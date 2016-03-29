@@ -1,15 +1,13 @@
 import re
 
 MAX = 1000000000
+ORDER = 'ACGU'
 
-
+# Outputs AXYA number
 def parse_stack_txt(data):
-  """Outputs stacking data. Impossible is set to MAX. Output as integers ten times bigger than the original value.
-
-  Outputs 16 matrices in AA, AC ... order. Each matrix is outputted in AA, AC ... order too.
-  """
   lines = [i.strip() for i in re.sub(r' +', ' ', data).split('\n')]
   output = ''
+  idx = 0
   for i in range(len(lines)):
     if re.match(r'(\s*3\' <-- 5\'\s*){4}', lines[i]):
       matrix_lines = [[j.strip() for j in i.split()] for i in lines[i + 1:i + 5]]
@@ -21,10 +19,9 @@ def parse_stack_txt(data):
               val = MAX
             else:
               val = int(val.replace('.', ''))
-            output += '%d ' % val
-          output += '\n'
-        output += '\n'
+            output += '%s%s%s%s %d\n' % (ORDER[idx], ORDER[r], ORDER[c], ORDER[m], val)
       i += 5
+      idx += 1
   return output
 
 
