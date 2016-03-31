@@ -1,0 +1,13 @@
+-9
+-8
+-22
+15
+3
+16
+// Order is as below:
+// UU or GA first mismatch
+// GG first mismatch
+// special GU closure
+// C3 loop
+// All-C loop, A
+// All-C loop, B

@@ -29,7 +29,7 @@ inline bool IsUnorderedOf(base_t a, base_t b, int basesA, int basesB) {
 
 void Init();
 
-base_t BaseFromChar(char c);
+base_t CharToBase(char c);
 
 char BaseToChar(base_t b);
 
