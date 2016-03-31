@@ -1,13 +1,20 @@
 #include "base.h"
 #include "parsing.h"
+#include "globals.h"
 
 namespace memerna {
 
 void Init() {
-  parsing::ParseStackingEnergiesFromFile("data/stacking.data");
+  parsing::Parse2x2FromFile("data/stacking.data", stacking_e);
+  parsing::Parse2x2FromFile("data/terminal.data", terminal_e);
+  parsing::ParseMapFromFile("data/hairpin.data", hairpin_e);
+  parsing::ParseInitiationEnergyFromFile("data/internal_initiation.data", internal_init);
+  parsing::ParseInitiationEnergyFromFile("data/bulge_initiation.data", bulge_init);
+  parsing::ParseInitiationEnergyFromFile("data/hairpin_initiation.data", hairpin_init);
+  parsing::ParseHairpinMismatchesFromFile("data/hairpin_mismatches.data");
 }
 
-base_t BaseFromChar(char c) {
+base_t CharToBase(char c) {
   switch (c) {
     case 'A':
       return A;

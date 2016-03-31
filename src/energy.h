@@ -9,7 +9,12 @@ namespace memerna {
 namespace energy {
 
 typedef int32_t energy_t;
+const energy_t MAX_E = 1000000000;
 const energy_t AUGU_PENALTY = 5;
+// N.B. This is for kcal/mol so it's not 8.315.
+const double R = 1.985877534e-3;
+// This is 37 degrees Celsius. Changing this is not a good idea.
+const double T = 310.15;
 
 // Destroys folded_rna_t.
 energy_t ComputeEnergy(folded_rna_t& frna);
