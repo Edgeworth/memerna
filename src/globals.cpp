@@ -9,6 +9,7 @@ energy::energy_t terminal_e[4][4][4][4];
 energy::energy_t internal_init[INITIATION_CACHE_SZ];
 
 energy::energy_t bulge_init[INITIATION_CACHE_SZ];
+energy::energy_t bulge_special_c;
 
 energy::energy_t hairpin_init[INITIATION_CACHE_SZ];
 energy::energy_t hairpin_uu_ga_first_mismatch, hairpin_gg_first_mismatch,

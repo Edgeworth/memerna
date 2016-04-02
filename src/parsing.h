@@ -21,7 +21,9 @@ void ParseMapFromFile(const std::string& filename, std::unordered_map<std::strin
 
 void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t (&output)[INITIATION_CACHE_SZ]);
 
-void ParseHairpinMismatchesFromFile(const std::string& filename);
+void ParseHairpinMiscDataFromFile(const std::string& filename);
+
+void ParseBulgeMiscDataFromFile(const std::string& filename);
 
 }
 }

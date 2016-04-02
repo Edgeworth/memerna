@@ -11,7 +11,8 @@ void Init() {
   parsing::ParseInitiationEnergyFromFile("data/internal_initiation.data", internal_init);
   parsing::ParseInitiationEnergyFromFile("data/bulge_initiation.data", bulge_init);
   parsing::ParseInitiationEnergyFromFile("data/hairpin_initiation.data", hairpin_init);
-  parsing::ParseHairpinMismatchesFromFile("data/hairpin_mismatches.data");
+  parsing::ParseHairpinMiscDataFromFile("data/hairpin_misc.data");
+  parsing::ParseBulgeMiscDataFromFile("data/bulge_misc.data");
 }
 
 base_t CharToBase(char c) {
