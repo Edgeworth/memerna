@@ -1,5 +1,4 @@
 #include "parsing.h"
-#include "globals.h"
 
 namespace memerna {
 namespace parsing {
@@ -62,7 +61,7 @@ void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t
   fclose(fp);
 }
 
-void ParseHairpinMismatchesFromFile(const std::string& filename) {
+void ParseHairpinMiscDataFromFile(const std::string& filename) {
   FILE* fp = fopen(filename.c_str(), "r");
   int res = fscanf(
       fp, "%d %d %d %d %d %d",
@@ -71,6 +70,14 @@ void ParseHairpinMismatchesFromFile(const std::string& filename) {
   assert(res == 6);
   fclose(fp);
 }
+
+void ParseBulgeMiscDataFromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  int res = fscanf(fp, "%d", &bulge_special_c);
+  assert(res == 1);
+  fclose(fp);
+}
+
 
 }
 }

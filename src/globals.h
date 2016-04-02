@@ -23,6 +23,7 @@ extern energy::energy_t internal_init[INITIATION_CACHE_SZ];
 
 // Bulge loop related:
 extern energy::energy_t bulge_init[INITIATION_CACHE_SZ];
+extern energy::energy_t bulge_special_c;
 
 // Hairpin loop related:
 extern energy::energy_t hairpin_init[INITIATION_CACHE_SZ];
