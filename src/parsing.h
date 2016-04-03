@@ -25,6 +25,10 @@ void ParseHairpinMiscDataFromFile(const std::string& filename);
 
 void ParseBulgeMiscDataFromFile(const std::string& filename);
 
+void ParseInternalLoop1x1FromFile(const std::string& filename);
+void ParseInternalLoop1x2FromFile(const std::string& filename);
+void ParseInternalLoop2x2FromFile(const std::string& filename);
+
 }
 }
 

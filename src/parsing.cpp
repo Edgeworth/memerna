@@ -5,7 +5,7 @@ namespace parsing {
 
 rna_t ParseRnaFromString(const std::string& s) {
   rna_t rna(s.size());
-  for (int i = 0; i < s.size(); ++i) {
+  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     rna[i] = CharToBase(s[i]);
   }
   return rna;
@@ -16,7 +16,7 @@ folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs
   rna_t rna = ParseRnaFromString(rna_str);
   std::vector<int> pairs(rna_str.size(), -1);
   std::stack<int> s;
-  for (int i = 0; i < rna_str.size(); ++i) {
+  for (int i = 0; i < static_cast<int>(rna_str.size()); ++i) {
     if (pairs_str[i] == '(') {
       s.push(i);
     } else if (pairs_str[i] == ')') {
@@ -76,6 +76,60 @@ void ParseBulgeMiscDataFromFile(const std::string& filename) {
   FILE* fp = fopen(filename.c_str(), "r");
   int res = fscanf(fp, "%d", &bulge_special_c);
   assert(res == 1);
+  fclose(fp);
+}
+
+void ParseInternalLoop1x1FromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  while (1) {
+    base_t a = CharToBase((char) fgetc(fp));
+    base_t b = CharToBase((char) fgetc(fp));
+    base_t c = CharToBase((char) fgetc(fp));
+    base_t d = CharToBase((char) fgetc(fp));
+    base_t e = CharToBase((char) fgetc(fp));
+    base_t f = CharToBase((char) fgetc(fp));
+    if (a == -1) break;
+    assert(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1);
+    int res = fscanf(fp, " %d ", &internal_1x1[a][b][c][d][e][f]);
+    assert(res == 1);
+  }
+  fclose(fp);
+}
+
+void ParseInternalLoop1x2FromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  while (1) {
+    base_t a = CharToBase((char) fgetc(fp));
+    base_t b = CharToBase((char) fgetc(fp));
+    base_t c = CharToBase((char) fgetc(fp));
+    base_t d = CharToBase((char) fgetc(fp));
+    base_t e = CharToBase((char) fgetc(fp));
+    base_t f = CharToBase((char) fgetc(fp));
+    base_t g = CharToBase((char) fgetc(fp));
+    if (a == -1) break;
+    assert(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1);
+    int res = fscanf(fp, " %d ", &internal_1x2[a][b][c][d][e][f][g]);
+    assert(res == 1);
+  }
+  fclose(fp);
+}
+
+void ParseInternalLoop2x2FromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  while (1) {
+    base_t a = CharToBase((char) fgetc(fp));
+    base_t b = CharToBase((char) fgetc(fp));
+    base_t c = CharToBase((char) fgetc(fp));
+    base_t d = CharToBase((char) fgetc(fp));
+    base_t e = CharToBase((char) fgetc(fp));
+    base_t f = CharToBase((char) fgetc(fp));
+    base_t g = CharToBase((char) fgetc(fp));
+    base_t h = CharToBase((char) fgetc(fp));
+    if (a == -1) break;
+    assert(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1 && h != -1);
+    int res = fscanf(fp, " %d ", &internal_2x2[a][b][c][d][e][f][g][h]);
+    assert(res == 1);
+  }
   fclose(fp);
 }
 
