@@ -23,6 +23,11 @@ extern energy::energy_t internal_init[INITIATION_CACHE_SZ];
 extern energy::energy_t internal_1x1[4][4][4][4][4][4];
 extern energy::energy_t internal_1x2[4][4][4][4][4][4][4];
 extern energy::energy_t internal_2x2[4][4][4][4][4][4][4][4];
+extern energy::energy_t internal_2x3_mismatch[4][4][4][4];
+extern energy::energy_t internal_other_mismatch[4][4][4][4];
+extern energy::energy_t internal_asym;
+extern energy::energy_t internal_augu_penalty;
+extern energy::energy_t internal_mismatch_1xk;
 
 // Bulge loop related:
 extern energy::energy_t bulge_init[INITIATION_CACHE_SZ];
