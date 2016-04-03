@@ -13,14 +13,15 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FindUBSan)
 include(FindASan)
 include(FindMSan)
-include(FindGTest)
 include(FindThreads)
+
+include_directories(src)
 
 add_library(memerna_lib ${MEMERNA_SOURCE} ${MEMERNA_HEADERS})
 add_executable(memerna src/main.cpp)
 target_link_libraries(memerna memerna_lib)
 
+add_subdirectory(lib/gtest)
 enable_testing()
 add_executable(run_tests ${TEST_SOURCE} ${MEMERNA_HEADERS})
-include_directories(src)
-target_link_libraries(run_tests Threads::Threads ${GTEST_LIBRARIES} memerna_lib)
+target_link_libraries(run_tests Threads::Threads gtest memerna_lib)
