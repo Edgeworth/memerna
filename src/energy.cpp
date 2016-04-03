@@ -158,10 +158,10 @@ energy_t ComputeEnergyInternal(int st, int en) {
   return energy;
 }
 
-// Destroys folded_rna_t.
+// TODO: This does a copy.
 energy_t ComputeEnergy(folded_rna_t& frna) {
-  r = std::move(frna.r);
-  p = std::move(frna.p);
+  r = frna.r;
+  p = frna.p;
   return ComputeEnergyInternal(-1, (int) r.size());
 }
 
