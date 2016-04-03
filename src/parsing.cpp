@@ -30,7 +30,7 @@ folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs
 }
 
 
-void Parse2x2FromFile(const std::string& filename, energy::energy_t (&output)[4][4][4][4]) {
+void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   for (int i = 0; i < 256; ++i) {
     base_t a = CharToBase((char) fgetc(fp));
@@ -53,7 +53,7 @@ void ParseMapFromFile(const std::string& filename, std::unordered_map<std::strin
   fclose(fp);
 }
 
-void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t (&output)[INITIATION_CACHE_SZ]) {
+void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t (& output)[INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
   energy::energy_t energy;
   int idx;

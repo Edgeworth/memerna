@@ -2,7 +2,6 @@
 #include <cassert>
 #include "base.h"
 #include "parsing.h"
-#include "energy.h"
 
 using namespace memerna;
 

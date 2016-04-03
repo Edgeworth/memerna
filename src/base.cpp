@@ -1,6 +1,5 @@
 #include "base.h"
 #include "parsing.h"
-#include "globals.h"
 
 namespace memerna {
 
