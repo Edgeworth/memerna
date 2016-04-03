@@ -2,6 +2,8 @@
 import argparse
 import os
 
+import sys
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--type', choices=['debug', 'asan', 'msan', 'ubsan'], default='debug', required=False)
 parser.add_argument('-c', '--use_clang', action='store_true', default=False, required=False)
@@ -13,9 +15,13 @@ if args.use_clang:
   cc = 'clang'
   cxx = 'clang++'
 
+
 def run_command(cmd):
   print(cmd)
-  os.system(cmd)
+  res = os.system(cmd)
+  if res != 0:
+    sys.exit(1)
+
 
 if not os.path.exists('build'):
   os.mkdir('build')

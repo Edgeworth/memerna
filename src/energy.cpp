@@ -94,8 +94,10 @@ energy_t BulgeEnergy(int outer_st, int outer_en, int inner_st, int inner_en) {
   int unpaired = outer_st + 1;
   if (outer_st + 1 == inner_st) unpaired = inner_en + 1;
   // Special C bulge.
-  if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired] + 1 == C))
+  if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired] + 1 == C)) {
+    printf("Applying special c bulge: %d\n", bulge_special_c);
     energy += bulge_special_c;
+  }
 #if BULGE_LOOP_STATES
   // TODO. This is not implemented and potentially experimentally not super solid.
 #endif
@@ -116,7 +118,7 @@ energy_t ComputeEnergyInternal(int st, int en) {
       energy += stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]];
     } else if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
       // N.B. Double counting penalties for stacks of size 1 is intentional.
-      printf("Applying ending AU/GU penalty %d %d\n", st, en);
+      printf("Applying ending AU/GU penalty %d %d: %d\n", st, en, AUGU_PENALTY);
       energy += AUGU_PENALTY;
     }
   }
@@ -131,7 +133,7 @@ energy_t ComputeEnergyInternal(int st, int en) {
       printf("Loop at %d %d\n", i, pair);
       // If not a continuation of stacking and not a size 1 bulge loop, apply AU/GU penalty.
       if ((i - st + en - pair > 3) && IsUnorderedOf(r[i], r[pair], G_b | A_b, U_b)) {
-        printf("Applying opening AU/GU penalty %d %d\n", st + 1, en - 1);
+        printf("Applying opening AU/GU penalty %d %d: %d\n", st + 1, en - 1, AUGU_PENALTY);
         energy += AUGU_PENALTY;
       }
       if (first_st == -1) {
@@ -151,8 +153,14 @@ energy_t ComputeEnergyInternal(int st, int en) {
     assert(numunpaired >= 3);
     printf("Found hairpin loop %d %d\n", st, en);
     energy += HairpinEnergy(st, en);
-  } else if (numloops == 1) {
-    energy += BulgeEnergy(st, en, first_st, first_en);
+  } else if (numloops == 1 && first_st - st + en - first_en > 2) {
+    // Bulge loop or internal loop.
+    if (first_st - st == 1 || en - first_en == 1) {
+      printf("Found bulge loop %d %d\n", first_st, first_en);
+      energy += BulgeEnergy(st, en, first_st, first_en);
+    } else {
+      printf("Found internal loop %d %d\n", first_st, first_en);
+    }
   }
   printf("Found %d loops\n", numloops);
   return energy;
