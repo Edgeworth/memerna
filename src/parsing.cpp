@@ -32,11 +32,12 @@ folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs
 
 void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
-  for (int i = 0; i < 256; ++i) {
+  while (1) {
     base_t a = CharToBase((char) fgetc(fp));
     base_t b = CharToBase((char) fgetc(fp));
     base_t c = CharToBase((char) fgetc(fp));
     base_t d = CharToBase((char) fgetc(fp));
+    if (a == -1) break;
     assert(a != -1 && b != -1 && c != -1 && d != -1);
     int res = fscanf(fp, " %d ", &output[a][b][c][d]);
     assert(res == 1);
@@ -130,6 +131,13 @@ void ParseInternalLoop2x2FromFile(const std::string& filename) {
     int res = fscanf(fp, " %d ", &internal_2x2[a][b][c][d][e][f][g][h]);
     assert(res == 1);
   }
+  fclose(fp);
+}
+
+void ParseInternalLoopMiscDataFromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  int res = fscanf(fp, "%d %d %d", &internal_asym, &internal_augu_penalty, &internal_mismatch_1xk);
+  assert(res == 3);
   fclose(fp);
 }
 

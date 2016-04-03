@@ -22,7 +22,11 @@ energy_t HairpinEnergy(int st, int en);
 
 energy_t BulgeInitiation(int n);
 
-energy_t BulgeEnergy(int outer_st, int outer_en, int inner_st, int inner_en);
+energy_t BulgeEnergy(int ost, int oen, int ist, int ien);
+
+energy_t InternalLoopInitiation(int n);
+
+energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien);
 
 energy_t ComputeEnergy(const folded_rna_t& frna);
 }

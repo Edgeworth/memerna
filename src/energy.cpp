@@ -121,17 +121,46 @@ energy_t InternalLoopInitiation(int n) {
   return static_cast<energy_t>(round(internal_init[6] + 1.08 * log(n / 6.0)));
 }
 
+// Indices are inclusive.
+// Rules for internal loops:
+// 1. If it is 1x1, 1x2, 2x1, or 2x2, then check a lookup table.
+// 2. If not, return G_init plus:
+// 2.1 Internal loop specific AU/GU penalty for each AU/GU end.
+// 2.2
 energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 1 && botlen == 1)
-    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[oen + 1]][r[oen]];
+    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
   if (toplen == 1 && botlen == 2)
-    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[oen + 2]][r[oen + 1]][r[oen]];
+    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
   if (toplen == 2 && botlen == 1)
-    return internal_1x2[r[oen]][r[oen + 1]][r[oen + 2]][r[ien]][r[ist]][r[ost + 1]][r[ost]];
+    return internal_1x2[r[ien]][r[ien + 1]][r[ien + 2]][r[oen]][r[ost]][r[ost + 1]][r[ist]];
   if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[oen + 2]][r[oen + 1]][r[oen]];
-  return 0;
+    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+
+  energy_t energy = InternalLoopInitiation(toplen + botlen);
+  // Special AU/GU penalties.
+  if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b))
+    energy += internal_augu_penalty;
+  if (IsUnorderedOf(r[ist], r[ien], G_b | A_b, U_b))
+    energy += internal_augu_penalty;
+  // Asymmetry term.
+  energy += std::abs(toplen - botlen) * internal_asym;
+
+  // Special mismatch parameters.
+  // To flip an RNA, we flip it vertically and horizontally (180 degree rotation).
+  // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which side is
+  // on the left / right is flipped.
+  if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
+    energy += internal_2x3_mismatch[r[ost]][r[ost + 1]][r[ien + 2]][r[oen]];
+    energy += internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ost + 1]][r[ist]];
+  }
+
+  if (toplen != 1 && botlen != 1) {
+    energy += internal_other_mismatch[r[ost]][r[ost + 1]][r[ien + 2]][r[oen]];
+    energy += internal_other_mismatch[r[ien]][r[ien + 1]][r[ost + 1]][r[ist]];
+  }
+  return energy;
 }
 
 energy_t ComputeEnergyInternal(int st, int en) {

@@ -9,6 +9,7 @@ namespace energy {
 class EnergyTest : public testing::Test {
 public:
     folded_rna_t kHairpin1 = parsing::ParseViennaRna("CACAAAAAAAUGUG", "((((......))))");
+    folded_rna_t kInternal2x3 = parsing::ParseViennaRna("CAGACGAAACGGAGUG", "((..((...))...))");
 };
 
 
@@ -22,6 +23,12 @@ TEST_F(EnergyTest, NNDBExamples) {
       stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + AUGU_PENALTY +
           terminal_e[A][A][A][U] + HairpinInitiation(6),
       ComputeEnergy(kHairpin1));
+
+  EXPECT_EQ(
+      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(5) + internal_asym +
+      internal_2x3_mismatch[A][G][G][U] + internal_2x3_mismatch[G][G][A][C] + internal_augu_penalty +
+      HairpinInitiation(3),
+      ComputeEnergy(kInternal2x3));
 }
 
 TEST_F(EnergyTest, BaseCases) {
