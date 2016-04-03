@@ -7,6 +7,9 @@ energy::energy_t stacking_e[4][4][4][4];
 energy::energy_t terminal_e[4][4][4][4];
 
 energy::energy_t internal_init[INITIATION_CACHE_SZ];
+energy::energy_t internal_1x1[4][4][4][4][4][4];
+energy::energy_t internal_1x2[4][4][4][4][4][4][4];
+energy::energy_t internal_2x2[4][4][4][4][4][4][4][4];
 
 energy::energy_t bulge_init[INITIATION_CACHE_SZ];
 energy::energy_t bulge_special_c;

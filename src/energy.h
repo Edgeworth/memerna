@@ -24,7 +24,7 @@ energy_t BulgeInitiation(int n);
 
 energy_t BulgeEnergy(int outer_st, int outer_en, int inner_st, int inner_en);
 
-energy_t ComputeEnergy(folded_rna_t& frna);
+energy_t ComputeEnergy(const folded_rna_t& frna);
 }
 }
 
