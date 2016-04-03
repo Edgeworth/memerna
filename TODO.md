@@ -12,7 +12,7 @@
 -- Optional handling of GGUC_CUGG
 
 - Remember to apply dangles / terminal mismatches / coaxial stacking.
-
+- Change printfs to optional explanation output
 
 ### Tests
 - HairpinEnergy

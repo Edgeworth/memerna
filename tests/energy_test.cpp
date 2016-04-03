@@ -17,5 +17,5 @@ TEST_F(EnergyTest, SixLength) {
 }
 
 TEST_F(EnergyTest, NNDBExamples) {
-  EXPECT_EQ(-14, energy::ComputeEnergy(kHairpin1));
+  EXPECT_EQ(-13, energy::ComputeEnergy(kHairpin1));
 }
