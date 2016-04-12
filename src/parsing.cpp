@@ -142,5 +142,12 @@ void ParseInternalLoopMiscDataFromFile(const std::string& filename) {
 }
 
 
+void ParseMultiloopMiscDataFromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  int res = fscanf(fp, "%d %d %d", &multiloop_a, &multiloop_b, &multiloop_c);
+  assert(res == 3);
+  fclose(fp);
+}
+
 }
 }

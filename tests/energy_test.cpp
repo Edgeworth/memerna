@@ -38,8 +38,8 @@ TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(
       AUGU_PENALTY * 2 + stacking_e[G][A][U][U] + hairpin_init[3],
       ComputeEnergy(parsing::ParseViennaRna("GAAAAUU", "((...))")));
-  EXPECT_EQ(AUGU_PENALTY * 2 + hairpin_init[3], ComputeEnergy(parsing::ParseViennaRna("AAAAAUA", ".(...).")));
-  EXPECT_EQ(AUGU_PENALTY * 2 + hairpin_init[3], ComputeEnergy(parsing::ParseViennaRna("AAAAU", "(...)")));
+  EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseViennaRna("AAAAAUA", ".(...).")));
+  EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseViennaRna("AAAAU", "(...)")));
 }
 
 }

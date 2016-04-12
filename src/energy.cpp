@@ -3,6 +3,12 @@
 #include "energy.h"
 #include "globals.h"
 
+#if ENERGY_LOG
+#define ELOG(msg, args...) fprintf(stderr, "%s" msg, __func__, args)
+#else
+#define ELOG(msg, args...)
+#endif
+
 namespace memerna {
 namespace energy {
 
@@ -44,7 +50,7 @@ energy_t HairpinEnergy(int st, int en) {
   energy_t energy = HairpinInitiation(length);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
-    printf("Hairpin %d %d applying AUGU penalty\n", st, en);
+    ELOG("(%d, %d): applying AUGU penalty\n", st, en);
     energy += AUGU_PENALTY;
   }
 
@@ -104,11 +110,12 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien) {
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
   if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired] + 1 == C)) {
-    printf("Applying special c bulge: %d\n", bulge_special_c);
+    ELOG("(%d, %d, %d, %d): applying special c bulge: %d\n", ost, oen, ist, ien, bulge_special_c);
     energy += bulge_special_c;
   }
 #if BULGE_LOOP_STATES
-  // TODO. This is not implemented and potentially experimentally not super solid.
+  // TODO. This is not implemented and potentially experimentally not super solid?
+  // Count up the number of contiguous same bases next to the size 1 bulge loop base.
 #endif
   return energy;
 }
@@ -126,24 +133,40 @@ energy_t InternalLoopInitiation(int n) {
 // 1. If it is 1x1, 1x2, 2x1, or 2x2, then check a lookup table.
 // 2. If not, return G_init plus:
 // 2.1 Internal loop specific AU/GU penalty for each AU/GU end.
-// 2.2
+// 2.2 A constant times the absolute difference between the number of unpaired bases on each side of the loop.
+// 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for 2x3, and then
+//   rotate the rna by 180 degrees to look it up for 3x2.
 energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
-  if (toplen == 1 && botlen == 1)
+  ELOG("(%d, %d, %d, %d): Computing %dx%d internal loop\n", ost, oen, ist, ien, toplen, botlen);
+  if (toplen == 1 && botlen == 1) {
+    ELOG("(%d, %d, %d, %d): 1x1 internal loop\n", ost, oen, ist, ien);
     return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
-  if (toplen == 1 && botlen == 2)
+  }
+  if (toplen == 1 && botlen == 2) {
+    ELOG("(%d, %d, %d, %d): 1x2 internal loop\n", ost, oen, ist, ien);
     return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
-  if (toplen == 2 && botlen == 1)
+  }
+  if (toplen == 2 && botlen == 1) {
+    ELOG("(%d, %d, %d, %d): 2x1 internal loop\n", ost, oen, ist, ien);
     return internal_1x2[r[ien]][r[ien + 1]][r[ien + 2]][r[oen]][r[ost]][r[ost + 1]][r[ist]];
-  if (toplen == 2 && botlen == 2)
+  }
+  if (toplen == 2 && botlen == 2) {
+    ELOG("(%d, %d, %d, %d): 2x2 internal loop\n", ost, oen, ist, ien);
     return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+  }
 
   energy_t energy = InternalLoopInitiation(toplen + botlen);
+  ELOG("(%d, %d, %d, %d): Internal loop initiation: %d\n", ost, oen, ist, ien, energy);
   // Special AU/GU penalties.
-  if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b))
+  if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b)) {
+    ELOG("(%d, %d, %d, %d): Adding outer internal loop AUGU penalty\n", ost, oen, ist, ien);
     energy += internal_augu_penalty;
-  if (IsUnorderedOf(r[ist], r[ien], G_b | A_b, U_b))
+  }
+  if (IsUnorderedOf(r[ist], r[ien], G_b | A_b, U_b)) {
+    ELOG("(%d, %d, %d, %d): Adding inner internal loop AUGU penalty\n", ost, oen, ist, ien);
     energy += internal_augu_penalty;
+  }
   // Asymmetry term.
   energy += std::abs(toplen - botlen) * internal_asym;
 
@@ -152,64 +175,110 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien) {
   // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which side is
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
-    energy += internal_2x3_mismatch[r[ost]][r[ost + 1]][r[ien + 2]][r[oen]];
-    energy += internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ost + 1]][r[ist]];
+    ELOG("(%d, %d, %d, %d): Adding 2x3 internal loop mismatch parameters.\n", ost, oen, ist, ien);
+    energy += internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]];
+    energy += internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+  } else if (toplen != 1 && botlen != 1) {
+    ELOG("(%d, %d, %d, %d): Adding other size internal loop mismatch parameters.\n", ost, oen, ist, ien);
+    energy += internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]];
+    energy += internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
   }
 
-  if (toplen != 1 && botlen != 1) {
-    energy += internal_other_mismatch[r[ost]][r[ost + 1]][r[ien + 2]][r[oen]];
-    energy += internal_other_mismatch[r[ien]][r[ien + 1]][r[ost + 1]][r[ist]];
+  return energy;
+}
+
+// 1999 rules.
+energy_t MultiloopInitiation(int st, int en, const std::vector<int>& loops) {
+  int num_unpaired = 0;
+  for (auto loop_st : loops) {
+    num_unpaired += loop_st - p[loop_st] + 1;
   }
+  num_unpaired = en - st - 1 - num_unpaired;
+#if T99_LN_FACTOR
+  if (num_unpaired > 6)
+    return static_cast<energy_t>(multiloop_a + 6 * multiloop_b + 1.1 * log(num_unpaired / 6.0) + multiloop_c * loops.size());
+#endif
+  return static_cast<energy_t>(multiloop_a + multiloop_b * num_unpaired + multiloop_c * loops.size());
+}
+
+energy_t MultiloopEnergy(int st, int en, const std::vector<int>& loops) {
+  bool exterior_loop = st == 0 && en == static_cast<int>(r.size() - 1) && p[st] != en;
+  energy_t energy = 0;
+  // No initiation for the exterior loop.
+  if (!exterior_loop)
+    energy += MultiloopInitiation(st, en, loops);
+
+  // Add AUGU penalties.
+  for (auto loop_st : loops) {
+    if (IsUnorderedOf(r[loop_st], r[p[loop_st]], G_b | A_b, U_b)) {
+      ELOG("(%d, %d): Applying opening AUGU penalty at %d %d\n", st, en, loop_st, p[loop_st - st]);
+      energy += AUGU_PENALTY;
+    }
+  }
+
   return energy;
 }
 
 energy_t ComputeEnergyInternal(int st, int en) {
-  assert(en >= st - 1);
+  assert(en > st);
   energy_t energy = 0;
-  printf("%d %d\n", st, en);
   // Watson-Crick helix.
   if (p[st + 1] == en - 1 && p[st] == en) {
-    printf("Adding Watson-Crick stacking energy %d %d %d %d: %d\n",
-           st, st + 1, en - 1, en, stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]]);
+    ELOG(
+        "(%d, %d): Adding Watson-Crick stacking energy %d %d %d %d: %d\n",
+        st, en, st, st + 1, en - 1, en, stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]]);
     energy += stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]];
   }
+
   // Look for loops inside.
-  int numloops = 0;
-  int first_st = -1, first_en = -1;
+  std::vector<int> loops;
   for (int i = st; i <= en; ++i) {
     int pair = p[i];
-    // This only happens when we're called at 0, sz - 1 and it's something like "(...)."
+    assert(pair <= en);
+    // If we're in the exterior loop we still want to consider loops starting or ending at st or en.
     if ((i == st && pair == en) || (i == en && pair == st)) continue;
-    assert(pair < en);
+
     if (pair != -1) {
-      printf("Loop at %d %d\n", i, pair);
-      if (first_st == -1) {
-        first_st = i;
-        first_en = pair;
-      }
+      ELOG("(%d, %d): Loop at %d %d\n", st, en, i, pair);
+      loops.push_back(i);
       energy += ComputeEnergyInternal(i, pair);
 
       i = pair;
-      numloops++;
     }
   }
 
-  // Hairpin loop.
-  if (numloops == 0) {
-    int numunpaired = en - st - 1;
-    assert(numunpaired >= 3);
-    printf("Found hairpin loop %d %d\n", st, en);
-    energy += HairpinEnergy(st, en);
-  } else if (numloops == 1 && first_st - st + en - first_en > 2) {
-    // Bulge loop or internal loop.
-    if (first_st - st == 1 || en - first_en == 1) {
-      printf("Found bulge loop %d %d\n", first_st, first_en);
-      energy += BulgeEnergy(st, en, first_st, first_en);
-    } else {
-      printf("Found internal loop %d %d\n", first_st, first_en);
+  // We're in the exterior loop if we were called with the entire RNA and there's no match on the very ends that takes
+  // us out of the exterior loop.
+  bool exterior_loop = st == 0 && en == static_cast<int>(r.size() - 1) && p[st] != en;
+  if (exterior_loop || loops.size() >= 2) {
+    // Found multiloop.
+    energy_t multiloop_energy = MultiloopEnergy(st, en, loops);
+    ELOG("(%d, %d): Found multiloop: %d\n", st, en, multiloop_energy);
+    energy += multiloop_energy;
+  } else if (loops.size() == 0) {
+    // Hairpin loop.
+    int num_unpaired = en - st - 1;
+    assert(num_unpaired >= 3);
+    energy_t hairpin_energy = HairpinEnergy(st, en);
+    ELOG("(%d, %d): Found hairpin loop: %d\n", st, en, hairpin_energy);
+    energy += hairpin_energy;
+  } else if (loops.size() == 1) {
+    int loop_st = loops.front(), loop_en = p[loops.front()];
+    if (loop_st - st + en - loop_en > 2) {
+      // Bulge loop or internal loop.
+      if (loop_st - st == 1 || en - loop_en == 1) {
+        energy_t bulge_energy = BulgeEnergy(st, en, loop_st, loop_en);
+        ELOG("(%d, %d): Found bulge loop %d %d %d %d: %d\n", st, en, st, en, loop_st, loop_en, bulge_energy);
+        energy += bulge_energy;
+      } else {
+        energy_t internal_energy = InternalLoopEnergy(st, en, loop_st, loop_en);
+        ELOG("(%d, %d): Found internal loop %d %d %d %d: %d\n", st, en, st, en, loop_st, loop_en, internal_energy);
+        energy += internal_energy;
+      }
     }
   }
-  printf("Found %d loops\n", numloops);
+
+  ELOG("(%d, %d): Found %d loops\n", st, en, (int) loops.size());
   return energy;
 }
 
@@ -217,16 +286,10 @@ energy_t ComputeEnergyInternal(int st, int en) {
 energy_t ComputeEnergy(const folded_rna_t& frna) {
   r = frna.r;
   p = frna.p;
+  ELOG("(): Computing energy of %d length RNA.\n", (int)r.size());
   energy_t firstAu = 0;
-  // Add top level AUGU penalties.
-  for (int i = 0; i < static_cast<int>(r.size()); ++i) {
-    int pair = p[i];
-    if (pair != -1) {
-      if (IsUnorderedOf(r[i], r[pair], G_b | A_b, U_b))
-        firstAu += AUGU_PENALTY;
-      i = pair;
-    }
-  }
+  if (p[0] == static_cast<int>(r.size() - 1) && IsUnorderedOf(r[0], r[p[0]], G_b | A_b, U_b))
+    firstAu = AUGU_PENALTY;
   return ComputeEnergyInternal(0, (int) r.size() - 1) + firstAu;
 }
 

@@ -16,6 +16,7 @@ const int INITIATION_CACHE_SZ = 31;
 // Stacking related:
 extern energy::energy_t stacking_e[4][4][4][4];
 
+// Terminal mismatch:
 extern energy::energy_t terminal_e[4][4][4][4];
 
 // Internal loop related:
@@ -38,6 +39,9 @@ extern energy::energy_t hairpin_init[INITIATION_CACHE_SZ];
 extern energy::energy_t hairpin_uu_ga_first_mismatch, hairpin_gg_first_mismatch,
     hairpin_special_gu_closure, hairpin_c3_loop, hairpin_all_c_a, hairpin_all_c_b;
 extern std::unordered_map<std::string, energy::energy_t> hairpin_e;
+
+// Multiloop related:
+extern energy::energy_t multiloop_a, multiloop_b, multiloop_c;
 
 // Global data variables.
 extern rna_t r;
