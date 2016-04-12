@@ -32,6 +32,9 @@ void ParseInternalLoop1x2FromFile(const std::string& filename);
 void ParseInternalLoop2x2FromFile(const std::string& filename);
 
 void ParseInternalLoopMiscDataFromFile(const std::string& filename);
+
+void ParseMultiloopMiscDataFromFile(const std::string& filename);
+
 }
 }
 
