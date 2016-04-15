@@ -30,6 +30,13 @@ void Init() {
 
   // Multiloop data.
   parsing::ParseMultiloopMiscDataFromFile("data/multiloop_misc.data");
+
+  // Dangle data.
+  parsing::ParseDangleDataFromFile("data/dangle3.data", dangle3_e);
+  parsing::ParseDangleDataFromFile("data/dangle5.data", dangle5_e);
+
+  // Coaxial stacking.
+  parsing::ParseCoaxialMiscDataFromFile("data/coaxial_misc.data");
 }
 
 base_t CharToBase(char c) {

@@ -149,5 +149,26 @@ void ParseMultiloopMiscDataFromFile(const std::string& filename) {
   fclose(fp);
 }
 
+void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& output)[4][4][4]) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  while (1) {
+    base_t a = CharToBase((char) fgetc(fp));
+    base_t b = CharToBase((char) fgetc(fp));
+    base_t c = CharToBase((char) fgetc(fp));
+    if (a == -1) break;
+    assert(a != -1 && b != -1 && c != -1);
+    int res = fscanf(fp, " %d ", &output[a][b][c]);
+    assert(res == 1);
+  }
+  fclose(fp);
+}
+
+void ParseCoaxialMiscDataFromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  int res = fscanf(fp, "%d %d %d", &coax_mismatch_non_contigous, &coax_mismatch_wc_bonus, &coax_mismatch_non_contigous);
+  assert(res == 3);
+  fclose(fp);
+}
+
 }
 }

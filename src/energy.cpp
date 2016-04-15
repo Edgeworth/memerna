@@ -201,6 +201,33 @@ energy_t MultiloopInitiation(int st, int en, const std::vector<int>& loops) {
   return static_cast<energy_t>(multiloop_a + multiloop_b * num_unpaired + multiloop_c * loops.size());
 }
 
+// Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
+energy_t ComputeOptimalCtd(std::vector<int>& loops, int outer_idx) {
+  int N = static_cast<int>(loops.size());
+  std::vector<int> cache[2] = {std::vector<int>(loops.size(), MAX_E), std::vector<int>(loops.size(), MAX_E)};
+  for (int i = 0; i < N - 1; ++i) {
+    int l = loops[i], r = p[loops[i]];
+    assert(r != -1);
+    int lu = l - 1, ru = r + 1;
+    if (i == outer_idx) {
+      lu = r - 1;
+      ru = l + 1;
+    }
+    bool lu_exists = p[lu] == -1, ru_exists = p[ru] == -1;
+    bool lu_shared = lu_exists && lu > 0 && p[lu - 1] != -1;
+    bool ru_shared = ru_exists && ru < N - 1 && p[ru + 1] != -1;
+    // Left consuming cases. Requires lu_exists and left not used.
+    if (lu_exists) {
+      // Terminal mismatch. Requires lu_exists, ru_exists, and left not used.
+      cache[ru_shared][i + 1] = std::min(cache[ru_shared][i + 1], cache[0][i] + terminal_e[r][ru][lu][l]);
+    }
+
+    // Cases where the left was consumed.
+
+    // C
+  }
+}
+
 energy_t MultiloopEnergy(int st, int en, const std::vector<int>& loops) {
   bool exterior_loop = st == 0 && en == static_cast<int>(r.size() - 1) && p[st] != en;
   energy_t energy = 0;
