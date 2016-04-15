@@ -26,6 +26,11 @@ std::unordered_map<std::string, energy::energy_t> hairpin_e;
 
 energy::energy_t multiloop_a, multiloop_b, multiloop_c;
 
+energy::energy_t dangle5_e[4][4][4];
+energy::energy_t dangle3_e[4][4][4];
+
+energy::energy_t coax_mismatch_non_contigous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
+
 rna_t r;
 std::vector<int> p;
 

@@ -10,10 +10,14 @@
 namespace memerna {
 
 // Globals.
-// A X Y A
 const int INITIATION_CACHE_SZ = 31;
 
 // Stacking related:
+// Note that the order of indices is always the order the RNA would be accessed in in memory.
+// E.g. For a terminal mismatch:
+// 5'-> G X 3'->
+// <-3' U Y <-5'
+// Access the array terminal_e[G][X][Y][U] since G, X, Y, U would occur in that order in memory.
 extern energy::energy_t stacking_e[4][4][4][4];
 
 // Terminal mismatch:
@@ -42,6 +46,15 @@ extern std::unordered_map<std::string, energy::energy_t> hairpin_e;
 
 // Multiloop related:
 extern energy::energy_t multiloop_a, multiloop_b, multiloop_c;
+
+// Dangles:
+// X, G, U
+extern energy::energy_t dangle5_e[4][4][4];
+// G, U, X
+extern energy::energy_t dangle3_e[4][4][4];
+
+// Coaxial stacking:
+extern energy::energy_t coax_mismatch_non_contigous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
 
 // Global data variables.
 extern rna_t r;

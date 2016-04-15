@@ -35,6 +35,10 @@ void ParseInternalLoopMiscDataFromFile(const std::string& filename);
 
 void ParseMultiloopMiscDataFromFile(const std::string& filename);
 
+void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& output)[4][4][4]);
+
+void ParseCoaxialMiscDataFromFile(const std::string& filename);
+
 }
 }
 
