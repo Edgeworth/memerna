@@ -54,7 +54,7 @@ extern energy::energy_t dangle5_e[4][4][4];
 extern energy::energy_t dangle3_e[4][4][4];
 
 // Coaxial stacking:
-extern energy::energy_t coax_mismatch_non_contigous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
+extern energy::energy_t coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
 
 // Global data variables.
 extern rna_t r;

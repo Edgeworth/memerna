@@ -12,7 +12,7 @@ def parse_number(val):
     assert (float(val) * 10 == int(val.replace('.', '')))
     return int(val.replace('.', ''))
 
-
+# Converts ordering of dangles.
 def parse_dangle_file(data):
   lines = [i.strip() for i in re.sub(r' +', ' ', data).split('\n')]
   outputs = ['', '']

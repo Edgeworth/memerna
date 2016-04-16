@@ -1,6 +1,5 @@
 ### efn2
 - Bulge loops
--- AU/GU penalty only for bulges >=2 nucleotides
 -- Number of states term.
 - Multiloops
 - Coaxial stacking
@@ -15,6 +14,8 @@
 - Change printfs to optional explanation output
 
 ### Tests
-- HairpinEnergy
-- HairpinInitiation
-- Add googletest + scripts
+- Randomised energy model + unit tests
+- Randomised energy model + comparison to vienna rna / rna structure / max rna
+- Zuker tests:
+-- Randomised energy model + multiple tracebacks + comparison to energy function output
+- Store structure?
