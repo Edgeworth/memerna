@@ -5,7 +5,7 @@ namespace parsing {
 
 rna_t ParseRnaFromString(const std::string& s) {
   rna_t rna(s.size());
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
+  for (int i = 0; i < int(s.size()); ++i) {
     rna[i] = CharToBase(s[i]);
   }
   return rna;
@@ -16,7 +16,7 @@ folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs
   rna_t rna = ParseRnaFromString(rna_str);
   std::vector<int> pairs(rna_str.size(), -1);
   std::stack<int> s;
-  for (int i = 0; i < static_cast<int>(rna_str.size()); ++i) {
+  for (int i = 0; i < int(rna_str.size()); ++i) {
     if (pairs_str[i] == '(') {
       s.push(i);
     } else if (pairs_str[i] == ')') {
@@ -165,7 +165,7 @@ void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& ou
 
 void ParseCoaxialMiscDataFromFile(const std::string& filename) {
   FILE* fp = fopen(filename.c_str(), "r");
-  int res = fscanf(fp, "%d %d %d", &coax_mismatch_non_contigous, &coax_mismatch_wc_bonus, &coax_mismatch_non_contigous);
+  int res = fscanf(fp, "%d %d %d", &coax_mismatch_non_contiguous, &coax_mismatch_wc_bonus, &coax_mismatch_non_contiguous);
   assert(res == 3);
   fclose(fp);
 }

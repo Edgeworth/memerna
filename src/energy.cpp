@@ -4,9 +4,9 @@
 #include "globals.h"
 
 #if ENERGY_LOG
-#define ELOG(msg, args...) fprintf(stderr, "%s" msg, __func__, args)
+#define ELOG(msg, ...) fprintf(stderr, "%s" msg, __func__, __VA_ARGS__)
 #else
-#define ELOG(msg, args...)
+#define ELOG(msg, ...)
 #endif
 
 namespace memerna {
@@ -17,7 +17,7 @@ energy_t HairpinInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
   static_assert(INITIATION_CACHE_SZ > 9, "Need initiation values for up to 9.");
   // Formula: G_init(9) + 1.75 * R * T * ln(n / 9).
-  return static_cast<energy_t>(round(hairpin_init[9] + 1.75 * R * T * log(n / 9.0)));
+  return energy_t(round(hairpin_init[9] + 1.75 * R * T * log(n / 9.0)));
 }
 
 // Indices are inclusive, include the initiating base pair.
@@ -82,7 +82,7 @@ energy_t BulgeInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return bulge_init[n];
   static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
   // Formula: G_init(6) + 1.75 * R * T * ln(n / 6).
-  return static_cast<energy_t>(round(bulge_init[6] + 1.75 * R * T * log(n / 6.0)));
+  return energy_t(round(bulge_init[6] + 1.75 * R * T * log(n / 6.0)));
 }
 
 // Indices are inclusive.
@@ -125,7 +125,7 @@ energy_t InternalLoopInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return internal_init[n];
   static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
   // Formula: G_init(6) + 1.08 * ln(n / 6).
-  return static_cast<energy_t>(round(internal_init[6] + 1.08 * log(n / 6.0)));
+  return energy_t(round(internal_init[6] + 1.08 * log(n / 6.0)));
 }
 
 // Indices are inclusive.
@@ -188,57 +188,181 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien) {
 }
 
 // 1999 rules.
-energy_t MultiloopInitiation(int st, int en, const std::vector<int>& loops) {
+energy_t MultiloopInitiation(int st, int en, const std::vector<int>& branches) {
   int num_unpaired = 0;
-  for (auto loop_st : loops) {
-    num_unpaired += loop_st - p[loop_st] + 1;
+  for (auto branch_st : branches) {
+    num_unpaired += branch_st - p[branch_st] + 1;
   }
   num_unpaired = en - st - 1 - num_unpaired;
 #if T99_LN_FACTOR
   if (num_unpaired > 6)
-    return static_cast<energy_t>(multiloop_a + 6 * multiloop_b + 1.1 * log(num_unpaired / 6.0) + multiloop_c * loops.size());
+    return energy_t(multiloop_a + 6 * multiloop_b + 1.1 * log(num_unpaired / 6.0) + multiloop_c * branches.size());
 #endif
-  return static_cast<energy_t>(multiloop_a + multiloop_b * num_unpaired + multiloop_c * loops.size());
+  return energy_t(multiloop_a + multiloop_b * num_unpaired + multiloop_c * branches.size());
 }
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
-energy_t ComputeOptimalCtd(std::vector<int>& loops, int outer_idx) {
-  int N = static_cast<int>(loops.size());
-  std::vector<int> cache[2] = {std::vector<int>(loops.size(), MAX_E), std::vector<int>(loops.size(), MAX_E)};
-  for (int i = 0; i < N - 1; ++i) {
-    int l = loops[i], r = p[loops[i]];
-    assert(r != -1);
-    int lu = l - 1, ru = r + 1;
-    if (i == outer_idx) {
-      lu = r - 1;
-      ru = l + 1;
-    }
-    bool lu_exists = p[lu] == -1, ru_exists = p[ru] == -1;
-    bool lu_shared = lu_exists && lu > 0 && p[lu - 1] != -1;
-    bool ru_shared = ru_exists && ru < N - 1 && p[ru + 1] != -1;
-    // Left consuming cases. Requires lu_exists and left not used.
-    if (lu_exists) {
-      // Terminal mismatch. Requires lu_exists, ru_exists, and left not used.
-      cache[ru_shared][i + 1] = std::min(cache[ru_shared][i + 1], cache[0][i] + terminal_e[r][ru][lu][l]);
-    }
+// This DP needs to be run four times. The series of branches is actually cyclic, and there are two types of interactions
+// that can occur between branches. Interactions between the branches themselves, and interactions between the unpaired bases
+// next to them. branches interact when they form coaxial stacks. Bases interact when an unpaired base is shared by two
+// branches and has the option of forming a dangle on either. N.B. interact is not used in the chemistry sense here.
+// The DP needs to be run with the outer branch at the start and the end, and also with the unpaired base on the left
+// // of the first branch (if it exists) not used and potentially used. Running with the outer branch at both the start and
+// the end allows coaxial stacking interactions between the outer branch and both adjacent branches. Running with having the
+// left unpaired base both not used lets the last branch potentially consume it (wrapping around).
+//
+// The state holds which branches we're up to, |i|, and whether the unpaired base on the left was consumed by anything
+// other than a 5' dangle, |used|.
+// If there is no unpaired base, |used| indicates whether this branch was consumed by a coaxial stacking interaction.
+// From this we can work out all the cases.
+//
+// Note that we can't form two dangles attached to the same stem; that's a terminal mismatch. This is handled by baking
+// every 5' dangle case into the other cases. This means when we go to place a 3' dangle when |used| is true, the left
 
-    // Cases where the left was consumed.
-
-    // C
-  }
+// Rules for mismatch mediated coaxial stacking:
+//    1. A terminal mismatch is formed around the branch being straddled.
+//    2. An arbitrary bonus is added.
+//    2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
+inline energy_t MismatchMediatedCoaxialEnergy(
+    base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
+  energy_t coax = terminal_e[fiveTop][mismatch_top][mismatch_bot][threeBot] + coax_mismatch_non_contiguous;
+  if (IsUnorderedOf(mismatch_top, mismatch_bot, G_b, C_b) ||
+      IsUnorderedOf(mismatch_top, mismatch_bot, A_b, U_b))
+    coax += coax_mismatch_wc_bonus;
+  if (IsUnorderedOf(mismatch_top, mismatch_bot, G_b, U_b))
+    coax += coax_mismatch_gu_bonus;
+  return coax;
 }
 
-energy_t MultiloopEnergy(int st, int en, const std::vector<int>& loops) {
-  bool exterior_loop = st == 0 && en == static_cast<int>(r.size() - 1) && p[st] != en;
+// unpaired base will never have been consumed by a 5' dangle.
+#define UPDATE_CACHE(used, idx, cur_used, cur_idx, value) \
+  do { if (cache[cur_used][cur_idx] + value < cache[used][idx]) { \
+    cache[used][idx] = cache[cur_used][cur_idx] + value; \
+    back[used][idx] = {cur_used, cur_idx}; \
+  } } while (0)
+energy_t ComputeOptimalCtd(std::vector<int>& branches, int outer_idx, bool use_first_lu) {
+  // cache[used][i]
+  int N = branches.size();
+  assert(outer_idx == 0 || outer_idx == N - 1);
+
+  std::vector<int> cache[2] = {
+      std::vector<int>(size_t(N + 1), MAX_E),
+      std::vector<int>(size_t(N + 1), MAX_E)
+  };
+  std::vector<std::pair<int, int>> back[2] = {
+      std::vector<std::pair<int, int>>(size_t(N + 1), {-1, -1}),
+      std::vector<std::pair<int, int>>(size_t(N + 1), {-1, -1})
+  };
+  cache[0][0] = cache[1][0] = 0;
+  // These values are for outer_idx == N - 1, i.e. last.
+  int first_lui = branches[0] - 1, last_rui = branches[N - 1] + 1;
+  // These are for outer_idx == 0.
+  if (outer_idx == 0) {
+    first_lui = p[branches[0]] - 1;
+    last_rui = p[branches[N - 1]] + 1;
+  }
+  for (int i = 0; i < N; ++i) {
+    int li = branches[i], ri = p[branches[i]];
+    assert(ri != -1);
+    if (i == outer_idx)
+      std::swap(li, ri);
+    int lui = li - 1, rui = ri + 1;
+    // If |use_first_lu|, then if the left unpaired base is the same as the last branches right unpaired base,
+    // then we can't use it (as it could be used at the end by a terminal mismatch, dangle, right facing coaxial stack,
+    // etc). This is because the loop is cyclic.
+    bool lu_exists = lui >= 0 && lui < N && p[lui] == -1;
+    bool lu_usable = lu_exists && (lui != last_rui || use_first_lu);
+    bool ru_exists = rui >= 0 && rui < N && p[rui] == -1;
+    bool ru_usable = ru_exists && (rui != first_lui || !use_first_lu);
+    bool ru_shared = ru_exists && rui < N - 1 && p[rui + 1] != -1;
+    base_t lb = r[li], rb = r[ri], lub = -1, rub = -1;
+    if (lu_exists) lub = r[lui];
+    if (ru_exists) rub = r[rui];
+
+    // Next loop for coaxial stacking:
+    int lli = -1, rri = -1, rrui = -1;
+    bool rru_exists_usable = false;
+    if (i != N - 1) {
+      lli = branches[i + 1];
+      rri = p[branches[i + 1]];
+      if (i + 1 == outer_idx)
+        std::swap(lli, rri);
+      rrui = rri - 1;
+      rru_exists_usable = rrui >= 0 && rrui < N && p[rrui] == -1 && (rrui != first_lui || !use_first_lu);
+    }
+
+    // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be the last branch.
+    if (!ru_exists && lli != -1) {
+      energy_t coax = stacking_e[rb][r[lli]][r[rri]][lb];
+      // Here |used| is set when lu doesn't exist for branch i + 1, indicating it was consumed by a coaxial stack.
+      UPDATE_CACHE(1, i + 1, 0, i, coax);
+      if (lu_exists) {
+        // If lu exists, and it was used, then it's fine to coaxially stack. If |used| were true but lu didn't exist then
+        // we couldn't coaxially stack as the current branch would already have been involved in one, though.
+        UPDATE_CACHE(1, i + 1, 1, i, coax);
+        // 5' dangle if left wasn't used.
+        UPDATE_CACHE(1, i + 1, 0, i, coax + dangle5_e[rb][lub][lb]);
+      }
+    }
+
+    if (lu_usable && ru_usable) {
+      // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
+      // Consumes ru, so if it was shared, use it.
+      UPDATE_CACHE(ru_shared, i + 1, 0, i, terminal_e[rb][rub][lub][lb]);
+
+      // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
+      // Requires lu_exists, ru_exists, ru_shared, and left not used. Consumes ru.
+      if (ru_shared) {
+        energy_t left_coax = MismatchMediatedCoaxialEnergy(rb, rub, lub, lb);
+        UPDATE_CACHE(1, i + 1, 0, i, left_coax);
+      }
+    }
+
+    // Right consuming cases.
+    if (ru_usable) {
+      // Right dangle (3').
+      // Only requires ru_exists so handle where left is both used and not used.
+      UPDATE_CACHE(ru_shared, i + 1, 0, i, dangle3_e[rb][rub][lb]);
+      UPDATE_CACHE(ru_shared, i + 1, 1, i, dangle3_e[rb][rub][lb]);
+
+      // Mismatch mediated coaxial stacking, right facing (uses the next branch).
+      // Requires ru_exists, ru_shared. Consumes ru and rru.
+      if (ru_shared && rru_exists_usable) {
+        energy_t right_coax = MismatchMediatedCoaxialEnergy(r[rri], r[rrui], rub, r[lli]);
+        UPDATE_CACHE(1, i + 2, 0, i, right_coax);
+        if (lu_exists) {
+          // In the case that lu doesn't exist but it is "used" it means this branch was consumed by a coaxial interaction
+          // so don't use it.
+          UPDATE_CACHE(1, i + 2, 1, i, right_coax);
+          // 5' dangle.
+          UPDATE_CACHE(1, i + 2, 0, i, right_coax + dangle5_e[rb][lub][lb]);
+        }
+      }
+    }
+
+    // 5' dangle.
+    UPDATE_CACHE(0, i + 1, 0, i, dangle5_e[rb][lub][lb]);
+
+    // Have the option of doing nothing.
+    UPDATE_CACHE(0, i + 1, 0, i, 0);
+    UPDATE_CACHE(0, i + 1, 1, i, 0);
+  }
+
+  return std::min(cache[0][N], cache[1][N]);
+}
+#undef UPDATE_CACHE
+
+energy_t MultiloopEnergy(int st, int en, const std::vector<int>& branches) {
+  bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   energy_t energy = 0;
   // No initiation for the exterior loop.
   if (!exterior_loop)
-    energy += MultiloopInitiation(st, en, loops);
+    energy += MultiloopInitiation(st, en, branches);
 
   // Add AUGU penalties.
-  for (auto loop_st : loops) {
-    if (IsUnorderedOf(r[loop_st], r[p[loop_st]], G_b | A_b, U_b)) {
-      ELOG("(%d, %d): Applying opening AUGU penalty at %d %d\n", st, en, loop_st, p[loop_st - st]);
+  for (auto branch_st : branches) {
+    if (IsUnorderedOf(r[branch_st], r[p[branch_st]], G_b | A_b, U_b)) {
+      ELOG("(%d, %d): Applying opening AUGU penalty at %d %d\n", st, en, branch_st, p[branch_st - st]);
       energy += AUGU_PENALTY;
     }
   }
@@ -257,17 +381,17 @@ energy_t ComputeEnergyInternal(int st, int en) {
     energy += stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]];
   }
 
-  // Look for loops inside.
-  std::vector<int> loops;
+  // Look for branches inside.
+  std::vector<int> branches;
   for (int i = st; i <= en; ++i) {
     int pair = p[i];
     assert(pair <= en);
-    // If we're in the exterior loop we still want to consider loops starting or ending at st or en.
+    // If we're in the exterior loop we still want to consider branches starting or ending at st or en.
     if ((i == st && pair == en) || (i == en && pair == st)) continue;
 
     if (pair != -1) {
-      ELOG("(%d, %d): Loop at %d %d\n", st, en, i, pair);
-      loops.push_back(i);
+      ELOG("(%d, %d): Branch at %d %d\n", st, en, i, pair);
+      branches.push_back(i);
       energy += ComputeEnergyInternal(i, pair);
 
       i = pair;
@@ -276,21 +400,21 @@ energy_t ComputeEnergyInternal(int st, int en) {
 
   // We're in the exterior loop if we were called with the entire RNA and there's no match on the very ends that takes
   // us out of the exterior loop.
-  bool exterior_loop = st == 0 && en == static_cast<int>(r.size() - 1) && p[st] != en;
-  if (exterior_loop || loops.size() >= 2) {
+  bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
+  if (exterior_loop || branches.size() >= 2) {
     // Found multiloop.
-    energy_t multiloop_energy = MultiloopEnergy(st, en, loops);
+    energy_t multiloop_energy = MultiloopEnergy(st, en, branches);
     ELOG("(%d, %d): Found multiloop: %d\n", st, en, multiloop_energy);
     energy += multiloop_energy;
-  } else if (loops.size() == 0) {
+  } else if (branches.size() == 0) {
     // Hairpin loop.
     int num_unpaired = en - st - 1;
     assert(num_unpaired >= 3);
     energy_t hairpin_energy = HairpinEnergy(st, en);
     ELOG("(%d, %d): Found hairpin loop: %d\n", st, en, hairpin_energy);
     energy += hairpin_energy;
-  } else if (loops.size() == 1) {
-    int loop_st = loops.front(), loop_en = p[loops.front()];
+  } else if (branches.size() == 1) {
+    int loop_st = branches.front(), loop_en = p[branches.front()];
     if (loop_st - st + en - loop_en > 2) {
       // Bulge loop or internal loop.
       if (loop_st - st == 1 || en - loop_en == 1) {
@@ -305,7 +429,7 @@ energy_t ComputeEnergyInternal(int st, int en) {
     }
   }
 
-  ELOG("(%d, %d): Found %d loops\n", st, en, (int) loops.size());
+  ELOG("(%d, %d): Found %d branches\n", st, en, (int) branches.size());
   return energy;
 }
 
@@ -313,9 +437,9 @@ energy_t ComputeEnergyInternal(int st, int en) {
 energy_t ComputeEnergy(const folded_rna_t& frna) {
   r = frna.r;
   p = frna.p;
-  ELOG("(): Computing energy of %d length RNA.\n", (int)r.size());
+  ELOG("(): Computing energy of %d length RNA.\n", (int) r.size());
   energy_t firstAu = 0;
-  if (p[0] == static_cast<int>(r.size() - 1) && IsUnorderedOf(r[0], r[p[0]], G_b | A_b, U_b))
+  if (p[0] == int(r.size() - 1) && IsUnorderedOf(r[0], r[p[0]], G_b | A_b, U_b))
     firstAu = AUGU_PENALTY;
   return ComputeEnergyInternal(0, (int) r.size() - 1) + firstAu;
 }

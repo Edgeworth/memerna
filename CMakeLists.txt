@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 project(memerna)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
 file(GLOB MEMERNA_SOURCE "src/*.cpp")
 file(GLOB MEMERNA_HEADERS "src/*.h")
 list(REMOVE_ITEM MEMERNA_SOURCE src/main.cpp)
