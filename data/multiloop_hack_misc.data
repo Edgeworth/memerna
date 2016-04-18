@@ -1,6 +1,7 @@
 93
 -9
 // This is for the hacky T04 model described in the T04 paper. Doesn't include asymmetry.
+// TODO: RNAstructure might use -6 instead of -9?
 // Order is as below:
 // a constant
 // b constant

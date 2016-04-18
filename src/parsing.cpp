@@ -11,7 +11,7 @@ rna_t ParseRnaFromString(const std::string& s) {
   return rna;
 }
 
-folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs_str) {
+folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str) {
   assert(rna_str.size() == pairs_str.size());
   rna_t rna = ParseRnaFromString(rna_str);
   std::vector<int> pairs(rna_str.size(), -1);

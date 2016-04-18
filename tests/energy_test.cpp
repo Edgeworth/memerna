@@ -8,15 +8,15 @@ namespace energy {
 
 class EnergyTest : public testing::Test {
 public:
-    folded_rna_t kHairpin1 = parsing::ParseViennaRna("CACAAAAAAAUGUG", "((((......))))");
-    folded_rna_t kHairpin2 = parsing::ParseViennaRna("CACAGGAAGUGUG", "((((.....))))");
-    folded_rna_t kHairpin3 = parsing::ParseViennaRna("CACCCGAGGGUG", "((((....))))");
-    folded_rna_t kHairpin4 = parsing::ParseViennaRna("CACACCCCCCUGUG", "((((......))))");
-    folded_rna_t kHairpin5 = parsing::ParseViennaRna("CGGGGGAAGUCCG", "((((.....))))");
-    folded_rna_t kInternal2x3 = parsing::ParseViennaRna("CAGACGAAACGGAGUG", "((..((...))...))");
-    folded_rna_t kFlushCoax = parsing::ParseViennaRna("GUGAAACACAAAAUGA", ".((...))((...)).");
+    folded_rna_t kHairpin1 = parsing::ParseDotBracketRna("CACAAAAAAAUGUG", "((((......))))");
+    folded_rna_t kHairpin2 = parsing::ParseDotBracketRna("CACAGGAAGUGUG", "((((.....))))");
+    folded_rna_t kHairpin3 = parsing::ParseDotBracketRna("CACCCGAGGGUG", "((((....))))");
+    folded_rna_t kHairpin4 = parsing::ParseDotBracketRna("CACACCCCCCUGUG", "((((......))))");
+    folded_rna_t kHairpin5 = parsing::ParseDotBracketRna("CGGGGGAAGUCCG", "((((.....))))");
+    folded_rna_t kInternal2x3 = parsing::ParseDotBracketRna("CAGACGAAACGGAGUG", "((..((...))...))");
+    folded_rna_t kFlushCoax = parsing::ParseDotBracketRna("GUGAAACACAAAAUGA", ".((...))((...)).");
     // NNDB T99 Multiloop example
-    folded_rna_t kMultiloop = parsing::ParseViennaRna("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+    folded_rna_t kMultiloop = parsing::ParseDotBracketRna("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
 };
 
 
@@ -78,15 +78,15 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
 TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(
       AUGU_PENALTY + stacking_e[G][A][U][C] + hairpin_init[3],
-      ComputeEnergy(parsing::ParseViennaRna("GAAAAUC", "((...))")));
+      ComputeEnergy(parsing::ParseDotBracketRna("GAAAAUC", "((...))")));
   EXPECT_EQ(
       AUGU_PENALTY * 2 + stacking_e[G][A][U][U] + hairpin_init[3],
-      ComputeEnergy(parsing::ParseViennaRna("GAAAAUU", "((...))")));
+      ComputeEnergy(parsing::ParseDotBracketRna("GAAAAUU", "((...))")));
   EXPECT_EQ(
       AUGU_PENALTY * 2 + HairpinInitiation(3) +
       std::min(terminal_e[U][A][A][A], std::min(dangle3_e[U][A][A], dangle5_e[U][A][A])),
-      ComputeEnergy(parsing::ParseViennaRna("AAAAAUA", ".(...).")));
-  EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseViennaRna("AAAAU", "(...)")));
+      ComputeEnergy(parsing::ParseDotBracketRna("AAAAAUA", ".(...).")));
+  EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseDotBracketRna("AAAAU", "(...)")));
 }
 
 }

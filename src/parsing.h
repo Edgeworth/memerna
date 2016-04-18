@@ -13,7 +13,7 @@ namespace parsing {
 
 rna_t ParseRnaFromString(const std::string& s);
 
-folded_rna_t ParseViennaRna(const std::string& rna_str, const std::string& pairs_str);
+folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str);
 
 void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4][4][4][4]);
 
