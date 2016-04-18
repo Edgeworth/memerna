@@ -4,15 +4,15 @@ import os
 import tempfile
 
 from common import run_command
-from convert import vienna_to_ct
+from convert import db_to_ct
 
 def run_rnastructure(rnastrucuture_dir, seq, pairs):
   print("Running RNAstructure")
   with tempfile.NamedTemporaryFile() as f, tempfile.NamedTemporaryFile() as out:
-    f.write(vienna_to_ct(seq, pairs).encode('UTF-8'))
+    f.write(db_to_ct(seq, pairs).encode('UTF-8'))
     f.flush()
     os.putenv('DATAPATH', '%s/data_tables' % rnastrucuture_dir)
-    run_command('%s/exe/efn2' % rnastrucuture_dir, '-s', f.name, out.name)
+    run_command('%s/exe/efn2' % rnastrucuture_dir, '-w', f.name, out.name)
     print('RNAstructure: %s' % out.read().strip().decode('UTF-8'))
 
 def run_memerna(memerna_loc, seq, pairs):
