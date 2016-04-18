@@ -141,11 +141,17 @@ void ParseInternalLoopMiscDataFromFile(const std::string& filename) {
   fclose(fp);
 }
 
-
-void ParseMultiloopMiscDataFromFile(const std::string& filename) {
+void ParseMultiloopT99MiscDataFromFile(const std::string& filename) {
   FILE* fp = fopen(filename.c_str(), "r");
-  int res = fscanf(fp, "%d %d %d", &multiloop_a, &multiloop_b, &multiloop_c);
+  int res = fscanf(fp, "%d %d %d", &multiloop_t99_a, &multiloop_t99_b, &multiloop_t99_c);
   assert(res == 3);
+  fclose(fp);
+}
+
+void ParseMultiloopHackMiscDataFromFile(const std::string& filename) {
+  FILE* fp = fopen(filename.c_str(), "r");
+  int res = fscanf(fp, "%d %d", &multiloop_hack_a, &multiloop_hack_b);
+  assert(res == 2);
   fclose(fp);
 }
 
@@ -165,7 +171,7 @@ void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& ou
 
 void ParseCoaxialMiscDataFromFile(const std::string& filename) {
   FILE* fp = fopen(filename.c_str(), "r");
-  int res = fscanf(fp, "%d %d %d", &coax_mismatch_non_contiguous, &coax_mismatch_wc_bonus, &coax_mismatch_non_contiguous);
+  int res = fscanf(fp, "%d %d %d", &coax_mismatch_non_contiguous, &coax_mismatch_wc_bonus, &coax_mismatch_gu_bonus);
   assert(res == 3);
   fclose(fp);
 }

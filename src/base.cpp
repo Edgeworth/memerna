@@ -29,7 +29,8 @@ void Init() {
   parsing::Parse2x2FromFile("data/internal_other_mismatch.data", internal_other_mismatch);
 
   // Multiloop data.
-  parsing::ParseMultiloopMiscDataFromFile("data/multiloop_misc.data");
+  parsing::ParseMultiloopT99MiscDataFromFile("data/multiloop_t99_misc.data");
+  parsing::ParseMultiloopHackMiscDataFromFile("data/multiloop_hack_misc.data");
 
   // Dangle data.
   parsing::ParseDangleDataFromFile("data/dangle3.data", dangle3_e);

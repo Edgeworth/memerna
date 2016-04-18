@@ -1,9 +1,6 @@
+#!/usr/bin/env python3
 import argparse
 import re
-
-parser = argparse.ArgumentParser()
-parser.add_argument('filename')
-args = parser.parse_args()
 
 
 def vienna_to_ct(seq, pairs):
@@ -45,5 +42,14 @@ def ct_to_vienna(ct):
   return sequence, pairs
 
 
-seq, pairs, _ = open(args.filename).readlines()
-print(vienna_to_ct(seq, pairs))
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('filename')
+  args = parser.parse_args()
+
+  seq, pairs = open(args.filename).readlines()
+  print(vienna_to_ct(seq, pairs))
+
+
+if __name__ == "__main__":
+  main()
