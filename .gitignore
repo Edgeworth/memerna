@@ -11,3 +11,5 @@ install_manifest.txt
 
 .idea/
 build/
+__pycache__
+*.pyc
