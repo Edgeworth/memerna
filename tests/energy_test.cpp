@@ -13,6 +13,9 @@ public:
     folded_rna_t kHairpin3 = parsing::ParseDotBracketRna("CACCCGAGGGUG", "((((....))))");
     folded_rna_t kHairpin4 = parsing::ParseDotBracketRna("CACACCCCCCUGUG", "((((......))))");
     folded_rna_t kHairpin5 = parsing::ParseDotBracketRna("CGGGGGAAGUCCG", "((((.....))))");
+    folded_rna_t kBulge1 = parsing::ParseDotBracketRna("GCCCGAAACGGC", "(((.(...))))");
+    folded_rna_t kBulge2 = parsing::ParseDotBracketRna("GAACAGAAACUC", "((...(...)))");
+    folded_rna_t kBulge3 = parsing::ParseDotBracketRna("GCUCGAAACAGC", "(((.(...))))");
     folded_rna_t kInternal2x3 = parsing::ParseDotBracketRna("CAGACGAAACGGAGUG", "((..((...))...))");
     folded_rna_t kFlushCoax = parsing::ParseDotBracketRna("GUGAAACACAAAAUGA", ".((...))((...)).");
     // NNDB T99 Multiloop example
@@ -58,6 +61,22 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
             ComputeEnergy(kHairpin5));
 }
 
+TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
+  energy_t states = 0;
+  if (BULGE_LOOP_STATES)
+    states = -energy_t(10.0 * R * R * log(3));
+
+  EXPECT_EQ(
+      stacking_e[G][C][G][C] + stacking_e[C][C][G][G] + BulgeInitiation(1)
+      + bulge_special_c + stacking_e[C][G][C][G] + HairpinInitiation(3) + states,
+      ComputeEnergy(kBulge1));
+
+  EXPECT_EQ(
+      stacking_e[G][A][U][C] + AUGU_PENALTY + BulgeInitiation(3) + HairpinInitiation(3),
+      ComputeEnergy(kBulge2));
+}
+
+
 TEST_F(EnergyTest, NNDBMultiloopExamples) {
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] +
             2 * AUGU_PENALTY + 2 * HairpinInitiation(3),
@@ -87,6 +106,10 @@ TEST_F(EnergyTest, BaseCases) {
       std::min(terminal_e[U][A][A][A], std::min(dangle3_e[U][A][A], dangle5_e[U][A][A])),
       ComputeEnergy(parsing::ParseDotBracketRna("AAAAAUA", ".(...).")));
   EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseDotBracketRna("AAAAU", "(...)")));
+  EXPECT_EQ(
+      stacking_e[G][C][G][C] + stacking_e[C][U][A][G] + BulgeInitiation(1) +
+      stacking_e[U][G][C][A] + HairpinInitiation(3),
+      ComputeEnergy(kBulge3));
 }
 
 }

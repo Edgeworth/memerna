@@ -105,7 +105,7 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien) {
     return energy;
   }
   // Stacking energy.
-  energy += stacking_e[r[ost]][r[ist]][r[ien]][r[ist]];
+  energy += stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
   int unpaired = ost + 1;
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
@@ -337,8 +337,10 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       }
     }
 
-    // 5' dangle.
-    UPDATE_CACHE(0, i + 1, 0, i, dangle5_e[rb][lub][lb], "lu 5' dangle;");
+    if (lu_usable[i]) {
+      // 5' dangle.
+      UPDATE_CACHE(0, i + 1, 0, i, dangle5_e[rb][lub][lb], "lu 5' dangle;");
+    }
 
     // Have the option of doing nothing.
     UPDATE_CACHE(0, i + 1, 0, i, 0, "no interaction;");

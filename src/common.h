@@ -6,7 +6,8 @@
 
 // TODO: Handle special stacking (GGUC <-> CUGG).
 #define SPECIAL_STACKING 0
-#define BULGE_LOOP_STATES 1
+// TODO: Handle bulge loop states.
+#define BULGE_LOOP_STATES 0
 #define ENERGY_LOG 1
 
 #endif //MEMERNA_COMMON_H
