@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import re
 
+from common import write_file, read_file
+
 MAX = 1000000000
 ORDER = 'ACGU'
 
@@ -11,6 +13,7 @@ def parse_number(val):
   else:
     assert (float(val) * 10 == int(val.replace('.', '')))
     return int(val.replace('.', ''))
+
 
 # Converts ordering of dangles.
 def parse_dangle_file(data):
@@ -132,30 +135,26 @@ def parse_terminal_txt(data):
   return parse_2x2_file(data)
 
 
-def read_file(name):
-  return open('orig_data/%s' % name, encoding='utf-8').read()
+def main():
+  write_file(
+    'hairpin.data',
+    parse_map_file(read_file('triloop.txt')) +
+    parse_map_file(read_file('tloop.txt')) +
+    parse_map_file(read_file('hexaloop.txt')))
+  write_file('stacking.data', parse_stack_txt(read_file('stack.txt')))
+  write_file('terminal.data', parse_terminal_txt(read_file('tstack.txt')))
+  internal, bulge, hairpin = parse_loop_file(read_file('loop.txt'))
+  write_file('internal_initiation.data', internal)
+  write_file('bulge_initiation.data', bulge)
+  write_file('hairpin_initiation.data', hairpin)
+  write_file('internal_1x1.data', parse_1x1_internal_loop(read_file('int11.txt')))
+  write_file('internal_1x2.data', parse_1x2_internal_loop(read_file('int21.txt')))
+  write_file('internal_2x2.data', parse_2x2_internal_loop(read_file('int22.txt')))
+
+  dangle3, dangle5 = parse_dangle_file(read_file('dangle.txt'))
+  write_file('dangle3.data', dangle3)
+  write_file('dangle5.data', dangle5)
 
 
-def write_file(name, data):
-  with open('data/%s' % name, 'w') as f:
-    f.write(data)
-
-
-write_file(
-  'hairpin.data',
-  parse_map_file(read_file('triloop.txt')) +
-  parse_map_file(read_file('tloop.txt')) +
-  parse_map_file(read_file('hexaloop.txt')))
-write_file('stacking.data', parse_stack_txt(read_file('stack.txt')))
-write_file('terminal.data', parse_terminal_txt(read_file('tstack.txt')))
-internal, bulge, hairpin = parse_loop_file(read_file('loop.txt'))
-write_file('internal_initiation.data', internal)
-write_file('bulge_initiation.data', bulge)
-write_file('hairpin_initiation.data', hairpin)
-write_file('internal_1x1.data', parse_1x1_internal_loop(read_file('int11.txt')))
-write_file('internal_1x2.data', parse_1x2_internal_loop(read_file('int21.txt')))
-write_file('internal_2x2.data', parse_2x2_internal_loop(read_file('int22.txt')))
-
-dangle3, dangle5 = parse_dangle_file(read_file('dangle.txt'))
-write_file('dangle3.data', dangle3)
-write_file('dangle5.data', dangle5)
+if __name__ == "__main__":
+  main()

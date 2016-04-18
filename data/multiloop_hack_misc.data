@@ -1,0 +1,6 @@
+93
+-9
+// This is for the hacky T04 model described in the T04 paper. Doesn't include asymmetry.
+// Order is as below:
+// a constant
+// b constant

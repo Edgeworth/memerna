@@ -44,8 +44,11 @@ extern energy::energy_t hairpin_uu_ga_first_mismatch, hairpin_gg_first_mismatch,
     hairpin_special_gu_closure, hairpin_c3_loop, hairpin_all_c_a, hairpin_all_c_b;
 extern std::unordered_map<std::string, energy::energy_t> hairpin_e;
 
-// Multiloop related:
-extern energy::energy_t multiloop_a, multiloop_b, multiloop_c;
+// Multiloop hack model:
+extern energy::energy_t multiloop_hack_a, multiloop_hack_b;
+
+// Multiloop T99 model:
+extern energy::energy_t multiloop_t99_a, multiloop_t99_b, multiloop_t99_c;
 
 // Dangles:
 // X, G, U

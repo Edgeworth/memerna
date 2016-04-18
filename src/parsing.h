@@ -33,7 +33,9 @@ void ParseInternalLoop2x2FromFile(const std::string& filename);
 
 void ParseInternalLoopMiscDataFromFile(const std::string& filename);
 
-void ParseMultiloopMiscDataFromFile(const std::string& filename);
+void ParseMultiloopT99MiscDataFromFile(const std::string& filename);
+
+void ParseMultiloopHackMiscDataFromFile(const std::string& filename);
 
 void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& output)[4][4][4]);
 

@@ -2,6 +2,7 @@
 #define MEMERNA_ENERGY_H
 
 #include <utility>
+#include <deque>
 #include "common.h"
 #include "base.h"
 
@@ -27,6 +28,10 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien);
 energy_t InternalLoopInitiation(int n);
 
 energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien);
+
+energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
+
+energy_t MultiloopHackInitiation(int num_branches);
 
 energy_t ComputeEnergy(const folded_rna_t& frna);
 }
