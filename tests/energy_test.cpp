@@ -8,23 +8,30 @@ namespace energy {
 
 class EnergyTest : public testing::Test {
 public:
-    folded_rna_t kHairpin1 = parsing::ParseDotBracketRna("CACAAAAAAAUGUG", "((((......))))");
-    folded_rna_t kHairpin2 = parsing::ParseDotBracketRna("CACAGGAAGUGUG", "((((.....))))");
-    folded_rna_t kHairpin3 = parsing::ParseDotBracketRna("CACCCGAGGGUG", "((((....))))");
-    folded_rna_t kHairpin4 = parsing::ParseDotBracketRna("CACACCCCCCUGUG", "((((......))))");
-    folded_rna_t kHairpin5 = parsing::ParseDotBracketRna("CGGGGGAAGUCCG", "((((.....))))");
-    folded_rna_t kBulge1 = parsing::ParseDotBracketRna("GCCCGAAACGGC", "(((.(...))))");
-    folded_rna_t kBulge2 = parsing::ParseDotBracketRna("GAACAGAAACUC", "((...(...)))");
-    folded_rna_t kBulge3 = parsing::ParseDotBracketRna("GCUCGAAACAGC", "(((.(...))))");
-    folded_rna_t kInternal2x3 = parsing::ParseDotBracketRna("CAGACGAAACGGAGUG", "((..((...))...))");
+    folded_rna_t kNNDBHairpin1 = parsing::ParseDotBracketRna("CACAAAAAAAUGUG", "((((......))))");
+    folded_rna_t kNNDBHairpin2 = parsing::ParseDotBracketRna("CACAGGAAGUGUG", "((((.....))))");
+    folded_rna_t kNNDBHairpin3 = parsing::ParseDotBracketRna("CACCCGAGGGUG", "((((....))))");
+    folded_rna_t kNNDBHairpin4 = parsing::ParseDotBracketRna("CACACCCCCCUGUG", "((((......))))");
+    folded_rna_t kNNDBHairpin5 = parsing::ParseDotBracketRna("CGGGGGAAGUCCG", "((((.....))))");
+    folded_rna_t kNNDBBulge1 = parsing::ParseDotBracketRna("GCCCGAAACGGC", "(((.(...))))");
+    folded_rna_t kNNDBBulge2 = parsing::ParseDotBracketRna("GAACAGAAACUC", "((...(...)))");
+    folded_rna_t kNNDBInternal2x3 = parsing::ParseDotBracketRna("CAGACGAAACGGAGUG", "((..((...))...))");
+    folded_rna_t kNNDBInternal1x5 = parsing::ParseDotBracketRna("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+    folded_rna_t kNNDBInternal2x2 = parsing::ParseDotBracketRna("CAGACGAAACGGAUG", "((..((...))..))");
     folded_rna_t kFlushCoax = parsing::ParseDotBracketRna("GUGAAACACAAAAUGA", ".((...))((...)).");
     // NNDB T99 Multiloop example
-    folded_rna_t kMultiloop = parsing::ParseDotBracketRna("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+    folded_rna_t kNNDBMultiloop = parsing::ParseDotBracketRna("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+
+    folded_rna_t kBulge1 = parsing::ParseDotBracketRna("GCUCGAAACAGC", "(((.(...))))");
+    folded_rna_t kInternal1 = parsing::ParseDotBracketRna("AGAGAAACAAAU", "(..(...)...)");
+    // 180 degree rotation of |kInternal1|.
+    folded_rna_t kInternal2 = parsing::ParseDotBracketRna("CAAAUAAAAGAG", "(...(...)..)");
+    folded_rna_t kInternal3 = parsing::ParseDotBracketRna("GGGGGAAACGGGC", "(...(...)...)");
 };
 
 
 TEST_F(EnergyTest, HairpinEnergy) {
-  r = kHairpin1.r;
+  r = kNNDBHairpin1.r;
   EXPECT_EQ(AUGU_PENALTY + terminal_e[A][A][A][U] + HairpinInitiation(6), HairpinEnergy(3, 10));
   EXPECT_EQ(88, HairpinInitiation(87));
 }
@@ -46,19 +53,19 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
   EXPECT_EQ(
       stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + AUGU_PENALTY +
       terminal_e[A][A][A][U] + HairpinInitiation(6),
-      ComputeEnergy(kHairpin1));
+      ComputeEnergy(kNNDBHairpin1));
   EXPECT_EQ(
       stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + AUGU_PENALTY +
       terminal_e[A][G][G][U] + hairpin_gg_first_mismatch + HairpinInitiation(5),
-      ComputeEnergy(kHairpin2));
+      ComputeEnergy(kNNDBHairpin2));
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][C][G][G] + hairpin_e["CCGAGG"],
-            ComputeEnergy(kHairpin3));
+            ComputeEnergy(kNNDBHairpin3));
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] +
             AUGU_PENALTY + terminal_e[A][C][C][U] + HairpinInitiation(6) + hairpin_all_c_a * 6 + hairpin_all_c_b,
-            ComputeEnergy(kHairpin4));
+            ComputeEnergy(kNNDBHairpin4));
   EXPECT_EQ(stacking_e[C][G][C][G] + stacking_e[G][G][C][C] + stacking_e[G][G][U][C] + AUGU_PENALTY +
             terminal_e[G][G][G][U] + hairpin_gg_first_mismatch + HairpinInitiation(5) + hairpin_special_gu_closure,
-            ComputeEnergy(kHairpin5));
+            ComputeEnergy(kNNDBHairpin5));
 }
 
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
@@ -69,11 +76,11 @@ TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   EXPECT_EQ(
       stacking_e[G][C][G][C] + stacking_e[C][C][G][G] + BulgeInitiation(1)
       + bulge_special_c + stacking_e[C][G][C][G] + HairpinInitiation(3) + states,
-      ComputeEnergy(kBulge1));
+      ComputeEnergy(kNNDBBulge1));
 
   EXPECT_EQ(
       stacking_e[G][A][U][C] + AUGU_PENALTY + BulgeInitiation(3) + HairpinInitiation(3),
-      ComputeEnergy(kBulge2));
+      ComputeEnergy(kNNDBBulge2));
 }
 
 
@@ -83,7 +90,7 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
             ComputeEnergy(kFlushCoax));
   EXPECT_EQ(stacking_e[G][A][U][C] + terminal_e[C][G][A][G] + coax_mismatch_non_contiguous +
             3 * HairpinInitiation(3) + MultiloopT99Initiation(8, 4) + 2 * AUGU_PENALTY,
-            ComputeEnergy(kMultiloop));
+            ComputeEnergy(kNNDBMultiloop));
 }
 
 TEST_F(EnergyTest, NNDBInternalLoopExamples) {
@@ -91,7 +98,15 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
       stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(5) + internal_asym +
       internal_2x3_mismatch[A][G][G][U] + internal_2x3_mismatch[G][G][A][C] + internal_augu_penalty +
       HairpinInitiation(3),
-      ComputeEnergy(kInternal2x3));
+      ComputeEnergy(kNNDBInternal2x3));
+  EXPECT_EQ(
+      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + internal_2x2[A][G][A][C][G][G][A][U] +
+      HairpinInitiation(3),
+      ComputeEnergy(kNNDBInternal2x2));
+  EXPECT_EQ(
+      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(6) + 4 * internal_asym +
+      internal_augu_penalty + HairpinInitiation(3),
+      ComputeEnergy(kNNDBInternal1x5));
 }
 
 TEST_F(EnergyTest, BaseCases) {
@@ -109,7 +124,12 @@ TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(
       stacking_e[G][C][G][C] + stacking_e[C][U][A][G] + BulgeInitiation(1) +
       stacking_e[U][G][C][A] + HairpinInitiation(3),
-      ComputeEnergy(kBulge3));
+      ComputeEnergy(kBulge1));
+
+  EXPECT_EQ(
+      InternalLoopInitiation(5) + internal_asym + internal_augu_penalty + AUGU_PENALTY +
+          internal_2x3_mismatch[A][G][A][U] + internal_2x3_mismatch[C][A][A][G] + HairpinInitiation(3),
+      ComputeEnergy(kInternal1));
 }
 
 }

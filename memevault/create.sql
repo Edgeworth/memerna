@@ -1,0 +1,4 @@
+CREATE TABLE archiveii (
+  name TEXT PRIMARY KEY,
+  seq TEXT UNIQUE NOT NULL,
+  db TEXT NOT NULL);

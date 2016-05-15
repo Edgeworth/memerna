@@ -391,7 +391,11 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches) {
       ELOG("(%d, %d): Applying closing AUGU penalty\n", st, en);
       energy += AUGU_PENALTY;
     }
+#if USE_HACK_MODEL
+    energy_t initiation = MultiloopHackInitiation(int(branches.size() + 1));
+#else
     energy_t initiation = MultiloopT99Initiation(num_unpaired, int(branches.size() + 1));
+#endif
     ELOG("(%d, %d): Initiation: %d\n", st, en, initiation);
     energy += initiation;
     branches.push_front(st);
