@@ -137,23 +137,23 @@ def parse_terminal_txt(data):
 
 def main():
   write_file(
-    'hairpin.data',
-    parse_map_file(read_file('triloop.txt')) +
-    parse_map_file(read_file('tloop.txt')) +
-    parse_map_file(read_file('hexaloop.txt')))
-  write_file('stacking.data', parse_stack_txt(read_file('stack.txt')))
-  write_file('terminal.data', parse_terminal_txt(read_file('tstack.txt')))
-  internal, bulge, hairpin = parse_loop_file(read_file('loop.txt'))
-  write_file('internal_initiation.data', internal)
-  write_file('bulge_initiation.data', bulge)
-  write_file('hairpin_initiation.data', hairpin)
-  write_file('internal_1x1.data', parse_1x1_internal_loop(read_file('int11.txt')))
-  write_file('internal_1x2.data', parse_1x2_internal_loop(read_file('int21.txt')))
-  write_file('internal_2x2.data', parse_2x2_internal_loop(read_file('int22.txt')))
+    'orig_data/hairpin.data',
+    parse_map_file(read_file('orig_data/triloop.txt')) +
+    parse_map_file(read_file('orig_data/tloop.txt')) +
+    parse_map_file(read_file('orig_data/hexaloop.txt')))
+  write_file('data/stacking.data', parse_stack_txt(read_file('orig_data/stack.txt')))
+  write_file('data/terminal.data', parse_terminal_txt(read_file('orig_data/tstack.txt')))
+  internal, bulge, hairpin = parse_loop_file(read_file('orig_data/loop.txt'))
+  write_file('data/internal_initiation.data', internal)
+  write_file('data/bulge_initiation.data', bulge)
+  write_file('data/hairpin_initiation.data', hairpin)
+  write_file('data/internal_1x1.data', parse_1x1_internal_loop(read_file('orig_data/int11.txt')))
+  write_file('data/internal_1x2.data', parse_1x2_internal_loop(read_file('orig_data/int21.txt')))
+  write_file('data/internal_2x2.data', parse_2x2_internal_loop(read_file('orig_data/int22.txt')))
 
-  dangle3, dangle5 = parse_dangle_file(read_file('dangle.txt'))
-  write_file('dangle3.data', dangle3)
-  write_file('dangle5.data', dangle5)
+  dangle3, dangle5 = parse_dangle_file(read_file('orig_data/dangle.txt'))
+  write_file('data/dangle3.data', dangle3)
+  write_file('data/dangle5.data', dangle5)
 
 
 if __name__ == "__main__":

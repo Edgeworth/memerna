@@ -1,3 +1,4 @@
+#include <cstring>
 #include "base.h"
 #include "parsing.h"
 

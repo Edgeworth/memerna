@@ -1,7 +1,11 @@
 -21
 -4
 -2
+-22
+-3
+-1
 // Order is as below:
+// TODO: ACtual value is -2.2 usually?
 // mismatch non-continous backbone bonus
 // mismatch is Watson-Crick
 // mismatch is GU
