@@ -6,8 +6,8 @@ import sqlite3
 import urllib.request
 
 from bs4 import BeautifulSoup
-from rna import RNA
 from common import *
+from rna import RNA
 
 
 class MemeVault:
@@ -39,6 +39,7 @@ class MemeVault:
     for name, seq, db in c.fetchall():
       yield RNA.from_name_seq_db(name, seq, db)
 
+
 class RNAStrand:
   def __init__(self, data):
     self.rnas = []
@@ -49,7 +50,7 @@ class RNAStrand:
       data = re.sub(r'\s', '', data)
       assert len(data) % 2 == 0
       self.rnas.append(
-          RNA.from_name_seq_db(name, data[:len(data) // 2], data[len(data) // 2:]))
+        RNA.from_name_seq_db(name, data[:len(data) // 2], data[len(data) // 2:]))
 
   def insert(self, memevault):
     for rna in self.rnas:
@@ -72,6 +73,7 @@ class RNAStrand:
     d = {self.trim_category(i.td.get_text()): i.td.next_sibling.get_text() for i in rows}
     assert rna.name == d['Molecule ID']
 
+
 class ArchiveII:
   def __init__(self, dir):
     self.dir = fix_path(dir)
@@ -83,7 +85,7 @@ class ArchiveII:
       rna = RNA.from_any_file(read_file(filename))
       rna.name = name
       if rna in memevault:
-         print('Skipping', rna)
+        print('Skipping', rna)
       else:
         memevault.add(rna)
 

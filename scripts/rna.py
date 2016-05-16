@@ -1,6 +1,9 @@
 import re
 import string
 
+BRACKETS = ['()', '[]', '{}', '<>']
+BRACKETS += ['%s%s' % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
+
 
 class RNAAccuracy:
   def __init__(self, ppv, sensitivity):
@@ -29,19 +32,19 @@ class RNAAccuracy:
   def __str__(self):
     return 'F-Score: %.2f - PPV: %.2f - Sensitivity: %.2f' % (self.fscore, self.ppv, self.sensitivity)
 
+
 class RNA:
   def __init__(self, name=None, seq=None, pairs=None):
     self.name = name
     self.seq = seq
     self.pairs = pairs
+    assert len(seq) == len(pairs)
 
   def __str__(self, *args, **kwargs):
-    return '%s' % self.name
+    return '%s:\n  %s\n  %s' % (self.name, self.seq, self.db())
 
   # Handles pseudoknots.
   def db(self):
-    brackets = ['()', '[]', '{}', '<>']
-    brackets += ['%s%s' % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
     inter = []
     popularity = {}
     stacks = []
@@ -75,7 +78,7 @@ class RNA:
       if sid == -1:
         db += '.'
       else:
-        db += brackets[stack_map[sid]][bid]
+        db += BRACKETS[stack_map[sid]][bid]
     return db
 
   def to_ct_file(self):
@@ -118,18 +121,22 @@ class RNA:
 
   @staticmethod
   def from_name_seq_db(name, seq, db):
-    # Only consider fully determined sequences with no pseudoknots for now.
+    # Only consider fully determined sequences.
     assert all(i in 'GUAC' for i in seq)
-    assert all(i in '().' for i in db)
-    stack = []
-    pairs = [-1 for i in range(len(seq))]
+    opening = {v[0] for v in BRACKETS}
+    closing = {v[1]: v[0] for v in BRACKETS}
+    stack = {}
+    pairs = [-1 for i in range(len(db))]
     for i, v in enumerate(db):
-      if v == '(':
-        stack.append(i)
-      elif v == ')':
-        pair = stack.pop()
+      if v in opening:
+        stack.setdefault(v, [])
+        stack[v].append(i)
+      elif v in closing:
+        pair = stack[closing[v]].pop()
         pairs[pair] = i
         pairs[i] = pair
+      else:
+        assert v == '.'
     return RNA(name=name, seq=seq, pairs=pairs)
 
   @staticmethod
