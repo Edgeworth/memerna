@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
-import argparse
-import re
+import run
 
+
+def main():
+  run.process_command(['-b'])
+
+
+if __name__ == "__main__":
+  main()

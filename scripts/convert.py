@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 
-from rna import RNA
 from common import read_file
+from rna import RNA
 
 
 def main():
