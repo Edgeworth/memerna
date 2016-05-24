@@ -7,12 +7,21 @@ import numpy as np
 log = logging.getLogger('')
 
 
-def human_size(b):
-  for unit in ['B', 'KiB', 'MiB']:
-    if abs(b) < 1024:
-      return '%.2f %s' % (b, unit)
-    b /= 1024
-  return "%.2f %s" % (b, 'GiB')
+def float_fmt(f):
+  return ('%.2f' % f).rstrip('0').rstrip('.')
+
+
+def human_size(b, binary=True):
+  units = ['B', 'KiB', 'MiB', 'GiB']
+  base = 1024
+  if not binary:
+    units = ['B', 'KB', 'MB', 'GB']
+    base = 1000
+  for unit in units[:-1]:
+    if abs(b) < base:
+      return '%s %s' % (float_fmt(b), unit)
+    b /= base
+  return '%s %s' % (float_fmt(b), units[-1])
 
 
 class BenchmarkResults:
