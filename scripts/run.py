@@ -76,8 +76,9 @@ class ViennaRNA:
       f.flush()
       benchmark_results, stdout = benchmark_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-        '-d3', '--noPS', '-i', f.name)
-      seq, db = stdout.decode('UTF-8').strip().split('\n')
+      #  '-d3',
+        '--noPS', '-i', f.name)
+      seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
       predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
     return (predicted, benchmark_results)
@@ -138,15 +139,19 @@ class MemeRNA:
 
 
 def process_benchmark(programs, args):
-  memevault = MemeVault('archiveii')
-  rnastructure = RNAstructure(fix_path(args.rnastructure_loc))
+  memevault = MemeVault('random')
+  rnastructure = RNAstructure(fix_path('~/software/rna/rnastructure'))
   for program in programs:
-    with open('%s.results' % program, 'w') as f:
+    with open('%s_%s.results' % (program, memevault.dataset), 'w') as f:
       idx = 1
       for rna in memevault:
+        if idx <= 2738:
+          print('Skipping %d' % idx)
+          idx += 1
+          continue
         results = []
         print('Running %s on #%d %s' % (program, idx, rna.name))
-        for i in range(5):
+        for i in range(2):
           predicted, result = program.fold(rna)
           results.append(result)
         combined = BenchmarkResults.combine_benchmarks(results)

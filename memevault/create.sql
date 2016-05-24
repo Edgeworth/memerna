@@ -1,4 +1,4 @@
-CREATE TABLE archiveii (
+CREATE TABLE random (
   name TEXT PRIMARY KEY,
   seq TEXT UNIQUE NOT NULL,
   db TEXT NOT NULL);
