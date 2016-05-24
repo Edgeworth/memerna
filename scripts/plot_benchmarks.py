@@ -2,11 +2,13 @@
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
+import scipy
 import seaborn as sns
 import statsmodels as sm
 import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
 import statsmodels.stats.weightstats
+import statsmodels.stats.diagnostic
 from common import human_size
 from matplotlib import pyplot as plt
 
@@ -100,8 +102,9 @@ def do_accuracy_plot(frames, xid):
   axes = axes.flatten()
   for i, frame_id in enumerate(frames):
     sns.distplot(frames[frame_id][xid], ax=axes[i], label=frame_id)
+    axes[i].annotate(frame_id, xy=(0.1, 0.85), size=10, textcoords='axes fraction')
 
-  set_up_figure(f, names=(cols[xid], None))
+  set_up_figure(f, names=(cols[xid], None), legend=False)
   f.suptitle('F-Score distribution')
   return f
 
@@ -159,8 +162,8 @@ def do_ttest(frames, xid):
       frameA, frameB = frames[a_fid][xid], frames[b_fid][xid]
       if i < j:
         frameA, frameB = frameB, frameA
-      t, p, df = sm.stats.weightstats.ttest_ind(
-        frameA, frameB, alternative='larger', usevar='unequal')
+      #t, p = scipy.stats.wilcoxon(frameA, frameB)
+      t, p = scipy.stats.ttest_rel(frameA, frameB)
       entry = '%.3f' % t
       if i < j:
         entry = '%.3f' % p
@@ -204,8 +207,8 @@ def do_perf_results(dataset_name, data):
 def do_accuracy_results(dataset_name, data):
   frames = read_frames(data)
 
-  # savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
-  savefig_local(dataset_name, 'comparison', do_comparison_plot(frames, 'ppv', 'sensitivity'))
+  savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
+  # savefig_local(dataset_name, 'comparison', do_comparison_plot(frames, 'ppv', 'sensitivity'))
   # do_mfe_table(frames, 'mfe')
   # do_accuracy_table(frames, ['fscore', 'ppv', 'sensitivity'])
   # do_ttest(frames, 'fscore')
