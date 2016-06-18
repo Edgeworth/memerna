@@ -5,7 +5,9 @@ import os
 import sys
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-t', '--type', choices=['debug', 'asan', 'msan', 'ubsan'], default='debug', required=False)
+parser.add_argument(
+  '-t', '--type', choices=['debug', 'asan', 'msan', 'ubsan', 'release'],
+  default='debug', required=False)
 parser.add_argument('-c', '--use_clang', action='store_true', default=False, required=False)
 args = parser.parse_args()
 
