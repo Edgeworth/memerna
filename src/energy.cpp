@@ -198,6 +198,14 @@ energy_t MultiloopHackInitiation(int num_branches) {
   return multiloop_hack_a + num_branches * multiloop_hack_b;
 }
 
+energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
+#if USE_HACK_MODEL
+  return MultiloopHackInitiation(num_branches);
+#else
+  return MultiloopT99Initiation(num_unpaired, num_branches);
+#endif
+}
+
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
 // This DP needs to be run four times. The series of branches is actually cyclic, and there are two types of interactions
 // that can occur between branches. Interactions between the branches themselves, and interactions between them and the
@@ -380,6 +388,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches) {
   }
   num_unpaired = en - st - 1 - num_unpaired;
 
+  ELOG("(%d %d): Unpaired: %d, Branches: %d\n", st, en, num_unpaired, int(branches.size() + 1));
+
   if (exterior_loop) {
     // No initiation for the exterior loop.
     energy_t a = ComputeOptimalCtd(branches, -1, true);
@@ -390,11 +400,7 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches) {
       ELOG("(%d, %d): Applying closing AUGU penalty\n", st, en);
       energy += AUGU_PENALTY;
     }
-#if USE_HACK_MODEL
-    energy_t initiation = MultiloopHackInitiation(int(branches.size() + 1));
-#else
-    energy_t initiation = MultiloopT99Initiation(num_unpaired, int(branches.size() + 1));
-#endif
+    energy_t initiation = MultiloopInitiation(num_unpaired, int(branches.size() + 1));
     ELOG("(%d, %d): Initiation: %d\n", st, en, initiation);
     energy += initiation;
     branches.push_front(st);

@@ -29,10 +29,14 @@ class RNAstructure:
       f.write(rna.to_ct_file())
       f.flush()
       extra_args = []
+      # Note that not giving this flag doesn't make it logarithmic.
+      # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
+      # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
+      # the fitted -9.
       if not logarithmic:
         extra_args.append('-s')
       benchmark_results, _ = benchmark_command(
-          os.path.join(self.loc, 'exe', 'efn2'), *extra_args, f.name, out.name)
+        os.path.join(self.loc, 'exe', 'efn2'), *extra_args, f.name, out.name)
       match = re.search(r'Energy = (.+)', out.read().strip())
       energy = float(match.group(1))
     return (energy, benchmark_results)
@@ -86,7 +90,7 @@ class ViennaRNA:
       f.flush()
       benchmark_results, stdout = benchmark_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-      #  '-d3',
+        #  '-d3',
         '--noPS', '-i', f.name)
       seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
@@ -145,7 +149,6 @@ class MemeRNA:
     match = re.search(r'Computed energy: (.+)', stdout)
     energy = float(match.group(1))
     return (energy, benchmark_results)
-
 
   def close(self):
     pass
