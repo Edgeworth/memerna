@@ -33,7 +33,7 @@ energy_t HairpinInitiation(int n) {
 //   Terminal mismatch energy for st + 1 and en - 1.
 //   If the mismatch is UU or GA (in that order), additional bonus (TODO: bake this into the mismatch energies for hairpin loops)
 //   If the mismatch is GG, additional bonus.
-//   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs.
+//   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy model).
 energy_t HairpinEnergy(int st, int en) {
   assert(st < en);
@@ -71,8 +71,7 @@ energy_t HairpinEnergy(int st, int en) {
   if (all_c)
     energy += hairpin_all_c_a * length + hairpin_all_c_b;
 
-  assert(st >= 2);
-  if (IsPairOf(r[st], r[en], G_b, U_b) && r[st - 1] == G && r[st - 2] == G)
+  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G)
     energy += hairpin_special_gu_closure;
   return energy;
 }

@@ -1,3 +1,5 @@
+benchmark_figures/
+
 *.o
 *.obj
 

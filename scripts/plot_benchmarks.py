@@ -93,7 +93,7 @@ def do_quantity_plot(frames, xid, yid):
   set_up_figure(f, names=(cols[xid], cols[yid]))
   if yid == 'maxrss':
     ax.yaxis.set_major_formatter(
-      mpl.ticker.FuncFormatter(lambda x, pos: human_size(x, False)))
+      mpl.ticker.FuncFormatter(lambda x, pos: human_size(x * 1000, False)))
   return f
 
 
@@ -192,22 +192,22 @@ def do_perf_results(dataset_name, data):
   # savefig_local(
   #   dataset_name, 'real',
   #   do_quantity_plot(frames_by_length, 'length', 'real'))
-  # savefig_local(
-  #   dataset_name, 'maxrss',
-  #   do_quantity_plot(frames_by_length, 'length', 'maxrss'))
+  savefig_local(
+    dataset_name, 'maxrss',
+    do_quantity_plot(frames_by_length, 'length', 'maxrss'))
   # f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'real')
   # savefig_local(dataset_name, 'real_loglog_scatter', f1)
   # savefig_local(dataset_name, 'real_loglog_bestfit', f2)
 
-  # f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'maxrss', logx=False)
-  # savefig_local(dataset_name, 'maxrss_loglog_scatter', f1)
-  # savefig_local(dataset_name, 'maxrss_loglog_bestfit', f2)
+  f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'maxrss', logx=False)
+  savefig_local(dataset_name, 'maxrss_loglog_scatter', f1)
+  savefig_local(dataset_name, 'maxrss_loglog_bestfit', f2)
 
 
 def do_accuracy_results(dataset_name, data):
   frames = read_frames(data)
 
-  savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
+  # savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
   # savefig_local(dataset_name, 'comparison', do_comparison_plot(frames, 'ppv', 'sensitivity'))
   # do_mfe_table(frames, 'mfe')
   # do_accuracy_table(frames, ['fscore', 'ppv', 'sensitivity'])
@@ -215,17 +215,17 @@ def do_accuracy_results(dataset_name, data):
 
 
 # ArchiveII
-do_accuracy_results('archiveii', {
-  'UNAFold': './benchmark_results/UNAFold_archiveii.results',
-  'RNAstructure': './benchmark_results/RNAstructure_archiveii.results',
-  'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_archiveii.results',
-  'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_archiveii.results'
-})
+# do_accuracy_results('archiveii', {
+#   'UNAFold': './benchmark_results/UNAFold_archiveii.results',
+#   'RNAstructure': './benchmark_results/RNAstructure_archiveii.results',
+#   'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_archiveii.results',
+#   'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_archiveii.results'
+# })
 
 # Random
-# do_perf_results('random', {
-#   'UNAFold': './benchmark_results/UNAFold_random.results',
-#   'RNAstructure': './benchmark_results/RNAstructure_random.results',
-#   'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_random.results',
-#   'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_random.results'
-# })
+do_perf_results('random', {
+  'UNAFold': './benchmark_results/UNAFold_random.results',
+  'RNAstructure': './benchmark_results/RNAstructure_random.results',
+  'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_random.results',
+  'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_random.results'
+})
