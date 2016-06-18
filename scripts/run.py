@@ -145,10 +145,6 @@ def process_benchmark(programs, args):
     with open('%s_%s.results' % (program, memevault.dataset), 'w') as f:
       idx = 1
       for rna in memevault:
-        if idx <= 2738:
-          print('Skipping %d' % idx)
-          idx += 1
-          continue
         results = []
         print('Running %s on #%d %s' % (program, idx, rna.name))
         for i in range(2):
