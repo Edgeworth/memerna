@@ -29,6 +29,8 @@ energy_t InternalLoopInitiation(int n);
 
 energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien);
 
+energy_t MultiloopInitiation(int num_unpaired, int num_branches);
+
 energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopHackInitiation(int num_branches);

@@ -6,8 +6,11 @@
 - Watson-Crick helices
 -- Optional handling of GGUC_CUGG
 
-- Remember to apply dangles / terminal mismatches / coaxial stacking.
-- Change printfs to optional explanation output
+-- Write generator converting from my model / data dir to RNAstructure data tables.
+
+### RNAstructure data tables.
+Changed coaxstack.dat to have -2.1 instead of -2.2.
+Still need to look at tstackcoax, tstackh, tstacki, tstacki23.
 
 ### Tests
 - Randomised energy model + unit tests

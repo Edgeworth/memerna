@@ -89,7 +89,7 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
             2 * AUGU_PENALTY + 2 * HairpinInitiation(3),
             ComputeEnergy(kFlushCoax));
   EXPECT_EQ(stacking_e[G][A][U][C] + terminal_e[C][G][A][G] + coax_mismatch_non_contiguous +
-            3 * HairpinInitiation(3) + MultiloopT99Initiation(8, 4) + 2 * AUGU_PENALTY,
+            3 * HairpinInitiation(3) + MultiloopInitiation(8, 4) + 2 * AUGU_PENALTY,
             ComputeEnergy(kNNDBMultiloop));
 }
 
