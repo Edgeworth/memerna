@@ -65,7 +65,8 @@ def run_command(*args, input=None):
 def benchmark_command(*args, input=None):
   stdouts = []
   res = run_command('/usr/bin/time', '-f', '%e %U %S %M', *args, input=input)
-  real, user, sys, maxrss = [float(i) for i in res.stderr.decode('UTF-8').split(' ')]
+  last_line = res.stderr.decode('UTF-8').strip().split('\n')[-1].split(' ')
+  real, user, sys, maxrss = [float(i) for i in last_line]
   return (
     BenchmarkResults(real=real, usersys=user + sys, maxrss=maxrss * 1024),
     res.stdout.decode('UTF-8')

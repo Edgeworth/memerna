@@ -2,6 +2,19 @@
 
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
+### Building
+
+./build.py -t [debug, asan, msan, ubsan, release] -c
+
+Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.
+
+### Compile time options
+
+ENERGY_LOG to control logging.
+TODO: rest of them here
+
+### Running the tests
+Run from ./build/run_tests after building.
 
 ### Useful commands
 
@@ -31,3 +44,6 @@ Crops images in a directory.
 
 ./scripts/convert.py
 Converts between db and ct files.
+
+./scripts/scrape.py
+Can scrape RNAstrand for information. This was a bit of a one-time script. Contains memevault code.

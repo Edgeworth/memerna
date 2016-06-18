@@ -1,10 +1,6 @@
 ### efn2
 - Bulge loops
 -- Number of states term.
-- Multiloops
-- Coaxial stacking
-- Dangles
-- Internal loops
 - Hairpin loops
 -- Python code to generate C code to do energy for optimisation.
 - Watson-Crick helices

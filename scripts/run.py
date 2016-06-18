@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -30,10 +31,11 @@ class RNAstructure:
       extra_args = []
       if not logarithmic:
         extra_args.append('-s')
-      run_command(os.path.join(self.loc, 'exe', 'efn2'), *extra_args, f.name, out.name)
-      match = re.search('Energy = (.+)', out.read().strip())
+      benchmark_results, _ = benchmark_command(
+          os.path.join(self.loc, 'exe', 'efn2'), *extra_args, f.name, out.name)
+      match = re.search(r'Energy = (.+)', out.read().strip())
       energy = float(match.group(1))
-    return energy
+    return (energy, benchmark_results)
 
   def close(self):
     pass
@@ -53,11 +55,19 @@ class Rnark:
     # run_command(os.path.join('.', os.path.basename(rnark_loc)), '1', rna.seq, rna.db)
     os.chdir(cwd)
 
-  def efn(self, rna):
+  def efn(self, rna, logarithmic=False):
     cwd = os.getcwd()
-    os.chdir(os.path.dirname(rnark_loc))
-    # run_command(os.path.join('.', os.path.basename(rnark_loc)), '1', seq, pairs)
+    os.chdir(os.path.join(self.loc, 'bin'))
+    flag = '0'
+    if logarithmic:
+      flag = '1'
+    benchmark_results, stdout = benchmark_command(
+      fix_path('Memefn'), flag, rna.seq, rna.db())
     os.chdir(cwd)
+    print(stdout)
+    match = re.search(r'Total energy: (.+)', stdout)
+    energy = float(match.group(1))
+    return (energy, benchmark_results)
 
   def close(self):
     pass
@@ -129,7 +139,13 @@ class MemeRNA:
     pass
 
   def efn(self, rna):
-    run_command(self.loc, seq, pairs)
+    benchmark_results, stdout = benchmark_command(
+      os.path.join(self.loc, 'build', 'memerna'), rna.seq, rna.db())
+    print(stdout)
+    match = re.search(r'Computed energy: (.+)', stdout)
+    energy = float(match.group(1))
+    return (energy, benchmark_results)
+
 
   def close(self):
     pass
@@ -173,7 +189,7 @@ def process_command(*extra_args):
   parser.add_argument('-p', '--predict', action='store_true')
   parser.add_argument('-e', '--energy', action='store_true')
   parser.add_argument('-b', '--benchmark', action='store_true')
-  args = parser.parse_args(sys.argv[1:] + list(extra_args))
+  args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
   if bool(args.predict) + bool(args.energy) + bool(args.benchmark) != 1:
     parser.error('Exactly one of --predict, --energy, or --benchmark is required.')
@@ -206,7 +222,7 @@ def process_command(*extra_args):
       if args.predict:
         print('Folding with %s:\n%s' % (program, program.fold(rna)[0]))
       if args.energy:
-        print('Energy with %s: %f' % (program, program.efn(rna)))
+        print('Energy with %s: %f' % (program, program.efn(rna)[0]))
 
   for program in programs:
     program.close()
