@@ -45,7 +45,7 @@ TEST_F(EnergyTest, InternalLoopEnergy) {
 }
 
 TEST_F(EnergyTest, MultiloopEnergy) {
-  EXPECT_EQ(57, MultiloopHackInitiation(4));
+  EXPECT_EQ(multiloop_hack_a + 4 * multiloop_hack_b, MultiloopHackInitiation(4));
   EXPECT_EQ(74, MultiloopT99Initiation(8, 4));
 }
 
@@ -71,7 +71,7 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   energy_t states = 0;
   if (BULGE_LOOP_STATES)
-    states = -energy_t(10.0 * R * R * log(3));
+    states = -energy_t(round(10.0 * R * T * log(3)));
 
   EXPECT_EQ(
       stacking_e[G][C][G][C] + stacking_e[C][C][G][G] + BulgeInitiation(1)
