@@ -11,6 +11,7 @@
 ### RNAstructure data tables.
 Changed coaxstack.dat to have -2.1 instead of -2.2.
 Still need to look at tstackcoax, tstackh, tstacki, tstacki23.
+See fixed_data_tables directory (currently non-existent).
 
 ### Tests
 - Randomised energy model + unit tests

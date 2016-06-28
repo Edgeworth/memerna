@@ -1,6 +1,6 @@
 93
--9
-// -6
+-6
+// -9
 // This is for the hacky T04 model described in the T04 paper. Doesn't include asymmetry.
 // Note that RNAstructure uses -6 instead of -9, for the hack model.
 // Order is as below:

@@ -31,7 +31,7 @@ energy_t HairpinInitiation(int n) {
 // Case 2 -- more than 3 bases on the inside:
 //   Return G_init plus the following penalties / bonuses:
 //   Terminal mismatch energy for st + 1 and en - 1.
-//   If the mismatch is UU or GA (in that order), additional bonus (TODO: bake this into the mismatch energies for hairpin loops)
+//   If the mismatch is UU or GA (not AG), additional bonus (TODO: bake this into the mismatch energies for hairpin loops)
 //   If the mismatch is GG, additional bonus.
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy model).
@@ -91,10 +91,12 @@ energy_t BulgeInitiation(int n) {
 //    Don't apply AU/GU penalties -- since the helix is able to continue (unlike for lengths > 1).
 //    Since the helix continues, also apply stacking energies for Watson-Crick helices.
 //    If the unpaired base is a C, and is next to another C (at pos - 1 or pos + 1), add special C bulge bonus.
+//    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a bonus from that.
 energy_t BulgeEnergy(int ost, int oen, int ist, int ien) {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) && (oen - ien >= 2 || ist - ost >= 2));
   int length = std::max(ist - ost, oen - ien) - 1;
   energy_t energy = BulgeInitiation(length);
+  ELOG("(%d %d %d %d): Initiation: %d\n", ost, oen, ist, ien, energy);
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
     if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b))
@@ -113,9 +115,16 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien) {
     energy += bulge_special_c;
   }
 #if BULGE_LOOP_STATES
-  // TODO. This is not implemented and potentially experimentally not super solid?
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
+  int num_states = 0;
+  for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i)
+    num_states++;
+  for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i)
+    num_states++;
+  ELOG("(%d, %d, %d, %d): applying bonus for %d states\n", ost, oen, ist, ien, num_states);
+  energy -= energy_t(round(10.0 * R * T * log(num_states)));
 #endif
+
   return energy;
 }
 
@@ -189,8 +198,9 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien) {
 // 1999 rules.
 energy_t MultiloopT99Initiation(int num_unpaired, int num_branches) {
   if (num_unpaired > 6)
-    return energy_t(
-        multiloop_t99_a + 6 * multiloop_t99_b + 10.0 * 1.1 * log(num_unpaired / 6.0) + multiloop_t99_c * num_branches);
+    return energy_t(round(
+        multiloop_t99_a + 6 * multiloop_t99_b +
+        10.0 * 1.1 * log(num_unpaired / 6.0) + multiloop_t99_c * num_branches));
   return energy_t(multiloop_t99_a + multiloop_t99_b * num_unpaired + multiloop_t99_c * num_branches);
 }
 
@@ -219,6 +229,12 @@ energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
 //
 // Note that we can't form two dangles attached to the same stem; that's a terminal mismatch.
 
+// We use the normal terminal mismatch parameters for the mismatch that is on the continuous part of the
+// RNA. The stacking for the non-continuous part is set to be an arbitrary given number. There are two possible
+// orientations, since the base involved in the terminal mismatch could come from either side.
+// ... _ _ _ _ ...
+// ...|_|  _|_|...
+//      | |
 // Rules for mismatch mediated coaxial stacking:
 //    1. A terminal mismatch is formed around the branch being straddled.
 //    2. An arbitrary bonus is added.
