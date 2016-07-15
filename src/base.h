@@ -12,8 +12,8 @@ typedef int8_t base_t;
 typedef std::vector<base_t> rna_t;
 
 struct folded_rna_t {
-    rna_t r;
-    std::vector<int> p;
+  rna_t r;
+  std::vector<int> p;
 };
 
 const base_t A = 0, C = 1, G = 2, U = 3;

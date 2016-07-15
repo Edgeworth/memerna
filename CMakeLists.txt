@@ -19,7 +19,7 @@ include(FindThreads)
 
 include_directories(src)
 
-add_library(memerna_lib ${MEMERNA_SOURCE} ${MEMERNA_HEADERS})
+add_library(memerna_lib ${MEMERNA_SOURCE} ${MEMERNA_HEADERS} src/common.cpp)
 add_executable(memerna src/main.cpp)
 target_link_libraries(memerna memerna_lib)
 
