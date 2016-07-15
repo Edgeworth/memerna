@@ -3,11 +3,12 @@
 
 #include <cassert>
 #include <cstdint>
+#include <string>
 
-// TODO: Handle special stacking (GGUC <-> CUGG).
-#define SPECIAL_STACKING 0
 #define BULGE_LOOP_STATES 1
 #define USE_HACK_MODEL 1
-#define ENERGY_LOG 1
+#define LOG_STRUCTURE 1
+
+std::string sfmt(const char* fmt, ...);
 
 #endif //MEMERNA_COMMON_H

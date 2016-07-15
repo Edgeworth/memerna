@@ -4,7 +4,7 @@
 #include "globals.h"
 
 #if ENERGY_LOG
-#define ELOG(msg, ...) fprintf(stderr, "L%.4d: %s" msg, __LINE__, __func__, __VA_ARGS__)
+#define ELOG(msg, ...) fprintf(stdout, "L%.4d: %s" msg, __LINE__, __func__, __VA_ARGS__)
 #else
 #define ELOG(msg, ...)
 #endif
@@ -495,7 +495,6 @@ energy_t ComputeEnergyInternal(int st, int en) {
   return energy;
 }
 
-// TODO: This does a copy.
 energy_t ComputeEnergy(const folded_rna_t& frna) {
   r = frna.r;
   p = frna.p;
