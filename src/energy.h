@@ -4,10 +4,16 @@
 #include <utility>
 #include <string>
 #include <deque>
+#include <memory>
 #include "common.h"
 #include "base.h"
 
 namespace memerna {
+
+namespace structure {
+class Structure;
+}
+
 namespace energy {
 
 typedef int32_t energy_t;
@@ -20,15 +26,15 @@ const double T = 310.15;
 
 energy_t HairpinInitiation(int n);
 
-energy_t HairpinEnergy(int st, int en);
+energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t BulgeInitiation(int n);
 
-energy_t BulgeEnergy(int ost, int oen, int ist, int ien);
+energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t InternalLoopInitiation(int n);
 
-energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien);
+energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t MultiloopInitiation(int num_unpaired, int num_branches);
 
@@ -36,7 +42,8 @@ energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopHackInitiation(int num_branches);
 
-energy_t ComputeEnergy(const folded_rna_t& frna);
+energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr);
+
 }
 }
 

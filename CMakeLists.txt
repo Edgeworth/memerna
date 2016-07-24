@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 project(memerna)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 message(${CMAKE_CXX_FLAGS_RELEASE})
 file(GLOB MEMERNA_SOURCE "src/*.cpp")
