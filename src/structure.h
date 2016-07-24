@@ -15,14 +15,24 @@ public:
 
   Structure& operator=(const Structure&) = delete;
 
-  void AddNote(const std::string& note) {
-    notes.push_back(note);
-  }
-  std::vector<std::string> Description(int nesting);
+  virtual ~Structure() = default;
+
+  void AddNote(const std::string& note, ...);
+
+  std::vector<std::string> Description(int nesting = 0);
   virtual std::string ShortDesc() = 0;
-  virtual std::vector<std::string> BodyDesc() = 0;
+
+  virtual void AddBranch(std::unique_ptr<Structure> b) {
+    branches.push_back(std::move(b));
+  }
 
   void SetEnergy(energy::energy_t e) {energy = e;}
+
+  energy::energy_t GetEnergy() {return energy;}
+
+protected:
+  std::vector<std::unique_ptr<Structure>> branches;
+
 private:
   energy::energy_t energy;
   std::vector<std::string> notes;
@@ -33,38 +43,27 @@ class HairpinLoop : public Structure {
 public:
   HairpinLoop(int st, int en) : st(st), en(en) {}
 
+  void AddBranch(std::unique_ptr<Structure>) {
+    assert(false);
+  }
+
   std::string ShortDesc();
-  std::vector<std::string> BodyDesc();
 private:
   int st, en;
-};
-
-class BulgeLoop : public Structure {
-public:
-  BulgeLoop(int ost, int oen, int ist, int ien) : ost(ost), oen(oen), ist(ist), ien(ien) {}
-
-  void SetBranch(std::unique_ptr<Structure> c) {
-    branch = std::move(c);
-  }
-  std::string ShortDesc();
-  std::vector<std::string> BodyDesc();
-private:
-  int ost, oen, ist, ien;
-  std::unique_ptr<Structure> branch;
 };
 
 class InternalLoop : public Structure {
 public:
   InternalLoop(int ost, int oen, int ist, int ien) : ost(ost), oen(oen), ist(ist), ien(ien) {}
 
-  void SetBranch(std::unique_ptr<Structure> b) {
-    branch = std::move(b);
+  void AddBranch(std::unique_ptr<Structure> b) {
+    assert(branches.empty());
+    Structure::AddBranch(std::move(b));
   }
+
   std::string ShortDesc();
-  std::vector<std::string> BodyDesc();
 private:
   int ost, oen, ist, ien;
-  std::unique_ptr<Structure> branch;
 };
 
 enum class CtdType {
@@ -87,14 +86,10 @@ class MultiLoop : public Structure {
 public:
   MultiLoop(int st, int en) : st(st), en(en) {}
 
-  void AddBranch(std::unique_ptr<Structure> b) {
-    branches.push_back(std::move(b));
-  }
+
   std::string ShortDesc();
-  std::vector<std::string> BodyDesc();
 private:
   int st, en;
-  std::vector<std::unique_ptr<Structure>> branches;
   // TODO ctds.
 };
 
@@ -102,14 +97,14 @@ class Stacking : public Structure {
 public:
   Stacking(int st, int en) : st(st), en(en) {}
 
-  void SetBranch(std::unique_ptr<Structure> b) {
-    branch = std::move(b);
+  void AddBranch(std::unique_ptr<Structure> b) {
+    assert(branches.empty());
+    Structure::AddBranch(std::move(b));
   }
+
   std::string ShortDesc();
-  std::vector<std::string> BodyDesc();
 private:
   int st, en;
-  std::unique_ptr<Structure> branch;
 };
 
 }

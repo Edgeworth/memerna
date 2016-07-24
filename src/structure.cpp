@@ -5,52 +5,39 @@ namespace structure {
 
 std::vector<std::string> Structure::Description(int nesting) {
   std::vector<std::string> desc;
-  desc.push_back(sfmt("| %d %s - %d", nesting, ShortDesc().c_str(), energy));
+  desc.push_back(sfmt("%d - %de - %s", nesting, energy, ShortDesc().c_str()));
   for (const auto& note : notes)
-    desc.push_back("| " + note);
-  for (const auto& body_desc : BodyDesc())
-    desc.push_back("|- " + body_desc);
+    desc.push_back(" | " + note);
+  for (const auto& branch : branches)
+    desc.push_back(" |-- " + branch->ShortDesc());
+  for (const auto& branch : branches) {
+    auto branch_desc = branch->Description(nesting + 1);
+    desc.insert(desc.end(), branch_desc.begin(), branch_desc.end());
+  }
   return desc;
+}
+
+void Structure::AddNote(const std::string& note, ...) {
+  va_list l;
+  va_start(l, note);
+  notes.push_back(vsfmt(note.c_str(), l));
+  va_end(l);
 }
 
 std::string HairpinLoop::ShortDesc() {
   return sfmt("HairpinLoop(%d, %d)", st, en);
 }
 
-std::vector<std::string> HairpinLoop::BodyDesc() {
-  return {};
-}
-
-std::string BulgeLoop::ShortDesc() {
-  return sfmt("BulgeLoop(%d, %d, %d, %d)", ost, oen, ist, ien);
-}
-
-std::vector<std::string> BulgeLoop::BodyDesc() {
-  return {};
-}
-
 std::string InternalLoop::ShortDesc() {
   return sfmt("InternalLoop(%d, %d, %d, %d)", ost, oen, ist, ien);
-}
-
-std::vector<std::string> InternalLoop::BodyDesc() {
-  return {};
 }
 
 std::string MultiLoop::ShortDesc() {
   return sfmt("MultiLoop(%d, %d)", st, en);
 }
 
-std::vector<std::string> MultiLoop::BodyDesc() {
-  return {};
-}
-
 std::string Stacking::ShortDesc() {
   return sfmt("Stacking(%d, %d)", st, en);
-}
-
-std::vector<std::string> Stacking::BodyDesc() {
-  return {};
 }
 
 }
