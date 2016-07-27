@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   folded_rna_t frna = parsing::ParseDotBracketRna(argv[1], argv[2]);
   printf("Computing energy.\n");
   std::unique_ptr<structure::Structure> structure;
-  printf("Computed energy: %lf\n", energy::ComputeEnergy(frna, &structure) / 10.0);
+  printf("Computed energy: %d\n", energy::ComputeEnergy(frna, &structure));
   auto descs = structure->Description();
   for (const auto& desc : descs) {
     printf("%s\n", desc.c_str());

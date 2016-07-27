@@ -52,6 +52,7 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
   int length = en - st - 1;
   if (length < 3) return MAX_E;  // Disallowed by T04.
   energy_t energy = HairpinInitiation(length);
+  if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
     if (s) (*s)->AddNote("%de - AU/GU penalty", AUGU_PENALTY);
@@ -64,19 +65,34 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
     if (r[i] != C) all_c = false;
   }
 
-  if (length == 3)
-    return energy + (all_c ? hairpin_c3_loop : 0);
+  if (length == 3) {
+    if (all_c) {
+      if (s) (*s)->AddNote("%de - all C penalty (length 3)", hairpin_c3_loop);
+      energy += hairpin_c3_loop;
+    }
+    return energy;
+  }
   base_t left = r[st + 1], right = r[en - 1];
+  if (s) (*s)->AddNote("%de - terminal mismatch", terminal_e[r[st]][left][right][r[en]]);
   energy += terminal_e[r[st]][left][right][r[en]];
-  if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b))
+  if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
+    if (s) (*s)->AddNote("%de - UU/GA first mismatch", hairpin_uu_ga_first_mismatch);
     energy += hairpin_uu_ga_first_mismatch;
-  if (IsPairOf(left, right, G_b, G_b))
+  }
+  if (IsPairOf(left, right, G_b, G_b)) {
+    if (s) (*s)->AddNote("%de - GG first mismatch", hairpin_gg_first_mismatch);
     energy += hairpin_gg_first_mismatch;
-  if (all_c)
-    energy += hairpin_all_c_a * length + hairpin_all_c_b;
+  }
+  if (all_c) {
+    energy_t all_c_energy = hairpin_all_c_a * length + hairpin_all_c_b;
+    if (s) (*s)->AddNote("%de - all C penalty", all_c_energy);
+    energy += all_c_energy;
+  }
 
-  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G)
+  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
+    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
     energy += hairpin_special_gu_closure;
+  }
   return energy;
 }
 
@@ -120,7 +136,7 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
   int unpaired = ost + 1;
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
-  if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired] + 1 == C)) {
+  if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired + 1] == C)) {
     if (s) (*s)->AddNote("%de - special c bulge", bulge_special_c);
     energy += bulge_special_c;
   }
@@ -144,7 +160,6 @@ energy_t InternalLoopInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return internal_init[n];
   static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
   // Formula: G_init(6) + 1.08 * ln(n / 6).
-  printf("MEME: %f\n", internal_init[6] + 10.0 * 1.08 * log(n / 6.0));
   return energy_t(round(internal_init[6] + 10.0 * 1.08 * log(n / 6.0)));
 }
 
@@ -167,7 +182,7 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
   if (toplen == 1 && botlen == 2)
     return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
   if (toplen == 2 && botlen == 1)
-    return internal_1x2[r[ien]][r[ien + 1]][r[ien + 2]][r[oen]][r[ost]][r[ost + 1]][r[ist]];
+    return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
     return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
 
@@ -365,11 +380,6 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
         energy_t right_coax = MismatchMediatedCoaxialEnergy(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
-        if (outer_idx == 3 && use_first_lu == 0 && i == 2) {
-          printf("meme: %d %d %d %d %d %c %c %c %c\n", right_coax,
-                 ri[i + 1], rui[i + 1], rui[i], li[i + 1],
-                 BaseToChar(r[ri[i + 1]]), BaseToChar(r[rui[i + 1]]), BaseToChar(rub), BaseToChar(r[li[i + 1]]));
-        }
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, "right coaxial; no lu;");
         if (lu_exists[i]) {
