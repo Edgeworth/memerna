@@ -26,15 +26,18 @@ public:
     branches.push_back(std::move(b));
   }
 
-  void SetEnergy(energy::energy_t e) {energy = e;}
+  void SetSelfEnergy(energy::energy_t e) {self_energy = e;}
+  void SetTotalEnergy(energy::energy_t e) {total_energy = e;}
 
-  energy::energy_t GetEnergy() {return energy;}
+  energy::energy_t GetSelfEnergy() {return self_energy;}
+  energy::energy_t GetTotalEnergy() {return total_energy;}
 
 protected:
   std::vector<std::unique_ptr<Structure>> branches;
 
 private:
-  energy::energy_t energy;
+  energy::energy_t self_energy;
+  energy::energy_t total_energy;
   std::vector<std::string> notes;
 };
 
