@@ -144,6 +144,7 @@ energy_t InternalLoopInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return internal_init[n];
   static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
   // Formula: G_init(6) + 1.08 * ln(n / 6).
+  printf("MEME: %f\n", internal_init[6] + 10.0 * 1.08 * log(n / 6.0));
   return energy_t(round(internal_init[6] + 10.0 * 1.08 * log(n / 6.0)));
 }
 
@@ -235,7 +236,7 @@ energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
 // that can occur between branches. Interactions between the branches themselves, and interactions between them and the
 // bases next to them. N.B. interact is not used in the chemistry sense here.
 // The DP needs to be run with the outer branch at the start and the end, and also with the unpaired base on the left
-// // of the first branch (if it exists) not used and potentially used. Running with the outer branch at both the start and
+// of the first branch (if it exists) not used and potentially used. Running with the outer branch at both the start and
 // the end allows coaxial stacking interactions between the outer branch and both adjacent branches. Running with having the
 // left unpaired base both not used lets the last branch potentially consume it (wrapping around).
 //
@@ -289,9 +290,7 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
   };
 
   cache[0][0] = cache[1][0] = 0;
-  // These values are for outer_idx == N - 1, i.e. last.
   int first_lui = -1, last_rui = -1;
-  // These are for outer_idx == 0.
   if (outer_idx == 0) {
     first_lui = p[branches[0]] - 1;
     last_rui = p[branches[N - 1]] + 1;
@@ -312,7 +311,7 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       std::swap(li[i], ri[i]);
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
-    // If |use_first_lu|, then if the left unpaired base is the same as the last branches right unpaired base,
+    // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right unpaired base,
     // then we can't use it (as it could be used at the end by a terminal mismatch, dangle, right facing coaxial stack,
     // etc). This is because the loop is cyclic.
     lu_exists[i] = lui[i] >= 0 && lui[i] < R && p[lui[i]] == -1;
@@ -366,11 +365,17 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
         energy_t right_coax = MismatchMediatedCoaxialEnergy(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
-        UPDATE_CACHE(1, i + 2, 0, i, right_coax, "right coaxial; no lu;");
+        if (outer_idx == 3 && use_first_lu == 0 && i == 2) {
+          printf("meme: %d %d %d %d %d %c %c %c %c\n", right_coax,
+                 ri[i + 1], rui[i + 1], rui[i], li[i + 1],
+                 BaseToChar(r[ri[i + 1]]), BaseToChar(r[rui[i + 1]]), BaseToChar(rub), BaseToChar(r[li[i + 1]]));
+        }
+
+        UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, "right coaxial; no lu;");
         if (lu_exists[i]) {
           // In the case that lu doesn't exist but it is "used" it means this branch was consumed by a coaxial interaction
           // so don't use it.
-          UPDATE_CACHE(1, i + 2, 1, i, right_coax, "right coaxial; lu used;");
+          UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, "right coaxial; lu used;");
         }
       }
     }
@@ -499,8 +504,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
     }
   }
 
-  if (s) (*s)->SetEnergy(energy);
-
+  if (s) (*s)->SetSelfEnergy(energy);
   // Add energy from children.
   for (auto i : branches) {
     int pair = p[i];
@@ -512,6 +516,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
       energy += ComputeEnergyInternal(i, pair, nullptr);
     }
   }
+  if (s) (*s)->SetTotalEnergy(energy);
 
   return energy;
 }
@@ -525,7 +530,8 @@ energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Stru
     energy += AUGU_PENALTY;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", AUGU_PENALTY);
-      (*s)->SetEnergy((*s)->GetEnergy() + AUGU_PENALTY);  // Gross.
+      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + AUGU_PENALTY);  // Gross.
+      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + AUGU_PENALTY);  // Gross.
     }
   }
   return energy;

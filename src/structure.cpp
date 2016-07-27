@@ -5,7 +5,7 @@ namespace structure {
 
 std::vector<std::string> Structure::Description(int nesting) {
   std::vector<std::string> desc;
-  desc.push_back(sfmt("%d - %de - %s", nesting, energy, ShortDesc().c_str()));
+  desc.push_back(sfmt("%d - %s", nesting, ShortDesc().c_str()));
   for (const auto& note : notes)
     desc.push_back(" | " + note);
   for (const auto& branch : branches)
@@ -25,19 +25,21 @@ void Structure::AddNote(const std::string& note, ...) {
 }
 
 std::string HairpinLoop::ShortDesc() {
-  return sfmt("HairpinLoop(%d, %d)", st, en);
+  return sfmt("HairpinLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string InternalLoop::ShortDesc() {
-  return sfmt("InternalLoop(%d, %d, %d, %d)", ost, oen, ist, ien);
+  return sfmt(
+      "InternalLoop(%d, %d, %d, %d) - %de:%de",
+      ost, oen, ist, ien, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string MultiLoop::ShortDesc() {
-  return sfmt("MultiLoop(%d, %d)", st, en);
+  return sfmt("MultiLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string Stacking::ShortDesc() {
-  return sfmt("Stacking(%d, %d)", st, en);
+  return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 }

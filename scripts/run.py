@@ -189,38 +189,70 @@ def process_command(*extra_args):
   parser.add_argument('--viennarna-loc')
   parser.add_argument('--unafold-loc')
   parser.add_argument('--memerna-loc')
+  parser.add_argument('-pr', '--rnastructure', action='store_true')
+  parser.add_argument('-pm', '--rnark', action='store_true')
+  parser.add_argument('-pv', '--viennarna', action='store_true')
+  parser.add_argument('-pu', '--unafold', action='store_true')
+  parser.add_argument('-pk', '--memerna', action='store_true')
   parser.add_argument('-p', '--predict', action='store_true')
   parser.add_argument('-e', '--energy', action='store_true')
   parser.add_argument('-b', '--benchmark', action='store_true')
+  parser.add_argument('cmd', type=str, nargs='*')
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
   if bool(args.predict) + bool(args.energy) + bool(args.benchmark) != 1:
     parser.error('Exactly one of --predict, --energy, or --benchmark is required.')
 
   programs = []
+  rnastructure_loc = None
+  rnark_loc = None
+  viennarna_loc = None
+  unafold_loc = None
+  memerna_loc = None
 
-  if args.rnastructure_loc:
-    programs.append(RNAstructure(fix_path(args.rnastructure_loc)))
-  if args.rnark_loc:
-    programs.append(Rnark(fix_path(args.rnark_loc)))
-  if args.viennarna_loc:
-    programs.append(ViennaRNA(fix_path(args.viennarna_loc)))
-  if args.unafold_loc:
-    programs.append(UNAFold(fix_path(args.unafold_loc)))
-  if args.memerna_loc:
-    programs.append(MemeRNA(fix_path(args.memerna_loc)))
+  try:
+    import default_paths
+    rnastructure_loc = default_paths.RNASTRUCTURE_PATH
+    rnark_loc = default_paths.RNARK_PATH
+    viennarna_loc = default_paths.UNAFOLD_PATH
+    unafold_loc = default_paths.VIENNARNA_PATH
+    memerna_loc = default_paths.MEMERNA_PATH
+  except ImportError:
+    print('Create the scripts/default_paths.py file to specify default paths for program locations.')
+
+  if args.rnastructure_loc or args.rnastructure:
+    assert rnastructure_loc
+    programs.append(RNAstructure(fix_path(rnastructure_loc)))
+  if args.rnark_loc or args.rnark:
+    assert rnark_loc
+    programs.append(Rnark(fix_path(rnark_loc)))
+  if args.viennarna_loc or args.viennarna:
+    assert viennarna_loc
+    programs.append(ViennaRNA(fix_path(viennarna_loc)))
+  if args.unafold_loc or args.unafold:
+    assert unafold_loc
+    programs.append(UNAFold(fix_path(unafold_loc)))
+  if args.memerna_loc or args.memerna:
+    assert memerna_loc
+    programs.append(MemeRNA(fix_path(memerna_loc)))
 
   if args.benchmark:
     process_benchmark(programs, args)
   else:
-    if bool(args.file) == bool(args.memevault):
-      parser.error('Exactly one of --file or --memevault is required.')
+    if bool(args.file) + bool(args.memevault) + bool(len(args.cmd)) != 1:
+      parser.error('Exactly one of --file or --memevault or direct specification is required.')
 
     if args.file:
       rna = RNA.from_any_file(read_file(args.file))
     elif args.memevault:
       memevault = MemeVault('archiveii')
       rna = memevault[args.memevault]
+    elif args.cmd:
+      if len(args.cmd) != 2:
+        parser.error('Direction specification requires exactly two arguments.')
+      rna = RNA.from_name_seq_db('user', *args.cmd)
+    else:
+      print('Nothing to do?')
     for program in programs:
       if args.predict:
         print('Folding with %s:\n%s' % (program, program.fold(rna)[0]))
