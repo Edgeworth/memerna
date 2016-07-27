@@ -1,0 +1,3 @@
+> Hairpin 2 - RNAstructure bug - applied special GU closure to size 3 hairpin loops.
+AGGGUCAUCCG
+.(((...))).
