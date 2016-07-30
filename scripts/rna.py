@@ -1,3 +1,4 @@
+import random
 import re
 import string
 
@@ -31,6 +32,85 @@ class RNAAccuracy:
 
   def __str__(self):
     return 'F-Score: %.2f - PPV: %.2f - Sensitivity: %.2f' % (self.fscore, self.ppv, self.sensitivity)
+
+
+def rnas_from_db_list(data):
+  lines = [i for i in data.split('\n') if i]
+  rnas = []
+  assert len(lines) % 3 == 0
+  for i in range(len(lines) // 3):
+    rnas.append(RNA.from_name_seq_db(lines[3 * i], lines[3 * i + 1], lines[3 * i + 2]))
+  return rnas
+
+
+def can_pair(a, b):
+  if a == 'G':
+    return b == 'C' or b == 'U'
+  if a == 'U':
+    return b == 'G' or b == 'A'
+  if a == 'A':
+    return b == 'U'
+  if a == 'C':
+    return b == 'G'
+
+
+def generate_foldings(rna, pick_one):
+  seq = rna.seq
+  assert all(i in 'GUAC' for i in seq)
+  rnas = []
+  last = []
+  pairs = [-1] * len(seq)
+  idx = 0
+
+  def gaf_internal(i):
+    nonlocal last, idx
+    if i == len(seq):
+      if len(last) == 0:
+        rnas.append(RNA(str(idx), seq, pairs[:]))
+        idx += 1
+        return True
+      return False
+    choices = [1, 2, 3]
+    if pick_one:
+      random.shuffle(choices)
+    succeeded = False
+    for choice in choices:
+      if choice == 1:
+        # 1. Try opening a new bracket.
+        if len(seq) - i - 1 >= len(last) + 1:
+          last.append(i)
+          succeeded = gaf_internal(i + 1)
+          last.pop(-1)
+      elif choice == 2:
+        # 2. Try closing a bracket.
+        if last and i - last[-1] - 1 >= 3 and can_pair(seq[i], seq[last[-1]]):
+          p = last.pop(-1)
+          pairs[i] = p
+          pairs[p] = i
+          succeeded = gaf_internal(i + 1)
+          pairs[i] = -1
+          pairs[p] = -1
+          last.append(p)
+      else:
+        # 3. Try doing nothing.
+        if len(seq) - i - 1 >= len(last):
+          succeeded = gaf_internal(i + 1)
+      if succeeded and pick_one:
+        break
+    return succeeded
+
+  gaf_internal(0)
+  return rnas
+
+# TODO: this is slow.
+def generate_random_foldings(rna, num):
+  rnas = []
+  for i in range(num):
+    rnas.extend(generate_foldings(rna, True))
+  return rnas
+
+def generate_all_foldings(rna):
+  return generate_foldings(rna, False)
 
 
 class RNA:

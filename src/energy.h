@@ -16,7 +16,6 @@ class Structure;
 
 namespace energy {
 
-typedef int32_t energy_t;
 const energy_t MAX_E = 1000000000;
 const energy_t AUGU_PENALTY = 5;
 // N.B. This is for kcal/mol so it's not 8.315.
@@ -36,12 +35,15 @@ energy_t InternalLoopInitiation(int n);
 
 energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
+energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+
 energy_t MultiloopInitiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopHackInitiation(int num_branches);
 
+// This function is not re-entrant.
 energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr);
 
 }

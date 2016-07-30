@@ -90,6 +90,7 @@ class ArchiveII:
       else:
         memevault.add(rna)
 
+
 class Random:
   def __init__(self, num):
     self.num = num
@@ -99,6 +100,7 @@ class Random:
       seq = ''.join(random.choice('GUAC') for _ in range(i))
       rna = RNA(name='len_%d' % i, seq=seq, pairs=[-1] * i)
       memevault.add(rna)
+
 
 def main():
   pass
@@ -110,6 +112,7 @@ def main():
   #
   # archiveii = ArchiveII('~/software/rna/rnark/RNASets/RNAStructureArchive')
   # archiveii.insert(memevault)
+
 
 if __name__ == '__main__':
   main()
