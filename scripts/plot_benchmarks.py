@@ -7,8 +7,6 @@ import seaborn as sns
 import statsmodels as sm
 import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
-import statsmodels.stats.weightstats
-import statsmodels.stats.diagnostic
 from common import human_size
 from matplotlib import pyplot as plt
 
@@ -162,7 +160,7 @@ def do_ttest(frames, xid):
       frameA, frameB = frames[a_fid][xid], frames[b_fid][xid]
       if i < j:
         frameA, frameB = frameB, frameA
-      #t, p = scipy.stats.wilcoxon(frameA, frameB)
+      # t, p = scipy.stats.wilcoxon(frameA, frameB)
       t, p = scipy.stats.ttest_rel(frameA, frameB)
       entry = '%.3f' % t
       if i < j:

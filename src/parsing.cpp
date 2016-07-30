@@ -30,7 +30,7 @@ folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& p
 }
 
 
-void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4][4][4][4]) {
+void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   while (1) {
     base_t a = CharToBase((char) fgetc(fp));
@@ -45,18 +45,18 @@ void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4
   fclose(fp);
 }
 
-void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy::energy_t>& output) {
+void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy_t>& output) {
   FILE* fp = fopen(filename.c_str(), "r");
   char buf[1024];
-  energy::energy_t energy;
+  energy_t energy;
   while (fscanf(fp, " %s %d ", buf, &energy) == 2)
     output[buf] = energy;
   fclose(fp);
 }
 
-void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t (& output)[INITIATION_CACHE_SZ]) {
+void ParseInitiationEnergyFromFile(const std::string& filename, energy_t (& output)[INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
-  energy::energy_t energy;
+  energy_t energy;
   int idx;
   while (fscanf(fp, "%d %d ", &idx, &energy) == 2)
     output[idx] = energy;
@@ -155,7 +155,7 @@ void ParseMultiloopHackMiscDataFromFile(const std::string& filename) {
   fclose(fp);
 }
 
-void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& output)[4][4][4]) {
+void ParseDangleDataFromFile(const std::string& filename, energy_t (& output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   while (1) {
     base_t a = CharToBase((char) fgetc(fp));

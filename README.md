@@ -8,9 +8,21 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 
 Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.
 
+### Directories
+
+build: build output directory
+cmake: CMake scripts
+data: energy model data for memerna
+examples: various dot-bracket example folded RNAs
+extern: external projects (miles_rnastructure, rnark)
+memevault: Known RNA structures in a sqlite database
+lib: third party libraries for memerna (gtest)
+scripts: scripts for various things (see below)
+src: source
+tests: tests
+
 ### Compile time options
 
-ENERGY_LOG to control logging.
 TODO: rest of them here
 
 ### Running the tests

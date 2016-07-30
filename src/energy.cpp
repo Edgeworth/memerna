@@ -225,6 +225,17 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
   return energy;
 }
 
+energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s) {
+  int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  if (toplen == 0 && botlen == 0) {
+    if (s) *s = std::make_unique<structure::Stacking>(ost, oen);
+    return stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
+  }
+  if (toplen >= 1 && botlen >= 1)
+    return InternalLoopEnergy(ost, oen, ist, ien, s);
+  return BulgeEnergy(ost, oen, ist, ien, s);
+}
+
 // 1999 rules.
 energy_t MultiloopT99Initiation(int num_unpaired, int num_branches) {
   if (num_unpaired > 6)
@@ -294,6 +305,8 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
   int N = int(branches.size());
   int R = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
+  assert(N >= 3 || outer_idx == -1);
+  if (N < 1) return 0;
 
   std::vector<int> cache[2] = {
       std::vector<int>(size_t(N + 1), MAX_E),
@@ -444,11 +457,11 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     }
   }
   num_unpaired = en - st - 1 - num_unpaired;
-  if (s) (*s)->AddNote("Unpaired: %d, Branches: %d", num_unpaired, int(branches.size() + 1));
 
   if (exterior_loop) {
     // No initiation for the exterior loop.
     energy += ComputeOptimalCtd(branches, -1, true, s);
+    num_unpaired += 2;
   } else {
     if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
       if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", AUGU_PENALTY, st, en);
@@ -468,12 +481,13 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     if (s) (*s)->AddNote("CTDs: %de %de %de %de", a, b, c, d);
     energy += std::min(a, std::min(b, std::min(c, d)));
   }
+  if (s) (*s)->AddNote("Unpaired: %d, Branches: %d", num_unpaired, int(branches.size() + 1));
 
   return energy;
 }
 
 energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Structure>* s) {
-  assert(en > st);
+  assert(en >= st);
   energy_t energy = 0;
 
   // Look for branches inside.
@@ -501,17 +515,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
     energy += HairpinEnergy(st, en, s);
   } else if (branches.size() == 1) {
     int loop_st = branches.front(), loop_en = p[branches.front()];
-    int toplen = loop_st - st - 1, botlen = en - loop_en - 1;
-
-    if (toplen > 0 && botlen > 0) {
-      energy += InternalLoopEnergy(st, en, loop_st, loop_en, s);
-    } else if (toplen > 0 || botlen > 0) {
-      energy += BulgeEnergy(st, en, loop_st, loop_en, s);
-    } else {
-      // Helix.
-      if (s) *s = std::make_unique<structure::Stacking>(st, en);
-      energy += stacking_e[r[st]][r[st + 1]][r[en - 1]][r[en]];
-    }
+    energy += TwoLoop(st, en, loop_st, loop_en, s);
   }
 
   if (s) (*s)->SetSelfEnergy(energy);
@@ -534,7 +538,6 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
 energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s) {
   r = frna.r;
   p = frna.p;
-  ELOG("(): Computing energy of %d length RNA.\n", (int) r.size());
   energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsUnorderedOf(r[0], r[p[0]], G_b | A_b, U_b)) {
     energy += AUGU_PENALTY;

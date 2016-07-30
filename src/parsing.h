@@ -5,7 +5,6 @@
 #include <stack>
 #include <unordered_map>
 #include "base.h"
-#include "energy.h"
 #include "globals.h"
 
 namespace memerna {
@@ -15,11 +14,11 @@ rna_t ParseRnaFromString(const std::string& s);
 
 folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str);
 
-void Parse2x2FromFile(const std::string& filename, energy::energy_t (& output)[4][4][4][4]);
+void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]);
 
-void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy::energy_t>& output);
+void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy_t>& output);
 
-void ParseInitiationEnergyFromFile(const std::string& filename, energy::energy_t (& output)[INITIATION_CACHE_SZ]);
+void ParseInitiationEnergyFromFile(const std::string& filename, energy_t (& output)[INITIATION_CACHE_SZ]);
 
 void ParseHairpinMiscDataFromFile(const std::string& filename);
 
@@ -37,7 +36,7 @@ void ParseMultiloopT99MiscDataFromFile(const std::string& filename);
 
 void ParseMultiloopHackMiscDataFromFile(const std::string& filename);
 
-void ParseDangleDataFromFile(const std::string& filename, energy::energy_t (& output)[4][4][4]);
+void ParseDangleDataFromFile(const std::string& filename, energy_t (& output)[4][4][4]);
 
 void ParseCoaxialMiscDataFromFile(const std::string& filename);
 

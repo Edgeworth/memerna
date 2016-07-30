@@ -10,5 +10,6 @@ def main():
   for i in args.files:
     os.system('convert %s -trim %s' % (i, i))
 
+
 if __name__ == '__main__':
   main()

@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import sys
 
 import numpy as np
 
@@ -57,9 +58,17 @@ class BenchmarkResults:
 
 def run_command(*args, input=None):
   log.debug("Running `%s'" % ' '.join(args))
-  return subprocess.run(
-    args, input=input, stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE, check=True)
+  try:
+    if input:
+      input = input.encode('utf-8')
+    return subprocess.run(
+      args, input=input, stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE, check=True)
+  except subprocess.CalledProcessError as e:
+    print('Running `%s\' failed with ret code %d. Stdout:\n%s\nStderr:\n%s\n' % (
+      e.cmd, e.returncode, e.stdout.decode('utf-8'), e.stderr.decode('utf-8')
+    ))
+    sys.exit(1)
 
 
 def benchmark_command(*args, input=None):
