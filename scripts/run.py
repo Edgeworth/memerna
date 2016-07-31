@@ -23,12 +23,15 @@ class RNAstructure:
 
   def fold(self, rna):
     with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
+      prev_dir = os.getcwd()
+      os.chdir(self.loc)
       f.write(rna.to_seq_file())
       f.flush()
       benchmark_results, _ = benchmark_command(
-        os.path.join(self.loc, 'exe', 'Fold'), '-mfe', f.name, out.name)
+        os.path.join('build', 'Fold'), '-mfe', f.name, out.name)
       output = out.read()
-      predicted = RNA.from_any_file(out.read())
+      predicted = RNA.from_any_file(output)
+      os.chdir(prev_dir)
     return predicted, benchmark_results, output
 
   def batch_efn(self, rnas):
@@ -280,17 +283,23 @@ def process_command(*extra_args):
     if args.memevault:
       memevault = MemeVault('archiveii')
       rna = memevault[args.memevault]
-    if args.cmd:
-      if len(args.cmd) != 2:
-        parser.error('Direct specification requires two number of arguments.')
-      rna = RNA.from_name_seq_db('user', *args.cmd)
+
 
     for program in programs:
       if args.predict:
+        if args.cmd:
+          if len(args.cmd) != 1:
+            parser.error('Direct specification requires one argument for prediction.')
+          seq = args.cmd[0]
+          rna = RNA('user', seq, [-1] * len(seq))
         frna, benchmark_results, output = program.fold(rna)
         print('Folding %s with %s: %s\n  %s\n%s' % (
           rna.name, program, frna.db(), benchmark_results, output))
       if args.energy:
+        if args.cmd:
+          if len(args.cmd) != 2:
+            parser.error('Direct specification requires two arguments for efn.')
+          rna = RNA.from_name_seq_db('user', *args.cmd)
         energy, benchmark_results, output = program.efn(rna)
         print('Energy of %s with %s: %f\n  %s\n%s' % (
           rna.name, program, energy, benchmark_results, output))

@@ -29,6 +29,24 @@ folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& p
   return {rna, pairs};
 }
 
+std::string DotBracketFromPairs(const std::vector<int>& pairs) {
+  std::string s(pairs.size(), '.');
+  for (int i = 0; i < int(pairs.size()); ++i) {
+    if (pairs[i] == -1) continue;
+    if (pairs[i] < i) s[i] = ')';
+    else s[i] = '(';
+  }
+  return s;
+}
+
+std::string StringFromRna(const rna_t& rna) {
+  std::string s;
+  s.resize(rna.size());
+  for (int i = 0; i < int(rna.size()); ++i) {
+    s[i] = BaseToChar(rna[i]);
+  }
+  return s;
+}
 
 void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");

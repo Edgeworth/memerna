@@ -6,7 +6,8 @@
 #include <string>
 #include <cstdarg>
 
-#define BULGE_LOOP_STATES 1
+// Note that changing these might break tests.
+#define COMPUTE_CTDS 0
 #define USE_HACK_MODEL 1
 
 std::string sfmt(const char* fmt, ...);

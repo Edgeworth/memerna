@@ -137,7 +137,7 @@ def parse_terminal_txt(data):
 
 def main():
   write_file(
-    'extern/orig_data/hairpin.data',
+    'data/hairpin.data',
     parse_map_file(read_file('extern/orig_data/triloop.txt')) +
     parse_map_file(read_file('extern/orig_data/tloop.txt')) +
     parse_map_file(read_file('extern/orig_data/hexaloop.txt')))
