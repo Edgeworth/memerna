@@ -54,7 +54,7 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
   energy_t energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
-  if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
+  if (IsAuGu(r[st], r[en])) {
     if (s) (*s)->AddNote("%de - AU/GU penalty", AUGU_PENALTY);
     energy += AUGU_PENALTY;
   }
@@ -125,9 +125,9 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
 
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
-    if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b))
+    if (IsAuGu(r[ost], r[oen]))
       energy += AUGU_PENALTY;
-    if (IsUnorderedOf(r[ist], r[ien], G_b | A_b, U_b))
+    if (IsAuGu(r[ist], r[ien]))
       energy += AUGU_PENALTY;
     return energy;
   }
@@ -140,7 +140,7 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
     if (s) (*s)->AddNote("%de - special c bulge", bulge_special_c);
     energy += bulge_special_c;
   }
-#if BULGE_LOOP_STATES
+  // TODO: make this faster?
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
   int num_states = 0;
   for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i)
@@ -150,7 +150,6 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
   energy_t states_bonus = -energy_t(round(10.0 * R * T * log(num_states)));
   if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
   energy += states_bonus;
-#endif
 
   return energy;
 }
@@ -190,11 +189,11 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
   if (s) (*s)->AddNote("%de - initiation", energy);
 
   // Special AU/GU penalties.
-  if (IsUnorderedOf(r[ost], r[oen], G_b | A_b, U_b)) {
+  if (IsAuGu(r[ost], r[oen])) {
     if (s) (*s)->AddNote("%de - outer AU/GU penalty", internal_augu_penalty);
     energy += internal_augu_penalty;
   }
-  if (IsUnorderedOf(r[ist], r[ien], G_b | A_b, U_b)) {
+  if (IsAuGu(r[ist], r[ien])) {
     if (s) (*s)->AddNote("%de - inner AU/GU penalty", internal_augu_penalty);
     energy += internal_augu_penalty;
   }
@@ -293,11 +292,15 @@ inline energy_t MismatchMediatedCoaxialEnergy(
 
 // unpaired base will never have been consumed by a 5' dangle.
 #define UPDATE_CACHE(used, idx, cur_used, cur_idx, value, reason) \
-  do { if (cache[cur_used][cur_idx] + value < cache[used][idx]) { \
-    cache[used][idx] = cache[cur_used][cur_idx] + value; \
-    back[used][idx] = std::make_tuple(cur_used, cur_idx, \
-      std::string(reason) + " energy: " + std::to_string(value) + " total: " + std::to_string(cache[used][idx])); \
-  } } while (0)
+  do { \
+    energy_t macro_upd_value_ = (value); \
+    if (cache[cur_used][cur_idx] + macro_upd_value_ < cache[used][idx]) { \
+      cache[used][idx] = cache[cur_used][cur_idx] + macro_upd_value_; \
+      back[used][idx] = std::make_tuple(cur_used, cur_idx, \
+        std::string(reason) + " energy: " + std::to_string(macro_upd_value_) + \
+        " total: " + std::to_string(cache[used][idx])); \
+    } \
+  } while (0)
 
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
                            std::unique_ptr<structure::Structure>* s) {
@@ -451,7 +454,7 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
   for (auto branch_st : branches) {
     num_unpaired += p[branch_st] - branch_st + 1;
 
-    if (IsUnorderedOf(r[branch_st], r[p[branch_st]], G_b | A_b, U_b)) {
+    if (IsAuGu(r[branch_st], r[p[branch_st]])) {
       if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", AUGU_PENALTY, branch_st, p[branch_st]);
       energy += AUGU_PENALTY;
     }
@@ -459,17 +462,20 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
   num_unpaired = en - st - 1 - num_unpaired;
 
   if (exterior_loop) {
+#if COMPUTE_CTDS
     // No initiation for the exterior loop.
     energy += ComputeOptimalCtd(branches, -1, true, s);
+#endif
     num_unpaired += 2;
   } else {
-    if (IsUnorderedOf(r[st], r[en], G_b | A_b, U_b)) {
+    if (IsAuGu(r[st], r[en])) {
       if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", AUGU_PENALTY, st, en);
       energy += AUGU_PENALTY;
     }
     energy_t initiation = MultiloopInitiation(num_unpaired, int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
     energy += initiation;
+#if COMPUTE_CTDS
     branches.push_front(st);
     energy_t a = ComputeOptimalCtd(branches, 0, true, s);
     energy_t b = ComputeOptimalCtd(branches, 0, false, s);
@@ -480,13 +486,14 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     branches.pop_back();
     if (s) (*s)->AddNote("CTDs: %de %de %de %de", a, b, c, d);
     energy += std::min(a, std::min(b, std::min(c, d)));
+#endif
   }
   if (s) (*s)->AddNote("Unpaired: %d, Branches: %d", num_unpaired, int(branches.size() + 1));
 
   return energy;
 }
 
-energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Structure>* s) {
+energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s) {
   assert(en >= st);
   energy_t energy = 0;
 
@@ -524,10 +531,10 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
     int pair = p[i];
     if (s) {
       std::unique_ptr<structure::Structure> structure;
-      energy += ComputeEnergyInternal(i, pair, &structure);
+      energy += ComputeEnergy(i, pair, &structure);
       (*s)->AddBranch(std::move(structure));
     } else {
-      energy += ComputeEnergyInternal(i, pair, nullptr);
+      energy += ComputeEnergy(i, pair, nullptr);
     }
   }
   if (s) (*s)->SetTotalEnergy(energy);
@@ -538,8 +545,8 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
 energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s) {
   r = frna.r;
   p = frna.p;
-  energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
-  if (p[0] == int(r.size() - 1) && IsUnorderedOf(r[0], r[p[0]], G_b | A_b, U_b)) {
+  energy_t energy = ComputeEnergy(0, (int) r.size() - 1, s);
+  if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += AUGU_PENALTY;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", AUGU_PENALTY);

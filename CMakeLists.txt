@@ -16,11 +16,21 @@ include(FindThreads)
 
 include_directories(src)
 
-add_executable(compute_energy ${MEMERNA_SOURCE} src/programs/compute_energy.cpp)
-add_executable(batch_energy ${MEMERNA_SOURCE} src/programs/batch_energy.cpp)
-add_executable(fold ${MEMERNA_SOURCE} src/programs/fold.cpp)
+add_library(memerna ${MEMERNA_SOURCE})
+
+add_executable(compute_energy src/programs/compute_energy.cpp)
+add_executable(batch_energy src/programs/batch_energy.cpp)
+add_executable(fold src/programs/fold.cpp)
+add_executable(brute_fold src/programs/brute_fold.cpp)
+add_executable(fuzz src/programs/fuzz.cpp)
 
 add_subdirectory(lib/gtest)
 enable_testing()
 add_executable(run_tests ${TEST_SOURCE} ${MEMERNA_SOURCE})
-target_link_libraries(run_tests Threads::Threads gtest)
+
+target_link_libraries(run_tests memerna Threads::Threads gtest)
+target_link_libraries(compute_energy memerna)
+target_link_libraries(batch_energy memerna)
+target_link_libraries(fold memerna)
+target_link_libraries(brute_fold memerna)
+target_link_libraries(fuzz memerna)

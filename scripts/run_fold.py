@@ -3,7 +3,7 @@ import run
 
 
 def main():
-  run.process_command(['-f'])
+  run.process_command(['-p'])
 
 
 if __name__ == "__main__":

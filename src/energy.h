@@ -16,7 +16,6 @@ class Structure;
 
 namespace energy {
 
-const energy_t MAX_E = 1000000000;
 const energy_t AUGU_PENALTY = 5;
 // N.B. This is for kcal/mol so it's not 8.315.
 const double R = 1.985877534e-3;
@@ -42,6 +41,9 @@ energy_t MultiloopInitiation(int num_unpaired, int num_branches);
 energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopHackInitiation(int num_branches);
+
+// Requires global variables r and p to be set. st and en are inclusive.
+energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s);
 
 // This function is not re-entrant.
 energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr);
