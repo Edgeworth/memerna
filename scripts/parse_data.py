@@ -3,7 +3,7 @@ import re
 
 from common import write_file, read_file
 
-MAX = 1000000000
+MAX = 0x0F0F0F0F
 ORDER = 'ACGU'
 
 
