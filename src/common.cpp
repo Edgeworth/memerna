@@ -128,6 +128,7 @@ uint32_t EnergyModelChecksum() {
   APPEND_DATA(coax_mismatch_non_contiguous);
   APPEND_DATA(coax_mismatch_wc_bonus);
   APPEND_DATA(coax_mismatch_gu_bonus);
+  APPEND_DATA(augu_penalty);
 #undef APPEND_DATA
 
   return Crc32(data);

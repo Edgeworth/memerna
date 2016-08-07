@@ -33,6 +33,8 @@ energy_t dangle3_e[4][4][4];
 
 energy_t coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
 
+energy_t augu_penalty;
+
 rna_t r;
 std::vector<int> p;
 

@@ -54,8 +54,8 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsAuGu(r[st], r[en])) {
-    if (s) (*s)->AddNote("%de - AU/GU penalty", AUGU_PENALTY);
-    energy += AUGU_PENALTY;
+    if (s) (*s)->AddNote("%de - AU/GU penalty", augu_penalty);
+    energy += augu_penalty;
   }
 
   // T04 says hairpin loops with all C bases inside them are treated specially.
@@ -125,12 +125,12 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
     if (IsAuGu(r[ost], r[oen])) {
-      if (s) (*s)->AddNote("%de - outer AU/GU penalty", AUGU_PENALTY);
-      energy += AUGU_PENALTY;
+      if (s) (*s)->AddNote("%de - outer AU/GU penalty", augu_penalty);
+      energy += augu_penalty;
     }
     if (IsAuGu(r[ist], r[ien])) {
-      if (s) (*s)->AddNote("%de - inner AU/GU penalty", AUGU_PENALTY);
-      energy += AUGU_PENALTY;
+      if (s) (*s)->AddNote("%de - inner AU/GU penalty", augu_penalty);
+      energy += augu_penalty;
     }
     return energy;
   }
@@ -458,8 +458,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     num_unpaired += p[branch_st] - branch_st + 1;
 
     if (IsAuGu(r[branch_st], r[p[branch_st]])) {
-      if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", AUGU_PENALTY, branch_st, p[branch_st]);
-      energy += AUGU_PENALTY;
+      if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", augu_penalty, branch_st, p[branch_st]);
+      energy += augu_penalty;
     }
   }
   num_unpaired = en - st - 1 - num_unpaired;
@@ -472,8 +472,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     num_unpaired += 2;
   } else {
     if (IsAuGu(r[st], r[en])) {
-      if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", AUGU_PENALTY, st, en);
-      energy += AUGU_PENALTY;
+      if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
+      energy += augu_penalty;
     }
     energy_t initiation = MultiloopInitiation(num_unpaired, int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
@@ -548,11 +548,11 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
 energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s) {
   energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
-    energy += AUGU_PENALTY;
+    energy += augu_penalty;
     if (s) {
-      (*s)->AddNote("%de - top level AU/GU penalty", AUGU_PENALTY);
-      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + AUGU_PENALTY);  // Gross.
-      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + AUGU_PENALTY);  // Gross.
+      (*s)->AddNote("%de - top level AU/GU penalty", augu_penalty);
+      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + augu_penalty);  // Gross.
+      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + augu_penalty);  // Gross.
     }
   }
   return energy;

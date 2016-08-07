@@ -32,7 +32,7 @@ public:
 
 TEST_F(EnergyTest, HairpinEnergy) {
   SetFoldedRna(kNNDBHairpin1);
-  EXPECT_EQ(AUGU_PENALTY + terminal_e[A][A][A][U] + HairpinInitiation(6), HairpinEnergy(3, 10));
+  EXPECT_EQ(augu_penalty + terminal_e[A][A][A][U] + HairpinInitiation(6), HairpinEnergy(3, 10));
   EXPECT_EQ(88, HairpinInitiation(87));
 }
 
@@ -51,19 +51,19 @@ TEST_F(EnergyTest, MultiloopEnergy) {
 
 TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
   EXPECT_EQ(
-      stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + AUGU_PENALTY +
+      stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + augu_penalty +
       terminal_e[A][A][A][U] + HairpinInitiation(6),
       ComputeEnergy(kNNDBHairpin1));
   EXPECT_EQ(
-      stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + AUGU_PENALTY +
+      stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] + augu_penalty +
       terminal_e[A][G][G][U] + hairpin_gg_first_mismatch + HairpinInitiation(5),
       ComputeEnergy(kNNDBHairpin2));
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][C][G][G] + hairpin_e["CCGAGG"],
             ComputeEnergy(kNNDBHairpin3));
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] +
-            AUGU_PENALTY + terminal_e[A][C][C][U] + HairpinInitiation(6) + hairpin_all_c_a * 6 + hairpin_all_c_b,
+            augu_penalty + terminal_e[A][C][C][U] + HairpinInitiation(6) + hairpin_all_c_a * 6 + hairpin_all_c_b,
             ComputeEnergy(kNNDBHairpin4));
-  EXPECT_EQ(stacking_e[C][G][C][G] + stacking_e[G][G][C][C] + stacking_e[G][G][U][C] + AUGU_PENALTY +
+  EXPECT_EQ(stacking_e[C][G][C][G] + stacking_e[G][G][C][C] + stacking_e[G][G][U][C] + augu_penalty +
             terminal_e[G][G][G][U] + hairpin_gg_first_mismatch + HairpinInitiation(5) + hairpin_special_gu_closure,
             ComputeEnergy(kNNDBHairpin5));
 }
@@ -76,17 +76,17 @@ TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
       ComputeEnergy(kNNDBBulge1));
 
   EXPECT_EQ(
-      stacking_e[G][A][U][C] + AUGU_PENALTY + BulgeInitiation(3) + HairpinInitiation(3),
+      stacking_e[G][A][U][C] + augu_penalty + BulgeInitiation(3) + HairpinInitiation(3),
       ComputeEnergy(kNNDBBulge2));
 }
 
 
 TEST_F(EnergyTest, NNDBMultiloopExamples) {
   EXPECT_EQ(stacking_e[C][A][U][G] + stacking_e[A][C][G][U] + stacking_e[C][A][U][G] +
-            2 * AUGU_PENALTY + 2 * HairpinInitiation(3),
+            2 * augu_penalty + 2 * HairpinInitiation(3),
             ComputeEnergy(kFlushCoax));
   EXPECT_EQ(stacking_e[G][A][U][C] + terminal_e[C][G][A][G] + coax_mismatch_non_contiguous +
-            3 * HairpinInitiation(3) + MultiloopInitiation(8, 4) + 2 * AUGU_PENALTY,
+            3 * HairpinInitiation(3) + MultiloopInitiation(8, 4) + 2 * augu_penalty,
             ComputeEnergy(kNNDBMultiloop));
 }
 
@@ -108,23 +108,23 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
 
 TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(
-      AUGU_PENALTY + stacking_e[G][A][U][C] + hairpin_init[3],
+      augu_penalty + stacking_e[G][A][U][C] + hairpin_init[3],
       ComputeEnergy(parsing::ParseDotBracketRna("GAAAAUC", "((...))")));
   EXPECT_EQ(
-      AUGU_PENALTY * 2 + stacking_e[G][A][U][U] + hairpin_init[3],
+      augu_penalty * 2 + stacking_e[G][A][U][U] + hairpin_init[3],
       ComputeEnergy(parsing::ParseDotBracketRna("GAAAAUU", "((...))")));
   EXPECT_EQ(
-      AUGU_PENALTY * 2 + HairpinInitiation(3) +
+      augu_penalty * 2 + HairpinInitiation(3) +
       std::min(terminal_e[U][A][A][A], std::min(dangle3_e[U][A][A], dangle5_e[U][A][A])),
       ComputeEnergy(parsing::ParseDotBracketRna("AAAAAUA", ".(...).")));
-  EXPECT_EQ(AUGU_PENALTY * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseDotBracketRna("AAAAU", "(...)")));
+  EXPECT_EQ(augu_penalty * 2 + HairpinInitiation(3), ComputeEnergy(parsing::ParseDotBracketRna("AAAAU", "(...)")));
   EXPECT_EQ(
       stacking_e[G][C][G][C] + stacking_e[C][U][A][G] + BulgeInitiation(1) +
       stacking_e[U][G][C][A] + HairpinInitiation(3),
       ComputeEnergy(kBulge1));
 
   EXPECT_EQ(
-      InternalLoopInitiation(5) + internal_asym + internal_augu_penalty + AUGU_PENALTY +
+      InternalLoopInitiation(5) + internal_asym + internal_augu_penalty + augu_penalty +
       internal_2x3_mismatch[A][G][A][U] + internal_2x3_mismatch[C][A][A][G] + HairpinInitiation(3),
       ComputeEnergy(kInternal1));
 }

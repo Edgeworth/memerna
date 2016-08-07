@@ -17,3 +17,5 @@ Zuker optimisation ideas:
 - Move AUGU_PENALTY to global variable not constant
 - Bring examples into tests
 - American fuzzy lop?
+- Remove COMPUTE_CTDS macro
+- Incorporate USE_HACK_MODEL into energy hash
