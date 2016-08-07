@@ -8,9 +8,10 @@
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
-  assert(argc == 2);
+  verify_expr(argc == 2, "requires one argument");
   Init();
-  rna_t rna = parsing::ParseRnaFromString(argv[1]);
+  printf("%d\n", EnergyModelChecksum());
+  auto rna = parsing::ParseRnaFromString(argv[1]);
   energy_t e = fold::Fold(rna);
   printf("Energy: %d\n%s\n", e, parsing::DotBracketFromPairs(p).c_str());
 }

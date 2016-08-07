@@ -104,10 +104,10 @@ if(NOT HAVE_UNDEFINED_BEHAVIOR_SANITIZER)
 endif()
 
 
-set(CMAKE_C_FLAGS_UBSAN "-O0 -g ${UNDEFINED_BEHAVIOR_SANITIZER_FLAG} -fno-omit-frame-pointer"
+set(CMAKE_C_FLAGS_UBSAN "-g ${UNDEFINED_BEHAVIOR_SANITIZER_FLAG} -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the C compiler during UBSan builds."
     FORCE)
-set(CMAKE_CXX_FLAGS_UBSAN "-O0 -g ${UNDEFINED_BEHAVIOR_SANITIZER_FLAG} -fno-omit-frame-pointer"
+set(CMAKE_CXX_FLAGS_UBSAN "-g ${UNDEFINED_BEHAVIOR_SANITIZER_FLAG} -fno-omit-frame-pointer"
     CACHE STRING "Flags used by the C++ compiler during UBSan builds."
     FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_UBSAN "${UNDEFINED_BEHAVIOR_SANITIZER_FLAG}"

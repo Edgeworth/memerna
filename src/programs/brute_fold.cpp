@@ -8,10 +8,10 @@
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
-  assert(argc == 2);
+  verify_expr(argc == 2, "requires 1 argument");
   Init();
-  rna_t rna = parsing::ParseRnaFromString(argv[1]);
   std::unique_ptr<structure::Structure> structure;
+  auto rna = parsing::ParseRnaFromString(argv[1]);
   printf("Energy: %d\n", fold::FoldBruteForce(rna, &structure));
   printf("DB: %s\n", parsing::DotBracketFromPairs(p).c_str());
   auto descs = structure->Description();

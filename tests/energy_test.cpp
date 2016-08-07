@@ -31,7 +31,7 @@ public:
 
 
 TEST_F(EnergyTest, HairpinEnergy) {
-  r = kNNDBHairpin1.r;
+  SetFoldedRna(kNNDBHairpin1);
   EXPECT_EQ(AUGU_PENALTY + terminal_e[A][A][A][U] + HairpinInitiation(6), HairpinEnergy(3, 10));
   EXPECT_EQ(88, HairpinInitiation(87));
 }

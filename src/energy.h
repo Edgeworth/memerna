@@ -7,6 +7,7 @@
 #include <memory>
 #include "common.h"
 #include "base.h"
+#include "globals.h"
 
 namespace memerna {
 
@@ -21,6 +22,10 @@ const energy_t AUGU_PENALTY = 5;
 const double R = 1.985877534e-3;
 // This is 37 degrees Celsius. Changing this is not a good idea.
 const double T = 310.15;
+
+inline energy_t AuGuPenalty(int st, int en) {
+  return IsAuGu(r[st], r[en]) ? AUGU_PENALTY : 0;
+}
 
 energy_t HairpinInitiation(int n);
 
@@ -42,11 +47,16 @@ energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
 
 energy_t MultiloopHackInitiation(int num_branches);
 
-// Requires global variables r and p to be set. st and en are inclusive.
-energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s);
+energy_t MismatchMediatedCoaxialEnergy(
+    base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot);
 
-// This function is not re-entrant.
-energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr);
+// Requires global variables r and p to be set. st and en are inclusive.
+energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s = nullptr);
+
+inline energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr) {
+  SetFoldedRna(frna);
+  return ComputeEnergy(s);
+}
 
 }
 }

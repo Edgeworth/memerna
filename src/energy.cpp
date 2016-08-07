@@ -2,7 +2,6 @@
 #include <cmath>
 #include <memory>
 #include "energy.h"
-#include "globals.h"
 #include "structure.h"
 
 #ifndef NDEBUG
@@ -125,10 +124,14 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
 
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
-    if (IsAuGu(r[ost], r[oen]))
+    if (IsAuGu(r[ost], r[oen])) {
+      if (s) (*s)->AddNote("%de - outer AU/GU penalty", AUGU_PENALTY);
       energy += AUGU_PENALTY;
-    if (IsAuGu(r[ist], r[ien]))
+    }
+    if (IsAuGu(r[ist], r[ien])) {
+      if (s) (*s)->AddNote("%de - inner AU/GU penalty", AUGU_PENALTY);
       energy += AUGU_PENALTY;
+    }
     return energy;
   }
   // Stacking energy.
@@ -279,7 +282,7 @@ energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
 //    1. A terminal mismatch is formed around the branch being straddled.
 //    2. An arbitrary bonus is added.
 //    2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
-inline energy_t MismatchMediatedCoaxialEnergy(
+energy_t MismatchMediatedCoaxialEnergy(
     base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
   energy_t coax = terminal_e[fiveTop][mismatch_top][mismatch_bot][threeBot] + coax_mismatch_non_contiguous;
   if (IsUnorderedOf(mismatch_top, mismatch_bot, G_b, C_b) ||
@@ -493,7 +496,7 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
   return energy;
 }
 
-energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s) {
+energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Structure>* s) {
   assert(en >= st);
   energy_t energy = 0;
 
@@ -531,10 +534,10 @@ energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
     int pair = p[i];
     if (s) {
       std::unique_ptr<structure::Structure> structure;
-      energy += ComputeEnergy(i, pair, &structure);
+      energy += ComputeEnergyInternal(i, pair, &structure);
       (*s)->AddBranch(std::move(structure));
     } else {
-      energy += ComputeEnergy(i, pair, nullptr);
+      energy += ComputeEnergyInternal(i, pair, nullptr);
     }
   }
   if (s) (*s)->SetTotalEnergy(energy);
@@ -542,10 +545,8 @@ energy_t ComputeEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
   return energy;
 }
 
-energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s) {
-  r = frna.r;
-  p = frna.p;
-  energy_t energy = ComputeEnergy(0, (int) r.size() - 1, s);
+energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s) {
+  energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += AUGU_PENALTY;
     if (s) {

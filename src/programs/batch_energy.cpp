@@ -16,7 +16,7 @@ int main() {
     getline(std::cin, seq);
     getline(std::cin, db);
     if (!std::cin) break;
-    folded_rna_t frna = parsing::ParseDotBracketRna(seq, db);
+    auto frna = parsing::ParseDotBracketRna(seq, db);
     printf("RNA %d\nEnergy: %d\n", idx++, energy::ComputeEnergy(frna));
   }
 }
