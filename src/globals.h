@@ -59,6 +59,9 @@ extern energy_t dangle3_e[4][4][4];
 // Coaxial stacking:
 extern energy_t coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
 
+// AU/GU penalty
+extern energy_t augu_penalty;
+
 // Global data variables.
 extern rna_t r;
 extern std::vector<int> p;

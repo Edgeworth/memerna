@@ -196,6 +196,9 @@ void ParseMiscDataFromFile(const std::string& filename) {
   READ_DATA(multiloop_t99_a);
   READ_DATA(multiloop_t99_b);
   READ_DATA(multiloop_t99_c);
+
+  // AU/GU penalty
+  READ_DATA(augu_penalty);
 #undef READ_DATA
 
   fclose(fp);

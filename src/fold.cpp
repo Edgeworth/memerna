@@ -93,17 +93,17 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       if (sz)
         UPDATE_CACHE(U, sz, st, arr[sz - 1][st + 1][U]);
       // Pair here.
-      auto augu_penalty = energy::AuGuPenalty(st, en);
-      UPDATE_CACHE(U, sz, st, arr[sz][st][P] + multiloop_hack_b + augu_penalty);
+      auto penalty = energy::AuGuPenalty(st, en);
+      UPDATE_CACHE(U, sz, st, arr[sz][st][P] + multiloop_hack_b + penalty);
       // TODO: can reduce range, probably
       for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz; ++pivsz) {
-        augu_penalty = energy::AuGuPenalty(st, st + pivsz - 1);
+        penalty = energy::AuGuPenalty(st, st + pivsz - 1);
         // Split.
         UPDATE_CACHE(
             U, sz, st, arr[pivsz][st][P] + multiloop_hack_b +
-                       arr[sz - pivsz][st + pivsz][U] + augu_penalty);
+                       arr[sz - pivsz][st + pivsz][U] + penalty);
         // Choose rest to be empty.
-        UPDATE_CACHE(U, sz, st, arr[pivsz][st][P] + multiloop_hack_b + augu_penalty);
+        UPDATE_CACHE(U, sz, st, arr[pivsz][st][P] + multiloop_hack_b + penalty);
       }
 
       en++;
@@ -116,8 +116,8 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   for (int en = 1; en <= N; ++en) {
     exterior[en] = exterior[en - 1];
     for (int st = 0; st < en; ++st) {
-      energy_t augu_penalty = energy::AuGuPenalty(st, en - 1);
-      energy_t value = exterior[st] + arr[en - st][st][P] + augu_penalty;
+      energy_t penalty = energy::AuGuPenalty(st, en - 1);
+      energy_t value = exterior[st] + arr[en - st][st][P] + penalty;
       if (value < exterior[en]) {
         exterior[en] = value;
         exterior_sts[en] = st;
@@ -164,11 +164,11 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         }
       }
 
-      auto augu_penalty = energy::AuGuPenalty(st, en);
+      auto penalty = energy::AuGuPenalty(st, en);
       for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz - 1; ++pivsz) {
         auto other_pivsz = sz - pivsz - 2;
         auto val = arr[pivsz][st + 1][U] + multiloop_hack_a + multiloop_hack_b +
-                   arr[other_pivsz][st + 1 + pivsz][U] + augu_penalty;
+                   arr[other_pivsz][st + 1 + pivsz][U] + penalty;
         if (val == arr[sz][st][P]) {
           q.emplace(pivsz, st + 1, false);
           q.emplace(other_pivsz, st + 1 + pivsz, false);
@@ -181,21 +181,21 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         goto loopend;
       }
       // Pair here.
-      auto augu_penalty = energy::AuGuPenalty(st, en);
-      if (arr[sz][st][P] + multiloop_hack_b + augu_penalty == arr[sz][st][U]) {
+      auto penalty = energy::AuGuPenalty(st, en);
+      if (arr[sz][st][P] + multiloop_hack_b + penalty == arr[sz][st][U]) {
         q.emplace(sz, st, true);
         goto loopend;
       }
       for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz; ++pivsz) {
         int rem = sz - pivsz;
-        augu_penalty = energy::AuGuPenalty(st, st + pivsz - 1);
+        penalty = energy::AuGuPenalty(st, st + pivsz - 1);
         if (arr[pivsz][st][P] + multiloop_hack_b +
-            arr[rem][st + pivsz][U] + augu_penalty == arr[sz][st][U]) {
+            arr[rem][st + pivsz][U] + penalty == arr[sz][st][U]) {
           q.emplace(pivsz, st, true);
           q.emplace(rem, st + pivsz, false);
           goto loopend;
         }
-        if (arr[pivsz][st][P] + multiloop_hack_b + augu_penalty == arr[sz][st][U]) {
+        if (arr[pivsz][st][P] + multiloop_hack_b + penalty == arr[sz][st][U]) {
           q.emplace(pivsz, st, true);
           goto loopend;
         }
