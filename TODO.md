@@ -1,12 +1,19 @@
-### efn2
-- Hairpin loops
--- Python code to generate C code to do energy for optimisation.
+Zuker optimisation ideas:
+- list of actual base pairs (skip things)
+- magic data structures to reduce multiloop computation to log time
+- Python code to generate C code to do energy for optimisation.
+- Bake AUGU penalties etc into things
+- Create second set of energy functions  and zuker
+-- optimised versions and easy to understand versions
+- Vectorisation (SSE)
 
 - Energy model hash computation
-
-### Tests
-- Randomised energy model + unit tests
-- Randomised energy model + comparison to vienna rna / rna structure / max rna
-- Zuker tests:
--- Randomised energy model + multiple tracebacks + comparison to energy function output
-- Store structure?
+- Randomised energy model
+-- Plus comparison to rnastructure / rnark
+- Coaxial stacking, etc for Zuker
+- Lyngso optimisation
+- Sparse folding
+- Speed up internal loops somehow
+- Move AUGU_PENALTY to global variable not constant
+- Bring examples into tests
+- American fuzzy lop?

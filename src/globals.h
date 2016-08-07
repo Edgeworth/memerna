@@ -5,11 +5,11 @@
 #include <vector>
 #include <unordered_map>
 #include "base.h"
-#include "energy.h"
 
 namespace memerna {
 
 // Globals.
+// ----!!!!IF YOU UPDATE THESE UPDATE EnergyModelChecksum() IN COMMON.!!!!----
 const int INITIATION_CACHE_SZ = 31;
 
 // Stacking related:
@@ -63,6 +63,19 @@ extern energy_t coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_misma
 extern rna_t r;
 extern std::vector<int> p;
 
+inline void SetRna(const rna_t& rna) {
+  r = rna;
 }
 
-#endif //MEMERNA_GLOBALS_H
+inline void SetFoldedRna(const rna_t& rna, const std::vector<int>& pairs) {
+  r = rna;
+  p = pairs;
+}
+
+inline void SetFoldedRna(const folded_rna_t& frna) {
+  SetFoldedRna(frna.r, frna.p);
+}
+
+}
+
+#endif  //MEMERNA_GLOBALS_H

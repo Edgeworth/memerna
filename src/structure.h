@@ -27,9 +27,11 @@ public:
   }
 
   void SetSelfEnergy(energy_t e) {self_energy = e;}
+
   void SetTotalEnergy(energy_t e) {total_energy = e;}
 
   energy_t GetSelfEnergy() {return self_energy;}
+
   energy_t GetTotalEnergy() {return total_energy;}
 
 protected:

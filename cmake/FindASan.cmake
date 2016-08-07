@@ -56,10 +56,10 @@ endif()
 
 set(HAVE_ADDRESS_SANITIZER TRUE)
 
-set(CMAKE_C_FLAGS_ASAN "-O1 -g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_C_FLAGS_ASAN "-g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C compiler during ASan builds."
     FORCE)
-set(CMAKE_CXX_FLAGS_ASAN "-O1 -g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_CXX_FLAGS_ASAN "-g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C++ compiler during ASan builds."
     FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_ASAN "${ADDRESS_SANITIZER_FLAG}"

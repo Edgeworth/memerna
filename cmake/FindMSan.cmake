@@ -57,10 +57,10 @@ endif()
 
 set(HAVE_MEMORY_SANITIZER TRUE)
 
-set(CMAKE_C_FLAGS_MSAN "-O1 -g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_C_FLAGS_MSAN "-g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C compiler during MSan builds."
     FORCE)
-set(CMAKE_CXX_FLAGS_MSAN "-O1 -g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_CXX_FLAGS_MSAN "-g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C++ compiler during MSan builds."
     FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_MSAN "${MEMORY_SANITIZER_FLAG}"

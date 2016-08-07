@@ -7,9 +7,9 @@
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
-  assert(argc == 3);
+  verify_expr(argc == 3, "requires two arguments");
   Init();
-  folded_rna_t frna = parsing::ParseDotBracketRna(argv[1], argv[2]);
+  auto frna = parsing::ParseDotBracketRna(argv[1], argv[2]);
   std::unique_ptr<structure::Structure> structure;
   printf("Energy: %d\n", energy::ComputeEnergy(frna, &structure));
   auto descs = structure->Description();
