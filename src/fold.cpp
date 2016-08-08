@@ -7,9 +7,8 @@ namespace fold {
 enum {
   P,  // For the paired array.
   U,  // For the unpaired array.
-  U_ST,  // Unpaired but must start with a branch.
-  U_WC,  // Unpaired but must start with a branch not involved in a coaxial stack after this that is not GU.
-  U_GU,  // Unpaired but must start with a branch not involved in a coaxial stack after this that is GU.
+  U_WC,  // Unpaired but must start with a branch not involved in a CTD interaction that is not GU.
+  U_GU,  // Unpaired but must start with a branch not involved in a CTD interaction that is GU.
   U_RCOAX,  // Unpaired but must start with a branch involved in a right coaxial stack - includes energy for it.
   ARR_SIZE
 };
@@ -28,7 +27,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   assert(N > 0);
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, ARR_SIZE> arr(r.size() + 1);
-  assert(arr[N - 1][0][U_ST] == MAX_E);
+  assert(arr[N - 1][0][U_WC] == MAX_E);
 
   // TODO: check bounds
   // TODO: au/gu penalty?
@@ -73,61 +72,35 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
               base_branch_cost + arr[lpivsz][st + 1][P] + arr[rpivsz][st + 1 + lpivsz][U];
           auto l_l00r01_cost =
               base_branch_cost + arr[lpivsz][st + 1][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
-          auto l_l01r00_cost =
-              base_branch_cost + arr[lpivsz - 1][st + 1][P] + arr[rpivsz][st + 1 + lpivsz][U];
           auto l_l10r00_cost =
               base_branch_cost + arr[lpivsz - 1][st + 2][P] + arr[rpivsz][st + 1 + lpivsz][U];
           auto l_l10r01_cost =
               base_branch_cost + arr[lpivsz - 1][st + 2][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
           auto l_l11r00_cost =
               base_branch_cost + arr[lpivsz - 2][st + 2][P] + arr[rpivsz][st + 1 + lpivsz][U];
-          auto l_l11r01_cost =
-              base_branch_cost + arr[lpivsz - 2][st + 2][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
 
           auto r_l00r00_cost =
               base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz][st + 1 + lpivsz][P];
-          auto r_l10r00_cost =
-              base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz][st + 1 + lpivsz][P];
           auto r_l10r01_cost =
               base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz - 1][st + 1 + lpivsz][P];
-          auto r_l00r10_cost =
-              base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz - 1][st + 2 + lpivsz][P];
           auto r_l00r11_cost =
               base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz - 2][st + 2 + lpivsz][P];
-          auto r_l10r11_cost =
-              base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz - 2][st + 2 + lpivsz][P];
 
           // (.(   )   .) Left left coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
           UPDATE_CACHE(P, l_l10r01_cost + outer_coax);
-          // (.(   )3  .) 3' + Left left coax
-          UPDATE_CACHE(P, l_l11r01_cost + outer_coax + dangle3_e[pl1b][plb][st2b]);
           // (.(   ).   ) Left right coax
           auto l_inner_coax = energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b);
           UPDATE_CACHE(P, l_l11r00_cost + l_inner_coax);
-          // (.(   ).  5) 5' + Left right coax
-          UPDATE_CACHE(P, l_l11r01_cost + l_inner_coax + dangle5_e[stb][en1b][enb]);
           // (   .(   ).) Right left coax
           auto r_inner_coax = energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b);
           UPDATE_CACHE(P, r_l00r11_cost + r_inner_coax);
-          // (3  .(   ).) 3' + Right left coax
-          UPDATE_CACHE(P, r_l10r11_cost + outer_coax + dangle3_e[stb][st1b][enb]);
           // (.   (   ).) Right right coax
           UPDATE_CACHE(P, r_l10r01_cost + outer_coax);
-          // (.  5(   ).) 5' + Right right coax
-          UPDATE_CACHE(P, r_l10r11_cost + outer_coax + dangle5_e[en2b][prb][pr1b]);
           // ((   )   ) Left flush coax
           UPDATE_CACHE(P, l_l00r00_cost + stacking_e[stb][st1b][plb][enb]);
-          // ((   )3  ) 3' + Left flush coax
-          UPDATE_CACHE(P, l_l01r00_cost + stacking_e[stb][st1b][pl1b][enb] + dangle3_e[pl1b][plb][st1b]);
-          // ((   )  5) 5' + Left flush coax
-          UPDATE_CACHE(P, l_l00r01_cost + stacking_e[stb][st1b][pl1b][enb] + dangle5_e[stb][en1b][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(P, r_l00r00_cost + stacking_e[stb][prb][en1b][enb]);
-          // (  5(   )) 5' + Right flush coax
-          UPDATE_CACHE(P, r_l00r10_cost + stacking_e[stb][prb][en1b][enb]);
-          // (3  (   )) 3' + Right flush coax
-          UPDATE_CACHE(P, r_l10r00_cost + stacking_e[stb][prb][en1b][enb] + dangle3_e[stb][st1b][enb]);
           // (3(   )   ) 3'
           UPDATE_CACHE(P, l_l10r00_cost + dangle3_e[stb][st1b][enb]);
           // ((   )   5) 5'
@@ -142,35 +115,52 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       if (sz)
         UPDATE_CACHE(U, arr[sz - 1][st + 1][U]);
       // Pair here.
-      auto penalty = energy::AuGuPenalty(st, en);
-      UPDATE_CACHE(U, arr[sz][st][P] + multiloop_hack_b + penalty);
-      for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz; ++pivsz) {
-        penalty = energy::AuGuPenalty(st, st + pivsz - 1);
+      UPDATE_CACHE(U, arr[sz][st][P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
+      for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz; ++lpivsz) {
+        int rpivsz = sz - lpivsz;
+
+        //   (   .   )<   (
+        // stb pl1b pb   pr1b
+
+        auto pb = r[st + lpivsz - 1], pl1b = r[st + lpivsz - 2], pr1b = r[st + lpivsz];
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+        auto base00 = arr[lpivsz][st][P] + energy::AuGuPenalty(st, st + lpivsz - 1) + multiloop_hack_b;
+        auto base01 = arr[lpivsz - 1][st][P] + energy::AuGuPenalty(st, st + lpivsz - 2) + multiloop_hack_b;
+        auto base10 = arr[lpivsz - 1][st + 1][P] + energy::AuGuPenalty(st + 1, st + lpivsz - 2) + multiloop_hack_b;
+        auto base11 = arr[lpivsz - 2][st + 1][P] + energy::AuGuPenalty(st + 1, st + lpivsz - 3) + multiloop_hack_b;
         // Min is for either placing another unpaired or leaving it as nothing.
+        auto right_unpaired = std::min(arr[rpivsz][st + lpivsz][U], 0);
 
-        //   (   )<(
-        // stb  pb
-
-        auto pb = r[st + pivsz - 1];
-
-        // (   )<   > - U, U_ST, U_WC?, U_GU?
-        auto val = arr[pivsz][st][P] + multiloop_hack_b +
-            std::min(arr[sz - pivsz][st + pivsz][U], 0) + penalty;
+        // (   )<   > - U, U_WC?, U_GU?
+        auto val = base00 + right_unpaired;
         UPDATE_CACHE(U, val);
-        UPDATE_CACHE(U_ST, val);
         if (IsGu(stb, pb))
           UPDATE_CACHE(U_GU, val);
         else
           UPDATE_CACHE(U_WC, val);
 
-        // (   )3<   > 3' - U, U_ST,
-        // 5(   )<   > 5'
-        // .(   ).<   > Terminal mismatch
-        // .(   ).<(   ) > Left coax
-        // (   )<(   ) > Flush coax?
-        // 5(   )<(   ) Flush coax + 5'
-        // (   ).<(   ). > Right coax
-        // 5(   ).<(   ). > Right coax + 5'
+        // (   )3<   > 3' - U
+        UPDATE_CACHE(U, base01 + dangle3_e[pl1b][pb][stb] + right_unpaired);
+
+        // 5(   )<   > 5' - U
+        UPDATE_CACHE(U, base10 + dangle5_e[pb][stb][st1b] + right_unpaired);
+
+        // .(   ).<   > Terminal mismatch - U
+        UPDATE_CACHE(U, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
+
+        // .(   ).<(   ) > Left coax - U
+        UPDATE_CACHE(U, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
+
+        // (   )<(   ) > Flush coax - U
+        UPDATE_CACHE(U, base00 + stacking_e[pb][pr1b][pr1b ^ 2][stb] + arr[rpivsz][st + lpivsz][U_WC]);
+        if (pr1b == G || pr1b == U)
+          UPDATE_CACHE(U, base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][U_GU]);
+
+        // (   ).<(   ). > Right coax forward and backward
+        UPDATE_CACHE(U, base01 + arr[rpivsz][st + lpivsz][U_RCOAX]);
+        if (st > 0)
+          UPDATE_CACHE(U_RCOAX, base01 + energy::MismatchMediatedCoaxialEnergy(
+              pl1b, pb, r[st - 1], stb) + right_unpaired);
       }
 
       en++;
