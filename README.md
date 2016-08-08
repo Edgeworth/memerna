@@ -8,6 +8,8 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 
 Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.
 
+No guarantees this runs or even builds on Windows.
+
 ### Directories
 
 build: build output directory
