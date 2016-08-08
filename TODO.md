@@ -6,6 +6,8 @@ Zuker optimisation ideas:
 - Create second set of energy functions  and zuker
 -- optimised versions and easy to understand versions
 - Vectorisation (SSE)
+- Can remove some cache updates since negatives in turner model, etc.
+
 
 - Energy model hash computation
 - Randomised energy model
@@ -19,3 +21,4 @@ Zuker optimisation ideas:
 - American fuzzy lop?
 - Remove COMPUTE_CTDS macro
 - Incorporate USE_HACK_MODEL into energy hash
+- Use energy hash in tests.

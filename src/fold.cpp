@@ -4,23 +4,24 @@
 namespace memerna {
 namespace fold {
 
-#define UPDATE_CACHE(a, sz, st, value) \
+enum {
+  P,  // For the paired array.
+  U,  // For the unpaired array.
+  U_ST,  // Unpaired but must start with a branch.
+  U_WC,  // Unpaired but must start with a branch not involved in a coaxial stack after this that is not GU.
+  U_GU,  // Unpaired but must start with a branch not involved in a coaxial stack after this that is GU.
+  U_RCOAX,  // Unpaired but must start with a branch involved in a right coaxial stack - includes energy for it.
+  ARR_SIZE
+};
+
+#define UPDATE_CACHE(a, value) \
   do { \
     energy_t macro_upd_value_ = (value); \
     if (macro_upd_value_ < CAP_E && macro_upd_value_ < arr[sz][st][a]) { \
-      /*printf("Updating " #arr " %d %d %d => %d\n  " #value "\n", sz, st, arr[sz][st][a], value);*/ \
       arr[sz][st][a] = macro_upd_value_; \
     } \
   } while (0)
 
-enum {
-  P,
-  U,
-  U_ST,
-  U_USED,
-  U_RCOAX,
-  ARR_SIZE
-};
 
 energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   int N = int(r.size());
@@ -36,7 +37,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   for (int sz = HAIRPIN_MIN_SZ + 2; sz <= N; ++sz) {
     int en = sz - 1;
     for (int st = 0; st < N - sz + 1; ++st) {
-      base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en];
+      base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
 
       // Update paired - only if can actually pair.
       if (CanPair(r[st], r[en])) {
@@ -44,66 +45,132 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         // TODO: can reduce the range of these loops.
         for (int ist = st + 1; ist < en - 1; ++ist) {
           for (int ien = ist + 1; ien < en; ++ien) {
-            UPDATE_CACHE(P, sz, st, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][P]);
+            UPDATE_CACHE(P, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][P]);
           }
         }
         // Hairpin loops.
-        UPDATE_CACHE(P, sz, st, energy::HairpinEnergy(st, en));
+        UPDATE_CACHE(P, energy::HairpinEnergy(st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
-        for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz - 1 - HAIRPIN_MIN_SZ; ++pivsz) {
-          UPDATE_CACHE(
-              P, sz, st,
-              base_branch_cost + arr[pivsz][st + 1][U] +
-              arr[sz - pivsz - 2][st + 1 + pivsz][U]);
-
+        for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - HAIRPIN_MIN_SZ; ++lpivsz) {
+          int rpivsz = sz - lpivsz - 2;
+          // No stacking case. Not canonical TODO switch to U_ST?
+          UPDATE_CACHE(P, base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz][st + 1 + lpivsz][U]);
 
           // Paired coaxial stacking cases:
-          // Left branch ending base, Left branch ending adjacent unpaired base.
-          base_t lben = r[st + pivsz - 1], lbenu = r[st + pivsz];
+          base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
 
-          // st1en1 = leave 1 unpaired at st + 1 and one unpaired at en - 1.
-          auto st1en1_cost =
-              base_branch_cost + arr[pivsz - 1][st + 2][P] + arr[sz - pivsz - 3][st + 1 + pivsz][U];
+          //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
+          // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
+
+          // l_lABrCD =
+          //   l => place a paired on the left
+          //   skip A bases on left of left branch, B bases on right of left branch
+          //   skip C bases on left of right branch, D bases on right of right branch.
+          auto l_l00r00_cost =
+              base_branch_cost + arr[lpivsz][st + 1][P] + arr[rpivsz][st + 1 + lpivsz][U];
+          auto l_l00r01_cost =
+              base_branch_cost + arr[lpivsz][st + 1][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
+          auto l_l01r00_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 1][P] + arr[rpivsz][st + 1 + lpivsz][U];
+          auto l_l10r00_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 2][P] + arr[rpivsz][st + 1 + lpivsz][U];
+          auto l_l10r01_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 2][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
+          auto l_l11r00_cost =
+              base_branch_cost + arr[lpivsz - 2][st + 2][P] + arr[rpivsz][st + 1 + lpivsz][U];
+          auto l_l11r01_cost =
+              base_branch_cost + arr[lpivsz - 2][st + 2][P] + arr[rpivsz - 1][st + 1 + lpivsz][U];
+
+          auto r_l00r00_cost =
+              base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz][st + 1 + lpivsz][P];
+          auto r_l10r00_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz][st + 1 + lpivsz][P];
+          auto r_l10r01_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz - 1][st + 1 + lpivsz][P];
+          auto r_l00r10_cost =
+              base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz - 1][st + 2 + lpivsz][P];
+          auto r_l00r11_cost =
+              base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz - 2][st + 2 + lpivsz][P];
+          auto r_l10r11_cost =
+              base_branch_cost + arr[lpivsz - 1][st + 2][U] + arr[rpivsz - 2][st + 2 + lpivsz][P];
+
           // (.(   )   .) Left left coax - P
-          //UPDATE_CACHE(P, sz, st, st1en1_cost + energy::MismatchMediatedCoaxialEnergy());
+          auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
+          UPDATE_CACHE(P, l_l10r01_cost + outer_coax);
           // (.(   )3  .) 3' + Left left coax
+          UPDATE_CACHE(P, l_l11r01_cost + outer_coax + dangle3_e[pl1b][plb][st2b]);
           // (.(   ).   ) Left right coax
+          auto l_inner_coax = energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b);
+          UPDATE_CACHE(P, l_l11r00_cost + l_inner_coax);
           // (.(   ).  5) 5' + Left right coax
-          // (   .(   ).) Left left coax
-          // (3  .(   ).) 3' + Left left coax
-          // (.   (   ).) Left right coax
-          // (.  5(   ).) 5' + Left right coax
+          UPDATE_CACHE(P, l_l11r01_cost + l_inner_coax + dangle5_e[stb][en1b][enb]);
+          // (   .(   ).) Right left coax
+          auto r_inner_coax = energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b);
+          UPDATE_CACHE(P, r_l00r11_cost + r_inner_coax);
+          // (3  .(   ).) 3' + Right left coax
+          UPDATE_CACHE(P, r_l10r11_cost + outer_coax + dangle3_e[stb][st1b][enb]);
+          // (.   (   ).) Right right coax
+          UPDATE_CACHE(P, r_l10r01_cost + outer_coax);
+          // (.  5(   ).) 5' + Right right coax
+          UPDATE_CACHE(P, r_l10r11_cost + outer_coax + dangle5_e[en2b][prb][pr1b]);
           // ((   )   ) Left flush coax
+          UPDATE_CACHE(P, l_l00r00_cost + stacking_e[stb][st1b][plb][enb]);
           // ((   )3  ) 3' + Left flush coax
+          UPDATE_CACHE(P, l_l01r00_cost + stacking_e[stb][st1b][pl1b][enb] + dangle3_e[pl1b][plb][st1b]);
           // ((   )  5) 5' + Left flush coax
+          UPDATE_CACHE(P, l_l00r01_cost + stacking_e[stb][st1b][pl1b][enb] + dangle5_e[stb][en1b][enb]);
           // (   (   )) Right flush coax
+          UPDATE_CACHE(P, r_l00r00_cost + stacking_e[stb][prb][en1b][enb]);
           // (  5(   )) 5' + Right flush coax
+          UPDATE_CACHE(P, r_l00r10_cost + stacking_e[stb][prb][en1b][enb]);
           // (3  (   )) 3' + Right flush coax
-          // (3   ) 3'
-          // (   5) 5'
-          // (.   .) Terminal mismatch
+          UPDATE_CACHE(P, r_l10r00_cost + stacking_e[stb][prb][en1b][enb] + dangle3_e[stb][st1b][enb]);
+          // (3(   )   ) 3'
+          UPDATE_CACHE(P, l_l10r00_cost + dangle3_e[stb][st1b][enb]);
+          // ((   )   5) 5'
+          UPDATE_CACHE(P, l_l00r01_cost + dangle5_e[stb][en1b][enb]);
+          // (.(   )   .) Terminal mismatch
+          UPDATE_CACHE(P, l_l10r01_cost + terminal_e[stb][st1b][en1b][enb]);
         }
       }
 
       // Update unpaired.
       // Choose |st| to be unpaired.
       if (sz)
-        UPDATE_CACHE(U, sz, st, arr[sz - 1][st + 1][U]);
+        UPDATE_CACHE(U, arr[sz - 1][st + 1][U]);
       // Pair here.
       auto penalty = energy::AuGuPenalty(st, en);
-      UPDATE_CACHE(U, sz, st, arr[sz][st][P] + multiloop_hack_b + penalty);
-      // TODO: can reduce range, probably
+      UPDATE_CACHE(U, arr[sz][st][P] + multiloop_hack_b + penalty);
       for (int pivsz = HAIRPIN_MIN_SZ + 2; pivsz < sz; ++pivsz) {
         penalty = energy::AuGuPenalty(st, st + pivsz - 1);
-        // Split.
-        UPDATE_CACHE(
-            U, sz, st, arr[pivsz][st][P] + multiloop_hack_b +
-                       arr[sz - pivsz][st + pivsz][U] + penalty);
-        // Choose rest to be empty.
-        UPDATE_CACHE(U, sz, st, arr[pivsz][st][P] + multiloop_hack_b + penalty);
+        // Min is for either placing another unpaired or leaving it as nothing.
+
+        //   (   )<(
+        // stb  pb
+
+        auto pb = r[st + pivsz - 1];
+
+        // (   )<   > - U, U_ST, U_WC?, U_GU?
+        auto val = arr[pivsz][st][P] + multiloop_hack_b +
+            std::min(arr[sz - pivsz][st + pivsz][U], 0) + penalty;
+        UPDATE_CACHE(U, val);
+        UPDATE_CACHE(U_ST, val);
+        if (IsGu(stb, pb))
+          UPDATE_CACHE(U_GU, val);
+        else
+          UPDATE_CACHE(U_WC, val);
+
+        // (   )3<   > 3' - U, U_ST,
+        // 5(   )<   > 5'
+        // .(   ).<   > Terminal mismatch
+        // .(   ).<(   ) > Left coax
+        // (   )<(   ) > Flush coax?
+        // 5(   )<(   ) Flush coax + 5'
+        // (   ).<(   ). > Right coax
+        // 5(   ).<(   ). > Right coax + 5'
       }
 
       en++;

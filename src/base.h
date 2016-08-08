@@ -30,6 +30,15 @@ inline bool IsAuGu(base_t a, base_t b) {
   return combined == (G_b | U_b) || combined == (A_b | U_b);
 }
 
+inline bool IsWatsonCrick(base_t a, base_t b) {
+  int combined = (1 << a) | (1 << b);
+  return combined == (A_b | U_b) || combined == (G_b | C_b);
+}
+
+inline bool IsGu(base_t a, base_t b) {
+  return (a == G && b == U) || (a == U && b == G);
+}
+
 base_t CharToBase(char c);
 
 char BaseToChar(base_t b);

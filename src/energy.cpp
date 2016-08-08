@@ -285,10 +285,9 @@ energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
 energy_t MismatchMediatedCoaxialEnergy(
     base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
   energy_t coax = terminal_e[fiveTop][mismatch_top][mismatch_bot][threeBot] + coax_mismatch_non_contiguous;
-  if (IsUnorderedOf(mismatch_top, mismatch_bot, G_b, C_b) ||
-      IsUnorderedOf(mismatch_top, mismatch_bot, A_b, U_b))
+  if (IsWatsonCrick(mismatch_top, mismatch_bot))
     coax += coax_mismatch_wc_bonus;
-  if (IsUnorderedOf(mismatch_top, mismatch_bot, G_b, U_b))
+  if (IsGu(mismatch_top, mismatch_bot))
     coax += coax_mismatch_gu_bonus;
   return coax;
 }
@@ -307,13 +306,13 @@ energy_t MismatchMediatedCoaxialEnergy(
 
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
                            std::unique_ptr<structure::Structure>* s) {
-  // cache[used][i]
   int N = int(branches.size());
   int R = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
   assert(N >= 3 || outer_idx == -1);
   if (N < 1) return 0;
 
+  // cache[used][i]
   std::vector<int> cache[2] = {
       std::vector<int>(size_t(N + 1), MAX_E),
       std::vector<int>(size_t(N + 1), MAX_E)
