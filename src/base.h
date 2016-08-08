@@ -9,6 +9,7 @@
 
 namespace memerna {
 
+// Don't ever change these values.
 const base_t A = 0, C = 1, G = 2, U = 3;
 const int A_b = 1 << A, C_b = 1 << C, G_b = 1 << G, U_b = 1 << U;
 
