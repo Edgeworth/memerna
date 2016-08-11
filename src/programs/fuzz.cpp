@@ -43,22 +43,39 @@ void FuzzRandomRna(int length) {
 
   if (dp != efn) {
     printf(
-        "Diff. DP: %d !=  EFN: %d, on: %s\n",
-        dp, efn, parsing::StringFromRna(rna).c_str());
+        "Diff. DP: %d !=  EFN: %d, on:\n  %s\n  %s\n",
+        dp, efn, parsing::StringFromRna(rna).c_str(),
+        parsing::DotBracketFromPairs(p).c_str());
     return;
   }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
   Init();
   srand(time(NULL));
-//  for (int i = 1; i <= 15; ++i) {
-//    printf("Fuzzing len %d\n", i);
-//    FuzzRnaOfLength(i);
-//  }
-  for (int i = 0; i < 100000; ++i) {
-    int length = 200 + rand() % 20;
-    if (i % 10000 == 0) printf("Fuzzed %d RNA\n", i);
-    FuzzRandomRna(length);
+  verify_expr(argc >= 2, "require selection; 1 == brute force, 2 == random rnas");
+  std::string choice = argv[1];
+  if (choice == "1") {
+    for (int i = 1; i <= 15; ++i) {
+      printf("Fuzzing len %d\n", i);
+      FuzzRnaOfLength(i);
+    }
+  } else if (choice == "2") {
+    int base_len = 100;
+    int variance = 20;
+    if (argc >= 3)
+      base_len = atoi(argv[2]);
+    if (argc >= 4)
+      variance = atoi(argv[3]);
+    verify_expr(base_len > 0, "invalid length");
+    verify_expr(variance >= 0, "invalid variance");
+    for (int i = 0; ; ++i) {
+      int length = base_len;
+      if (variance) length += rand() % variance;
+      if (i % 10000 == 0) printf("Fuzzed %d RNA\n", i);
+      FuzzRandomRna(length);
+    }
+  } else {
+    verify_expr(false, "unknown choice");
   }
 }

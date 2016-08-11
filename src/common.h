@@ -10,7 +10,7 @@
 #include <vector>
 
 // Note that changing these might break tests.
-#define COMPUTE_CTDS 0
+#define COMPUTE_CTDS 1
 #define USE_HACK_MODEL 1
 
 // Like assert, but can't be disabled.
@@ -50,8 +50,9 @@ struct array3d_t {
 public:
   array3d_t() : data(nullptr), size(0) {}
 
-  array3d_t(std::size_t size) : data(new T[size * size * K]), size(size) {
-    memset(data, MAX_E & 0xFF, sizeof(data[0]) * size * size * K);
+  array3d_t(std::size_t size, uint8_t init_val = MAX_E & 0xFF) :
+      data(new T[size * size * K]), size(size) {
+    memset(data, init_val, sizeof(data[0]) * size * size * K);
   }
 
   array3d_t(const array3d_t&) = delete;
@@ -78,6 +79,42 @@ private:
   T* data;
   std::size_t size;
 };
+
+template<typename T, unsigned int K>
+struct array2d_t {
+public:
+  array2d_t() : data(nullptr), size(0) {}
+
+  array2d_t(std::size_t size, uint8_t init_val = MAX_E & 0xFF) :
+      data(new T[size * K]), size(size) {
+    memset(data, init_val, sizeof(data[0]) * size * K);
+  }
+
+  array2d_t(const array2d_t&) = delete;
+
+  array2d_t(array2d_t&& o) {*this = std::move(o);}
+
+  array2d_t& operator=(const array2d_t&) = delete;
+
+  array2d_t& operator=(array2d_t&& o) {
+    data = o.data;
+    size = o.size;
+    o.data = nullptr;
+    o.size = 0;
+    return *this;
+  }
+
+  ~array2d_t() {delete[] data;}
+
+  T* operator[](std::size_t idx) {
+    return &data[idx * K];
+  }
+
+private:
+  T* data;
+  std::size_t size;
+};
+
 
 uint32_t EnergyModelChecksum();
 }
