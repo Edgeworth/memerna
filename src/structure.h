@@ -71,6 +71,7 @@ private:
   int ost, oen, ist, ien;
 };
 
+// TODO: Do this?
 enum class CtdType {
   UNUSED,
   STOLEN,  // Used by another branch.

@@ -38,7 +38,8 @@ const energy_t MAX_E = 0x0F0F0F0F;
 const energy_t CAP_E = 0x07070707;
 const int HAIRPIN_MIN_SZ = 3;
 
-void Init();
+void LoadEnergyModelFromDataDir();
+void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy);
 
 std::string sgetline(FILE* fp);
 std::string sfmt(const char* fmt, ...);

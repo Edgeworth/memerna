@@ -9,7 +9,7 @@ using namespace memerna;
 
 int main(int argc, char* argv[]) {
   verify_expr(argc == 2, "requires 1 argument");
-  Init();
+  LoadEnergyModelFromDataDir();
   std::unique_ptr<structure::Structure> structure;
   auto rna = parsing::ParseRnaFromString(argv[1]);
   printf("Energy: %d\n", fold::FoldBruteForce(rna, &structure));
