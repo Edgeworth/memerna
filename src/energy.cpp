@@ -200,8 +200,8 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
     if (s) (*s)->AddNote("%de - inner AU/GU penalty", internal_augu_penalty);
     energy += internal_augu_penalty;
   }
-  // Asymmetry term.
-  energy_t asym = std::abs(toplen - botlen) * internal_asym;
+  // Asymmetry term, limit with Ninio maximum asymmetry.
+  energy_t asym = std::min(std::abs(toplen - botlen), NINIO_MAX_ASYM) * internal_asym;
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -307,7 +307,7 @@ energy_t MismatchMediatedCoaxialEnergy(
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
                            std::unique_ptr<structure::Structure>* s) {
   int N = int(branches.size());
-  int R = int(r.size());
+  int RSZ = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
   assert(N >= 3 || outer_idx == -1);
   if (N < 1) return 0;
@@ -347,11 +347,11 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
     // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right unpaired base,
     // then we can't use it (as it could be used at the end by a terminal mismatch, dangle, right facing coaxial stack,
     // etc). This is because the loop is cyclic.
-    lu_exists[i] = lui[i] >= 0 && lui[i] < R && p[lui[i]] == -1;
+    lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && p[lui[i]] == -1;
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);
-    ru_exists[i] = rui[i] >= 0 && rui[i] < R && p[rui[i]] == -1;
+    ru_exists[i] = rui[i] >= 0 && rui[i] < RSZ && p[rui[i]] == -1;
     ru_usable[i] = ru_exists[i] && (rui[i] != first_lui || !use_first_lu);
-    ru_shared[i] = ru_exists[i] && rui[i] < R - 1 && p[rui[i] + 1] != -1;
+    ru_shared[i] = ru_exists[i] && rui[i] < RSZ - 1 && p[rui[i] + 1] != -1;
   }
 
   for (int i = 0; i < N; ++i) {

@@ -92,17 +92,17 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
 
 TEST_F(EnergyTest, NNDBInternalLoopExamples) {
   EXPECT_EQ(
-      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(5) + internal_asym +
-      internal_2x3_mismatch[A][G][G][U] + internal_2x3_mismatch[G][G][A][C] + internal_augu_penalty +
-      HairpinInitiation(3),
+      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(5) +
+      std::min(1, NINIO_MAX_ASYM) * internal_asym + internal_2x3_mismatch[A][G][G][U] +
+      internal_2x3_mismatch[G][G][A][C] + internal_augu_penalty + HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal2x3));
   EXPECT_EQ(
       stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + internal_2x2[A][G][A][C][G][G][A][U] +
       HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal2x2));
   EXPECT_EQ(
-      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(6) + 4 * internal_asym +
-      internal_augu_penalty + HairpinInitiation(3),
+      stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(6) +
+      std::min(4, NINIO_MAX_ASYM) * internal_asym + internal_augu_penalty + HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal1x5));
 }
 
