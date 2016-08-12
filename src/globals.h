@@ -9,7 +9,7 @@
 namespace memerna {
 
 // Globals.
-// ----!!!!IF YOU UPDATE THESE UPDATE EnergyModelChecksum() IN COMMON.!!!!----
+// ----!!!!IF YOU UPDATE THESE UPDATE SerialiseEnergyModel() and LoadRandomEnergyModel() IN common.!!!!----
 const int INITIATION_CACHE_SZ = 31;
 
 // Stacking related:

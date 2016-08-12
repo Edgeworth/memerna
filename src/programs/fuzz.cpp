@@ -51,7 +51,7 @@ void FuzzRandomRna(int length) {
 }
 
 int main(int argc, char* argv[]) {
-  Init();
+  LoadEnergyModelFromDataDir();
   srand(time(NULL));
   verify_expr(argc >= 2, "require selection; 1 == brute force, 2 == random rnas");
   std::string choice = argv[1];

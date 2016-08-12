@@ -6,10 +6,68 @@ namespace memerna {
 namespace {
 const int BUF_SIZE = 1024;
 const uint32_t CRC_MAGIC = 0xEDB88320;
+
+std::string SerialiseEnergyModel() {
+  std::string data;
+
+  static_assert(sizeof(energy_t) == 4, "Assumes size of energy_t is 4 bytes");
+  // Need to do this to handle endianess.
+#define APPEND_DATA(d) \
+  do { \
+    auto dp = reinterpret_cast<const energy_t*>(&d); \
+    for (int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
+      data += dp[i] & 0xFF; \
+      data += (dp[i] >> 8) & 0xFF; \
+      data += (dp[i] >> 16) & 0xFF; \
+      data += (dp[i] >> 24) & 0xFF; \
+    } \
+  } while (0)
+
+  APPEND_DATA(stacking_e);
+  APPEND_DATA(terminal_e);
+  APPEND_DATA(internal_init);
+  APPEND_DATA(internal_1x1);
+  APPEND_DATA(internal_1x2);
+  APPEND_DATA(internal_2x2);
+  APPEND_DATA(internal_2x3_mismatch);
+  APPEND_DATA(internal_other_mismatch);
+  APPEND_DATA(internal_asym);
+  APPEND_DATA(internal_augu_penalty);
+  APPEND_DATA(internal_mismatch_1xk);
+  APPEND_DATA(bulge_init);
+  APPEND_DATA(bulge_special_c);
+  APPEND_DATA(hairpin_init);
+  APPEND_DATA(hairpin_uu_ga_first_mismatch);
+  APPEND_DATA(hairpin_gg_first_mismatch);
+  APPEND_DATA(hairpin_special_gu_closure);
+  APPEND_DATA(hairpin_c3_loop);
+  APPEND_DATA(hairpin_all_c_a);
+  APPEND_DATA(hairpin_all_c_b);
+
+  for (const auto& v : hairpin_e) {
+    data += v.first;
+    APPEND_DATA(v.second);
+  }
+
+  APPEND_DATA(multiloop_hack_a);
+  APPEND_DATA(multiloop_hack_b);
+  APPEND_DATA(multiloop_t99_a);
+  APPEND_DATA(multiloop_t99_b);
+  APPEND_DATA(multiloop_t99_c);
+  APPEND_DATA(dangle5_e);
+  APPEND_DATA(dangle3_e);
+  APPEND_DATA(coax_mismatch_non_contiguous);
+  APPEND_DATA(coax_mismatch_wc_bonus);
+  APPEND_DATA(coax_mismatch_gu_bonus);
+  APPEND_DATA(augu_penalty);
+#undef APPEND_DATA
+
+  return data;
 }
 
+}
 
-void Init() {
+void LoadEnergyModelFromDataDir() {
   // Stacking interaction data.
   parsing::Parse2x2FromFile("data/stacking.data", stacking_e);
 
@@ -37,6 +95,56 @@ void Init() {
 
   // Other misc data.
   parsing::ParseMiscDataFromFile("data/misc.data");
+}
+
+void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
+  verify_expr(min_energy <= max_energy, "Min energy must be <= max energy")
+  static_assert(sizeof(energy_t) == 4, "Assumes size of energy_t is 4 bytes");
+#define RANDOMISE_DATA(d) \
+  do { \
+    auto dp = reinterpret_cast<energy_t*>(&d); \
+    for (int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
+      dp[i] = rand() % (max_energy - min_energy + 1) + min_energy; \
+    } \
+  } while (0)
+
+  RANDOMISE_DATA(stacking_e);
+  RANDOMISE_DATA(terminal_e);
+  RANDOMISE_DATA(internal_init);
+  RANDOMISE_DATA(internal_1x1);
+  RANDOMISE_DATA(internal_1x2);
+  RANDOMISE_DATA(internal_2x2);
+  RANDOMISE_DATA(internal_2x3_mismatch);
+  RANDOMISE_DATA(internal_other_mismatch);
+  RANDOMISE_DATA(internal_asym);
+  RANDOMISE_DATA(internal_augu_penalty);
+  RANDOMISE_DATA(internal_mismatch_1xk);
+  RANDOMISE_DATA(bulge_init);
+  RANDOMISE_DATA(bulge_special_c);
+  RANDOMISE_DATA(hairpin_init);
+  RANDOMISE_DATA(hairpin_uu_ga_first_mismatch);
+  RANDOMISE_DATA(hairpin_gg_first_mismatch);
+  RANDOMISE_DATA(hairpin_special_gu_closure);
+  RANDOMISE_DATA(hairpin_c3_loop);
+  RANDOMISE_DATA(hairpin_all_c_a);
+  RANDOMISE_DATA(hairpin_all_c_b);
+
+  for (auto& v : hairpin_e) {
+    RANDOMISE_DATA(v.second);
+  }
+
+  RANDOMISE_DATA(multiloop_hack_a);
+  RANDOMISE_DATA(multiloop_hack_b);
+  RANDOMISE_DATA(multiloop_t99_a);
+  RANDOMISE_DATA(multiloop_t99_b);
+  RANDOMISE_DATA(multiloop_t99_c);
+  RANDOMISE_DATA(dangle5_e);
+  RANDOMISE_DATA(dangle3_e);
+  RANDOMISE_DATA(coax_mismatch_non_contiguous);
+  RANDOMISE_DATA(coax_mismatch_wc_bonus);
+  RANDOMISE_DATA(coax_mismatch_gu_bonus);
+  RANDOMISE_DATA(augu_penalty);
+#undef RANDOMISE_DATA
 }
 
 std::string sgetline(FILE* fp) {
@@ -84,54 +192,7 @@ uint32_t Crc32(const std::string& data) {
 
 
 uint32_t EnergyModelChecksum() {
-  std::string data;
-
-#define APPEND_DATA(d) \
-  do { \
-    const char* dp = reinterpret_cast<const char*>(&d); \
-    data.insert(data.end(), dp, dp + sizeof(d)); \
-  } while (0)
-
-  APPEND_DATA(stacking_e);
-  APPEND_DATA(terminal_e);
-  APPEND_DATA(internal_init);
-  APPEND_DATA(internal_1x1);
-  APPEND_DATA(internal_1x2);
-  APPEND_DATA(internal_2x2);
-  APPEND_DATA(internal_2x3_mismatch);
-  APPEND_DATA(internal_other_mismatch);
-  APPEND_DATA(internal_asym);
-  APPEND_DATA(internal_augu_penalty);
-  APPEND_DATA(internal_mismatch_1xk);
-  APPEND_DATA(bulge_init);
-  APPEND_DATA(bulge_special_c);
-  APPEND_DATA(hairpin_init);
-  APPEND_DATA(hairpin_uu_ga_first_mismatch);
-  APPEND_DATA(hairpin_gg_first_mismatch);
-  APPEND_DATA(hairpin_special_gu_closure);
-  APPEND_DATA(hairpin_c3_loop);
-  APPEND_DATA(hairpin_all_c_a);
-  APPEND_DATA(hairpin_all_c_b);
-
-  for (const auto& v : hairpin_e) {
-    data += v.first;
-    APPEND_DATA(v.second);
-  }
-
-  APPEND_DATA(multiloop_hack_a);
-  APPEND_DATA(multiloop_hack_b);
-  APPEND_DATA(multiloop_t99_a);
-  APPEND_DATA(multiloop_t99_b);
-  APPEND_DATA(multiloop_t99_c);
-  APPEND_DATA(dangle5_e);
-  APPEND_DATA(dangle3_e);
-  APPEND_DATA(coax_mismatch_non_contiguous);
-  APPEND_DATA(coax_mismatch_wc_bonus);
-  APPEND_DATA(coax_mismatch_gu_bonus);
-  APPEND_DATA(augu_penalty);
-#undef APPEND_DATA
-
-  return Crc32(data);
+  return Crc32(SerialiseEnergyModel());
 }
 
 }

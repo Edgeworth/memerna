@@ -7,6 +7,7 @@ namespace fold {
 enum {
   P,  // For the paired array.
   U,  // For the unpaired array.
+  U2, // Contains at least two branches.
   U_WC,  // Unpaired but must start with a branch not involved in a CTD interaction that is not GU.
   U_GU,  // Unpaired but must start with a branch not involved in a CTD interaction that is GU.
   U_RCOAX,  // Unpaired but must start with a branch involved in a right coaxial stack - includes energy for it.
@@ -25,7 +26,7 @@ enum {
   do { \
     energy_t macro_upd_value_ = (value); \
     if (macro_upd_value_ < CAP_E && macro_upd_value_ < arr[sz][st][a]) { \
-      /* printf("Upd %d %d %d %d => %d " #value "\n", sz, st, a, arr[sz][st][a], macro_upd_value_);*/ \
+      /*printf("Upd %d %d %d %d => %d " #value "\n", st, en, a, arr[sz][st][a], macro_upd_value_);*/ \
       arr[sz][st][a] = macro_upd_value_; \
     } \
   } while (0)
@@ -71,6 +72,16 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
+
+        // No stacking case.
+        UPDATE_CACHE(P, base_branch_cost + arr[sz - 2][st + 1][U2]);
+        // (3<   ><   >) 3'
+        UPDATE_CACHE(P, base_branch_cost + arr[sz - 3][st + 2][U2]+  dangle3_e[stb][st1b][enb]);
+        // (<   ><   >5) 5'
+        UPDATE_CACHE(P, base_branch_cost + arr[sz - 3][st + 1][U2] + dangle5_e[stb][en1b][enb]);
+        // (.<   ><   >.) Terminal mismatch
+        UPDATE_CACHE(P, base_branch_cost + arr[sz - 4][st + 2][U2] + terminal_e[stb][st1b][en1b][enb]);
+
         for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - HAIRPIN_MIN_SZ; ++lpivsz) {
           int rpivsz = sz - lpivsz - 2;
           // Paired coaxial stacking cases:
@@ -84,10 +95,6 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           //   skip C bases on left of right branch, D bases on right of right branch.
           auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][P] + multiloop_hack_b +
                                energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][U];
-          auto l_l00r01_cost = base_branch_cost + arr[lpivsz][st + 1][P] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][U];
-          auto l_l10r00_cost = base_branch_cost + arr[lpivsz - 1][st + 2][P] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][U];
           auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][P] + multiloop_hack_b +
                                energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][U];
           auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][P] + multiloop_hack_b +
@@ -100,8 +107,6 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][U] + multiloop_hack_b +
                                energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][P];
 
-          // No stacking case. Not canonical TODO switch to U_ST?
-          UPDATE_CACHE(P, base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz][st + 1 + lpivsz][U]);
           // (.(   )   .) Left left coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
           UPDATE_CACHE(P, l_l10r01_cost + outer_coax);
@@ -117,19 +122,15 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           UPDATE_CACHE(P, l_l00r00_cost + stacking_e[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(P, r_l00r00_cost + stacking_e[stb][prb][en1b][enb]);
-          // (3(   )   ) 3'
-          UPDATE_CACHE(P, l_l10r00_cost + dangle3_e[stb][st1b][enb]);
-          // ((   )   5) 5'
-          UPDATE_CACHE(P, l_l00r01_cost + dangle5_e[stb][en1b][enb]);
-          // (.(   )   .) Terminal mismatch
-          UPDATE_CACHE(P, l_l10r01_cost + terminal_e[stb][st1b][en1b][enb]);
         }
       }
 
       // Update unpaired.
       // Choose |st| to be unpaired.
-      if (sz)
+      if (sz) {
         UPDATE_CACHE(U, arr[sz - 1][st + 1][U]);
+        UPDATE_CACHE(U2, arr[sz - 1][st + 1][U2]);
+      }
       // Pair here.
       UPDATE_CACHE(U, arr[sz][st][P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
       for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
@@ -146,6 +147,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         auto right_unpaired = std::min(arr[rpivsz][st + lpivsz][U], 0);
 
         // (   )<   > - U, U_WC?, U_GU?
+        UPDATE_CACHE(U2, base00 + arr[rpivsz][st + lpivsz][U]);
         auto val = base00 + right_unpaired;
         UPDATE_CACHE(U, val);
         if (IsGu(stb, pb))
@@ -155,16 +157,23 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
 
         // (   )3<   > 3' - U
         UPDATE_CACHE(U, base01 + dangle3_e[pl1b][pb][stb] + right_unpaired);
+        UPDATE_CACHE(U2, base01 + dangle3_e[pl1b][pb][stb] + arr[rpivsz][st + lpivsz][U]);
         // 5(   )<   > 5' - U
         UPDATE_CACHE(U, base10 + dangle5_e[pb][stb][st1b] + right_unpaired);
+        UPDATE_CACHE(U2, base10 + dangle5_e[pb][stb][st1b] + arr[rpivsz][st + lpivsz][U]);
         // .(   ).<   > Terminal mismatch - U
         UPDATE_CACHE(U, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
+        UPDATE_CACHE(U2, base11 + terminal_e[pl1b][pb][stb][st1b] + arr[rpivsz][st + lpivsz][U]);
         // .(   ).<(   ) > Left coax - U
-        UPDATE_CACHE(U, base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b) +
-                        std::min(arr[rpivsz][st + lpivsz][U_WC], arr[rpivsz][st + lpivsz][U_GU]));
+        val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b) +
+              std::min(arr[rpivsz][st + lpivsz][U_WC], arr[rpivsz][st + lpivsz][U_GU]);
+        UPDATE_CACHE(U, val);
+        UPDATE_CACHE(U2, val);
 
         // (   ).<(   ). > Right coax forward and backward
-        UPDATE_CACHE(U, base01 + arr[rpivsz][st + lpivsz][U_RCOAX]);
+        val =  base01 + arr[rpivsz][st + lpivsz][U_RCOAX];
+        UPDATE_CACHE(U, val);
+        UPDATE_CACHE(U2, val);
         if (st > 0)
           UPDATE_CACHE(U_RCOAX, base01 + energy::MismatchMediatedCoaxialEnergy(
               pl1b, pb, r[st - 1], stb) + right_unpaired);
@@ -173,9 +182,14 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         if (rpivsz > 0) {
           auto pr1b = r[st + lpivsz];
           // (   )<(   ) > Flush coax - U
-          UPDATE_CACHE(U, base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[rpivsz][st + lpivsz][U_WC]);
-          if (pr1b == G || pr1b == U)
-            UPDATE_CACHE(U, base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][U_GU]);
+          val = base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[rpivsz][st + lpivsz][U_WC];
+          UPDATE_CACHE(U, val);
+          UPDATE_CACHE(U2, val);
+          if (pr1b == G || pr1b == U) {
+            val = base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][U_GU];
+            UPDATE_CACHE(U, val);
+            UPDATE_CACHE(U2, val);
+          }
         }
       }
 
@@ -280,16 +294,34 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       }
 
       auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
+
+      // (<   ><    >)
+      if (base_branch_cost + arr[sz - 2][st + 1][U2] == arr[sz][st][P]) {
+        q.emplace(sz - 2, st + 1, U2);
+        goto loopend;
+      }
+      // (3<   ><   >) 3'
+      if (base_branch_cost + arr[sz - 3][st + 2][U2] +  dangle3_e[stb][st1b][enb] == arr[sz][st][P]) {
+        q.emplace(sz - 3, st + 2, U2);
+        goto loopend;
+      }
+      // (<   ><   >5) 5'
+      if (base_branch_cost + arr[sz - 3][st + 1][U2] + dangle5_e[stb][en1b][enb] == arr[sz][st][P]) {
+        q.emplace(sz - 3, st + 1, U2);
+        goto loopend;
+      }
+      // (.<   ><   >.) Terminal mismatch
+      if (base_branch_cost + arr[sz - 4][st + 2][U2] + terminal_e[stb][st1b][en1b][enb] == arr[sz][st][P]) {
+        q.emplace(sz - 4, st + 2, U2);
+        goto loopend;
+      }
+
       for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - HAIRPIN_MIN_SZ; ++lpivsz) {
         auto rpivsz = sz - lpivsz - 2;
         base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
 
         auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][P] + multiloop_hack_b +
                              energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][U];
-        auto l_l00r01_cost = base_branch_cost + arr[lpivsz][st + 1][P] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][U];
-        auto l_l10r00_cost = base_branch_cost + arr[lpivsz - 1][st + 2][P] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][U];
         auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][P] + multiloop_hack_b +
                              energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][U];
         auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][P] + multiloop_hack_b +
@@ -301,14 +333,6 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
                              energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][P];
         auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][U] + multiloop_hack_b +
                              energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][P];
-
-        auto val = base_branch_cost + arr[lpivsz][st + 1][U] + arr[rpivsz][st + 1 + lpivsz][U];
-        if (val == arr[sz][st][P]) {
-          q.emplace(lpivsz, st + 1, U);
-          q.emplace(rpivsz, st + 1 + lpivsz, U);
-          goto loopend;
-        }
-
         // (.(   )   .) Left left coax - P
         auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
         if (l_l10r01_cost + outer_coax == arr[sz][st][P]) {
@@ -348,33 +372,15 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           q.emplace(rpivsz, st + 1 + lpivsz, P);
           goto loopend;
         }
-        // (3(   )   ) 3'
-        if (l_l10r00_cost + dangle3_e[stb][st1b][enb] == arr[sz][st][P]) {
-          q.emplace(lpivsz - 1, st + 2, P);
-          q.emplace(rpivsz, st + 1 + lpivsz, U);
-          goto loopend;
-        }
-        // ((   )   5) 5'
-        if (l_l00r01_cost + dangle5_e[stb][en1b][enb] == arr[sz][st][P]) {
-          q.emplace(lpivsz, st + 1, P);
-          q.emplace(rpivsz - 1, st + 1 + lpivsz, U);
-          goto loopend;
-        }
-        // (.(   )   .) Terminal mismatch
-        if (l_l10r01_cost + terminal_e[stb][st1b][en1b][enb] == arr[sz][st][P]) {
-          q.emplace(lpivsz - 1, st + 2, P);
-          q.emplace(rpivsz - 1, st + 1 + lpivsz, U);
-          goto loopend;
-        }
       }
     } else {
       // Unpaired.
-      if (sz && arr[sz - 1][st + 1][U] == arr[sz][st][U]) {
-        q.emplace(sz - 1, st + 1, U);
+      if (sz && (a == U || a == U2) && arr[sz - 1][st + 1][a] == arr[sz][st][a]) {
+        q.emplace(sz - 1, st + 1, a);
         goto loopend;
       }
       // Pair here.
-      if (arr[sz][st][P] + multiloop_hack_b + energy::AuGuPenalty(st, en) == arr[sz][st][U]) {
+      if (a == U && arr[sz][st][P] + multiloop_hack_b + energy::AuGuPenalty(st, en) == arr[sz][st][U]) {
         q.emplace(sz, st, P);
         goto loopend;
       }
@@ -390,65 +396,76 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         auto base01 = arr[lpivsz - 1][st][P] + energy::AuGuPenalty(st, st + lpivsz - 2) + multiloop_hack_b;
         auto base10 = arr[lpivsz - 1][st + 1][P] + energy::AuGuPenalty(st + 1, st + lpivsz - 1) + multiloop_hack_b;
         auto base11 = arr[lpivsz - 2][st + 1][P] + energy::AuGuPenalty(st + 1, st + lpivsz - 2) + multiloop_hack_b;
-        // Min is for either placing another unpaired or leaving it as nothing.
-        auto right_unpaired = std::min(arr[rpivsz][st + lpivsz][U], 0);
 
-        // (   )<   > - U, U_WC?, U_GU?
+        // Min is for either placing another unpaired or leaving it as nothing.
+        // If we're at U2, don't allow leaving as nothing.
+        auto right_unpaired = arr[rpivsz][st + lpivsz][U];
+        if (a != U2)
+          right_unpaired = std::min(right_unpaired, 0);
+
+        // Check a == U_RCOAX:
+        // (   ).<( ** ). > Right coax backward
+        if (a == U_RCOAX) {
+          if (st > 0 && base01 + energy::MismatchMediatedCoaxialEnergy(
+              pl1b, pb, r[st - 1], stb) + right_unpaired == arr[sz][st][U_RCOAX]) {
+            q.emplace(lpivsz - 1, st, P);
+            if (right_unpaired)
+              q.emplace(rpivsz, st + lpivsz, U);
+            goto loopend;
+
+          }
+          continue;
+        }
+
+        // (   )<   > - U, U2, U_WC?, U_GU?
         if (base00 + right_unpaired == arr[sz][st][a]) {
           q.emplace(lpivsz, st, P);
           assert((a != U_WC || IsWatsonCrick(stb, pb)) && (a != U_GU || IsGu(stb, pb)));
-          if (right_unpaired)
+          if (a == U2 || right_unpaired)
             q.emplace(rpivsz, st + lpivsz, U);
           goto loopend;
         }
 
-        // (   ).<( ** ). > Right coax backward
-        if (a == U_RCOAX && st > 0 && base01 + energy::MismatchMediatedCoaxialEnergy(
-            pl1b, pb, r[st - 1], stb) + right_unpaired == arr[sz][st][U_RCOAX]) {
+        // The rest of the cases are for U and U2.
+        if (a != U && a != U2)
+          continue;
+
+        // (   )3<   > 3' - U, U2
+        if (base01 + dangle3_e[pl1b][pb][stb] + right_unpaired == arr[sz][st][a]) {
           q.emplace(lpivsz - 1, st, P);
-          if (right_unpaired)
+          if (a == U2 || right_unpaired)
             q.emplace(rpivsz, st + lpivsz, U);
           goto loopend;
         }
-
-        assert(a == U);
-
-        // (   )3<   > 3' - U
-        if (base01 + dangle3_e[pl1b][pb][stb] + right_unpaired == arr[sz][st][U]) {
-          q.emplace(lpivsz - 1, st, P);
-          if (right_unpaired)
-            q.emplace(rpivsz, st + lpivsz, U);
-          goto loopend;
-        }
-        // 5(   )<   > 5' - U
-        if (base10 + dangle5_e[pb][stb][st1b] + right_unpaired == arr[sz][st][U]) {
+        // 5(   )<   > 5' - U, U2
+        if (base10 + dangle5_e[pb][stb][st1b] + right_unpaired == arr[sz][st][a]) {
           q.emplace(lpivsz - 1, st + 1, P);
-          if (right_unpaired)
+          if (a == U2 || right_unpaired)
             q.emplace(rpivsz, st + lpivsz, U);
           goto loopend;
         }
-        // .(   ).<   > Terminal mismatch - U
-        if (base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired == arr[sz][st][U]) {
+        // .(   ).<   > Terminal mismatch - U, U2
+        if (base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired == arr[sz][st][a]) {
           q.emplace(lpivsz - 2, st + 1, P);
-          if (right_unpaired)
+          if (a == U2 || right_unpaired)
             q.emplace(rpivsz, st + lpivsz, U);
           goto loopend;
         }
-        // .(   ).<(   ) > Left coax - U
+        // .(   ).<(   ) > Left coax - U, U2
         auto val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b);
-        if (val + arr[rpivsz][st + lpivsz][U_WC] == arr[sz][st][U]) {
+        if (val + arr[rpivsz][st + lpivsz][U_WC] == arr[sz][st][a]) {
           q.emplace(lpivsz - 2, st + 1, P);
           q.emplace(rpivsz, st + lpivsz, U_WC);
           goto loopend;
         }
-        if (val + arr[rpivsz][st + lpivsz][U_GU] == arr[sz][st][U]) {
+        if (val + arr[rpivsz][st + lpivsz][U_GU] == arr[sz][st][a]) {
           q.emplace(lpivsz - 2, st + 1, P);
           q.emplace(rpivsz, st + lpivsz, U_GU);
           goto loopend;
         }
 
-        // (   ).<(   ). > Right coax forward
-        if (base01 + arr[rpivsz][st + lpivsz][U_RCOAX] == arr[sz][st][U]) {
+        // (   ).<(   ). > Right coax forward - U, U2
+        if (base01 + arr[rpivsz][st + lpivsz][U_RCOAX] == arr[sz][st][a]) {
           q.emplace(lpivsz - 1, st, P);
           q.emplace(rpivsz, st + lpivsz, U_RCOAX);
           goto loopend;
@@ -457,14 +474,14 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         // There has to be remaining bases to even have a chance at these cases.
         if (rpivsz > 0) {
           auto pr1b = r[st + lpivsz];
-          // (   )<(   ) > Flush coax - U
-          if (base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[rpivsz][st + lpivsz][U_WC] == arr[sz][st][U]) {
+          // (   )<(   ) > Flush coax - U, U2
+          if (base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[rpivsz][st + lpivsz][U_WC] == arr[sz][st][a]) {
             q.emplace(lpivsz, st, P);
             q.emplace(rpivsz, st + lpivsz, U_WC);
             goto loopend;
           }
           if ((pr1b == G || pr1b == U) &&
-              base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][U_GU] == arr[sz][st][U]) {
+              base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][U_GU] == arr[sz][st][a]) {
             q.emplace(lpivsz, st, P);
             q.emplace(rpivsz, st + lpivsz, U_GU);
           }
