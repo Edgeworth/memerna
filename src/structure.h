@@ -46,7 +46,7 @@ private:
 
 class HairpinLoop : public Structure {
 public:
-  HairpinLoop(int st, int en) : st(st), en(en) {}
+  HairpinLoop(int _st, int _en) : st(_st), en(_en) {}
 
   void AddBranch(std::unique_ptr<Structure>) {
     assert(false);
@@ -59,7 +59,7 @@ private:
 
 class InternalLoop : public Structure {
 public:
-  InternalLoop(int ost, int oen, int ist, int ien) : ost(ost), oen(oen), ist(ist), ien(ien) {}
+  InternalLoop(int _ost, int _oen, int _ist, int _ien) : ost(_ost), oen(_oen), ist(_ist), ien(_ien) {}
 
   void AddBranch(std::unique_ptr<Structure> b) {
     assert(branches.empty());
@@ -90,7 +90,7 @@ struct ctd_t {
 
 class MultiLoop : public Structure {
 public:
-  MultiLoop(int st, int en) : st(st), en(en) {}
+  MultiLoop(int _st, int _en) : st(_st), en(_en) {}
 
 
   std::string ShortDesc();
@@ -101,7 +101,7 @@ private:
 
 class Stacking : public Structure {
 public:
-  Stacking(int st, int en) : st(st), en(en) {}
+  Stacking(int _st, int _en) : st(_st), en(_en) {}
 
   void AddBranch(std::unique_ptr<Structure> b) {
     assert(branches.empty());

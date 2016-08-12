@@ -7,18 +7,16 @@ Zuker optimisation ideas:
 -- optimised versions and easy to understand versions
 - Vectorisation (SSE)
 - Can remove some cache updates since negatives in turner model, etc.
+- Sliding window, reduce memory usage - needs st en not sz st?
 
-
-- Energy model hash computation
 - Randomised energy model
 -- Plus comparison to rnastructure / rnark
-- Coaxial stacking, etc for Zuker
 - Lyngso optimisation
 - Sparse folding
 - Speed up internal loops somehow
-- Move AUGU_PENALTY to global variable not constant
 - Bring examples into tests
 - American fuzzy lop?
 - Remove COMPUTE_CTDS macro
 - Incorporate USE_HACK_MODEL into energy hash
 - Use energy hash in tests.
+- Update to use new version of rnark, bring into extern.

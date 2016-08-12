@@ -15,7 +15,7 @@ std::string SerialiseEnergyModel() {
 #define APPEND_DATA(d) \
   do { \
     auto dp = reinterpret_cast<const energy_t*>(&d); \
-    for (int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
       data += dp[i] & 0xFF; \
       data += (dp[i] >> 8) & 0xFF; \
       data += (dp[i] >> 16) & 0xFF; \
@@ -98,12 +98,12 @@ void LoadEnergyModelFromDataDir() {
 }
 
 void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
-  verify_expr(min_energy <= max_energy, "Min energy must be <= max energy")
+  verify_expr(min_energy <= max_energy, "Min energy must be <= max energy");
   static_assert(sizeof(energy_t) == 4, "Assumes size of energy_t is 4 bytes");
 #define RANDOMISE_DATA(d) \
   do { \
     auto dp = reinterpret_cast<energy_t*>(&d); \
-    for (int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
       dp[i] = rand() % (max_energy - min_energy + 1) + min_energy; \
     } \
   } while (0)

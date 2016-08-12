@@ -9,7 +9,7 @@ include(FindMSan)
 include(FindThreads)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wshadow -pedantic")
 set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_MSAN "${CMAKE_CXX_FLAGS_MSAN}  -march=native -O3")
 set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
@@ -29,7 +29,7 @@ add_executable(fuzz src/programs/fuzz.cpp)
 
 add_subdirectory(lib/gtest)
 enable_testing()
-add_executable(run_tests ${TEST_SOURCE} ${MEMERNA_SOURCE})
+add_executable(run_tests ${TEST_SOURCE})
 
 target_link_libraries(run_tests memerna Threads::Threads gtest)
 target_link_libraries(compute_energy memerna)

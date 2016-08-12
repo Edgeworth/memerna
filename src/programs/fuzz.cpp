@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cassert>
 #include <random>
+#include <chrono>
 #include "base.h"
 #include "parsing.h"
 #include "fold.h"
@@ -69,10 +70,16 @@ int main(int argc, char* argv[]) {
       variance = atoi(argv[3]);
     verify_expr(base_len > 0, "invalid length");
     verify_expr(variance >= 0, "invalid variance");
+
+    auto start_time = std::chrono::steady_clock::now();
     for (int i = 0; ; ++i) {
       int length = base_len;
       if (variance) length += rand() % variance;
-      if (i % 10000 == 0) printf("Fuzzed %d RNA\n", i);
+      if (std::chrono::duration_cast<std::chrono::seconds>(
+          std::chrono::steady_clock::now() - start_time).count() > 10.0) {
+        printf("Fuzzed %d RNA\n", i);
+        start_time = std::chrono::steady_clock::now();
+      }
       FuzzRandomRna(length);
     }
   } else {
