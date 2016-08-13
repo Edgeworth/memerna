@@ -12,6 +12,7 @@ namespace memerna {
 namespace bridge {
 
 Rnark::Rnark(const std::string& data_path) : model(data_path) {
+  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
   model.SetMLParams(93, -6, 0, 0, 999999);
 }
 
@@ -45,7 +46,9 @@ RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) {
 }
 
 Rnastructure::Rnastructure(const std::string& data_path) :
-    data(librnary::LoadDatatable(data_path)) {}
+    data(librnary::LoadDatatable(data_path)) {
+  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
+}
 
 RnaPackage::results_t Rnastructure::Efn(const folded_rna_t& frna, bool verbose) {
   auto structure = librnary::LoadStructure(
@@ -66,6 +69,7 @@ RnaPackage::results_t Rnastructure::Fold(const rna_t& rna, bool verbose) {
 }
 
 Memerna::Memerna(const std::string& data_path) {
+  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
   LoadEnergyModelFromDataDir(data_path);
 }
 

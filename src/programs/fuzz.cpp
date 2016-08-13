@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     verify_expr(variance >= 0, "invalid variance");
 
     auto start_time = std::chrono::steady_clock::now();
-    for (int i = 0; ; ++i) {
+    for (int i = 0;; ++i) {
       int length = base_len;
       if (variance) length += rand() % variance;
       if (std::chrono::duration_cast<std::chrono::seconds>(

@@ -76,7 +76,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         // No stacking case.
         UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 2][st + 1][DP_U2]);
         // (3<   ><   >) 3'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 3][st + 2][DP_U2]+  dangle3_e[stb][st1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 3][st + 2][DP_U2] + dangle3_e[stb][st1b][enb]);
         // (<   ><   >5) 5'
         UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 3][st + 1][DP_U2] + dangle5_e[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
@@ -94,18 +94,18 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           //   skip A bases on left of left branch, B bases on right of left branch
           //   skip C bases on left of right branch, D bases on right of right branch.
           auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_P] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
+              energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
           auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
+              energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
           auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
+              energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
 
           auto r_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
+              energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
           auto r_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
+              energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
           auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-                               energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
+              energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
 
           // (.(   )   .) Left left coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
@@ -166,12 +166,12 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         UPDATE_CACHE(DP_U2, base11 + terminal_e[pl1b][pb][stb][st1b] + arr[rpivsz][st + lpivsz][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b) +
-              std::min(arr[rpivsz][st + lpivsz][DP_U_WC], arr[rpivsz][st + lpivsz][DP_U_GU]);
+            std::min(arr[rpivsz][st + lpivsz][DP_U_WC], arr[rpivsz][st + lpivsz][DP_U_GU]);
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
 
         // (   ).<(   ). > Right coax forward and backward
-        val =  base01 + arr[rpivsz][st + lpivsz][DP_U_RCOAX];
+        val = base01 + arr[rpivsz][st + lpivsz][DP_U_RCOAX];
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
         if (st > 0)
@@ -302,7 +302,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         goto loopend;
       }
       // (3<   ><   >) 3'
-      if (base_branch_cost + arr[sz - 3][st + 2][DP_U2] +  dangle3_e[stb][st1b][enb] == arr[sz][st][DP_P]) {
+      if (base_branch_cost + arr[sz - 3][st + 2][DP_U2] + dangle3_e[stb][st1b][enb] == arr[sz][st][DP_P]) {
         q.emplace(sz - 3, st + 2, DP_U2);
         goto loopend;
       }
@@ -322,18 +322,18 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
 
         auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_P] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
+            energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
         auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
+            energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
         auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
+            energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
 
         auto r_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
+            energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
         auto r_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
+            energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
         auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
+            energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
         // (.(   )   .) Left left coax - P
         auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
         if (l_l10r01_cost + outer_coax == arr[sz][st][DP_P]) {

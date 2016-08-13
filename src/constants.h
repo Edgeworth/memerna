@@ -16,7 +16,7 @@ const double R = 1.985877534e-3;
 // This is 37 degrees Celsius. Changing this is not a good idea.
 const double T = 310.15;
 // Ninio maximum asymmetry.
-const int NINIO_MAX_ASYM = 3;
+const energy_t NINIO_MAX_ASYM = 30;
 
 // Maximum size of a twoloop.
 const int TWOLOOP_MAX_SZ = 30;

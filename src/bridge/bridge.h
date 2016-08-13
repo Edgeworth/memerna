@@ -9,7 +9,6 @@
 namespace memerna {
 namespace bridge {
 
-
 class RnaPackage {
 public:
   struct results_t {
