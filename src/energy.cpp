@@ -3,12 +3,7 @@
 #include <memory>
 #include "energy.h"
 #include "structure.h"
-
-#ifndef NDEBUG
-#define ELOG(msg, ...) fprintf(stderr, "L%.4d: %s" msg, __LINE__, __func__, __VA_ARGS__)
-#else
-#define ELOG(msg, ...)
-#endif
+#include "constants.h"
 
 namespace memerna {
 namespace energy {
@@ -18,7 +13,7 @@ energy_t HairpinInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
   static_assert(INITIATION_CACHE_SZ > 9, "Need initiation values for up to 9.");
   // Formula: G_init(9) + 1.75 * R * T * ln(n / 9).
-  return energy_t(round(hairpin_init[9] + 10.0 * 1.75 * R * T * log(n / 9.0)));
+  return energy_t(round(hairpin_init[9] + 10.0 * 1.75 * constants::R * constants::T * log(n / 9.0)));
 }
 
 // Indices are inclusive, include the initiating base pair.
@@ -49,7 +44,7 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
 
   // Subtract two for the initiating base pair.
   int length = en - st - 1;
-  if (length < 3) return MAX_E;  // Disallowed by T04.
+  if (length < 3) return constants::MAX_E;  // Disallowed by T04.
   energy_t energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
@@ -100,7 +95,7 @@ energy_t BulgeInitiation(int n) {
   if (n < INITIATION_CACHE_SZ) return bulge_init[n];
   static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
   // Formula: G_init(6) + 1.75 * R * T * ln(n / 6).
-  return energy_t(round(bulge_init[6] + 10.0 * 1.75 * R * T * log(n / 6.0)));
+  return energy_t(round(bulge_init[6] + 10.0 * 1.75 * constants::R * constants::T * log(n / 6.0)));
 }
 
 // Indices are inclusive.
@@ -150,7 +145,7 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
     num_states++;
   for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i)
     num_states++;
-  energy_t states_bonus = -energy_t(round(10.0 * R * T * log(num_states)));
+  energy_t states_bonus = -energy_t(round(10.0 * constants::R * constants::T * log(num_states)));
   if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
   energy += states_bonus;
 
@@ -201,7 +196,7 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
     energy += internal_augu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
-  energy_t asym = std::min(std::abs(toplen - botlen), NINIO_MAX_ASYM) * internal_asym;
+  energy_t asym = std::min(std::abs(toplen - botlen), constants::NINIO_MAX_ASYM) * internal_asym;
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -221,7 +216,6 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
         internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
-
   }
 
   return energy;
@@ -314,8 +308,8 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
 
   // cache[used][i]
   std::vector<int> cache[2] = {
-      std::vector<int>(size_t(N + 1), MAX_E),
-      std::vector<int>(size_t(N + 1), MAX_E)
+      std::vector<int>(size_t(N + 1), constants::MAX_E),
+      std::vector<int>(size_t(N + 1), constants::MAX_E)
   };
   std::vector<std::tuple<bool, int, std::string>> back[2] = {
       std::vector<std::tuple<bool, int, std::string>>(size_t(N + 1), std::make_tuple(false, -1, "")),
@@ -464,10 +458,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
   num_unpaired = en - st - 1 - num_unpaired;
 
   if (exterior_loop) {
-#if COMPUTE_CTDS
     // No initiation for the exterior loop.
     energy += ComputeOptimalCtd(branches, -1, true, s);
-#endif
     num_unpaired += 2;
   } else {
     if (IsAuGu(r[st], r[en])) {
@@ -477,7 +469,6 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     energy_t initiation = MultiloopInitiation(num_unpaired, int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
     energy += initiation;
-#if COMPUTE_CTDS
     branches.push_front(st);
     energy_t a = ComputeOptimalCtd(branches, 0, true, s);
     energy_t b = ComputeOptimalCtd(branches, 0, false, s);
@@ -488,7 +479,6 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     branches.pop_back();
     if (s) (*s)->AddNote("CTDs: %de %de %de %de", a, b, c, d);
     energy += std::min(a, std::min(b, std::min(c, d)));
-#endif
   }
   if (s) (*s)->AddNote("Unpaired: %d, Branches: %d", num_unpaired, int(branches.size() + 1));
 

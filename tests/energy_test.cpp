@@ -1,3 +1,4 @@
+#include <constants.h>
 #include "energy.h"
 #include "globals.h"
 #include "parsing.h"
@@ -72,7 +73,7 @@ TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   EXPECT_EQ(
       stacking_e[G][C][G][C] + stacking_e[C][C][G][G] + BulgeInitiation(1)
       + bulge_special_c + stacking_e[C][G][C][G] + HairpinInitiation(3) -
-      energy_t(round(10.0 * R * T * log(3))),
+      energy_t(round(10.0 * constants::R * constants::T * log(3))),
       ComputeEnergy(kNNDBBulge1));
 
   EXPECT_EQ(
@@ -93,7 +94,7 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
 TEST_F(EnergyTest, NNDBInternalLoopExamples) {
   EXPECT_EQ(
       stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(5) +
-      std::min(1, NINIO_MAX_ASYM) * internal_asym + internal_2x3_mismatch[A][G][G][U] +
+      std::min(1, constants::NINIO_MAX_ASYM) * internal_asym + internal_2x3_mismatch[A][G][G][U] +
       internal_2x3_mismatch[G][G][A][C] + internal_augu_penalty + HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal2x3));
   EXPECT_EQ(
@@ -102,7 +103,7 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
       ComputeEnergy(kNNDBInternal2x2));
   EXPECT_EQ(
       stacking_e[C][A][U][G] + stacking_e[C][G][C][G] + InternalLoopInitiation(6) +
-      std::min(4, NINIO_MAX_ASYM) * internal_asym + internal_augu_penalty + HairpinInitiation(3),
+      std::min(4, constants::NINIO_MAX_ASYM) * internal_asym + internal_augu_penalty + HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal1x5));
 }
 

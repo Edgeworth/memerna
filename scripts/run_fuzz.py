@@ -7,6 +7,8 @@ import run
 from common import read_file
 from scrape import MemeVault
 
+# TODO: get rid of this file.
+
 def gen_seqs(N):
   seqs = []
   for i in range(1 << (2 * N)):

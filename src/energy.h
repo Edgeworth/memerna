@@ -17,13 +17,6 @@ class Structure;
 
 namespace energy {
 
-// N.B. This is for kcal/mol so it's not 8.315.
-const double R = 1.985877534e-3;
-// This is 37 degrees Celsius. Changing this is not a good idea.
-const double T = 310.15;
-// Ninio maximum asymmetry.
-const int NINIO_MAX_ASYM = 3;
-
 inline energy_t AuGuPenalty(int st, int en) {
   return IsAuGu(r[st], r[en]) ? augu_penalty : 0;
 }

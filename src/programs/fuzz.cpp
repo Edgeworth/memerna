@@ -20,15 +20,15 @@ void FuzzRnaOfLength(int length) {
     SetRna(rna);
     energy_t a = fold::Fold();
     energy_t a_efn = energy::ComputeEnergy();
-    std::string a_db = parsing::DotBracketFromPairs(p).c_str();
+    std::string a_db = parsing::PairsToDotBracket(p).c_str();
     energy_t b = fold::FoldBruteForce();
     energy_t b_efn = energy::ComputeEnergy();
-    std::string b_db = parsing::DotBracketFromPairs(p).c_str();
+    std::string b_db = parsing::PairsToDotBracket(p).c_str();
 
     if (a != b || a != a_efn || b != b_efn) {
       printf(
           "Diff. DP: %d (efn %d) != BF: %d (efn %d), on: %s\n%s vs %s\n",
-          a, a_efn, b, b_efn, parsing::StringFromRna(rna).c_str(), a_db.c_str(), b_db.c_str());
+          a, a_efn, b, b_efn, parsing::RnaToString(rna).c_str(), a_db.c_str(), b_db.c_str());
       return;
     }
   }
@@ -45,14 +45,14 @@ void FuzzRandomRna(int length) {
   if (dp != efn) {
     printf(
         "Diff. DP: %d !=  EFN: %d, on:\n  %s\n  %s\n",
-        dp, efn, parsing::StringFromRna(rna).c_str(),
-        parsing::DotBracketFromPairs(p).c_str());
+        dp, efn, parsing::RnaToString(rna).c_str(),
+        parsing::PairsToDotBracket(p).c_str());
     return;
   }
 }
 
 int main(int argc, char* argv[]) {
-  LoadEnergyModelFromDataDir();
+  LoadEnergyModelFromDataDir("data");
   srand(time(NULL));
   verify_expr(argc >= 2, "require selection; 1 == brute force, 2 == random rnas");
   std::string choice = argv[1];
