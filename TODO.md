@@ -16,7 +16,6 @@ Zuker optimisation ideas:
 - Speed up internal loops somehow
 - Bring examples into tests
 - American fuzzy lop?
-- Remove COMPUTE_CTDS macro
 - Incorporate USE_HACK_MODEL into energy hash
 - Use energy hash in tests.
 - Update to use new version of rnark, bring into extern.

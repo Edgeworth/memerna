@@ -71,7 +71,6 @@ class RNAstructure:
     return 'RNAstructure'
 
 
-# TODO: On hold until rnark works.
 class Rnark:
   def __init__(self, loc=None):
     try:
@@ -84,18 +83,20 @@ class Rnark:
 
   def fold(self, rna):
     cwd = os.getcwd()
-    os.chdir(os.path.dirname(rnark_loc))
-    # run_command(os.path.join('.', os.path.basename(rnark_loc)), '1', rna.seq, rna.db)
+    os.chdir(os.path.join(self.loc, 'bin'))
+    benchmark_results, stdout = benchmark_command(
+      fix_path('Memefold'), rna.seq)
     os.chdir(cwd)
+    match = re.search(r'Total energy: (.+)', stdout)
+    energy = float(match.group(1)) / 10.0
+    return energy, benchmark_results, stdout
 
-  def efn(self, rna, logarithmic=False):
+
+  def efn(self, rna):
     cwd = os.getcwd()
     os.chdir(os.path.join(self.loc, 'bin'))
-    flag = '0'
-    if logarithmic:
-      flag = '1'
     benchmark_results, stdout = benchmark_command(
-      fix_path('Memefn'), flag, rna.seq, rna.db())
+      fix_path('Memefn'), rna.seq, rna.db())
     os.chdir(cwd)
     match = re.search(r'Total energy: (.+)', stdout)
     energy = float(match.group(1)) / 10.0

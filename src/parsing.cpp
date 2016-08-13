@@ -3,7 +3,7 @@
 namespace memerna {
 namespace parsing {
 
-rna_t ParseRnaFromString(const std::string& s) {
+rna_t StringToRna(const std::string& s) {
   rna_t rna(s.size());
   for (int i = 0; i < int(s.size()); ++i) {
     rna[i] = CharToBase(s[i]);
@@ -13,10 +13,13 @@ rna_t ParseRnaFromString(const std::string& s) {
 
 folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str) {
   verify_expr(rna_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  rna_t rna = ParseRnaFromString(rna_str);
-  std::vector<int> pairs(rna_str.size(), -1);
+  return {StringToRna(rna_str), DotBracketToPairs(pairs_str)};
+}
+
+std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
+  std::vector<int> pairs(pairs_str.size(), -1);
   std::stack<int> s;
-  for (int i = 0; i < int(rna_str.size()); ++i) {
+  for (int i = 0; i < int(pairs_str.size()); ++i) {
     if (pairs_str[i] == '(') {
       s.push(i);
     } else if (pairs_str[i] == ')') {
@@ -26,10 +29,10 @@ folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& p
       s.pop();
     }
   }
-  return {rna, pairs};
+  return pairs;
 }
 
-std::string DotBracketFromPairs(const std::vector<int>& pairs) {
+std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
   for (int i = 0; i < int(pairs.size()); ++i) {
     if (pairs[i] == -1) continue;
@@ -39,7 +42,7 @@ std::string DotBracketFromPairs(const std::vector<int>& pairs) {
   return s;
 }
 
-std::string StringFromRna(const rna_t& rna) {
+std::string RnaToString(const rna_t& rna) {
   std::string s;
   s.resize(rna.size());
   for (int i = 0; i < int(rna.size()); ++i) {

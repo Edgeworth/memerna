@@ -4,6 +4,9 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 
 ### Building
 
+Run git submodule init and git submodule update to pull in external dependencies.
+Make sure you are on the right branch for them.
+
 ./build.py -t [debug, asan, msan, ubsan, release] -c
 
 Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.

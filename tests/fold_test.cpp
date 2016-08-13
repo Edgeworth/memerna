@@ -8,8 +8,8 @@ namespace fold {
 
 class FoldTest : public testing::Test {
 public:
-  rna_t kStacking = parsing::ParseRnaFromString("GGGGAAACCCC");
-  rna_t kTest = parsing::ParseRnaFromString("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA");
+  rna_t kStacking = parsing::StringToRna("GGGGAAACCCC");
+  rna_t kTest = parsing::StringToRna("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA");
 };
 
 

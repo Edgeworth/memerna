@@ -1,5 +1,6 @@
 #include <stack>
 #include "fold.h"
+#include "array.h"
 
 namespace memerna {
 namespace fold {
@@ -25,7 +26,7 @@ enum {
 #define UPDATE_CACHE(a, value) \
   do { \
     energy_t macro_upd_value_ = (value); \
-    if (macro_upd_value_ < CAP_E && macro_upd_value_ < arr[sz][st][a]) { \
+    if (macro_upd_value_ < constants::CAP_E && macro_upd_value_ < arr[sz][st][a]) { \
       /*printf("Upd %d %d %d %d => %d " #value "\n", st, en, a, arr[sz][st][a], macro_upd_value_);*/ \
       arr[sz][st][a] = macro_upd_value_; \
     } \
@@ -34,7 +35,7 @@ enum {
 #define UPDATE_EXT(a, na, psz, pst, value) \
   do { \
     energy_t macro_upd_value_ = (value) + exterior[en + 1][na]; \
-    if (macro_upd_value_ < CAP_E && macro_upd_value_ < exterior[st][a]) { \
+    if (macro_upd_value_ < constants::CAP_E && macro_upd_value_ < exterior[st][a]) { \
       /* printf("Ext st %d en %d a %d pst %d pen %d na %d %d => %d " #value "\n", st, en, a, pst, pst + psz - 1, na, exterior[st][a], macro_upd_value_); */ \
       exterior[st][a] = macro_upd_value_; \
       exterior_sts[st][a] = std::make_tuple(psz, pst, en + 1, na); \
@@ -46,23 +47,22 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   assert(N > 0);
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
-  assert(arr[N - 1][0][DP_U_WC] == MAX_E);
+  assert(arr[N - 1][0][DP_U_WC] == constants::MAX_E);
 
   // TODO: check bounds
   // TODO: au/gu penalty?
   // sz includes st and en.
-  static_assert(HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
-  for (int sz = HAIRPIN_MIN_SZ + 2; sz <= N; ++sz) {
+  static_assert(constants::HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
+  for (int sz = constants::HAIRPIN_MIN_SZ + 2; sz <= N; ++sz) {
     int en = sz - 1;
     for (int st = 0; st < N - sz + 1; ++st) {
       base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
 
       // Update paired - only if can actually pair.
       if (CanPair(r[st], r[en])) {
-        // Internal loops, bulge loops, and stacking. TODO: Lyngso's
-        // TODO: can reduce the range of these loops.
-        for (int ist = st + 1; ist < en - 1; ++ist) {
-          for (int ien = ist + 1; ien < en; ++ien) {
+        for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
+          for (int ist = st + 1; ist < st + isz + 2; ++ist) {
+            int ien = en - (st + isz - ist) - 2;
             UPDATE_CACHE(DP_P, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
           }
         }
@@ -82,7 +82,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         // (.<   ><   >.) Terminal mismatch
         UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 4][st + 2][DP_U2] + terminal_e[stb][st1b][en1b][enb]);
 
-        for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - HAIRPIN_MIN_SZ; ++lpivsz) {
+        for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - constants::HAIRPIN_MIN_SZ; ++lpivsz) {
           int rpivsz = sz - lpivsz - 2;
           // Paired coaxial stacking cases:
           base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
@@ -133,7 +133,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       }
       // Pair here.
       UPDATE_CACHE(DP_U, arr[sz][st][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
-      for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
+      for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         int rpivsz = sz - lpivsz;
@@ -205,7 +205,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
     exterior[st][EXT] = exterior[st + 1][EXT];
-    for (int sz = HAIRPIN_MIN_SZ + 2; sz < N - st + 1; ++sz) {
+    for (int sz = constants::HAIRPIN_MIN_SZ + 2; sz < N - st + 1; ++sz) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
       int en = st + sz - 1, rem = N - st - sz;
@@ -273,9 +273,9 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
     int sz, st, a;
     std::tie(sz, st, a) = q.top();
     int en = st + sz - 1;
-    assert(sz >= HAIRPIN_MIN_SZ + 2);
+    assert(sz >= constants::HAIRPIN_MIN_SZ + 2);
     auto stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
-    //printf("%d %d %d: %de\n", st, en, a, arr[sz][st][a]);
+//    printf("%d %d %d: %de\n", st, en, a, arr[sz][st][a]);
     q.pop();
     if (a == DP_P) {
       // It's paired, so add it to the folding.
@@ -283,12 +283,12 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       p[en] = st;
 
       // Following largely matches the above DP so look up there for comments.
-      for (int ist = st + 1; ist < en - 1; ++ist) {
-        for (int ien = ist + 1; ien < en; ++ien) {
-          int isz = ien - ist + 1;
-          auto val = energy::TwoLoop(st, en, ist, ien) + arr[isz][ist][DP_P];
+      for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
+        for (int ist = st + 1; ist < st + isz + 2; ++ist) {
+          int ien = en - (st + isz - ist) - 2;
+          auto val = energy::TwoLoop(st, en, ist, ien) + arr[sz - isz - 2][ist][DP_P];
           if (val == arr[sz][st][DP_P]) {
-            q.emplace(isz, ist, DP_P);
+            q.emplace(sz - isz - 2, ist, DP_P);
             goto loopend;
           }
         }
@@ -317,7 +317,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         goto loopend;
       }
 
-      for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - HAIRPIN_MIN_SZ; ++lpivsz) {
+      for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - constants::HAIRPIN_MIN_SZ; ++lpivsz) {
         auto rpivsz = sz - lpivsz - 2;
         base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
 
@@ -387,7 +387,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       }
 
       // Pair here.
-      for (int lpivsz = HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
+      for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         int rpivsz = sz - lpivsz;
@@ -538,10 +538,10 @@ void FoldBruteForceInternal(int idx) {
 
 energy_t FoldBruteForce(std::unique_ptr<structure::Structure>* s) {
   p = std::vector<int>(r.size(), -1);
-  best = MAX_E;
+  best = constants::MAX_E;
   base_pairs.clear();
   for (int st = 0; st < int(r.size()); ++st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
+    for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
       if (CanPair(r[st], r[en]))
         base_pairs.emplace_back(st, en);
     }
