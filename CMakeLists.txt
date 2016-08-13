@@ -3,7 +3,13 @@ cmake_minimum_required(VERSION 3.2)
 project(memerna)
 set(BUILD_SHARED_LIBS ON)
 
+set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+# Always have librnary compiled as release.
+set(CMAKE_BUILD_TYPE Release)
 add_subdirectory("extern/rnark/librnary")
+# Disable warning messages for subprojects.
+set_target_properties(librnary PROPERTIES COMPILE_FLAGS "-w")
+set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FindUBSan)
@@ -20,7 +26,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 file(GLOB MEMERNA_SOURCE "src/*.cpp" "src/*.h")
 file(GLOB BRIDGE_SOURCE "src/bridge/*.cpp" "src/bridge/*.h")
 file(GLOB TEST_SOURCE "tests/*.cpp" "tests/*.h")
-
 message(${CMAKE_CXX_FLAGS})
 
 include_directories(src)

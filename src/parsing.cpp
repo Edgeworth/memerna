@@ -116,7 +116,7 @@ void ParseInternalLoop1x2FromFile(const std::string& filename) {
     base_t g = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 &&
-            e != -1 && f != -1 && g != -1, "expected base");
+        e != -1 && f != -1 && g != -1, "expected base");
     verify_expr(fscanf(fp, " %d ", &internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
   }
   fclose(fp);
@@ -136,7 +136,7 @@ void ParseInternalLoop2x2FromFile(const std::string& filename) {
     base_t h = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 &&
-                    f != -1 && g != -1 && h != -1, "expected base");
+        f != -1 && g != -1 && h != -1, "expected base");
     verify_expr(fscanf(fp, " %d ", &internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
   }
   fclose(fp);

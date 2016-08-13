@@ -1,6 +1,6 @@
+#!/usr/bin/env python3
 import argparse
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -10,59 +10,48 @@ from rna import *
 from scrape import MemeVault
 
 
+def run_harness_efn(loc, program, rnas):
+  prev_dir = os.getcwd()
+  os.chdir(loc)
+  input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
+  benchmark_results, stdout = benchmark_command(
+    os.path.join('build', 'harness'), '-e', program, input=input)
+  os.chdir(prev_dir)
+  energies = [float(i) / 10.0 for i in stdout.split('\n')]
+  return energies, benchmark_results
+
+
+def run_harness_fold(loc, program, rnas):
+  prev_dir = os.getcwd()
+  os.chdir(loc)
+  input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
+  benchmark_results, stdout = benchmark_command(
+    os.path.join('build', 'harness'), '-f', program, input=input)
+  os.chdir(prev_dir)
+  lines = stdout.split('\n')[1::2]
+  energies = [float(i) / 10.0 for i in lines]
+  return energies, benchmark_results
+
+
 class RNAstructure:
   def __init__(self, loc=None):
     try:
       import default_paths
-      loc = loc or default_paths.MILESRNASTRUCTURE_PATH
+      loc = loc or default_paths.MEMERNA_PATH
     except ImportError:
       pass
     assert loc
     self.loc = fix_path(loc)
-    os.putenv('DATAPATH', os.path.join(self.loc, 'data_tables'))
 
   def fold(self, rna):
-    with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
-      prev_dir = os.getcwd()
-      os.chdir(self.loc)
-      f.write(rna.to_seq_file())
-      f.flush()
-      benchmark_results, _ = benchmark_command(
-        os.path.join('build', 'Fold'), '-mfe', f.name, out.name)
-      output = out.read()
-      predicted = RNA.from_any_file(output)
-      os.chdir(prev_dir)
-    return predicted, benchmark_results, output
+    return run_harness_fold(self.loc, '-r', [rna])
 
   def batch_efn(self, rnas):
-    prev_dir = os.getcwd()
-    os.chdir(self.loc)
-    input = ''.join(rna.to_db_file() for rna in rnas)
-    benchmark_results, stdout = benchmark_command(
-      os.path.join('build', 'memefn'), input=input)
-    matches = re.findall(r'^Energy: (.+)$', stdout, re.M)
-    energies = [float(i) for i in matches]
-    os.chdir(prev_dir)
-    return energies, benchmark_results, stdout
+    return run_harness_efn(self.loc, '-r', rnas)
 
-  def efn(self, rna, logarithmic=False):
-    with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
-      f.write(rna.to_ct_file())
-      f.flush()
-      extra_args = ['-w']
-      # Note that not giving this flag doesn't make it logarithmic.
-      # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
-      # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
-      # the fitted -9.
-      if not logarithmic:
-        extra_args.append('-s')
-      benchmark_results, _ = benchmark_command(
-        os.path.join(self.loc, 'build', 'efn2'), *extra_args, f.name, out.name)
-      print(_)
-      output = out.read()
-      match = re.search(r'[eE]nergy = (.+)', output.strip())
-      energy = float(match.group(1))
-    return energy, benchmark_results, output
+  def efn(self, rna):
+    energies, benchmark_results = run_harness_efn(self.loc, '-r', [rna])
+    return energies[0], benchmark_results
 
   def close(self):
     pass
@@ -82,31 +71,47 @@ class Rnark:
     self.loc = fix_path(loc)
 
   def fold(self, rna):
-    cwd = os.getcwd()
-    os.chdir(os.path.join(self.loc, 'bin'))
-    benchmark_results, stdout = benchmark_command(
-      fix_path('Memefold'), rna.seq)
-    os.chdir(cwd)
-    match = re.search(r'Total energy: (.+)', stdout)
-    energy = float(match.group(1)) / 10.0
-    return energy, benchmark_results, stdout
+    return run_harness_fold(self.loc, '-m', [rna])
 
+  def batch_efn(self, rnas):
+    return run_harness_efn(self.loc, '-m', rnas)
 
   def efn(self, rna):
-    cwd = os.getcwd()
-    os.chdir(os.path.join(self.loc, 'bin'))
-    benchmark_results, stdout = benchmark_command(
-      fix_path('Memefn'), rna.seq, rna.db())
-    os.chdir(cwd)
-    match = re.search(r'Total energy: (.+)', stdout)
-    energy = float(match.group(1)) / 10.0
-    return energy, benchmark_results, stdout
+    energies, benchmark_results = run_harness_efn(self.loc, '-m', [rna])
+    return energies[0], benchmark_results
 
   def close(self):
     pass
 
   def __str__(self):
     return 'Rnark'
+
+
+class MemeRNA:
+  def __init__(self, loc=None):
+    try:
+      import default_paths
+      loc = loc or default_paths.MEMERNA_PATH
+    except ImportError:
+      pass
+    assert loc
+    self.loc = fix_path(loc)
+
+  def fold(self, rna):
+    return run_harness_fold(self.loc, '-k', [rna])
+
+  def batch_efn(self, rnas):
+    return run_harness_efn(self.loc, '-k', rnas)
+
+  def efn(self, rna):
+    energies, benchmark_results = run_harness_efn(self.loc, '-k', [rna])
+    return energies[0], benchmark_results
+
+  def close(self):
+    pass
+
+  def __str__(self):
+    return 'MemeRNA'
 
 
 class ViennaRNA:
@@ -130,7 +135,7 @@ class ViennaRNA:
       seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
       predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
-    return predicted, benchmark_results, stdout
+    return predicted, benchmark_results
 
   def efn(self, rna):
     print('Not implemented yet')
@@ -164,7 +169,7 @@ class UNAFold:
         os.path.join(self.loc, 'src', 'hybrid-ss-min'), f.name)
       predicted = RNA.from_any_file(read_file(os.path.splitext(f.name)[0] + '.ct'))
     os.chdir(prev_dir)
-    return predicted, benchmark_results, None
+    return predicted, benchmark_results
 
   def efn(self, rna):
     pass
@@ -174,47 +179,6 @@ class UNAFold:
 
   def __str__(self):
     return 'UNAFold'
-
-
-class MemeRNA:
-  def __init__(self, loc=None):
-    try:
-      import default_paths
-      loc = loc or default_paths.MEMERNA_PATH
-    except ImportError:
-      pass
-    assert loc
-    self.loc = fix_path(loc)
-
-  def fold(self, rna):
-    pass
-
-  def batch_efn(self, rnas):
-    prev_dir = os.getcwd()
-    os.chdir(self.loc)
-    input = ''.join(rna.to_db_file() for rna in rnas)
-    benchmark_results, stdout = benchmark_command(
-      os.path.join('build', 'batch_energy'), input=input)
-    matches = re.findall(r'^Energy: (.+)$', stdout, re.M)
-    energies = [float(i) / 10.0 for i in matches]
-    os.chdir(prev_dir)
-    return energies, benchmark_results, stdout
-
-  def efn(self, rna):
-    prev_dir = os.getcwd()
-    os.chdir(self.loc)
-    benchmark_results, stdout = benchmark_command(
-      os.path.join('build', 'compute_energy'), rna.seq, rna.db())
-    match = re.search(r'^Energy: (.+)$', stdout, re.M)
-    energy = float(match.group(1)) / 10.0
-    os.chdir(prev_dir)
-    return energy, benchmark_results, stdout
-
-  def close(self):
-    pass
-
-  def __str__(self):
-    return 'MemeRNA'
 
 
 def process_benchmark(programs, args):
@@ -242,68 +206,65 @@ def process_benchmark(programs, args):
 
 def process_command(*extra_args):
   parser = argparse.ArgumentParser()
-  parser.add_argument('-f', '--file', type=str)
-  parser.add_argument('-k', '--memevault', type=str)
-  parser.add_argument('--rnastructure-loc')
-  parser.add_argument('--rnark-loc')
+  parser.add_argument('-p', '--path', type=str)
+  parser.add_argument('-kv', '--memevault', type=str)
   parser.add_argument('--viennarna-loc')
   parser.add_argument('--unafold-loc')
   parser.add_argument('--memerna-loc')
-  parser.add_argument('-pr', '--rnastructure', action='store_true')
-  parser.add_argument('-pm', '--rnark', action='store_true')
-  parser.add_argument('-pv', '--viennarna', action='store_true')
-  parser.add_argument('-pu', '--unafold', action='store_true')
-  parser.add_argument('-pk', '--memerna', action='store_true')
-  parser.add_argument('-p', '--predict', action='store_true')
+  parser.add_argument('-r', '--rnastructure', action='store_true')
+  parser.add_argument('-m', '--rnark', action='store_true')
+  parser.add_argument('-v', '--viennarna', action='store_true')
+  parser.add_argument('-u', '--unafold', action='store_true')
+  parser.add_argument('-k', '--memerna', action='store_true')
+  parser.add_argument('-f', '--fold', action='store_true')
   parser.add_argument('-e', '--energy', action='store_true')
   parser.add_argument('-b', '--benchmark', action='store_true')
   parser.add_argument('cmd', type=str, nargs='*')
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
-  if bool(args.predict) + bool(args.energy) + bool(args.benchmark) != 1:
-    parser.error('Exactly one of --predict, --energy, or --benchmark is required.')
+  if bool(args.fold) + bool(args.energy) + bool(args.benchmark) != 1:
+    parser.error('Exactly one of --fold, --energy, or --benchmark is required.')
 
   programs = []
 
-  if args.rnastructure_loc or args.rnastructure:
-    programs.append(RNAstructure(args.rnastructure_loc))
-  if args.rnark_loc or args.rnark:
-    programs.append(Rnark(args.rnark_loc))
-  if args.viennarna_loc or args.viennarna:
+  if args.rnastructure:
+    programs.append(RNAstructure(args.memerna_loc))
+  if args.rnark:
+    programs.append(Rnark(args.memerna_loc))
+  if args.viennarna:
     programs.append(ViennaRNA(args.viennarna_loc))
-  if args.unafold_loc or args.unafold:
+  if args.unafold:
     programs.append(UNAFold(args.unafold_loc))
-  if args.memerna_loc or args.memerna:
+  if args.memerna:
     programs.append(MemeRNA(args.memerna_loc))
 
   if args.benchmark:
     process_benchmark(programs, args)
   else:
-    if args.file:
-      rna = RNA.from_any_file(read_file(args.file))
+    if args.path:
+      rna = RNA.from_any_file(read_file(args.path))
     if args.memevault:
       memevault = MemeVault('archiveii')
       rna = memevault[args.memevault]
 
-
     for program in programs:
-      if args.predict:
+      if args.fold:
         if args.cmd:
           if len(args.cmd) != 1:
             parser.error('Direct specification requires one argument for prediction.')
           seq = args.cmd[0]
           rna = RNA('user', seq, [-1] * len(seq))
-        frna, benchmark_results, output = program.fold(rna)
-        print('Folding %s with %s: %s\n  %s\n%s' % (
-          rna.name, program, frna.db(), benchmark_results, output))
+        frna, benchmark_results = program.fold(rna)
+        print('Folding %s with %s: %s\n  %s\n' % (
+          rna.name, program, frna.db(), benchmark_results))
       if args.energy:
         if args.cmd:
           if len(args.cmd) != 2:
             parser.error('Direct specification requires two arguments for efn.')
           rna = RNA.from_name_seq_db('user', *args.cmd)
-        energy, benchmark_results, output = program.efn(rna)
-        print('Energy of %s with %s: %f\n  %s\n%s' % (
-          rna.name, program, energy, benchmark_results, output))
+        energy, benchmark_results = program.efn(rna)
+        print('Energy of %s with %s: %f\n  %s\n' % (
+          rna.name, program, energy, benchmark_results))
 
   for program in programs:
     program.close()

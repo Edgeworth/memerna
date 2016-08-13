@@ -196,7 +196,7 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
     energy += internal_augu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
-  energy_t asym = std::min(std::abs(toplen - botlen), constants::NINIO_MAX_ASYM) * internal_asym;
+  energy_t asym = std::min(std::abs(toplen - botlen) * internal_asym, constants::NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -207,13 +207,13 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     energy_t mismatch =
         internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+            internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
     energy_t mismatch =
         internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+            internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
   }
@@ -237,7 +237,7 @@ energy_t MultiloopT99Initiation(int num_unpaired, int num_branches) {
   if (num_unpaired > 6)
     return energy_t(round(
         multiloop_t99_a + 6 * multiloop_t99_b +
-        10.0 * 1.1 * log(num_unpaired / 6.0) + multiloop_t99_c * num_branches));
+            10.0 * 1.1 * log(num_unpaired / 6.0) + multiloop_t99_c * num_branches));
   return energy_t(multiloop_t99_a + multiloop_t99_b * num_unpaired + multiloop_t99_c * num_branches);
 }
 
@@ -299,7 +299,7 @@ energy_t MismatchMediatedCoaxialEnergy(
   } while (0)
 
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
-                           std::unique_ptr<structure::Structure>* s) {
+    std::unique_ptr<structure::Structure>* s) {
   int N = int(branches.size());
   int RSZ = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);

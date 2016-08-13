@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <cassert>
 #include "base.h"
 #include "parsing.h"
 #include "structure.h"

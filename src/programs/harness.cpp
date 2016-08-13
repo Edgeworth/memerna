@@ -4,8 +4,6 @@
 #include "argparse.h"
 #include "bridge/bridge.h"
 
-// efn, fold for the three progs + brute fold?
-
 int main(int argc, char* argv[]) {
   memerna::ArgParse argparse({
       {"v", "be verbose (if possible)"},
@@ -31,32 +29,50 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<memerna::bridge::RnaPackage> package;
   if (argparse.HasFlag("r")) {
     package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Rnastructure("extern/rnark/data_tables")));
+        new memerna::bridge::Rnastructure("extern/rnark/data_tables/")));
   } else if (argparse.HasFlag("m")) {
     package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Rnark("extern/rnark/data_tables")));
+        new memerna::bridge::Rnark("extern/rnark/data_tables/")));
   } else {
     package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Memerna("data")));
+        new memerna::bridge::Memerna("data/")));
   }
 
+  const auto& p = argparse.GetPositional();
+  bool read_stdin = p.empty();
+  std::deque<std::string> pos(p.begin(), p.end());
   if (argparse.HasFlag("e")) {
     while (1) {
       std::string seq, db;
-      getline(std::cin, seq);
-      getline(std::cin, db);
-      if (!std::cin) break;
+      if (read_stdin) {
+        getline(std::cin, seq);
+        getline(std::cin, db);
+        if (!std::cin) break;
+      } else {
+        if (pos.empty()) break;
+        verify_expr(pos.size() >= 2, "need even number of positional args");
+        seq = pos.front();
+        pos.pop_front();
+        db = pos.front();
+        pos.pop_front();
+      }
       auto frna = memerna::parsing::ParseDotBracketRna(seq, db);
-      auto res = package->Efn(frna, false);
+      auto res = package->Efn(frna, argparse.HasFlag("v"));
       printf("%d\n%s", res.energy, res.desc.c_str());
     }
   } else {
     while (1) {
       std::string seq;
-      getline(std::cin, seq);
-      if (!std::cin) break;
+      if (read_stdin) {
+        getline(std::cin, seq);
+        if (!std::cin) break;
+      } else {
+        if (pos.empty()) break;
+        seq = pos.front();
+        pos.pop_front();
+      }
       auto rna = memerna::parsing::StringToRna(seq);
-      auto res = package->Fold(rna, false);
+      auto res = package->Fold(rna, argparse.HasFlag("v"));
       printf("%d\n%s\n%s", res.energy,
           memerna::parsing::PairsToDotBracket(res.frna.p).c_str(), res.desc.c_str());
     }
