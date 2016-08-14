@@ -14,8 +14,5 @@ Zuker optimisation ideas:
 - Lyngso optimisation
 - Sparse folding
 - Speed up internal loops somehow
-- Bring examples into tests
 - American fuzzy lop?
 - Incorporate USE_HACK_MODEL into energy hash
-- Use energy hash in tests.
-- Update to use new version of rnark, bring into extern.

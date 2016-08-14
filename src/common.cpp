@@ -1,5 +1,6 @@
 #include "common.h"
 #include "parsing.h"
+#include "constants.h"
 
 namespace memerna {
 
@@ -10,17 +11,11 @@ const uint32_t CRC_MAGIC = 0xEDB88320;
 std::string SerialiseEnergyModel() {
   std::string data;
 
-  static_assert(sizeof(energy_t) == 4, "Assumes size of energy_t is 4 bytes");
-  // Need to do this to handle endianess.
+  // This isn't portable across machines with different endianness but I don't care.
 #define APPEND_DATA(d) \
   do { \
-    auto dp = reinterpret_cast<const energy_t*>(&d); \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
-      data += dp[i] & 0xFF; \
-      data += (dp[i] >> 8) & 0xFF; \
-      data += (dp[i] >> 16) & 0xFF; \
-      data += (dp[i] >> 24) & 0xFF; \
-    } \
+    auto dp = reinterpret_cast<const char*>(&d); \
+    data.insert(data.end(), dp, dp + sizeof(d)); \
   } while (0)
 
   APPEND_DATA(stacking_e);
@@ -60,6 +55,12 @@ std::string SerialiseEnergyModel() {
   APPEND_DATA(coax_mismatch_wc_bonus);
   APPEND_DATA(coax_mismatch_gu_bonus);
   APPEND_DATA(augu_penalty);
+
+  APPEND_DATA(constants::HAIRPIN_MIN_SZ);
+  APPEND_DATA(constants::R);
+  APPEND_DATA(constants::T);
+  APPEND_DATA(constants::NINIO_MAX_ASYM);
+  APPEND_DATA(constants::TWOLOOP_MAX_SZ);
 #undef APPEND_DATA
 
   return data;
