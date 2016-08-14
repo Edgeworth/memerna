@@ -47,9 +47,6 @@ extern std::unordered_map<std::string, energy_t> hairpin_e;
 // Multiloop hack model:
 extern energy_t multiloop_hack_a, multiloop_hack_b;
 
-// Multiloop T99 model:
-extern energy_t multiloop_t99_a, multiloop_t99_b, multiloop_t99_c;
-
 // Dangles:
 // X, G, U
 extern energy_t dangle5_e[4][4][4];

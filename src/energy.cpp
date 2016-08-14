@@ -232,25 +232,8 @@ energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::
   return BulgeEnergy(ost, oen, ist, ien, s);
 }
 
-// 1999 rules.
-energy_t MultiloopT99Initiation(int num_unpaired, int num_branches) {
-  if (num_unpaired > 6)
-    return energy_t(round(
-        multiloop_t99_a + 6 * multiloop_t99_b +
-            10.0 * 1.1 * log(num_unpaired / 6.0) + multiloop_t99_c * num_branches));
-  return energy_t(multiloop_t99_a + multiloop_t99_b * num_unpaired + multiloop_t99_c * num_branches);
-}
-
-energy_t MultiloopHackInitiation(int num_branches) {
+energy_t MultiloopInitiation(int num_branches) {
   return multiloop_hack_a + num_branches * multiloop_hack_b;
-}
-
-energy_t MultiloopInitiation(int num_unpaired, int num_branches) {
-#if USE_HACK_MODEL
-  return MultiloopHackInitiation(num_branches);
-#else
-  return MultiloopT99Initiation(num_unpaired, num_branches);
-#endif
 }
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
@@ -466,7 +449,7 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
       if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
       energy += augu_penalty;
     }
-    energy_t initiation = MultiloopInitiation(num_unpaired, int(branches.size() + 1));
+    energy_t initiation = MultiloopInitiation(int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
     energy += initiation;
     branches.push_front(st);

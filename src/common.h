@@ -9,9 +9,6 @@
 #include <cstring>
 #include <vector>
 
-// Note that changing these might break tests.
-#define USE_HACK_MODEL 1
-
 // Like assert, but can't be disabled.
 #define verify_expr(expr, ...) \
   do { \

@@ -46,9 +46,6 @@ std::string SerialiseEnergyModel() {
 
   APPEND_DATA(multiloop_hack_a);
   APPEND_DATA(multiloop_hack_b);
-  APPEND_DATA(multiloop_t99_a);
-  APPEND_DATA(multiloop_t99_b);
-  APPEND_DATA(multiloop_t99_c);
   APPEND_DATA(dangle5_e);
   APPEND_DATA(dangle3_e);
   APPEND_DATA(coax_mismatch_non_contiguous);
@@ -136,9 +133,6 @@ void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
 
   RANDOMISE_DATA(multiloop_hack_a);
   RANDOMISE_DATA(multiloop_hack_b);
-  RANDOMISE_DATA(multiloop_t99_a);
-  RANDOMISE_DATA(multiloop_t99_b);
-  RANDOMISE_DATA(multiloop_t99_c);
   RANDOMISE_DATA(dangle5_e);
   RANDOMISE_DATA(dangle3_e);
   RANDOMISE_DATA(coax_mismatch_non_contiguous);
