@@ -26,8 +26,6 @@ std::unordered_map<std::string, energy_t> hairpin_e;
 
 energy_t multiloop_hack_a, multiloop_hack_b;
 
-energy_t multiloop_t99_a, multiloop_t99_b, multiloop_t99_c;
-
 energy_t dangle5_e[4][4][4];
 energy_t dangle3_e[4][4][4];
 

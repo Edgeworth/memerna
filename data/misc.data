@@ -43,13 +43,5 @@
 // b constant
 -6
 
-// 6. Multiloop T99 model data
-// a constant
-101
-// b constant
--3
-// c constant
--3
-
 // 7. AU/GU penalty
 5

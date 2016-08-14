@@ -35,11 +35,7 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
 
 energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
-energy_t MultiloopInitiation(int num_unpaired, int num_branches);
-
-energy_t MultiloopT99Initiation(int num_unpaired, int num_branches);
-
-energy_t MultiloopHackInitiation(int num_branches);
+energy_t MultiloopInitiation(int num_branches);
 
 energy_t MismatchMediatedCoaxialEnergy(
     base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot);

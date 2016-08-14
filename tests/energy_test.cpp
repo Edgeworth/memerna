@@ -30,7 +30,7 @@ public:
 
 
 TEST_F(EnergyTest, MultiloopEnergy) {
-  EXPECT_EQ(multiloop_hack_a + 4 * multiloop_hack_b, MultiloopHackInitiation(4));
+  EXPECT_EQ(multiloop_hack_a + 4 * multiloop_hack_b, MultiloopInitiation(4));
 }
 
 TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
@@ -70,7 +70,7 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
       2 * augu_penalty + 2 * HairpinInitiation(3),
       ComputeEnergy(kFlushCoax));
   EXPECT_EQ(stacking_e[G][A][U][C] + terminal_e[C][G][A][G] + coax_mismatch_non_contiguous +
-      3 * HairpinInitiation(3) + MultiloopInitiation(8, 4) + 2 * augu_penalty,
+      3 * HairpinInitiation(3) + MultiloopInitiation(4) + 2 * augu_penalty,
       ComputeEnergy(kNNDBMultiloop));
 }
 
@@ -119,7 +119,6 @@ TEST_F(EnergyTest, T04Tests) {
   EXPECT_EQ(88, HairpinInitiation(87));
   EXPECT_EQ(68, BulgeInitiation(57));
   EXPECT_EQ(46, InternalLoopInitiation(67));
-  EXPECT_EQ(74, MultiloopT99Initiation(8, 4));
 
   EXPECT_EQ(45, ComputeEnergy(parsing::ParseDotBracketRna("GCAAAGCC", "((...).)")));
   EXPECT_EQ(57, ComputeEnergy(parsing::ParseDotBracketRna("CCCAAAAUG", ".(.(...))")));
