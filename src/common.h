@@ -16,6 +16,7 @@
 #define verify_expr(expr, ...) \
   do { \
     if (!(expr)) { \
+      fprintf(stderr, "%s:%d: ", __func__, __LINE__); \
       fprintf(stderr, __VA_ARGS__); \
       fprintf(stderr, "\n"); \
       exit(1); \

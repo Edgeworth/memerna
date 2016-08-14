@@ -9,32 +9,8 @@ from common import *
 from rna import *
 from scrape import MemeVault
 
-
-def run_harness_efn(loc, program, rnas):
-  prev_dir = os.getcwd()
-  os.chdir(loc)
-  input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
-  benchmark_results, stdout = benchmark_command(
-    os.path.join('build', 'harness'), '-e', program, input=input)
-  os.chdir(prev_dir)
-  energies = [float(i) / 10.0 for i in stdout.split('\n')]
-  return energies, benchmark_results
-
-
-def run_harness_fold(loc, program, rnas):
-  prev_dir = os.getcwd()
-  os.chdir(loc)
-  input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
-  benchmark_results, stdout = benchmark_command(
-    os.path.join('build', 'harness'), '-f', program, input=input)
-  os.chdir(prev_dir)
-  lines = stdout.split('\n')[1::2]
-  energies = [float(i) / 10.0 for i in lines]
-  return energies, benchmark_results
-
-
-class RNAstructure:
-  def __init__(self, loc=None):
+class HarnessFolder:
+  def __init__(self, loc, name, flag):
     try:
       import default_paths
       loc = loc or default_paths.MEMERNA_PATH
@@ -42,76 +18,51 @@ class RNAstructure:
       pass
     assert loc
     self.loc = fix_path(loc)
+    self.name = name
+    self.flag = flag
 
   def fold(self, rna):
-    return run_harness_fold(self.loc, '-r', [rna])
+    prev_dir = os.getcwd()
+    os.chdir(self.loc)
+    benchmark_results, stdout = benchmark_command(
+      os.path.join('build', 'harness'), '-f', self.flag, input=rna.seq)
+    os.chdir(prev_dir)
+    lines = stdout.strip().split('\n')
+    assert len(lines) == 2
+    return RNA.from_name_seq_db(rna.name, rna.seq, lines[1]), benchmark_results
 
   def batch_efn(self, rnas):
-    return run_harness_efn(self.loc, '-r', rnas)
+    prev_dir = os.getcwd()
+    os.chdir(self.loc)
+    input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
+    benchmark_results, stdout = benchmark_command(
+      os.path.join('build', 'harness'), '-e', self.flag, input=input)
+    os.chdir(prev_dir)
+    energies = [float(i) / 10.0 for i in stdout.strip().split('\n')]
+    return energies, benchmark_results
 
   def efn(self, rna):
-    energies, benchmark_results = run_harness_efn(self.loc, '-r', [rna])
+    energies, benchmark_results = self.batch_efn([rna])
     return energies[0], benchmark_results
 
   def close(self):
     pass
 
   def __str__(self):
-    return 'RNAstructure'
+    return self.name
 
 
-class Rnark:
+class RNAstructure(HarnessFolder):
   def __init__(self, loc=None):
-    try:
-      import default_paths
-      loc = loc or default_paths.RNARK_PATH
-    except ImportError:
-      pass
-    assert loc
-    self.loc = fix_path(loc)
+    super().__init__(loc, 'RNAstructure', '-r')
 
-  def fold(self, rna):
-    return run_harness_fold(self.loc, '-m', [rna])
-
-  def batch_efn(self, rnas):
-    return run_harness_efn(self.loc, '-m', rnas)
-
-  def efn(self, rna):
-    energies, benchmark_results = run_harness_efn(self.loc, '-m', [rna])
-    return energies[0], benchmark_results
-
-  def close(self):
-    pass
-
-  def __str__(self):
-    return 'Rnark'
-
-
-class MemeRNA:
+class Rnark(HarnessFolder):
   def __init__(self, loc=None):
-    try:
-      import default_paths
-      loc = loc or default_paths.MEMERNA_PATH
-    except ImportError:
-      pass
-    assert loc
-    self.loc = fix_path(loc)
+    super().__init__(loc, 'Rnark', '-m')
 
-  def fold(self, rna):
-    return run_harness_fold(self.loc, '-k', [rna])
-
-  def batch_efn(self, rnas):
-    return run_harness_efn(self.loc, '-k', rnas)
-
-  def efn(self, rna):
-    energies, benchmark_results = run_harness_efn(self.loc, '-k', [rna])
-    return energies[0], benchmark_results
-
-  def close(self):
-    pass
-
-  def __str__(self):
-    return 'MemeRNA'
+class MemeRNA(HarnessFolder):
+  def __init__(self, loc=None):
+    super().__init__(loc, 'MemeRNA', '-k')
 
 
 class ViennaRNA:

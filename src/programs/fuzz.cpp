@@ -51,6 +51,12 @@ void FuzzRandomRna(int length) {
   }
 }
 
+// test types:
+// against efn / brute fold, against rnastructure
+// if against itself, try random energy models
+// input types: stdin, exhaustive rnas (up to size x), random rnas (of size, and variance)
+// usage: -e, -f;
+
 int main(int argc, char* argv[]) {
   LoadEnergyModelFromDataDir("data");
   srand(time(NULL));

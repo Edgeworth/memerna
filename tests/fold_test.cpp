@@ -1,5 +1,4 @@
 #include "fold.h"
-#include "globals.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
 
