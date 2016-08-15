@@ -7,7 +7,7 @@
 namespace memerna {
 namespace fold {
 
-array3d_t<energy_t, DP_SIZE> ComputeTables_Slow();
+array3d_t<energy_t, DP_SIZE> ComputeTablesSlow();
 
 }
 }

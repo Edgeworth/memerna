@@ -1,20 +1,9 @@
-#include "fold/fold.h"
-#include "array.h"
+#include "fold1.h"
 
 namespace memerna {
 namespace fold {
 
-#define UPDATE_CACHE(a, value) \
-  do { \
-    energy_t macro_upd_value_ = (value); \
-    if (macro_upd_value_ < constants::CAP_E && macro_upd_value_ < arr[sz][st][a]) { \
-      /*printf("Upd %d %d %d %d => %d " #value "\n", st, en, a, arr[sz][st][a], macro_upd_value_);*/ \
-      arr[sz][st][a] = macro_upd_value_; \
-    } \
-  } while (0)
-
-
-array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
+array3d_t<energy_t, DP_SIZE> ComputeTables1() {
   int N = int(r.size());
   assert(N > 0);
   // Automatically initialised to MAX_E.
@@ -30,28 +19,29 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
 
       // Update paired - only if can actually pair.
       if (CanPair(r[st], r[en]) && IsNotLonely(st, en)) {
+        energy_t p_min = constants::MAX_E;
         for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
           for (int ist = st + 1; ist < st + isz + 2; ++ist) {
             int ien = en - (st + isz - ist) - 2;
             if (arr[ien - ist + 1][ist][DP_P] < constants::CAP_E)
-              UPDATE_CACHE(DP_P, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
+              p_min = std::min(p_min, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
           }
         }
         // Hairpin loops.
-        UPDATE_CACHE(DP_P, energy::HairpinEnergy(st, en));
+        p_min = std::min(p_min, energy::HairpinEnergy(st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
 
         // No stacking case.
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 2][st + 1][DP_U2]);
+        p_min = std::min(p_min, base_branch_cost + arr[sz - 2][st + 1][DP_U2]);
         // (3<   ><   >) 3'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 3][st + 2][DP_U2] + dangle3_e[stb][st1b][enb]);
+        p_min = std::min(p_min, base_branch_cost + arr[sz - 3][st + 2][DP_U2] + dangle3_e[stb][st1b][enb]);
         // (<   ><   >5) 5'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 3][st + 1][DP_U2] + dangle5_e[stb][en1b][enb]);
+        p_min = std::min(p_min, base_branch_cost + arr[sz - 3][st + 1][DP_U2] + dangle5_e[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[sz - 4][st + 2][DP_U2] + terminal_e[stb][st1b][en1b][enb]);
+        p_min = std::min(p_min, base_branch_cost + arr[sz - 4][st + 2][DP_U2] + terminal_e[stb][st1b][en1b][enb]);
 
         for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz < sz - 3 - constants::HAIRPIN_MIN_SZ; ++lpivsz) {
           int rpivsz = sz - lpivsz - 2;
@@ -62,40 +52,44 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
 
           // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
               energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
               energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
               energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U] +
               energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
               energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P] +
               energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_P] +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_P] +
               multiloop_hack_b + energy::AuGuPenalty(st + 1, st + lpivsz) +
               arr[rpivsz][st + 1 + lpivsz][DP_U] + stacking_e[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_U] +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_U] +
               multiloop_hack_b + energy::AuGuPenalty(st + 1 + lpivsz, en - 1) +
               arr[rpivsz][st + 1 + lpivsz][DP_P] + stacking_e[stb][prb][en1b][enb]);
         }
-      }
 
+        if (p_min < constants::CAP_E)
+          arr[sz][st][DP_P] = p_min;
+      }
+      energy_t u_min = constants::MAX_E, u2_min = constants::MAX_E,
+          rcoax_min = constants::MAX_E, wc_min = constants::MAX_E, gu_min = constants::MAX_E;
       // Update unpaired.
       // Choose |st| to be unpaired.
       if (sz) {
-        UPDATE_CACHE(DP_U, arr[sz - 1][st + 1][DP_U]);
-        UPDATE_CACHE(DP_U2, arr[sz - 1][st + 1][DP_U2]);
+        u_min = std::min(u_min, arr[sz - 1][st + 1][DP_U]);
+        u2_min = std::min(u2_min, arr[sz - 1][st + 1][DP_U2]);
       }
       // Pair here.
-      UPDATE_CACHE(DP_U, arr[sz][st][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
+      u_min = std::min(u_min, arr[sz][st][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
       for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
@@ -110,35 +104,35 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         auto right_unpaired = std::min(arr[rpivsz][st + lpivsz][DP_U], 0);
 
         // (   )<   > - U, U_WC?, U_GU?
-        UPDATE_CACHE(DP_U2, base00 + arr[rpivsz][st + lpivsz][DP_U]);
+        u2_min = std::min(u2_min, base00 + arr[rpivsz][st + lpivsz][DP_U]);
         auto val = base00 + right_unpaired;
-        UPDATE_CACHE(DP_U, val);
+        u_min = std::min(u_min, val);
         if (IsGu(stb, pb))
-          UPDATE_CACHE(DP_U_GU, val);
+          gu_min = std::min(gu_min, val);
         else
-          UPDATE_CACHE(DP_U_WC, val);
+          wc_min = std::min(wc_min, val);
 
         // (   )3<   > 3' - U
-        UPDATE_CACHE(DP_U, base01 + dangle3_e[pl1b][pb][stb] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base01 + dangle3_e[pl1b][pb][stb] + arr[rpivsz][st + lpivsz][DP_U]);
+        u_min = std::min(u_min, base01 + dangle3_e[pl1b][pb][stb] + right_unpaired);
+        u2_min = std::min(u2_min, base01 + dangle3_e[pl1b][pb][stb] + arr[rpivsz][st + lpivsz][DP_U]);
         // 5(   )<   > 5' - U
-        UPDATE_CACHE(DP_U, base10 + dangle5_e[pb][stb][st1b] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base10 + dangle5_e[pb][stb][st1b] + arr[rpivsz][st + lpivsz][DP_U]);
+        u_min = std::min(u_min, base10 + dangle5_e[pb][stb][st1b] + right_unpaired);
+        u2_min = std::min(u2_min, base10 + dangle5_e[pb][stb][st1b] + arr[rpivsz][st + lpivsz][DP_U]);
         // .(   ).<   > Terminal mismatch - U
-        UPDATE_CACHE(DP_U, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base11 + terminal_e[pl1b][pb][stb][st1b] + arr[rpivsz][st + lpivsz][DP_U]);
+        u_min = std::min(u_min, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
+        u2_min = std::min(u2_min, base11 + terminal_e[pl1b][pb][stb][st1b] + arr[rpivsz][st + lpivsz][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b) +
             std::min(arr[rpivsz][st + lpivsz][DP_U_WC], arr[rpivsz][st + lpivsz][DP_U_GU]);
-        UPDATE_CACHE(DP_U, val);
-        UPDATE_CACHE(DP_U2, val);
+        u_min = std::min(u_min, val);
+        u2_min = std::min(u2_min, val);
 
         // (   ).<(   ). > Right coax forward and backward
         val = base01 + arr[rpivsz][st + lpivsz][DP_U_RCOAX];
-        UPDATE_CACHE(DP_U, val);
-        UPDATE_CACHE(DP_U2, val);
+        u_min = std::min(u_min, val);
+        u2_min = std::min(u2_min, val);
         if (st > 0)
-          UPDATE_CACHE(DP_U_RCOAX, base01 + energy::MismatchMediatedCoaxialEnergy(
+          rcoax_min = std::min(rcoax_min, base01 + energy::MismatchMediatedCoaxialEnergy(
               pl1b, pb, r[st - 1], stb) + right_unpaired);
 
         // There has to be remaining bases to even have a chance at these cases.
@@ -146,23 +140,31 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
           auto pr1b = r[st + lpivsz];
           // (   )<(   ) > Flush coax - U
           val = base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[rpivsz][st + lpivsz][DP_U_WC];
-          UPDATE_CACHE(DP_U, val);
-          UPDATE_CACHE(DP_U2, val);
+          u_min = std::min(u_min, val);
+          u2_min = std::min(u2_min, val);
           if (pr1b == G || pr1b == U) {
             val = base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][DP_U_GU];
-            UPDATE_CACHE(DP_U, val);
-            UPDATE_CACHE(DP_U2, val);
+            u_min = std::min(u_min, val);
+            u2_min = std::min(u2_min, val);
           }
         }
       }
 
+      if (u_min < constants::CAP_E)
+        arr[sz][st][DP_U] = u_min;
+      if (u2_min < constants::CAP_E)
+        arr[sz][st][DP_U2] = u2_min;
+      if (wc_min < constants::CAP_E)
+        arr[sz][st][DP_U_WC] = wc_min;
+      if (gu_min < constants::CAP_E)
+        arr[sz][st][DP_U_GU] = gu_min;
+      if (rcoax_min < constants::CAP_E)
+        arr[sz][st][DP_U_RCOAX] = rcoax_min;
       en++;
     }
   }
   return arr;
 }
-
-#undef UPDATE_CACHE
 
 }
 }
