@@ -1,7 +1,7 @@
 #include <cstdio>
 #include "base.h"
 #include "parsing.h"
-#include "structure.h"
+#include "energy/structure.h"
 
 using namespace memerna;
 
