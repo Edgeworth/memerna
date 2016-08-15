@@ -13,6 +13,7 @@
 - Sparse folding
 - Speed up internal loops somehow
 - American fuzzy lop?
+- Download and test that sparse folding program from that paper
 
 ### Fuzzing
 - Randomised energy model fuzzing
