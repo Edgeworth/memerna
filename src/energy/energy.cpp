@@ -249,26 +249,6 @@ energy_t MultiloopInitiation(int num_branches) {
 //
 // Note that we can't form two dangles attached to the same stem; that's a terminal mismatch.
 
-// We use the normal terminal mismatch parameters for the mismatch that is on the continuous part of the
-// RNA. The stacking for the non-continuous part is set to be an arbitrary given number. There are two possible
-// orientations, since the base involved in the terminal mismatch could come from either side.
-// ... _ _ _ _ ...
-// ...|_|  _|_|...
-//      | |
-// Rules for mismatch mediated coaxial stacking:
-//    1. A terminal mismatch is formed around the branch being straddled.
-//    2. An arbitrary bonus is added.
-//    2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
-energy_t MismatchMediatedCoaxialEnergy(
-    base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
-  energy_t coax = terminal_e[fiveTop][mismatch_top][mismatch_bot][threeBot] + coax_mismatch_non_contiguous;
-  if (IsWatsonCrick(mismatch_top, mismatch_bot))
-    coax += coax_mismatch_wc_bonus;
-  if (IsGu(mismatch_top, mismatch_bot))
-    coax += coax_mismatch_gu_bonus;
-  return coax;
-}
-
 // unpaired base will never have been consumed by a 5' dangle.
 #define UPDATE_CACHE(used, idx, cur_used, cur_idx, value, reason) \
   do { \
@@ -492,8 +472,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
     energy += MultiloopEnergy(st, en, branches, s);
   } else if (branches.size() == 0) {
     // Hairpin loop.
-    int num_unpaired = en - st - 1;
-    assert(num_unpaired >= 3);
+    assert(en - st - 1 >= 3);
     energy += HairpinEnergy(st, en, s);
   } else if (branches.size() == 1) {
     int loop_st = branches.front(), loop_en = p[branches.front()];
