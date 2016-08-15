@@ -28,7 +28,6 @@ public:
 };
 
 
-
 TEST_F(EnergyTest, MultiloopEnergy) {
   EXPECT_EQ(multiloop_hack_a + 4 * multiloop_hack_b, MultiloopInitiation(4));
 }
@@ -146,6 +145,7 @@ TEST_F(EnergyTest, T04Tests) {
   // Special stacking - this is not implemented. TODO: Implement this?
   EXPECT_EQ(37, ComputeEnergy(parsing::ParseDotBracketRna("GGUCAAAGGUC", "((((...))))")));
   EXPECT_EQ(-45, ComputeEnergy(parsing::ParseDotBracketRna("GGGGAAACCCC", "((((...))))")));
+  EXPECT_EQ(72, ComputeEnergy(parsing::ParseDotBracketRna("UGACAAAGGCGA", "(..(...)...)")));
 }
 
 }

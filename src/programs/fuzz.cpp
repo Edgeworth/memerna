@@ -2,6 +2,8 @@
 #include <cassert>
 #include <random>
 #include <chrono>
+#include <bridge/bridge.h>
+#include "argparse.h"
 #include "base.h"
 #include "parsing.h"
 #include "fold.h"
@@ -34,19 +36,26 @@ void FuzzRnaOfLength(int length) {
   }
 }
 
-void FuzzRandomRna(int length) {
+void FuzzRandomRna(int length,
+    const bridge::Memerna& memerna, const bridge::Rnastructure& rnastructure) {
   rna_t rna(std::size_t(length), 0);
   for (int i = 0; i < length; ++i)
     rna[i] = rand() % 4;
-  SetRna(rna);
-  energy_t dp = fold::Fold();
-  energy_t efn = energy::ComputeEnergy();
 
-  if (dp != efn) {
+  auto memerna_dp = memerna.Fold(rna, false);
+  auto memerna_efn = memerna.Efn(memerna_dp.frna, false);
+  auto rnastructure_dp = rnastructure.Fold(rna, false);
+  auto rnastructure_efn = rnastructure.Efn(rnastructure_dp.frna, false);
+
+  if (memerna_dp.energy != memerna_efn.energy ||
+      memerna_dp.energy != rnastructure_dp.energy ||
+      memerna_dp.energy != rnastructure_efn.energy) {
     printf(
-        "Diff. DP: %d !=  EFN: %d, on:\n  %s\n  %s\n",
-        dp, efn, parsing::RnaToString(rna).c_str(),
-        parsing::PairsToDotBracket(p).c_str());
+        "Diff on %s\n  Rnastructure: dp %d, efn %d\n    %s\n  Memerna: dp %d, efn %d\n    %s\n\n",
+        parsing::RnaToString(rna).c_str(), rnastructure_dp.energy, rnastructure_efn.energy,
+        parsing::PairsToDotBracket(rnastructure_dp.frna.p).c_str(),
+        memerna_dp.energy, memerna_efn.energy, parsing::PairsToDotBracket(memerna_dp.frna.p).c_str()
+    );
     return;
   }
 }
@@ -55,40 +64,48 @@ void FuzzRandomRna(int length) {
 // against efn / brute fold, against rnastructure
 // if against itself, try random energy models
 // input types: stdin, exhaustive rnas (up to size x), random rnas (of size, and variance)
-// usage: -e, -f;
+// usage: -e?, -f --stdin --brute --rand
+// if brute force, up to size x
+// if random, size, variance
+// for efn, try all foldings as well?
 
 int main(int argc, char* argv[]) {
-  LoadEnergyModelFromDataDir("data");
-  srand(time(NULL));
-  verify_expr(argc >= 2, "require selection; 1 == brute force, 2 == random rnas");
-  std::string choice = argv[1];
-  if (choice == "1") {
-    for (int i = 1; i <= 15; ++i) {
-      printf("Fuzzing len %d\n", i);
-      FuzzRnaOfLength(i);
-    }
-  } else if (choice == "2") {
-    int base_len = 100;
-    int variance = 20;
-    if (argc >= 3)
-      base_len = atoi(argv[2]);
-    if (argc >= 4)
-      variance = atoi(argv[3]);
-    verify_expr(base_len > 0, "invalid length");
-    verify_expr(variance >= 0, "invalid variance");
+  ArgParse argparse({});
+  auto ret = argparse.Parse(argc, argv);
+  verify_expr(
+      ret.size() == 0,
+      "%s\n%s\n", ret.c_str(), argparse.Usage().c_str());
 
-    auto start_time = std::chrono::steady_clock::now();
-    for (int i = 0;; ++i) {
-      int length = base_len;
-      if (variance) length += rand() % variance;
-      if (std::chrono::duration_cast<std::chrono::seconds>(
-          std::chrono::steady_clock::now() - start_time).count() > 10.0) {
-        printf("Fuzzed %d RNA\n", i);
-        start_time = std::chrono::steady_clock::now();
-      }
-      FuzzRandomRna(length);
+  LoadEnergyModelFromDataDir("data");
+  srand(static_cast<unsigned int>(time(NULL)));
+//  if (choice == "1") {
+//    for (int i = 1; i <= 15; ++i) {
+//      printf("Fuzzing len %d\n", i);
+//      FuzzRnaOfLength(i);
+//    }
+//  } else if (choice == "2") {
+  auto pos = argparse.GetPositional();
+  verify_expr(
+      argparse.GetPositional().size() == 2,
+      "require size and variance");
+  int base_len = atoi(pos[0].c_str());
+  int variance = atoi(pos[1].c_str());
+  verify_expr(base_len > 0, "invalid length");
+  verify_expr(variance >= 0, "invalid variance");
+
+  bridge::Memerna memerna("data/");
+  bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
+
+  auto start_time = std::chrono::steady_clock::now();
+  for (int i = 0;; ++i) {
+    int length = base_len;
+    if (variance) length += rand() % variance;
+    if (std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - start_time).count() > 10.0) {
+      printf("Fuzzed %d RNA\n", i);
+      start_time = std::chrono::steady_clock::now();
     }
-  } else {
-    verify_expr(false, "unknown choice");
+    FuzzRandomRna(length, memerna, rnastructure);
   }
 }
+

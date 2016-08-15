@@ -1,4 +1,4 @@
-Zuker optimisation ideas:
+### Zuker optimisation ideas
 - list of actual base pairs (skip things)
 - magic data structures to reduce multiloop computation to log time
 - Python code to generate C code to do energy for optimisation.
@@ -9,10 +9,14 @@ Zuker optimisation ideas:
 - Can remove some cache updates since negatives in turner model, etc.
 - Sliding window, reduce memory usage - needs st en not sz st?
 
-- Randomised energy model
--- Plus comparison to rnastructure / rnark
+### Todo
 - Lyngso optimisation
 - Sparse folding
 - Speed up internal loops somehow
 - American fuzzy lop?
-- Incorporate USE_HACK_MODEL into energy hash
+
+### Fuzzing
+- Randomised energy model fuzzing
+-- Plus comparison to rnastructure / rnark
+- Run on digitalocean?
+- Run on max computer

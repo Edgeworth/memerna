@@ -18,8 +18,8 @@ public:
   };
 
   virtual ~RnaPackage() = default;
-  virtual results_t Efn(const folded_rna_t& frna, bool verbose) = 0;
-  virtual results_t Fold(const rna_t& rna, bool verbose) = 0;
+  virtual results_t Efn(const folded_rna_t& frna, bool verbose) const = 0;
+  virtual results_t Fold(const rna_t& rna, bool verbose) const = 0;
 };
 
 class Rnark : public RnaPackage {
@@ -28,8 +28,8 @@ public:
   Rnark(const Rnark&) = delete;
   Rnark& operator=(const Rnark&) = delete;
 
-  results_t Efn(const folded_rna_t& frna, bool verbose);
-  results_t Fold(const rna_t& rna, bool verbose);
+  results_t Efn(const folded_rna_t& frna, bool verbose) const;
+  results_t Fold(const rna_t& rna, bool verbose) const;
 
 private:
   librnary::NNUnpairedModel model;
@@ -37,14 +37,15 @@ private:
 
 class Rnastructure : public RnaPackage {
 public:
-  Rnastructure(const std::string& data_path);
+  Rnastructure(const std::string& data_path, bool _use_lyngso);
   Rnastructure(const Rnastructure&) = delete;
   Rnastructure& operator=(results_t&) = delete;
 
-  results_t Efn(const folded_rna_t& frna, bool verbose);
-  results_t Fold(const rna_t& rna, bool verbose);
+  results_t Efn(const folded_rna_t& frna, bool verbose) const;
+  results_t Fold(const rna_t& rna, bool verbose) const;
 private:
   std::unique_ptr<datatable> data;
+  bool use_lyngso;
 };
 
 class Memerna : public RnaPackage {
@@ -53,8 +54,8 @@ public:
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  results_t Efn(const folded_rna_t& frna, bool verbose);
-  results_t Fold(const rna_t& rna, bool verbose);
+  results_t Efn(const folded_rna_t& frna, bool verbose) const;
+  results_t Fold(const rna_t& rna, bool verbose) const;
 };
 
 }
