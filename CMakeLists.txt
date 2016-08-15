@@ -5,6 +5,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3 -fsched-spec-load")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3 -fsched-spec-load")
 # Always have librnary compiled as release.
 set(CMAKE_BUILD_TYPE Release)
 add_subdirectory("extern/rnark/librnary")
@@ -20,6 +21,9 @@ include(FindThreads)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wshadow -pedantic")
+set(CMAKE_CXX_FLAGS_GPROF "${CMAKE_CXX_FLAGS_GPROF} -march=native -O3 -pg")
+SET(CMAKE_EXE_LINKER_FLAGS_GPROF  "${CMAKE_EXE_LINKER_FLAGS_GPROF} -pg")
+SET(CMAKE_SHARED_LINKER_FLAGS_GPROF  "${CMAKE_SHARED_LINKER_FLAGS_GPROF} -pg")
 set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_MSAN "${CMAKE_CXX_FLAGS_MSAN}  -march=native -O3")
 set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
