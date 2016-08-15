@@ -37,6 +37,10 @@ public:
     return reinterpret_cast<ArrayType*>(&data[idx * size * K]);
   }
 
+  const ArrayType* operator[](std::size_t idx) const {
+    return reinterpret_cast<const ArrayType*>(&data[idx * size * K]);
+  }
+
 private:
   T* data;
   std::size_t size;
@@ -57,7 +61,6 @@ public:
 
   array2d_t(array2d_t&& o) {*this = std::move(o);}
 
-
   array2d_t& operator=(array2d_t&& o) {
     data = o.data;
     size = o.size;
@@ -69,6 +72,10 @@ public:
   ~array2d_t() {delete[] data;}
 
   T* operator[](std::size_t idx) {
+    return &data[idx * K];
+  }
+
+  const T* operator[](std::size_t idx) const {
     return &data[idx * K];
   }
 
