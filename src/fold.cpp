@@ -42,6 +42,11 @@ enum {
     } \
   } while (0)
 
+inline bool IsNotLonely(int st, int en) {
+  return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
+      (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
+}
+
 energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   int N = int(r.size());
   assert(N > 0);
@@ -59,7 +64,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
 
       // Update paired - only if can actually pair.
-      if (CanPair(r[st], r[en])) {
+      if (CanPair(r[st], r[en]) && IsNotLonely(st, en)) {
         for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
           for (int ist = st + 1; ist < st + isz + 2; ++ist) {
             int ien = en - (st + isz - ist) - 2;
@@ -275,7 +280,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
     int en = st + sz - 1;
     assert(sz >= constants::HAIRPIN_MIN_SZ + 2);
     auto stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
-//    printf("%d %d %d: %de\n", st, en, a, arr[sz][st][a]);
+    // printf("%d %d %d: %de\n", st, en, a, arr[sz][st][a]);
     q.pop();
     if (a == DP_P) {
       // It's paired, so add it to the folding.
@@ -375,12 +380,12 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         }
       }
     } else {
-      // Unpaired.
+      // Left unpaired. Either DP_U or DP_U2.
       if (sz && (a == DP_U || a == DP_U2) && arr[sz - 1][st + 1][a] == arr[sz][st][a]) {
         q.emplace(sz - 1, st + 1, a);
         goto loopend;
       }
-      // Pair here.
+      // Pair here. Only for DP_U.
       if (a == DP_U && arr[sz][st][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en) == arr[sz][st][DP_U]) {
         q.emplace(sz, st, DP_P);
         goto loopend;
@@ -419,9 +424,10 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         }
 
         // (   )<   > - U, U2, U_WC?, U_GU?
-        if (base00 + right_unpaired == arr[sz][st][a]) {
+        if (base00 + right_unpaired == arr[sz][st][a] &&
+            (a != DP_U_WC || IsWatsonCrick(stb, pb)) &&
+            (a != DP_U_GU || IsGu(stb, pb))) {
           q.emplace(lpivsz, st, DP_P);
-          assert((a != DP_U_WC || IsWatsonCrick(stb, pb)) && (a != DP_U_GU || IsGu(stb, pb)));
           if (a == DP_U2 || right_unpaired)
             q.emplace(rpivsz, st + lpivsz, DP_U);
           goto loopend;
@@ -485,6 +491,7 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
               base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[rpivsz][st + lpivsz][DP_U_GU] == arr[sz][st][a]) {
             q.emplace(lpivsz, st, DP_P);
             q.emplace(rpivsz, st + lpivsz, DP_U_GU);
+            goto loopend;
           }
         }
       }
@@ -542,7 +549,7 @@ energy_t FoldBruteForce(std::unique_ptr<structure::Structure>* s) {
   base_pairs.clear();
   for (int st = 0; st < int(r.size()); ++st) {
     for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
-      if (CanPair(r[st], r[en]))
+      if (CanPair(r[st], r[en]) && IsNotLonely(st, en))
         base_pairs.emplace_back(st, en);
     }
   }

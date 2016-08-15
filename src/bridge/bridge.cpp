@@ -16,7 +16,7 @@ Rnark::Rnark(const std::string& data_path) : model(data_path) {
   model.SetMLParams(93, -6, 0, 0, 999999);
 }
 
-RnaPackage::results_t Rnark::Efn(const folded_rna_t& frna, bool verbose) {
+RnaPackage::results_t Rnark::Efn(const folded_rna_t& frna, bool verbose) const {
   auto rna = librnary::StringToPrimary(parsing::RnaToString(frna.r));
   auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p)));
 
@@ -34,7 +34,7 @@ RnaPackage::results_t Rnark::Efn(const folded_rna_t& frna, bool verbose) {
   return {energy, frna, desc};
 }
 
-RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) {
+RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) const {
   librnary::NNUnpairedFolder folder(model);
   folder.SetMaxTwoLoop(constants::TWOLOOP_MAX_SZ);
   folder.SetLonelyPairs(true);
@@ -45,27 +45,31 @@ RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) {
   return {energy, {rna, pairs}, verbose ? "verbose output not yet implemented" : ""};
 }
 
-Rnastructure::Rnastructure(const std::string& data_path) :
-    data(librnary::LoadDatatable(data_path)) {
+Rnastructure::Rnastructure(const std::string& data_path, bool _use_lyngso) :
+    data(librnary::LoadDatatable(data_path)), use_lyngso(_use_lyngso) {
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-RnaPackage::results_t Rnastructure::Efn(const folded_rna_t& frna, bool verbose) {
+RnaPackage::results_t Rnastructure::Efn(const folded_rna_t& frna, bool verbose) const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(frna.r)),
       librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p))
   );
-  energy_t energy = librnary::RunEFN2WithSimpleMulti(*data, *structure);
-  return {energy, frna, verbose ? "verbose output not yet implemented" : ""};
+  efn2(data.get(), structure.get(), 1, true);
+  return {energy_t(structure->GetEnergy(1)), frna, verbose ? "verbose output not yet implemented" : ""};
 }
 
-RnaPackage::results_t Rnastructure::Fold(const rna_t& rna, bool verbose) {
+RnaPackage::results_t Rnastructure::Fold(const rna_t& rna, bool verbose) const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(rna)));
-  energy_t energy = librnary::RunMFEFold(*data, *structure);
+  // First false here says also generate the folding itself (not just the MFE).
+  // Second last parameter is whether to generate the mfe structure only -- i.e. just one.
+  // Last parameter is whether to use Lyngso or not.
+  // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
+  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true, !use_lyngso);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
-  return {energy, {rna, pairs}, verbose ? "verbose output not yet implemented" : ""};
+  return {energy_t(structure->GetEnergy(1)), {rna, pairs}, verbose ? "verbose output not yet implemented" : ""};
 }
 
 Memerna::Memerna(const std::string& data_path) {
@@ -73,7 +77,7 @@ Memerna::Memerna(const std::string& data_path) {
   LoadEnergyModelFromDataDir(data_path);
 }
 
-RnaPackage::results_t Memerna::Efn(const folded_rna_t& frna, bool verbose) {
+RnaPackage::results_t Memerna::Efn(const folded_rna_t& frna, bool verbose) const {
   energy_t energy;
   std::string desc;
   if (verbose) {
@@ -90,7 +94,7 @@ RnaPackage::results_t Memerna::Efn(const folded_rna_t& frna, bool verbose) {
   return {energy, frna, desc};
 }
 
-RnaPackage::results_t Memerna::Fold(const rna_t& rna, bool verbose) {
+RnaPackage::results_t Memerna::Fold(const rna_t& rna, bool verbose) const {
   energy_t energy;
   std::string desc;
   if (verbose) {

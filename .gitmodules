@@ -1,6 +1,3 @@
-[submodule "extern/miles_rnastructure"]
-	path = extern/miles_rnastructure
-	url = git@github.com:Edgeworth/miles_rnastructure.git
 [submodule "extern/rnark"]
 	path = extern/rnark
 	url = git@github.com:maxhwardg/rnark.git

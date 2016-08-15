@@ -11,9 +11,9 @@ namespace energy {
 energy_t HairpinInitiation(int n) {
   assert(n >= 3);
   if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
-  static_assert(INITIATION_CACHE_SZ > 9, "Need initiation values for up to 9.");
-  // Formula: G_init(9) + 1.75 * R * T * ln(n / 9).
-  return energy_t(round(hairpin_init[9] + 10.0 * 1.75 * constants::R * constants::T * log(n / 9.0)));
+  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
+  // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to match RNAstructure.
+  return energy_t(round(hairpin_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
 // Indices are inclusive, include the initiating base pair.
@@ -93,9 +93,9 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
 energy_t BulgeInitiation(int n) {
   assert(n >= 1);
   if (n < INITIATION_CACHE_SZ) return bulge_init[n];
-  static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
-  // Formula: G_init(6) + 1.75 * R * T * ln(n / 6).
-  return energy_t(round(bulge_init[6] + 10.0 * 1.75 * constants::R * constants::T * log(n / 6.0)));
+  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
+  // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to match RNAstructure.
+  return energy_t(round(bulge_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
 // Indices are inclusive.
@@ -155,9 +155,9 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
 energy_t InternalLoopInitiation(int n) {
   assert(n >= 4);
   if (n < INITIATION_CACHE_SZ) return internal_init[n];
-  static_assert(INITIATION_CACHE_SZ > 6, "Need initiation values for up to 6.");
-  // Formula: G_init(6) + 1.08 * ln(n / 6).
-  return energy_t(round(internal_init[6] + 10.0 * 1.08 * log(n / 6.0)));
+  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
+  // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match RNAstructure.
+  return energy_t(round(internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
 }
 
 // Indices are inclusive.

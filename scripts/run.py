@@ -7,7 +7,7 @@ import tempfile
 
 from common import *
 from rna import *
-from scrape import MemeVault
+from memevault import MemeVault
 
 class HarnessFolder:
   def __init__(self, loc, name, flag):
@@ -81,7 +81,7 @@ class ViennaRNA:
       f.flush()
       benchmark_results, stdout = benchmark_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-        #  '-d3',
+         # '-d3',
         '--noPS', '-i', f.name)
       seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
