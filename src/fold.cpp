@@ -32,22 +32,12 @@ enum {
     } \
   } while (0)
 
-#define UPDATE_EXT(a, na, psz, pst, value) \
-  do { \
-    energy_t macro_upd_value_ = (value) + exterior[en + 1][na]; \
-    if (macro_upd_value_ < constants::CAP_E && macro_upd_value_ < exterior[st][a]) { \
-      /* printf("Ext st %d en %d a %d pst %d pen %d na %d %d => %d " #value "\n", st, en, a, pst, pst + psz - 1, na, exterior[st][a], macro_upd_value_); */ \
-      exterior[st][a] = macro_upd_value_; \
-      exterior_sts[st][a] = std::make_tuple(psz, pst, en + 1, na); \
-    } \
-  } while (0)
-
 inline bool IsNotLonely(int st, int en) {
   return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
       (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
 }
 
-energy_t Fold(std::unique_ptr<structure::Structure>* s) {
+array3d_t<energy_t, DP_SIZE> ComputeTables() {
   int N = int(r.size());
   assert(N > 0);
   // Automatically initialised to MAX_E.
@@ -68,7 +58,8 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
           for (int ist = st + 1; ist < st + isz + 2; ++ist) {
             int ien = en - (st + isz - ist) - 2;
-            UPDATE_CACHE(DP_P, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
+            if (arr[ien - ist + 1][ist][DP_P] < constants::CAP_E)
+              UPDATE_CACHE(DP_P, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
           }
         }
         // Hairpin loops.
@@ -94,39 +85,31 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
           //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
-          // l_lABrCD =
-          //   l => place a paired on the left
-          //   skip A bases on left of left branch, B bases on right of left branch
-          //   skip C bases on left of right branch, D bases on right of right branch.
-          auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
-          auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
-          auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
-
-          auto r_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
-          auto r_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
-          auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
-
-          // (.(   )   .) Left left coax - P
+          // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-          UPDATE_CACHE(DP_P, l_l10r01_cost + outer_coax);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
+              energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U] + outer_coax);
+          // (.   (   ).) Right outer coax
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
+              energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P] + outer_coax);
+
           // (.(   ).   ) Left right coax
-          auto l_inner_coax = energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b);
-          UPDATE_CACHE(DP_P, l_l11r00_cost + l_inner_coax);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
+              energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U] +
+              energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
-          auto r_inner_coax = energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b);
-          UPDATE_CACHE(DP_P, r_l00r11_cost + r_inner_coax);
-          // (.   (   ).) Right right coax
-          UPDATE_CACHE(DP_P, r_l10r01_cost + outer_coax);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
+              energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P] +
+              energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b));
+
           // ((   )   ) Left flush coax
-          UPDATE_CACHE(DP_P, l_l00r00_cost + stacking_e[stb][st1b][plb][enb]);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_P] +
+              multiloop_hack_b + energy::AuGuPenalty(st + 1, st + lpivsz) +
+              arr[rpivsz][st + 1 + lpivsz][DP_U] + stacking_e[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
-          UPDATE_CACHE(DP_P, r_l00r00_cost + stacking_e[stb][prb][en1b][enb]);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[lpivsz][st + 1][DP_U] +
+              multiloop_hack_b + energy::AuGuPenalty(st + 1 + lpivsz, en - 1) +
+              arr[rpivsz][st + 1 + lpivsz][DP_P] + stacking_e[stb][prb][en1b][enb]);
         }
       }
 
@@ -201,7 +184,24 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       en++;
     }
   }
+  return arr;
+}
 
+#undef UPDATE_CACHE
+
+
+#define UPDATE_EXT(a, na, psz, pst, value) \
+  do { \
+    energy_t macro_upd_value_ = (value) + exterior[en + 1][na]; \
+    if (macro_upd_value_ < constants::CAP_E && macro_upd_value_ < exterior[st][a]) { \
+      /* printf("Ext st %d en %d a %d pst %d pen %d na %d %d => %d " #value "\n", st, en, a, pst, pst + psz - 1, na, exterior[st][a], macro_upd_value_); */ \
+      exterior[st][a] = macro_upd_value_; \
+      exterior_sts[st][a] = std::make_tuple(psz, pst, en + 1, na); \
+    } \
+  } while (0)
+
+energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q) {
+  int N = int(r.size());
   // Exterior loop calculation. There can be no paired base on exterior[en].
   array2d_t<energy_t, EXT_SIZE> exterior(std::size_t(N + 1));
   exterior[N][EXT] = 0;
@@ -259,7 +259,6 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
   // Backtrace.
   p = std::vector<int>(r.size(), -1);
   // sz, st, paired
-  std::stack<std::tuple<int, int, int>> q;
   int ext_st = 0, ext_a = EXT;
   while (ext_st < N) {
     int psz, pst, nst, na;
@@ -273,7 +272,12 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
     ext_st = nst;
     ext_a = na;
   }
+  return exterior[0][EXT];
+}
 
+#undef UPDATE_EXT
+
+void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q) {
   while (!q.empty()) {
     int sz, st, a;
     std::tie(sz, st, a) = q.top();
@@ -291,10 +295,12 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
       for (int isz = 0; isz <= std::min(constants::TWOLOOP_MAX_SZ, sz - 4 - constants::HAIRPIN_MIN_SZ); ++isz) {
         for (int ist = st + 1; ist < st + isz + 2; ++ist) {
           int ien = en - (st + isz - ist) - 2;
-          auto val = energy::TwoLoop(st, en, ist, ien) + arr[sz - isz - 2][ist][DP_P];
-          if (val == arr[sz][st][DP_P]) {
-            q.emplace(sz - isz - 2, ist, DP_P);
-            goto loopend;
+          if (arr[ien - ist + 1][ist][DP_P] < constants::CAP_E) {
+            auto val = energy::TwoLoop(st, en, ist, ien) + arr[sz - isz - 2][ist][DP_P];
+            if (val == arr[sz][st][DP_P]) {
+              q.emplace(sz - isz - 2, ist, DP_P);
+              goto loopend;
+            }
           }
         }
       }
@@ -326,54 +332,53 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
         auto rpivsz = sz - lpivsz - 2;
         base_t pl1b = r[st + lpivsz - 1], plb = r[st + lpivsz], prb = r[st + lpivsz + 1], pr1b = r[st + lpivsz + 2];
 
-        auto l_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_P] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 1, st + lpivsz) + arr[rpivsz][st + 1 + lpivsz][DP_U];
-        auto l_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U];
-        auto l_l11r00_cost = base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U];
-
-        auto r_l00r00_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 1 + lpivsz, en - 1) + arr[rpivsz][st + 1 + lpivsz][DP_P];
-        auto r_l10r01_cost = base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P];
-        auto r_l00r11_cost = base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-            energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P];
-        // (.(   )   .) Left left coax - P
+        // (.(   )   .) Left outer coax - P
         auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-        if (l_l10r01_cost + outer_coax == arr[sz][st][DP_P]) {
+        if (base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
+            energy::AuGuPenalty(st + 2, st + lpivsz) +
+            arr[rpivsz - 1][st + 1 + lpivsz][DP_U] + outer_coax == arr[sz][st][DP_P]) {
           q.emplace(lpivsz - 1, st + 2, DP_P);
           q.emplace(rpivsz - 1, st + 1 + lpivsz, DP_U);
           goto loopend;
         }
+        // (.   (   ).) Right outer coax
+        if (base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
+            energy::AuGuPenalty(st + 1 + lpivsz, en - 2) +
+            arr[rpivsz - 1][st + 1 + lpivsz][DP_P] + outer_coax == arr[sz][st][DP_P]) {
+          q.emplace(lpivsz - 1, st + 2, DP_U);
+          q.emplace(rpivsz - 1, st + 1 + lpivsz, DP_P);
+          goto loopend;
+        }
+
         // (.(   ).   ) Left right coax
-        auto l_inner_coax = energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b);
-        if (l_l11r00_cost + l_inner_coax == arr[sz][st][DP_P]) {
+        if (base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
+            energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U] +
+            energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b) == arr[sz][st][DP_P]) {
           q.emplace(lpivsz - 2, st + 2, DP_P);
           q.emplace(rpivsz, st + 1 + lpivsz, DP_U);
           goto loopend;
         }
         // (   .(   ).) Right left coax
-        auto r_inner_coax = energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b);
-        if (r_l00r11_cost + r_inner_coax == arr[sz][st][DP_P]) {
+        if (base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
+            energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P] +
+            energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b) == arr[sz][st][DP_P]) {
           q.emplace(lpivsz, st + 1, DP_U);
           q.emplace(rpivsz - 2, st + 2 + lpivsz, DP_P);
           goto loopend;
         }
-        // (.   (   ).) Right right coax
-        if (r_l10r01_cost + outer_coax == arr[sz][st][DP_P]) {
-          q.emplace(lpivsz - 1, st + 2, DP_U);
-          q.emplace(rpivsz - 1, st + 1 + lpivsz, DP_P);
-          goto loopend;
-        }
+
         // ((   )   ) Left flush coax
-        if (l_l00r00_cost + stacking_e[stb][st1b][plb][enb] == arr[sz][st][DP_P]) {
+        if (base_branch_cost + arr[lpivsz][st + 1][DP_P] +
+            multiloop_hack_b + energy::AuGuPenalty(st + 1, st + lpivsz) +
+            arr[rpivsz][st + 1 + lpivsz][DP_U] + stacking_e[stb][st1b][plb][enb] == arr[sz][st][DP_P]) {
           q.emplace(lpivsz, st + 1, DP_P);
           q.emplace(rpivsz, st + 1 + lpivsz, DP_U);
           goto loopend;
         }
         // (   (   )) Right flush coax
-        if (r_l00r00_cost + stacking_e[stb][prb][en1b][enb] == arr[sz][st][DP_P]) {
+        if (base_branch_cost + arr[lpivsz][st + 1][DP_U] +
+            multiloop_hack_b + energy::AuGuPenalty(st + 1 + lpivsz, en - 1) +
+            arr[rpivsz][st + 1 + lpivsz][DP_P] + stacking_e[stb][prb][en1b][enb] == arr[sz][st][DP_P]) {
           q.emplace(lpivsz, st + 1, DP_U);
           q.emplace(rpivsz, st + 1 + lpivsz, DP_P);
           goto loopend;
@@ -499,11 +504,15 @@ energy_t Fold(std::unique_ptr<structure::Structure>* s) {
 
     loopend:;
   }
-  return exterior[0][EXT];
 }
 
-#undef UPDATE_CACHE
-#undef UPDATE_EXT
+energy_t Fold(std::unique_ptr<structure::Structure>* s) {
+  auto arr = ComputeTables();
+  std::stack<std::tuple<int, int, int>> q;
+  auto energy = TraceExterior(arr, q);
+  TraceStructure(arr, q);
+  return energy;
+}
 
 namespace {
 
