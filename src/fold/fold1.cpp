@@ -3,6 +3,48 @@
 namespace memerna {
 namespace fold {
 
+const energy_t MULTILOOP_A = 93;
+
+const energy_t AUGUBRANCH[4][4] = {
+    {-6, -6, -6, 5 - 6},
+    {-6, -6, -6, -6},
+    {-6, -6, -6, 5 - 6},
+    {5 - 6, -6, 5 - 6, -6}
+};
+
+energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
+  int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  if (toplen == 0 && botlen == 0)
+    return stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
+  if (toplen == 0 || botlen == 0)
+    return energy::BulgeEnergy(ost, oen, ist, ien);
+  if (toplen == 1 && botlen == 1)
+    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
+  if (toplen == 1 && botlen == 2)
+    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+  if (toplen == 2 && botlen == 1)
+    return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
+  if (toplen == 2 && botlen == 2)
+    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+
+  static_assert(constants::TWOLOOP_MAX_SZ <= INITIATION_CACHE_SZ, "initiation cache not large enough");
+  energy_t energy = internal_init[toplen + botlen] + std::min(std::abs(toplen - botlen) * internal_asym, constants::NINIO_MAX_ASYM);
+
+  if (IsAuGu(r[ost], r[oen]))
+    energy += internal_augu_penalty;
+  if (IsAuGu(r[ist], r[ien]))
+    energy += internal_augu_penalty;
+
+  if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
+    energy += internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+        internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+  else if (toplen != 1 && botlen != 1)
+    energy += internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+        internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+
+  return energy;
+}
+
 array3d_t<energy_t, DP_SIZE> ComputeTables1() {
   int N = int(r.size());
   assert(N > 0);
@@ -24,7 +66,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
           for (int ist = st + 1; ist < st + isz + 2; ++ist) {
             int ien = en - (st + isz - ist) - 2;
             if (arr[ien - ist + 1][ist][DP_P] < constants::CAP_E)
-              p_min = std::min(p_min, energy::TwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
+              p_min = std::min(p_min, FastTwoLoop(st, en, ist, ien) + arr[ien - ist + 1][ist][DP_P]);
           }
         }
         // Hairpin loops.
@@ -32,7 +74,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
+        auto base_branch_cost = AUGUBRANCH[stb][enb] + MULTILOOP_A;
 
         // No stacking case.
         p_min = std::min(p_min, base_branch_cost + arr[sz - 2][st + 1][DP_U2]);
@@ -52,33 +94,30 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
 
           // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, st + lpivsz) + arr[rpivsz - 1][st + 1 + lpivsz][DP_U] + outer_coax);
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_P] +
+              AUGUBRANCH[st2b][plb] + arr[rpivsz - 1][st + 1 + lpivsz][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
-          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 1 + lpivsz, en - 2) + arr[rpivsz - 1][st + 1 + lpivsz][DP_P] + outer_coax);
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 1][st + 2][DP_U] +
+              AUGUBRANCH[prb][en2b] + arr[rpivsz - 1][st + 1 + lpivsz][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
-          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, st + lpivsz - 1) + arr[rpivsz][st + 1 + lpivsz][DP_U] +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz - 2][st + 2][DP_P] +
+              AUGUBRANCH[st2b][pl1b] + arr[rpivsz][st + 1 + lpivsz][DP_U] +
               energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
-          p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2 + lpivsz, en - 2) + arr[rpivsz - 2][st + 2 + lpivsz][DP_P] +
+          p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_U] +
+              AUGUBRANCH[pr1b][en2b] + arr[rpivsz - 2][st + 2 + lpivsz][DP_P] +
               energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_P] +
-              multiloop_hack_b + energy::AuGuPenalty(st + 1, st + lpivsz) +
-              arr[rpivsz][st + 1 + lpivsz][DP_U] + stacking_e[stb][st1b][plb][enb]);
+              AUGUBRANCH[st1b][plb] + arr[rpivsz][st + 1 + lpivsz][DP_U] + stacking_e[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           p_min = std::min(p_min, base_branch_cost + arr[lpivsz][st + 1][DP_U] +
-              multiloop_hack_b + energy::AuGuPenalty(st + 1 + lpivsz, en - 1) +
-              arr[rpivsz][st + 1 + lpivsz][DP_P] + stacking_e[stb][prb][en1b][enb]);
+              AUGUBRANCH[prb][en1b] + arr[rpivsz][st + 1 + lpivsz][DP_P] + stacking_e[stb][prb][en1b][enb]);
         }
 
-        if (p_min < constants::CAP_E)
-          arr[sz][st][DP_P] = p_min;
+        arr[sz][st][DP_P] = p_min;
       }
       energy_t u_min = constants::MAX_E, u2_min = constants::MAX_E,
           rcoax_min = constants::MAX_E, wc_min = constants::MAX_E, gu_min = constants::MAX_E;
@@ -89,17 +128,17 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         u2_min = std::min(u2_min, arr[sz - 1][st + 1][DP_U2]);
       }
       // Pair here.
-      u_min = std::min(u_min, arr[sz][st][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
+      u_min = std::min(u_min, arr[sz][st][DP_P] + AUGUBRANCH[stb][enb]);
       for (int lpivsz = constants::HAIRPIN_MIN_SZ + 2; lpivsz <= sz; ++lpivsz) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         int rpivsz = sz - lpivsz;
         auto pb = r[st + lpivsz - 1], pl1b = r[st + lpivsz - 2];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[lpivsz][st][DP_P] + energy::AuGuPenalty(st, st + lpivsz - 1) + multiloop_hack_b;
-        auto base01 = arr[lpivsz - 1][st][DP_P] + energy::AuGuPenalty(st, st + lpivsz - 2) + multiloop_hack_b;
-        auto base10 = arr[lpivsz - 1][st + 1][DP_P] + energy::AuGuPenalty(st + 1, st + lpivsz - 1) + multiloop_hack_b;
-        auto base11 = arr[lpivsz - 2][st + 1][DP_P] + energy::AuGuPenalty(st + 1, st + lpivsz - 2) + multiloop_hack_b;
+        auto base00 = arr[lpivsz][st][DP_P] + AUGUBRANCH[stb][pb];
+        auto base01 = arr[lpivsz - 1][st][DP_P] + AUGUBRANCH[stb][pl1b];
+        auto base10 = arr[lpivsz - 1][st + 1][DP_P] + AUGUBRANCH[st1b][pb];
+        auto base11 = arr[lpivsz - 2][st + 1][DP_P] + AUGUBRANCH[st1b][pl1b];
         // Min is for either placing another unpaired or leaving it as nothing.
         auto right_unpaired = std::min(arr[rpivsz][st + lpivsz][DP_U], 0);
 
@@ -150,16 +189,11 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         }
       }
 
-      if (u_min < constants::CAP_E)
-        arr[sz][st][DP_U] = u_min;
-      if (u2_min < constants::CAP_E)
-        arr[sz][st][DP_U2] = u2_min;
-      if (wc_min < constants::CAP_E)
-        arr[sz][st][DP_U_WC] = wc_min;
-      if (gu_min < constants::CAP_E)
-        arr[sz][st][DP_U_GU] = gu_min;
-      if (rcoax_min < constants::CAP_E)
-        arr[sz][st][DP_U_RCOAX] = rcoax_min;
+      arr[sz][st][DP_U] = u_min;
+      arr[sz][st][DP_U2] = u2_min;
+      arr[sz][st][DP_U_WC] = wc_min;
+      arr[sz][st][DP_U_GU] = gu_min;
+      arr[sz][st][DP_U_RCOAX] = rcoax_min;
       en++;
     }
   }

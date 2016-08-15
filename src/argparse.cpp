@@ -11,15 +11,20 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     if (is_flag) {
       if (possible_args.count(arg) == 0)
         return sfmt("unknown argument %s", argv[i]);
-      if (i + 1 == argc)
-        return sfmt("missing argument for flag %s", arg);
-      flags[arg] = argv[++i];
+
+      if (possible_args[arg].has_arg) {
+        if (i + 1 == argc)
+          return sfmt("missing argument for flag %s", arg);
+        flags[arg] = argv[++i];
+      } else {
+        flags[arg] = arg;
+      }
     } else {
       positional.push_back(std::move(arg));
     }
   }
   for (const auto& arg : possible_args) {
-    if (arg.second.has_arg && flags.count(arg.first) == 0 && !arg.second.has_default)
+    if (arg.second.has_arg && flags.count(arg.first) == 0 && !arg.second.has_default && arg.second.required)
       return sfmt("missing argument for flag %s", arg.first.c_str());
   }
   return "";
