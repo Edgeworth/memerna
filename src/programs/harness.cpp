@@ -4,14 +4,16 @@
 #include "argparse.h"
 #include "bridge/bridge.h"
 
+using namespace memerna;
+
 int main(int argc, char* argv[]) {
-  memerna::ArgParse argparse({
-      {"v", "be verbose (if possible)"},
-      {"r", "rnastructure"},
-      {"m", "rnark"},
-      {"k", "memerna"},
-      {"e", "run efn"},
-      {"f", "run fold"}
+  ArgParse argparse({
+      {"v", {"be verbose (if possible)"}},
+      {"r", {"rnastructure"}},
+      {"m", {"rnark"}},
+      {"k", {"memerna"}},
+      {"e", {"run efn"}},
+      {"f", {"run fold"}},
   });
 
   auto ret = argparse.Parse(argc, argv);
@@ -26,16 +28,16 @@ int main(int argc, char* argv[]) {
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
 
-  std::unique_ptr<memerna::bridge::RnaPackage> package;
+  std::unique_ptr<bridge::RnaPackage> package;
   if (argparse.HasFlag("r")) {
-    package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Rnastructure("extern/rnark/data_tables/", false)));
+    package = std::move(std::unique_ptr<bridge::RnaPackage>(
+        new bridge::Rnastructure("extern/rnark/data_tables/", false)));
   } else if (argparse.HasFlag("m")) {
-    package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Rnark("extern/rnark/data_tables/")));
+    package = std::move(std::unique_ptr<bridge::RnaPackage>(
+        new bridge::Rnark("extern/rnark/data_tables/")));
   } else {
-    package = std::move(std::unique_ptr<memerna::bridge::RnaPackage>(
-        new memerna::bridge::Memerna("data/")));
+    package = std::move(std::unique_ptr<bridge::RnaPackage>(
+        new bridge::Memerna("data/")));
   }
 
   const auto& p = argparse.GetPositional();
@@ -56,7 +58,7 @@ int main(int argc, char* argv[]) {
         db = pos.front();
         pos.pop_front();
       }
-      auto frna = memerna::parsing::ParseDotBracketRna(seq, db);
+      auto frna = parsing::ParseDotBracketRna(seq, db);
       auto res = package->Efn(frna, argparse.HasFlag("v"));
       printf("%d\n%s", res.energy, res.desc.c_str());
     }
@@ -71,10 +73,10 @@ int main(int argc, char* argv[]) {
         seq = pos.front();
         pos.pop_front();
       }
-      auto rna = memerna::parsing::StringToRna(seq);
+      auto rna = parsing::StringToRna(seq);
       auto res = package->Fold(rna, argparse.HasFlag("v"));
       printf("%d\n%s\n%s", res.energy,
-          memerna::parsing::PairsToDotBracket(res.frna.p).c_str(), res.desc.c_str());
+          parsing::PairsToDotBracket(res.frna.p).c_str(), res.desc.c_str());
     }
   }
 }

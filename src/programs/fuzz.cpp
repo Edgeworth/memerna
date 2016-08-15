@@ -70,7 +70,9 @@ void FuzzRandomRna(int length,
 // for efn, try all foldings as well?
 
 int main(int argc, char* argv[]) {
-  ArgParse argparse({});
+  ArgParse argparse({
+      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
+  });
   auto ret = argparse.Parse(argc, argv);
   verify_expr(
       ret.size() == 0,
@@ -97,11 +99,12 @@ int main(int argc, char* argv[]) {
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
 
   auto start_time = std::chrono::steady_clock::now();
+  auto interval = atoi(argparse.GetOption("print-interval").c_str());
   for (int i = 0;; ++i) {
     int length = base_len;
     if (variance) length += rand() % variance;
     if (std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::steady_clock::now() - start_time).count() > 10.0) {
+        std::chrono::steady_clock::now() - start_time).count() > interval) {
       printf("Fuzzed %d RNA\n", i);
       start_time = std::chrono::steady_clock::now();
     }
