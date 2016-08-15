@@ -36,6 +36,8 @@ inline energy_t Fold(const rna_t& rna) {
   SetRna(rna);
   return Fold();
 }
+
+energy_t Fold1();
 energy_t FoldBruteForce();
 
 }

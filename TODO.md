@@ -1,16 +1,15 @@
 ### Zuker optimisation ideas
-- list of actual base pairs (skip things)
+- list of actual base pairs (skip things)? memory
 - magic data structures to reduce multiloop computation to log time
-- Python code to generate C code to do energy for optimisation.
+- Python code to generate C code to do energy for optimisation. - probs not useful
 - Bake AUGU penalties etc into things
 - Create second set of energy functions  and zuker
 -- optimised versions and easy to understand versions
 - Vectorisation (SSE)
-- Can remove some cache updates since negatives in turner model, etc.
 - Sliding window, reduce memory usage - needs st en not sz st?
 
 ### Todo
-- Lyngso optimisation
+- Lyngso optimisation?
 - Sparse folding
 - Speed up internal loops somehow
 - American fuzzy lop?
