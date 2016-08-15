@@ -1,5 +1,5 @@
 #include <constants.h>
-#include "energy.h"
+#include "energy/energy.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"

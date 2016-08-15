@@ -506,7 +506,7 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
   }
 }
 
-energy_t Fold(std::unique_ptr<structure::Structure>* s) {
+energy_t Fold() {
   auto arr = ComputeTables();
   std::stack<std::tuple<int, int, int>> q;
   auto energy = TraceExterior(arr, q);
@@ -552,7 +552,7 @@ void FoldBruteForceInternal(int idx) {
 
 }
 
-energy_t FoldBruteForce(std::unique_ptr<structure::Structure>* s) {
+energy_t FoldBruteForce() {
   p = std::vector<int>(r.size(), -1);
   best = constants::MAX_E;
   base_pairs.clear();
@@ -564,7 +564,7 @@ energy_t FoldBruteForce(std::unique_ptr<structure::Structure>* s) {
   }
   FoldBruteForceInternal(0);
   p = best_p;
-  return energy::ComputeEnergy(s);
+  return energy::ComputeEnergy();
 }
 
 }

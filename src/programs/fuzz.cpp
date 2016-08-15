@@ -6,7 +6,7 @@
 #include "argparse.h"
 #include "base.h"
 #include "parsing.h"
-#include "fold.h"
+#include "fold/fold.h"
 
 using namespace memerna;
 
@@ -42,19 +42,19 @@ void FuzzRandomRna(int length,
   for (int i = 0; i < length; ++i)
     rna[i] = rand() % 4;
 
-  auto memerna_dp = memerna.Fold(rna, false);
-  auto memerna_efn = memerna.Efn(memerna_dp.frna, false);
-  auto rnastructure_dp = rnastructure.Fold(rna, false);
-  auto rnastructure_efn = rnastructure.Efn(rnastructure_dp.frna, false);
+  auto memerna_dp = memerna.Fold(rna);
+  auto memerna_efn = memerna.Efn(memerna_dp);
+  auto rnastructure_dp = rnastructure.Fold(rna);
+  auto rnastructure_efn = rnastructure.Efn(rnastructure_dp);
 
-  if (memerna_dp.energy != memerna_efn.energy ||
+  if (memerna_dp.energy != memerna_efn ||
       memerna_dp.energy != rnastructure_dp.energy ||
-      memerna_dp.energy != rnastructure_efn.energy) {
+      memerna_dp.energy != rnastructure_efn) {
     printf(
         "Diff on %s\n  Rnastructure: dp %d, efn %d\n    %s\n  Memerna: dp %d, efn %d\n    %s\n\n",
-        parsing::RnaToString(rna).c_str(), rnastructure_dp.energy, rnastructure_efn.energy,
-        parsing::PairsToDotBracket(rnastructure_dp.frna.p).c_str(),
-        memerna_dp.energy, memerna_efn.energy, parsing::PairsToDotBracket(memerna_dp.frna.p).c_str()
+        parsing::RnaToString(rna).c_str(), rnastructure_dp.energy, rnastructure_efn,
+        parsing::PairsToDotBracket(rnastructure_dp.p).c_str(),
+        memerna_dp.energy, memerna_efn, parsing::PairsToDotBracket(memerna_dp.p).c_str()
     );
     return;
   }

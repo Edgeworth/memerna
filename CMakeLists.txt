@@ -27,7 +27,9 @@ SET(CMAKE_SHARED_LINKER_FLAGS_GPROF  "${CMAKE_SHARED_LINKER_FLAGS_GPROF} -pg")
 set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_MSAN "${CMAKE_CXX_FLAGS_MSAN}  -march=native -O3")
 set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
-file(GLOB MEMERNA_SOURCE "src/*.cpp" "src/*.h")
+file(GLOB MEMERNA_SOURCE
+    "src/*.cpp" "src/*.h" "src/energy/*.cpp" "src/energy/*.h" "src/fold/*.cpp"
+    "src/fold/*.h")
 file(GLOB BRIDGE_SOURCE "src/bridge/*.cpp" "src/bridge/*.h")
 file(GLOB TEST_SOURCE "tests/*.cpp" "tests/*.h")
 message(${CMAKE_CXX_FLAGS})

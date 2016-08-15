@@ -59,8 +59,9 @@ int main(int argc, char* argv[]) {
         pos.pop_front();
       }
       auto frna = parsing::ParseDotBracketRna(seq, db);
-      auto res = package->Efn(frna, argparse.HasFlag("v"));
-      printf("%d\n%s", res.energy, res.desc.c_str());
+      std::string desc;
+      auto res = package->Efn(frna, argparse.HasFlag("v") ? &desc : nullptr);
+      printf("%d\n%s", res, desc.c_str());
     }
   } else {
     while (1) {
@@ -74,9 +75,8 @@ int main(int argc, char* argv[]) {
         pos.pop_front();
       }
       auto rna = parsing::StringToRna(seq);
-      auto res = package->Fold(rna, argparse.HasFlag("v"));
-      printf("%d\n%s\n%s", res.energy,
-          parsing::PairsToDotBracket(res.frna.p).c_str(), res.desc.c_str());
+      auto res = package->Fold(rna);
+      printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.p).c_str());
     }
   }
 }

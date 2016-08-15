@@ -1,9 +1,9 @@
 #include <constants.h>
-#include "energy.h"
-#include "fold.h"
+#include "energy/energy.h"
+#include "fold/fold.h"
 #include "parsing.h"
 #include "bridge.h"
-#include "structure.h"
+#include "energy/structure.h"
 
 #include "nn_unpaired_folder.hpp"
 #include "nn_scorer.hpp"
@@ -16,25 +16,24 @@ Rnark::Rnark(const std::string& data_path) : model(data_path) {
   model.SetMLParams(93, -6, 0, 0, 999999);
 }
 
-RnaPackage::results_t Rnark::Efn(const folded_rna_t& frna, bool verbose) const {
+energy_t Rnark::Efn(const folded_rna_t& frna, std::string* desc) const {
   auto rna = librnary::StringToPrimary(parsing::RnaToString(frna.r));
   auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p)));
 
   librnary::NNScorer<librnary::NNUnpairedModel> scorer(model);
   scorer.SetRNA(rna);
   energy_t energy;
-  std::string desc;
-  if (verbose) {
+  if (desc) {
     auto trace = scorer.TraceExterior(ss_tree.RootSurface());
-    desc = trace.Describe(' ', 0) + "\n";
+    *desc = trace.Describe(' ', 0) + "\n";
     energy = trace.recursive_score;
   } else {
     energy = scorer.ScoreExterior(ss_tree.RootSurface());
   }
-  return {energy, frna, desc};
+  return energy;
 }
 
-RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) const {
+folded_rna_t Rnark::Fold(const rna_t& rna) const {
   librnary::NNUnpairedFolder folder(model);
   folder.SetMaxTwoLoop(constants::TWOLOOP_MAX_SZ);
   folder.SetLonelyPairs(true);
@@ -42,7 +41,7 @@ RnaPackage::results_t Rnark::Fold(const rna_t& rna, bool verbose) const {
   auto primary = librnary::StringToPrimary(parsing::RnaToString(rna));
   energy_t energy = folder.Fold(primary);
   auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
-  return {energy, {rna, pairs}, verbose ? "verbose output not yet implemented" : ""};
+  return {rna, pairs, energy};
 }
 
 Rnastructure::Rnastructure(const std::string& data_path, bool _use_lyngso) :
@@ -50,16 +49,16 @@ Rnastructure::Rnastructure(const std::string& data_path, bool _use_lyngso) :
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-RnaPackage::results_t Rnastructure::Efn(const folded_rna_t& frna, bool verbose) const {
+energy_t Rnastructure::Efn(const folded_rna_t& frna, std::string* desc)  const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(frna.r)),
       librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p))
   );
   efn2(data.get(), structure.get(), 1, true);
-  return {energy_t(structure->GetEnergy(1)), frna, verbose ? "verbose output not yet implemented" : ""};
+  return energy_t(structure->GetEnergy(1));
 }
 
-RnaPackage::results_t Rnastructure::Fold(const rna_t& rna, bool verbose) const {
+folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(rna)));
   // First false here says also generate the folding itself (not just the MFE).
@@ -69,7 +68,7 @@ RnaPackage::results_t Rnastructure::Fold(const rna_t& rna, bool verbose) const {
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true, !use_lyngso);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
-  return {energy_t(structure->GetEnergy(1)), {rna, pairs}, verbose ? "verbose output not yet implemented" : ""};
+  return {rna, pairs, energy_t(structure->GetEnergy(1))};
 }
 
 Memerna::Memerna(const std::string& data_path) {
@@ -77,37 +76,26 @@ Memerna::Memerna(const std::string& data_path) {
   LoadEnergyModelFromDataDir(data_path);
 }
 
-RnaPackage::results_t Memerna::Efn(const folded_rna_t& frna, bool verbose) const {
+energy_t Memerna::Efn(const folded_rna_t& frna, std::string* desc) const {
   energy_t energy;
-  std::string desc;
-  if (verbose) {
+  if (desc) {
     std::unique_ptr<structure::Structure> structure;
     energy = energy::ComputeEnergy(frna, &structure);
     for (const auto& s : structure->Description()) {
-      desc += s;
-      desc += "\n";
+      *desc += s;
+      *desc += "\n";
     }
   } else {
     energy = energy::ComputeEnergy(frna);
   }
 
-  return {energy, frna, desc};
+  return energy;
 }
 
-RnaPackage::results_t Memerna::Fold(const rna_t& rna, bool verbose) const {
-  energy_t energy;
-  std::string desc;
-  if (verbose) {
-    std::unique_ptr<structure::Structure> structure;
-    energy = fold::Fold(rna, &structure);
-    for (const auto& s : structure->Description()) {
-      desc += s;
-      desc += "\n";
-    }
-  } else {
-    energy = fold::Fold(rna);
-  }
-  return {energy, {rna, p}, desc};
+folded_rna_t Memerna::Fold(const rna_t& rna) const {
+  SetRna(rna);
+  auto energy = fold::Fold();
+  return {r, p, energy};
 }
 
 }

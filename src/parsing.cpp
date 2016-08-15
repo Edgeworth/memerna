@@ -1,4 +1,5 @@
 #include "parsing.h"
+#include "constants.h"
 
 namespace memerna {
 namespace parsing {
@@ -13,7 +14,7 @@ rna_t StringToRna(const std::string& s) {
 
 folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str) {
   verify_expr(rna_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  return {StringToRna(rna_str), DotBracketToPairs(pairs_str)};
+  return {StringToRna(rna_str), DotBracketToPairs(pairs_str), constants::MAX_E};
 }
 
 std::vector<int> DotBracketToPairs(const std::string& pairs_str) {

@@ -29,6 +29,7 @@ typedef int32_t energy_t;
 struct folded_rna_t {
   rna_t r;
   std::vector<int> p;
+  energy_t energy;
 };
 
 void LoadEnergyModelFromDataDir(const std::string& data_dir);
