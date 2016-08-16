@@ -13,7 +13,7 @@ from rna import RNA
 
 class MemeVault:
   def __init__(self, dataset):
-    self.db = sqlite3.connect('memevault/memevault.db')
+    self.db = sqlite3.connect('scripts/memevault.db')
     self.dataset = dataset
 
   def add(self, rna):
