@@ -81,7 +81,7 @@ class ViennaRNA:
       f.flush()
       benchmark_results, stdout = benchmark_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-         # '-d3',
+        '-d3',
         '--noPS', '-i', f.name)
       seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
