@@ -33,11 +33,15 @@ struct folded_rna_t {
 };
 
 void LoadEnergyModelFromDataDir(const std::string& data_dir);
+
 void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy);
+
 uint32_t EnergyModelChecksum();
 
 std::string sgetline(FILE* fp);
+
 std::string sfmt(const char* fmt, ...);
+
 std::string vsfmt(const char* fmt, va_list l);
 
 }

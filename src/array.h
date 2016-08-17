@@ -18,6 +18,7 @@ public:
   }
 
   array3d_t(const array3d_t&) = delete;
+
   array3d_t& operator=(const array3d_t&) = delete;
 
   array3d_t(array3d_t&& o) {*this = std::move(o);}
@@ -57,6 +58,7 @@ public:
   }
 
   array2d_t(const array2d_t&) = delete;
+
   array2d_t& operator=(const array2d_t&) = delete;
 
   array2d_t(array2d_t&& o) {*this = std::move(o);}

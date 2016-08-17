@@ -66,7 +66,7 @@ folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
   // Last parameter is whether to use Lyngso or not.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso);
+          !use_lyngso);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
   return {rna, pairs, energy_t(structure->GetEnergy(1))};

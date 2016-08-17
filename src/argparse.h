@@ -12,7 +12,7 @@ class ArgParse {
 public:
   struct option_t {
     option_t(const std::string& _desc = "", const std::string& _default_arg = "",
-        bool _has_default = false, bool _has_arg = false, bool _required = false) :
+             bool _has_default = false, bool _has_arg = false, bool _required = false) :
         desc(_desc), default_arg(_default_arg), has_default(_has_default),
         has_arg(_has_arg), required(_required) {
       verify_expr(!has_arg || has_default, "bad arguments");
@@ -45,9 +45,11 @@ public:
   ArgParse(const std::map<std::string, option_t>& _possible_args) : possible_args(_possible_args) {}
 
   ArgParse(const ArgParse&) = delete;
+
   ArgParse& operator=(const ArgParse&) = delete;
 
   std::string Parse(int argc, char* argv[]);
+
   std::string Usage();
 
   const std::vector<std::string>& GetPositional() const {return positional;}

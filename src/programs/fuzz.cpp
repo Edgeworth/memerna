@@ -43,7 +43,7 @@ rna_t GenerateRandomRna(int length) {
 }
 
 void FuzzRna(const rna_t& rna,
-    const bridge::Memerna& memerna, const bridge::Rnastructure& rnastructure) {
+             const bridge::Memerna& memerna, const bridge::Rnastructure& rnastructure) {
   auto memerna_dp = memerna.Fold(rna);
   auto memerna_efn = memerna.Efn(memerna_dp);
   auto rnastructure_dp = rnastructure.Fold(rna);
@@ -76,7 +76,7 @@ void FuzzComputeTables(const rna_t& rna) {
       for (int a = 0; a < fold::DP_SIZE; ++a) {
         if (table1[st][en][a] != table2[st][en][a] && table1[st][en][a] < constants::CAP_E) {
           printf("Diff on %s\n %d %d %d: %d (good) != %d\n",
-              parsing::RnaToString(rna).c_str(), st, en, a, table1[st][en][a], table2[st][en][a]);
+                 parsing::RnaToString(rna).c_str(), st, en, a, table1[st][en][a], table2[st][en][a]);
           return;
         }
       }
@@ -95,8 +95,8 @@ void FuzzComputeTables(const rna_t& rna) {
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({
-      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
-  });
+                        {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
+                    });
   auto ret = argparse.Parse(argc, argv);
   verify_expr(
       ret.size() == 0,

@@ -8,13 +8,13 @@ using namespace memerna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({
-      {"v", {"be verbose (if possible)"}},
-      {"r", {"rnastructure"}},
-      {"m", {"rnark"}},
-      {"k", {"memerna"}},
-      {"e", {"run efn"}},
-      {"f", {"run fold"}},
-  });
+                        {"v", {"be verbose (if possible)"}},
+                        {"r", {"rnastructure"}},
+                        {"m", {"rnark"}},
+                        {"k", {"memerna"}},
+                        {"e", {"run efn"}},
+                        {"f", {"run fold"}},
+                    });
 
   auto ret = argparse.Parse(argc, argv);
 

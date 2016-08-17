@@ -40,13 +40,13 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
         UPDATE_EXT(EXT_WC, EXT, st, en, base00);
 
       // (   )3<   > 3'
-      UPDATE_EXT(EXT, EXT, st, en - 1, base01 + dangle3_e[en1b][enb][stb]);
+      UPDATE_EXT(EXT, EXT, st, en - 1, base01 + g_dangle3_e[en1b][enb][stb]);
       // 5(   )<   > 5'
-      UPDATE_EXT(EXT, EXT, st + 1, en, base10 + dangle5_e[enb][stb][st1b]);
+      UPDATE_EXT(EXT, EXT, st + 1, en, base10 + g_dangle5_e[enb][stb][st1b]);
       // .(   ).<   > Terminal mismatch
-      UPDATE_EXT(EXT, EXT, st + 1, en - 1, base11 + terminal_e[en1b][enb][stb][st1b]);
+      UPDATE_EXT(EXT, EXT, st + 1, en - 1, base11 + g_terminal[en1b][enb][stb][st1b]);
       // .(   ).<(   ) > Left coax  x
-      auto val = base11 + energy::MismatchMediatedCoaxialEnergy(en1b, enb, stb, st1b);
+      auto val = base11 + energy::MismatchCoaxial(en1b, enb, stb, st1b);
       UPDATE_EXT(EXT, EXT_GU, st + 1, en - 1, val);
       UPDATE_EXT(EXT, EXT_WC, st + 1, en - 1, val);
 
@@ -54,15 +54,15 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
       UPDATE_EXT(EXT, EXT_RCOAX, st, en - 1, base01);
       // (   ).<( * ). > Right coax backward
       if (st > 0)
-        UPDATE_EXT(EXT_RCOAX, EXT, st, en - 1, base01 + energy::MismatchMediatedCoaxialEnergy(
+        UPDATE_EXT(EXT_RCOAX, EXT, st, en - 1, base01 + energy::MismatchCoaxial(
             en1b, enb, r[st - 1], stb));
 
       if (en < N - 1) {
         // (   )<(   ) > Flush coax
         auto enrb = r[en + 1];
-        UPDATE_EXT(EXT, EXT_WC, st, en, base00 + stacking_e[enb][enrb][enrb ^ 3][stb]);
+        UPDATE_EXT(EXT, EXT_WC, st, en, base00 + g_stack[enb][enrb][enrb ^ 3][stb]);
         if (enrb == G || enrb == U)
-          UPDATE_EXT(EXT, EXT_GU, st, en, base00 + stacking_e[enb][enrb][enrb ^ 1][stb]);
+          UPDATE_EXT(EXT, EXT_GU, st, en, base00 + g_stack[enb][enrb][enrb ^ 1][stb]);
       }
     }
   }
@@ -114,7 +114,7 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         }
       }
 
-      auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
+      auto base_branch_cost = energy::AuGuPenalty(st, en) + g_multiloop_hack_a + g_multiloop_hack_b;
 
       // (<   ><    >)
       if (base_branch_cost + arr[st + 1][en - 1][DP_U2] == arr[st][en][DP_P]) {
@@ -122,17 +122,17 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         goto loopend;
       }
       // (3<   ><   >) 3'
-      if (base_branch_cost + arr[st + 2][en - 1][DP_U2] + dangle3_e[stb][st1b][enb] == arr[st][en][DP_P]) {
+      if (base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb] == arr[st][en][DP_P]) {
         q.emplace(st + 2, en - 1, DP_U2);
         goto loopend;
       }
       // (<   ><   >5) 5'
-      if (base_branch_cost + arr[st + 1][en - 2][DP_U2] + dangle5_e[stb][en1b][enb] == arr[st][en][DP_P]) {
+      if (base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb] == arr[st][en][DP_P]) {
         q.emplace(st + 1, en - 2, DP_U2);
         goto loopend;
       }
       // (.<   ><   >.) Terminal mismatch
-      if (base_branch_cost + arr[st + 2][en - 2][DP_U2] + terminal_e[stb][st1b][en1b][enb] == arr[st][en][DP_P]) {
+      if (base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb] == arr[st][en][DP_P]) {
         q.emplace(st + 2, en - 2, DP_U2);
         goto loopend;
       }
@@ -141,15 +141,15 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         base_t pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
 
         // (.(   )   .) Left outer coax - P
-        auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-        if (base_branch_cost + arr[st + 2][piv][DP_P] + multiloop_hack_b +
+        auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
+        if (base_branch_cost + arr[st + 2][piv][DP_P] + g_multiloop_hack_b +
             energy::AuGuPenalty(st + 2, piv) + arr[piv + 1][en - 2][DP_U] + outer_coax == arr[st][en][DP_P]) {
           q.emplace(st + 2, piv, DP_P);
           q.emplace(piv + 1, en - 2, DP_U);
           goto loopend;
         }
         // (.   (   ).) Right outer coax
-        if (base_branch_cost + arr[st + 2][piv][DP_U] + multiloop_hack_b +
+        if (base_branch_cost + arr[st + 2][piv][DP_U] + g_multiloop_hack_b +
             energy::AuGuPenalty(piv + 1, en - 2) + arr[piv + 1][en - 2][DP_P] + outer_coax == arr[st][en][DP_P]) {
           q.emplace(st + 2, piv, DP_U);
           q.emplace(piv + 1, en - 2, DP_P);
@@ -157,17 +157,17 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         }
 
         // (.(   ).   ) Left right coax
-        if (base_branch_cost + arr[st + 2][piv - 1][DP_P] + multiloop_hack_b +
+        if (base_branch_cost + arr[st + 2][piv - 1][DP_P] + g_multiloop_hack_b +
             energy::AuGuPenalty(st + 2, piv - 1) + arr[piv + 1][en - 1][DP_U] +
-            energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b) == arr[st][en][DP_P]) {
+            energy::MismatchCoaxial(pl1b, plb, st1b, st2b) == arr[st][en][DP_P]) {
           q.emplace(st + 2, piv - 1, DP_P);
           q.emplace(piv + 1, en - 1, DP_U);
           goto loopend;
         }
         // (   .(   ).) Right left coax
-        if (base_branch_cost + arr[st + 1][piv][DP_U] + multiloop_hack_b +
+        if (base_branch_cost + arr[st + 1][piv][DP_U] + g_multiloop_hack_b +
             energy::AuGuPenalty(piv + 2, en - 2) + arr[piv + 2][en - 2][DP_P] +
-            energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b) == arr[st][en][DP_P]) {
+            energy::MismatchCoaxial(en2b, en1b, prb, pr1b) == arr[st][en][DP_P]) {
           q.emplace(st + 1, piv, DP_U);
           q.emplace(piv + 2, en - 2, DP_P);
           goto loopend;
@@ -175,16 +175,16 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
 
         // ((   )   ) Left flush coax
         if (base_branch_cost + arr[st + 1][piv][DP_P] +
-            multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
-            arr[piv + 1][en - 1][DP_U] + stacking_e[stb][st1b][plb][enb] == arr[st][en][DP_P]) {
+            g_multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
+            arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb] == arr[st][en][DP_P]) {
           q.emplace(st + 1, piv, DP_P);
           q.emplace(piv + 1, en - 1, DP_U);
           goto loopend;
         }
         // (   (   )) Right flush coax
         if (base_branch_cost + arr[st + 1][piv][DP_U] +
-            multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
-            arr[piv + 1][en - 1][DP_P] + stacking_e[stb][prb][en1b][enb] == arr[st][en][DP_P]) {
+            g_multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
+            arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb] == arr[st][en][DP_P]) {
           q.emplace(st + 1, piv, DP_U);
           q.emplace(piv + 1, en - 1, DP_P);
           goto loopend;
@@ -203,10 +203,10 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(st, piv) + multiloop_hack_b;
-        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(st, piv - 1) + multiloop_hack_b;
-        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st + 1, piv) + multiloop_hack_b;
-        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st + 1, piv - 1) + multiloop_hack_b;
+        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(st, piv) + g_multiloop_hack_b;
+        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(st, piv - 1) + g_multiloop_hack_b;
+        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st + 1, piv) + g_multiloop_hack_b;
+        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st + 1, piv - 1) + g_multiloop_hack_b;
 
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.
@@ -217,7 +217,7 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         // Check a == U_RCOAX:
         // (   ).<( ** ). > Right coax backward
         if (a == DP_U_RCOAX) {
-          if (st > 0 && base01 + energy::MismatchMediatedCoaxialEnergy(
+          if (st > 0 && base01 + energy::MismatchCoaxial(
               pl1b, pb, r[st - 1], stb) + right_unpaired == arr[st][en][DP_U_RCOAX]) {
             q.emplace(st, piv - 1, DP_P);
             if (right_unpaired)
@@ -243,28 +243,28 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
           continue;
 
         // (   )3<   > 3' - U, U2
-        if (base01 + dangle3_e[pl1b][pb][stb] + right_unpaired == arr[st][en][a]) {
+        if (base01 + g_dangle3_e[pl1b][pb][stb] + right_unpaired == arr[st][en][a]) {
           q.emplace(st, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // 5(   )<   > 5' - U, U2
-        if (base10 + dangle5_e[pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
+        if (base10 + g_dangle5_e[pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
           q.emplace(st + 1, piv, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch - U, U2
-        if (base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
+        if (base11 + g_terminal[pl1b][pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
           q.emplace(st + 1, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<(   ) > Left coax - U, U2
-        auto val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b);
+        auto val = base11 + energy::MismatchCoaxial(pl1b, pb, stb, st1b);
         if (val + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_WC);
@@ -287,13 +287,13 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
         if (piv < en) {
           auto pr1b = r[piv + 1];
           // (   )<(   ) > Flush coax - U, U2
-          if (base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
+          if (base00 + g_stack[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_WC);
             goto loopend;
           }
           if ((pr1b == G || pr1b == U) &&
-              base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[piv + 1][en][DP_U_GU] == arr[st][en][a]) {
+              base00 + g_stack[pb][pr1b][pr1b ^ 1][stb] + arr[piv + 1][en][DP_U_GU] == arr[st][en][a]) {
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_GU);
             goto loopend;

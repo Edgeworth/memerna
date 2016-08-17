@@ -99,7 +99,7 @@ void ParseInternalLoop1x1FromFile(const std::string& filename) {
     base_t f = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
+    verify_expr(fscanf(fp, " %d ", &g_internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -117,8 +117,8 @@ void ParseInternalLoop1x2FromFile(const std::string& filename) {
     base_t g = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 &&
-        e != -1 && f != -1 && g != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
+                e != -1 && f != -1 && g != -1, "expected base");
+    verify_expr(fscanf(fp, " %d ", &g_internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -137,8 +137,8 @@ void ParseInternalLoop2x2FromFile(const std::string& filename) {
     base_t h = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 &&
-        f != -1 && g != -1 && h != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
+                f != -1 && g != -1 && h != -1, "expected base");
+    verify_expr(fscanf(fp, " %d ", &g_internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -174,32 +174,32 @@ void ParseMiscDataFromFile(const std::string& filename) {
 
 
   // Bulge loops.
-  READ_DATA(bulge_special_c);
+  READ_DATA(g_bulge_special_c);
 
   // Coaxial stacking.
-  READ_DATA(coax_mismatch_non_contiguous);
-  READ_DATA(coax_mismatch_wc_bonus);
-  READ_DATA(coax_mismatch_gu_bonus);
+  READ_DATA(g_coax_mismatch_non_contiguous);
+  READ_DATA(g_coax_mismatch_wc_bonus);
+  READ_DATA(g_coax_mismatch_gu_bonus);
 
   // Hairpin loops.
-  READ_DATA(hairpin_uu_ga_first_mismatch);
-  READ_DATA(hairpin_gg_first_mismatch);
-  READ_DATA(hairpin_special_gu_closure);
-  READ_DATA(hairpin_c3_loop);
-  READ_DATA(hairpin_all_c_a);
-  READ_DATA(hairpin_all_c_b);
+  READ_DATA(g_hairpin_uu_ga_first_mismatch);
+  READ_DATA(g_hairpin_gg_first_mismatch);
+  READ_DATA(g_hairpin_special_gu_closure);
+  READ_DATA(g_hairpin_c3_loop);
+  READ_DATA(g_hairpin_all_c_a);
+  READ_DATA(g_hairpin_all_c_b);
 
   // Internal loops.
-  READ_DATA(internal_asym);
-  READ_DATA(internal_augu_penalty);
-  READ_DATA(internal_mismatch_1xk);
+  READ_DATA(g_internal_asym);
+  READ_DATA(g_internal_augu_penalty);
+  READ_DATA(g_internal_mismatch_1xk);
 
   // Multiloop data.
-  READ_DATA(multiloop_hack_a);
-  READ_DATA(multiloop_hack_b);
+  READ_DATA(g_multiloop_hack_a);
+  READ_DATA(g_multiloop_hack_b);
 
   // AU/GU penalty
-  READ_DATA(augu_penalty);
+  READ_DATA(g_augu_penalty);
 #undef READ_DATA
 
   fclose(fp);
