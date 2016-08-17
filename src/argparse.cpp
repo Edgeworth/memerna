@@ -23,9 +23,14 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
       positional.push_back(std::move(arg));
     }
   }
-  for (const auto& arg : possible_args) {
-    if (arg.second.has_arg && flags.count(arg.first) == 0 && !arg.second.has_default && arg.second.required)
-      return sfmt("missing argument for flag %s", arg.first.c_str());
+  for (const auto& argpair : possible_args) {
+    const auto& flag = argpair.first;
+    const auto& arg = argpair.second;
+    verify_expr(!arg.has_arg || arg.has_default, "bad option somehow");
+    if (arg.has_arg && flags.count(flag) == 0 && !arg.has_default && arg.required)
+      return sfmt("missing argument for flag %s", flag.c_str());
+    if (!arg.choices.empty() && arg.choices.count(GetOption(flag)) == 0)
+      return sfmt("unrecognised argument for flag %s", flag.c_str());
   }
   return "";
 }

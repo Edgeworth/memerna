@@ -44,8 +44,8 @@ folded_rna_t Rnark::Fold(const rna_t& rna) const {
   return {rna, pairs, energy};
 }
 
-Rnastructure::Rnastructure(const std::string& data_path, bool _use_lyngso) :
-    data(librnary::LoadDatatable(data_path)), use_lyngso(_use_lyngso) {
+Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
+    data(librnary::LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
