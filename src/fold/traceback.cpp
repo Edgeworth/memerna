@@ -48,8 +48,8 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
       UPDATE_EXT(EXT, EXT, st + 1, en - 1, base11 + terminal_e[en1b][enb][stb][st1b]);
       // .(   ).<(   ) > Left coax  x
       auto val = base11 + energy::MismatchMediatedCoaxialEnergy(en1b, enb, stb, st1b);
-      UPDATE_EXT(EXT, EXT_GU, st + 1, en - 1,  val);
-      UPDATE_EXT(EXT, EXT_WC, st + 1, en - 1,  val);
+      UPDATE_EXT(EXT, EXT_GU, st + 1, en - 1, val);
+      UPDATE_EXT(EXT, EXT_WC, st + 1, en - 1, val);
 
       // (   ).<(   ). > Right coax forward
       UPDATE_EXT(EXT, EXT_RCOAX, st, en - 1, base01);
@@ -69,7 +69,6 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
   }
 
   // Backtrace.
-  p = std::vector<int>(r.size(), -1);
   // sz, st, paired
   int ext_st = 0, ext_a = EXT;
   while (ext_st < N) {
@@ -90,6 +89,7 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
 #undef UPDATE_EXT
 
 void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q) {
+  p = std::vector<int>(r.size(), -1);
   while (!q.empty()) {
     int st, en, a;
     std::tie(st, en, a) = q.top();
@@ -204,7 +204,7 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
       }
 
       // Pair here.
-      for (int piv = st + constants::HAIRPIN_MIN_SZ + 2; piv <= en; ++piv) {
+      for (int piv = st + constants::HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];

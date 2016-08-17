@@ -17,20 +17,24 @@ public:
         has_arg(_has_arg), required(_required) {
       verify_expr(!has_arg || has_default, "bad arguments");
     }
+
     option_t& Arg(const std::string& _default) {
       default_arg = _default;
       has_default = true;
       has_arg = true;
       return *this;
     }
+
     option_t& Arg() {
       has_arg = true;
       return *this;
     }
+
     option_t& Require() {
       required = true;
       return *this;
     }
+
     std::string desc;
     std::string default_arg;
     bool has_default;
@@ -39,6 +43,7 @@ public:
   };
 
   ArgParse(const std::map<std::string, option_t>& _possible_args) : possible_args(_possible_args) {}
+
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
 
@@ -48,6 +53,7 @@ public:
   const std::vector<std::string>& GetPositional() const {return positional;}
 
   bool HasFlag(const std::string& flag) const {return bool(flags.count(flag));}
+
   std::string GetOption(const std::string& flag) {
     if (HasFlag(flag))
       return flags[flag];

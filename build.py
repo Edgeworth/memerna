@@ -20,7 +20,6 @@ if args.use_clang:
 
 
 def run_command(cmd):
-  print(cmd)
   res = os.system(cmd)
   if res != 0:
     sys.exit(1)

@@ -12,7 +12,6 @@ namespace fold {
     } \
   } while (0)
 
-
 array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
   int N = int(r.size());
   // Automatically initialised to MAX_E.
@@ -89,8 +88,9 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         UPDATE_CACHE(DP_U2, arr[st + 1][en][DP_U2]);
       }
       // Pair here.
+      // TODO can remove this line probs
       UPDATE_CACHE(DP_U, arr[st][en][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
-      for (int piv = st + constants::HAIRPIN_MIN_SZ + 2; piv <= en; ++piv) {
+      for (int piv = st + constants::HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];

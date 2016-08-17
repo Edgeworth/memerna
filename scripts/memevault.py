@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 import glob
-import os
 import random
-import re
 import sqlite3
-import urllib.request
 
-from bs4 import BeautifulSoup
 from common import *
 from rna import RNA
 

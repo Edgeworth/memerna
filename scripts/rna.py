@@ -1,4 +1,3 @@
-import random
 import re
 import string
 
@@ -32,6 +31,7 @@ class RNAAccuracy:
 
   def __str__(self):
     return 'F-Score: %.2f - PPV: %.2f - Sensitivity: %.2f' % (self.fscore, self.ppv, self.sensitivity)
+
 
 class RNA:
   def __init__(self, name=None, seq=None, pairs=None):

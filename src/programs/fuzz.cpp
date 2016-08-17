@@ -4,7 +4,6 @@
 #include <chrono>
 #include <bridge/bridge.h>
 #include "argparse.h"
-#include "base.h"
 #include "parsing.h"
 #include "fold/fold.h"
 
@@ -36,12 +35,15 @@ void FuzzRnaOfLength(int length) {
   }
 }
 
-void FuzzRandomRna(int length,
-    const bridge::Memerna& memerna, const bridge::Rnastructure& rnastructure) {
+rna_t GenerateRandomRna(int length) {
   rna_t rna(std::size_t(length), 0);
   for (int i = 0; i < length; ++i)
     rna[i] = rand() % 4;
+  return rna;
+}
 
+void FuzzRna(const rna_t& rna,
+    const bridge::Memerna& memerna, const bridge::Rnastructure& rnastructure) {
   auto memerna_dp = memerna.Fold(rna);
   auto memerna_efn = memerna.Efn(memerna_dp);
   auto rnastructure_dp = rnastructure.Fold(rna);
@@ -57,6 +59,27 @@ void FuzzRandomRna(int length,
         memerna_dp.energy, memerna_efn, parsing::PairsToDotBracket(memerna_dp.p).c_str()
     );
     return;
+  }
+}
+
+#include "fold/slow_fold.h"
+#include "fold/fold1.h"
+#include "fold/fold2.h"
+void FuzzComputeTables(const rna_t& rna) {
+  SetRna(rna);
+  auto table1 = fold::ComputeTablesSlow();
+  auto table2 = fold::ComputeTables2();
+  int N = int(rna.size());
+  for (int st = N - 1; st >= 0; --st) {
+    for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      for (int a = 0; a < fold::DP_SIZE; ++a) {
+        if (table1[st][en][a] != table2[st][en][a] && table1[st][en][a] < constants::CAP_E) {
+          printf("Diff on %s\n %d %d %d: %d (good) != %d\n",
+              parsing::RnaToString(rna).c_str(), st, en, a, table1[st][en][a], table2[st][en][a]);
+          return;
+        }
+      }
+    }
   }
 }
 
@@ -108,7 +131,9 @@ int main(int argc, char* argv[]) {
       printf("Fuzzed %d RNA\n", i);
       start_time = std::chrono::steady_clock::now();
     }
-    FuzzRandomRna(length, memerna, rnastructure);
+    auto rna = GenerateRandomRna(length);
+//    FuzzRna(length, memerna, rnastructure);
+    FuzzComputeTables(rna);
   }
 }
 
