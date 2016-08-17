@@ -11,14 +11,15 @@ const energy_t MIN_FLUSH_COAX = -34;
 // In general, for each array we need a new candidate list (except for U and U2 which mirror each other very
 // closely). We also need another candidate list for forward RCOAX since we can't use its energy value directly, not
 // knowing it. Same with flush coaxial stacks.
+// TODO optimise loop etc for ones that have monotonicity only
 enum {
-  CAND_P_MISMATCH,
-  CAND_P_OUTER,
-  CAND_P_FLUSH,
+  CAND_P_MISMATCH,  // No monotonicity.
+  CAND_P_OUTER,  // No monotonicity.
+  CAND_P_FLUSH,  // No monotonicity.
   CAND_U,
-  CAND_U_LCOAX,
-  CAND_U_RCOAX_FWD,
-  CAND_U_FLUSH,
+  CAND_U_LCOAX,  // No monotonicity.
+  CAND_U_RCOAX_FWD,  // No monotonicity.
+  CAND_U_FLUSH,  // No monotonicity.
   CAND_U_WC,
   CAND_U_GU,
   CAND_U_RCOAX,
@@ -136,8 +137,8 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         // stb piv piv + 1
         if (cand.idx + 1 < en) {
           auto pb = r[cand.idx], pr1b = r[cand.idx + 1];
-          auto val =
-              cand.energy - MIN_FLUSH_COAX + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[cand.idx + 1][en][DP_U_WC];
+          auto val = cand.energy - MIN_FLUSH_COAX +
+              stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[cand.idx + 1][en][DP_U_WC];
           mins[DP_U] = std::min(mins[DP_U], val);
           mins[DP_U2] = std::min(mins[DP_U2], val);
           if (pr1b == G || pr1b == U) {
@@ -175,9 +176,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
 
       energy_t cand_st_mins[] = {constants::MAX_E, constants::MAX_E, constants::MAX_E, constants::MAX_E,
           constants::MAX_E, constants::MAX_E, constants::MAX_E, constants::MAX_E, constants::MAX_E, constants::MAX_E};
-      energy_t p_cand_en_mins[] = {constants::MAX_E, constants::MAX_E, constants::MAX_E};
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
-      static_assert(sizeof(p_cand_en_mins) / sizeof(p_cand_en_mins[0]) == CAND_EN_SIZE, "array wrong size");
 
       // Unpaired cases. These store the best pairs u_cand that begin at st.
       // begin means that the whole interaction starts at st. e.g. .(   ). starts one before the paren.
@@ -206,6 +205,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // multiple times? when this is split into multiple candidate lists still can have minimum over all of them for
       // monotonicity``
       // Can only merge candidate lists for monotonicity if the right part of the pivot is the same (from the same array).
+      // Can only apply monotonicity optimisation to ones ending with min(U, 0).
       // (   ). - 3' - U, U2
       auto dangle3_base = arr[st][en - 1][DP_P] + AUGUBRANCH[stb][en1b] + dangle3_e[en1b][enb][stb];
       if (dangle3_base < arr[st][en][DP_U] && dangle3_base < cand_st_mins[CAND_U])
@@ -221,14 +221,14 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // .(   ).<(   ) > - Left coax - U, U2
       auto lcoax_base = arr[st + 1][en - 1][DP_P] + AUGUBRANCH[st1b][en1b] +
           energy::MismatchMediatedCoaxialEnergy(en1b, enb, stb, st1b);
-      if (lcoax_base < arr[st][en][DP_U] && lcoax_base < cand_st_mins[CAND_U_LCOAX])
-        cand_st_mins[CAND_U_LCOAX] = lcoax_base;
+      if (lcoax_base < arr[st][en][DP_U])
+        cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
       // This is probably better than having four candidate lists for each possible mismatch (TODO check this).
       // TODO remember to subtract off coax_mismatch_non_contiguous when computing after saving value
       auto rcoaxf_base = arr[st][en - 1][DP_P] + AUGUBRANCH[stb][en1b] + MIN_MISMATCH_COAX;
-      if (rcoaxf_base < arr[st][en][DP_U] && rcoaxf_base < cand_st_mins[CAND_U_RCOAX_FWD])
-        cand_st_mins[CAND_U_RCOAX_FWD] = rcoaxf_base;
+      if (rcoaxf_base < arr[st][en][DP_U])
+        cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
 
       // (   ).<( * ). > Right coax backward - RCOAX
       // Again, we can't replace RCOAX with U, we'd have to replace it with RCOAX, so compare to itself.
@@ -246,8 +246,8 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // be very careful when keeping this candidate list monotonic, since stacks could have less or more energy
       // than we expect.
       auto flush_base = arr[st][en][DP_P] + AUGUBRANCH[stb][enb] + MIN_FLUSH_COAX;
-      if (flush_base < arr[st][en][DP_U] && flush_base < cand_st_mins[CAND_U_FLUSH])
-        cand_st_mins[CAND_U_FLUSH] = flush_base;
+      if (flush_base < arr[st][en][DP_U])
+        cand_st[CAND_U_FLUSH].push_back({flush_base, en});
 
       // Base cases.
       arr[st][en][DP_U] = std::min(arr[st][en][DP_U], normal_base);
@@ -263,30 +263,30 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // Since we assumed the minimum energy coax stack and made this structure self contained,
       // we could potentially replace it with U[st + 1][en].
       auto plocoax_base = arr[st + 2][en][DP_P] + AUGUBRANCH[st2b][enb] + MIN_MISMATCH_COAX;
-      if (plocoax_base < arr[st + 1][en][DP_U] && plocoax_base < cand_st_mins[CAND_P_OUTER])
-        cand_st_mins[CAND_P_OUTER] = plocoax_base;
+      if (plocoax_base < arr[st + 1][en][DP_U])
+        cand_st[CAND_P_OUTER].push_back({plocoax_base, en});
       // (.   (   ).) Right outer coax
       auto procoax_base = arr[st][en - 2][DP_P] + AUGUBRANCH[stb][en2b] + MIN_MISMATCH_COAX;
-      if (procoax_base < arr[st][en - 1][DP_U] && procoax_base < p_cand_en_mins[CAND_EN_P_OUTER])
-        p_cand_en_mins[CAND_EN_P_OUTER] = procoax_base;
+      if (procoax_base < arr[st][en - 1][DP_U])
+        p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       auto plrcoax_base = arr[st + 2][en - 1][DP_P] + AUGUBRANCH[st2b][en1b] +
           energy::MismatchMediatedCoaxialEnergy(en1b, enb, st1b, st2b);
-      if (plrcoax_base < arr[st + 1][en][DP_U] && plrcoax_base < cand_st_mins[CAND_P_MISMATCH])
-        cand_st_mins[CAND_P_MISMATCH] = plrcoax_base;
+      if (plrcoax_base < arr[st + 1][en][DP_U])
+        cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       auto prlcoax_base = arr[st + 1][en - 2][DP_P] + AUGUBRANCH[st1b][en2b] +
           energy::MismatchMediatedCoaxialEnergy(en2b, en1b, stb, st1b);
-      if (prlcoax_base < arr[st][en - 1][DP_U] && prlcoax_base < p_cand_en_mins[CAND_EN_P_MISMATCH])
-        p_cand_en_mins[CAND_EN_P_MISMATCH] = prlcoax_base;
+      if (prlcoax_base < arr[st][en - 1][DP_U])
+        p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base,  st});
       // ((   )   ) Left flush coax
       auto plfcoax_base = arr[st + 1][en][DP_P] + AUGUBRANCH[st1b][enb] + MIN_FLUSH_COAX;
-      if (plfcoax_base < arr[st + 1][en][DP_U] && plfcoax_base < cand_st_mins[CAND_P_FLUSH])
-        cand_st_mins[CAND_P_FLUSH] = plfcoax_base;
+      if (plfcoax_base < arr[st + 1][en][DP_U])
+        cand_st[CAND_P_FLUSH].push_back({plfcoax_base, en});
       // (   (   )) Right flush coax
       auto prfcoax_base = arr[st][en - 1][DP_P] + AUGUBRANCH[stb][en1b] + MIN_FLUSH_COAX;
-      if (prfcoax_base < arr[st][en - 1][DP_U] && prfcoax_base < p_cand_en_mins[CAND_EN_P_FLUSH])
-        p_cand_en_mins[CAND_EN_P_FLUSH] = prfcoax_base;
+      if (prfcoax_base < arr[st][en - 1][DP_U])
+        p_cand_en[CAND_EN_P_FLUSH][en].push_back({prfcoax_base, st});
 
 
       // Add potentials to the candidate lists.
@@ -294,12 +294,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         if (cand_st_mins[i] < constants::CAP_E &&
             (cand_st[i].empty() || cand_st_mins[i] < cand_st[i].back().energy))
           cand_st[i].push_back({cand_st_mins[i], en});
-      }
-      // TODO what do here
-      for (int i = 0; i < CAND_EN_SIZE; ++i) {
-        if (p_cand_en_mins[i] < constants::CAP_E &&
-            (p_cand_en[i][en].empty() || p_cand_en_mins[i] < p_cand_en[i][en].back().energy))
-          p_cand_en[i][en].push_back({p_cand_en_mins[i], st});
       }
     }
   }
