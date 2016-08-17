@@ -73,66 +73,61 @@ energy_t Fold2() {
   return FoldInternal(ComputeTables2);
 }
 
-std::vector<energy_t[MAX_SPECIAL_HAIRPIN_SZ + 1]> PrecomputeFastHairpin() {
-  std::vector<energy_t[MAX_SPECIAL_HAIRPIN_SZ + 1]> precompute(r.size());
-  memset(precompute.data(), MAX_E & 0xFF, precompute.size() * sizeof(precompute[0]));
+std::vector<hairpin_precomp_t> PrecomputeFastHairpin() {
+  assert(r.size() > 0);
+  std::vector<hairpin_precomp_t> precompute(r.size());
   std::string rna_str = parsing::RnaToString(r);
   for (const auto& hairpinpair : g_hairpin_e) {
     const auto& str = hairpinpair.first;
     auto pos = rna_str.find(str, 0);
     while (pos != std::string::npos) {
-      precompute[pos][str.size()] = hairpinpair.second;
-      pos = rna_str.find(str, pos+1);
+      precompute[pos].special[str.size() - 2] = hairpinpair.second;
+      pos = rna_str.find(str, pos + 1);
     }
+  }
+  int N = int(r.size());
+  precompute[N - 1].num_c = int(r[N - 1] == C);
+  for (int i = N - 2; i >= 0; --i) {
+    if (r[i] == C)
+      precompute[i].num_c = precompute[i + 1].num_c + 1;
   }
   return precompute;
 }
 
-energy_t FastHairpin(int st, int en) {
-  // Subtract two for the initiating base pair.
+energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& precomp) {
   int length = en - st - 1;
-  if (length < 3) return constants::MAX_E;  // Disallowed by T04.
-  energy_t energy = energy::HairpinInitiation(length);
-  // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
-  if (IsAuGu(r[st], r[en])) {
-    energy += g_augu_penalty;
-  }
+  assert(length >= constants::HAIRPIN_MIN_SZ);
+  if (length <= MAX_SPECIAL_HAIRPIN_SZ && precomp[st].special[length] != MAX_E)
+    return precomp[st].special[length];
+  base_t stb = r[st], st1b = r[st + 1], en1b = r[en - 1], enb = r[en];
+  energy_t energy = energy::HairpinInitiation(length) + energy::AuGuPenalty(stb, enb);
 
-  // T04 says hairpin loops with all C bases inside them are treated specially.
-  bool all_c = true;
-  for (int i = st + 1; i <= en - 1; ++i) {
-    if (r[i] != C) all_c = false;
-  }
+  bool all_c = precomp[st + 1].num_c >= length;
 
   if (length == 3) {
-    if (all_c) {
+    if (all_c)
       energy += g_hairpin_c3_loop;
-    }
     return energy;
   }
-  base_t left = r[st + 1], right = r[en - 1];
-  energy += g_terminal[r[st]][left][right][r[en]];
-  if ((left == U && right == U) || (left == G_b && right == A_b))
+  energy += g_terminal[r[st]][st1b][en1b][r[en]];
+
+  if ((st1b == U && en1b == U) || (st1b == G && en1b == A))
     energy += g_hairpin_uu_ga_first_mismatch;
-  if (IsPairOf(left, right, G_b, G_b))
+  if (st1b == G && en1b == G)
     energy += g_hairpin_gg_first_mismatch;
   if (all_c)
     energy += g_hairpin_all_c_a * length + g_hairpin_all_c_b;
-  if (r[st] == G && r[en] == U && st >= 2 && r[st - 1] == G && r[st - 2] == G)
+  if (stb == G && enb == U && st >= 2 && r[st - 1] == G && r[st - 2] == G)
     energy += g_hairpin_special_gu_closure;
 
   return energy;
 }
 
 void InitFold() {
-  if (g_fold_init)
-    return;
   // Initialise fast AUGU branch table
   for (base_t i = 0; i < 4; ++i)
     for (base_t j = 0; j < 4; ++j)
       g_augubranch[i][j] = g_multiloop_hack_b + energy::AuGuPenalty(i, j);
-
-  g_fold_init = true;
 }
 
 }

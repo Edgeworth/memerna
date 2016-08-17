@@ -6,8 +6,6 @@
 namespace memerna {
 namespace fold {
 
-// For checks to make sure everything has been initialised.
-extern bool g_fold_init;
 extern energy_t g_augubranch[4][4];
 
 }

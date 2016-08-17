@@ -53,7 +53,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
   // Hairpin optimisation
-  auto special_hairpin = PrecomputeFastHairpin();
+  auto hairpin_precomp = PrecomputeFastHairpin();
 
   static_assert(constants::HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
@@ -74,7 +74,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
           }
         }
         // Hairpin loops.
-        mins[DP_P] = std::min(mins[DP_P], energy::Hairpin(st, en));
+        mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
