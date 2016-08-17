@@ -8,9 +8,9 @@ using namespace memerna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({
-                        {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")},
-                        {"alg",            ArgParse::option_t("which algorithm (slow, 1, 2)").Arg("slow")}
-                    });
+      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")},
+      {"alg",            ArgParse::option_t("which algorithm (slow, 1, 2)").Arg("slow")}
+  });
   auto ret = argparse.Parse(argc, argv);
   verify_expr(
       ret.size() == 0,

@@ -50,26 +50,26 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
           // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv][DP_P] +
-                                  AUGUBRANCH[st2b][plb] + arr[piv + 1][en - 2][DP_U] + outer_coax);
+              AUGUBRANCH[st2b][plb] + arr[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv][DP_U] +
-                                  AUGUBRANCH[prb][en2b] + arr[piv + 1][en - 2][DP_P] + outer_coax);
+              AUGUBRANCH[prb][en2b] + arr[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv - 1][DP_P] +
-                                  AUGUBRANCH[st2b][pl1b] + arr[piv + 1][en - 1][DP_U] +
-                                  energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
+              AUGUBRANCH[st2b][pl1b] + arr[piv + 1][en - 1][DP_U] +
+              energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_U] +
-                                  AUGUBRANCH[pr1b][en2b] + arr[piv + 2][en - 2][DP_P] +
-                                  energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
+              AUGUBRANCH[pr1b][en2b] + arr[piv + 2][en - 2][DP_P] +
+              energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_P] +
-                                  AUGUBRANCH[st1b][plb] + arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
+              AUGUBRANCH[st1b][plb] + arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_U] +
-                                  AUGUBRANCH[prb][en1b] + arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
+              AUGUBRANCH[prb][en1b] + arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
         }
 
         arr[st][en][DP_P] = p_min;
@@ -114,7 +114,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         u2_min = std::min(u2_min, base11 + g_terminal[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + energy::MismatchCoaxial(pl1b, pb, stb, st1b) +
-              std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
+            std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
 
