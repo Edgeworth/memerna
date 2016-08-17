@@ -12,9 +12,9 @@ struct array3d_t {
 public:
   array3d_t() : data(nullptr), size(0) {}
 
-  array3d_t(std::size_t _size, uint8_t init_val = constants::MAX_E & 0xFF) :
-      data(new T[_size * _size * K]), size(_size) {
-    memset(data, init_val, sizeof(data[0]) * _size * _size * K);
+  array3d_t(std::size_t size_, uint8_t init_val = constants::MAX_E & 0xFF) :
+      data(new T[size_ * size_ * K]), size(size_) {
+    memset(data, init_val, sizeof(data[0]) * size_ * size_ * K);
   }
 
   array3d_t(const array3d_t&) = delete;
@@ -52,9 +52,9 @@ struct array2d_t {
 public:
   array2d_t() : data(nullptr), size(0) {}
 
-  array2d_t(std::size_t _size, uint8_t init_val = constants::MAX_E & 0xFF) :
-      data(new T[_size * K]), size(_size) {
-    memset(data, init_val, sizeof(data[0]) * _size * K);
+  array2d_t(std::size_t size_, uint8_t init_val = constants::MAX_E & 0xFF) :
+      data(new T[size_ * K]), size(size_) {
+    memset(data, init_val, sizeof(data[0]) * size_ * K);
   }
 
   array2d_t(const array2d_t&) = delete;

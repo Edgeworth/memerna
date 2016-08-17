@@ -37,7 +37,7 @@ private:
 
 class Rnastructure : public RnaPackage {
 public:
-  Rnastructure(const std::string& data_path, bool _use_lyngso);
+  Rnastructure(const std::string& data_path, bool use_lyngso_);
 
   Rnastructure(const Rnastructure&) = delete;
 

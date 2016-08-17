@@ -11,16 +11,25 @@ namespace memerna {
 class ArgParse {
 public:
   struct option_t {
-    option_t(const std::string& _desc = "", const std::string& _default_arg = "",
-             bool _has_default = false, bool _has_arg = false, bool _required = false) :
-        desc(_desc), default_arg(_default_arg), has_default(_has_default),
-        has_arg(_has_arg), required(_required) {
-      verify_expr(!has_arg || has_default, "bad arguments");
+    option_t(const std::string& desc_ = "", const std::string& default_arg_ = "",
+             bool has_default_ = false, bool has_arg_ = false, bool required_ = false) :
+        desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
+        has_arg(has_arg_), required(required_) {}
+
+    option_t& Arg(const std::string& default_, const std::unordered_set<std::string>& choices_) {
+      default_arg = default_;
+      choices = choices_;
+      has_default = true;
+      has_arg = true;
+      return *this;
     }
 
-    option_t& Arg(const std::string& _default) {
-      default_arg = _default;
-      has_default = true;
+    option_t& Arg(const std::string& default_) {
+      return Arg(default_, {});
+    }
+
+    option_t& Arg(const std::unordered_set<std::string>& choices_) {
+      choices = choices_;
       has_arg = true;
       return *this;
     }
@@ -37,12 +46,13 @@ public:
 
     std::string desc;
     std::string default_arg;
+    std::unordered_set<std::string> choices;
     bool has_default;
     bool has_arg;
     bool required;
   };
 
-  ArgParse(const std::map<std::string, option_t>& _possible_args) : possible_args(_possible_args) {}
+  ArgParse(const std::map<std::string, option_t>& possible_args_) : possible_args(possible_args_) {}
 
   ArgParse(const ArgParse&) = delete;
 
