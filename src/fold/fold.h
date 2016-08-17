@@ -8,6 +8,8 @@
 namespace memerna {
 namespace fold {
 
+const int MAX_SPECIAL_HAIRPIN_SZ = 6;
+
 enum {
   DP_P,  // For the paired array.
   DP_U,  // For the unpaired array.
@@ -26,36 +28,29 @@ enum {
   EXT_SIZE
 };
 
-const energy_t MULTILOOP_A = 93;
 
-const energy_t AUGUBRANCH[4][4] = {
-    {-6,    -6, -6,    5 - 6},
-    {-6,    -6, -6,    -6},
-    {-6,    -6, -6,    5 - 6},
-    {5 - 6, -6, 5 - 6, -6}
-};
 
+void InitFold();
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
+std::vector<energy_t[MAX_SPECIAL_HAIRPIN_SZ + 1]> PrecomputeFastHairpin();
+energy_t FastHairpin(int st, int en);
 
-inline bool IsNotLonely(int st, int en) {
-  return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
-      (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
-}
 
 energy_t Fold();
+energy_t Fold2();
+energy_t Fold1();
+energy_t FoldSlow();
+energy_t FoldBruteForce();
 
 inline energy_t Fold(const rna_t& rna) {
   SetRna(rna);
   return Fold();
 }
 
-energy_t Fold2();
-
-energy_t Fold1();
-
-energy_t FoldSlow();
-
-energy_t FoldBruteForce();
+inline bool IsNotLonely(int st, int en) {
+  return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
+      (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
+}
 
 }
 }
