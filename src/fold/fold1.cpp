@@ -3,57 +3,16 @@
 namespace memerna {
 namespace fold {
 
-const energy_t MULTILOOP_A = 93;
 
-const energy_t AUGUBRANCH[4][4] = {
-    {-6, -6, -6, 5 - 6},
-    {-6, -6, -6, -6},
-    {-6, -6, -6, 5 - 6},
-    {5 - 6, -6, 5 - 6, -6}
-};
 
-energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
-  int toplen = ist - ost - 1, botlen = oen - ien - 1;
-  if (toplen == 0 && botlen == 0)
-    return stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
-  if (toplen == 0 || botlen == 0)
-    return energy::BulgeEnergy(ost, oen, ist, ien);
-  if (toplen == 1 && botlen == 1)
-    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
-  if (toplen == 1 && botlen == 2)
-    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
-  if (toplen == 2 && botlen == 1)
-    return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
-  if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
-
-  static_assert(constants::TWOLOOP_MAX_SZ <= INITIATION_CACHE_SZ, "initiation cache not large enough");
-  energy_t energy = internal_init[toplen + botlen] + std::min(std::abs(toplen - botlen) * internal_asym, constants::NINIO_MAX_ASYM);
-
-  if (IsAuGu(r[ost], r[oen]))
-    energy += internal_augu_penalty;
-  if (IsAuGu(r[ist], r[ien]))
-    energy += internal_augu_penalty;
-
-  if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
-    energy += internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
-  else if (toplen != 1 && botlen != 1)
-    energy += internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
-
-  return energy;
-}
 
 array3d_t<energy_t, DP_SIZE> ComputeTables1() {
   int N = int(r.size());
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
-  //std::vector<int> candidates;
 
   static_assert(constants::HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
-    //candidates.clear();
     for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
 
@@ -126,7 +85,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
       }
       // Pair here.
       u_min = std::min(u_min, arr[st][en][DP_P] + AUGUBRANCH[stb][enb]);
-      for (int piv = st + constants::HAIRPIN_MIN_SZ + 2; piv <= en; ++piv) {
+      for (int piv = st + constants::HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];
@@ -190,8 +149,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
       arr[st][en][DP_U_WC] = wc_min;
       arr[st][en][DP_U_GU] = gu_min;
       arr[st][en][DP_U_RCOAX] = rcoax_min;
-//      if (arr[st][en][DP_P] < arr[st][en][DP_U])
-//        candidates.push_back(en);
     }
   }
   return arr;

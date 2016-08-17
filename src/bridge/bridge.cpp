@@ -49,7 +49,7 @@ Rnastructure::Rnastructure(const std::string& data_path, bool _use_lyngso) :
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-energy_t Rnastructure::Efn(const folded_rna_t& frna, std::string* desc)  const {
+energy_t Rnastructure::Efn(const folded_rna_t& frna, std::string* desc) const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(frna.r)),
       librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p))
@@ -65,7 +65,8 @@ folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
   // Second last parameter is whether to generate the mfe structure only -- i.e. just one.
   // Last parameter is whether to use Lyngso or not.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
-  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true, !use_lyngso);
+  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true,
+      !use_lyngso);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
   return {rna, pairs, energy_t(structure->GetEnergy(1))};

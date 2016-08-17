@@ -7,8 +7,9 @@ import seaborn as sns
 import statsmodels as sm
 import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
-from common import human_size
 from matplotlib import pyplot as plt
+
+from common import human_size
 
 sns.set(color_codes=True)
 

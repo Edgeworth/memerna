@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import shutil
-import sys
 import tempfile
 
 from common import *
-from rna import *
 from memevault import MemeVault
+from rna import *
+
 
 class HarnessFolder:
   def __init__(self, loc, name, flag):
@@ -56,9 +55,11 @@ class RNAstructure(HarnessFolder):
   def __init__(self, loc=None):
     super().__init__(loc, 'RNAstructure', '-r')
 
+
 class Rnark(HarnessFolder):
   def __init__(self, loc=None):
     super().__init__(loc, 'Rnark', '-m')
+
 
 class MemeRNA(HarnessFolder):
   def __init__(self, loc=None):

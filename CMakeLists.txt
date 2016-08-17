@@ -29,7 +29,6 @@ file(GLOB MEMERNA_SOURCE
     "src/fold/*.h")
 file(GLOB BRIDGE_SOURCE "src/bridge/*.cpp" "src/bridge/*.h")
 file(GLOB TEST_SOURCE "tests/*.cpp" "tests/*.h")
-message(${CMAKE_CXX_FLAGS})
 
 include_directories(src)
 # Suppress warnings.

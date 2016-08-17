@@ -15,6 +15,8 @@
 - American fuzzy lop?
 - Download and test that sparse folding program from that paper
 - Grep codebase for todos
+- Fuzz tables!!
+- Add choices to argparse.
 
 ### Fuzzing
 - Randomised energy model fuzzing
