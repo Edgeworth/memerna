@@ -18,40 +18,40 @@ std::string SerialiseEnergyModel() {
     data.insert(data.end(), dp, dp + sizeof(d)); \
   } while (0)
 
-  APPEND_DATA(stacking_e);
-  APPEND_DATA(terminal_e);
-  APPEND_DATA(internal_init);
-  APPEND_DATA(internal_1x1);
-  APPEND_DATA(internal_1x2);
-  APPEND_DATA(internal_2x2);
-  APPEND_DATA(internal_2x3_mismatch);
-  APPEND_DATA(internal_other_mismatch);
-  APPEND_DATA(internal_asym);
-  APPEND_DATA(internal_augu_penalty);
-  APPEND_DATA(internal_mismatch_1xk);
-  APPEND_DATA(bulge_init);
-  APPEND_DATA(bulge_special_c);
-  APPEND_DATA(hairpin_init);
-  APPEND_DATA(hairpin_uu_ga_first_mismatch);
-  APPEND_DATA(hairpin_gg_first_mismatch);
-  APPEND_DATA(hairpin_special_gu_closure);
-  APPEND_DATA(hairpin_c3_loop);
-  APPEND_DATA(hairpin_all_c_a);
-  APPEND_DATA(hairpin_all_c_b);
+  APPEND_DATA(g_stack);
+  APPEND_DATA(g_terminal);
+  APPEND_DATA(g_internal_init);
+  APPEND_DATA(g_internal_1x1);
+  APPEND_DATA(g_internal_1x2);
+  APPEND_DATA(g_internal_2x2);
+  APPEND_DATA(g_internal_2x3_mismatch);
+  APPEND_DATA(g_internal_other_mismatch);
+  APPEND_DATA(g_internal_asym);
+  APPEND_DATA(g_internal_augu_penalty);
+  APPEND_DATA(g_internal_mismatch_1xk);
+  APPEND_DATA(g_bulge_init);
+  APPEND_DATA(g_bulge_special_c);
+  APPEND_DATA(g_hairpin_init);
+  APPEND_DATA(g_hairpin_uu_ga_first_mismatch);
+  APPEND_DATA(g_hairpin_gg_first_mismatch);
+  APPEND_DATA(g_hairpin_special_gu_closure);
+  APPEND_DATA(g_hairpin_c3_loop);
+  APPEND_DATA(g_hairpin_all_c_a);
+  APPEND_DATA(g_hairpin_all_c_b);
 
-  for (const auto& v : hairpin_e) {
+  for (const auto& v : g_hairpin_e) {
     data += v.first;
     APPEND_DATA(v.second);
   }
 
-  APPEND_DATA(multiloop_hack_a);
-  APPEND_DATA(multiloop_hack_b);
-  APPEND_DATA(dangle5_e);
-  APPEND_DATA(dangle3_e);
-  APPEND_DATA(coax_mismatch_non_contiguous);
-  APPEND_DATA(coax_mismatch_wc_bonus);
-  APPEND_DATA(coax_mismatch_gu_bonus);
-  APPEND_DATA(augu_penalty);
+  APPEND_DATA(g_multiloop_hack_a);
+  APPEND_DATA(g_multiloop_hack_b);
+  APPEND_DATA(g_dangle5_e);
+  APPEND_DATA(g_dangle3_e);
+  APPEND_DATA(g_coax_mismatch_non_contiguous);
+  APPEND_DATA(g_coax_mismatch_wc_bonus);
+  APPEND_DATA(g_coax_mismatch_gu_bonus);
+  APPEND_DATA(g_augu_penalty);
 
   APPEND_DATA(constants::HAIRPIN_MIN_SZ);
   APPEND_DATA(constants::R);
@@ -67,29 +67,29 @@ std::string SerialiseEnergyModel() {
 
 void LoadEnergyModelFromDataDir(const std::string& data_dir) {
   // Stacking interaction data.
-  parsing::Parse2x2FromFile(data_dir + "/stacking.data", stacking_e);
+  parsing::Parse2x2FromFile(data_dir + "/stacking.data", g_stack);
 
   // Terminal mismatch data.
-  parsing::Parse2x2FromFile(data_dir + "/terminal.data", terminal_e);
+  parsing::Parse2x2FromFile(data_dir + "/terminal.data", g_terminal);
 
   // Hairpin data.
-  parsing::ParseMapFromFile(data_dir + "/hairpin.data", hairpin_e);
-  parsing::ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", hairpin_init);
+  parsing::ParseMapFromFile(data_dir + "/hairpin.data", g_hairpin_e);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", g_hairpin_init);
 
   // Bulge loop data.
-  parsing::ParseInitiationEnergyFromFile(data_dir + "/bulge_initiation.data", bulge_init);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/bulge_initiation.data", g_bulge_init);
 
   // Internal loop data.
-  parsing::ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", internal_init);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", g_internal_init);
   parsing::ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data");
   parsing::ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data");
   parsing::ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data");
-  parsing::Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", internal_2x3_mismatch);
-  parsing::Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", internal_other_mismatch);
+  parsing::Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", g_internal_2x3_mismatch);
+  parsing::Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", g_internal_other_mismatch);
 
   // Dangle data.
-  parsing::ParseDangleDataFromFile(data_dir + "/dangle3.data", dangle3_e);
-  parsing::ParseDangleDataFromFile(data_dir + "/dangle5.data", dangle5_e);
+  parsing::ParseDangleDataFromFile(data_dir + "/dangle3.data", g_dangle3_e);
+  parsing::ParseDangleDataFromFile(data_dir + "/dangle5.data", g_dangle5_e);
 
   // Other misc data.
   parsing::ParseMiscDataFromFile(data_dir + "/misc.data");
@@ -106,39 +106,39 @@ void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
     } \
   } while (0)
 
-  RANDOMISE_DATA(stacking_e);
-  RANDOMISE_DATA(terminal_e);
-  RANDOMISE_DATA(internal_init);
-  RANDOMISE_DATA(internal_1x1);
-  RANDOMISE_DATA(internal_1x2);
-  RANDOMISE_DATA(internal_2x2);
-  RANDOMISE_DATA(internal_2x3_mismatch);
-  RANDOMISE_DATA(internal_other_mismatch);
-  RANDOMISE_DATA(internal_asym);
-  RANDOMISE_DATA(internal_augu_penalty);
-  RANDOMISE_DATA(internal_mismatch_1xk);
-  RANDOMISE_DATA(bulge_init);
-  RANDOMISE_DATA(bulge_special_c);
-  RANDOMISE_DATA(hairpin_init);
-  RANDOMISE_DATA(hairpin_uu_ga_first_mismatch);
-  RANDOMISE_DATA(hairpin_gg_first_mismatch);
-  RANDOMISE_DATA(hairpin_special_gu_closure);
-  RANDOMISE_DATA(hairpin_c3_loop);
-  RANDOMISE_DATA(hairpin_all_c_a);
-  RANDOMISE_DATA(hairpin_all_c_b);
+  RANDOMISE_DATA(g_stack);
+  RANDOMISE_DATA(g_terminal);
+  RANDOMISE_DATA(g_internal_init);
+  RANDOMISE_DATA(g_internal_1x1);
+  RANDOMISE_DATA(g_internal_1x2);
+  RANDOMISE_DATA(g_internal_2x2);
+  RANDOMISE_DATA(g_internal_2x3_mismatch);
+  RANDOMISE_DATA(g_internal_other_mismatch);
+  RANDOMISE_DATA(g_internal_asym);
+  RANDOMISE_DATA(g_internal_augu_penalty);
+  RANDOMISE_DATA(g_internal_mismatch_1xk);
+  RANDOMISE_DATA(g_bulge_init);
+  RANDOMISE_DATA(g_bulge_special_c);
+  RANDOMISE_DATA(g_hairpin_init);
+  RANDOMISE_DATA(g_hairpin_uu_ga_first_mismatch);
+  RANDOMISE_DATA(g_hairpin_gg_first_mismatch);
+  RANDOMISE_DATA(g_hairpin_special_gu_closure);
+  RANDOMISE_DATA(g_hairpin_c3_loop);
+  RANDOMISE_DATA(g_hairpin_all_c_a);
+  RANDOMISE_DATA(g_hairpin_all_c_b);
 
-  for (auto& v : hairpin_e) {
+  for (auto& v : g_hairpin_e) {
     RANDOMISE_DATA(v.second);
   }
 
-  RANDOMISE_DATA(multiloop_hack_a);
-  RANDOMISE_DATA(multiloop_hack_b);
-  RANDOMISE_DATA(dangle5_e);
-  RANDOMISE_DATA(dangle3_e);
-  RANDOMISE_DATA(coax_mismatch_non_contiguous);
-  RANDOMISE_DATA(coax_mismatch_wc_bonus);
-  RANDOMISE_DATA(coax_mismatch_gu_bonus);
-  RANDOMISE_DATA(augu_penalty);
+  RANDOMISE_DATA(g_multiloop_hack_a);
+  RANDOMISE_DATA(g_multiloop_hack_b);
+  RANDOMISE_DATA(g_dangle5_e);
+  RANDOMISE_DATA(g_dangle3_e);
+  RANDOMISE_DATA(g_coax_mismatch_non_contiguous);
+  RANDOMISE_DATA(g_coax_mismatch_wc_bonus);
+  RANDOMISE_DATA(g_coax_mismatch_gu_bonus);
+  RANDOMISE_DATA(g_augu_penalty);
 #undef RANDOMISE_DATA
 }
 

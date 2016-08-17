@@ -18,20 +18,20 @@ class Structure;
 namespace energy {
 
 inline energy_t AuGuPenalty(int st, int en) {
-  return IsAuGu(r[st], r[en]) ? augu_penalty : 0;
+  return IsAuGu(r[st], r[en]) ? g_augu_penalty : 0;
 }
 
 energy_t HairpinInitiation(int n);
 
-energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t BulgeInitiation(int n);
 
-energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t Bulge(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t InternalLoopInitiation(int n);
 
-energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t InternalLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
 energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
 
@@ -47,13 +47,12 @@ energy_t MultiloopInitiation(int num_branches);
 //    1. A terminal mismatch is formed around the branch being straddled.
 //    2. An arbitrary bonus is added.
 //    2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
-inline energy_t MismatchMediatedCoaxialEnergy(
-    base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
-  energy_t coax = terminal_e[fiveTop][mismatch_top][mismatch_bot][threeBot] + coax_mismatch_non_contiguous;
+inline energy_t MismatchCoaxial(base_t fiveTop, base_t mismatch_top, base_t mismatch_bot, base_t threeBot) {
+  energy_t coax = g_terminal[fiveTop][mismatch_top][mismatch_bot][threeBot] + g_coax_mismatch_non_contiguous;
   if (IsWatsonCrick(mismatch_top, mismatch_bot))
-    coax += coax_mismatch_wc_bonus;
+    coax += g_coax_mismatch_wc_bonus;
   else if (IsGu(mismatch_top, mismatch_bot))
-    coax += coax_mismatch_gu_bonus;
+    coax += g_coax_mismatch_gu_bonus;
   return coax;
 }
 

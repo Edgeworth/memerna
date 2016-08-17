@@ -11,11 +11,13 @@ namespace memerna {
 namespace parsing {
 
 rna_t StringToRna(const std::string& s);
+
 std::string RnaToString(const rna_t& rna);
 
 folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str);
 
 std::vector<int> DotBracketToPairs(const std::string& pairs_str);
+
 std::string PairsToDotBracket(const std::vector<int>& pairs);
 
 

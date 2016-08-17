@@ -11,6 +11,7 @@ namespace structure {
 class Structure {
 public:
   Structure() = default;
+
   Structure(const Structure&) = delete;
 
   Structure& operator=(const Structure&) = delete;
@@ -20,6 +21,7 @@ public:
   void AddNote(const std::string& note, ...);
 
   std::vector<std::string> Description(int nesting = 0);
+
   virtual std::string ShortDesc() = 0;
 
   virtual void AddBranch(std::unique_ptr<Structure> b) {
@@ -53,6 +55,7 @@ public:
   }
 
   std::string ShortDesc();
+
 private:
   int st, en;
 };
@@ -67,6 +70,7 @@ public:
   }
 
   std::string ShortDesc();
+
 private:
   int ost, oen, ist, ien;
 };
@@ -94,6 +98,7 @@ public:
 
 
   std::string ShortDesc();
+
 private:
   int st, en;
 };
@@ -108,6 +113,7 @@ public:
   }
 
   std::string ShortDesc();
+
 private:
   int st, en;
 };

@@ -32,20 +32,20 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
           }
         }
         // Hairpin loops.
-        UPDATE_CACHE(DP_P, energy::HairpinEnergy(st, en));
+        UPDATE_CACHE(DP_P, energy::Hairpin(st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        auto base_branch_cost = energy::AuGuPenalty(st, en) + multiloop_hack_a + multiloop_hack_b;
+        auto base_branch_cost = energy::AuGuPenalty(st, en) + g_multiloop_hack_a + g_multiloop_hack_b;
 
         // (<   ><   >)
         UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 1][DP_U2] + dangle3_e[stb][st1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb]);
         // (<   ><   >5) 5'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 2][DP_U2] + dangle5_e[stb][en1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 2][DP_U2] + terminal_e[stb][st1b][en1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb]);
 
         for (int piv = st + constants::HAIRPIN_MIN_SZ + 2; piv < en - constants::HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
@@ -54,30 +54,30 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
           // (.(   )   .) Left outer coax - P
-          auto outer_coax = energy::MismatchMediatedCoaxialEnergy(stb, st1b, en1b, enb);
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, piv) + arr[piv + 1][en - 2][DP_U] + outer_coax);
+          auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_P] + g_multiloop_hack_b +
+                             energy::AuGuPenalty(st + 2, piv) + arr[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(piv + 1, en - 2) + arr[piv + 1][en - 2][DP_P] + outer_coax);
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_U] + g_multiloop_hack_b +
+                             energy::AuGuPenalty(piv + 1, en - 2) + arr[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv - 1][DP_P] + multiloop_hack_b +
-              energy::AuGuPenalty(st + 2, piv - 1) + arr[piv + 1][en - 1][DP_U] +
-              energy::MismatchMediatedCoaxialEnergy(pl1b, plb, st1b, st2b));
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv - 1][DP_P] + g_multiloop_hack_b +
+                             energy::AuGuPenalty(st + 2, piv - 1) + arr[piv + 1][en - 1][DP_U] +
+                             energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
-          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_U] + multiloop_hack_b +
-              energy::AuGuPenalty(piv + 2, en - 2) + arr[piv + 2][en - 2][DP_P] +
-              energy::MismatchMediatedCoaxialEnergy(en2b, en1b, prb, pr1b));
+          UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_U] + g_multiloop_hack_b +
+                             energy::AuGuPenalty(piv + 2, en - 2) + arr[piv + 2][en - 2][DP_P] +
+                             energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_P] +
-              multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
-              arr[piv + 1][en - 1][DP_U] + stacking_e[stb][st1b][plb][enb]);
+                             g_multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
+                             arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_U] +
-              multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
-              arr[piv + 1][en - 1][DP_P] + stacking_e[stb][prb][en1b][enb]);
+                             g_multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
+                             arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
         }
       }
 
@@ -93,10 +93,10 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(st, piv) + multiloop_hack_b;
-        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(st, piv - 1) + multiloop_hack_b;
-        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st + 1, piv) + multiloop_hack_b;
-        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st + 1, piv - 1) + multiloop_hack_b;
+        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(st, piv) + g_multiloop_hack_b;
+        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(st, piv - 1) + g_multiloop_hack_b;
+        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st + 1, piv) + g_multiloop_hack_b;
+        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st + 1, piv - 1) + g_multiloop_hack_b;
         // Min is for either placing another unpaired or leaving it as nothing.
         auto right_unpaired = std::min(arr[piv + 1][en][DP_U], 0);
 
@@ -110,17 +110,17 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
           UPDATE_CACHE(DP_U_WC, val);
 
         // (   )3<   > 3' - U
-        UPDATE_CACHE(DP_U, base01 + dangle3_e[pl1b][pb][stb] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base01 + dangle3_e[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
+        UPDATE_CACHE(DP_U, base01 + g_dangle3_e[pl1b][pb][stb] + right_unpaired);
+        UPDATE_CACHE(DP_U2, base01 + g_dangle3_e[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
         // 5(   )<   > 5' - U
-        UPDATE_CACHE(DP_U, base10 + dangle5_e[pb][stb][st1b] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base10 + dangle5_e[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
+        UPDATE_CACHE(DP_U, base10 + g_dangle5_e[pb][stb][st1b] + right_unpaired);
+        UPDATE_CACHE(DP_U2, base10 + g_dangle5_e[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<   > Terminal mismatch - U
-        UPDATE_CACHE(DP_U, base11 + terminal_e[pl1b][pb][stb][st1b] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base11 + terminal_e[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);
+        UPDATE_CACHE(DP_U, base11 + g_terminal[pl1b][pb][stb][st1b] + right_unpaired);
+        UPDATE_CACHE(DP_U2, base11 + g_terminal[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
-        val = base11 + energy::MismatchMediatedCoaxialEnergy(pl1b, pb, stb, st1b) +
-            std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
+        val = base11 + energy::MismatchCoaxial(pl1b, pb, stb, st1b) +
+              std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
 
@@ -129,18 +129,18 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
         if (st > 0)
-          UPDATE_CACHE(DP_U_RCOAX, base01 + energy::MismatchMediatedCoaxialEnergy(
+          UPDATE_CACHE(DP_U_RCOAX, base01 + energy::MismatchCoaxial(
               pl1b, pb, r[st - 1], stb) + right_unpaired);
 
         // There has to be remaining bases to even have a chance at these cases.
         if (piv < en) {
           auto pr1b = r[piv + 1];
           // (   )<(   ) > Flush coax - U
-          val = base00 + stacking_e[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC];
+          val = base00 + g_stack[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC];
           UPDATE_CACHE(DP_U, val);
           UPDATE_CACHE(DP_U2, val);
           if (pr1b == G || pr1b == U) {
-            val = base00 + stacking_e[pb][pr1b][pr1b ^ 1][stb] + arr[piv + 1][en][DP_U_GU];
+            val = base00 + g_stack[pb][pr1b][pr1b ^ 1][stb] + arr[piv + 1][en][DP_U_GU];
             UPDATE_CACHE(DP_U, val);
             UPDATE_CACHE(DP_U2, val);
           }

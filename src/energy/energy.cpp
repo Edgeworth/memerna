@@ -10,10 +10,10 @@ namespace energy {
 
 energy_t HairpinInitiation(int n) {
   assert(n >= 3);
-  if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
+  if (n < INITIATION_CACHE_SZ) return g_hairpin_init[n];
   static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
   // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to match RNAstructure.
-  return energy_t(round(hairpin_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
+  return energy_t(round(g_hairpin_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
 // Indices are inclusive, include the initiating base pair.
@@ -31,15 +31,15 @@ energy_t HairpinInitiation(int n) {
 //   If the mismatch is GG, additional bonus.
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy model).
-energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s) {
+energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s) {
   assert(st < en);
   if (s) *s = std::make_unique<structure::HairpinLoop>(st, en);
 
   std::string seq;
   for (int i = st; i <= en; ++i)
     seq += BaseToChar(r[i]);
-  auto iter = hairpin_e.find(seq);
-  if (iter != hairpin_e.end())
+  auto iter = g_hairpin_e.find(seq);
+  if (iter != g_hairpin_e.end())
     return iter->second;
 
   // Subtract two for the initiating base pair.
@@ -49,8 +49,8 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsAuGu(r[st], r[en])) {
-    if (s) (*s)->AddNote("%de - AU/GU penalty", augu_penalty);
-    energy += augu_penalty;
+    if (s) (*s)->AddNote("%de - AU/GU penalty", g_augu_penalty);
+    energy += g_augu_penalty;
   }
 
   // T04 says hairpin loops with all C bases inside them are treated specially.
@@ -61,41 +61,41 @@ energy_t HairpinEnergy(int st, int en, std::unique_ptr<structure::Structure>* s)
 
   if (length == 3) {
     if (all_c) {
-      if (s) (*s)->AddNote("%de - all C penalty (length 3)", hairpin_c3_loop);
-      energy += hairpin_c3_loop;
+      if (s) (*s)->AddNote("%de - all C penalty (length 3)", g_hairpin_c3_loop);
+      energy += g_hairpin_c3_loop;
     }
     return energy;
   }
   base_t left = r[st + 1], right = r[en - 1];
-  if (s) (*s)->AddNote("%de - terminal mismatch", terminal_e[r[st]][left][right][r[en]]);
-  energy += terminal_e[r[st]][left][right][r[en]];
+  if (s) (*s)->AddNote("%de - terminal mismatch", g_terminal[r[st]][left][right][r[en]]);
+  energy += g_terminal[r[st]][left][right][r[en]];
   if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
-    if (s) (*s)->AddNote("%de - UU/GA first mismatch", hairpin_uu_ga_first_mismatch);
-    energy += hairpin_uu_ga_first_mismatch;
+    if (s) (*s)->AddNote("%de - UU/GA first mismatch", g_hairpin_uu_ga_first_mismatch);
+    energy += g_hairpin_uu_ga_first_mismatch;
   }
   if (IsPairOf(left, right, G_b, G_b)) {
-    if (s) (*s)->AddNote("%de - GG first mismatch", hairpin_gg_first_mismatch);
-    energy += hairpin_gg_first_mismatch;
+    if (s) (*s)->AddNote("%de - GG first mismatch", g_hairpin_gg_first_mismatch);
+    energy += g_hairpin_gg_first_mismatch;
   }
   if (all_c) {
-    energy_t all_c_energy = hairpin_all_c_a * length + hairpin_all_c_b;
+    energy_t all_c_energy = g_hairpin_all_c_a * length + g_hairpin_all_c_b;
     if (s) (*s)->AddNote("%de - all C penalty", all_c_energy);
     energy += all_c_energy;
   }
 
   if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
-    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
-    energy += hairpin_special_gu_closure;
+    if (s) (*s)->AddNote("%de - special GU closure", g_hairpin_special_gu_closure);
+    energy += g_hairpin_special_gu_closure;
   }
   return energy;
 }
 
 energy_t BulgeInitiation(int n) {
   assert(n >= 1);
-  if (n < INITIATION_CACHE_SZ) return bulge_init[n];
+  if (n < INITIATION_CACHE_SZ) return g_bulge_init[n];
   static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
   // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to match RNAstructure.
-  return energy_t(round(bulge_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
+  return energy_t(round(g_bulge_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
 // Indices are inclusive.
@@ -106,7 +106,7 @@ energy_t BulgeInitiation(int n) {
 //    Since the helix continues, also apply stacking energies for Watson-Crick helices.
 //    If the unpaired base is a C, and is next to another C (at pos - 1 or pos + 1), add special C bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a bonus from that.
-energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s) {
+energy_t Bulge(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s) {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) && (oen - ien >= 2 || ist - ost >= 2));
   int length = std::max(ist - ost, oen - ien) - 1;
   energy_t energy = BulgeInitiation(length);
@@ -120,23 +120,23 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
     if (IsAuGu(r[ost], r[oen])) {
-      if (s) (*s)->AddNote("%de - outer AU/GU penalty", augu_penalty);
-      energy += augu_penalty;
+      if (s) (*s)->AddNote("%de - outer AU/GU penalty", g_augu_penalty);
+      energy += g_augu_penalty;
     }
     if (IsAuGu(r[ist], r[ien])) {
-      if (s) (*s)->AddNote("%de - inner AU/GU penalty", augu_penalty);
-      energy += augu_penalty;
+      if (s) (*s)->AddNote("%de - inner AU/GU penalty", g_augu_penalty);
+      energy += g_augu_penalty;
     }
     return energy;
   }
   // Stacking energy.
-  energy += stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
+  energy += g_stack[r[ost]][r[ist]][r[ien]][r[oen]];
   int unpaired = ost + 1;
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
   if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired + 1] == C)) {
-    if (s) (*s)->AddNote("%de - special c bulge", bulge_special_c);
-    energy += bulge_special_c;
+    if (s) (*s)->AddNote("%de - special c bulge", g_bulge_special_c);
+    energy += g_bulge_special_c;
   }
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
@@ -154,10 +154,10 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
 
 energy_t InternalLoopInitiation(int n) {
   assert(n >= 4);
-  if (n < INITIATION_CACHE_SZ) return internal_init[n];
+  if (n < INITIATION_CACHE_SZ) return g_internal_init[n];
   static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
   // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match RNAstructure.
-  return energy_t(round(internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
+  return energy_t(round(g_internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
 }
 
 // Indices are inclusive.
@@ -168,35 +168,35 @@ energy_t InternalLoopInitiation(int n) {
 // 2.2 A constant times the absolute difference between the number of unpaired bases on each side of the loop.
 // 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for 2x3, and then
 //   rotate the rna by 180 degrees to look it up for 3x2.
-energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s) {
+energy_t InternalLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<structure::InternalLoop>(ost, oen, ist, ien);
     (*s)->AddNote("%dx%d internal loop", toplen, botlen);
   }
   if (toplen == 1 && botlen == 1)
-    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
+    return g_internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
   if (toplen == 1 && botlen == 2)
-    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+    return g_internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
   if (toplen == 2 && botlen == 1)
-    return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
+    return g_internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+    return g_internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
 
   energy_t energy = InternalLoopInitiation(toplen + botlen);
   if (s) (*s)->AddNote("%de - initiation", energy);
 
   // Special AU/GU penalties.
   if (IsAuGu(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("%de - outer AU/GU penalty", internal_augu_penalty);
-    energy += internal_augu_penalty;
+    if (s) (*s)->AddNote("%de - outer AU/GU penalty", g_internal_augu_penalty);
+    energy += g_internal_augu_penalty;
   }
   if (IsAuGu(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("%de - inner AU/GU penalty", internal_augu_penalty);
-    energy += internal_augu_penalty;
+    if (s) (*s)->AddNote("%de - inner AU/GU penalty", g_internal_augu_penalty);
+    energy += g_internal_augu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
-  energy_t asym = std::min(std::abs(toplen - botlen) * internal_asym, constants::NINIO_MAX_ASYM);
+  energy_t asym = std::min(std::abs(toplen - botlen) * g_internal_asym, constants::NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -206,14 +206,14 @@ energy_t InternalLoopEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     energy_t mismatch =
-        internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-            internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        g_internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+        g_internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
     energy_t mismatch =
-        internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-            internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        g_internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+        g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
   }
@@ -225,15 +225,15 @@ energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<structure::Stacking>(ost, oen);
-    return stacking_e[r[ost]][r[ist]][r[ien]][r[oen]];
+    return g_stack[r[ost]][r[ist]][r[ien]][r[oen]];
   }
   if (toplen >= 1 && botlen >= 1)
-    return InternalLoopEnergy(ost, oen, ist, ien, s);
-  return BulgeEnergy(ost, oen, ist, ien, s);
+    return InternalLoop(ost, oen, ist, ien, s);
+  return Bulge(ost, oen, ist, ien, s);
 }
 
 energy_t MultiloopInitiation(int num_branches) {
-  return multiloop_hack_a + num_branches * multiloop_hack_b;
+  return g_multiloop_hack_a + num_branches * g_multiloop_hack_b;
 }
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
@@ -262,7 +262,7 @@ energy_t MultiloopInitiation(int num_branches) {
   } while (0)
 
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
-    std::unique_ptr<structure::Structure>* s) {
+                           std::unique_ptr<structure::Structure>* s) {
   int N = int(branches.size());
   int RSZ = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
@@ -318,7 +318,7 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
 
     // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be the last branch.
     if (!ru_exists[i] && i != N - 1) {
-      energy_t coax = stacking_e[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
+      energy_t coax = g_stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with anything, so
       // just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, "flush coaxial; no lu;");
@@ -332,14 +332,14 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
     if (lu_usable[i] && ru_usable[i]) {
       // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
       // Consumes ru, so if it was shared, use it.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, terminal_e[rb][rub][lub][lb], "terminal mismatch;");
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_terminal[rb][rub][lub][lb], "terminal mismatch;");
 
       // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
       // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
       // Skip to the branch after next since the next branch can't be involved in any more interactions anyway:
       // its left pair is consumed, and its right pair can't dangle towards it.
       if (ru_shared[i] && i != N - 1) {
-        energy_t left_coax = MismatchMediatedCoaxialEnergy(rb, rub, lub, lb);
+        energy_t left_coax = MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, "left coaxial;");
       }
     }
@@ -348,13 +348,13 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
     if (ru_usable[i]) {
       // Right dangle (3').
       // Only requires ru_exists so handle where left is both used and not used.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, dangle3_e[rb][rub][lb], "lu unused; ru 3' dangle;");
-      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, dangle3_e[rb][rub][lb], "lu used; ru 3' dangle;");
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_dangle3_e[rb][rub][lb], "lu unused; ru 3' dangle;");
+      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, g_dangle3_e[rb][rub][lb], "lu used; ru 3' dangle;");
 
       // Mismatch mediated coaxial stacking, right facing (uses the next branch).
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
-        energy_t right_coax = MismatchMediatedCoaxialEnergy(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
+        energy_t right_coax = MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, "right coaxial; no lu;");
         if (lu_exists[i]) {
@@ -367,7 +367,7 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
 
     if (lu_usable[i]) {
       // 5' dangle.
-      UPDATE_CACHE(0, i + 1, 0, i, dangle5_e[rb][lub][lb], "lu 5' dangle;");
+      UPDATE_CACHE(0, i + 1, 0, i, g_dangle5_e[rb][lub][lb], "lu 5' dangle;");
     }
 
     // Have the option of doing nothing.
@@ -413,8 +413,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     num_unpaired += p[branch_st] - branch_st + 1;
 
     if (IsAuGu(r[branch_st], r[p[branch_st]])) {
-      if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", augu_penalty, branch_st, p[branch_st]);
-      energy += augu_penalty;
+      if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", g_augu_penalty, branch_st, p[branch_st]);
+      energy += g_augu_penalty;
     }
   }
   num_unpaired = en - st - 1 - num_unpaired;
@@ -425,8 +425,8 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     num_unpaired += 2;
   } else {
     if (IsAuGu(r[st], r[en])) {
-      if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
-      energy += augu_penalty;
+      if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", g_augu_penalty, st, en);
+      energy += g_augu_penalty;
     }
     energy_t initiation = MultiloopInitiation(int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
@@ -472,7 +472,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
   } else if (branches.size() == 0) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
-    energy += HairpinEnergy(st, en, s);
+    energy += Hairpin(st, en, s);
   } else if (branches.size() == 1) {
     int loop_st = branches.front(), loop_en = p[branches.front()];
     energy += TwoLoop(st, en, loop_st, loop_en, s);
@@ -498,11 +498,11 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
 energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s) {
   energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
-    energy += augu_penalty;
+    energy += g_augu_penalty;
     if (s) {
-      (*s)->AddNote("%de - top level AU/GU penalty", augu_penalty);
-      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + augu_penalty);  // Gross.
-      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + augu_penalty);  // Gross.
+      (*s)->AddNote("%de - top level AU/GU penalty", g_augu_penalty);
+      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + g_augu_penalty);  // Gross.
+      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + g_augu_penalty);  // Gross.
     }
   }
   return energy;
