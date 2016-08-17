@@ -94,32 +94,22 @@ void FuzzComputeTables(const rna_t& rna) {
 // for efn, try all foldings as well?
 
 int main(int argc, char* argv[]) {
+  srand(static_cast<unsigned int>(time(NULL)));
   ArgParse argparse({
       {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
   });
-  auto ret = argparse.Parse(argc, argv);
-  verify_expr(
-      ret.size() == 0,
-      "%s\n%s\n", ret.c_str(), argparse.Usage().c_str());
-
-  LoadEnergyModelFromDataDir("data");
-  srand(static_cast<unsigned int>(time(NULL)));
-//  if (choice == "1") {
-//    for (int i = 1; i <= 15; ++i) {
-//      printf("Fuzzing len %d\n", i);
-//      FuzzRnaOfLength(i);
-//    }
-//  } else if (choice == "2") {
+  argparse.AddOptions(bridge::MEMERNA_OPTIONS);
+  argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
   verify_expr(
-      argparse.GetPositional().size() == 2,
+      pos.size() == 2,
       "require size and variance");
   int base_len = atoi(pos[0].c_str());
   int variance = atoi(pos[1].c_str());
   verify_expr(base_len > 0, "invalid length");
   verify_expr(variance >= 0, "invalid variance");
 
-  bridge::Memerna memerna("data/");
+  auto memerna = bridge::MemernaFromArgParse(argparse);
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
 
   auto start_time = std::chrono::steady_clock::now();
