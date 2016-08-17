@@ -56,28 +56,28 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
           // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_P] + g_multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2, piv) + arr[piv + 1][en - 2][DP_U] + outer_coax);
+              energy::AuGuPenalty(st + 2, piv) + arr[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv][DP_U] + g_multiloop_hack_b +
-                             energy::AuGuPenalty(piv + 1, en - 2) + arr[piv + 1][en - 2][DP_P] + outer_coax);
+              energy::AuGuPenalty(piv + 1, en - 2) + arr[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][piv - 1][DP_P] + g_multiloop_hack_b +
-                             energy::AuGuPenalty(st + 2, piv - 1) + arr[piv + 1][en - 1][DP_U] +
-                             energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
+              energy::AuGuPenalty(st + 2, piv - 1) + arr[piv + 1][en - 1][DP_U] +
+              energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_U] + g_multiloop_hack_b +
-                             energy::AuGuPenalty(piv + 2, en - 2) + arr[piv + 2][en - 2][DP_P] +
-                             energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
+              energy::AuGuPenalty(piv + 2, en - 2) + arr[piv + 2][en - 2][DP_P] +
+              energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_P] +
-                             g_multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
-                             arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
+              g_multiloop_hack_b + energy::AuGuPenalty(st + 1, piv) +
+              arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][piv][DP_U] +
-                             g_multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
-                             arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
+              g_multiloop_hack_b + energy::AuGuPenalty(piv + 1, en - 1) +
+              arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
         }
       }
 
@@ -120,7 +120,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         UPDATE_CACHE(DP_U2, base11 + g_terminal[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + energy::MismatchCoaxial(pl1b, pb, stb, st1b) +
-              std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
+            std::min(arr[piv + 1][en][DP_U_WC], arr[piv + 1][en][DP_U_GU]);
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
 

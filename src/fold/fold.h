@@ -39,7 +39,7 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
 
 inline bool IsNotLonely(int st, int en) {
   return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
-         (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
+      (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
 }
 
 energy_t Fold();

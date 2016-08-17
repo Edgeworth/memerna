@@ -26,7 +26,7 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   static_assert(constants::TWOLOOP_MAX_SZ <= INITIATION_CACHE_SZ, "initiation cache not large enough");
   energy_t energy =
       g_internal_init[toplen + botlen] +
-      std::min(std::abs(toplen - botlen) * g_internal_asym, constants::NINIO_MAX_ASYM);
+          std::min(std::abs(toplen - botlen) * g_internal_asym, constants::NINIO_MAX_ASYM);
 
   if (IsAuGu(r[ost], r[oen]))
     energy += g_internal_augu_penalty;
@@ -35,10 +35,10 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
 
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
     energy += g_internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-              g_internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        g_internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
   else if (toplen != 1 && botlen != 1)
     energy += g_internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-              g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
 
   return energy;
 }

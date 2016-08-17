@@ -207,13 +207,13 @@ energy_t InternalLoop(int ost, int oen, int ist, int ien, std::unique_ptr<struct
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     energy_t mismatch =
         g_internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        g_internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+            g_internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
     energy_t mismatch =
         g_internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-        g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+            g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
   }
@@ -262,7 +262,7 @@ energy_t MultiloopInitiation(int num_branches) {
   } while (0)
 
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
-                           std::unique_ptr<structure::Structure>* s) {
+    std::unique_ptr<structure::Structure>* s) {
   int N = int(branches.size());
   int RSZ = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);

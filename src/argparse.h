@@ -12,7 +12,7 @@ class ArgParse {
 public:
   struct option_t {
     option_t(const std::string& desc_ = "", const std::string& default_arg_ = "",
-             bool has_default_ = false, bool has_arg_ = false, bool required_ = false) :
+        bool has_default_ = false, bool has_arg_ = false, bool required_ = false) :
         desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
         has_arg(has_arg_), required(required_) {}
 
