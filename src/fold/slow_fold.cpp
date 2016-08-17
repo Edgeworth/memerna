@@ -88,8 +88,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
         UPDATE_CACHE(DP_U2, arr[st + 1][en][DP_U2]);
       }
       // Pair here.
-      // TODO can remove this line probs
-      UPDATE_CACHE(DP_U, arr[st][en][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en));
       for (int piv = st + constants::HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b

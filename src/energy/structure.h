@@ -71,7 +71,7 @@ private:
   int ost, oen, ist, ien;
 };
 
-// TODO: Do this?
+// TODO: Use CTD representation?
 enum class CtdType {
   UNUSED,
   STOLEN,  // Used by another branch.
@@ -96,7 +96,6 @@ public:
   std::string ShortDesc();
 private:
   int st, en;
-  // TODO ctds.
 };
 
 class Stacking : public Structure {

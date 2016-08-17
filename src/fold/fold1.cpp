@@ -3,9 +3,6 @@
 namespace memerna {
 namespace fold {
 
-
-
-
 array3d_t<energy_t, DP_SIZE> ComputeTables1() {
   int N = int(r.size());
   // Automatically initialised to MAX_E.
@@ -83,8 +80,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         u_min = std::min(u_min, arr[st + 1][en][DP_U]);
         u2_min = std::min(u2_min, arr[st + 1][en][DP_U2]);
       }
-      // Pair here.
-      u_min = std::min(u_min, arr[st][en][DP_P] + AUGUBRANCH[stb][enb]);
       for (int piv = st + constants::HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b

@@ -27,7 +27,6 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
       //           stb  st1b   en1b  enb   rem
       auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
 
-      // TODO: check below line!!!
       auto base00 = arr[st][en][DP_P] + energy::AuGuPenalty(st, en);
       auto base01 = arr[st][en - 1][DP_P] + energy::AuGuPenalty(st, en - 1);
       auto base10 = arr[st + 1][en][DP_P] + energy::AuGuPenalty(st + 1, en);
@@ -195,11 +194,6 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tup
       // Left unpaired. Either DP_U or DP_U2.
       if (st + 1 < en && (a == DP_U || a == DP_U2) && arr[st + 1][en][a] == arr[st][en][a]) {
         q.emplace(st + 1, en, a);
-        goto loopend;
-      }
-      // Pair here. Only for DP_U.
-      if (a == DP_U && arr[st][en][DP_P] + multiloop_hack_b + energy::AuGuPenalty(st, en) == arr[st][en][DP_U]) {
-        q.emplace(st, en, DP_P);
         goto loopend;
       }
 
