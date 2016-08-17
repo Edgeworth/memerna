@@ -32,8 +32,17 @@ enum {
 
 void InitFold();
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
-std::vector<energy_t[MAX_SPECIAL_HAIRPIN_SZ + 1]> PrecomputeFastHairpin();
-energy_t FastHairpin(int st, int en);
+
+struct hairpin_precomp_t {
+  hairpin_precomp_t() : num_c(0) {
+    memset(special, constants::MAX_E & 0xFF, sizeof(special));
+  }
+  energy_t special[MAX_SPECIAL_HAIRPIN_SZ + 1];
+  int num_c;
+};
+
+std::vector<hairpin_precomp_t> PrecomputeFastHairpin();
+energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& precomp);
 
 
 energy_t Fold();

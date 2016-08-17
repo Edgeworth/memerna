@@ -1,4 +1,5 @@
 #include <constants.h>
+#include "fold/fold.h"
 #include "energy/energy.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
@@ -49,6 +50,24 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
   EXPECT_EQ(g_stack[C][G][C][G] + g_stack[G][G][C][C] + g_stack[G][G][U][C] + g_augu_penalty +
       g_terminal[G][G][G][U] + g_hairpin_gg_first_mismatch + HairpinInitiation(5) + g_hairpin_special_gu_closure,
       ComputeEnergy(kNNDBHairpin5));
+
+  SetRna(kNNDBHairpin1.r);
+  EXPECT_EQ(g_augu_penalty + g_terminal[A][A][A][U] + HairpinInitiation(6),
+      fold::FastHairpin(3, 10, fold::PrecomputeFastHairpin()));
+  SetRna(kNNDBHairpin2.r);
+  EXPECT_EQ(
+      g_augu_penalty + g_terminal[A][G][G][U] + g_hairpin_gg_first_mismatch + HairpinInitiation(5),
+      fold::FastHairpin(3, 9, fold::PrecomputeFastHairpin()));
+  SetRna(kNNDBHairpin3.r);
+  EXPECT_EQ(g_hairpin_e["CCGAGG"], fold::FastHairpin(3, 8, fold::PrecomputeFastHairpin()));
+  SetRna(kNNDBHairpin4.r);
+  EXPECT_EQ(g_augu_penalty + g_terminal[A][C][C][U] + HairpinInitiation(6) +
+      g_hairpin_all_c_a * 6 + g_hairpin_all_c_b,
+      fold::FastHairpin(3, 10, fold::PrecomputeFastHairpin()));
+  SetRna(kNNDBHairpin5.r);
+  EXPECT_EQ(g_augu_penalty + g_terminal[G][G][G][U] + g_hairpin_gg_first_mismatch +
+      HairpinInitiation(5) + g_hairpin_special_gu_closure,
+      fold::FastHairpin(3, 9, fold::PrecomputeFastHairpin()));
 }
 
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
