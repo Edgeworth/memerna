@@ -65,6 +65,7 @@ void FuzzRna(const rna_t& rna,
 #include "fold/slow_fold.h"
 #include "fold/fold1.h"
 #include "fold/fold2.h"
+
 void FuzzComputeTables(const rna_t& rna) {
   SetRna(rna);
   auto table1 = fold::ComputeTablesSlow();

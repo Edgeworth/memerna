@@ -27,7 +27,7 @@ energy_t HairpinInitiation(int n) {
 // Case 2 -- more than 3 bases on the inside:
 //   Return G_init plus the following penalties / bonuses:
 //   Terminal mismatch energy for st + 1 and en - 1.
-//   If the mismatch is UU or GA (not AG), additional bonus (TODO: bake this into the mismatch energies for hairpin loops)
+//   If the mismatch is UU or GA (not AG), additional bonus
 //   If the mismatch is GG, additional bonus.
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy model).
@@ -138,7 +138,7 @@ energy_t BulgeEnergy(int ost, int oen, int ist, int ien, std::unique_ptr<structu
     if (s) (*s)->AddNote("%de - special c bulge", bulge_special_c);
     energy += bulge_special_c;
   }
-  // TODO: make this faster?
+
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
   int num_states = 0;
   for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i)
@@ -378,7 +378,6 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
   std::tuple<bool, int, std::string> state{false, N, ""};
   if (cache[1][N] < cache[0][N])
     state = std::make_tuple(true, N, "");
-  // TODO use ctd representation
   if (s) {
     (*s)->AddNote(
         "%de - CTD: outer_idx: %d, use_first_lu: %d",
