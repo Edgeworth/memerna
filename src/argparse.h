@@ -24,25 +24,21 @@ public:
       return *this;
     }
 
-    option_t& Arg(const std::string& default_) {
-      return Arg(default_, {});
-    }
-
+    option_t& Arg(const std::string& default_) {return Arg(default_, {});}
     option_t& Arg(const std::unordered_set<std::string>& choices_) {
       choices = choices_;
       has_arg = true;
       return *this;
     }
-
     option_t& Arg() {
       has_arg = true;
       return *this;
     }
-
     option_t& Require() {
       required = true;
       return *this;
     }
+    std::string Desc() const;
 
     std::string desc;
     std::string default_arg;
@@ -53,23 +49,30 @@ public:
   };
 
   ArgParse(const std::map<std::string, option_t>& possible_args_) : possible_args(possible_args_) {}
-
+  ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
-
   ArgParse& operator=(const ArgParse&) = delete;
 
+  void AddOptions(const std::map<std::string, option_t>& possible_args_);
   std::string Parse(int argc, char* argv[]);
-
+  void ParseOrExit(int argc, char* argv[]);
   std::string Usage();
-
   const std::vector<std::string>& GetPositional() const {return positional;}
 
-  bool HasFlag(const std::string& flag) const {return bool(flags.count(flag));}
+  bool HasFlag(const std::string& flag) const {
+    if (possible_args.count(flag) && possible_args.find(flag)->second.has_default)
+      return true;
+    return flags.count(flag) > 0;
+  }
 
-  std::string GetOption(const std::string& flag) {
-    if (HasFlag(flag))
-      return flags[flag];
-    return possible_args[flag].default_arg;
+  std::string GetOption(const std::string& flag) const {
+    auto flagiter = flags.find(flag);
+    auto positer = possible_args.find(flag);
+    if (flagiter != flags.end())
+      return flagiter->second;
+    if (positer != possible_args.end())
+      return positer->second.default_arg;
+    return "";
   }
 
 private:

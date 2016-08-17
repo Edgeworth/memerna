@@ -15,12 +15,9 @@ int main(int argc, char* argv[]) {
       {"e", {"run efn"}},
       {"f", {"run fold"}},
   });
+  argparse.AddOptions(bridge::MEMERNA_OPTIONS);
+  argparse.ParseOrExit(argc, argv);
 
-  auto ret = argparse.Parse(argc, argv);
-
-  verify_expr(
-      ret.size() == 0,
-      "%s\n%s\n", ret.c_str(), argparse.Usage().c_str());
   verify_expr(
       argparse.HasFlag("r") + argparse.HasFlag("m") + argparse.HasFlag("k") == 1,
       "require exactly one package flag\n%s", argparse.Usage().c_str());
@@ -36,8 +33,7 @@ int main(int argc, char* argv[]) {
     package = std::move(std::unique_ptr<bridge::RnaPackage>(
         new bridge::Rnark("extern/rnark/data_tables/")));
   } else {
-    package = std::move(std::unique_ptr<bridge::RnaPackage>(
-        new bridge::Memerna("data/")));
+    package = std::move(bridge::MemernaFromArgParse(argparse));
   }
 
   const auto& p = argparse.GetPositional();
