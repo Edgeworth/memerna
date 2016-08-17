@@ -8,14 +8,6 @@
 namespace memerna {
 namespace energy {
 
-energy_t HairpinInitiation(int n) {
-  assert(n >= 3);
-  if (n < INITIATION_CACHE_SZ) return g_hairpin_init[n];
-  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-  // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to match RNAstructure.
-  return energy_t(round(g_hairpin_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
-}
-
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:
@@ -39,8 +31,10 @@ energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s) {
   for (int i = st; i <= en; ++i)
     seq += BaseToChar(r[i]);
   auto iter = g_hairpin_e.find(seq);
-  if (iter != g_hairpin_e.end())
+  if (iter != g_hairpin_e.end()) {
+    if (s) (*s)->AddNote("special hairpin");
     return iter->second;
+  }
 
   // Subtract two for the initiating base pair.
   int length = en - st - 1;
@@ -88,14 +82,6 @@ energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s) {
     energy += g_hairpin_special_gu_closure;
   }
   return energy;
-}
-
-energy_t BulgeInitiation(int n) {
-  assert(n >= 1);
-  if (n < INITIATION_CACHE_SZ) return g_bulge_init[n];
-  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-  // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to match RNAstructure.
-  return energy_t(round(g_bulge_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
 // Indices are inclusive.
@@ -150,14 +136,6 @@ energy_t Bulge(int ost, int oen, int ist, int ien, std::unique_ptr<structure::St
   energy += states_bonus;
 
   return energy;
-}
-
-energy_t InternalLoopInitiation(int n) {
-  assert(n >= 4);
-  if (n < INITIATION_CACHE_SZ) return g_internal_init[n];
-  static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-  // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match RNAstructure.
-  return energy_t(round(g_internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
 }
 
 // Indices are inclusive.
@@ -230,10 +208,6 @@ energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::
   if (toplen >= 1 && botlen >= 1)
     return InternalLoop(ost, oen, ist, ien, s);
   return Bulge(ost, oen, ist, ien, s);
-}
-
-energy_t MultiloopInitiation(int num_branches) {
-  return g_multiloop_hack_a + num_branches * g_multiloop_hack_b;
 }
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).

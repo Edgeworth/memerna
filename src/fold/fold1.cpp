@@ -1,4 +1,5 @@
 #include "fold1.h"
+#include "fold_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -6,6 +7,7 @@ namespace fold {
 using constants::MAX_E;
 
 array3d_t<energy_t, DP_SIZE> ComputeTables1() {
+  InitFold();
   int N = int(r.size());
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
@@ -30,7 +32,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        auto base_branch_cost = AUGUBRANCH[stb][enb] + MULTILOOP_A;
+        auto base_branch_cost = g_augubranch[stb][enb] + g_multiloop_hack_a;
 
         // (<   ><   >)
         p_min = std::min(p_min, base_branch_cost + arr[st + 1][en - 1][DP_U2]);
@@ -50,26 +52,26 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
           // (.(   )   .) Left outer coax - P
           auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv][DP_P] +
-              AUGUBRANCH[st2b][plb] + arr[piv + 1][en - 2][DP_U] + outer_coax);
+              g_augubranch[st2b][plb] + arr[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv][DP_U] +
-              AUGUBRANCH[prb][en2b] + arr[piv + 1][en - 2][DP_P] + outer_coax);
+              g_augubranch[prb][en2b] + arr[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv - 1][DP_P] +
-              AUGUBRANCH[st2b][pl1b] + arr[piv + 1][en - 1][DP_U] +
+              g_augubranch[st2b][pl1b] + arr[piv + 1][en - 1][DP_U] +
               energy::MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_U] +
-              AUGUBRANCH[pr1b][en2b] + arr[piv + 2][en - 2][DP_P] +
+              g_augubranch[pr1b][en2b] + arr[piv + 2][en - 2][DP_P] +
               energy::MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_P] +
-              AUGUBRANCH[st1b][plb] + arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
+              g_augubranch[st1b][plb] + arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           p_min = std::min(p_min, base_branch_cost + arr[st + 1][piv][DP_U] +
-              AUGUBRANCH[prb][en1b] + arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
+              g_augubranch[prb][en1b] + arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb]);
         }
 
         arr[st][en][DP_P] = p_min;
@@ -87,10 +89,10 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         // stb pl1b pb   pr1b
         auto pb = r[piv], pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(st, piv) + g_multiloop_hack_b;
-        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(st, piv - 1) + g_multiloop_hack_b;
-        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st + 1, piv) + g_multiloop_hack_b;
-        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st + 1, piv - 1) + g_multiloop_hack_b;
+        auto base00 = arr[st][piv][DP_P] + energy::AuGuPenalty(stb, pb) + g_multiloop_hack_b;
+        auto base01 = arr[st][piv - 1][DP_P] + energy::AuGuPenalty(stb, pl1b) + g_multiloop_hack_b;
+        auto base10 = arr[st + 1][piv][DP_P] + energy::AuGuPenalty(st1b, pb) + g_multiloop_hack_b;
+        auto base11 = arr[st + 1][piv - 1][DP_P] + energy::AuGuPenalty(st1b, pl1b) + g_multiloop_hack_b;
         // Min is for either placing another unpaired or leaving it as nothing.
         auto right_unpaired = std::min(arr[piv + 1][en][DP_U], 0);
 
