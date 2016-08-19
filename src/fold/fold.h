@@ -81,6 +81,7 @@ energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& preco
 
 
 energy_t Fold();
+energy_t Fold4();
 energy_t Fold3();
 energy_t Fold2();
 energy_t Fold1();
