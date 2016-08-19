@@ -5,6 +5,7 @@
 #include "fold/traceback.h"
 #include "fold/fold1.h"
 #include "fold/fold2.h"
+#include "fold/fold3.h"
 #include "fold/fold_globals.h"
 
 namespace memerna {
@@ -39,7 +40,7 @@ energy_t Fold2() {
 }
 
 energy_t Fold3() {
-  return FoldInternal(ComputeTables2);
+  return FoldInternal(ComputeTables3);
 }
 
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
@@ -62,10 +63,8 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
       g_internal_init[toplen + botlen] +
           std::min(std::abs(toplen - botlen) * g_internal_asym, constants::NINIO_MAX_ASYM);
 
-  if (IsAuGu(r[ost], r[oen]))
-    energy += g_internal_augu_penalty;
-  if (IsAuGu(r[ist], r[ien]))
-    energy += g_internal_augu_penalty;
+  energy += energy::InternalLoopAuGuPenalty(r[ost], r[oen]);
+  energy += energy::InternalLoopAuGuPenalty(r[ist], r[ien]);
 
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
     energy += g_internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +

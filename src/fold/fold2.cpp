@@ -1,5 +1,5 @@
-#include "fold2.h"
-#include "fold_globals.h"
+#include "fold/fold2.h"
+#include "fold/fold_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -11,9 +11,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
   int N = int(r.size());
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
-  // For now split up cases into paired and unpaired candidates. For more optimisations, split this up more later.
-  // In the full optimisation, these are strictly decreasing (since 0 unpaired base cost).
-  // In the full optimisation, also include the computed values (except for RCOAX which is not possible).
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<cand_t> cand_st[CAND_SIZE];

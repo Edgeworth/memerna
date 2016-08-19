@@ -2,7 +2,7 @@
 #define MEMERNA_FOLD3_H
 
 #include "common.h"
-#include "fold.h"
+#include "fold/fold.h"
 #include "array.h"
 
 namespace memerna {
