@@ -12,6 +12,36 @@ namespace fold {
 
 using constants::MAX_E;
 
+template<typename T>
+energy_t FoldInternal(T ComputeTables) {
+  InitFold();
+  auto arr = ComputeTables();
+  std::stack<std::tuple<int, int, int>> q;
+  auto energy = TraceExterior(arr, q);
+  TraceStructure(arr, q);
+  return energy;
+}
+
+energy_t Fold() {
+  return FoldInternal(ComputeTables2);
+}
+
+energy_t FoldSlow() {
+  return FoldInternal(ComputeTablesSlow);
+}
+
+energy_t Fold1() {
+  return FoldInternal(ComputeTables1);
+}
+
+energy_t Fold2() {
+  return FoldInternal(ComputeTables2);
+}
+
+energy_t Fold3() {
+  return FoldInternal(ComputeTables2);
+}
+
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0)
@@ -45,32 +75,6 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
         g_internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
 
   return energy;
-}
-
-template<typename T>
-energy_t FoldInternal(T ComputeTables) {
-  InitFold();
-  auto arr = ComputeTables();
-  std::stack<std::tuple<int, int, int>> q;
-  auto energy = TraceExterior(arr, q);
-  TraceStructure(arr, q);
-  return energy;
-}
-
-energy_t Fold() {
-  return FoldInternal(ComputeTables2);
-}
-
-energy_t FoldSlow() {
-  return FoldInternal(ComputeTablesSlow);
-}
-
-energy_t Fold1() {
-  return FoldInternal(ComputeTables1);
-}
-
-energy_t Fold2() {
-  return FoldInternal(ComputeTables2);
 }
 
 std::vector<hairpin_precomp_t> PrecomputeFastHairpin() {
