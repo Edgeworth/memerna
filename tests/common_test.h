@@ -4,11 +4,9 @@
 #include <cstdint>
 
 namespace memerna {
-namespace energy {
 
-const uint32_t T04_MODEL_HASH = 0xA89606C3;
+const uint32_t T04_MODEL_HASH = 0x8A27A024;
 
-}
 }
 
 #endif //MEMERNA_COMMON_TEST_H
