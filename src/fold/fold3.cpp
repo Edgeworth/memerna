@@ -1,4 +1,4 @@
-#include "fold2.h"
+#include "fold3.h"
 #include "fold_globals.h"
 
 namespace memerna {
@@ -6,7 +6,7 @@ namespace fold {
 
 using constants::MAX_E;
 
-array3d_t<energy_t, DP_SIZE> ComputeTables2() {
+array3d_t<energy_t, DP_SIZE> ComputeTables3() {
   InitFold();
   int N = int(r.size());
   // Automatically initialised to MAX_E.

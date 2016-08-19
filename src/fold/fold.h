@@ -10,6 +10,12 @@ namespace fold {
 
 const int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
+// Non continuous -2.1, -4 for WC, -16 for terminal mismatch.
+// TODO: compute in InitFold
+const energy_t MIN_MISMATCH_COAX = -21 - 4 - 16;
+const energy_t MIN_FLUSH_COAX = -34;
+
+// DP arrays
 enum {
   DP_P,  // For the paired array.
   DP_U,  // For the unpaired array.
@@ -28,6 +34,35 @@ enum {
   EXT_SIZE
 };
 
+// Split candidates up into several lists.
+// In general, for each array we need a new candidate list (except for U and U2 which mirror each other very
+// closely). We also need another candidate list for forward RCOAX since we can't use its energy value directly, not
+// knowing it. Same with flush coaxial stacks.
+enum {
+  CAND_P_MISMATCH,  // No monotonicity.
+  CAND_P_OUTER,  // No monotonicity.
+  CAND_P_FLUSH,  // No monotonicity.
+  CAND_U,
+  CAND_U_LCOAX,  // No monotonicity.
+  CAND_U_RCOAX_FWD,  // No monotonicity.
+  CAND_U_FLUSH,  // No monotonicity.
+  CAND_U_WC,
+  CAND_U_GU,
+  CAND_U_RCOAX,
+  CAND_SIZE
+};
+
+enum {
+  CAND_EN_P_MISMATCH,
+  CAND_EN_P_OUTER,
+  CAND_EN_P_FLUSH,
+  CAND_EN_SIZE
+};
+
+struct cand_t {
+  energy_t energy;
+  int idx;
+};
 
 
 void InitFold();
@@ -46,6 +81,7 @@ energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& preco
 
 
 energy_t Fold();
+energy_t Fold3();
 energy_t Fold2();
 energy_t Fold1();
 energy_t FoldSlow();

@@ -49,7 +49,7 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> MEMERNA_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("slow", {"slow", "1", "2"})},
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("slow", {"slow", "1", "2", "3"})},
     {"data-path", ArgParse::option_t("path to data tables for memerna").Arg("data/")}
 };
 
@@ -66,6 +66,7 @@ private:
   energy_t (* fold_alg)();
 };
 
+// TODO: change to be able to create all of them
 std::unique_ptr<Memerna> MemernaFromArgParse(const ArgParse& argparse);
 
 }
