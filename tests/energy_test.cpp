@@ -132,7 +132,10 @@ TEST_F(EnergyTest, BaseCases) {
 }
 
 TEST_F(EnergyTest, T04Tests) {
-  if (EnergyModelChecksum() != T04_MODEL_HASH) return;
+  if (EnergyModelChecksum() != T04_MODEL_HASH) {
+    printf("Skipping energy model specific energy tests.");
+    return;
+  }
 
   EXPECT_EQ(88, HairpinInitiation(87));
   EXPECT_EQ(68, BulgeInitiation(57));

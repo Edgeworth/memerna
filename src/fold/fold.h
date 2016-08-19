@@ -10,11 +10,6 @@ namespace fold {
 
 const int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
-// Non continuous -2.1, -4 for WC, -16 for terminal mismatch.
-// TODO: compute in InitFold
-const energy_t MIN_MISMATCH_COAX = -21 - 4 - 16;
-const energy_t MIN_FLUSH_COAX = -34;
-
 // DP arrays
 enum {
   DP_P,  // For the paired array.
@@ -66,6 +61,7 @@ struct cand_t {
 
 
 void InitFold();
+int MaxNumContiguous(const rna_t& rna);
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
 
 struct hairpin_precomp_t {
