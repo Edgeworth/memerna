@@ -7,9 +7,9 @@ MAX = 0x0F0F0F0F
 ORDER = 'ACGU'
 
 
-def parse_number(val):
+def parse_number(val, default=MAX):
   if val == '.':
-    return MAX
+    return default
   else:
     assert (float(val) * 10 == int(val.replace('.', '')))
     return int(val.replace('.', ''))
@@ -120,9 +120,9 @@ def parse_loop_file(data):
   m = re.findall(r'(\d+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)', data)
   internal, bulge, hairpin = '', '', ''
   for i in m:
-    internal += '%s %d\n' % (i[0], parse_number(i[1]))
-    bulge += '%s %d\n' % (i[0], parse_number(i[2]))
-    hairpin += '%s %d\n' % (i[0], parse_number(i[3]))
+    internal += '%s %d\n' % (i[0], parse_number(i[1], 0))
+    bulge += '%s %d\n' % (i[0], parse_number(i[2], 0))
+    hairpin += '%s %d\n' % (i[0], parse_number(i[3], 0))
   return (internal, bulge, hairpin)
 
 
