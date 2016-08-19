@@ -6,6 +6,7 @@
 #include "fold/fold1.h"
 #include "fold/fold2.h"
 #include "fold/fold3.h"
+#include "fold/fold4.h"
 #include "fold/fold_globals.h"
 
 namespace memerna {
@@ -41,6 +42,10 @@ energy_t Fold2() {
 
 energy_t Fold3() {
   return FoldInternal(ComputeTables3);
+}
+
+energy_t Fold4() {
+  return FoldInternal(ComputeTables4);
 }
 
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {

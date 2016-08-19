@@ -83,6 +83,8 @@ std::unique_ptr<Memerna> MemernaFromArgParse(const ArgParse& argparse) {
     fold_alg = &fold::Fold2;
   else if (opt == "3")
     fold_alg = &fold::Fold3;
+  else if (opt == "4")
+    fold_alg = &fold::Fold4;
   else if (opt == "brute")
     fold_alg = &fold::FoldBruteForce;
   else
