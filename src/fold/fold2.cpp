@@ -100,21 +100,17 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_FLUSH]) {
+      for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
         // (   )<(   ) > Flush coax - U
         // stb piv piv + 1
-        if (cand.idx + 1 < en) {
-          auto pb = r[cand.idx], pr1b = r[cand.idx + 1];
-          auto val = cand.energy - g_min_flush_coax +
-              g_stack[pb][pr1b][pr1b ^ 3][stb] + arr[cand.idx + 1][en][DP_U_WC];
-          mins[DP_U] = std::min(mins[DP_U], val);
-          mins[DP_U2] = std::min(mins[DP_U2], val);
-          if (pr1b == G || pr1b == U) {
-            val = cand.energy - g_min_flush_coax + g_stack[pb][pr1b][pr1b ^ 1][stb] + arr[cand.idx + 1][en][DP_U_GU];
-            mins[DP_U] = std::min(mins[DP_U], val);
-            mins[DP_U2] = std::min(mins[DP_U2], val);
-          }
-        }
+        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_WC];
+        mins[DP_U] = std::min(mins[DP_U], val);
+        mins[DP_U2] = std::min(mins[DP_U2], val);
+      }
+      for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
+        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_GU];
+        mins[DP_U] = std::min(mins[DP_U], val);
+        mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_WC])
         mins[DP_U_WC] = std::min(mins[DP_U_WC], cand.energy + std::min(arr[cand.idx + 1][en][DP_U], 0));
@@ -142,7 +138,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // These orderings are useful to remember:
       // U <= U_WC, U_GU, U2
 
-      energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
+      energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
 
       // Unpaired cases. These store the best pairs u_cand that begin at st.
@@ -212,9 +208,15 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // We could take the min of if it were a Watson-Crick or GU pair for stacking, but then we would have to
       // be very careful when keeping this candidate list monotonic, since stacks could have less or more energy
       // than we expect.
-      auto flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_min_flush_coax;
-      if (flush_base < CAP_E && flush_base < arr[st][en][DP_U])
-        cand_st[CAND_U_FLUSH].push_back({flush_base, en});
+      if (en + 1 < N) {
+        auto enr1b = r[en + 1];
+        auto wc_flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_stack[enb][enr1b][enr1b ^ 3][stb];
+        auto gu_flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_stack[enb][enr1b][enr1b ^ 1][stb];
+        if (wc_flush_base < CAP_E && wc_flush_base < arr[st][en][DP_U])
+          cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
+        if (gu_flush_base < CAP_E && (enr1b == G || enr1b == U) && gu_flush_base < arr[st][en][DP_U])
+          cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
+      }
 
       // Base cases.
       arr[st][en][DP_U] = std::min(arr[st][en][DP_U], normal_base);
@@ -244,7 +246,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // (   .(   ).) Right left coax
       auto prlcoax_base = arr[st + 1][en - 2][DP_P] + g_augubranch[st1b][en2b] +
           energy::MismatchCoaxial(en2b, en1b, stb, st1b);
-      if (prlcoax_base < CAP_E && prlcoax_base < arr[st][en - 1][DP_U]) // TODO and not infinite etc for others
+      if (prlcoax_base < CAP_E && prlcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax
       auto plfcoax_base = arr[st + 1][en][DP_P] + g_augubranch[st1b][enb] + g_min_flush_coax;

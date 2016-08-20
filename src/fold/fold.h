@@ -40,7 +40,8 @@ enum {
   CAND_U,
   CAND_U_LCOAX,  // No monotonicity.
   CAND_U_RCOAX_FWD,  // No monotonicity.
-  CAND_U_FLUSH,  // No monotonicity.
+  CAND_U_WC_FLUSH,  // No monotonicity.
+  CAND_U_GU_FLUSH,  // No monotonicity.
   CAND_U_WC,
   CAND_U_GU,
   CAND_U_RCOAX,
@@ -77,7 +78,6 @@ energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& preco
 
 
 energy_t Fold();
-energy_t Fold4();
 energy_t Fold3();
 energy_t Fold2();
 energy_t Fold1();
