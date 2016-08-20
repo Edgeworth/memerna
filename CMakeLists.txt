@@ -5,7 +5,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3 -fsched-spec-load")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3 -fsched-spec-load")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO  "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
 # Always have librnary compiled as release.
 set(CMAKE_BUILD_TYPE Release)
 add_subdirectory("extern/rnark/librnary")

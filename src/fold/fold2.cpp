@@ -5,6 +5,7 @@ namespace memerna {
 namespace fold {
 
 using constants::MAX_E;
+using constants::CAP_E;
 
 array3d_t<energy_t, DP_SIZE> ComputeTables2() {
   InitFold();
@@ -65,7 +66,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         for (auto cand : cand_st[CAND_P_FLUSH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - g_min_flush_coax +
               g_stack[stb][st1b][r[cand.idx]][enb] + arr[cand.idx + 1][en - 1][DP_U]);
-
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy + arr[st + 1][cand.idx - 1][DP_U]);
@@ -188,13 +188,13 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // .(   ).<(   ) > - Left coax - U, U2
       auto lcoax_base = arr[st + 1][en - 1][DP_P] + g_augubranch[st1b][en1b] +
           energy::MismatchCoaxial(en1b, enb, stb, st1b);
-      if (lcoax_base < arr[st][en][DP_U])
+      if (lcoax_base < CAP_E && lcoax_base < arr[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
       // This is probably better than having four candidate lists for each possible mismatch (TODO check this).
       // TODO remember to subtract off g_coax_mismatch_non_contiguous when computing after saving value
       auto rcoaxf_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_min_mismatch_coax;
-      if (rcoaxf_base < arr[st][en][DP_U])
+      if (rcoaxf_base < CAP_E && rcoaxf_base < arr[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
 
       // (   ).<( * ). > Right coax backward - RCOAX
@@ -213,7 +213,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // be very careful when keeping this candidate list monotonic, since stacks could have less or more energy
       // than we expect.
       auto flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_min_flush_coax;
-      if (flush_base < arr[st][en][DP_U])
+      if (flush_base < CAP_E && flush_base < arr[st][en][DP_U])
         cand_st[CAND_U_FLUSH].push_back({flush_base, en});
 
       // Base cases.
@@ -230,29 +230,29 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // Since we assumed the minimum energy coax stack and made this structure self contained,
       // we could potentially replace it with U[st + 1][en].
       auto plocoax_base = arr[st + 2][en][DP_P] + g_augubranch[st2b][enb] + g_min_mismatch_coax;
-      if (plocoax_base < arr[st + 1][en][DP_U])
+      if (plocoax_base < CAP_E && plocoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_OUTER].push_back({plocoax_base, en});
       // (.   (   ).) Right outer coax
       auto procoax_base = arr[st][en - 2][DP_P] + g_augubranch[stb][en2b] + g_min_mismatch_coax;
-      if (procoax_base < arr[st][en - 1][DP_U])
+      if (procoax_base < CAP_E && procoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       auto plrcoax_base = arr[st + 2][en - 1][DP_P] + g_augubranch[st2b][en1b] +
           energy::MismatchCoaxial(en1b, enb, st1b, st2b);
-      if (plrcoax_base < arr[st + 1][en][DP_U])
+      if (plrcoax_base < CAP_E && plrcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       auto prlcoax_base = arr[st + 1][en - 2][DP_P] + g_augubranch[st1b][en2b] +
           energy::MismatchCoaxial(en2b, en1b, stb, st1b);
-      if (prlcoax_base < arr[st][en - 1][DP_U]) // TODO and not infinite etc for others
+      if (prlcoax_base < CAP_E && prlcoax_base < arr[st][en - 1][DP_U]) // TODO and not infinite etc for others
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax
       auto plfcoax_base = arr[st + 1][en][DP_P] + g_augubranch[st1b][enb] + g_min_flush_coax;
-      if (plfcoax_base < arr[st + 1][en][DP_U])
+      if (plfcoax_base < CAP_E && plfcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_FLUSH].push_back({plfcoax_base, en});
       // (   (   )) Right flush coax
       auto prfcoax_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_min_flush_coax;
-      if (prfcoax_base < arr[st][en - 1][DP_U])
+      if (prfcoax_base < CAP_E && prfcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_FLUSH][en].push_back({prfcoax_base, st});
 
 
