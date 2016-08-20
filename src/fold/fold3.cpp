@@ -157,7 +157,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_FLUSH]) {
+      for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
         // (   )<(   ) > Flush coax - U
         // stb piv piv + 1
         if (cand.idx + 1 < en) {
@@ -199,7 +199,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       // These orderings are useful to remember:
       // U <= U_WC, U_GU, U2
 
-      energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
+      energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
 
       // Unpaired cases. These store the best pairs u_cand that begin at st.
@@ -271,7 +271,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       // than we expect.
       auto flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_min_flush_coax;
       if (flush_base < arr[st][en][DP_U])
-        cand_st[CAND_U_FLUSH].push_back({flush_base, en});
+        cand_st[CAND_U_GU_FLUSH].push_back({flush_base, en});  // TODO change back to CAND_U_FLUSH (and others)
 
       // Base cases.
       arr[st][en][DP_U] = std::min(arr[st][en][DP_U], normal_base);

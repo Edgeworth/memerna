@@ -66,7 +66,6 @@ void FuzzRna(const rna_t& rna,
 #include "fold/fold1.h"
 #include "fold/fold2.h"
 #include "fold/fold3.h"
-#include "fold/fold4.h"
 
 void FuzzComputeTables(const rna_t& rna) {
   SetRna(rna);
@@ -74,20 +73,18 @@ void FuzzComputeTables(const rna_t& rna) {
   auto table1 = fold::ComputeTables1();
   auto table2 = fold::ComputeTables2();
   auto table3 = fold::ComputeTables3();
-  auto table4 = fold::ComputeTables4();
   int N = int(rna.size());
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       for (int a = 0; a < fold::DP_SIZE; ++a) {
         if ((table0[st][en][a] != table1[st][en][a] ||
             table0[st][en][a] != table2[st][en][a] ||
-            table0[st][en][a] != table3[st][en][a] ||
-            table0[st][en][a] != table4[st][en][a]) &&
+            table0[st][en][a] != table3[st][en][a]) &&
             table0[st][en][a] < constants::CAP_E) {
-          printf("Diff on %s\n %d %d %d: %d %d %d %d %d\n",
+          printf("Diff on %s\n %d %d %d: %d %d %d %d\n",
               parsing::RnaToString(rna).c_str(), st, en, a,
               table0[st][en][a], table1[st][en][a], table2[st][en][a],
-              table3[st][en][a], table4[st][en][a]);
+              table3[st][en][a]);
           return;
         }
       }
