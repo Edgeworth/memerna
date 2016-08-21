@@ -72,25 +72,7 @@ folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
   return {rna, pairs, energy_t(structure->GetEnergy(1))};
 }
 
-std::unique_ptr<Memerna> MemernaFromArgParse(const ArgParse& argparse) {
-  energy_t (*fold_alg)() = &fold::Fold;
-  auto opt = argparse.GetOption("alg");
-  if (opt == "slow")
-    fold_alg = &fold::FoldSlow;
-  else if (opt == "1")
-    fold_alg = &fold::Fold1;
-  else if (opt == "2")
-    fold_alg = &fold::Fold2;
-  else if (opt == "3")
-    fold_alg = &fold::Fold3;
-  else if (opt == "brute")
-    fold_alg = &fold::FoldBruteForce;
-  else
-    verify_expr(false, "unknown fold option");
-  return std::make_unique<Memerna>(argparse.GetOption("data-path"), fold_alg);
-}
-
-Memerna::Memerna(const std::string& data_path, energy_t (*fold_alg_)()) : fold_alg(fold_alg_) {
+Memerna::Memerna(const std::string& data_path, const fold::fold_fn_t* fold_fn_) : fold_fn(fold_fn_) {
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
   LoadEnergyModelFromDataDir(data_path);
 }
@@ -112,9 +94,20 @@ energy_t Memerna::Efn(const folded_rna_t& frna, std::string* desc) const {
 }
 
 folded_rna_t Memerna::Fold(const rna_t& rna) const {
-  SetRna(rna);
-  auto energy = fold_alg();
-  return {r, p, energy};
+  return fold_fn(rna);
+}
+
+std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
+  verify_expr(
+      argparse.HasFlag("r") + argparse.HasFlag("m") + argparse.HasFlag("k") == 1,
+      "require exactly one package flag\n%s", argparse.Usage().c_str());
+  if (argparse.HasFlag("r")) {
+    return std::unique_ptr<RnaPackage>(new bridge::Rnastructure("extern/rnark/data_tables/", false));
+  } else if (argparse.HasFlag("m")) {
+    return std::unique_ptr<RnaPackage>(new bridge::Rnark("extern/rnark/data_tables/"));
+  } else {
+    return std::unique_ptr<RnaPackage>(new Memerna("data/", FoldFunctionFromArgParse(argparse)));
+  }
 }
 
 }

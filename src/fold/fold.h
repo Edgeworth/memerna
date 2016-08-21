@@ -1,6 +1,7 @@
 #ifndef MEMERNA_FOLD_H
 #define MEMERNA_FOLD_H
 
+#include "array.h"
 #include "constants.h"
 #include "common.h"
 #include "energy/energy.h"
@@ -60,39 +61,42 @@ struct cand_t {
   int idx;
 };
 
-
-void InitFold();
-int MaxNumContiguous(const rna_t& rna);
-energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
-
 struct hairpin_precomp_t {
   hairpin_precomp_t() : num_c(0) {
     memset(special, constants::MAX_E & 0xFF, sizeof(special));
   }
+
   energy_t special[MAX_SPECIAL_HAIRPIN_SZ + 1];
   int num_c;
 };
 
+
+int MaxNumContiguous(const rna_t& rna);
+energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
 std::vector<hairpin_precomp_t> PrecomputeFastHairpin();
 energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& precomp);
-
-
-energy_t Fold();
-energy_t Fold3();
-energy_t Fold2();
-energy_t Fold1();
-energy_t FoldSlow();
-energy_t FoldBruteForce();
-
-inline energy_t Fold(const rna_t& rna) {
-  SetRna(rna);
-  return Fold();
-}
 
 inline bool IsNotLonely(int st, int en) {
   return (en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(r[st + 1], r[en - 1])) ||
       (st > 0 && en < int(r.size() - 1) && CanPair(r[st - 1], r[en + 1]));
 }
+
+
+void InitFold();
+
+// Exposed for fuzzing.
+array3d_t<energy_t, DP_SIZE> ComputeTables3();
+array3d_t<energy_t, DP_SIZE> ComputeTables2();
+array3d_t<energy_t, DP_SIZE> ComputeTables1();
+array3d_t<energy_t, DP_SIZE> ComputeTables0();
+
+folded_rna_t Fold3(const rna_t& rna);
+folded_rna_t Fold2(const rna_t& rna);
+folded_rna_t Fold1(const rna_t& rna);
+folded_rna_t Fold0(const rna_t& rna);
+folded_rna_t FoldBruteForce(const rna_t& rna);
+
+typedef folded_rna_t (fold_fn_t)(const rna_t&);
 
 }
 }

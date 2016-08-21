@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <map>
 #include <unordered_map>
+#include <fold/fold.h>
 
 namespace memerna {
 
@@ -25,19 +26,23 @@ public:
     }
 
     option_t& Arg(const std::string& default_) {return Arg(default_, {});}
+
     option_t& Arg(const std::unordered_set<std::string>& choices_) {
       choices = choices_;
       has_arg = true;
       return *this;
     }
+
     option_t& Arg() {
       has_arg = true;
       return *this;
     }
+
     option_t& Require() {
       required = true;
       return *this;
     }
+
     std::string Desc() const;
 
     std::string desc;
@@ -49,6 +54,7 @@ public:
   };
 
   ArgParse(const std::map<std::string, option_t>& possible_args_) : possible_args(possible_args_) {}
+
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
@@ -56,7 +62,8 @@ public:
   void AddOptions(const std::map<std::string, option_t>& possible_args_);
   std::string Parse(int argc, char* argv[]);
   void ParseOrExit(int argc, char* argv[]);
-  std::string Usage();
+  std::string Usage() const;
+
   const std::vector<std::string>& GetPositional() const {return positional;}
 
   bool HasFlag(const std::string& flag) const {
@@ -80,6 +87,12 @@ private:
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
+
+const std::map<std::string, ArgParse::option_t> MEMERNA_OPTIONS = {
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3"})},
+};
+
+fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse);
 
 }
 

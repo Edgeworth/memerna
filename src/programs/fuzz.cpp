@@ -2,10 +2,8 @@
 #include <cassert>
 #include <random>
 #include <chrono>
-#include <bridge/bridge.h>
-#include "argparse.h"
+#include "bridge/bridge.h"
 #include "parsing.h"
-#include "fold/fold.h"
 
 using namespace memerna;
 
@@ -18,11 +16,10 @@ void FuzzRnaOfLength(int length) {
       rna[j] = base_t(data & 0b11);
       data >>= 2;
     }
-    SetRna(rna);
-    energy_t a = fold::Fold();
+    energy_t a = fold::Fold0(rna).energy;
     energy_t a_efn = energy::ComputeEnergy();
     std::string a_db = parsing::PairsToDotBracket(p).c_str();
-    energy_t b = fold::FoldBruteForce();
+    energy_t b = fold::FoldBruteForce(rna).energy;
     energy_t b_efn = energy::ComputeEnergy();
     std::string b_db = parsing::PairsToDotBracket(p).c_str();
 
@@ -62,14 +59,9 @@ void FuzzRna(const rna_t& rna,
   }
 }
 
-#include "fold/slow_fold.h"
-#include "fold/fold1.h"
-#include "fold/fold2.h"
-#include "fold/fold3.h"
-
 void FuzzComputeTables(const rna_t& rna) {
   SetRna(rna);
-  auto table0 = fold::ComputeTablesSlow();
+  auto table0 = fold::ComputeTables0();
   auto table1 = fold::ComputeTables1();
   auto table2 = fold::ComputeTables2();
   auto table3 = fold::ComputeTables3();
@@ -106,7 +98,6 @@ int main(int argc, char* argv[]) {
   ArgParse argparse({
       {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
   });
-  argparse.AddOptions(bridge::MEMERNA_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
   verify_expr(
@@ -117,8 +108,7 @@ int main(int argc, char* argv[]) {
   verify_expr(base_len > 0, "invalid length");
   verify_expr(variance >= 0, "invalid variance");
 
-  auto memerna = bridge::MemernaFromArgParse(argparse);
-  bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
+  // bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
 
   auto start_time = std::chrono::steady_clock::now();
   auto interval = atoi(argparse.GetOption("print-interval").c_str());
@@ -131,7 +121,6 @@ int main(int argc, char* argv[]) {
       start_time = std::chrono::steady_clock::now();
     }
     auto rna = GenerateRandomRna(length);
-//    FuzzRna(length, memerna, rnastructure);
     FuzzComputeTables(rna);
   }
 }

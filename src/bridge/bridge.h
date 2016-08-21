@@ -48,26 +48,26 @@ private:
   bool use_lyngso;
 };
 
-const std::map<std::string, ArgParse::option_t> MEMERNA_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("slow", {"slow", "1", "2", "3"})},
-    {"data-path", ArgParse::option_t("path to data tables for memerna").Arg("data/")}
-};
-
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
 public:
-  Memerna(const std::string& data_path, energy_t (* fold_alg_)() = &fold::Fold);
+  Memerna(const std::string& data_path, const fold::fold_fn_t* fold_fn_ = &fold::Fold0);
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
   virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
   virtual folded_rna_t Fold(const rna_t& rna) const;
 private:
-  energy_t (* fold_alg)();
+  fold::fold_fn_t* fold_fn;
 };
 
-// TODO: change to be able to create all of them
-std::unique_ptr<Memerna> MemernaFromArgParse(const ArgParse& argparse);
+const std::map<std::string, ArgParse::option_t> BRIDGE_OPTIONS = {
+    {"r", {"rnastructure"}},
+    {"m", {"rnark"}},
+    {"k", {"memerna"}}
+};
+
+std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
 
 }
 }

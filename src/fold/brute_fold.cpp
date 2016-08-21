@@ -41,7 +41,8 @@ void FoldBruteForceInternal(int idx) {
 
 }
 
-energy_t FoldBruteForce() {
+folded_rna_t FoldBruteForce(const rna_t& rna) {
+  SetRna(rna);
   p = std::vector<int>(r.size(), -1);
   best = constants::MAX_E;
   base_pairs.clear();
@@ -53,7 +54,7 @@ energy_t FoldBruteForce() {
   }
   FoldBruteForceInternal(0);
   p = best_p;
-  return energy::ComputeEnergy();
+  return {rna, p, energy::ComputeEnergy()};
 }
 
 }

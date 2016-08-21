@@ -1,6 +1,5 @@
 #include <constants.h>
 #include "fold/fold.h"
-#include "energy/energy.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"

@@ -1,11 +1,11 @@
-#include "fold/fold3.h"
+#include "fold/fold.h"
 #include "fold/fold_globals.h"
-#include "globals.h"
 
 namespace memerna {
 namespace fold {
 
 using constants::MAX_E;
+using constants::CAP_E;
 using constants::TWOLOOP_MAX_SZ;
 using constants::NINIO_MAX_ASYM;
 using constants::HAIRPIN_MIN_SZ;
@@ -72,9 +72,12 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
 
         // Internal loop cases. Since we require HAIRPIN_MIN_SZ >= 3 and initialise arr to MAX_E, we don't need ifs here.
         mins[DP_P] = std::min(mins[DP_P], g_internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + arr[st + 2][en - 2][DP_P]);
-        mins[DP_P] = std::min(mins[DP_P], g_internal_1x2[stb][st1b][st2b][r[en - 3]][en2b][en1b][enb] + arr[st + 2][en - 3][DP_P]);
-        mins[DP_P] = std::min(mins[DP_P], g_internal_1x2[en2b][en1b][enb][stb][st1b][st2b][r[st + 3]] + arr[st + 3][en - 2][DP_P]);
-        mins[DP_P] = std::min(mins[DP_P], g_internal_2x2[stb][st1b][st2b][r[st + 3]][r[en - 3]][en2b][en1b][enb] + arr[st + 3][en - 3][DP_P]);
+        mins[DP_P] = std::min(mins[DP_P],
+            g_internal_1x2[stb][st1b][st2b][r[en - 3]][en2b][en1b][enb] + arr[st + 2][en - 3][DP_P]);
+        mins[DP_P] = std::min(mins[DP_P],
+            g_internal_1x2[en2b][en1b][enb][stb][st1b][st2b][r[st + 3]] + arr[st + 3][en - 2][DP_P]);
+        mins[DP_P] = std::min(mins[DP_P],
+            g_internal_2x2[stb][st1b][st2b][r[st + 3]][r[en - 3]][en2b][en1b][enb] + arr[st + 3][en - 3][DP_P]);
 
         // 2x3 and 3x2 loops
         auto two_by_three = base_internal_loop + g_internal_init[5] +
@@ -90,8 +93,8 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
 
         // Lyngso for the rest.
         for (int l = 6; l <= max_inter; ++l)
-            mins[DP_P] = std::min(mins[DP_P], lyngso[st + 2][en - 2][l - 4] -
-                g_internal_init[l - 4] + g_internal_init[l] + base_internal_loop);
+          mins[DP_P] = std::min(mins[DP_P], lyngso[st + 2][en - 2][l - 4] -
+              g_internal_init[l - 4] + g_internal_init[l] + base_internal_loop);
 
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
@@ -157,21 +160,16 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
+      for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
         // (   )<(   ) > Flush coax - U
-        // stb piv piv + 1
-        if (cand.idx + 1 < en) {
-          auto pb = r[cand.idx], pr1b = r[cand.idx + 1];
-          auto val = cand.energy - g_min_flush_coax +
-              g_stack[pb][pr1b][pr1b ^ 3][stb] + arr[cand.idx + 1][en][DP_U_WC];
-          mins[DP_U] = std::min(mins[DP_U], val);
-          mins[DP_U2] = std::min(mins[DP_U2], val);
-          if (pr1b == G || pr1b == U) {
-            val = cand.energy - g_min_flush_coax + g_stack[pb][pr1b][pr1b ^ 1][stb] + arr[cand.idx + 1][en][DP_U_GU];
-            mins[DP_U] = std::min(mins[DP_U], val);
-            mins[DP_U2] = std::min(mins[DP_U2], val);
-          }
-        }
+        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_WC];
+        mins[DP_U] = std::min(mins[DP_U], val);
+        mins[DP_U2] = std::min(mins[DP_U2], val);
+      }
+      for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
+        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_GU];
+        mins[DP_U] = std::min(mins[DP_U], val);
+        mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_WC])
         mins[DP_U_WC] = std::min(mins[DP_U_WC], cand.energy + std::min(arr[cand.idx + 1][en][DP_U], 0));
@@ -266,12 +264,15 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       }
 
       // (   )<(   ) > Flush coax - U, U2
-      // We could take the min of if it were a Watson-Crick or GU pair for stacking, but then we would have to
-      // be very careful when keeping this candidate list monotonic, since stacks could have less or more energy
-      // than we expect.
-      auto flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_min_flush_coax;
-      if (flush_base < arr[st][en][DP_U])
-        cand_st[CAND_U_GU_FLUSH].push_back({flush_base, en});  // TODO change back to CAND_U_FLUSH (and others)
+      if (en + 1 < N) {
+        auto enr1b = r[en + 1];
+        auto wc_flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_stack[enb][enr1b][enr1b ^ 3][stb];
+        auto gu_flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_stack[enb][enr1b][enr1b ^ 1][stb];
+        if (wc_flush_base < CAP_E && wc_flush_base < arr[st][en][DP_U])
+          cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
+        if (gu_flush_base < CAP_E && (enr1b == G || enr1b == U) && gu_flush_base < arr[st][en][DP_U])
+          cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
+      }
 
       // Base cases.
       arr[st][en][DP_U] = std::min(arr[st][en][DP_U], normal_base);
