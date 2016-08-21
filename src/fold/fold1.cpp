@@ -1,5 +1,5 @@
-#include "fold1.h"
-#include "fold_globals.h"
+#include "fold/fold.h"
+#include "fold/fold_globals.h"
 
 namespace memerna {
 namespace fold {

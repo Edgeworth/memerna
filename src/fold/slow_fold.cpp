@@ -1,5 +1,4 @@
 #include "fold/fold.h"
-#include "array.h"
 
 namespace memerna {
 namespace fold {
@@ -12,7 +11,7 @@ namespace fold {
     } \
   } while (0)
 
-array3d_t<energy_t, DP_SIZE> ComputeTablesSlow() {
+array3d_t<energy_t, DP_SIZE> ComputeTables0() {
   InitFold();
   int N = int(r.size());
   // Automatically initialised to MAX_E.

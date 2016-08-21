@@ -51,7 +51,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   return "";
 }
 
-std::string ArgParse::Usage() {
+std::string ArgParse::Usage() const {
   std::string usage = "Flags: \n";
   for (const auto& arg : possible_args) {
     usage += sfmt("  -%s: %s\n", arg.first.c_str(), arg.second.Desc().c_str());
@@ -70,5 +70,24 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   auto ret = Parse(argc, argv);
   verify_expr(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
+
+fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse) {
+  fold::fold_fn_t* fold_fn = nullptr;
+  auto opt = argparse.GetOption("alg");
+  if (opt == "0")
+    fold_fn = &fold::Fold0;
+  else if (opt == "1")
+    fold_fn = &fold::Fold1;
+  else if (opt == "2")
+    fold_fn = &fold::Fold2;
+  else if (opt == "3")
+    fold_fn = &fold::Fold3;
+  else if (opt == "brute")
+    fold_fn = &fold::FoldBruteForce;
+  else
+    verify_expr(false, "unknown fold option");
+  return fold_fn;
+}
+
 
 }

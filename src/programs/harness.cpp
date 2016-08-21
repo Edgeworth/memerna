@@ -9,32 +9,17 @@ using namespace memerna;
 int main(int argc, char* argv[]) {
   ArgParse argparse({
       {"v", {"be verbose (if possible)"}},
-      {"r", {"rnastructure"}},
-      {"m", {"rnark"}},
-      {"k", {"memerna"}},
       {"e", {"run efn"}},
       {"f", {"run fold"}},
   });
-  argparse.AddOptions(bridge::MEMERNA_OPTIONS);
+  argparse.AddOptions(bridge::BRIDGE_OPTIONS);
+  argparse.AddOptions(MEMERNA_OPTIONS);
   argparse.ParseOrExit(argc, argv);
-
-  verify_expr(
-      argparse.HasFlag("r") + argparse.HasFlag("m") + argparse.HasFlag("k") == 1,
-      "require exactly one package flag\n%s", argparse.Usage().c_str());
   verify_expr(
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
 
-  std::unique_ptr<bridge::RnaPackage> package;
-  if (argparse.HasFlag("r")) {
-    package = std::move(std::unique_ptr<bridge::RnaPackage>(
-        new bridge::Rnastructure("extern/rnark/data_tables/", false)));
-  } else if (argparse.HasFlag("m")) {
-    package = std::move(std::unique_ptr<bridge::RnaPackage>(
-        new bridge::Rnark("extern/rnark/data_tables/")));
-  } else {
-    package = std::move(bridge::MemernaFromArgParse(argparse));
-  }
+  auto package = bridge::RnaPackageFromArgParse(argparse);
 
   const auto& p = argparse.GetPositional();
   bool read_stdin = p.empty();

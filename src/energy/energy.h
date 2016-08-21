@@ -22,6 +22,7 @@ namespace energy {
 inline energy_t AuGuPenalty(base_t stb, base_t enb) {
   return IsAuGu(stb, enb) ? g_augu_penalty : 0;
 }
+
 inline energy_t InternalLoopAuGuPenalty(base_t stb, base_t enb) {
   return IsAuGu(stb, enb) ? g_internal_augu_penalty : 0;
 }

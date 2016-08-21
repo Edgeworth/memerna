@@ -1,4 +1,4 @@
-#include "fold/fold2.h"
+#include "fold/fold.h"
 #include "fold/fold_globals.h"
 
 namespace memerna {
@@ -102,7 +102,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       }
       for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
         // (   )<(   ) > Flush coax - U
-        // stb piv piv + 1
         auto val = cand.energy + arr[cand.idx + 1][en][DP_U_WC];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
@@ -205,9 +204,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       }
 
       // (   )<(   ) > Flush coax - U, U2
-      // We could take the min of if it were a Watson-Crick or GU pair for stacking, but then we would have to
-      // be very careful when keeping this candidate list monotonic, since stacks could have less or more energy
-      // than we expect.
       if (en + 1 < N) {
         auto enr1b = r[en + 1];
         auto wc_flush_base = arr[st][en][DP_P] + g_augubranch[stb][enb] + g_stack[enb][enr1b][enr1b ^ 3][stb];

@@ -3,7 +3,6 @@
 #include <memory>
 #include "energy.h"
 #include "structure.h"
-#include "constants.h"
 
 namespace memerna {
 namespace energy {

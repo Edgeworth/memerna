@@ -1,11 +1,7 @@
 #include <stack>
 #include "parsing.h"
 #include "fold/fold.h"
-#include "fold/slow_fold.h"
 #include "fold/traceback.h"
-#include "fold/fold1.h"
-#include "fold/fold2.h"
-#include "fold/fold3.h"
 #include "fold/fold_globals.h"
 
 namespace memerna {
@@ -14,33 +10,30 @@ namespace fold {
 using constants::MAX_E;
 
 template<typename T>
-energy_t FoldInternal(T ComputeTables) {
+folded_rna_t FoldInternal(const rna_t& rna, T ComputeTables) {
+  SetRna(rna);
   InitFold();
   auto arr = ComputeTables();
   std::stack<std::tuple<int, int, int>> q;
   auto energy = TraceExterior(arr, q);
   TraceStructure(arr, q);
-  return energy;
+  return {rna, p, energy};
 }
 
-energy_t Fold() {
-  return FoldInternal(ComputeTables2);
+folded_rna_t Fold0(const rna_t& rna) {
+  return FoldInternal(rna, ComputeTables0);
 }
 
-energy_t FoldSlow() {
-  return FoldInternal(ComputeTablesSlow);
+folded_rna_t Fold1(const rna_t& rna) {
+  return FoldInternal(rna, ComputeTables1);
 }
 
-energy_t Fold1() {
-  return FoldInternal(ComputeTables1);
+folded_rna_t Fold2(const rna_t& rna) {
+  return FoldInternal(rna, ComputeTables2);
 }
 
-energy_t Fold2() {
-  return FoldInternal(ComputeTables2);
-}
-
-energy_t Fold3() {
-  return FoldInternal(ComputeTables3);
+folded_rna_t Fold3(const rna_t& rna) {
+  return FoldInternal(rna, ComputeTables3);
 }
 
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
@@ -159,9 +152,8 @@ void InitFold() {
   g_min_mismatch_coax = g_coax_mismatch_non_contiguous +
       std::min(g_coax_mismatch_gu_bonus, g_coax_mismatch_wc_bonus) +
       MinEnergy(&g_terminal[0][0][0][0], sizeof(g_terminal));
-  g_min_flush_coax = min_stack;
   // Minimum of all stacking params.
-
+  g_min_flush_coax = min_stack;
 
   energy_t min_internal = MinEnergy(&g_internal_1x1[0][0][0][0][0][0], sizeof(g_internal_1x1));
   min_internal = std::min(min_internal,
