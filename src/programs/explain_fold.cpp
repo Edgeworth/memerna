@@ -1,18 +1,18 @@
 #include <cstdio>
-#include "bridge/bridge.h"
 #include "fold/fold.h"
 #include "fold/traceback.h"
 #include "parsing.h"
+#include "energy/energy_model.h"
 
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
-  ArgParse argparse;
+  ArgParse argparse(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
   verify_expr(pos.size() == 4, "need primary sequence and dp table indices");
 
-  LoadEnergyModelFromDataDir("data/");
+  energy::LoadEnergyModelFromArgParse(argparse);
   fold::fold_state_t state;
   fold::Fold0(parsing::StringToRna(pos[0]), &state);
 

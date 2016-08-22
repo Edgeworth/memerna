@@ -6,6 +6,7 @@
 #include <deque>
 #include <memory>
 #include <cmath>
+#include "argparse.h"
 #include "constants.h"
 #include "common.h"
 #include "base.h"

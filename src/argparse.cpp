@@ -42,7 +42,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   for (const auto& argpair : possible_args) {
     const auto& flag = argpair.first;
     const auto& arg = argpair.second;
-    verify_expr(!arg.has_arg || arg.has_default, "bad option somehow");
+    verify_expr(!arg.has_default || arg.has_arg, "bad option somehow");
     if (arg.has_arg && flags.count(flag) == 0 && !arg.has_default && arg.required)
       return sfmt("missing argument for flag %s", flag.c_str());
     if (!arg.choices.empty() && arg.choices.count(GetOption(flag)) == 0)
@@ -70,24 +70,5 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   auto ret = Parse(argc, argv);
   verify_expr(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
-
-fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse) {
-  fold::fold_fn_t* fold_fn = nullptr;
-  auto opt = argparse.GetOption("alg");
-  if (opt == "0")
-    fold_fn = &fold::Fold0;
-  else if (opt == "1")
-    fold_fn = &fold::Fold1;
-  else if (opt == "2")
-    fold_fn = &fold::Fold2;
-  else if (opt == "3")
-    fold_fn = &fold::Fold3;
-  else if (opt == "brute")
-    fold_fn = &fold::FoldBruteForce;
-  else
-    verify_expr(false, "unknown fold option");
-  return fold_fn;
-}
-
 
 }

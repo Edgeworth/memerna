@@ -3,6 +3,7 @@
 #include <chrono>
 #include "bridge/bridge.h"
 #include "parsing.h"
+#include "energy/energy_model.h"
 
 using namespace memerna;
 
@@ -26,7 +27,7 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
   int st = 0, en = 0, a = 0;
 
   if (use_random_energy_model)
-    LoadRandomEnergyModel(seed);
+    energy::LoadRandomEnergyModel(seed);
   std::vector<fold::fold_state_t> memerna_states;
   std::vector<folded_rna_t> memerna_folds;
   std::vector<energy_t> memerna_efns;
@@ -71,14 +72,15 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
             goto print_diff;
           }
         }
-        energy_t rnastructureval = constants::MAX_E;
-        if (a == fold::DP_P)
-          rnastructureval = rnastructure_state.v.f(st + 1, en + 1);
-        else if (a == fold::DP_U)
-          rnastructureval = rnastructure_state.w.f(st + 1, en + 1);
-        if (rnastructureval != constants::MAX_E && !use_random_energy_model) {
-          if ((memerna0 < constants::CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
-              (memerna0 < constants::CAP_E && memerna0 != rnastructureval)) {
+        if (!use_random_energy_model) {
+          energy_t rnastructureval = constants::MAX_E;
+          if (a == fold::DP_P)
+            rnastructureval = rnastructure_state.v.f(st + 1, en + 1);
+          else if (a == fold::DP_U)
+            rnastructureval = rnastructure_state.w.f(st + 1, en + 1);
+          if (rnastructureval != constants::MAX_E &&
+              ((memerna0 < constants::CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
+              (memerna0 < constants::CAP_E && memerna0 != rnastructureval))) {
             dp_table_diff = true;
             goto print_diff;
           }
@@ -133,7 +135,7 @@ int main(int argc, char* argv[]) {
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
   std::vector<bridge::Memerna> memernas;
   for (const auto& fold_fn : fold::FOLD_FUNCTIONS) {
-    memernas.emplace_back("data/", fold_fn);
+    memernas.emplace_back(fold_fn);
   }
 
   auto start_time = std::chrono::steady_clock::now();

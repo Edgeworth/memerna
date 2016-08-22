@@ -4,6 +4,7 @@
 #include "parsing.h"
 #include "bridge.h"
 #include "energy/structure.h"
+#include "energy/energy_model.h"
 
 #include "nn_unpaired_folder.hpp"
 #include "nn_scorer.hpp"
@@ -77,15 +78,6 @@ folded_rna_t Rnastructure::FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state
   return {rna, pairs, energy_t(structure->GetEnergy(1))};
 }
 
-Memerna::Memerna(const std::string& data_path, const fold::fold_fn_t* fold_fn_) : fold_fn(fold_fn_) {
-  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
-  LoadEnergyModelFromDataDir(data_path);
-}
-
-Memerna::Memerna(Memerna&& meme) {
-  fold_fn = meme.fold_fn;
-}
-
 energy_t Memerna::Efn(const folded_rna_t& frna, std::string* desc) const {
   energy_t energy;
   if (desc) {
@@ -119,7 +111,7 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   } else if (argparse.HasFlag("m")) {
     return std::unique_ptr<RnaPackage>(new Rnark("extern/rnark/data_tables/"));
   } else {
-    return std::unique_ptr<RnaPackage>(new Memerna("data/", FoldFunctionFromArgParse(argparse)));
+    return std::unique_ptr<RnaPackage>(new Memerna(fold::FoldFunctionFromArgParse(argparse)));
   }
 }
 

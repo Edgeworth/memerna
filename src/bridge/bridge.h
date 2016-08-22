@@ -52,10 +52,12 @@ private:
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
 public:
-  Memerna(const std::string& data_path, const fold::fold_fn_t* fold_fn_ = &fold::Fold0);
+  Memerna(const fold::fold_fn_t* fold_fn_) : fold_fn(fold_fn_) {}
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
-  Memerna(Memerna&& meme);
+  Memerna(Memerna&& meme) {
+    fold_fn = meme.fold_fn;
+  }
 
   virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
   virtual folded_rna_t Fold(const rna_t& rna) const;
