@@ -14,7 +14,7 @@ folded_rna_t FoldInternal(const rna_t& rna, fold_state_t* fold_state, T ComputeT
   SetRna(rna);
   InitFold();
   auto arr = ComputeTables();
-  std::stack<std::tuple<int, int, int>> q;
+  traceback_stack_t q;
   auto energy = TraceExterior(arr, q);
   TraceStructure(arr, q);
   if (fold_state)

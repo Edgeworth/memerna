@@ -9,9 +9,10 @@
 namespace memerna {
 namespace fold {
 
-energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q);
+typedef std::stack<std::tuple<int, int, int>> traceback_stack_t;
 
-void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q);
+energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q);
+void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q);
 
 }
 }

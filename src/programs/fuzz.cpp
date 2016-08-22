@@ -88,7 +88,7 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
   }
   return;
   print_diff:
-  printf("Difference on %s\n", parsing::RnaToString(rna).c_str());
+  printf("Difference on len %d RNA %s\n", int(rna.size()), parsing::RnaToString(rna).c_str());
   if (use_random_energy_model)
     printf("  Using random energy model with seed: %d\n", seed);
   else
