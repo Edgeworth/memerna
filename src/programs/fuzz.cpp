@@ -122,6 +122,7 @@ int main(int argc, char* argv[]) {
       {"print-interval", ArgParse::option_t("status update every n seconds").Arg("-1")},
       {"random", ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")}
   });
+  argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
   verify_expr(
@@ -131,6 +132,7 @@ int main(int argc, char* argv[]) {
   int variance = atoi(pos[1].c_str());
   verify_expr(base_len > 0, "invalid length");
   verify_expr(variance >= 0, "invalid variance");
+  energy::LoadEnergyModelFromArgParse(argparse);
 
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
   std::vector<bridge::Memerna> memernas;

@@ -3,6 +3,7 @@
 #include "parsing.h"
 #include "argparse.h"
 #include "bridge/bridge.h"
+#include "energy/energy_model.h"
 
 using namespace memerna;
 
@@ -14,10 +15,12 @@ int main(int argc, char* argv[]) {
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
   argparse.AddOptions(fold::FOLD_OPTIONS);
+  argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   verify_expr(
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
+  energy::LoadEnergyModelFromArgParse(argparse);
 
   auto package = bridge::RnaPackageFromArgParse(argparse);
 
