@@ -8,6 +8,7 @@ rna_t StringToRna(const std::string& s) {
   rna_t rna(s.size());
   for (int i = 0; i < int(s.size()); ++i) {
     rna[i] = CharToBase(s[i]);
+    verify_expr(rna[i] != -1, "unexpected base %c", s[i]);
   }
   return rna;
 }

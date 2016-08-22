@@ -58,7 +58,7 @@ TEST_P(FoldAlgTest, T04) {
   EXPECT_EQ(-208, fold_fn(parsing::StringToRna("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU")).energy);
 }
 
-INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::Values(&Fold0, &Fold1, &Fold2, &Fold3));
+INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(FOLD_FUNCTIONS));
 
 TEST(FoldTest, Constants) {
   if (EnergyModelChecksum() != T04_MODEL_HASH) {

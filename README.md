@@ -4,8 +4,8 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 
 ### Building
 
-Run git submodule init and git submodule update to pull in external dependencies.
-Make sure you are on the right branch for them.
+Run git submodule init and git submodule update to pull in external dependencies. 
+Memerna requires a modern C++ compiler that supports C++14.
 
 ./build.py -t [debug, asan, msan, ubsan, release, 'relwithdebinfo'] -c
 

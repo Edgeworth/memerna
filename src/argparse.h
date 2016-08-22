@@ -89,7 +89,7 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> MEMERNA_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3"})},
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
 };
 
 fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse);

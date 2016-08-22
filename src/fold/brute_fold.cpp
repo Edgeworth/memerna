@@ -41,7 +41,7 @@ void FoldBruteForceInternal(int idx) {
 
 }
 
-folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state) {
+folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t*) {
   SetRna(rna);
   p = std::vector<int>(r.size(), -1);
   best = constants::MAX_E;
