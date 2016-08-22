@@ -12,7 +12,7 @@ namespace fold {
     } \
   } while (0)
 
-energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q) {
+energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q) {
   int N = int(r.size());
   // Exterior loop calculation. There can be no paired base on exterior[en].
   array2d_t<energy_t, EXT_SIZE> exterior(std::size_t(N + 1));
@@ -87,7 +87,7 @@ energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::
 
 #undef UPDATE_EXT
 
-void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, std::stack<std::tuple<int, int, int>>& q) {
+void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q) {
   p = std::vector<int>(r.size(), -1);
   while (!q.empty()) {
     int st, en, a;
