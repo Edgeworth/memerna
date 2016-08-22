@@ -101,6 +101,8 @@ folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state = nullptr
 
 typedef folded_rna_t (fold_fn_t)(const rna_t&, fold_state_t* fold_state);
 
+const fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
+
 }
 }
 

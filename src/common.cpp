@@ -1,3 +1,4 @@
+#include <random>
 #include "common.h"
 #include "parsing.h"
 #include "constants.h"
@@ -95,16 +96,20 @@ void LoadEnergyModelFromDataDir(const std::string& data_dir) {
   parsing::ParseMiscDataFromFile(data_dir + "/misc.data");
 }
 
-void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
-  verify_expr(min_energy <= max_energy, "Min energy must be <= max energy");
-  static_assert(sizeof(energy_t) == 4, "Assumes size of energy_t is 4 bytes");
+const energy_t RAND_MIN_ENERGY = -1000;
+const energy_t RAND_MAX_ENERGY = 1000;
+
+void LoadRandomEnergyModel(int seed) {
+  std::default_random_engine eng(seed);
+  std::uniform_int_distribution<energy_t> uniform_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  std::uniform_int_distribution<energy_t> uniform_dist_pos(0, RAND_MAX_ENERGY);
 #define RANDOMISE_DATA(d) \
   do { \
     auto dp = reinterpret_cast<energy_t*>(&d); \
     for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
-      dp[i] = rand() % (max_energy - min_energy + 1) + min_energy; \
+      dp[i] = uniform_dist(eng); \
     } \
-  } while (0)
+  } while (0);
 
   RANDOMISE_DATA(g_stack);
   RANDOMISE_DATA(g_terminal);
@@ -114,7 +119,7 @@ void LoadRandomEnergyModel(energy_t min_energy, energy_t max_energy) {
   RANDOMISE_DATA(g_internal_2x2);
   RANDOMISE_DATA(g_internal_2x3_mismatch);
   RANDOMISE_DATA(g_internal_other_mismatch);
-  RANDOMISE_DATA(g_internal_asym);
+  g_internal_asym = uniform_dist_pos(eng);  // This needs to be non-negative for some optimisations.
   RANDOMISE_DATA(g_internal_augu_penalty);
   RANDOMISE_DATA(g_internal_mismatch_1xk);
   RANDOMISE_DATA(g_bulge_init);

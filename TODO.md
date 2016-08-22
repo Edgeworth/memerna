@@ -7,8 +7,5 @@
 - American fuzzy lop?
 - Wutchys
 - Grep codebase for todos
-- Fuzz tables!! - rnastructure too
+- Fix bugs from random energy model fuzzing.
 
-### Fuzzing
-- Randomised energy model fuzzing
--- Plus comparison to rnastructure / rnark
