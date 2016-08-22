@@ -4,6 +4,7 @@
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"
+#include "energy/energy_model.h"
 
 namespace memerna {
 namespace fold {
@@ -13,7 +14,7 @@ class FoldAlgTest : public testing::TestWithParam<fold_fn_t*> {
 
 
 TEST_P(FoldAlgTest, T04) {
-  if (EnergyModelChecksum() != T04_MODEL_HASH) {
+  if (energy::EnergyModelChecksum() != T04_MODEL_HASH) {
     printf("Skipping energy model specific energy tests.");
     return;
   }
@@ -61,7 +62,7 @@ TEST_P(FoldAlgTest, T04) {
 INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(FOLD_FUNCTIONS));
 
 TEST(FoldTest, Constants) {
-  if (EnergyModelChecksum() != T04_MODEL_HASH) {
+  if (energy::EnergyModelChecksum() != T04_MODEL_HASH) {
     printf("Skipping energy model specific energy tests.");
     return;
   }

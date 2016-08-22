@@ -1,8 +1,9 @@
-#include <constants.h>
+#include "constants.h"
 #include "fold/fold.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"
+#include "energy/energy_model.h"
 
 namespace memerna {
 namespace energy {
@@ -131,7 +132,7 @@ TEST_F(EnergyTest, BaseCases) {
 }
 
 TEST_F(EnergyTest, T04Tests) {
-  if (EnergyModelChecksum() != T04_MODEL_HASH) {
+  if (energy::EnergyModelChecksum() != T04_MODEL_HASH) {
     printf("Skipping energy model specific energy tests.");
     return;
   }

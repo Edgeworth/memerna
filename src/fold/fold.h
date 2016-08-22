@@ -1,6 +1,7 @@
 #ifndef MEMERNA_FOLD_H
 #define MEMERNA_FOLD_H
 
+#include "argparse.h"
 #include "array.h"
 #include "constants.h"
 #include "common.h"
@@ -102,6 +103,12 @@ folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state = nullptr
 typedef folded_rna_t (fold_fn_t)(const rna_t&, fold_state_t* fold_state);
 
 const fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
+
+const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})}
+};
+
+fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse);
 
 }
 }

@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
       {"f", {"run fold"}},
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
-  argparse.AddOptions(MEMERNA_OPTIONS);
+  argparse.AddOptions(fold::FOLD_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   verify_expr(
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,

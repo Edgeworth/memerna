@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <map>
 #include <unordered_map>
-#include <fold/fold.h>
 
 namespace memerna {
 
@@ -87,12 +86,6 @@ private:
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
-
-const std::map<std::string, ArgParse::option_t> MEMERNA_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
-};
-
-fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse);
 
 }
 
