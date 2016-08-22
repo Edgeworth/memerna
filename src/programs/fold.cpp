@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 
   LoadEnergyModelFromDataDir("data/");
   auto fold_fn = FoldFunctionFromArgParse(argparse);
-  auto frna = fold_fn(parsing::StringToRna(pos.front()));
+  auto frna = fold_fn(parsing::StringToRna(pos.front()), nullptr);
 
   printf("Energy: %d\n%s\n", frna.energy, parsing::PairsToDotBracket(frna.p).c_str());
 }

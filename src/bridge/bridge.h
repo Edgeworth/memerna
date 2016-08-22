@@ -43,6 +43,8 @@ public:
   virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
   virtual folded_rna_t Fold(const rna_t& rna) const;
 
+  folded_rna_t FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state) const;
+
 private:
   std::unique_ptr<datatable> data;
   bool use_lyngso;
@@ -57,6 +59,8 @@ public:
 
   virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
   virtual folded_rna_t Fold(const rna_t& rna) const;
+
+  folded_rna_t FoldAndDpTable(const rna_t& rna, fold::fold_state_t* fold_state) const;
 private:
   fold::fold_fn_t* fold_fn;
 };

@@ -82,21 +82,24 @@ inline bool IsNotLonely(int st, int en) {
 }
 
 
-void InitFold();
 
-// Exposed for fuzzing.
+struct fold_state_t {
+  array3d_t<energy_t, DP_SIZE> dp_table;
+};
+
 array3d_t<energy_t, DP_SIZE> ComputeTables3();
 array3d_t<energy_t, DP_SIZE> ComputeTables2();
 array3d_t<energy_t, DP_SIZE> ComputeTables1();
 array3d_t<energy_t, DP_SIZE> ComputeTables0();
 
-folded_rna_t Fold3(const rna_t& rna);
-folded_rna_t Fold2(const rna_t& rna);
-folded_rna_t Fold1(const rna_t& rna);
-folded_rna_t Fold0(const rna_t& rna);
-folded_rna_t FoldBruteForce(const rna_t& rna);
+void InitFold();
+folded_rna_t Fold3(const rna_t& rna, fold_state_t* fold_state = nullptr);
+folded_rna_t Fold2(const rna_t& rna, fold_state_t* fold_state = nullptr);
+folded_rna_t Fold1(const rna_t& rna, fold_state_t* fold_state = nullptr);
+folded_rna_t Fold0(const rna_t& rna, fold_state_t* fold_state = nullptr);
+folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state = nullptr);
 
-typedef folded_rna_t (fold_fn_t)(const rna_t&);
+typedef folded_rna_t (fold_fn_t)(const rna_t&, fold_state_t* fold_state);
 
 }
 }

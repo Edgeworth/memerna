@@ -59,14 +59,19 @@ energy_t Rnastructure::Efn(const folded_rna_t& frna, std::string* desc) const {
 }
 
 folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
+  return FoldAndDpTable(rna, nullptr);
+}
+
+folded_rna_t Rnastructure::FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state) const {
   auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::RnaToString(rna)));
   // First false here says also generate the folding itself (not just the MFE).
-  // Second last parameter is whether to generate the mfe structure only -- i.e. just one.
-  // Last parameter is whether to use Lyngso or not.
+  // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
+  // Second last parameter is whether to use Lyngso or not.
+  // Last parameter is for returning the DP state.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso);
+      !use_lyngso, dp_state);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
   return {rna, pairs, energy_t(structure->GetEnergy(1))};
@@ -94,8 +99,13 @@ energy_t Memerna::Efn(const folded_rna_t& frna, std::string* desc) const {
 }
 
 folded_rna_t Memerna::Fold(const rna_t& rna) const {
-  return fold_fn(rna);
+  return fold_fn(rna, nullptr);
 }
+
+folded_rna_t Memerna::FoldAndDpTable(const rna_t& rna, fold::fold_state_t* fold_state) const {
+  return fold_fn(rna, fold_state);
+}
+
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   verify_expr(

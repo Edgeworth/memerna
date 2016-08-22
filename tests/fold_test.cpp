@@ -18,7 +18,7 @@ TEST_P(FoldAlgTest, T04) {
     return;
   }
 
-  auto fold_fn = GetParam();
+  auto fold_fn = [this](const auto& rna) {return GetParam()(rna, nullptr);};
 
   EXPECT_EQ(-45, fold_fn(parsing::StringToRna("GGGGAAACCCC")).energy);
   EXPECT_EQ(-51, fold_fn(parsing::StringToRna("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA")).energy);

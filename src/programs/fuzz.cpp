@@ -16,10 +16,10 @@ void FuzzRnaOfLength(int length) {
       rna[j] = base_t(data & 0b11);
       data >>= 2;
     }
-    energy_t a = fold::Fold0(rna).energy;
+    energy_t a = fold::Fold0(rna, nullptr).energy;
     energy_t a_efn = energy::ComputeEnergy();
     std::string a_db = parsing::PairsToDotBracket(p).c_str();
-    energy_t b = fold::FoldBruteForce(rna).energy;
+    energy_t b = fold::FoldBruteForce(rna, nullptr).energy;
     energy_t b_efn = energy::ComputeEnergy();
     std::string b_db = parsing::PairsToDotBracket(p).c_str();
 
@@ -96,7 +96,7 @@ void FuzzComputeTables(const rna_t& rna) {
 int main(int argc, char* argv[]) {
   srand(static_cast<unsigned int>(time(NULL)));
   ArgParse argparse({
-      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("60")}
+      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("-1")}
   });
   argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0;; ++i) {
     int length = base_len;
     if (variance) length += rand() % variance;
-    if (std::chrono::duration_cast<std::chrono::seconds>(
+    if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::steady_clock::now() - start_time).count() > interval) {
       printf("Fuzzed %d RNA\n", i);
       start_time = std::chrono::steady_clock::now();
