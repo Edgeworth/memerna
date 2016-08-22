@@ -10,30 +10,32 @@ namespace fold {
 using constants::MAX_E;
 
 template<typename T>
-folded_rna_t FoldInternal(const rna_t& rna, T ComputeTables) {
+folded_rna_t FoldInternal(const rna_t& rna, fold_state_t* fold_state, T ComputeTables) {
   SetRna(rna);
   InitFold();
   auto arr = ComputeTables();
   std::stack<std::tuple<int, int, int>> q;
   auto energy = TraceExterior(arr, q);
   TraceStructure(arr, q);
+  if (fold_state)
+    fold_state->dp_table = std::move(arr);
   return {rna, p, energy};
 }
 
-folded_rna_t Fold0(const rna_t& rna) {
-  return FoldInternal(rna, ComputeTables0);
+folded_rna_t Fold0(const rna_t& rna, fold_state_t* fold_state) {
+  return FoldInternal(rna, fold_state, ComputeTables0);
 }
 
-folded_rna_t Fold1(const rna_t& rna) {
-  return FoldInternal(rna, ComputeTables1);
+folded_rna_t Fold1(const rna_t& rna, fold_state_t* fold_state) {
+  return FoldInternal(rna, fold_state, ComputeTables1);
 }
 
-folded_rna_t Fold2(const rna_t& rna) {
-  return FoldInternal(rna, ComputeTables2);
+folded_rna_t Fold2(const rna_t& rna, fold_state_t* fold_state) {
+  return FoldInternal(rna, fold_state, ComputeTables2);
 }
 
-folded_rna_t Fold3(const rna_t& rna) {
-  return FoldInternal(rna, ComputeTables3);
+folded_rna_t Fold3(const rna_t& rna, fold_state_t* fold_state) {
+  return FoldInternal(rna, fold_state, ComputeTables3);
 }
 
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
