@@ -32,8 +32,6 @@
 6
 // AU/GU penalty
 7
-// 1x(n-1) terminal mismatch
-0
 
 // 5. Multiloop hack model data
 // This is for the hacky T04 model described in the T04 paper. Doesn't include asymmetry.

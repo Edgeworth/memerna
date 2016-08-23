@@ -32,7 +32,6 @@ extern energy_t g_internal_2x3_mismatch[4][4][4][4];
 extern energy_t g_internal_other_mismatch[4][4][4][4];
 extern energy_t g_internal_asym;
 extern energy_t g_internal_augu_penalty;
-extern energy_t g_internal_mismatch_1xk;
 
 // Bulge loop related:
 extern energy_t g_bulge_init[INITIATION_CACHE_SZ];

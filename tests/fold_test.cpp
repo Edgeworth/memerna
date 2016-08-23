@@ -14,13 +14,9 @@ class FoldAlgTest : public testing::TestWithParam<fold_fn_t*> {
 
 
 TEST_P(FoldAlgTest, T04) {
-  if (energy::EnergyModelChecksum() != T04_MODEL_HASH) {
-    printf("Skipping energy model specific energy tests.");
-    return;
-  }
+  ONLY_FOR_THIS_MODEL(T04_MODEL_HASH);
 
   auto fold_fn = [this](const auto& rna) {return GetParam()(rna, nullptr);};
-
   EXPECT_EQ(-45, fold_fn(parsing::StringToRna("GGGGAAACCCC")).energy);
   EXPECT_EQ(-51, fold_fn(parsing::StringToRna("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA")).energy);
   EXPECT_EQ(-133,
@@ -62,10 +58,7 @@ TEST_P(FoldAlgTest, T04) {
 INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(FOLD_FUNCTIONS));
 
 TEST(FoldTest, Constants) {
-  if (energy::EnergyModelChecksum() != T04_MODEL_HASH) {
-    printf("Skipping energy model specific energy tests.");
-    return;
-  }
+  ONLY_FOR_THIS_MODEL(T04_MODEL_HASH);
 
   r = parsing::StringToRna("GGGGAAACCCC");
   fold::InitFold();

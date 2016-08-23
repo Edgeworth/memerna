@@ -14,7 +14,6 @@ energy_t g_internal_2x3_mismatch[4][4][4][4];
 energy_t g_internal_other_mismatch[4][4][4][4];
 energy_t g_internal_asym;
 energy_t g_internal_augu_penalty;
-energy_t g_internal_mismatch_1xk;
 
 energy_t g_bulge_init[INITIATION_CACHE_SZ];
 energy_t g_bulge_special_c;
