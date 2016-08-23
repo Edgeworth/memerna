@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <cstring>
+#include <random>
 
 #include "common.h"
 
@@ -43,6 +44,16 @@ inline bool IsGu(base_t a, base_t b) {
 base_t CharToBase(char c);
 
 char BaseToChar(base_t b);
+
+template<typename RandomEngine>
+rna_t GenerateRandomRna(int length, RandomEngine& eng) {
+  std::uniform_int_distribution<int> dist(0, 3);
+  rna_t rna(std::size_t(length), 0);
+  for (int i = 0; i < length; ++i)
+    rna[i] = base_t(dist(eng));
+  return rna;
+}
+
 
 }
 

@@ -23,4 +23,6 @@ int main(int argc, char* argv[]) {
 
   printf("DP value at %d %d %d: %d\n  %s\n", st, en, a,
       state.dp_table[st][en][a], parsing::PairsToDotBracket(p).c_str());
+
+  printf("Multiloop initiation params: %d %d\n", g_multiloop_hack_a, g_multiloop_hack_b);
 }

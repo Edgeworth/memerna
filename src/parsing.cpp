@@ -193,7 +193,6 @@ void ParseMiscDataFromFile(const std::string& filename) {
   // Internal loops.
   READ_DATA(g_internal_asym);
   READ_DATA(g_internal_augu_penalty);
-  READ_DATA(g_internal_mismatch_1xk);
 
   // Multiloop data.
   READ_DATA(g_multiloop_hack_a);
