@@ -152,7 +152,7 @@ void InitFold() {
 
   // Non continuous (-2.1), -4 for WC, -16 for terminal mismatch.
   g_min_mismatch_coax = g_coax_mismatch_non_contiguous +
-      std::min(g_coax_mismatch_gu_bonus, g_coax_mismatch_wc_bonus) +
+      std::min(std::min(g_coax_mismatch_gu_bonus, g_coax_mismatch_wc_bonus), 0) +
       MinEnergy(&g_terminal[0][0][0][0], sizeof(g_terminal));
   // Minimum of all stacking params.
   g_min_flush_coax = min_stack;

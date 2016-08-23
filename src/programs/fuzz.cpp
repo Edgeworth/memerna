@@ -33,7 +33,7 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
       mfe_diff = true;
   }
 
-  bool use_brute = rna.size() <= 22;
+  bool use_brute = rna.size() <= 24;
   folded_rna_t brute_frna;
   if (use_brute) {
     brute_frna = fold::FoldBruteForce(rna, nullptr);
