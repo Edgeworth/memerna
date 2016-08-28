@@ -15,10 +15,13 @@ folded_rna_t FoldInternal(const rna_t& rna, fold_state_t* fold_state, T ComputeT
   InitFold();
   auto arr = ComputeTables();
   traceback_stack_t q;
-  auto energy = TraceExterior(arr, q);
+  auto exterior = TraceExterior(arr, q);
+  energy_t energy = exterior[0][EXT];
   TraceStructure(arr, q);
-  if (fold_state)
+  if (fold_state) {
     fold_state->dp_table = std::move(arr);
+    fold_state->ext_table = std::move(exterior);
+  }
   return {rna, p, energy};
 }
 

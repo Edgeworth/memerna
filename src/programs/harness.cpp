@@ -24,9 +24,9 @@ int main(int argc, char* argv[]) {
 
   auto package = bridge::RnaPackageFromArgParse(argparse);
 
-  const auto& p = argparse.GetPositional();
-  bool read_stdin = p.empty();
-  std::deque<std::string> pos(p.begin(), p.end());
+  const auto& pos = argparse.GetPositional();
+  bool read_stdin = pos.empty();
+  std::deque<std::string> rnaqueue(pos.begin(), pos.end());
   if (argparse.HasFlag("e")) {
     while (1) {
       std::string seq, db;
@@ -35,12 +35,12 @@ int main(int argc, char* argv[]) {
         getline(std::cin, db);
         if (!std::cin) break;
       } else {
-        if (pos.empty()) break;
-        verify_expr(pos.size() >= 2, "need even number of positional args");
-        seq = pos.front();
-        pos.pop_front();
-        db = pos.front();
-        pos.pop_front();
+        if (rnaqueue.empty()) break;
+        verify_expr(rnaqueue.size() >= 2, "need even number of positional args");
+        seq = rnaqueue.front();
+        rnaqueue.pop_front();
+        db = rnaqueue.front();
+        rnaqueue.pop_front();
       }
       auto frna = parsing::ParseDotBracketRna(seq, db);
       std::string desc;
@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
         getline(std::cin, seq);
         if (!std::cin) break;
       } else {
-        if (pos.empty()) break;
-        seq = pos.front();
-        pos.pop_front();
+        if (rnaqueue.empty()) break;
+        seq = rnaqueue.front();
+        rnaqueue.pop_front();
       }
       auto rna = parsing::StringToRna(seq);
       auto res = package->Fold(rna);

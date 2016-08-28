@@ -18,7 +18,8 @@ public:
 
   virtual ~Structure() = default;
 
-  void AddNote(const std::string& note, ...);
+  // This is not a reference because of varargs.
+  void AddNote(std::string note, ...);
 
   std::vector<std::string> Description(int nesting = 0);
 

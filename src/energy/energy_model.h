@@ -15,7 +15,7 @@ const std::map<std::string, ArgParse::option_t> ENERGY_OPTIONS = {
 };
 
 void LoadEnergyModelFromDataDir(const std::string& data_dir);
-void LoadRandomEnergyModel(uint32_t seed);
+void LoadRandomEnergyModel(uint_fast32_t seed);
 void LoadEnergyModelFromArgParse(const ArgParse& argparse);
 bool IsValidEnergyModel(std::string* reason = nullptr);
 uint32_t EnergyModelChecksum();

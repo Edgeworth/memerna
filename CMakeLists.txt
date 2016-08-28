@@ -4,8 +4,7 @@ project(memerna)
 set(BUILD_SHARED_LIBS OFF)
 
 set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-# RNAstructure copmpiles with these options, so be fair and use them.
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3 -fsched-spec-load")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 # Always have librnary compiled as release.
 set(CMAKE_BUILD_TYPE Release)
 add_subdirectory("extern/rnark/librnary")
@@ -20,7 +19,8 @@ include(FindMSan)
 include(FindThreads)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wshadow -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra -Wshadow \
+  -Wconversion -Wfloat-equal -Wvector-operation-performance -Wformat-security -pedantic")
 set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_MSAN "${CMAKE_CXX_FLAGS_MSAN}  -march=native -O3")
 set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")

@@ -69,7 +69,7 @@ std::string SerialiseEnergyModel() {
 
 }
 
-void LoadRandomEnergyModel(uint32_t seed) {
+void LoadRandomEnergyModel(uint_fast32_t seed) {
   std::mt19937 eng(seed);
   std::uniform_int_distribution<memerna::energy_t> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   std::uniform_int_distribution<memerna::energy_t> nonneg_energy_dist(0, RAND_MAX_ENERGY);
@@ -186,7 +186,7 @@ void LoadEnergyModelFromDataDir(const std::string& data_dir) {
 
 void LoadEnergyModelFromArgParse(const ArgParse& argparse) {
   if (argparse.HasFlag("seed")) {
-    LoadRandomEnergyModel(uint32_t(atoi(argparse.GetOption("seed").c_str())));
+    LoadRandomEnergyModel(uint_fast32_t(atoi(argparse.GetOption("seed").c_str())));
   } else {
     LoadEnergyModelFromDataDir(argparse.GetOption("data-path"));
   }

@@ -60,7 +60,8 @@ folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t*) {
   }
   FoldBruteForceInternal(0);
   p = best_p;
-  return {rna, best_p, energy::ComputeEnergy()};
+  folded_rna_t frna = {rna, best_p, energy::ComputeEnergy()};
+  return frna;
 }
 
 }
