@@ -34,6 +34,16 @@ std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
   return pairs;
 }
 
+std::vector<int> BasePairListToPairs(const std::vector<std::pair<int, int>>& base_pairs, std::size_t size) {
+  std::vector<int> pairs(size, -1);
+  for (const auto& pair : base_pairs) {
+    pairs[pair.first] = pair.second;
+    pairs[pair.second] = pair.first;
+  }
+  return pairs;
+}
+
+
 std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
   for (int i = 0; i < int(pairs.size()); ++i) {
@@ -204,7 +214,6 @@ void ParseMiscDataFromFile(const std::string& filename) {
 
   fclose(fp);
 }
-
 
 }
 }

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <random>
 #include <chrono>
+#include <cinttypes>
 #include "bridge/bridge.h"
 #include "parsing.h"
 #include "energy/energy_model.h"
@@ -11,7 +12,7 @@ template<typename RandomEngine>
 void FuzzRna(const rna_t& rna, bool use_random_energy_model,
     const std::vector<bridge::Memerna>& memernas, const bridge::Rnastructure& rnastructure,
     RandomEngine& eng) {
-  uint32_t seed = eng();
+  uint_fast32_t seed = eng();
   if (use_random_energy_model)
     energy::LoadRandomEnergyModel(seed);
 
@@ -87,9 +88,9 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
   }
   loop_end:;
   if (mfe_diff || dp_table_diff) {
-    printf("Difference on len %d RNA %s\n", int(rna.size()), parsing::RnaToString(rna).c_str());
+    printf("Difference on len %zu RNA %s\n", rna.size(), parsing::RnaToString(rna).c_str());
     if (use_random_energy_model)
-      printf("  Using random energy model with seed: %d\n", seed);
+      printf("  Using random energy model with seed: %" PRIuFAST32 "\n", seed);
     else
       printf("  Using T04 energy model.\n");
     if (mfe_diff) {
@@ -116,7 +117,7 @@ void FuzzRna(const rna_t& rna, bool use_random_energy_model,
 }
 
 int main(int argc, char* argv[]) {
-  std::mt19937 eng(uint32_t(time(nullptr)));
+  std::mt19937 eng(uint_fast32_t(time(nullptr)));
   ArgParse argparse({
       {"print-interval", ArgParse::option_t("status update every n seconds").Arg("-1")},
       {"random", ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")}

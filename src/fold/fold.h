@@ -25,9 +25,9 @@ enum {
 
 enum {
   EXT,
-  EXT_WC,
-  EXT_GU,
-  EXT_RCOAX,
+  EXT_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
+  EXT_GU,  // Must start with a branch not involved in an interaction that is GU
+  EXT_RCOAX,  // Must start with a branch, that branch is involved backwards in a right coaxial stack.
   EXT_SIZE
 };
 
@@ -86,6 +86,7 @@ inline bool IsNotLonely(int st, int en) {
 
 struct fold_state_t {
   array3d_t<energy_t, DP_SIZE> dp_table;
+  array2d_t<energy_t, EXT_SIZE> ext_table;
 };
 
 array3d_t<energy_t, DP_SIZE> ComputeTables3();
@@ -102,7 +103,7 @@ folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state = nullptr
 
 typedef folded_rna_t (fold_fn_t)(const rna_t&, fold_state_t* fold_state);
 
-const fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
+fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
     {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})}

@@ -17,7 +17,7 @@ std::vector<std::string> Structure::Description(int nesting) {
   return desc;
 }
 
-void Structure::AddNote(const std::string& note, ...) {
+void Structure::AddNote(std::string note, ...) {
   va_list l;
   va_start(l, note);
   notes.push_back(vsfmt(note.c_str(), l));

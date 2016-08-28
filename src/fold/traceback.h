@@ -11,7 +11,7 @@ namespace fold {
 
 typedef std::stack<std::tuple<int, int, int>> traceback_stack_t;
 
-energy_t TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q);
+array2d_t<energy_t, EXT_SIZE> TraceExterior(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q);
 void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q);
 
 }

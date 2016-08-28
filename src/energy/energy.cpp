@@ -415,7 +415,7 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     if (s) (*s)->AddNote("CTDs: %de %de %de %de", a, b, c, d);
     energy += std::min(a, std::min(b, std::min(c, d)));
   }
-  if (s) (*s)->AddNote("Unpaired: %d, Branches: %d", num_unpaired, int(branches.size() + 1));
+  if (s) (*s)->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
   return energy;
 }
