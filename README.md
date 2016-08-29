@@ -15,14 +15,15 @@ No guarantees this runs or even builds on Windows.
 
 ### Directories
 
-build: build output directory
-cmake: CMake scripts
-data: energy model data for memerna
-examples: various dot-bracket example folded RNAs
-extern: external projects and data (gtest, original data from rnastructure and nndb, rnark)
-scripts: scripts for various things (see below)
-src: source
-tests: tests
+- build: build output directory
+- cmake: CMake scripts
+- data: energy model data for memerna
+- examples: various dot-bracket example folded RNAs
+- extern: external projects and data (gtest, original data from rnastructure and nndb, rnark)
+- scripts: scripts for various things (see below)
+- src: source
+- tests: tests
+
 
 ### Compile time options
 

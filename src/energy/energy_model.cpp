@@ -1,8 +1,6 @@
 #include "energy/energy_model.h"
 #include "parsing.h"
-#include "common.h"
 #include "constants.h"
-#include <random>
 
 namespace memerna {
 namespace energy {
