@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   if (energy_delta >= 0 || max_structures > 0) {
     if (energy_delta < 0) energy_delta = constants::CAP_E;
     if (max_structures < 0) max_structures = INT_MAX;
-    auto structures = fold::SuboptimalTraceback(
+    auto structures = fold::SuboptimalTraceback0(
         frna.energy + energy_delta, max_structures, state.dp_table, state.ext_table);
     printf("%zu suboptimal structures:\n", structures.size());
     for (const auto& subopt : structures) {
