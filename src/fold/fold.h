@@ -83,7 +83,6 @@ inline bool IsNotLonely(int st, int en) {
 }
 
 
-
 struct fold_state_t {
   array3d_t<energy_t, DP_SIZE> dp_table;
   array2d_t<energy_t, EXT_SIZE> ext_table;

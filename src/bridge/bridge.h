@@ -53,8 +53,10 @@ private:
 class Memerna : public RnaPackage {
 public:
   Memerna(fold::fold_fn_t* const fold_fn_) : fold_fn(fold_fn_) {}
+
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
+
   Memerna(Memerna&& meme) {
     fold_fn = meme.fold_fn;
   }

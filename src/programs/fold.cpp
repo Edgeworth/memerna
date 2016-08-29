@@ -3,8 +3,6 @@
 #include "fold/suboptimal.h"
 #include "parsing.h"
 #include "energy/energy_model.h"
-#include "fold/fold.h"
-#include "constants.h"
 
 using namespace memerna;
 
