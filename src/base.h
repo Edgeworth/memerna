@@ -46,12 +46,12 @@ base_t CharToBase(char c);
 char BaseToChar(base_t b);
 
 template<typename RandomEngine>
-rna_t GenerateRandomRna(int length, RandomEngine& eng) {
+primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   std::uniform_int_distribution<int> dist(0, 3);
-  rna_t rna(std::size_t(length), 0);
+  primary_t primary(std::size_t(length), 0);
   for (int i = 0; i < length; ++i)
-    rna[i] = base_t(dist(eng));
-  return rna;
+    primary[i] = base_t(dist(eng));
+  return primary;
 }
 
 

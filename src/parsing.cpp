@@ -4,18 +4,18 @@
 namespace memerna {
 namespace parsing {
 
-rna_t StringToRna(const std::string& s) {
-  rna_t rna(s.size());
+primary_t StringToPrimary(const std::string& s) {
+  primary_t primary(s.size());
   for (int i = 0; i < int(s.size()); ++i) {
-    rna[i] = CharToBase(s[i]);
-    verify_expr(rna[i] != -1, "unexpected base %c", s[i]);
+    primary[i] = CharToBase(s[i]);
+    verify_expr(primary[i] != -1, "unexpected base %c", s[i]);
   }
-  return rna;
+  return primary;
 }
 
-folded_rna_t ParseDotBracketRna(const std::string& rna_str, const std::string& pairs_str) {
-  verify_expr(rna_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  return {StringToRna(rna_str), DotBracketToPairs(pairs_str), constants::MAX_E};
+secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str) {
+  verify_expr(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
+  return {StringToPrimary(prim_str), DotBracketToPairs(pairs_str)};
 }
 
 std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
@@ -54,11 +54,11 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
   return s;
 }
 
-std::string RnaToString(const rna_t& rna) {
+std::string PrimaryToString(const primary_t& primary) {
   std::string s;
-  s.resize(rna.size());
-  for (int i = 0; i < int(rna.size()); ++i) {
-    s[i] = BaseToChar(rna[i]);
+  s.resize(primary.size());
+  for (int i = 0; i < int(primary.size()); ++i) {
+    s[i] = BaseToChar(primary[i]);
   }
   return s;
 }

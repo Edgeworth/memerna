@@ -61,7 +61,7 @@ struct suboptimal_node_t {
     newnode.not_yet_expanded.pop_back(); \
   } while (0)
 
-std::vector<folded_rna_t> SuboptimalTraceback0(
+std::vector<computed_t> SuboptimalTraceback0(
     energy_t max_energy, int max_structures,
     const array3d_t<energy_t, DP_SIZE>& arr,
     const array2d_t<energy_t, EXT_SIZE>& exterior) {
@@ -146,7 +146,7 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
           energy = base_energy + base00 + exterior[en + 1][EXT];
           EXPAND2(energy, (en + 1, -1, EXT), (st, en, DP_P));
           // (   )3<   > 3'
-          energy = base_energy + base01 + g_dangle3_e[en1b][enb][stb] + exterior[en + 1][EXT];
+          energy = base_energy + base01 + g_dangle3[en1b][enb][stb] + exterior[en + 1][EXT];
           EXPAND2(energy, (en + 1, -1, EXT), (st, en - 1, DP_P));
         }
 
@@ -154,7 +154,7 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
         if (a != EXT) continue;
 
         // 5(   )<   > 5'
-        energy = base_energy + base10 + g_dangle5_e[enb][stb][st1b] + exterior[en + 1][EXT];
+        energy = base_energy + base10 + g_dangle5[enb][stb][st1b] + exterior[en + 1][EXT];
         EXPAND2(energy, (en + 1, -1, EXT), (st + 1, en, DP_P));
 
         // .(   ).<   > Terminal mismatch
@@ -211,10 +211,10 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
       energy = base_and_branch + arr[st + 1][en - 1][DP_U2];
       EXPAND1(energy, (st + 1, en - 1, DP_U2));
       // (3<   ><   >) 3'
-      energy = base_and_branch + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb];
+      energy = base_and_branch + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb];
       EXPAND1(energy, (st + 2, en - 1, DP_U2));
       // (<   ><   >5) 5'
-      energy = base_and_branch + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb];
+      energy = base_and_branch + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb];
       EXPAND1(energy, (st + 1, en - 2, DP_U2));
       // (.<   ><   >.) Terminal mismatch
       energy = base_and_branch + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb];
@@ -310,12 +310,12 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
           continue;
 
         // (   )3<   > 3' - U, U2
-        energy = base_energy + base01 + g_dangle3_e[pl1b][pb][stb];
+        energy = base_energy + base01 + g_dangle3[pl1b][pb][stb];
         EXPAND1(energy, (st, piv - 1, DP_P));
         EXPAND2(energy + arr[piv + 1][en][DP_U], (st, piv - 1, DP_P), (piv + 1, en, DP_U));
 
         // 5(   )<   > 5' - U, U2
-        energy = base_energy + base10 + g_dangle5_e[pb][stb][st1b];
+        energy = base_energy + base10 + g_dangle5[pb][stb][st1b];
         EXPAND1(energy, (st + 1, piv, DP_P));
         EXPAND2(energy + arr[piv + 1][en][DP_U], (st + 1, piv, DP_P), (piv + 1, en, DP_U));
 
@@ -349,7 +349,7 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
     }
   }
 
-  std::vector<folded_rna_t> ret;
+  std::vector<computed_t> ret;
   for (const auto& struc : finished) {
     for (const auto& meme : struc.not_yet_expanded) {
       printf("%d %d %d\n", std::get<0>(meme), std::get<1>(meme), std::get<2>(meme));
@@ -360,7 +360,8 @@ std::vector<folded_rna_t> SuboptimalTraceback0(
       if (std::get<1>(hist) >= 0 && std::get<2>(hist) == DP_P)
         base_pairs.emplace_back(std::get<0>(hist), std::get<1>(hist));
     }
-    ret.push_back({r, parsing::BasePairListToPairs(base_pairs, r.size()), struc.energy});
+    // TODO add ctds
+    //ret.push_back({r, parsing::BasePairListToPairs(base_pairs, r.size()), struc.energy});
   }
   return ret;
 }

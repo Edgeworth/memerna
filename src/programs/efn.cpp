@@ -12,9 +12,9 @@ int main(int argc, char* argv[]) {
   verify_expr(pos.size() == 2, "requires primary sequence and dot bracket");
 
   energy::LoadEnergyModelFromArgParse(argparse);
-  auto frna = parsing::ParseDotBracketRna(pos.front(), pos.back());
+  auto secondary = parsing::ParseDotBracketSecondary(pos.front(), pos.back());
   std::unique_ptr<structure::Structure> structure;
-  printf("Energy: %d\n", energy::ComputeEnergy(frna, &structure));
+  printf("Energy: %d\n", energy::ComputeEnergy(secondary, &structure).energy);
   auto descs = structure->Description();
   for (const auto& desc : descs) {
     printf("%s\n", desc.c_str());

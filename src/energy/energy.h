@@ -84,13 +84,8 @@ inline energy_t MismatchCoaxial(base_t fiveTop, base_t mismatch_top, base_t mism
 }
 
 
-// Requires global variables r and p to be set. st and en are inclusive.
-energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s = nullptr);
-
-inline energy_t ComputeEnergy(const folded_rna_t& frna, std::unique_ptr<structure::Structure>* s = nullptr) {
-  SetFoldedRna(frna);
-  return ComputeEnergy(s);
-}
+// TODO ctd version
+computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<structure::Structure>* s = nullptr);
 
 }
 }

@@ -23,13 +23,46 @@
 namespace memerna {
 
 typedef int8_t base_t;
-typedef std::vector<base_t> rna_t;
+typedef std::vector<base_t> primary_t;
 typedef int32_t energy_t;
 
-struct folded_rna_t {
-  rna_t r;
+enum Ctd {
+  CTD_NA,
+  CTD_UNUSED,
+  CTD_3_DANGLE,
+  CTD_5_DANGLE,
+  CTD_TERMINAL_MISMATCH,
+  CTD_LEFT_MISMATCH_COAX_WITH_NEXT,
+  CTD_LEFT_MISMATCH_COAX_WITH_PREV,
+  CTD_RIGHT_MISMATCH_COAX_WITH_NEXT,
+  CTD_RIGHT_MISMATCH_COAX_WITH_PREV,
+  CTD_FLUSH_COAX_WITH_NEXT,
+  CTD_FLUSH_COAX_WITH_PREV,
+  CTD_SIZE
+};
+
+struct computed_t {
+  computed_t() = default;
+  explicit computed_t(const primary_t& primary);
+  computed_t(const primary_t& primary, const std::vector<int>& p_,
+      const std::vector<Ctd>& ctds_, energy_t energy_);
+  computed_t(computed_t&&) = default;
+  computed_t& operator=(computed_t&&) = default;
+  primary_t r;
   std::vector<int> p;
+  std::vector<Ctd> ctds;
   energy_t energy;
+};
+
+struct secondary_t {
+  secondary_t() = default;
+  explicit secondary_t(const primary_t& primary) : r(primary), p(primary.size(), -1) {}
+  explicit secondary_t(const computed_t& computed) : r(computed.r), p(computed.p) {}
+  secondary_t(const primary_t& primary, const std::vector<int>& p_) : r(primary), p(p_) {}
+  secondary_t(secondary_t&&) = default;
+  secondary_t& operator=(secondary_t&&) = default;
+  primary_t r;
+  std::vector<int> p;
 };
 
 std::string sgetline(FILE* fp);

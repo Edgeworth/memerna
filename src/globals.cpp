@@ -21,18 +21,18 @@ energy_t g_bulge_special_c;
 energy_t g_hairpin_init[INITIATION_CACHE_SZ];
 energy_t g_hairpin_uu_ga_first_mismatch, g_hairpin_gg_first_mismatch,
     g_hairpin_special_gu_closure, g_hairpin_c3_loop, g_hairpin_all_c_a, g_hairpin_all_c_b;
-std::unordered_map<std::string, energy_t> g_hairpin_e;
+std::unordered_map<std::string, energy_t> g_hairpin;
 
 energy_t g_multiloop_hack_a, g_multiloop_hack_b;
 
-energy_t g_dangle5_e[4][4][4];
-energy_t g_dangle3_e[4][4][4];
+energy_t g_dangle5[4][4][4];
+energy_t g_dangle3[4][4][4];
 
 energy_t g_coax_mismatch_non_contiguous, g_coax_mismatch_wc_bonus, g_coax_mismatch_gu_bonus;
 
 energy_t g_augu_penalty;
 
-rna_t r;
+primary_t r;
 std::vector<int> p;
 
 }

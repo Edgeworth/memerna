@@ -40,9 +40,9 @@ array2d_t<energy_t, EXT_SIZE> TraceExterior(const array3d_t<energy_t, DP_SIZE>& 
         UPDATE_EXT(EXT_WC, EXT, st, en, base00);
 
       // (   )3<   > 3'
-      UPDATE_EXT(EXT, EXT, st, en - 1, base01 + g_dangle3_e[en1b][enb][stb]);
+      UPDATE_EXT(EXT, EXT, st, en - 1, base01 + g_dangle3[en1b][enb][stb]);
       // 5(   )<   > 5'
-      UPDATE_EXT(EXT, EXT, st + 1, en, base10 + g_dangle5_e[enb][stb][st1b]);
+      UPDATE_EXT(EXT, EXT, st + 1, en, base10 + g_dangle5[enb][stb][st1b]);
       // .(   ).<   > Terminal mismatch
       UPDATE_EXT(EXT, EXT, st + 1, en - 1, base11 + g_terminal[en1b][enb][stb][st1b]);
       // .(   ).<(   ) > Left coax  x
@@ -86,8 +86,10 @@ array2d_t<energy_t, EXT_SIZE> TraceExterior(const array3d_t<energy_t, DP_SIZE>& 
 
 #undef UPDATE_EXT
 
-void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& q) {
-  p = std::vector<int>(r.size(), -1);
+computed_t TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr,
+    const array2d_t<energy_t, EXT_SIZE>& exterior, traceback_stack_t& q) {
+  computed_t computed(r);
+  computed.energy = exterior[0][EXT];
   while (!q.empty()) {
     int st, en, a;
     std::tie(st, en, a) = q.top();
@@ -96,8 +98,9 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& 
     q.pop();
     if (a == DP_P) {
       // It's paired, so add it to the folding.
-      p[st] = en;
-      p[en] = st;
+      computed.p[st] = en;
+      computed.p[en] = st;
+      // TODO ctds
 
       // Following largely matches the above DP so look up there for comments.
       int max_inter = std::min(constants::TWOLOOP_MAX_SZ, en - st - constants::HAIRPIN_MIN_SZ - 3);
@@ -121,12 +124,12 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& 
         goto loopend;
       }
       // (3<   ><   >) 3'
-      if (base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb] == arr[st][en][DP_P]) {
+      if (base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb] == arr[st][en][DP_P]) {
         q.emplace(st + 2, en - 1, DP_U2);
         goto loopend;
       }
       // (<   ><   >5) 5'
-      if (base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb] == arr[st][en][DP_P]) {
+      if (base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb] == arr[st][en][DP_P]) {
         q.emplace(st + 1, en - 2, DP_U2);
         goto loopend;
       }
@@ -242,14 +245,14 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& 
           continue;
 
         // (   )3<   > 3' - U, U2
-        if (base01 + g_dangle3_e[pl1b][pb][stb] + right_unpaired == arr[st][en][a]) {
+        if (base01 + g_dangle3[pl1b][pb][stb] + right_unpaired == arr[st][en][a]) {
           q.emplace(st, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // 5(   )<   > 5' - U, U2
-        if (base10 + g_dangle5_e[pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
+        if (base10 + g_dangle5[pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
           q.emplace(st + 1, piv, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -303,6 +306,7 @@ void TraceStructure(const array3d_t<energy_t, DP_SIZE>& arr, traceback_stack_t& 
 
     loopend:;
   }
+  return computed;
 }
 
 

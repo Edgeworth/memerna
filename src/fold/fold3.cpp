@@ -106,9 +106,9 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         // (<   ><   >)
         mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
-        mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb]);
+        mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb]);
         // (<   ><   >5) 5'
-        mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb]);
+        mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
         mins[DP_P] = std::min(mins[DP_P],
             base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb]);
@@ -229,11 +229,11 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       // Can only merge candidate lists for monotonicity if the right part of the pivot is the same (from the same array).
       // Can only apply monotonicity optimisation to ones ending with min(U, 0).
       // (   ). - 3' - U, U2
-      auto dangle3_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_dangle3_e[en1b][enb][stb];
+      auto dangle3_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_dangle3[en1b][enb][stb];
       if (dangle3_base < arr[st][en][DP_U] && dangle3_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = dangle3_base;
       // .(   ) - 5' - U, U2
-      auto dangle5_base = arr[st + 1][en][DP_P] + g_augubranch[st1b][enb] + g_dangle5_e[enb][stb][st1b];
+      auto dangle5_base = arr[st + 1][en][DP_P] + g_augubranch[st1b][enb] + g_dangle5[enb][stb][st1b];
       if (dangle5_base < arr[st][en][DP_U] && dangle5_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = dangle5_base;
       // .(   ). - Terminal mismatch - U, U2

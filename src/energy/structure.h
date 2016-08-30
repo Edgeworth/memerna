@@ -8,33 +8,30 @@
 namespace memerna {
 namespace structure {
 
+const char* CtdToName(Ctd ctd);
+
 class Structure {
 public:
   Structure() = default;
-
   Structure(const Structure&) = delete;
-
   Structure& operator=(const Structure&) = delete;
 
   virtual ~Structure() = default;
 
   // This is not a reference because of varargs.
   void AddNote(std::string note, ...);
-
   std::vector<std::string> Description(int nesting = 0);
-
   virtual std::string ShortDesc() = 0;
 
   virtual void AddBranch(std::unique_ptr<Structure> b) {
     branches.push_back(std::move(b));
   }
 
+  virtual std::string BranchDesc(int idx) { return branches[idx]->ShortDesc(); }
+
   void SetSelfEnergy(energy_t e) {self_energy = e;}
-
   void SetTotalEnergy(energy_t e) {total_energy = e;}
-
   energy_t GetSelfEnergy() {return self_energy;}
-
   energy_t GetTotalEnergy() {return total_energy;}
 
 protected:
@@ -76,32 +73,24 @@ private:
   int ost, oen, ist, ien;
 };
 
-// TODO: Use CTD representation?
-enum class CtdType {
-  UNUSED,
-  STOLEN,  // Used by another branch.
-  NOEXIST,
-  LEFT_DANGLE,
-  RIGHT_DANGLE,
-  TERMINAL_MISMATCH,
-  COAXIAL_MIDDLE,  // Involved in a mismatch
-  COAXIAL_END
-};
-
-struct ctd_t {
-
-  // Also store if this branch is involved in a flush coaxial stack.
-};
-
 class MultiLoop : public Structure {
 public:
   MultiLoop(int st_, int en_) : st(st_), en(en_) {}
 
+  void AddBranch(std::unique_ptr<Structure> b, Ctd ctd, energy_t ctd_energy) {
+    Structure::AddBranch(std::move(b));
+    ctds.emplace_back(ctd, ctd_energy);
+  }
 
+  std::string BranchDesc(int idx) {
+    return sfmt("%s - %de %s", branches[idx]->ShortDesc().c_str(),
+        ctds[idx].second, CtdToName(ctds[idx].first));
+  }
   std::string ShortDesc();
 
 private:
   int st, en;
+  std::vector<std::pair<Ctd, energy_t>> ctds;
 };
 
 class Stacking : public Structure {

@@ -41,9 +41,9 @@ array3d_t<energy_t, DP_SIZE> ComputeTables0() {
         // (<   ><   >)
         UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb]);
         // (<   ><   >5) 5'
-        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb]);
+        UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
         UPDATE_CACHE(DP_P, base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb]);
 
@@ -110,11 +110,11 @@ array3d_t<energy_t, DP_SIZE> ComputeTables0() {
           UPDATE_CACHE(DP_U_WC, val);
 
         // (   )3<   > 3' - U
-        UPDATE_CACHE(DP_U, base01 + g_dangle3_e[pl1b][pb][stb] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base01 + g_dangle3_e[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
+        UPDATE_CACHE(DP_U, base01 + g_dangle3[pl1b][pb][stb] + right_unpaired);
+        UPDATE_CACHE(DP_U2, base01 + g_dangle3[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
         // 5(   )<   > 5' - U
-        UPDATE_CACHE(DP_U, base10 + g_dangle5_e[pb][stb][st1b] + right_unpaired);
-        UPDATE_CACHE(DP_U2, base10 + g_dangle5_e[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
+        UPDATE_CACHE(DP_U, base10 + g_dangle5[pb][stb][st1b] + right_unpaired);
+        UPDATE_CACHE(DP_U2, base10 + g_dangle5[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<   > Terminal mismatch - U
         UPDATE_CACHE(DP_U, base11 + g_terminal[pl1b][pb][stb][st1b] + right_unpaired);
         UPDATE_CACHE(DP_U2, base11 + g_terminal[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);
