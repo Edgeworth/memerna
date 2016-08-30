@@ -9,7 +9,7 @@
 namespace memerna {
 namespace fold {
 
-std::vector<folded_rna_t> SuboptimalTraceback0(
+std::vector<computed_t> SuboptimalTraceback0(
     energy_t max_energy, int max_structures,
     const array3d_t<energy_t, DP_SIZE>& arr,
     const array2d_t<energy_t, EXT_SIZE>& exterior);

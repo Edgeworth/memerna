@@ -72,7 +72,7 @@ struct hairpin_precomp_t {
 };
 
 
-int MaxNumContiguous(const rna_t& rna);
+int MaxNumContiguous(const primary_t& primary);
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
 std::vector<hairpin_precomp_t> PrecomputeFastHairpin();
 energy_t FastHairpin(int st, int en, const std::vector<hairpin_precomp_t>& precomp);
@@ -94,13 +94,13 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1();
 array3d_t<energy_t, DP_SIZE> ComputeTables0();
 
 void InitFold();
-folded_rna_t Fold3(const rna_t& rna, fold_state_t* fold_state = nullptr);
-folded_rna_t Fold2(const rna_t& rna, fold_state_t* fold_state = nullptr);
-folded_rna_t Fold1(const rna_t& rna, fold_state_t* fold_state = nullptr);
-folded_rna_t Fold0(const rna_t& rna, fold_state_t* fold_state = nullptr);
-folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t* fold_state = nullptr);
+computed_t Fold3(const primary_t& primary, fold_state_t* fold_state = nullptr);
+computed_t Fold2(const primary_t& primary, fold_state_t* fold_state = nullptr);
+computed_t Fold1(const primary_t& primary, fold_state_t* fold_state = nullptr);
+computed_t Fold0(const primary_t& primary, fold_state_t* fold_state = nullptr);
+computed_t FoldBruteForce(const primary_t& primary, fold_state_t* fold_state = nullptr);
 
-typedef folded_rna_t (fold_fn_t)(const rna_t&, fold_state_t* fold_state);
+typedef computed_t (fold_fn_t)(const primary_t&, fold_state_t* fold_state);
 
 fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
 

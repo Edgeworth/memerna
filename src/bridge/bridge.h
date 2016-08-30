@@ -13,11 +13,10 @@ namespace bridge {
 
 class RnaPackage {
 public:
-
   virtual ~RnaPackage() = default;
 
-  virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const = 0;
-  virtual folded_rna_t Fold(const rna_t& rna) const = 0;
+  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;
+  virtual computed_t Fold(const primary_t& primary) const = 0;
 };
 
 class Rnark : public RnaPackage {
@@ -26,8 +25,8 @@ public:
   Rnark(const Rnark&) = delete;
   Rnark& operator=(const Rnark&) = delete;
 
-  virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
-  virtual folded_rna_t Fold(const rna_t& rna) const;
+  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
+  virtual computed_t Fold(const primary_t& primary) const;
 
 private:
   librnary::NNUnpairedModel model;
@@ -39,10 +38,10 @@ public:
   Rnastructure(const Rnastructure&) = delete;
   Rnastructure& operator=(Rnastructure&) = delete;
 
-  virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
-  virtual folded_rna_t Fold(const rna_t& rna) const;
+  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
+  virtual computed_t Fold(const primary_t& primary) const;
 
-  folded_rna_t FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state) const;
+  computed_t FoldAndDpTable(const primary_t& primary, dp_state_t* dp_state) const;
 
 private:
   std::unique_ptr<datatable> data;
@@ -61,10 +60,10 @@ public:
     fold_fn = meme.fold_fn;
   }
 
-  virtual energy_t Efn(const folded_rna_t& frna, std::string* desc = nullptr) const;
-  virtual folded_rna_t Fold(const rna_t& rna) const;
+  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
+  virtual computed_t Fold(const primary_t& primary) const;
 
-  folded_rna_t FoldAndDpTable(const rna_t& rna, fold::fold_state_t* fold_state) const;
+  computed_t FoldAndDpTable(const primary_t& primary, fold::fold_state_t* fold_state) const;
 private:
   fold::fold_fn_t* fold_fn;
 };

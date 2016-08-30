@@ -17,12 +17,12 @@ Rnark::Rnark(const std::string& data_path) : model(data_path) {
   model.SetMLParams(93, -6, 0, 0, 999999);
 }
 
-energy_t Rnark::Efn(const folded_rna_t& frna, std::string* desc) const {
-  auto rna = librnary::StringToPrimary(parsing::RnaToString(frna.r));
-  auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p)));
+energy_t Rnark::Efn(const secondary_t& secondary, std::string* desc) const {
+  auto primary = librnary::StringToPrimary(parsing::PrimaryToString(secondary.r));
+  auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p)));
 
   librnary::NNScorer<librnary::NNUnpairedModel> scorer(model);
-  scorer.SetRNA(rna);
+  scorer.SetRNA(primary);
   energy_t energy;
   if (desc) {
     auto trace = scorer.TraceExterior(ss_tree.RootSurface());
@@ -34,15 +34,15 @@ energy_t Rnark::Efn(const folded_rna_t& frna, std::string* desc) const {
   return energy;
 }
 
-folded_rna_t Rnark::Fold(const rna_t& rna) const {
+computed_t Rnark::Fold(const primary_t& primary) const {
   librnary::NNUnpairedFolder folder(model);
   folder.SetMaxTwoLoop(constants::TWOLOOP_MAX_SZ);
   folder.SetLonelyPairs(true);
   folder.SetStacking(true);
-  auto primary = librnary::StringToPrimary(parsing::RnaToString(rna));
-  energy_t energy = folder.Fold(primary);
+  auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(primary));
+  energy_t energy = folder.Fold(librnary_primary);
   auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
-  return {rna, pairs, energy};
+  return {primary, pairs, std::vector<Ctd>(primary.size(), CTD_NA), energy};
 }
 
 Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
@@ -50,22 +50,22 @@ Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-energy_t Rnastructure::Efn(const folded_rna_t& frna, std::string*) const {
+energy_t Rnastructure::Efn(const secondary_t& secondary, std::string*) const {
   auto structure = librnary::LoadStructure(
-      librnary::StringToPrimary(parsing::RnaToString(frna.r)),
-      librnary::DotBracketToMatching(parsing::PairsToDotBracket(frna.p))
+      librnary::StringToPrimary(parsing::PrimaryToString(secondary.r)),
+      librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p))
   );
   efn2(data.get(), structure.get(), 1, true);
   return energy_t(structure->GetEnergy(1));
 }
 
-folded_rna_t Rnastructure::Fold(const rna_t& rna) const {
-  return FoldAndDpTable(rna, nullptr);
+computed_t Rnastructure::Fold(const primary_t& primary) const {
+  return FoldAndDpTable(primary, nullptr);
 }
 
-folded_rna_t Rnastructure::FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state) const {
+computed_t Rnastructure::FoldAndDpTable(const primary_t& primary, dp_state_t* dp_state) const {
   auto structure = librnary::LoadStructure(
-      librnary::StringToPrimary(parsing::RnaToString(rna)));
+      librnary::StringToPrimary(parsing::PrimaryToString(primary)));
   // First false here says also generate the folding itself (not just the MFE).
   // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
   // Second last parameter is whether to use Lyngso or not.
@@ -75,31 +75,31 @@ folded_rna_t Rnastructure::FoldAndDpTable(const rna_t& rna, dp_state_t* dp_state
       !use_lyngso, dp_state);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
-  return {rna, pairs, energy_t(structure->GetEnergy(1))};
+  return {primary, pairs, std::vector<Ctd>(primary.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
 }
 
-energy_t Memerna::Efn(const folded_rna_t& frna, std::string* desc) const {
-  energy_t energy;
+energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
+  computed_t computed;
   if (desc) {
     std::unique_ptr<structure::Structure> structure;
-    energy = energy::ComputeEnergy(frna, &structure);
+    computed = energy::ComputeEnergy(secondary, &structure);
     for (const auto& s : structure->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    energy = energy::ComputeEnergy(frna);
+    computed = energy::ComputeEnergy(secondary);
   }
 
-  return energy;
+  return computed.energy;
 }
 
-folded_rna_t Memerna::Fold(const rna_t& rna) const {
-  return fold_fn(rna, nullptr);
+computed_t Memerna::Fold(const primary_t& primary) const {
+  return fold_fn(primary, nullptr);
 }
 
-folded_rna_t Memerna::FoldAndDpTable(const rna_t& rna, fold::fold_state_t* fold_state) const {
-  return fold_fn(rna, fold_state);
+computed_t Memerna::FoldAndDpTable(const primary_t& primary, fold::fold_state_t* fold_state) const {
+  return fold_fn(primary, fold_state);
 }
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {

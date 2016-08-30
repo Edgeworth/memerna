@@ -10,35 +10,34 @@ namespace fold {
 using constants::MAX_E;
 
 template<typename T>
-folded_rna_t FoldInternal(const rna_t& rna, fold_state_t* fold_state, T ComputeTables) {
-  SetRna(rna);
+computed_t FoldInternal(const primary_t& primary, fold_state_t* fold_state, T ComputeTables) {
+  SetPrimary(primary);
   InitFold();
   auto arr = ComputeTables();
   traceback_stack_t q;
   auto exterior = TraceExterior(arr, q);
-  energy_t energy = exterior[0][EXT];
-  TraceStructure(arr, q);
+  auto computed = TraceStructure(arr, exterior, q);
   if (fold_state) {
     fold_state->dp_table = std::move(arr);
     fold_state->ext_table = std::move(exterior);
   }
-  return {rna, p, energy};
+  return computed;
 }
 
-folded_rna_t Fold0(const rna_t& rna, fold_state_t* fold_state) {
-  return FoldInternal(rna, fold_state, ComputeTables0);
+computed_t Fold0(const primary_t& primary, fold_state_t* fold_state) {
+  return FoldInternal(primary, fold_state, ComputeTables0);
 }
 
-folded_rna_t Fold1(const rna_t& rna, fold_state_t* fold_state) {
-  return FoldInternal(rna, fold_state, ComputeTables1);
+computed_t Fold1(const primary_t& primary, fold_state_t* fold_state) {
+  return FoldInternal(primary, fold_state, ComputeTables1);
 }
 
-folded_rna_t Fold2(const rna_t& rna, fold_state_t* fold_state) {
-  return FoldInternal(rna, fold_state, ComputeTables2);
+computed_t Fold2(const primary_t& primary, fold_state_t* fold_state) {
+  return FoldInternal(primary, fold_state, ComputeTables2);
 }
 
-folded_rna_t Fold3(const rna_t& rna, fold_state_t* fold_state) {
-  return FoldInternal(rna, fold_state, ComputeTables3);
+computed_t Fold3(const primary_t& primary, fold_state_t* fold_state) {
+  return FoldInternal(primary, fold_state, ComputeTables3);
 }
 
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
@@ -77,8 +76,8 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
 std::vector<hairpin_precomp_t> PrecomputeFastHairpin() {
   assert(r.size() > 0);
   std::vector<hairpin_precomp_t> precompute(r.size());
-  std::string rna_str = parsing::RnaToString(r);
-  for (const auto& hairpinpair : g_hairpin_e) {
+  std::string rna_str = parsing::PrimaryToString(r);
+  for (const auto& hairpinpair : g_hairpin) {
     const auto& str = hairpinpair.first;
     verify_expr(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");
     auto pos = rna_str.find(str, 0);
@@ -132,11 +131,11 @@ energy_t MinEnergy(const energy_t* energy, std::size_t size) {
   return min;
 }
 
-int MaxNumContiguous(const rna_t& rna) {
+int MaxNumContiguous(const primary_t& primary) {
   energy_t num_contig = 0;
   energy_t max_num_contig = 0;
   base_t prev = -1;
-  for (auto b : rna) {
+  for (auto b : primary) {
     if (b == prev) num_contig++;
     else num_contig = 1;
     prev = b;

@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
         db = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto frna = parsing::ParseDotBracketRna(seq, db);
+      auto secondary = parsing::ParseDotBracketSecondary(seq, db);
       std::string desc;
-      auto res = package->Efn(frna, argparse.HasFlag("v") ? &desc : nullptr);
+      auto res = package->Efn(secondary, argparse.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
     }
   } else {
@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto rna = parsing::StringToRna(seq);
-      auto res = package->Fold(rna);
+      auto primary = parsing::StringToPrimary(seq);
+      auto res = package->Fold(primary);
       printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.p).c_str());
     }
   }

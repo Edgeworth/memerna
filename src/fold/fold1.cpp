@@ -37,9 +37,9 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
         // (<   ><   >)
         p_min = std::min(p_min, base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
-        p_min = std::min(p_min, base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3_e[stb][st1b][enb]);
+        p_min = std::min(p_min, base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb]);
         // (<   ><   >5) 5'
-        p_min = std::min(p_min, base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5_e[stb][en1b][enb]);
+        p_min = std::min(p_min, base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
         p_min = std::min(p_min, base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb]);
 
@@ -106,11 +106,11 @@ array3d_t<energy_t, DP_SIZE> ComputeTables1() {
           wc_min = std::min(wc_min, val);
 
         // (   )3<   > 3' - U
-        u_min = std::min(u_min, base01 + g_dangle3_e[pl1b][pb][stb] + right_unpaired);
-        u2_min = std::min(u2_min, base01 + g_dangle3_e[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
+        u_min = std::min(u_min, base01 + g_dangle3[pl1b][pb][stb] + right_unpaired);
+        u2_min = std::min(u2_min, base01 + g_dangle3[pl1b][pb][stb] + arr[piv + 1][en][DP_U]);
         // 5(   )<   > 5' - U
-        u_min = std::min(u_min, base10 + g_dangle5_e[pb][stb][st1b] + right_unpaired);
-        u2_min = std::min(u2_min, base10 + g_dangle5_e[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
+        u_min = std::min(u_min, base10 + g_dangle5[pb][stb][st1b] + right_unpaired);
+        u2_min = std::min(u2_min, base10 + g_dangle5[pb][stb][st1b] + arr[piv + 1][en][DP_U]);
         // .(   ).<   > Terminal mismatch - U
         u_min = std::min(u_min, base11 + g_terminal[pl1b][pb][stb][st1b] + right_unpaired);
         u2_min = std::min(u2_min, base11 + g_terminal[pl1b][pb][stb][st1b] + arr[piv + 1][en][DP_U]);

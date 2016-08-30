@@ -41,16 +41,16 @@ extern energy_t g_bulge_special_c;
 extern energy_t g_hairpin_init[INITIATION_CACHE_SZ];
 extern energy_t g_hairpin_uu_ga_first_mismatch, g_hairpin_gg_first_mismatch,
     g_hairpin_special_gu_closure, g_hairpin_c3_loop, g_hairpin_all_c_a, g_hairpin_all_c_b;
-extern std::unordered_map<std::string, energy_t> g_hairpin_e;
+extern std::unordered_map<std::string, energy_t> g_hairpin;
 
 // Multiloop hack model:
 extern energy_t g_multiloop_hack_a, g_multiloop_hack_b;
 
 // Dangles:
 // X, G, U
-extern energy_t g_dangle5_e[4][4][4];
+extern energy_t g_dangle5[4][4][4];
 // G, U, X
-extern energy_t g_dangle3_e[4][4][4];
+extern energy_t g_dangle3[4][4][4];
 
 // Coaxial stacking:
 extern energy_t g_coax_mismatch_non_contiguous, g_coax_mismatch_wc_bonus, g_coax_mismatch_gu_bonus;
@@ -59,21 +59,9 @@ extern energy_t g_coax_mismatch_non_contiguous, g_coax_mismatch_wc_bonus, g_coax
 extern energy_t g_augu_penalty;
 
 // Global data variables.
-extern rna_t r;
-extern std::vector<int> p;
+extern primary_t r;
 
-inline void SetRna(const rna_t& rna) {
-  r = rna;
-}
-
-inline void SetFoldedRna(const rna_t& rna, const std::vector<int>& pairs) {
-  r = rna;
-  p = pairs;
-}
-
-inline void SetFoldedRna(const folded_rna_t& frna) {
-  SetFoldedRna(frna.r, frna.p);
-}
+inline void SetPrimary(const primary_t& primary) { r = primary; }
 
 }
 

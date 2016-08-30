@@ -6,17 +6,15 @@ namespace fold {
 
 namespace {
 
-energy_t best;
-std::vector<int> best_p;
+computed_t best_computed;
+secondary_t cur_secondary;
 std::vector<std::pair<int, int>> base_pairs;
 
 void FoldBruteForceInternal(int idx) {
   if (idx == int(base_pairs.size())) {
-    energy_t e = energy::ComputeEnergy();
-    if (e < best) {
-      best = e;
-      best_p = p;
-    }
+    auto computed = energy::ComputeEnergy(cur_secondary);
+    if (computed.energy < best_computed.energy)
+      best_computed = std::move(computed);
     return;
   }
   // Don't take this base pair.
@@ -29,27 +27,26 @@ void FoldBruteForceInternal(int idx) {
   // increasing st, anything at or after this will either be the start of something starting at st, or
   // something ending, both of which conflict with this base pair.
   for (int i = pair.first; i <= pair.second; ++i) {
-    if (p[i] != -1) {
+    if (cur_secondary.p[i] != -1) {
       can_take = false;
       break;
     }
   }
   if (can_take) {
-    p[pair.first] = pair.second;
-    p[pair.second] = pair.first;
+    cur_secondary.p[pair.first] = pair.second;
+    cur_secondary.p[pair.second] = pair.first;
     FoldBruteForceInternal(idx + 1);
-    p[pair.first] = -1;
-    p[pair.second] = -1;
+    cur_secondary.p[pair.first] = -1;
+    cur_secondary.p[pair.second] = -1;
   }
 }
 
 }
 
-folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t*) {
-  SetRna(rna);
-  p = std::vector<int>(r.size(), -1);
-  best = constants::MAX_E;
-  best_p.clear();
+computed_t FoldBruteForce(const primary_t& primary, fold_state_t*) {
+  SetPrimary(primary);
+  best_computed = computed_t(primary);
+  cur_secondary = secondary_t(primary);
   base_pairs.clear();
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < int(r.size()); ++st) {
@@ -59,9 +56,7 @@ folded_rna_t FoldBruteForce(const rna_t& rna, fold_state_t*) {
     }
   }
   FoldBruteForceInternal(0);
-  p = best_p;
-  folded_rna_t frna = {rna, best_p, energy::ComputeEnergy()};
-  return frna;
+  return std::move(best_computed);
 }
 
 }

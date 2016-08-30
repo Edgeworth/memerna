@@ -1,11 +1,18 @@
 #include <cstdio>
 #include <cmath>
 #include <memory>
+#include <algorithm>
 #include "energy.h"
 #include "structure.h"
 
 namespace memerna {
 namespace energy {
+
+namespace {
+// Paired array, for easy access.
+std::vector<int> p;
+std::vector<Ctd> ctds;
+}
 
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
@@ -29,8 +36,8 @@ energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s) {
   std::string seq;
   for (int i = st; i <= en; ++i)
     seq += BaseToChar(r[i]);
-  auto iter = g_hairpin_e.find(seq);
-  if (iter != g_hairpin_e.end()) {
+  auto iter = g_hairpin.find(seq);
+  if (iter != g_hairpin.end()) {
     if (s) (*s)->AddNote("special hairpin");
     return iter->second;
   }
@@ -228,17 +235,19 @@ energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::
     energy_t macro_upd_value_ = (value); \
     if (cache[cur_used][cur_idx] + macro_upd_value_ < cache[used][idx]) { \
       cache[used][idx] = cache[cur_used][cur_idx] + macro_upd_value_; \
-      back[used][idx] = std::make_tuple(cur_used, cur_idx, \
-        std::string(reason) + " energy: " + std::to_string(macro_upd_value_) + \
-        " total: " + std::to_string(cache[used][idx])); \
+      back[used][idx] = std::make_tuple(cur_used, cur_idx, macro_upd_value_, reason); \
     } \
   } while (0)
 
+typedef std::deque<std::pair<Ctd, energy_t>> branch_ctd_t;
+
+// TODO remove outer_idx, do reversal in calling code
 energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool use_first_lu,
-    std::unique_ptr<structure::Structure>* s) {
+    branch_ctd_t* ctd_energies) {
   int N = int(branches.size());
   int RSZ = int(r.size());
   assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
+  // Could be on the exterior loop.
   assert(N >= 3 || outer_idx == -1);
   if (N < 1) return 0;
 
@@ -247,9 +256,9 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       std::vector<int>(size_t(N + 1), constants::MAX_E),
       std::vector<int>(size_t(N + 1), constants::MAX_E)
   };
-  std::vector<std::tuple<bool, int, std::string>> back[2] = {
-      std::vector<std::tuple<bool, int, std::string>>(size_t(N + 1), std::make_tuple(false, -1, "")),
-      std::vector<std::tuple<bool, int, std::string>>(size_t(N + 1), std::make_tuple(false, -1, ""))
+  std::vector<std::tuple<bool, int, energy_t, Ctd>> back[2] = {
+      std::vector<std::tuple<bool, int, energy_t, Ctd>>(size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA)),
+      std::vector<std::tuple<bool, int, energy_t, Ctd>>(size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA))
   };
 
   cache[0][0] = cache[1][0] = 0;
@@ -294,18 +303,18 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       energy_t coax = g_stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with anything, so
       // just skip to i + 2.
-      UPDATE_CACHE(0, i + 2, 0, i, coax, "flush coaxial; no lu;");
+      UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FLUSH_COAX_WITH_NEXT);
       if (lu_exists[i]) {
         // If lu exists, and it was used, then it's fine to coaxially stack. If |used| were true but lu didn't exist then
         // we couldn't coaxially stack as the current branch would already have been involved in one, though.
-        UPDATE_CACHE(0, i + 2, 1, i, coax, "flush coaxial; lu used;");
+        UPDATE_CACHE(0, i + 2, 1, i, coax, CTD_FLUSH_COAX_WITH_NEXT);
       }
     }
 
     if (lu_usable[i] && ru_usable[i]) {
       // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
       // Consumes ru, so if it was shared, use it.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_terminal[rb][rub][lub][lb], "terminal mismatch;");
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_terminal[rb][rub][lub][lb], CTD_TERMINAL_MISMATCH);
 
       // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
       // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
@@ -313,7 +322,7 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
       // its left pair is consumed, and its right pair can't dangle towards it.
       if (ru_shared[i] && i != N - 1) {
         energy_t left_coax = MismatchCoaxial(rb, rub, lub, lb);
-        UPDATE_CACHE(0, i + 2, 0, i, left_coax, "left coaxial;");
+        UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LEFT_MISMATCH_COAX_WITH_NEXT);
       }
     }
 
@@ -321,55 +330,123 @@ energy_t ComputeOptimalCtd(const std::deque<int>& branches, int outer_idx, bool 
     if (ru_usable[i]) {
       // Right dangle (3').
       // Only requires ru_exists so handle where left is both used and not used.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_dangle3_e[rb][rub][lb], "lu unused; ru 3' dangle;");
-      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, g_dangle3_e[rb][rub][lb], "lu used; ru 3' dangle;");
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_dangle3[rb][rub][lb], CTD_3_DANGLE);
+      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, g_dangle3[rb][rub][lb], CTD_3_DANGLE);
 
       // Mismatch mediated coaxial stacking, right facing (uses the next branch).
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
         energy_t right_coax = MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
-        UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, "right coaxial; no lu;");
+        UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RIGHT_MISMATCH_COAX_WITH_NEXT);
         if (lu_exists[i]) {
           // In the case that lu doesn't exist but it is "used" it means this branch was consumed by a coaxial interaction
           // so don't use it.
-          UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, "right coaxial; lu used;");
+          UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, CTD_RIGHT_MISMATCH_COAX_WITH_NEXT);
         }
       }
     }
 
     if (lu_usable[i]) {
       // 5' dangle.
-      UPDATE_CACHE(0, i + 1, 0, i, g_dangle5_e[rb][lub][lb], "lu 5' dangle;");
+      UPDATE_CACHE(0, i + 1, 0, i, g_dangle5[rb][lub][lb], CTD_5_DANGLE);
     }
 
     // Have the option of doing nothing.
-    UPDATE_CACHE(0, i + 1, 0, i, 0, "no interaction;");
-    UPDATE_CACHE(0, i + 1, 1, i, 0, "no interaction; lu used;");
+    UPDATE_CACHE(0, i + 1, 0, i, 0, CTD_UNUSED);
+    UPDATE_CACHE(0, i + 1, 1, i, 0, CTD_UNUSED);
   }
 
-  std::tuple<bool, int, std::string> state{false, N, ""};
+  std::tuple<bool, int, energy_t, Ctd> state{false, N, 0, CTD_NA};
   if (cache[1][N] < cache[0][N])
-    state = std::make_tuple(true, N, "");
-  if (s) {
-    (*s)->AddNote(
-        "%de - CTD: outer_idx: %d, use_first_lu: %d",
-        std::min(cache[0][N], cache[1][N]), outer_idx, int(use_first_lu));
-  }
+    state = std::make_tuple(true, N, 0, CTD_NA);
+  // First state contains no real info, so go ahead one.
+  state = back[std::get<0>(state)][std::get<1>(state)];
+  assert(ctd_energies->empty());
   while (1) {
     bool used;
     int idx;
-    std::string reason;
-    std::tie(used, idx, reason) = std::move(state);
+    energy_t energy;
+    Ctd reason;
+    std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
-    if (s) (*s)->AddNote("%d %d %s", int(used), idx, reason.c_str());
+    // We can skip a branch on coaxial stacking interactions, so make sure to insert the ctd energy for the branch.
+    // We build ctd_energies backwards, so we need to insert this later branch first.
+    // To get the PREV versions, just add one.
+    if (reason == CTD_LEFT_MISMATCH_COAX_WITH_NEXT ||
+        reason == CTD_RIGHT_MISMATCH_COAX_WITH_NEXT ||
+        reason == CTD_FLUSH_COAX_WITH_NEXT)
+      ctd_energies->emplace_back(Ctd(reason + 1), energy);
+    ctd_energies->emplace_back(reason, energy);
     state = back[used][idx];
   }
+  std::reverse(ctd_energies->begin(), ctd_energies->end());
 
   return std::min(cache[0][N], cache[1][N]);
 }
-
 #undef UPDATE_CACHE
+
+void WriteCtdsForBranches(const std::deque<int>& branches, const branch_ctd_t& ctd_energies) {
+  assert(branches.size() == ctd_energies.size());
+  for (int i = 0; i < int(branches.size()); ++i) {
+    ctds[branches[i]] = ctd_energies[i].first;
+    ctds[p[branches[i]]] = ctd_energies[i].first;
+  }
+}
+
+energy_t ReadCtdsForBranches(const std::deque<int>& branches, branch_ctd_t* ctd_energies) {
+  energy_t total_energy = 0;
+  int N = int(r.size());
+  for (int i = 0; i < int(branches.size()); ++i) {
+    int branch = branches[i];
+    int prev_branch = i > 0 ? branches[i - 1] : -1;
+    assert(ctds[branch] == ctds[p[branch]]);
+    energy_t energy = 0;
+    auto stb = r[branch], enb = r[p[branch]];
+    // TODO swap if outer branch
+    switch (ctds[branch]) {
+      case CTD_UNUSED: break;
+      case CTD_3_DANGLE:
+        assert(branch > 0);
+        energy = g_dangle3[enb][r[branch - 1]][stb];
+        break;
+      case CTD_5_DANGLE:
+        assert(branch > 0);
+        energy = g_dangle5[enb][r[branch - 1]][stb];
+        break;
+      case CTD_TERMINAL_MISMATCH:
+        assert(p[branch] + 1 < N && branch > 0);
+        energy = g_terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
+        break;
+      case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
+        assert(prev_branch != -1);
+        // .(   ).(   )
+        energy = MismatchCoaxial(r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
+        ctd_energies->emplace_back(CTD_LEFT_MISMATCH_COAX_WITH_NEXT, energy);
+        break;
+      case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
+        assert(prev_branch != -1 && branch > 0 && p[branch] + 1 < N);
+        // (   ).(   ). or (.(   ).   )
+        energy = MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
+        ctd_energies->emplace_back(CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, energy);
+        break;
+      case CTD_FLUSH_COAX_WITH_PREV:
+        assert(prev_branch != -1);
+        // (   )(   ) or ((   )   ) or (   (   ))
+        energy = g_stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
+        break;
+      // All these cases will be handled in the next branch (PREV).
+      case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
+      case CTD_RIGHT_MISMATCH_COAX_WITH_NEXT:
+      case CTD_FLUSH_COAX_WITH_NEXT:
+        break;
+      default:
+        verify_expr(false, "bug");  // Should never happen
+    }
+    ctd_energies->emplace_back(ctds[branch], energy);
+  }
+  return total_energy;
+}
 
 energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_ptr<structure::Structure>* s) {
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
@@ -390,12 +467,20 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
       energy += g_augu_penalty;
     }
   }
-  num_unpaired = en - st - 1 - num_unpaired;
+  num_unpaired = en - st - 1 - num_unpaired + exterior_loop * 2;
+  if (s) (*s)->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
+  bool compute_ctd = branches.empty() || (ctds[branches.front()] == CTD_NA);
+  branch_ctd_t ctd_energies;
+  energy_t ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
-    energy += ComputeOptimalCtd(branches, -1, true, s);
-    num_unpaired += 2;
+    if (compute_ctd) {
+      ctd_energy = ComputeOptimalCtd(branches, -1, true, &ctd_energies);
+      WriteCtdsForBranches(branches, ctd_energies);
+    } else {
+      ReadCtdsForBranches(branches, &ctd_energies);
+    }
   } else {
     if (IsAuGu(r[st], r[en])) {
       if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", g_augu_penalty, st, en);
@@ -404,18 +489,57 @@ energy_t MultiloopEnergy(int st, int en, std::deque<int>& branches, std::unique_
     energy_t initiation = MultiloopInitiation(int(branches.size() + 1));
     if (s) (*s)->AddNote("%de - initiation", initiation);
     energy += initiation;
-    branches.push_front(st);
-    energy_t a = ComputeOptimalCtd(branches, 0, true, s);
-    energy_t b = ComputeOptimalCtd(branches, 0, false, s);
-    branches.pop_front();
-    branches.push_back(st);
-    energy_t c = ComputeOptimalCtd(branches, int(branches.size() - 1), true, s);
-    energy_t d = ComputeOptimalCtd(branches, int(branches.size() - 1), false, s);
-    branches.pop_back();
-    if (s) (*s)->AddNote("CTDs: %de %de %de %de", a, b, c, d);
-    energy += std::min(a, std::min(b, std::min(c, d)));
+
+    if (compute_ctd) {
+      branch_ctd_t config_ctds[4] = {};
+      std::pair<energy_t, int> config_energies[4] = {};
+      branches.push_front(st);
+      config_energies[0] = {ComputeOptimalCtd(branches, 0, true, config_ctds), 0};
+      config_energies[1] = {ComputeOptimalCtd(branches, 0, false, config_ctds + 1), 1};
+      branches.pop_front();
+      branches.push_back(st);
+      config_energies[2] = {ComputeOptimalCtd(branches, int(branches.size() - 1), true, config_ctds + 2), 2};
+      config_energies[3] = {ComputeOptimalCtd(branches, int(branches.size() - 1), false, config_ctds + 3), 3};
+      // Shuffle these around so the outer loop is as the start.
+      config_ctds[2].push_front(config_ctds[2].back());
+      config_ctds[2].pop_back();
+      config_ctds[3].push_front(config_ctds[3].back());
+      config_ctds[3].pop_back();
+      branches.pop_back();
+      std::sort(config_energies, config_energies + 4);
+      ctd_energies = config_ctds[config_energies[0].second];
+      ctd_energy = config_energies[0].first;
+
+      // Assumes the outer loop is the first one.
+//      branches.push_front(st);
+//      WriteCtdsForBranches(branches, ctd_energies);
+//#ifndef NDEBUG
+//      branch_ctd_t tmp;
+//      assert(ctd_energy == ReadCtdsForBranches(branches, &tmp));
+//      assert(ctd_energies == tmp);
+//#endif
+//      branches.pop_front();
+    } else {
+      branches.push_front(st);
+      ReadCtdsForBranches(branches, &ctd_energies);
+      branches.pop_front();
+    }
   }
-  if (s) (*s)->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
+  energy += ctd_energy;
+
+  if (s) {
+    (*s)->AddNote("%de - ctd", ctd_energy);
+//    int idx = 0;
+//    if (!exterior_loop) {
+//      (*s)->AddNote("%de - outer loop stacking - %s", ctd_energies[0].second,
+//          structure::CtdToName(ctd_energies[0].first));
+//      idx++;
+//    }
+//    for (; idx < ctd_energies.size(); ++i) {
+//      (*s)->AddBranch()
+//    }
+    // TODO note for outer loop stacking
+  }
 
   return energy;
 }
@@ -441,7 +565,7 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(st, en, branches, s);
+    energy += MultiloopEnergy(st, en, branches, s);  // TODO add branch occurs below here.
   } else if (branches.size() == 0) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
@@ -468,7 +592,12 @@ energy_t ComputeEnergyInternal(int st, int en, std::unique_ptr<structure::Struct
   return energy;
 }
 
-energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s) {
+computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<structure::Structure>* s) {
+  r = secondary.r;
+  p = secondary.p;
+  ctds.clear();
+  ctds.resize(r.size(), CTD_NA);
+  assert(r.size() == p.size() && r.size() == ctds.size());
   energy_t energy = ComputeEnergyInternal(0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += g_augu_penalty;
@@ -478,7 +607,7 @@ energy_t ComputeEnergy(std::unique_ptr<structure::Structure>* s) {
       (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + g_augu_penalty);  // Gross.
     }
   }
-  return energy;
+  return {r, p, ctds, energy};
 }
 
 }
