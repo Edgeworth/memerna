@@ -69,8 +69,8 @@ std::string SerialiseEnergyModel() {
 
 void LoadRandomEnergyModel(uint_fast32_t seed) {
   std::mt19937 eng(seed);
-  std::uniform_int_distribution<memerna::energy_t> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  std::uniform_int_distribution<memerna::energy_t> nonneg_energy_dist(0, RAND_MAX_ENERGY);
+  std::uniform_int_distribution<energy_t> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  std::uniform_int_distribution<energy_t> nonneg_energy_dist(0, RAND_MAX_ENERGY);
 #define RANDOMISE_DATA(d) \
   do { \
     auto dp = reinterpret_cast<energy_t*>(&d); \
@@ -151,32 +151,32 @@ uint32_t EnergyModelChecksum() {
 
 void LoadEnergyModelFromDataDir(const std::string& data_dir) {
   // Stacking interaction data.
-  memerna::parsing::Parse2x2FromFile(data_dir + "/stacking.data", memerna::g_stack);
+  parsing::Parse2x2FromFile(data_dir + "/stacking.data", g_stack);
 
   // Terminal mismatch data.
-  memerna::parsing::Parse2x2FromFile(data_dir + "/terminal.data", memerna::g_terminal);
+  parsing::Parse2x2FromFile(data_dir + "/terminal.data", g_terminal);
 
   // Hairpin data.
-  memerna::parsing::ParseMapFromFile(data_dir + "/hairpin.data", memerna::g_hairpin);
-  memerna::parsing::ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", memerna::g_hairpin_init);
+  parsing::ParseMapFromFile(data_dir + "/hairpin.data", g_hairpin);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", g_hairpin_init);
 
   // Bulge loop data.
-  memerna::parsing::ParseInitiationEnergyFromFile(data_dir + "/bulge_initiation.data", memerna::g_bulge_init);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/bulge_initiation.data", g_bulge_init);
 
   // Internal loop data.
-  memerna::parsing::ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", memerna::g_internal_init);
-  memerna::parsing::ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data");
-  memerna::parsing::ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data");
-  memerna::parsing::ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data");
-  memerna::parsing::Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", memerna::g_internal_2x3_mismatch);
-  memerna::parsing::Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", memerna::g_internal_other_mismatch);
+  parsing::ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", g_internal_init);
+  parsing::ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data");
+  parsing::ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data");
+  parsing::ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data");
+  parsing::Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", g_internal_2x3_mismatch);
+  parsing::Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", g_internal_other_mismatch);
 
   // Dangle data.
-  memerna::parsing::ParseDangleDataFromFile(data_dir + "/dangle3.data", memerna::g_dangle3);
-  memerna::parsing::ParseDangleDataFromFile(data_dir + "/dangle5.data", memerna::g_dangle5);
+  parsing::ParseDangleDataFromFile(data_dir + "/dangle3.data", g_dangle3);
+  parsing::ParseDangleDataFromFile(data_dir + "/dangle5.data", g_dangle5);
 
   // Other misc data.
-  memerna::parsing::ParseMiscDataFromFile(data_dir + "/misc.data");
+  parsing::ParseMiscDataFromFile(data_dir + "/misc.data");
 
   std::string reason;
   verify_expr(IsValidEnergyModel(&reason), "invalid energy model: %s", reason.c_str());

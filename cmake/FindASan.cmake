@@ -56,16 +56,16 @@ endif()
 
 set(HAVE_ADDRESS_SANITIZER TRUE)
 
-set(CMAKE_C_FLAGS_ASAN "${CMAKE_C_FLAGS_ASAN} -g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_C_FLAGS_ASAN "-g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C compiler during ASan builds."
     FORCE)
-set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_CXX_FLAGS_ASAN "-g ${ADDRESS_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C++ compiler during ASan builds."
     FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_ASAN "${CMAKE_EXE_LINKER_FLAGS_ASAN} ${ADDRESS_SANITIZER_FLAG}"
+set(CMAKE_EXE_LINKER_FLAGS_ASAN "${ADDRESS_SANITIZER_FLAG}"
     CACHE STRING "Flags used for linking binaries during ASan builds."
     FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_ASAN "${CMAKE_SHARED_LINKER_FLAGS_ASAN} ${ADDRESS_SANITIZER_FLAG}"
+set(CMAKE_SHARED_LINKER_FLAGS_ASAN "${ADDRESS_SANITIZER_FLAG}"
     CACHE STRING "Flags used by the shared libraries linker during ASan builds."
     FORCE)
 mark_as_advanced(CMAKE_C_FLAGS_ASAN

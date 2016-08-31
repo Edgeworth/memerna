@@ -56,9 +56,13 @@ struct computed_t {
 
 struct secondary_t {
   secondary_t() = default;
+
   explicit secondary_t(const primary_t& primary) : r(primary), p(primary.size(), -1) {}
+
   explicit secondary_t(const computed_t& computed) : r(computed.r), p(computed.p) {}
+
   secondary_t(const primary_t& primary, const std::vector<int>& p_) : r(primary), p(p_) {}
+
   secondary_t(secondary_t&&) = default;
   secondary_t& operator=(secondary_t&&) = default;
   primary_t r;

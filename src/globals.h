@@ -61,7 +61,7 @@ extern energy_t g_augu_penalty;
 // Global data variables.
 extern primary_t r;
 
-inline void SetPrimary(const primary_t& primary) { r = primary; }
+inline void SetPrimary(const primary_t& primary) {r = primary;}
 
 }
 

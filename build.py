@@ -22,9 +22,6 @@ defs = {
 if args.use_clang:
   defs['CMAKE_C_COMPILER'] = 'clang'
   defs['CMAKE_CXX_COMPILER'] = 'clang++'
-  defs['CMAKE_CXX_FLAGS_MSAN'] = '-fsanitize-memory-track-origins  -fsanitize-memory-use-after-dtor'
-  defs['CMAKE_CXX_FLAGS_UBSAN'] = '-fsanitize=unsigned-integer-overflow'
-
 
 def run_command(cmd):
   res = os.system(cmd)
@@ -33,6 +30,8 @@ def run_command(cmd):
 
 
 def should_regenerate_cmake():
+  if not os.path.exists('build/CMakeCache.txt'):
+    return True
   with open('build/CMakeCache.txt', 'r') as f:
     data = f.read()
     match = re.search('^CMAKE_BUILD_TYPE:STRING=(.*)$', data, re.M)
@@ -44,11 +43,12 @@ def should_regenerate_cmake():
   return False
 
 
-regenerate = should_regenerate_cmake() or args.regenerate
-
+regenerate = False
 if not os.path.exists('build'):
   os.mkdir('build')
   regenerate = True
+regenerate = regenerate or should_regenerate_cmake() or args.regenerate
+
 os.chdir('build')
 if regenerate:
   print('Regenerating cmake files.')
