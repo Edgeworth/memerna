@@ -40,7 +40,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
 
-        // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = g_augubranch[stb][enb] + g_multiloop_hack_a;
 
@@ -127,12 +126,12 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       arr[st][en][DP_U_WC] = mins[DP_U_WC];
       arr[st][en][DP_U_GU] = mins[DP_U_GU];
       arr[st][en][DP_U_RCOAX] = mins[DP_U_RCOAX];
-      // TODO refactor these comments.
 
-      // Now build the candidates arrays based off the current pair [st, en].
+      // Now build the candidates arrays based off the current area [st, en].
       // In general, the idea is to see if there exists something we could replace a structure with that is as good.
-      // e.g. we could replace (   )3' in unpaired with the equivalent U since we know the energy for (   )3' -
-      // it is self contained. In some cases we use the minimum possible energy if we don't know the energy exactly
+      // e.g. we could replace a (   )3' with the equivalent U since we know the energy for (   )3' -
+      // it is self contained. If replacing it with U[st][en] is better, then we do not need to consider (...)3'
+      // when computing a larger U. In some cases we use the minimum possible energy if we don't know the energy exactly
       // for a structure (e.g. RCOAX).
       // These orderings are useful to remember:
       // U <= U_WC, U_GU, U2
@@ -161,12 +160,8 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         arr[st][en][DP_U_WC] = std::min(arr[st][en][DP_U_WC], normal_base);
       }
 
-      // TODO put if statments around these to make them only execute when actually possible?
-      // TODO do assignemnt of arr[st][en] inside these if statements - or use current best; don't push same thing on
-      // TODO order these if statements so hte most liekly to be strong go first.
-      // multiple times? when this is split into multiple candidate lists still can have minimum over all of them for
-      // monotonicity``
-      // Can only merge candidate lists for monotonicity if the right part of the pivot is the same (from the same array).
+      // Can only merge candidate lists for monotonicity if
+      // the right part of the pivot is the same (from the same array).
       // Can only apply monotonicity optimisation to ones ending with min(U, 0).
       // (   ). - 3' - U, U2
       auto dangle3_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_dangle3[en1b][enb][stb];
@@ -187,7 +182,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
       // This is probably better than having four candidate lists for each possible mismatch (TODO check this).
-      // TODO remember to subtract off g_coax_mismatch_non_contiguous when computing after saving value
       auto rcoaxf_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < arr[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});

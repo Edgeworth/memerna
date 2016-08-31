@@ -41,6 +41,7 @@ check_c_compiler_flag("-fsanitize=memory" HAVE_FLAG_SANITIZE_MEMORY)
 
 unset(CMAKE_REQUIRED_FLAGS)
 
+
 if(HAVE_FLAG_SANITIZE_MEMORY)
   # Clang 3.2+ use this version
   set(MEMORY_SANITIZER_FLAG "-fsanitize=memory")
@@ -55,18 +56,24 @@ else(NOT MEMORY_SANITIZER_FLAG)
   set(HAVE_MEMORY_SANITIZER TRUE)
 endif()
 
+check_c_compiler_flag("-fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor" HAVE_EXTRA_MEMORY_SANITIZER_FLAGS)
+
+if(HAVE_EXTRA_MEMORY_SANITIZER_FLAGS)
+  set(MEMORY_SANITIZER_FLAG "${MEMORY_SANITIZER_FLAG} -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor")
+endif()
+
 set(HAVE_MEMORY_SANITIZER TRUE)
 
-set(CMAKE_C_FLAGS_MSAN "${CMAKE_C_FLAGS_MSAN} -g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_C_FLAGS_MSAN "-g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C compiler during MSan builds."
     FORCE)
-set(CMAKE_CXX_FLAGS_MSAN "${CMAKE_CXX_FLAGS_MSAN} -g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+set(CMAKE_CXX_FLAGS_MSAN "-g ${MEMORY_SANITIZER_FLAG} -fno-omit-frame-pointer -fno-optimize-sibling-calls"
     CACHE STRING "Flags used by the C++ compiler during MSan builds."
     FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_MSAN "${CMAKE_EXE_LINKER_FLAGS_MSAN} ${MEMORY_SANITIZER_FLAG}"
+set(CMAKE_EXE_LINKER_FLAGS_MSAN "${MEMORY_SANITIZER_FLAG}"
     CACHE STRING "Flags used for linking binaries during MSan builds."
     FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_MSAN "${CMAKE_SHARED_LINKER_FLAGS_MSAN} ${MEMORY_SANITIZER_FLAG}"
+set(CMAKE_SHARED_LINKER_FLAGS_MSAN "${MEMORY_SANITIZER_FLAG}"
     CACHE STRING "Flags used by the shared libraries linker during MSan builds."
     FORCE)
 mark_as_advanced(CMAKE_C_FLAGS_MSAN

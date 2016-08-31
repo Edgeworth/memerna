@@ -18,9 +18,10 @@ TEST_P(FoldAlgTest, T04) {
 
   auto fold_fn = [this](const auto& primary) {return GetParam()(primary, nullptr);};
   EXPECT_EQ(-45, fold_fn(parsing::StringToPrimary("GGGGAAACCCC")).energy);
-  EXPECT_EQ(-51, fold_fn(parsing::StringToPrimary("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA")).energy);
-  EXPECT_EQ(-133,
-      fold_fn(parsing::StringToPrimary("AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU")).energy);
+  EXPECT_EQ(-51, fold_fn(parsing::StringToPrimary(
+      "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA")).energy);
+  EXPECT_EQ(-133, fold_fn(parsing::StringToPrimary(
+      "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU")).energy);
   EXPECT_EQ(-57, fold_fn(parsing::StringToPrimary("AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC")).energy);
   EXPECT_EQ(-121, fold_fn(parsing::StringToPrimary("ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG")).energy);
   EXPECT_EQ(-74, fold_fn(parsing::StringToPrimary("CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG")).energy);
@@ -35,14 +36,13 @@ TEST_P(FoldAlgTest, T04) {
   EXPECT_EQ(-6, fold_fn(parsing::StringToPrimary("CGGAAACGG")).energy);
   EXPECT_EQ(-22, fold_fn(parsing::StringToPrimary("CUGAAACUGGAAACAGAAAUG")).energy);
   EXPECT_EQ(-12, fold_fn(parsing::StringToPrimary("CUUAUAGUUAAGG")).energy);
-  EXPECT_EQ(-122,
-      fold_fn(parsing::StringToPrimary("GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC")).energy);
+  EXPECT_EQ(-122, fold_fn(parsing::StringToPrimary(
+      "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC")).energy);
   EXPECT_EQ(-29, fold_fn(parsing::StringToPrimary("GCCAAGGCCCCACCCGGA")).energy);
   EXPECT_EQ(-39, fold_fn(parsing::StringToPrimary("GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC")).energy);
   EXPECT_EQ(-67, fold_fn(parsing::StringToPrimary("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC")).energy);
-  EXPECT_EQ(-276,
-      fold_fn(parsing::StringToPrimary(
-          "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA")).energy);
+  EXPECT_EQ(-276, fold_fn(parsing::StringToPrimary(
+      "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA")).energy);
   EXPECT_EQ(-53, fold_fn(parsing::StringToPrimary("GCGCCCCAGUCGACGCUGAGCUCCUCUGCU")).energy);
   EXPECT_EQ(-157, fold_fn(parsing::StringToPrimary("GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG")).energy);
   EXPECT_EQ(-49, fold_fn(parsing::StringToPrimary("GGCCGAUGGCAGCGAUAGC")).energy);
@@ -52,7 +52,8 @@ TEST_P(FoldAlgTest, T04) {
   EXPECT_EQ(-23, fold_fn(parsing::StringToPrimary("UACCCUGUUCAGCAUUGGAAAUUUCCUGGG")).energy);
   EXPECT_EQ(-80, fold_fn(parsing::StringToPrimary("UCCACGGCUCGACGGCGCACUUAGUGCGUGGG")).energy);
   EXPECT_EQ(-4, fold_fn(parsing::StringToPrimary("UGCAAAGCAA")).energy);
-  EXPECT_EQ(-208, fold_fn(parsing::StringToPrimary("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU")).energy);
+  EXPECT_EQ(-208, fold_fn(parsing::StringToPrimary(
+      "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU")).energy);
 }
 
 INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(FOLD_FUNCTIONS));

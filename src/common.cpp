@@ -54,8 +54,8 @@ uint32_t Crc32(const std::string& data) {
 }
 
 computed_t::computed_t(const primary_t& primary)
-  : r(primary), p(primary.size(), -1),
-    ctds(primary.size(), CTD_NA), energy(constants::MAX_E) {}
+    : r(primary), p(primary.size(), -1),
+      ctds(primary.size(), CTD_NA), energy(constants::MAX_E) {}
 
 computed_t::computed_t(const primary_t& primary, const std::vector<int>& p_,
     const std::vector<Ctd>& ctds_, energy_t energy_)

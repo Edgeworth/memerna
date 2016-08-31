@@ -1,5 +1,4 @@
 #include "parsing.h"
-#include "constants.h"
 
 namespace memerna {
 namespace parsing {

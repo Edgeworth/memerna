@@ -11,14 +11,13 @@ using constants::NINIO_MAX_ASYM;
 using constants::HAIRPIN_MIN_SZ;
 
 array3d_t<energy_t, DP_SIZE> ComputeTables3() {
+  // See ComputeTables2 for comments - it is mostly the same.
   InitFold();
   int N = int(r.size());
-  // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
-  // Hairpin optimisation
   auto hairpin_precomp = PrecomputeFastHairpin();
 
   array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(r.size());
@@ -32,7 +31,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
 
-      // Lyngso for the rest.
       for (int l = 0; l <= max_inter; ++l) {
         // Don't add asymmetry here
         if (l >= 2)
@@ -99,10 +97,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
 
-        // Multiloops. Look at range [st + 1, en - 1].
-        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = g_augubranch[stb][enb] + g_multiloop_hack_a;
-
         // (<   ><   >)
         mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
@@ -181,34 +176,20 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         mins[DP_U_RCOAX] = std::min(mins[DP_U_RCOAX], cand.energy + std::min(arr[cand.idx + 1][en][DP_U], 0));
       }
 
-      // Set these so we can use sparse folding.
       arr[st][en][DP_U] = mins[DP_U];
       arr[st][en][DP_U2] = mins[DP_U2];
       arr[st][en][DP_U_WC] = mins[DP_U_WC];
       arr[st][en][DP_U_GU] = mins[DP_U_GU];
       arr[st][en][DP_U_RCOAX] = mins[DP_U_RCOAX];
-      // TODO refactor these comments.
-
-      // Now build the candidates arrays based off the current pair [st, en].
-      // In general, the idea is to see if there exists something we could replace a structure with that is as good.
-      // e.g. we could replace (   )3' in unpaired with the equivalent U since we know the energy for (   )3' -
-      // it is self contained. In some cases we use the minimum possible energy if we don't know the energy exactly
-      // for a structure (e.g. RCOAX).
-      // These orderings are useful to remember:
-      // U <= U_WC, U_GU, U2
 
       energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
 
-      // Unpaired cases. These store the best pairs u_cand that begin at st.
-      // begin means that the whole interaction starts at st. e.g. .(   ). starts one before the paren.
       // (   ) - Normal - U, U2
       auto normal_base = arr[st][en][DP_P] + g_augubranch[stb][enb];
       if (normal_base < arr[st][en][DP_U] && normal_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = normal_base;
 
-      // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare them to something they can be
-      // replaced with, i.e. themselves.
       if (IsGu(stb, enb)) {
         if (normal_base < arr[st][en][DP_U_GU] && normal_base < cand_st_mins[CAND_U_GU])
           cand_st_mins[CAND_U_GU] = normal_base;
@@ -221,13 +202,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         arr[st][en][DP_U_WC] = std::min(arr[st][en][DP_U_WC], normal_base);
       }
 
-      // TODO put if statments around these to make them only execute when actually possible?
-      // TODO do assignemnt of arr[st][en] inside these if statements - or use current best; don't push same thing on
-      // TODO order these if statements so hte most liekly to be strong go first.
-      // multiple times? when this is split into multiple candidate lists still can have minimum over all of them for
-      // monotonicity``
-      // Can only merge candidate lists for monotonicity if the right part of the pivot is the same (from the same array).
-      // Can only apply monotonicity optimisation to ones ending with min(U, 0).
       // (   ). - 3' - U, U2
       auto dangle3_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_dangle3[en1b][enb][stb];
       if (dangle3_base < arr[st][en][DP_U] && dangle3_base < cand_st_mins[CAND_U])
@@ -246,14 +220,11 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       if (lcoax_base < arr[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
-      // This is probably better than having four candidate lists for each possible mismatch (TODO check this).
-      // TODO remember to subtract off g_coax_mismatch_non_contiguous when computing after saving value
       auto rcoaxf_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + g_min_mismatch_coax;
       if (rcoaxf_base < arr[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
 
       // (   ).<( * ). > Right coax backward - RCOAX
-      // Again, we can't replace RCOAX with U, we'd have to replace it with RCOAX, so compare to itself.
       if (st > 0) {
         auto rcoaxb_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + energy::MismatchCoaxial(
             en1b, enb, r[st - 1], stb);
@@ -282,11 +253,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
       // Note we don't include the stacking here since they can't be base cases for U.
 
       // Paired cases
-      // TODO is it better to use more arrays for each possible coax stack, or min coax here?
-      // TODO could also use the one pair we know to find out the min poss stack -- test if perf gain useful
       // (.(   )   .) Left outer coax - P
-      // Since we assumed the minimum energy coax stack and made this structure self contained,
-      // we could potentially replace it with U[st + 1][en].
       auto plocoax_base = arr[st + 2][en][DP_P] + g_augubranch[st2b][enb] + g_min_mismatch_coax;
       if (plocoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_OUTER].push_back({plocoax_base, en});
