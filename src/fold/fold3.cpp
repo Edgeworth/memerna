@@ -1,24 +1,22 @@
 #include "fold/fold.h"
 #include "fold/fold_globals.h"
+#include "fold/fold_internal.h"
 
 namespace memerna {
 namespace fold {
+namespace internal {
 
-using constants::MAX_E;
-using constants::CAP_E;
-using constants::TWOLOOP_MAX_SZ;
-using constants::NINIO_MAX_ASYM;
-using constants::HAIRPIN_MIN_SZ;
+using namespace constants;
+using namespace energy;
 
-array3d_t<energy_t, DP_SIZE> ComputeTables3() {
+array3d_t<energy_t, DP_SIZE> ComputeTables3(const primary_t& r) {
   // See ComputeTables2 for comments - it is mostly the same.
-  InitFold();
   int N = int(r.size());
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
-  auto hairpin_precomp = PrecomputeFastHairpin();
+  auto hairpin_precomp = PrecomputeFastHairpin(r);
 
   array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(r.size());
   static_assert(HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
@@ -39,33 +37,33 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
 
         // Add asymmetry here, on left and right
         auto val = std::min(l * g_internal_asym, NINIO_MAX_ASYM) + g_internal_init[l];
-        lyngso[st][en][l] = std::min(lyngso[st][en][l], energy::InternalLoopAuGuPenalty(r[st + l + 1], en1b) +
+        lyngso[st][en][l] = std::min(lyngso[st][en][l], InternalLoopAuGuPenalty(r[st + l + 1], en1b) +
             g_internal_other_mismatch[en1b][enb][r[st + l]][r[st + l + 1]] + val + arr[st + l + 1][en - 1][DP_P]);
-        lyngso[st][en][l] = std::min(lyngso[st][en][l], energy::InternalLoopAuGuPenalty(st1b, r[en - l - 1]) +
+        lyngso[st][en][l] = std::min(lyngso[st][en][l], InternalLoopAuGuPenalty(st1b, r[en - l - 1]) +
             g_internal_other_mismatch[r[en - l - 1]][r[en - l]][stb][st1b] + val + arr[st + 1][en - l - 1][DP_P]);
       }
 
       // Update paired - only if can actually pair.
-      if (CanPair(r[st], r[en]) && IsNotLonely(st, en)) {
+      if (ViableFoldingPair(r, st, en)) {
         // Stacking
         mins[DP_P] = std::min(mins[DP_P], g_stack[stb][st1b][en1b][enb] + arr[st + 1][en - 1][DP_P]);
         // Bulge
         for (int isz = 1; isz <= max_inter; ++isz) {
           mins[DP_P] = std::min(mins[DP_P],
-              energy::Bulge(st, en, st + 1 + isz, en - 1) + arr[st + 1 + isz][en - 1][DP_P]);
+              Bulge(r, st, en, st + 1 + isz, en - 1) + arr[st + 1 + isz][en - 1][DP_P]);
           mins[DP_P] = std::min(mins[DP_P],
-              energy::Bulge(st, en, st + 1, en - 1 - isz) + arr[st + 1][en - 1 - isz][DP_P]);
+              Bulge(r, st, en, st + 1, en - 1 - isz) + arr[st + 1][en - 1 - isz][DP_P]);
         }
 
         // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have special energies.
         static_assert(INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ, "need initiation cached up to TWOLOOP_MAX_SZ");
-        auto base_internal_loop = energy::InternalLoopAuGuPenalty(stb, enb);
+        auto base_internal_loop = InternalLoopAuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {
           auto val = base_internal_loop + g_internal_init[isz] + std::min((isz - 2) * g_internal_asym, NINIO_MAX_ASYM);
           mins[DP_P] = std::min(mins[DP_P], val +
-              energy::InternalLoopAuGuPenalty(r[st + isz], en2b) + arr[st + isz][en - 2][DP_P]);
+              InternalLoopAuGuPenalty(r[st + isz], en2b) + arr[st + isz][en - 2][DP_P]);
           mins[DP_P] = std::min(mins[DP_P], val +
-              energy::InternalLoopAuGuPenalty(st2b, r[en - isz]) + arr[st + 2][en - isz][DP_P]);
+              InternalLoopAuGuPenalty(st2b, r[en - isz]) + arr[st + 2][en - isz][DP_P]);
         }
 
         // Internal loop cases. Since we require HAIRPIN_MIN_SZ >= 3 and initialise arr to MAX_E, we don't need ifs here.
@@ -81,9 +79,9 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         auto two_by_three = base_internal_loop + g_internal_init[5] +
             std::min(g_internal_asym, NINIO_MAX_ASYM) +
             g_internal_2x3_mismatch[stb][st1b][en1b][enb];
-        mins[DP_P] = std::min(mins[DP_P], two_by_three + energy::InternalLoopAuGuPenalty(r[st + 3], r[en - 4]) +
+        mins[DP_P] = std::min(mins[DP_P], two_by_three + InternalLoopAuGuPenalty(r[st + 3], r[en - 4]) +
             g_internal_2x3_mismatch[r[en - 4]][r[en - 3]][st2b][r[st + 3]] + arr[st + 3][en - 4][DP_P]);
-        mins[DP_P] = std::min(mins[DP_P], two_by_three + energy::InternalLoopAuGuPenalty(r[st + 4], r[en - 3]) +
+        mins[DP_P] = std::min(mins[DP_P], two_by_three + InternalLoopAuGuPenalty(r[st + 4], r[en - 3]) +
             g_internal_2x3_mismatch[r[en - 3]][r[en - 2]][r[st + 3]][r[st + 4]] + arr[st + 4][en - 3][DP_P]);
 
         // For the rest of the loops we need to apply the "other" type mismatches.
@@ -95,7 +93,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
               g_internal_init[l - 4] + g_internal_init[l] + base_internal_loop);
 
         // Hairpin loops.
-        mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
+        mins[DP_P] = std::min(mins[DP_P], FastHairpin(r, st, en, hairpin_precomp));
 
         auto base_branch_cost = g_augubranch[stb][enb] + g_multiloop_hack_a;
         // (<   ><   >)
@@ -112,7 +110,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         for (auto cand : cand_st[CAND_P_MISMATCH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy + arr[cand.idx + 1][en - 1][DP_U]);
         // (.(   )   .) Left outer coax
-        auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
+        auto outer_coax = MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - g_min_mismatch_coax +
               outer_coax + arr[cand.idx + 1][en - 2][DP_U]);
@@ -216,7 +214,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         cand_st_mins[CAND_U] = terminal_base;
       // .(   ).<(   ) > - Left coax - U, U2
       auto lcoax_base = arr[st + 1][en - 1][DP_P] + g_augubranch[st1b][en1b] +
-          energy::MismatchCoaxial(en1b, enb, stb, st1b);
+          MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < arr[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
@@ -226,7 +224,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
 
       // (   ).<( * ). > Right coax backward - RCOAX
       if (st > 0) {
-        auto rcoaxb_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + energy::MismatchCoaxial(
+        auto rcoaxb_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + MismatchCoaxial(
             en1b, enb, r[st - 1], stb);
         if (rcoaxb_base < arr[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
           cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
@@ -263,12 +261,12 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       auto plrcoax_base = arr[st + 2][en - 1][DP_P] + g_augubranch[st2b][en1b] +
-          energy::MismatchCoaxial(en1b, enb, st1b, st2b);
+          MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       auto prlcoax_base = arr[st + 1][en - 2][DP_P] + g_augubranch[st1b][en2b] +
-          energy::MismatchCoaxial(en2b, en1b, stb, st1b);
+          MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax
@@ -283,7 +281,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
 
       // Add potentials to the candidate lists.
       for (int i = 0; i < CAND_SIZE; ++i) {
-        if (cand_st_mins[i] < constants::CAP_E &&
+        if (cand_st_mins[i] < CAP_E &&
             (cand_st[i].empty() || cand_st_mins[i] < cand_st[i].back().energy))
           cand_st[i].push_back({cand_st_mins[i], en});
       }
@@ -292,5 +290,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables3() {
   return arr;
 }
 
+}
 }
 }

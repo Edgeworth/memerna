@@ -58,8 +58,8 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto primary = parsing::StringToPrimary(seq);
-      auto res = package->Fold(primary);
+      auto r = parsing::StringToPrimary(seq);
+      auto res = package->Fold(r);
       printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.p).c_str());
     }
   }

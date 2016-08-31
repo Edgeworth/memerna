@@ -53,13 +53,13 @@ uint32_t Crc32(const std::string& data) {
   return ~window;
 }
 
-computed_t::computed_t(const primary_t& primary)
-    : r(primary), p(primary.size(), -1),
-      ctds(primary.size(), CTD_NA), energy(constants::MAX_E) {}
+computed_t::computed_t(const primary_t& r_)
+    : r(r_), p(r_.size(), -1),
+      base_ctds(r_.size(), CTD_NA), energy(constants::MAX_E) {}
 
-computed_t::computed_t(const primary_t& primary, const std::vector<int>& p_,
-    const std::vector<Ctd>& ctds_, energy_t energy_)
-    : r(primary), p(p_), ctds(ctds_), energy(energy_) {
-  assert(r.size() == p.size() && r.size() == ctds.size());
+computed_t::computed_t(const primary_t& r_, const std::vector<int>& p_,
+    const std::vector<Ctd>& base_ctds_, energy_t energy_)
+    : r(r_), p(p_), base_ctds(base_ctds_), energy(energy_) {
+  assert(r.size() == p.size() && r.size() == base_ctds.size());
 }
 }

@@ -5,6 +5,8 @@
 - American fuzzy lop?
 - Wutchys
 - Grep codebase for todos -- ** urgent
+- reprofile fuzz, fold after the refactor
+- re-run with msan, ubsan, asan in clang
 
 ### Wuchty testing plan
 - Implement reporting stacking for wuchty

@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include "fold/fold.h"
 #include "fold/fold_globals.h"
+#include "fold/fold_internal.h"
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"
@@ -16,7 +17,7 @@ class FoldAlgTest : public testing::TestWithParam<fold_fn_t*> {
 TEST_P(FoldAlgTest, T04) {
   ONLY_FOR_THIS_MODEL(T04_MODEL_HASH);
 
-  auto fold_fn = [this](const auto& primary) {return GetParam()(primary, nullptr);};
+  auto fold_fn = [this](const auto& r) {return GetParam()(r, nullptr);};
   EXPECT_EQ(-45, fold_fn(parsing::StringToPrimary("GGGGAAACCCC")).energy);
   EXPECT_EQ(-51, fold_fn(parsing::StringToPrimary(
       "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA")).energy);
@@ -61,8 +62,8 @@ INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(FOLD_FUNCTIO
 TEST(FoldTest, Constants) {
   ONLY_FOR_THIS_MODEL(T04_MODEL_HASH);
 
-  r = parsing::StringToPrimary("GGGGAAACCCC");
-  fold::InitFold();
+  auto r = parsing::StringToPrimary("GGGGAAACCCC");
+  internal::InitFold(r);
   EXPECT_EQ(-21 - 4 - 16, g_min_mismatch_coax);
   EXPECT_EQ(-34, g_min_flush_coax);
   EXPECT_EQ(-26, g_min_twoloop_not_stack);
@@ -78,15 +79,15 @@ TEST(FoldTest, Constants) {
 }
 
 TEST(FoldTest, Helpers) {
-  EXPECT_EQ(0, fold::MaxNumContiguous(parsing::StringToPrimary("")));
-  EXPECT_EQ(1, fold::MaxNumContiguous(parsing::StringToPrimary("A")));
-  EXPECT_EQ(2, fold::MaxNumContiguous(parsing::StringToPrimary("AA")));
-  EXPECT_EQ(2, fold::MaxNumContiguous(parsing::StringToPrimary("GUAAC")));
-  EXPECT_EQ(1, fold::MaxNumContiguous(parsing::StringToPrimary("GUACA")));
-  EXPECT_EQ(3, fold::MaxNumContiguous(parsing::StringToPrimary("GAUCCC")));
-  EXPECT_EQ(3, fold::MaxNumContiguous(parsing::StringToPrimary("GGGAUC")));
-  EXPECT_EQ(4, fold::MaxNumContiguous(parsing::StringToPrimary("GGGAUCAAAA")));
-  EXPECT_EQ(5, fold::MaxNumContiguous(parsing::StringToPrimary("GGGAUUUUUCAAAA")));
+  EXPECT_EQ(0, internal::MaxNumContiguous(parsing::StringToPrimary("")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("A")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("AA")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("GUAAC")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("GUACA")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GAUCCC")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUC")));
+  EXPECT_EQ(4, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUCAAAA")));
+  EXPECT_EQ(5, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUUUUUCAAAA")));
 }
 
 }

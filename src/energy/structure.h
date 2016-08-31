@@ -3,10 +3,11 @@
 
 #include <memory>
 #include "common.h"
-#include "energy.h"
+#include "energy/energy.h"
+#include "energy/energy_internal.h"
 
 namespace memerna {
-namespace structure {
+namespace energy {
 
 const char* CtdToName(Ctd ctd);
 
@@ -47,9 +48,9 @@ private:
 };
 
 
-class HairpinLoop : public Structure {
+class HairpinLoopStructure : public Structure {
 public:
-  HairpinLoop(int st_, int en_) : st(st_), en(en_) {}
+  HairpinLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddBranch(std::unique_ptr<Structure>) {
     assert(false);
@@ -61,9 +62,9 @@ private:
   int st, en;
 };
 
-class InternalLoop : public Structure {
+class InternalLoopStructure : public Structure {
 public:
-  InternalLoop(int ost_, int oen_, int ist_, int ien_) : ost(ost_), oen(oen_), ist(ist_), ien(ien_) {}
+  InternalLoopStructure(int ost_, int oen_, int ist_, int ien_) : ost(ost_), oen(oen_), ist(ist_), ien(ien_) {}
 
   void AddBranch(std::unique_ptr<Structure> b) {
     assert(branches.empty());
@@ -76,30 +77,30 @@ private:
   int ost, oen, ist, ien;
 };
 
-class MultiLoop : public Structure {
+class MultiLoopStructure : public Structure {
 public:
-  MultiLoop(int st_, int en_) : st(st_), en(en_) {}
+  MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddBranch(std::unique_ptr<Structure> b, Ctd ctd, energy_t ctd_energy) {
     Structure::AddBranch(std::move(b));
-    ctds.emplace_back(ctd, ctd_energy);
+    branch_ctds.emplace_back(ctd, ctd_energy);
   }
 
   std::string BranchDesc(int idx) {
     return sfmt("%s - %de %s", branches[idx]->ShortDesc().c_str(),
-        ctds[idx].second, CtdToName(ctds[idx].first));
+        branch_ctds[idx].second, CtdToName(branch_ctds[idx].first));
   }
 
   std::string ShortDesc();
 
 private:
   int st, en;
-  std::vector<std::pair<Ctd, energy_t>> ctds;
+  internal::branch_ctd_t branch_ctds;
 };
 
-class Stacking : public Structure {
+class StackingStructure : public Structure {
 public:
-  Stacking(int st_, int en_) : st(st_), en(en_) {}
+  StackingStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddBranch(std::unique_ptr<Structure> b) {
     assert(branches.empty());

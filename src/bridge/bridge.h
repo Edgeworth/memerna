@@ -16,7 +16,7 @@ public:
   virtual ~RnaPackage() = default;
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;
-  virtual computed_t Fold(const primary_t& primary) const = 0;
+  virtual computed_t Fold(const primary_t& r) const = 0;
 };
 
 class Rnark : public RnaPackage {
@@ -26,7 +26,7 @@ public:
   Rnark& operator=(const Rnark&) = delete;
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
-  virtual computed_t Fold(const primary_t& primary) const;
+  virtual computed_t Fold(const primary_t& r) const;
 
 private:
   librnary::NNUnpairedModel model;
@@ -39,9 +39,9 @@ public:
   Rnastructure& operator=(Rnastructure&) = delete;
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
-  virtual computed_t Fold(const primary_t& primary) const;
+  virtual computed_t Fold(const primary_t& r) const;
 
-  computed_t FoldAndDpTable(const primary_t& primary, dp_state_t* dp_state) const;
+  computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;
 
 private:
   std::unique_ptr<datatable> data;
@@ -61,9 +61,9 @@ public:
   }
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
-  virtual computed_t Fold(const primary_t& primary) const;
+  virtual computed_t Fold(const primary_t& r) const;
 
-  computed_t FoldAndDpTable(const primary_t& primary, fold::fold_state_t* fold_state) const;
+  computed_t FoldAndDpTable(const primary_t& r, fold::fold_state_t* fold_state) const;
 private:
   fold::fold_fn_t* fold_fn;
 };
