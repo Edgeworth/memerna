@@ -1,4 +1,5 @@
 #include "fold/fold.h"
+#include "fold/fold_internal.h"
 #include "parsing.h"
 
 namespace memerna {
@@ -43,15 +44,14 @@ void FoldBruteForceInternal(int idx) {
 
 }
 
-computed_t FoldBruteForce(const primary_t& primary, fold_state_t*) {
-  SetPrimary(primary);
-  best_computed = computed_t(primary);
-  cur_secondary = secondary_t(primary);
+computed_t FoldBruteForce(const primary_t& r, fold_state_t*) {
+  best_computed = computed_t(r);
+  cur_secondary = secondary_t(r);
   base_pairs.clear();
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < int(r.size()); ++st) {
     for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
-      if (CanPair(r[st], r[en]) && IsNotLonely(st, en))
+      if (internal::ViableFoldingPair(r, st, en))
         base_pairs.emplace_back(st, en);
     }
   }

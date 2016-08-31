@@ -1,7 +1,7 @@
 #include "structure.h"
 
 namespace memerna {
-namespace structure {
+namespace energy {
 
 const char* CtdToName(Ctd ctd) {
   switch (ctd) {
@@ -53,22 +53,22 @@ void Structure::AddNote(std::string note, ...) {
   va_end(l);
 }
 
-std::string HairpinLoop::ShortDesc() {
-  return sfmt("HairpinLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+std::string HairpinLoopStructure::ShortDesc() {
+  return sfmt("HairpinLoopStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
-std::string InternalLoop::ShortDesc() {
+std::string InternalLoopStructure::ShortDesc() {
   return sfmt(
-      "InternalLoop(%d, %d, %d, %d) - %de:%de",
+      "InternalLoopStructure(%d, %d, %d, %d) - %de:%de",
       ost, oen, ist, ien, GetTotalEnergy(), GetSelfEnergy());
 }
 
-std::string MultiLoop::ShortDesc() {
-  return sfmt("MultiLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+std::string MultiLoopStructure::ShortDesc() {
+  return sfmt("MultiLoopStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
-std::string Stacking::ShortDesc() {
-  return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+std::string StackingStructure::ShortDesc() {
+  return sfmt("StackingStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 }

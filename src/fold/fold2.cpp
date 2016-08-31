@@ -1,14 +1,15 @@
 #include "fold/fold.h"
 #include "fold/fold_globals.h"
+#include "fold/fold_internal.h"
 
 namespace memerna {
 namespace fold {
+namespace internal {
 
-using constants::MAX_E;
-using constants::CAP_E;
+using namespace constants;
+using namespace energy;
 
-array3d_t<energy_t, DP_SIZE> ComputeTables2() {
-  InitFold();
+array3d_t<energy_t, DP_SIZE> ComputeTables2(const primary_t& r) {
   int N = int(r.size());
   // Automatically initialised to MAX_E.
   array3d_t<energy_t, DP_SIZE> arr(r.size() + 1);
@@ -16,29 +17,29 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
   // Hairpin optimisation
-  auto hairpin_precomp = PrecomputeFastHairpin();
+  auto hairpin_precomp = PrecomputeFastHairpin(r);
 
-  static_assert(constants::HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
+  static_assert(HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
     for (int i = 0; i < CAND_SIZE; ++i)
       cand_st[i].clear();
-    for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
       // Update paired - only if can actually pair.
-      if (CanPair(r[st], r[en]) && IsNotLonely(st, en)) {
-        int max_inter = std::min(constants::TWOLOOP_MAX_SZ, en - st - constants::HAIRPIN_MIN_SZ - 3);
+      if (ViableFoldingPair(r, st, en)) {
+        int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         mins[DP_P] = std::min(mins[DP_P], g_stack[stb][st1b][en1b][enb] + arr[st + 1][en - 1][DP_P]);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (arr[ist][ien][DP_P] < mins[DP_P] - g_min_twoloop_not_stack)
-              mins[DP_P] = std::min(mins[DP_P], FastTwoLoop(st, en, ist, ien) + arr[ist][ien][DP_P]);
+              mins[DP_P] = std::min(mins[DP_P], FastTwoLoop(r, st, en, ist, ien) + arr[ist][ien][DP_P]);
           }
         }
         // Hairpin loops.
-        mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en, hairpin_precomp));
+        mins[DP_P] = std::min(mins[DP_P], FastHairpin(r, st, en, hairpin_precomp));
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         auto base_branch_cost = g_augubranch[stb][enb] + g_multiloop_hack_a;
@@ -57,7 +58,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         for (auto cand : cand_st[CAND_P_MISMATCH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy + arr[cand.idx + 1][en - 1][DP_U]);
         // (.(   )   .) Left outer coax
-        auto outer_coax = energy::MismatchCoaxial(stb, st1b, en1b, enb);
+        auto outer_coax = MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - g_min_mismatch_coax +
               outer_coax + arr[cand.idx + 1][en - 2][DP_U]);
@@ -177,7 +178,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         cand_st_mins[CAND_U] = terminal_base;
       // .(   ).<(   ) > - Left coax - U, U2
       auto lcoax_base = arr[st + 1][en - 1][DP_P] + g_augubranch[st1b][en1b] +
-          energy::MismatchCoaxial(en1b, enb, stb, st1b);
+          MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < CAP_E && lcoax_base < arr[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
@@ -189,7 +190,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
       // (   ).<( * ). > Right coax backward - RCOAX
       // Again, we can't replace RCOAX with U, we'd have to replace it with RCOAX, so compare to itself.
       if (st > 0) {
-        auto rcoaxb_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + energy::MismatchCoaxial(
+        auto rcoaxb_base = arr[st][en - 1][DP_P] + g_augubranch[stb][en1b] + MismatchCoaxial(
             en1b, enb, r[st - 1], stb);
         if (rcoaxb_base < arr[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
           cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
@@ -230,12 +231,12 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       auto plrcoax_base = arr[st + 2][en - 1][DP_P] + g_augubranch[st2b][en1b] +
-          energy::MismatchCoaxial(en1b, enb, st1b, st2b);
+          MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < CAP_E && plrcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       auto prlcoax_base = arr[st + 1][en - 2][DP_P] + g_augubranch[st1b][en2b] +
-          energy::MismatchCoaxial(en2b, en1b, stb, st1b);
+          MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < CAP_E && prlcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax
@@ -250,7 +251,7 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
 
       // Add potentials to the candidate lists.
       for (int i = 0; i < CAND_SIZE; ++i) {
-        if (cand_st_mins[i] < constants::CAP_E &&
+        if (cand_st_mins[i] < CAP_E &&
             (cand_st[i].empty() || cand_st_mins[i] < cand_st[i].back().energy))
           cand_st[i].push_back({cand_st_mins[i], en});
       }
@@ -259,5 +260,6 @@ array3d_t<energy_t, DP_SIZE> ComputeTables2() {
   return arr;
 }
 
+}
 }
 }

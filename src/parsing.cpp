@@ -3,13 +3,15 @@
 namespace memerna {
 namespace parsing {
 
+using namespace energy;
+
 primary_t StringToPrimary(const std::string& s) {
-  primary_t primary(s.size());
+  primary_t r(s.size());
   for (int i = 0; i < int(s.size()); ++i) {
-    primary[i] = CharToBase(s[i]);
-    verify_expr(primary[i] != -1, "unexpected base %c", s[i]);
+    r[i] = CharToBase(s[i]);
+    verify_expr(r[i] != -1, "unexpected base %c", s[i]);
   }
-  return primary;
+  return r;
 }
 
 secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str) {
@@ -53,11 +55,11 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
   return s;
 }
 
-std::string PrimaryToString(const primary_t& primary) {
+std::string PrimaryToString(const primary_t& r) {
   std::string s;
-  s.resize(primary.size());
-  for (int i = 0; i < int(primary.size()); ++i) {
-    s[i] = BaseToChar(primary[i]);
+  s.resize(r.size());
+  for (int i = 0; i < int(r.size()); ++i) {
+    s[i] = BaseToChar(r[i]);
   }
   return s;
 }

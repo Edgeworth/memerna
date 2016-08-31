@@ -10,15 +10,13 @@
 #include "constants.h"
 #include "common.h"
 #include "base.h"
-#include "globals.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
 
-namespace structure {
-class Structure;
-}
-
 namespace energy {
+
+class Structure;
 
 inline energy_t AuGuPenalty(base_t stb, base_t enb) {
   return IsAuGu(stb, enb) ? g_augu_penalty : 0;
@@ -36,7 +34,8 @@ inline energy_t HairpinInitiation(int n) {
   return energy_t(round(g_hairpin_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
-energy_t Hairpin(int st, int en, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t Hairpin(const primary_t& r,
+    int st, int en, std::unique_ptr<Structure>* s = nullptr);
 
 inline energy_t BulgeInitiation(int n) {
   assert(n >= 1);
@@ -46,7 +45,8 @@ inline energy_t BulgeInitiation(int n) {
   return energy_t(round(g_bulge_init[30] + 10.0 * 1.75 * constants::R * constants::T * log(n / 30.0)));
 }
 
-energy_t Bulge(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t Bulge(const primary_t& r,
+    int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s = nullptr);
 
 inline energy_t InternalLoopInitiation(int n) {
   assert(n >= 4);
@@ -56,9 +56,13 @@ inline energy_t InternalLoopInitiation(int n) {
   return energy_t(round(g_internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
 }
 
-energy_t InternalLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t InternalLoop(const primary_t& r,
+    int ost, int oen, int ist, int ien,
+    std::unique_ptr<Structure>* s = nullptr);
 
-energy_t TwoLoop(int ost, int oen, int ist, int ien, std::unique_ptr<structure::Structure>* s = nullptr);
+energy_t TwoLoop(const primary_t& r,
+    int ost, int oen, int ist, int ien,
+    std::unique_ptr<Structure>* s = nullptr);
 
 inline energy_t MultiloopInitiation(int num_branches) {
   return g_multiloop_hack_a + num_branches * g_multiloop_hack_b;
@@ -85,7 +89,7 @@ inline energy_t MismatchCoaxial(base_t fiveTop, base_t mismatch_top, base_t mism
 
 
 // TODO ctd version
-computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<structure::Structure>* s = nullptr);
+computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure>* s = nullptr);
 
 }
 }

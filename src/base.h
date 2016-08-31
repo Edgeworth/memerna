@@ -48,10 +48,10 @@ char BaseToChar(base_t b);
 template<typename RandomEngine>
 primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   std::uniform_int_distribution<int> dist(0, 3);
-  primary_t primary(std::size_t(length), 0);
+  primary_t r(std::size_t(length), 0);
   for (int i = 0; i < length; ++i)
-    primary[i] = base_t(dist(eng));
-  return primary;
+    r[i] = base_t(dist(eng));
+  return r;
 }
 
 

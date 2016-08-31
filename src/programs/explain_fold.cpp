@@ -14,17 +14,16 @@ int main(int argc, char* argv[]) {
   verify_expr(pos.size() == 4, "need primary sequence and dp table indices");
 
   energy::LoadEnergyModelFromArgParse(argparse);
+  auto r = parsing::StringToPrimary(pos[0]);
   fold::fold_state_t state;
   auto fold_fn = fold::FoldFunctionFromArgParse(argparse);
-  fold_fn(parsing::StringToPrimary(pos[0]), &state);
+  fold_fn(r, &state);
 
   int st = atoi(pos[1].c_str()), en = atoi(pos[2].c_str()), a = atoi(pos[3].c_str());
   fold::traceback_stack_t q;
   q.emplace(st, en, a);
-  auto computed = fold::TraceStructure(state.dp_table, state.ext_table, q);
+  auto computed = fold::TraceStructure(r, state.dp_table, state.ext_table, q);
 
   printf("DP value at %d %d %d: %d\n  %s\n", st, en, a,
       state.dp_table[st][en][a], parsing::PairsToDotBracket(computed.p).c_str());
-
-  printf("Multiloop initiation params: %d %d\n", g_multiloop_hack_a, g_multiloop_hack_b);
 }

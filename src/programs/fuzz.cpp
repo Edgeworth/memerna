@@ -9,7 +9,7 @@
 using namespace memerna;
 
 template<typename RandomEngine>
-void FuzzRna(const primary_t& primary, bool use_random_energy_model,
+void FuzzRna(const primary_t& r, bool use_random_energy_model,
     const std::vector<bridge::Memerna>& memernas, const bridge::Rnastructure& rnastructure,
     RandomEngine& eng) {
   uint_fast32_t seed = eng();
@@ -21,7 +21,7 @@ void FuzzRna(const primary_t& primary, bool use_random_energy_model,
   std::vector<energy_t> memerna_efns;
   for (const auto& memerna : memernas) {
     fold::fold_state_t state;
-    auto computed = memerna.FoldAndDpTable(primary, &state);
+    auto computed = memerna.FoldAndDpTable(r, &state);
     // TODO check ctd descriptions are the same.
     memerna_efns.push_back(energy::ComputeEnergy(secondary_t(computed)).energy);
     memerna_states.push_back(std::move(state));
@@ -35,10 +35,10 @@ void FuzzRna(const primary_t& primary, bool use_random_energy_model,
       mfe_diff = true;
   }
 
-  bool use_brute = primary.size() <= 24;
+  bool use_brute = r.size() <= 24;
   computed_t brute_computed;
   if (use_brute) {
-    brute_computed = fold::FoldBruteForce(primary, nullptr);
+    brute_computed = fold::FoldBruteForce(r, nullptr);
     if (memerna_folds[0].energy != brute_computed.energy)
       mfe_diff = true;
   }
@@ -47,7 +47,7 @@ void FuzzRna(const primary_t& primary, bool use_random_energy_model,
   energy_t rnastructure_efn = 0;
   dp_state_t rnastructure_state;
   if (!use_random_energy_model) {
-    rnastructure_computed = rnastructure.FoldAndDpTable(primary, &rnastructure_state);
+    rnastructure_computed = rnastructure.FoldAndDpTable(r, &rnastructure_state);
     rnastructure_efn = rnastructure.Efn(secondary_t(rnastructure_computed));
     if (memerna_folds[0].energy != rnastructure_computed.energy ||
         memerna_folds[0].energy != rnastructure_efn)
@@ -56,7 +56,7 @@ void FuzzRna(const primary_t& primary, bool use_random_energy_model,
 
   int st = 0, en = 0, a = 0;
   bool dp_table_diff = false;
-  int N = int(primary.size());
+  int N = int(r.size());
   for (st = N - 1; st >= 0; --st) {
     for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       for (a = 0; a < fold::DP_SIZE; ++a) {
@@ -88,7 +88,7 @@ void FuzzRna(const primary_t& primary, bool use_random_energy_model,
   }
   loop_end:;
   if (mfe_diff || dp_table_diff) {
-    printf("Difference on len %zu RNA %s\n", primary.size(), parsing::PrimaryToString(primary).c_str());
+    printf("Difference on len %zu RNA %s\n", r.size(), parsing::PrimaryToString(r).c_str());
     if (use_random_energy_model)
       printf("  Using random energy model with seed: %" PRIuFAST32 "\n", seed);
     else
@@ -151,8 +151,8 @@ int main(int argc, char* argv[]) {
       printf("Fuzzed %d RNA\n", i);
       start_time = std::chrono::steady_clock::now();
     }
-    auto primary = GenerateRandomPrimary(length, eng);
-    FuzzRna(primary, argparse.HasFlag("random"), memernas, rnastructure, eng);
+    auto r = GenerateRandomPrimary(length, eng);
+    FuzzRna(r, argparse.HasFlag("random"), memernas, rnastructure, eng);
   }
 }
 
