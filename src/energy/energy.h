@@ -88,8 +88,8 @@ inline energy_t MismatchCoaxial(base_t fiveTop, base_t mismatch_top, base_t mism
 }
 
 
-// TODO ctd version
 computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure>* s = nullptr);
+computed_t ComputeEnergyWithCtds(const computed_t& computed, std::unique_ptr<Structure>* s = nullptr);
 
 }
 }

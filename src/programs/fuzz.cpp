@@ -19,11 +19,15 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
   std::vector<fold::fold_state_t> memerna_states;
   std::vector<computed_t> memerna_folds;
   std::vector<energy_t> memerna_efns;
+  std::vector<energy_t> memerna_optimal_efns;
   for (const auto& memerna : memernas) {
     fold::fold_state_t state;
     auto computed = memerna.FoldAndDpTable(r, &state);
-    // TODO check ctd descriptions are the same.
-    memerna_efns.push_back(energy::ComputeEnergy(computed.s).energy);
+    // First compute with the CTDs that fold returned to check the energy.
+    memerna_efns.push_back(energy::ComputeEnergyWithCtds(computed).energy);
+    // Also check that the optimal CTD configuration has the same energy.
+    // Note that it might not be the same, so we can't do an equality check.
+    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s).energy);
     memerna_states.push_back(std::move(state));
     memerna_folds.push_back(std::move(computed));
   }
@@ -31,7 +35,8 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
   bool mfe_diff = false;
   for (int i = 0; i < int(memernas.size()); ++i) {
     if (memerna_folds[0].energy != memerna_folds[i].energy ||
-        memerna_folds[0].energy != memerna_efns[i])
+        memerna_folds[0].energy != memerna_efns[i] ||
+        memerna_folds[0].energy != memerna_optimal_efns[i])
       mfe_diff = true;
   }
 
@@ -95,14 +100,14 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
       printf("  Using T04 energy model.\n");
     if (mfe_diff) {
       for (int i = 0; i < int(memernas.size()); ++i) {
-        printf("  Fold%d: %d (dp), %d (efn) - %s\n", i, memerna_folds[i].energy, memerna_efns[i],
-            parsing::PairsToDotBracket(memerna_folds[i].s.p).c_str());
+        printf("  Fold%d: %d (dp), %d (efn), %d (optimal efn) - %s\n", i, memerna_folds[i].energy, memerna_efns[i],
+            memerna_optimal_efns[i], parsing::PairsToDotBracket(memerna_folds[i].s.p).c_str());
       }
       if (use_brute)
         printf("  BruteFold: %d - %s\n", brute_computed.energy,
             parsing::PairsToDotBracket(brute_computed.s.p).c_str());
       if (!use_random_energy_model)
-        printf("  RNAstructure: %d (dp), %d (efn) - %s\n", rnastructure_computed.energy,
+        printf("  RNAstructure: %d (dp), %d (optimal efn) - %s\n", rnastructure_computed.energy,
             rnastructure_efn, parsing::PairsToDotBracket(rnastructure_computed.s.p).c_str());
     }
     if (dp_table_diff) {

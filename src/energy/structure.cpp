@@ -28,6 +28,7 @@ const char* CtdToName(Ctd ctd) {
     case CTD_FLUSH_COAX_WITH_PREV:
       return "flush coax with prev";
     default:
+      printf("WTF?: %d\n", ctd);
       verify_expr(false, "bug");
   }
 }
@@ -54,21 +55,21 @@ void Structure::AddNote(std::string note, ...) {
 }
 
 std::string HairpinLoopStructure::ShortDesc() {
-  return sfmt("HairpinLoopStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("Hairpin(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string InternalLoopStructure::ShortDesc() {
   return sfmt(
-      "InternalLoopStructure(%d, %d, %d, %d) - %de:%de",
+      "InternalLoop(%d, %d, %d, %d) - %de:%de",
       ost, oen, ist, ien, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string MultiLoopStructure::ShortDesc() {
-  return sfmt("MultiLoopStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("MultiLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string StackingStructure::ShortDesc() {
-  return sfmt("StackingStructure(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
 }
