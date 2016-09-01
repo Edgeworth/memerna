@@ -106,7 +106,6 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
       // It's paired, so add it to the folding.
       computed.s.p[st] = en;
       computed.s.p[en] = st;
-      // TODO ctds
 
       // Following largely matches the above DP so look up there for comments.
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -126,21 +125,25 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
 
       // (<   ><    >)
       if (base_branch_cost + arr[st + 1][en - 1][DP_U2] == arr[st][en][DP_P]) {
+        computed.base_ctds[en] = CTD_UNUSED;
         q.emplace(st + 1, en - 1, DP_U2);
         goto loopend;
       }
       // (3<   ><   >) 3'
       if (base_branch_cost + arr[st + 2][en - 1][DP_U2] + g_dangle3[stb][st1b][enb] == arr[st][en][DP_P]) {
+        computed.base_ctds[en] = CTD_3_DANGLE;
         q.emplace(st + 2, en - 1, DP_U2);
         goto loopend;
       }
       // (<   ><   >5) 5'
       if (base_branch_cost + arr[st + 1][en - 2][DP_U2] + g_dangle5[stb][en1b][enb] == arr[st][en][DP_P]) {
+        computed.base_ctds[en] = CTD_5_DANGLE;
         q.emplace(st + 1, en - 2, DP_U2);
         goto loopend;
       }
       // (.<   ><   >.) Terminal mismatch
       if (base_branch_cost + arr[st + 2][en - 2][DP_U2] + g_terminal[stb][st1b][en1b][enb] == arr[st][en][DP_P]) {
+        computed.base_ctds[en] = CTD_TERMINAL_MISMATCH;
         q.emplace(st + 2, en - 2, DP_U2);
         goto loopend;
       }
@@ -152,6 +155,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         auto outer_coax = MismatchCoaxial(stb, st1b, en1b, enb);
         if (base_branch_cost + arr[st + 2][piv][DP_P] + g_multiloop_hack_b +
             AuGuPenalty(st2b, plb) + arr[piv + 1][en - 2][DP_U] + outer_coax == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[st + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
           q.emplace(st + 2, piv, DP_P);
           q.emplace(piv + 1, en - 2, DP_U);
           goto loopend;
@@ -159,6 +164,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         // (.   (   ).) Right outer coax
         if (base_branch_cost + arr[st + 2][piv][DP_U] + g_multiloop_hack_b +
             AuGuPenalty(prb, en2b) + arr[piv + 1][en - 2][DP_P] + outer_coax == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+          computed.base_ctds[piv + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
           q.emplace(st + 2, piv, DP_U);
           q.emplace(piv + 1, en - 2, DP_P);
           goto loopend;
@@ -168,6 +175,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (base_branch_cost + arr[st + 2][piv - 1][DP_P] + g_multiloop_hack_b +
             AuGuPenalty(st2b, pl1b) + arr[piv + 1][en - 1][DP_U] +
             MismatchCoaxial(pl1b, plb, st1b, st2b) == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[st + 2] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
           q.emplace(st + 2, piv - 1, DP_P);
           q.emplace(piv + 1, en - 1, DP_U);
           goto loopend;
@@ -176,6 +185,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (base_branch_cost + arr[st + 1][piv][DP_U] + g_multiloop_hack_b +
             AuGuPenalty(pr1b, en2b) + arr[piv + 2][en - 2][DP_P] +
             MismatchCoaxial(en2b, en1b, prb, pr1b) == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+          computed.base_ctds[piv + 2] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
           q.emplace(st + 1, piv, DP_U);
           q.emplace(piv + 2, en - 2, DP_P);
           goto loopend;
@@ -185,6 +196,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (base_branch_cost + arr[st + 1][piv][DP_P] +
             g_multiloop_hack_b + AuGuPenalty(st1b, plb) +
             arr[piv + 1][en - 1][DP_U] + g_stack[stb][st1b][plb][enb] == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_FLUSH_COAX_WITH_NEXT;
+          computed.base_ctds[st + 1] = CTD_FLUSH_COAX_WITH_PREV;
           q.emplace(st + 1, piv, DP_P);
           q.emplace(piv + 1, en - 1, DP_U);
           goto loopend;
@@ -193,6 +206,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (base_branch_cost + arr[st + 1][piv][DP_U] +
             g_multiloop_hack_b + AuGuPenalty(prb, en1b) +
             arr[piv + 1][en - 1][DP_P] + g_stack[stb][prb][en1b][enb] == arr[st][en][DP_P]) {
+          computed.base_ctds[en] = CTD_FLUSH_COAX_WITH_PREV;
+          computed.base_ctds[piv + 1] = CTD_FLUSH_COAX_WITH_NEXT;
           q.emplace(st + 1, piv, DP_U);
           q.emplace(piv + 1, en - 1, DP_P);
           goto loopend;
@@ -227,11 +242,11 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (a == DP_U_RCOAX) {
           if (st > 0 && base01 + MismatchCoaxial(
               pl1b, pb, r[st - 1], stb) + right_unpaired == arr[st][en][DP_U_RCOAX]) {
+            // Ctds were already set from the recurrence that called this.
             q.emplace(st, piv - 1, DP_P);
             if (right_unpaired)
               q.emplace(piv + 1, en, DP_U);
             goto loopend;
-
           }
           continue;
         }
@@ -240,6 +255,9 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         if (base00 + right_unpaired == arr[st][en][a] &&
             (a != DP_U_WC || IsWatsonCrick(stb, pb)) &&
             (a != DP_U_GU || IsGu(stb, pb))) {
+          // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were already set.
+          if (a != DP_U_WC && a != DP_U_GU)
+            computed.base_ctds[st] = CTD_UNUSED;
           q.emplace(st, piv, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -252,6 +270,7 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
 
         // (   )3<   > 3' - U, U2
         if (base01 + g_dangle3[pl1b][pb][stb] + right_unpaired == arr[st][en][a]) {
+          computed.base_ctds[st] = CTD_3_DANGLE;
           q.emplace(st, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -259,6 +278,7 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         }
         // 5(   )<   > 5' - U, U2
         if (base10 + g_dangle5[pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
+          computed.base_ctds[st + 1] = CTD_5_DANGLE;
           q.emplace(st + 1, piv, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -266,6 +286,7 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         }
         // .(   ).<   > Terminal mismatch - U, U2
         if (base11 + g_terminal[pl1b][pb][stb][st1b] + right_unpaired == arr[st][en][a]) {
+          computed.base_ctds[st + 1] = CTD_TERMINAL_MISMATCH;
           q.emplace(st + 1, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -274,11 +295,15 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
         // .(   ).<(   ) > Left coax - U, U2
         auto val = base11 + MismatchCoaxial(pl1b, pb, stb, st1b);
         if (val + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
+          computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[piv + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_WC);
           goto loopend;
         }
         if (val + arr[piv + 1][en][DP_U_GU] == arr[st][en][a]) {
+          computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[piv + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_GU);
           goto loopend;
@@ -286,6 +311,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
 
         // (   ).<(   ). > Right coax forward - U, U2
         if (base01 + arr[piv + 1][en][DP_U_RCOAX] == arr[st][en][a]) {
+          computed.base_ctds[st] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[piv + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_RCOAX);
           goto loopend;
@@ -296,12 +323,16 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
           auto pr1b = r[piv + 1];
           // (   )<(   ) > Flush coax - U, U2
           if (base00 + g_stack[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
+            computed.base_ctds[st] = CTD_FLUSH_COAX_WITH_NEXT;
+            computed.base_ctds[piv + 1] = CTD_FLUSH_COAX_WITH_PREV;
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_WC);
             goto loopend;
           }
           if ((pr1b == G || pr1b == U) &&
               base00 + g_stack[pb][pr1b][pr1b ^ 1][stb] + arr[piv + 1][en][DP_U_GU] == arr[st][en][a]) {
+            computed.base_ctds[st] = CTD_FLUSH_COAX_WITH_NEXT;
+            computed.base_ctds[piv + 1] = CTD_FLUSH_COAX_WITH_PREV;
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_GU);
             goto loopend;

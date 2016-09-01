@@ -81,13 +81,12 @@ class MultiLoopStructure : public Structure {
 public:
   MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
-  void AddBranch(std::unique_ptr<Structure> b, Ctd ctd, energy_t ctd_energy) {
-    Structure::AddBranch(std::move(b));
+  void AddCtd(Ctd ctd, energy_t ctd_energy) {
     branch_ctds.emplace_back(ctd, ctd_energy);
   }
 
   std::string BranchDesc(int idx) {
-    return sfmt("%s - %de %s", branches[idx]->ShortDesc().c_str(),
+    return sfmt("%s - %de - %s", branches[idx]->ShortDesc().c_str(),
         branch_ctds[idx].second, CtdToName(branch_ctds[idx].first));
   }
 

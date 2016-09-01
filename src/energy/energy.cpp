@@ -216,15 +216,16 @@ energy_t TwoLoop(const primary_t& r,
 }
 
 energy_t MultiloopEnergy(computed_t& computed,
-    int st, int en, std::deque<int>& branches, std::unique_ptr<Structure>* s) {
+    int st, int en, std::deque<int>& branches, std::unique_ptr<Structure>* ss) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   energy_t energy = 0;
 
-  if (s) {
-    *s = std::make_unique<MultiLoopStructure>(st, en);
-    if (exterior_loop) (*s)->AddNote("exterior loop");
+  std::unique_ptr<MultiLoopStructure> s = nullptr;
+  if (ss) {
+    s = std::make_unique<MultiLoopStructure>(st, en);
+    if (exterior_loop) s->AddNote("exterior loop");
   }
 
   // Add AUGU penalties.
@@ -233,14 +234,14 @@ energy_t MultiloopEnergy(computed_t& computed,
     num_unpaired += p[branch_st] - branch_st + 1;
 
     if (IsAuGu(r[branch_st], r[p[branch_st]])) {
-      if (s) (*s)->AddNote("%de - opening AU/GU penalty at %d %d", g_augu_penalty, branch_st, p[branch_st]);
+      if (s) s->AddNote("%de - opening AU/GU penalty at %d %d", g_augu_penalty, branch_st, p[branch_st]);
       energy += g_augu_penalty;
     }
   }
   num_unpaired = en - st - 1 - num_unpaired + exterior_loop * 2;
-  if (s) (*s)->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
+  if (s) s->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
-  bool compute_ctd = computed.base_ctds[branches.front()] == CTD_NA;
+  bool compute_ctd = branches.empty() || computed.base_ctds[branches.front()] == CTD_NA;
   branch_ctd_t branch_ctds;
   energy_t ctd_energy = 0;
   if (exterior_loop) {
@@ -253,11 +254,11 @@ energy_t MultiloopEnergy(computed_t& computed,
     }
   } else {
     if (IsAuGu(r[st], r[en])) {
-      if (s) (*s)->AddNote("%de - closing AU/GU penalty at %d %d", g_augu_penalty, st, en);
+      if (s) s->AddNote("%de - closing AU/GU penalty at %d %d", g_augu_penalty, st, en);
       energy += g_augu_penalty;
     }
     energy_t initiation = MultiloopInitiation(int(branches.size() + 1));
-    if (s) (*s)->AddNote("%de - initiation", initiation);
+    if (s) s->AddNote("%de - initiation", initiation);
     energy += initiation;
 
     if (compute_ctd) {
@@ -293,18 +294,16 @@ energy_t MultiloopEnergy(computed_t& computed,
   energy += ctd_energy;
 
   if (s) {
-    (*s)->AddNote("%de - ctd", ctd_energy);
-    // TODO uncomment.
-//    int idx = 0;
-//    if (!exterior_loop) {
-//      (*s)->AddNote("%de - outer loop stacking - %s", branch_ctds[0].second,
-//          energy::CtdToName(branch_ctds[0].first));
-//      idx++;
-//    }
-//    for (; idx < branch_ctds.size(); ++i) {
-//      (*s)->AddBranch()
-//    }
-    // TODO note for outer loop stacking
+    s->AddNote("%de - ctd", ctd_energy);
+    if (!exterior_loop) {
+      s->AddNote("%de - outer loop stacking - %s", branch_ctds[0].second,
+          energy::CtdToName(branch_ctds[0].first));
+      branch_ctds.pop_front();
+    }
+    for (const auto& ctd : branch_ctds)
+      s->AddCtd(ctd.first, ctd.second);
+    // Give the pointer back.
+    ss->reset(s.release());
   }
 
   return energy;
@@ -333,7 +332,7 @@ energy_t ComputeEnergyInternal(computed_t& computed, int st, int en, std::unique
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(computed, st, en, branches, s);  // TODO add branch occurs below here.
+    energy += MultiloopEnergy(computed, st, en, branches, s);
   } else if (branches.size() == 0) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
@@ -360,11 +359,17 @@ energy_t ComputeEnergyInternal(computed_t& computed, int st, int en, std::unique
   return energy;
 }
 
+
 computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure>* s) {
-  const auto& r = secondary.r;
-  const auto& p = secondary.p;
   computed_t computed(secondary);
-  energy_t energy = ComputeEnergyInternal(computed, 0, (int) r.size() - 1, s);
+  return ComputeEnergyWithCtds(computed, s);
+}
+
+computed_t ComputeEnergyWithCtds(const computed_t& computed, std::unique_ptr<Structure>* s) {
+  auto computed_copy = computed;
+  const auto& r = computed_copy.s.r;
+  const auto& p = computed_copy.s.p;
+  energy_t energy = ComputeEnergyInternal(computed_copy, 0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += g_augu_penalty;
     if (s) {
@@ -373,9 +378,10 @@ computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure
       (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + g_augu_penalty);  // Gross.
     }
   }
-  computed.energy = energy;
-  return computed;
+  computed_copy.energy = energy;
+  return computed_copy;
 }
+
 
 }
 }
