@@ -54,12 +54,16 @@ uint32_t Crc32(const std::string& data) {
 }
 
 computed_t::computed_t(const primary_t& r_)
-    : r(r_), p(r_.size(), -1),
-      base_ctds(r_.size(), CTD_NA), energy(constants::MAX_E) {}
+    : s(r_), base_ctds(r_.size(), CTD_NA), energy(constants::MAX_E) {}
 
-computed_t::computed_t(const primary_t& r_, const std::vector<int>& p_,
+computed_t::computed_t(const secondary_t& s_,
     const std::vector<Ctd>& base_ctds_, energy_t energy_)
-    : r(r_), p(p_), base_ctds(base_ctds_), energy(energy_) {
-  assert(r.size() == p.size() && r.size() == base_ctds.size());
+    : s(s_), base_ctds(base_ctds_), energy(energy_) {
+  assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
 }
+
+computed_t::computed_t(const secondary_t& s_) : s(s_), base_ctds(s_.r.size(), CTD_NA), energy(constants::MAX_E) {
+  assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
+}
+
 }

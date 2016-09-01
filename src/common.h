@@ -41,22 +41,6 @@ enum Ctd {
   CTD_SIZE
 };
 
-struct computed_t {
-  computed_t() = default;
-  computed_t(const computed_t&) = default;
-  computed_t(computed_t&&) = default;
-  computed_t& operator=(computed_t&&) = default;
-
-  explicit computed_t(const primary_t& r_);
-  computed_t(const primary_t& r_, const std::vector<int>& p_,
-      const std::vector<Ctd>& base_ctds_, energy_t energy_);
-
-  primary_t r;
-  std::vector<int> p;
-  std::vector<Ctd> base_ctds;
-  energy_t energy;
-};
-
 struct secondary_t {
   secondary_t() = default;
   secondary_t(const secondary_t&) = default;
@@ -64,11 +48,25 @@ struct secondary_t {
   secondary_t& operator=(secondary_t&&) = default;
 
   explicit secondary_t(const primary_t& r_) : r(r_), p(r_.size(), -1) {}
-  explicit secondary_t(const computed_t& computed) : r(computed.r), p(computed.p) {}
   secondary_t(const primary_t& r_, const std::vector<int>& p_) : r(r_), p(p_) {}
 
   primary_t r;
   std::vector<int> p;
+};
+
+struct computed_t {
+  computed_t() = default;
+  computed_t(const computed_t&) = default;
+  computed_t(computed_t&&) = default;
+  computed_t& operator=(computed_t&&) = default;
+
+  explicit computed_t(const primary_t& r_);
+  explicit computed_t(const secondary_t& s_);
+  computed_t(const secondary_t& s_, const std::vector<Ctd>& base_ctds_, energy_t energy_);
+
+  secondary_t s;
+  std::vector<Ctd> base_ctds;
+  energy_t energy;
 };
 
 std::string sgetline(FILE* fp);

@@ -25,5 +25,5 @@ int main(int argc, char* argv[]) {
   auto computed = fold::TraceStructure(r, state.dp_table, state.ext_table, q);
 
   printf("DP value at %d %d %d: %d\n  %s\n", st, en, a,
-      state.dp_table[st][en][a], parsing::PairsToDotBracket(computed.p).c_str());
+      state.dp_table[st][en][a], parsing::PairsToDotBracket(computed.s.p).c_str());
 }
