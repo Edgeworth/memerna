@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   auto r = parsing::StringToPrimary(pos.front());
   auto computed = fold_fn(r, &state);
 
-  printf("Energy: %d\n%s\n", computed.energy, parsing::PairsToDotBracket(computed.p).c_str());
+  printf("Energy: %d\n%s\n", computed.energy, parsing::PairsToDotBracket(computed.s.p).c_str());
 
   energy_t energy_delta = atoi(argparse.GetOption("subopt-delta").c_str());
   int max_structures = atoi(argparse.GetOption("subopt-max").c_str());
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
         computed.energy + energy_delta, max_structures, r, state.dp_table, state.ext_table);
     printf("%zu suboptimal structures:\n", structures.size());
     for (const auto& subopt : structures) {
-      printf("%d %s\n", subopt.energy, parsing::PairsToDotBracket(subopt.p).c_str());
+      printf("%d %s\n", subopt.energy, parsing::PairsToDotBracket(subopt.s.p).c_str());
     }
   }
 }

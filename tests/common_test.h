@@ -15,6 +15,7 @@
 namespace memerna {
 
 const uint32_t T04_MODEL_HASH = 0x03b94db8;
+const char* const ENERGY_MODEL_PATH = "data";
 
 }
 

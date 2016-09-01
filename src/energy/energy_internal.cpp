@@ -29,18 +29,14 @@ namespace internal {
       back[used][idx] = std::make_tuple(cur_used, cur_idx, macro_upd_value_, reason); \
     } \
   } while (0)
-// TODO remove outer_idx, do reversal in calling code
 energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& branches,
-    int outer_idx, bool use_first_lu, branch_ctd_t* branch_ctds) {
+    bool use_first_lu, branch_ctd_t& branch_ctds) {
   const auto& r = secondary.r;
   const auto& p = secondary.p;
   int N = int(branches.size());
   int RSZ = int(r.size());
-  assert(outer_idx == 0 || outer_idx == N - 1 || outer_idx == -1);
-  assert(branch_ctds != nullptr);
-  assert(branch_ctds->empty());
+  assert(branch_ctds.empty());
   // Could be on the exterior loop.
-  assert(N >= 3 || outer_idx == -1);
   if (N < 1) return 0;
 
   // cache[used][i]
@@ -54,14 +50,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
   };
 
   cache[0][0] = cache[1][0] = 0;
-  int first_lui = -1, last_rui = -1;
-  if (outer_idx == 0) {
-    first_lui = p[branches[0]] - 1;
-    last_rui = p[branches[N - 1]] + 1;
-  } else if (outer_idx == N - 1) {
-    first_lui = branches[0] - 1;
-    last_rui = branches[N - 1] + 1;
-  }
+  int first_lui = branches[0] - 1, last_rui = p[branches[N - 1]] + 1;
 
   // Precompute data about the unpaired bases.
   std::vector<int> li((size_t(N))), ri((size_t(N))), lui((size_t(N))), rui((size_t(N)));
@@ -71,8 +60,6 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
     li[i] = branches[i];
     ri[i] = p[branches[i]];
     assert(ri[i] != -1);
-    if (i == outer_idx)
-      std::swap(li[i], ri[i]);
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
     // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right unpaired base,
@@ -154,7 +141,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
     state = std::make_tuple(true, N, 0, CTD_NA);
   // First state contains no real info, so go ahead one.
   state = back[std::get<0>(state)][std::get<1>(state)];
-  assert(branch_ctds->empty());
+  assert(branch_ctds.empty());
   while (1) {
     bool used;
     int idx;
@@ -168,50 +155,52 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
     if (reason == CTD_LEFT_MISMATCH_COAX_WITH_NEXT ||
         reason == CTD_RIGHT_MISMATCH_COAX_WITH_NEXT ||
         reason == CTD_FLUSH_COAX_WITH_NEXT)
-      branch_ctds->emplace_back(Ctd(reason + 1), energy);
-    branch_ctds->emplace_back(reason, energy);
+      branch_ctds.emplace_back(Ctd(reason + 1), energy);
+    branch_ctds.emplace_back(reason, energy);
     state = back[used][idx];
   }
-  std::reverse(branch_ctds->begin(), branch_ctds->end());
+  std::reverse(branch_ctds.begin(), branch_ctds.end());
 
   return std::min(cache[0][N], cache[1][N]);
 }
 
 #undef UPDATE_CACHE
 
-void BranchCtdsToBaseCtds(const secondary_t& secondary, const std::deque<int>& branches,
-    const branch_ctd_t& branch_ctds, std::vector<Ctd>* base_ctds) {
-  const auto& p = secondary.p;
-  assert(base_ctds != nullptr);
+void AddBranchCtdsToComputed(computed_t& computed,
+    const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < int(branches.size()); ++i) {
-    assert(int(base_ctds->size()) > branches[i] && int(base_ctds->size()) > p[branches[i]]);
-    (*base_ctds)[branches[i]] = branch_ctds[i].first;
-    (*base_ctds)[p[branches[i]]] = branch_ctds[i].first;
+    assert(int(computed.base_ctds.size()) > branches[i] &&
+        int(computed.base_ctds.size()) > computed.s.p[branches[i]]);
+    // Only write it into one side. If it's for an outer loop, it will be the right side, since we swap
+    // the indices in that case.
+    computed.base_ctds[branches[i]] = branch_ctds[i].first;
   }
 }
 
-energy_t BaseCtdsToBranchCtds(const secondary_t& secondary, const std::deque<int>& branches,
-    const std::vector<Ctd>& base_ctds, branch_ctd_t* branch_ctds) {
-  const auto& r = secondary.r;
-  const auto& p = secondary.p;
-  assert(branch_ctds != nullptr);
-  assert(branch_ctds->empty());
+energy_t GetBranchCtdsFromComputed(const computed_t& computed,
+    const std::deque<int>& branches, branch_ctd_t& branch_ctds) {
+  const auto& r = computed.s.r;
+  const auto& p = computed.s.p;
+  assert(branch_ctds.empty());
   energy_t total_energy = 0;
   int N = int(r.size());
+  // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the last, to NEXT.
+  // In this case, we need to fix the branch_ctds so that the corresponding branch ctd is on the right side.
+  // e.g. if the first element refers to PREV, we would put something before it,
+  // but that actually needs to be at the end.
+  bool rot_left = false;
   for (int i = 0; i < int(branches.size()); ++i) {
     int branch = branches[i];
-    int prev_branch = i > 0 ? branches[i - 1] : -1;
-    assert(base_ctds[branch] == base_ctds[p[branch]]);
+    int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     energy_t energy = 0;
     auto stb = r[branch], enb = r[p[branch]];
-    // TODO swap if outer branch
-    switch (base_ctds[branch]) {
+    switch (computed.base_ctds[branch]) {
       case CTD_UNUSED:
         break;
       case CTD_3_DANGLE:
-        assert(branch > 0);
-        energy = g_dangle3[enb][r[branch - 1]][stb];
+        assert(p[branch] + 1 < N);
+        energy = g_dangle3[enb][r[p[branch] + 1]][stb];
         break;
       case CTD_5_DANGLE:
         assert(branch > 0);
@@ -222,31 +211,39 @@ energy_t BaseCtdsToBranchCtds(const secondary_t& secondary, const std::deque<int
         energy = g_terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
         break;
       case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
-        assert(prev_branch != -1);
         // .(   ).(   )
         energy = MismatchCoaxial(r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
-        branch_ctds->emplace_back(CTD_LEFT_MISMATCH_COAX_WITH_NEXT, energy);
+        branch_ctds.emplace_back(CTD_LEFT_MISMATCH_COAX_WITH_NEXT, energy);
+        rot_left = (i == 0) || rot_left;
         break;
       case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
-        assert(prev_branch != -1 && branch > 0 && p[branch] + 1 < N);
+        assert(branch > 0 && p[branch] + 1 < N);
         // (   ).(   ). or (.(   ).   )
         energy = MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
-        branch_ctds->emplace_back(CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, energy);
+        // Need to do rotations
+        branch_ctds.emplace_back(CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, energy);
+        rot_left = (i == 0) || rot_left;
         break;
       case CTD_FLUSH_COAX_WITH_PREV:
-        assert(prev_branch != -1);
         // (   )(   ) or ((   )   ) or (   (   ))
         energy = g_stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
+        branch_ctds.emplace_back(CTD_FLUSH_COAX_WITH_NEXT, energy);
+        rot_left = (i == 0) || rot_left;
         break;
-        // All these cases will be handled in the next branch (PREV).
       case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
       case CTD_RIGHT_MISMATCH_COAX_WITH_NEXT:
       case CTD_FLUSH_COAX_WITH_NEXT:
-        break;
+        // All these cases will be handled in the next branch (PREV).
+        continue;
       default:
         verify_expr(false, "bug");  // Should never happen
     }
-    branch_ctds->emplace_back(base_ctds[branch], energy);
+    branch_ctds.emplace_back(computed.base_ctds[branch], energy);
+    total_energy += energy;
+  }
+  if (rot_left) {
+    branch_ctds.push_back(branch_ctds.front());
+    branch_ctds.pop_front();
   }
   return total_energy;
 }

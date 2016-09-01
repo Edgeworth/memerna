@@ -42,7 +42,7 @@ computed_t Rnark::Fold(const primary_t& r) const {
   auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(r));
   energy_t energy = folder.Fold(librnary_primary);
   auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
-  return {r, pairs, std::vector<Ctd>(r.size(), CTD_NA), energy};
+  return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy};
 }
 
 Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
@@ -75,7 +75,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
       !use_lyngso, dp_state);
   auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
-  return {r, pairs, std::vector<Ctd>(r.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
+  return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
 }
 
 energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {

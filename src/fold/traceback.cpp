@@ -104,8 +104,8 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
     q.pop();
     if (a == DP_P) {
       // It's paired, so add it to the folding.
-      computed.p[st] = en;
-      computed.p[en] = st;
+      computed.s.p[st] = en;
+      computed.s.p[en] = st;
       // TODO ctds
 
       // Following largely matches the above DP so look up there for comments.

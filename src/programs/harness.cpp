@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
       }
       auto r = parsing::StringToPrimary(seq);
       auto res = package->Fold(r);
-      printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.p).c_str());
+      printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());
     }
   }
 }

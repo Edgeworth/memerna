@@ -10,10 +10,6 @@ namespace energy {
 
 using namespace internal;
 
-namespace {
-std::vector<Ctd> g_ctds;
-}
-
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:
@@ -219,10 +215,10 @@ energy_t TwoLoop(const primary_t& r,
   return Bulge(r, ost, oen, ist, ien, s);
 }
 
-energy_t MultiloopEnergy(const secondary_t& secondary,
+energy_t MultiloopEnergy(computed_t& computed,
     int st, int en, std::deque<int>& branches, std::unique_ptr<Structure>* s) {
-  const auto& r = secondary.r;
-  const auto& p = secondary.p;
+  const auto& r = computed.s.r;
+  const auto& p = computed.s.p;
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   energy_t energy = 0;
 
@@ -244,16 +240,16 @@ energy_t MultiloopEnergy(const secondary_t& secondary,
   num_unpaired = en - st - 1 - num_unpaired + exterior_loop * 2;
   if (s) (*s)->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
-  bool compute_ctd = branches.empty() || (g_ctds[branches.front()] == CTD_NA);
+  bool compute_ctd = computed.base_ctds[branches.front()] == CTD_NA;
   branch_ctd_t branch_ctds;
   energy_t ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (compute_ctd) {
-      ctd_energy = ComputeOptimalCtd(secondary, branches, -1, true, &branch_ctds);
-      BranchCtdsToBaseCtds(secondary, branches, branch_ctds, &g_ctds);
+      ctd_energy = ComputeOptimalCtd(computed.s, branches, true, branch_ctds);
+      AddBranchCtdsToComputed(computed, branches, branch_ctds);
     } else {
-      BaseCtdsToBranchCtds(secondary, branches, g_ctds, &branch_ctds);
+      ctd_energy = GetBranchCtdsFromComputed(computed, branches, branch_ctds);
     }
   } else {
     if (IsAuGu(r[st], r[en])) {
@@ -267,18 +263,16 @@ energy_t MultiloopEnergy(const secondary_t& secondary,
     if (compute_ctd) {
       branch_ctd_t config_ctds[4] = {};
       std::pair<energy_t, int> config_energies[4] = {};
-      branches.push_front(st);
-      config_energies[0] = {ComputeOptimalCtd(secondary, branches, 0, true, config_ctds), 0};
-      config_energies[1] = {ComputeOptimalCtd(secondary, branches, 0, false, config_ctds + 1), 1};
+      branches.push_front(en);
+      config_energies[0] = {ComputeOptimalCtd(computed.s, branches, true, config_ctds[0]), 0};
+      config_energies[1] = {ComputeOptimalCtd(computed.s, branches, false, config_ctds[1]), 1};
       branches.pop_front();
-      branches.push_back(st);
-      config_energies[2] = {ComputeOptimalCtd(
-          secondary, branches, int(branches.size() - 1), true, config_ctds + 2), 2};
-      config_energies[3] = {ComputeOptimalCtd(
-          secondary, branches, int(branches.size() - 1), false, config_ctds + 3), 3};
-      // Shuffle these around so the outer loop is as the start.
+      branches.push_back(en);
+      config_energies[2] = {ComputeOptimalCtd(computed.s, branches, true, config_ctds[2]), 2};
+      // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
+      config_energies[3] = {ComputeOptimalCtd(computed.s, branches, false, config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
       branches.pop_back();
@@ -286,19 +280,13 @@ energy_t MultiloopEnergy(const secondary_t& secondary,
       branch_ctds = config_ctds[config_energies[0].second];
       ctd_energy = config_energies[0].first;
 
-      // Assumes the outer loop is the first one.
-      // TODO uncomment.
-//      branches.push_front(st);
-//      BranchCtdsToBaseCtds(branches, branch_ctds);
-//#ifndef NDEBUG
-//      branch_ctd_t tmp;
-//      assert(ctd_energy == BaseCtdsToBranchCtds(branches, &tmp));
-//      assert(branch_ctds == tmp);
-//#endif
-//      branches.pop_front();
+      // Write the optimal ctds to computed.
+      branches.push_front(en);
+      AddBranchCtdsToComputed(computed, branches, branch_ctds);
+      branches.pop_front();
     } else {
-      branches.push_front(st);
-      BaseCtdsToBranchCtds(secondary, branches, g_ctds, &branch_ctds);
+      branches.push_front(en);
+      ctd_energy = GetBranchCtdsFromComputed(computed, branches, branch_ctds);
       branches.pop_front();
     }
   }
@@ -322,9 +310,9 @@ energy_t MultiloopEnergy(const secondary_t& secondary,
   return energy;
 }
 
-energy_t ComputeEnergyInternal(const secondary_t& secondary, int st, int en, std::unique_ptr<Structure>* s) {
-  const auto& r = secondary.r;
-  const auto& p = secondary.p;
+energy_t ComputeEnergyInternal(computed_t& computed, int st, int en, std::unique_ptr<Structure>* s) {
+  const auto& r = computed.s.r;
+  const auto& p = computed.s.p;
   assert(en >= st);
   energy_t energy = 0;
 
@@ -345,7 +333,7 @@ energy_t ComputeEnergyInternal(const secondary_t& secondary, int st, int en, std
   bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(secondary, st, en, branches, s);  // TODO add branch occurs below here.
+    energy += MultiloopEnergy(computed, st, en, branches, s);  // TODO add branch occurs below here.
   } else if (branches.size() == 0) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
@@ -361,10 +349,10 @@ energy_t ComputeEnergyInternal(const secondary_t& secondary, int st, int en, std
     int pair = p[i];
     if (s) {
       std::unique_ptr<Structure> structure;
-      energy += ComputeEnergyInternal(secondary, i, pair, &structure);
+      energy += ComputeEnergyInternal(computed, i, pair, &structure);
       (*s)->AddBranch(std::move(structure));
     } else {
-      energy += ComputeEnergyInternal(secondary, i, pair, nullptr);
+      energy += ComputeEnergyInternal(computed, i, pair, nullptr);
     }
   }
   if (s) (*s)->SetTotalEnergy(energy);
@@ -375,10 +363,8 @@ energy_t ComputeEnergyInternal(const secondary_t& secondary, int st, int en, std
 computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure>* s) {
   const auto& r = secondary.r;
   const auto& p = secondary.p;
-  g_ctds.clear();
-  g_ctds.resize(r.size(), CTD_NA);
-  assert(r.size() == p.size() && r.size() == g_ctds.size());
-  energy_t energy = ComputeEnergyInternal(secondary, 0, (int) r.size() - 1, s);
+  computed_t computed(secondary);
+  energy_t energy = ComputeEnergyInternal(computed, 0, (int) r.size() - 1, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += g_augu_penalty;
     if (s) {
@@ -387,7 +373,8 @@ computed_t ComputeEnergy(const secondary_t& secondary, std::unique_ptr<Structure
       (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + g_augu_penalty);  // Gross.
     }
   }
-  return {r, p, g_ctds, energy};
+  computed.energy = energy;
+  return computed;
 }
 
 }
