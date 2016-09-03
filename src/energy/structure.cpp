@@ -28,7 +28,6 @@ const char* CtdToName(Ctd ctd) {
     case CTD_FLUSH_COAX_WITH_PREV:
       return "flush coax with prev";
     default:
-      printf("WTF?: %d\n", ctd);
       verify_expr(false, "bug");
   }
 }

@@ -35,22 +35,59 @@ std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
   return pairs;
 }
 
-std::vector<int> BasePairListToPairs(const std::vector<std::pair<int, int>>& base_pairs, std::size_t size) {
-  std::vector<int> pairs(size, -1);
-  for (const auto& pair : base_pairs) {
-    pairs[pair.first] = pair.second;
-    pairs[pair.second] = pair.first;
-  }
-  return pairs;
-}
-
-
 std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
   for (int i = 0; i < int(pairs.size()); ++i) {
     if (pairs[i] == -1) continue;
     if (pairs[i] < i) s[i] = ')';
     else s[i] = '(';
+  }
+  return s;
+}
+
+std::string ComputedToCtdString(const computed_t& computed) {
+  const auto& p = computed.s.p;
+  std::string s = PairsToDotBracket(p);
+  for (int i = 0; i < int(p.size()); ++i) {
+    switch (computed.base_ctds[i]) {
+      case CTD_NA:
+      case CTD_UNUSED:
+        break;
+      case CTD_3_DANGLE:
+        s[p[i] + 1] = '3';
+        break;
+      case CTD_5_DANGLE:
+        s[i - 1] = '5';
+        break;
+      case CTD_TERMINAL_MISMATCH:
+        s[i - 1] = 'm';
+        s[p[i] + 1] = 'm';
+        break;
+      case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
+        s[i] = '>';
+        s[i - 1] = 'm';
+        s[p[i] - 1] = 'm';
+        break;
+      case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
+        s[i] = '<';
+        break;
+      case CTD_RIGHT_MISMATCH_COAX_WITH_NEXT:
+        s[i] = '>';
+        break;
+      case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
+        s[i] = '<';
+        s[i - 1] = 'm';
+        s[p[i] - 1] = 'm';
+        break;
+      case CTD_FLUSH_COAX_WITH_NEXT:
+        s[i] = '>';
+        break;
+      case CTD_FLUSH_COAX_WITH_PREV:
+        s[i] = '<';
+        break;
+      default:
+        verify_expr(false, "bug");
+    }
   }
   return s;
 }

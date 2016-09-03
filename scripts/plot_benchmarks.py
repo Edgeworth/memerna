@@ -47,9 +47,12 @@ def save_figure(f, name):
 
 
 def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
-  f, axes = plt.subplots(len(frames) // 2, len(frames) // 2, sharey=True, sharex=True)
+  if len(frames) == 4:
+    f, axes = plt.subplots(len(frames) // 2, len(frames) // 2, sharey=True, sharex=True)
+    axes = axes.flatten()
+  else:
+    f, axes = plt.subplots(len(frames), sharey=True, sharex=True)
   f2, ax = plt.subplots(1)
-  axes = axes.flatten()
 
   for i, frame_id in enumerate(frames):
     data = frames[frame_id][[xid, yid]].mean()
@@ -97,8 +100,11 @@ def do_quantity_plot(frames, xid, yid):
 
 
 def do_accuracy_plot(frames, xid):
-  f, axes = plt.subplots(len(frames) // 2, len(frames) // 2)
-  axes = axes.flatten()
+  if len(frames) == 4:
+    f, axes = plt.subplots(len(frames) // 2, len(frames) // 2)
+    axes = axes.flatten()
+  else:
+    f, axes = plt.subplots(len(frames))
   for i, frame_id in enumerate(frames):
     sns.distplot(frames[frame_id][xid], ax=axes[i], label=frame_id)
     axes[i].annotate(frame_id, xy=(0.1, 0.85), size=10, textcoords='axes fraction')
@@ -109,8 +115,11 @@ def do_accuracy_plot(frames, xid):
 
 
 def do_comparison_plot(frames, aid, bid):
-  f, axes = plt.subplots(len(frames) // 2, len(frames) // 2)
-  axes = axes.flatten()
+  if len(frames) == 4:
+    f, axes = plt.subplots(len(frames) // 2, len(frames) // 2)
+    axes = axes.flatten()
+  else:
+    f, axes = plt.subplots(len(frames))
   for i, frame_id in enumerate(frames):
     frame = frames[frame_id]
     sns.kdeplot(frame[aid], frame[bid], shade=True, ax=axes[i], label=frame_id)
@@ -188,15 +197,15 @@ def do_perf_results(dataset_name, data):
   frames = read_frames(data)
   frames_by_length = {name: frame.groupby('length') for name, frame in frames.items()}
 
-  # savefig_local(
-  #   dataset_name, 'real',
-  #   do_quantity_plot(frames_by_length, 'length', 'real'))
+  savefig_local(
+    dataset_name, 'real',
+    do_quantity_plot(frames_by_length, 'length', 'real'))
   savefig_local(
     dataset_name, 'maxrss',
     do_quantity_plot(frames_by_length, 'length', 'maxrss'))
-  # f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'real')
-  # savefig_local(dataset_name, 'real_loglog_scatter', f1)
-  # savefig_local(dataset_name, 'real_loglog_bestfit', f2)
+  f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'real')
+  savefig_local(dataset_name, 'real_loglog_scatter', f1)
+  savefig_local(dataset_name, 'real_loglog_bestfit', f2)
 
   f1, f2 = do_quantity_log_plot(frames_by_length, 'length', 'maxrss', logx=False)
   savefig_local(dataset_name, 'maxrss_loglog_scatter', f1)
@@ -206,12 +215,21 @@ def do_perf_results(dataset_name, data):
 def do_accuracy_results(dataset_name, data):
   frames = read_frames(data)
 
-  # savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
-  # savefig_local(dataset_name, 'comparison', do_comparison_plot(frames, 'ppv', 'sensitivity'))
-  # do_mfe_table(frames, 'mfe')
-  # do_accuracy_table(frames, ['fscore', 'ppv', 'sensitivity'])
-  # do_ttest(frames, 'fscore')
+  savefig_local(dataset_name, 'fscore', do_accuracy_plot(frames, 'fscore'))
+  savefig_local(dataset_name, 'comparison', do_comparison_plot(frames, 'ppv', 'sensitivity'))
+  do_mfe_table(frames, 'mfe')
+  do_accuracy_table(frames, ['fscore', 'ppv', 'sensitivity'])
+  do_ttest(frames, 'fscore')
 
+do_accuracy_results('archiveii', {
+   'RNAstructureWithFixes': './RNAstructureWithFixes_archiveii.results',
+   'RNAstructureOld': '../benchmark_results/RNAstructure_archiveii.results',
+})
+
+do_perf_results('archiveii', {
+  'RNAstructureWithFixes': './RNAstructureWithFixes_archiveii.results',
+  'RNAstructureOld': '../benchmark_results/RNAstructure_archiveii.results',
+})
 
 # ArchiveII
 # do_accuracy_results('archiveii', {
@@ -222,9 +240,9 @@ def do_accuracy_results(dataset_name, data):
 # })
 
 # Random
-do_perf_results('random', {
-  'UNAFold': './benchmark_results/UNAFold_random.results',
-  'RNAstructure': './benchmark_results/RNAstructure_random.results',
-  'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_random.results',
-  'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_random.results'
-})
+# do_perf_results('random', {
+#   'UNAFold': './benchmark_results/UNAFold_random.results',
+#   'RNAstructure': './benchmark_results/RNAstructure_random.results',
+#   'ViennaRNA-d3': './benchmark_results/ViennaRNAd3_random.results',
+#   'ViennaRNA-d2': './benchmark_results/ViennaRNAd2_random.results'
+# })

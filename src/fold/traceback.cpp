@@ -122,7 +122,6 @@ computed_t TraceStructure(const primary_t& r, const array3d_t<energy_t, DP_SIZE>
       }
 
       auto base_branch_cost = AuGuPenalty(stb, enb) + g_multiloop_hack_a + g_multiloop_hack_b;
-
       // (<   ><    >)
       if (base_branch_cost + arr[st + 1][en - 1][DP_U2] == arr[st][en][DP_P]) {
         computed.base_ctds[en] = CTD_UNUSED;

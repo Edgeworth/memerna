@@ -184,7 +184,6 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed,
   const auto& p = computed.s.p;
   assert(branch_ctds.empty());
   energy_t total_energy = 0;
-  int N = int(r.size());
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the last, to NEXT.
   // In this case, we need to fix the branch_ctds so that the corresponding branch ctd is on the right side.
   // e.g. if the first element refers to PREV, we would put something before it,
@@ -199,7 +198,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed,
       case CTD_UNUSED:
         break;
       case CTD_3_DANGLE:
-        assert(p[branch] + 1 < N);
+        assert(p[branch] + 1 < int(r.size()));
         energy = g_dangle3[enb][r[p[branch] + 1]][stb];
         break;
       case CTD_5_DANGLE:
@@ -207,7 +206,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed,
         energy = g_dangle5[enb][r[branch - 1]][stb];
         break;
       case CTD_TERMINAL_MISMATCH:
-        assert(p[branch] + 1 < N && branch > 0);
+        assert(p[branch] + 1 < int(r.size()) && branch > 0);
         energy = g_terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
         break;
       case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
@@ -217,7 +216,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed,
         rot_left = (i == 0) || rot_left;
         break;
       case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
-        assert(branch > 0 && p[branch] + 1 < N);
+        assert(branch > 0 && p[branch] + 1 < int(r.size()));
         // (   ).(   ). or (.(   ).   )
         energy = MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
         // Need to do rotations

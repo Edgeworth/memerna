@@ -281,12 +281,6 @@ std::vector<computed_t> SuboptimalTraceback0(
         auto base10 = arr[st + 1][piv][DP_P] + AuGuPenalty(st1b, pb) + g_multiloop_hack_b;
         auto base11 = arr[st + 1][piv - 1][DP_P] + AuGuPenalty(st1b, pl1b) + g_multiloop_hack_b;
 
-        // Min is for either placing another unpaired or leaving it as nothing.
-        // If we're at U2, don't allow leaving as nothing.
-        auto right_unpaired = arr[piv + 1][en][DP_U];
-        if (a != DP_U2)
-          right_unpaired = std::min(right_unpaired, 0);
-
         // Check a == U_RCOAX:
         // (   ).<( ** ). > Right coax backward
         if (a == DP_U_RCOAX) {

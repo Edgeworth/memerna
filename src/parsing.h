@@ -15,7 +15,7 @@ std::string PrimaryToString(const primary_t& r);
 secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str);
 std::vector<int> DotBracketToPairs(const std::string& pairs_str);
 std::string PairsToDotBracket(const std::vector<int>& pairs);
-std::vector<int> BasePairListToPairs(const std::vector<std::pair<int, int>>& base_pairs, std::size_t size);
+std::string ComputedToCtdString(const computed_t& computed);
 
 void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]);
 void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy_t>& output);
