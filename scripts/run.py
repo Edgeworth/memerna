@@ -134,20 +134,21 @@ class UNAFold:
 
 
 def process_benchmark(programs, args):
-  memevault = MemeVault('random')
-  rnastructure = RNAstructure(fix_path('~/software/rna/rnastructure'))
+  dataset = 'archiveii'
+  memevault = MemeVault(dataset)
+  rnastructure = RNAstructure(args.memerna_loc)
   for program in programs:
-    with open('%s_%s.results' % (program, memevault.dataset), 'w') as f:
+    with open('%s_%s.results' % (program, dataset), 'w') as f:
       idx = 1
       for rna in memevault:
         results = []
         print('Running %s on #%d %s' % (program, idx, rna.name))
         for i in range(2):
-          predicted, result, _ = program.fold(rna)
+          predicted, result = program.fold(rna)
           results.append(result)
         combined = BenchmarkResults.combine_benchmarks(results)
         accuracy = RNAAccuracy.from_rna(rna, predicted)
-        energy, _, _ = rnastructure.efn(predicted)
+        energy, _ = rnastructure.efn(predicted)
         f.write('%d %.5f %.5f %.5f %.5f %.5f %.5f %.2f\n' % (
           len(rna.seq), combined.real, combined.usersys, combined.maxrss,
           accuracy.fscore, accuracy.ppv, accuracy.sensitivity, energy

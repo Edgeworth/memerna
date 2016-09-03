@@ -23,7 +23,9 @@ int main(int argc, char* argv[]) {
   auto r = parsing::StringToPrimary(pos.front());
   auto computed = fold_fn(r, &state);
 
-  printf("Energy: %d\n%s\n", computed.energy, parsing::PairsToDotBracket(computed.s.p).c_str());
+  printf("Energy: %d\n%s\n%s\n",
+      computed.energy, parsing::PairsToDotBracket(computed.s.p).c_str(),
+      parsing::ComputedToCtdString(computed).c_str());
 
   energy_t energy_delta = atoi(argparse.GetOption("subopt-delta").c_str());
   int max_structures = atoi(argparse.GetOption("subopt-max").c_str());
