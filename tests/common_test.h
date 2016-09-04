@@ -2,6 +2,7 @@
 #define MEMERNA_COMMON_TEST_H
 
 #include <cstdint>
+#include "energy/energy_model.h"
 
 #define ONLY_FOR_THIS_MODEL(em_, hash_) \
   do { \
@@ -15,7 +16,8 @@
 namespace memerna {
 
 const uint32_t T04_MODEL_HASH = 0x03b94db8;
-const char* const ENERGY_MODEL_PATH = "data";
+extern energy::EnergyModel g_em;
+extern std::vector<energy::EnergyModel> g_ems;
 
 }
 

@@ -31,12 +31,13 @@ std::vector<computed_t> Suboptimal0::Run() {
       std::vector<Ctd>(r.size(), CTD_NA),
       exterior[0][EXT]
   });
+  printf("%d %d\n", max_energy, max_structures);
   while (!q.empty()) {
 //    printf("q size: %zu\n", q.size());
 //    for (const auto& node : q) {
 //      printf("  %de %zu: ", node.energy, node.not_yet_expanded.size());
 //      for (const auto& nye : node.not_yet_expanded)
-//        printf("(%d, %d, %d), ", std::get<0>(nye), std::get<1>(nye), std::get<2>(nye));
+//        printf("(%d, %d, %d), ", nye.st, nye.en, nye.a);
 //      printf("\n");
 //    }
     auto node = std::move(*q.begin());

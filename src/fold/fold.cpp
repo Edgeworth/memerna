@@ -73,6 +73,8 @@ std::vector<computed_t> Context::Suboptimal() {
   switch (options.suboptimal_alg) {
     case context_options_t::SuboptimalAlg::ZERO:
       return Suboptimal0(*this, max_energy, max_structures).Run();
+    default:
+      verify_expr(false, "bug");
   }
 }
 

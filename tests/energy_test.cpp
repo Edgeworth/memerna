@@ -3,12 +3,11 @@
 #include "parsing.h"
 #include "gtest/gtest.h"
 #include "common_test.h"
-#include "energy/load_model.h"
 
 namespace memerna {
 namespace energy {
 
-class EnergyTest : public testing::TestWithParam<energy::EnergyModel> {
+class EnergyTest : public testing::Test {
 public:
   secondary_t kNNDBHairpin1 = parsing::ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
   secondary_t kNNDBHairpin2 = parsing::ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
@@ -30,142 +29,131 @@ public:
 };
 
 
-TEST_P(EnergyTest, MultiloopEnergy) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.multiloop_hack_a + 4 * em.multiloop_hack_b, em.MultiloopInitiation(4));
+TEST_F(EnergyTest, MultiloopEnergy) {
+  EXPECT_EQ(g_em.multiloop_hack_a + 4 * g_em.multiloop_hack_b, g_em.MultiloopInitiation(4));
 }
 
-TEST_P(EnergyTest, NNDBHairpinLoopExamples) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[A][C][G][U] + em.stack[C][A][U][G] + em.augu_penalty +
-      em.terminal[A][A][A][U] + em.HairpinInitiation(6),
-      ComputeEnergy(kNNDBHairpin1, em).energy);
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[A][C][G][U] + em.stack[C][A][U][G] + em.augu_penalty +
-      em.terminal[A][G][G][U] + em.hairpin_gg_first_mismatch + em.HairpinInitiation(5),
-      ComputeEnergy(kNNDBHairpin2, em).energy);
+TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[A][C][G][U] + g_em.stack[C][A][U][G] + g_em.augu_penalty +
+      g_em.terminal[A][A][A][U] + g_em.HairpinInitiation(6),
+      ComputeEnergy(kNNDBHairpin1, g_em).energy);
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[A][C][G][U] + g_em.stack[C][A][U][G] + g_em.augu_penalty +
+      g_em.terminal[A][G][G][U] + g_em.hairpin_gg_first_mismatch + g_em.HairpinInitiation(5),
+      ComputeEnergy(kNNDBHairpin2, g_em).energy);
 
-  auto iter = em.hairpin.find("CCGAGG");
-  auto hairpin_val = (iter == em.hairpin.end() ? 0 : iter->second);
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[A][C][G][U] + em.stack[C][C][G][G] + hairpin_val,
-      ComputeEnergy(kNNDBHairpin3, em).energy);
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[A][C][G][U] + em.stack[C][A][U][G] +
-      em.augu_penalty + em.terminal[A][C][C][U] + em.HairpinInitiation(6) +
-      em.hairpin_all_c_a * 6 + em.hairpin_all_c_b, ComputeEnergy(kNNDBHairpin4, em).energy);
-  EXPECT_EQ(em.stack[C][G][C][G] + em.stack[G][G][C][C] + em.stack[G][G][U][C] + em.augu_penalty +
-      em.terminal[G][G][G][U] + em.hairpin_gg_first_mismatch + em.HairpinInitiation(5) + em.hairpin_special_gu_closure,
-      ComputeEnergy(kNNDBHairpin5, em).energy);
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[A][C][G][U] + g_em.stack[C][C][G][G] + g_em.hairpin["CCGAGG"],
+      ComputeEnergy(kNNDBHairpin3, g_em).energy);
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[A][C][G][U] + g_em.stack[C][A][U][G] +
+      g_em.augu_penalty + g_em.terminal[A][C][C][U] + g_em.HairpinInitiation(6) +
+      g_em.hairpin_all_c_a * 6 + g_em.hairpin_all_c_b, ComputeEnergy(kNNDBHairpin4, g_em).energy);
+  EXPECT_EQ(g_em.stack[C][G][C][G] + g_em.stack[G][G][C][C] + g_em.stack[G][G][U][C] + g_em.augu_penalty +
+      g_em.terminal[G][G][G][U] + g_em.hairpin_gg_first_mismatch + g_em.HairpinInitiation(5) +
+      g_em.hairpin_special_gu_closure,
+      ComputeEnergy(kNNDBHairpin5, g_em).energy);
 
-  EXPECT_EQ(em.augu_penalty + em.terminal[A][A][A][U] + em.HairpinInitiation(6),
-      fold::Context(kNNDBHairpin1.r, em).FastHairpin(3, 10));
+  EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][A][A][U] + g_em.HairpinInitiation(6),
+      fold::Context(kNNDBHairpin1.r, g_em).FastHairpin(3, 10));
   EXPECT_EQ(
-      em.augu_penalty + em.terminal[A][G][G][U] + em.hairpin_gg_first_mismatch + em.HairpinInitiation(5),
-      fold::Context(kNNDBHairpin2.r, em).FastHairpin(3, 9));
-  EXPECT_EQ(hairpin_val,
-      fold::Context(kNNDBHairpin3.r, em).FastHairpin(3, 8));
-  EXPECT_EQ(em.augu_penalty + em.terminal[A][C][C][U] + em.HairpinInitiation(6) +
-      em.hairpin_all_c_a * 6 + em.hairpin_all_c_b,
-      fold::Context(kNNDBHairpin4.r, em).FastHairpin(3, 10));
-  EXPECT_EQ(em.augu_penalty + em.terminal[G][G][G][U] + em.hairpin_gg_first_mismatch +
-      em.HairpinInitiation(5) + em.hairpin_special_gu_closure,
-      fold::Context(kNNDBHairpin5.r, em).FastHairpin(3, 9));
+      g_em.augu_penalty + g_em.terminal[A][G][G][U] + g_em.hairpin_gg_first_mismatch + g_em.HairpinInitiation(5),
+      fold::Context(kNNDBHairpin2.r, g_em).FastHairpin(3, 9));
+  EXPECT_EQ(g_em.hairpin["CCGAGG"],
+      fold::Context(kNNDBHairpin3.r, g_em).FastHairpin(3, 8));
+  EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][C][C][U] + g_em.HairpinInitiation(6) +
+      g_em.hairpin_all_c_a * 6 + g_em.hairpin_all_c_b,
+      fold::Context(kNNDBHairpin4.r, g_em).FastHairpin(3, 10));
+  EXPECT_EQ(g_em.augu_penalty + g_em.terminal[G][G][G][U] + g_em.hairpin_gg_first_mismatch +
+      g_em.HairpinInitiation(5) + g_em.hairpin_special_gu_closure,
+      fold::Context(kNNDBHairpin5.r, g_em).FastHairpin(3, 9));
 }
 
-TEST_P(EnergyTest, NNDBBulgeLoopExamples) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.stack[G][C][G][C] + em.stack[C][C][G][G] + em.BulgeInitiation(1) +
-      em.bulge_special_c + em.stack[C][G][C][G] + em.HairpinInitiation(3) -
+TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
+  EXPECT_EQ(g_em.stack[G][C][G][C] + g_em.stack[C][C][G][G] + g_em.BulgeInitiation(1) +
+      g_em.bulge_special_c + g_em.stack[C][G][C][G] + g_em.HairpinInitiation(3) -
       energy_t(round(10.0 * constants::R * constants::T * log(3))),
-      ComputeEnergy(kNNDBBulge1, em).energy);
+      ComputeEnergy(kNNDBBulge1, g_em).energy);
 
-  EXPECT_EQ(em.stack[G][A][U][C] + em.augu_penalty + em.BulgeInitiation(3) + em.HairpinInitiation(3),
-      ComputeEnergy(kNNDBBulge2, em).energy);
+  EXPECT_EQ(g_em.stack[G][A][U][C] + g_em.augu_penalty + g_em.BulgeInitiation(3) + g_em.HairpinInitiation(3),
+      ComputeEnergy(kNNDBBulge2, g_em).energy);
 }
 
 
-TEST_P(EnergyTest, NNDBMultiloopExamples) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[A][C][G][U] + em.stack[C][A][U][G] +
-      2 * em.augu_penalty + 2 * em.HairpinInitiation(3),
-      ComputeEnergy(kFlushCoax, em).energy);
-  EXPECT_EQ(em.stack[G][A][U][C] + em.terminal[C][G][A][G] + em.coax_mismatch_non_contiguous +
-      3 * em.HairpinInitiation(3) + em.MultiloopInitiation(4) + 2 * em.augu_penalty,
-      ComputeEnergy(kNNDBMultiloop, em).energy);
+TEST_F(EnergyTest, NNDBMultiloopExamples) {
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[A][C][G][U] + g_em.stack[C][A][U][G] +
+      2 * g_em.augu_penalty + 2 * g_em.HairpinInitiation(3),
+      ComputeEnergy(kFlushCoax, g_em).energy);
+  EXPECT_EQ(g_em.stack[G][A][U][C] + g_em.terminal[C][G][A][G] + g_em.coax_mismatch_non_contiguous +
+      3 * g_em.HairpinInitiation(3) + g_em.MultiloopInitiation(4) + 2 * g_em.augu_penalty,
+      ComputeEnergy(kNNDBMultiloop, g_em).energy);
 }
 
-TEST_P(EnergyTest, NNDBInternalLoopExamples) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[C][G][C][G] + em.InternalLoopInitiation(5) +
-      std::min(em.internal_asym, constants::NINIO_MAX_ASYM) + em.internal_2x3_mismatch[A][G][G][U] +
-      em.internal_2x3_mismatch[G][G][A][C] + em.internal_augu_penalty + em.HairpinInitiation(3),
-      ComputeEnergy(kNNDBInternal2x3, em).energy);
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[C][G][C][G] + em.internal_2x2[A][G][A][C][G][G][A][U] +
-      em.HairpinInitiation(3),
-      ComputeEnergy(kNNDBInternal2x2, em).energy);
-  EXPECT_EQ(em.stack[C][A][U][G] + em.stack[C][G][C][G] + em.InternalLoopInitiation(6) +
-      std::min(4 * em.internal_asym, constants::NINIO_MAX_ASYM) +
-      em.internal_augu_penalty + em.HairpinInitiation(3),
-      ComputeEnergy(kNNDBInternal1x5, em).energy);
+TEST_F(EnergyTest, NNDBInternalLoopExamples) {
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[C][G][C][G] + g_em.InternalLoopInitiation(5) +
+      std::min(g_em.internal_asym, constants::NINIO_MAX_ASYM) + g_em.internal_2x3_mismatch[A][G][G][U] +
+      g_em.internal_2x3_mismatch[G][G][A][C] + g_em.internal_augu_penalty + g_em.HairpinInitiation(3),
+      ComputeEnergy(kNNDBInternal2x3, g_em).energy);
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[C][G][C][G] + g_em.internal_2x2[A][G][A][C][G][G][A][U] +
+      g_em.HairpinInitiation(3),
+      ComputeEnergy(kNNDBInternal2x2, g_em).energy);
+  EXPECT_EQ(g_em.stack[C][A][U][G] + g_em.stack[C][G][C][G] + g_em.InternalLoopInitiation(6) +
+      std::min(4 * g_em.internal_asym, constants::NINIO_MAX_ASYM) +
+      g_em.internal_augu_penalty + g_em.HairpinInitiation(3),
+      ComputeEnergy(kNNDBInternal1x5, g_em).energy);
 }
 
-TEST_P(EnergyTest, BaseCases) {
-  const auto& em = GetParam();
-  EXPECT_EQ(em.augu_penalty + em.stack[G][A][U][C] + em.hairpin_init[3],
-      ComputeEnergy(parsing::ParseDotBracketSecondary("GAAAAUC", "((...))"), em).energy);
-  EXPECT_EQ(em.augu_penalty * 2 + em.stack[G][A][U][U] + em.hairpin_init[3],
-      ComputeEnergy(parsing::ParseDotBracketSecondary("GAAAAUU", "((...))"), em).energy);
-  EXPECT_EQ(em.augu_penalty * 2 + em.HairpinInitiation(3) +
-      std::min(em.terminal[U][A][A][A], std::min(em.dangle3[U][A][A], em.dangle5[U][A][A])),
-      ComputeEnergy(parsing::ParseDotBracketSecondary("AAAAAUA", ".(...)."), em).energy);
-  EXPECT_EQ(em.augu_penalty * 2 + em.HairpinInitiation(3),
-      ComputeEnergy(parsing::ParseDotBracketSecondary("AAAAU", "(...)"), em).energy);
-  EXPECT_EQ(em.stack[G][C][G][C] + em.stack[C][U][A][G] + em.BulgeInitiation(1) +
-      em.stack[U][G][C][A] + em.HairpinInitiation(3),
-      ComputeEnergy(kBulge1, em).energy);
-  EXPECT_EQ(em.InternalLoopInitiation(5) + em.internal_asym + em.internal_augu_penalty + em.augu_penalty +
-      em.internal_2x3_mismatch[A][G][A][U] + em.internal_2x3_mismatch[C][A][A][G] + em.HairpinInitiation(3),
-      ComputeEnergy(kInternal1, em).energy);
+TEST_F(EnergyTest, BaseCases) {
+  EXPECT_EQ(g_em.augu_penalty + g_em.stack[G][A][U][C] + g_em.hairpin_init[3],
+      ComputeEnergy(parsing::ParseDotBracketSecondary("GAAAAUC", "((...))"), g_em).energy);
+  EXPECT_EQ(g_em.augu_penalty * 2 + g_em.stack[G][A][U][U] + g_em.hairpin_init[3],
+      ComputeEnergy(parsing::ParseDotBracketSecondary("GAAAAUU", "((...))"), g_em).energy);
+  EXPECT_EQ(g_em.augu_penalty * 2 + g_em.HairpinInitiation(3) +
+      std::min(g_em.terminal[U][A][A][A], std::min(g_em.dangle3[U][A][A], g_em.dangle5[U][A][A])),
+      ComputeEnergy(parsing::ParseDotBracketSecondary("AAAAAUA", ".(...)."), g_em).energy);
+  EXPECT_EQ(g_em.augu_penalty * 2 + g_em.HairpinInitiation(3),
+      ComputeEnergy(parsing::ParseDotBracketSecondary("AAAAU", "(...)"), g_em).energy);
+  EXPECT_EQ(g_em.stack[G][C][G][C] + g_em.stack[C][U][A][G] + g_em.BulgeInitiation(1) +
+      g_em.stack[U][G][C][A] + g_em.HairpinInitiation(3),
+      ComputeEnergy(kBulge1, g_em).energy);
+  EXPECT_EQ(g_em.InternalLoopInitiation(5) + g_em.internal_asym + g_em.internal_augu_penalty + g_em.augu_penalty +
+      g_em.internal_2x3_mismatch[A][G][A][U] + g_em.internal_2x3_mismatch[C][A][A][G] + g_em.HairpinInitiation(3),
+      ComputeEnergy(kInternal1, g_em).energy);
 }
 
-TEST_P(EnergyTest, T04Tests) {
-  const auto& em = GetParam();
-  ONLY_FOR_THIS_MODEL(em, T04_MODEL_HASH);
+TEST_F(EnergyTest, T04Tests) {
+  ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
-  EXPECT_EQ(88, em.HairpinInitiation(87));
-  EXPECT_EQ(68, em.BulgeInitiation(57));
-  EXPECT_EQ(46, em.InternalLoopInitiation(67));
+  EXPECT_EQ(88, g_em.HairpinInitiation(87));
+  EXPECT_EQ(68, g_em.BulgeInitiation(57));
+  EXPECT_EQ(46, g_em.InternalLoopInitiation(67));
 
-  EXPECT_EQ(45, ComputeEnergy(parsing::ParseDotBracketSecondary("GCAAAGCC", "((...).)"), em).energy);
-  EXPECT_EQ(57, ComputeEnergy(parsing::ParseDotBracketSecondary("CCCAAAAUG", ".(.(...))"), em).energy);
-  EXPECT_EQ(55, ComputeEnergy(parsing::ParseDotBracketSecondary("UACAGA", "(....)"), em).energy);
-  EXPECT_EQ(-6, ComputeEnergy(parsing::ParseDotBracketSecondary("AGGGUCAUCCG", ".(((...)))."), em).energy);
-  EXPECT_EQ(80, ComputeEnergy(parsing::ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)"), em).energy);
+  EXPECT_EQ(45, ComputeEnergy(parsing::ParseDotBracketSecondary("GCAAAGCC", "((...).)"), g_em).energy);
+  EXPECT_EQ(57, ComputeEnergy(parsing::ParseDotBracketSecondary("CCCAAAAUG", ".(.(...))"), g_em).energy);
+  EXPECT_EQ(55, ComputeEnergy(parsing::ParseDotBracketSecondary("UACAGA", "(....)"), g_em).energy);
+  EXPECT_EQ(-6, ComputeEnergy(parsing::ParseDotBracketSecondary("AGGGUCAUCCG", ".(((...)))."), g_em).energy);
+  EXPECT_EQ(80, ComputeEnergy(parsing::ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)"), g_em).energy);
   EXPECT_EQ(95, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"), em).energy);
-  EXPECT_EQ(77, ComputeEnergy(parsing::ParseDotBracketSecondary("CCCGAAACAG", "(..(...).)"), em).energy);
-  EXPECT_EQ(74, ComputeEnergy(parsing::ParseDotBracketSecondary("GACAGAAACGCUGAAUC", "((..(...)......))"), em).energy);
+      "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"), g_em).energy);
+  EXPECT_EQ(77, ComputeEnergy(parsing::ParseDotBracketSecondary("CCCGAAACAG", "(..(...).)"), g_em).energy);
+  EXPECT_EQ(74,
+      ComputeEnergy(parsing::ParseDotBracketSecondary("GACAGAAACGCUGAAUC", "((..(...)......))"), g_em).energy);
   EXPECT_EQ(173, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"), em).energy);
+      "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"), g_em).energy);
   EXPECT_EQ(182, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"), em).energy);
+      "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"), g_em).energy);
   EXPECT_EQ(176, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"), em).energy);
+      "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"), g_em).energy);
   EXPECT_EQ(131, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"), em).energy);
+      "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"), g_em).energy);
   EXPECT_EQ(-276, ComputeEnergy(parsing::ParseDotBracketSecondary(
       "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
-      "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."), em).energy);
+      "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."), g_em).energy);
   EXPECT_EQ(179, ComputeEnergy(parsing::ParseDotBracketSecondary(
-      "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"), em).energy);
+      "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"), g_em).energy);
 
-  // Special stacking - this is not implemented. TODO: Implement this?
-  EXPECT_EQ(37, ComputeEnergy(parsing::ParseDotBracketSecondary("GGUCAAAGGUC", "((((...))))"), em).energy);
-  EXPECT_EQ(-45, ComputeEnergy(parsing::ParseDotBracketSecondary("GGGGAAACCCC", "((((...))))"), em).energy);
-  EXPECT_EQ(72, ComputeEnergy(parsing::ParseDotBracketSecondary("UGACAAAGGCGA", "(..(...)...)"), em).energy);
+  // Special stacking - this is not implg_emented. TODO: Implg_ement this?
+  EXPECT_EQ(37, ComputeEnergy(parsing::ParseDotBracketSecondary("GGUCAAAGGUC", "((((...))))"), g_em).energy);
+  EXPECT_EQ(-45, ComputeEnergy(parsing::ParseDotBracketSecondary("GGGGAAACCCC", "((((...))))"), g_em).energy);
+  EXPECT_EQ(72, ComputeEnergy(parsing::ParseDotBracketSecondary("UGACAAAGGCGA", "(..(...)...)"), g_em).energy);
 }
-
-INSTANTIATE_TEST_CASE_P(EnergyTest, EnergyTest, testing::Values(
-    energy::LoadEnergyModelFromDataDir(ENERGY_MODEL_PATH)
-));
 
 }
 }

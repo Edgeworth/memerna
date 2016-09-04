@@ -28,8 +28,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 
 // Takes the list representation of ctds in |branch_ctds| for |branches| branches and
 // writes it in per-base representation to |computed|.
-void AddBranchCtdsToComputed(computed_t& computed, const EnergyModel& em,
-    const std::deque<int>& branches, const branch_ctd_t& branch_ctds);
+void AddBranchCtdsToComputed(computed_t& computed, const std::deque<int>& branches, const branch_ctd_t& branch_ctds);
 // Reads the per-base ctd representation from |computed| for |branches| branches and
 // writes it in list representation to |branch_ctds|.
 energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,

@@ -165,8 +165,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 
 #undef UPDATE_CACHE
 
-void AddBranchCtdsToComputed(computed_t& computed, const EnergyModel& em,
-    const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
+void AddBranchCtdsToComputed(computed_t& computed, const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < int(branches.size()); ++i) {
     assert(int(computed.base_ctds.size()) > branches[i] &&

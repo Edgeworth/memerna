@@ -22,9 +22,7 @@ int main(int argc, char* argv[]) {
       computed.energy, parsing::PairsToDotBracket(computed.s.p).c_str(),
       parsing::ComputedToCtdString(computed).c_str());
 
-  energy_t energy_delta = atoi(argparse.GetOption("subopt-delta").c_str());
-  int max_structures = atoi(argparse.GetOption("subopt-max").c_str());
-  if (energy_delta >= 0 || max_structures > 0) {
+  if (ctx.GetOptions().subopt_energy >= 0 || ctx.GetOptions().subopt_num > 0) {
     auto structures = ctx.Suboptimal();
     printf("%zu suboptimal structures:\n", structures.size());
     for (const auto& subopt : structures) {

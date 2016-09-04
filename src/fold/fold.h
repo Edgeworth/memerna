@@ -96,6 +96,7 @@ public:
   const array2d_t<energy_t, EXT_SIZE>& GetExteriorState() const {return exterior;};
   const energy::EnergyModel& GetEnergyModel() const {return em;};
   const primary_t& GetPrimary() const {return r;}
+  const context_options_t& GetOptions() const {return options;}
 
   energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
   energy_t FastHairpin(int st, int en);
