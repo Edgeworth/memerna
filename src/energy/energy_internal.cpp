@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <memory>
 #include "energy/energy_internal.h"
-#include "energy/energy.h"
 
 namespace memerna {
 namespace energy {
@@ -29,8 +28,8 @@ namespace internal {
       back[used][idx] = std::make_tuple(cur_used, cur_idx, macro_upd_value_, reason); \
     } \
   } while (0)
-energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& branches,
-    bool use_first_lu, branch_ctd_t& branch_ctds) {
+energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
+    const std::deque<int>& branches, bool use_first_lu, branch_ctd_t& branch_ctds) {
   const auto& r = secondary.r;
   const auto& p = secondary.p;
   int N = int(branches.size());
@@ -79,7 +78,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
 
     // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be the last branch.
     if (!ru_exists[i] && i != N - 1) {
-      energy_t coax = g_stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
+      energy_t coax = em.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with anything, so
       // just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FLUSH_COAX_WITH_NEXT);
@@ -93,14 +92,14 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
     if (lu_usable[i] && ru_usable[i]) {
       // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
       // Consumes ru, so if it was shared, use it.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_terminal[rb][rub][lub][lb], CTD_TERMINAL_MISMATCH);
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, em.terminal[rb][rub][lub][lb], CTD_TERMINAL_MISMATCH);
 
       // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
       // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
       // Skip to the branch after next since the next branch can't be involved in any more interactions anyway:
       // its left pair is consumed, and its right pair can't dangle towards it.
       if (ru_shared[i] && i != N - 1) {
-        energy_t left_coax = energy::MismatchCoaxial(rb, rub, lub, lb);
+        energy_t left_coax = em.MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LEFT_MISMATCH_COAX_WITH_NEXT);
       }
     }
@@ -109,13 +108,13 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
     if (ru_usable[i]) {
       // Right dangle (3').
       // Only requires ru_exists so handle where left is both used and not used.
-      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, g_dangle3[rb][rub][lb], CTD_3_DANGLE);
-      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, g_dangle3[rb][rub][lb], CTD_3_DANGLE);
+      UPDATE_CACHE(ru_shared[i], i + 1, 0, i, em.dangle3[rb][rub][lb], CTD_3_DANGLE);
+      UPDATE_CACHE(ru_shared[i], i + 1, 1, i, em.dangle3[rb][rub][lb], CTD_3_DANGLE);
 
       // Mismatch mediated coaxial stacking, right facing (uses the next branch).
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
-        energy_t right_coax = energy::MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
+        energy_t right_coax = em.MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RIGHT_MISMATCH_COAX_WITH_NEXT);
         if (lu_exists[i]) {
@@ -128,7 +127,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
 
     if (lu_usable[i]) {
       // 5' dangle.
-      UPDATE_CACHE(0, i + 1, 0, i, g_dangle5[rb][lub][lb], CTD_5_DANGLE);
+      UPDATE_CACHE(0, i + 1, 0, i, em.dangle5[rb][lub][lb], CTD_5_DANGLE);
     }
 
     // Have the option of doing nothing.
@@ -166,7 +165,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const std::deque<int>& 
 
 #undef UPDATE_CACHE
 
-void AddBranchCtdsToComputed(computed_t& computed,
+void AddBranchCtdsToComputed(computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < int(branches.size()); ++i) {
@@ -178,7 +177,7 @@ void AddBranchCtdsToComputed(computed_t& computed,
   }
 }
 
-energy_t GetBranchCtdsFromComputed(const computed_t& computed,
+energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, branch_ctd_t& branch_ctds) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
@@ -199,33 +198,33 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed,
         break;
       case CTD_3_DANGLE:
         assert(p[branch] + 1 < int(r.size()));
-        energy = g_dangle3[enb][r[p[branch] + 1]][stb];
+        energy = em.dangle3[enb][r[p[branch] + 1]][stb];
         break;
       case CTD_5_DANGLE:
         assert(branch > 0);
-        energy = g_dangle5[enb][r[branch - 1]][stb];
+        energy = em.dangle5[enb][r[branch - 1]][stb];
         break;
       case CTD_TERMINAL_MISMATCH:
         assert(p[branch] + 1 < int(r.size()) && branch > 0);
-        energy = g_terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
+        energy = em.terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
         break;
       case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
         // .(   ).(   )
-        energy = MismatchCoaxial(r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
+        energy = em.MismatchCoaxial(r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
         branch_ctds.emplace_back(CTD_LEFT_MISMATCH_COAX_WITH_NEXT, energy);
         rot_left = (i == 0) || rot_left;
         break;
       case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
         assert(branch > 0 && p[branch] + 1 < int(r.size()));
         // (   ).(   ). or (.(   ).   )
-        energy = MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
+        energy = em.MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
         // Need to do rotations
         branch_ctds.emplace_back(CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, energy);
         rot_left = (i == 0) || rot_left;
         break;
       case CTD_FLUSH_COAX_WITH_PREV:
         // (   )(   ) or ((   )   ) or (   (   ))
-        energy = g_stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
+        energy = em.stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
         branch_ctds.emplace_back(CTD_FLUSH_COAX_WITH_NEXT, energy);
         rot_left = (i == 0) || rot_left;
         break;

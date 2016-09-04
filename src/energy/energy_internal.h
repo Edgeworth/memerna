@@ -3,6 +3,7 @@
 
 #include <deque>
 #include "common.h"
+#include "energy/energy_model.h"
 
 namespace memerna {
 namespace energy {
@@ -10,7 +11,7 @@ namespace internal {
 
 typedef std::deque<std::pair<Ctd, energy_t>> branch_ctd_t;
 
-energy_t ComputeOptimalCtd(const secondary_t& secondary,
+energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     const std::deque<int>& branches, bool use_first_lu,
     branch_ctd_t& branch_ctds);
 
@@ -27,15 +28,15 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary,
 
 // Takes the list representation of ctds in |branch_ctds| for |branches| branches and
 // writes it in per-base representation to |computed|.
-void AddBranchCtdsToComputed(computed_t& computed,
+void AddBranchCtdsToComputed(computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, const branch_ctd_t& branch_ctds);
 // Reads the per-base ctd representation from |computed| for |branches| branches and
 // writes it in list representation to |branch_ctds|.
-energy_t GetBranchCtdsFromComputed(const computed_t& computed,
+energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, branch_ctd_t& branch_ctds);
 
 }
 }
 }
 
-#endif  //MEMERNA_ENERGY_INTERNAL_H
+#endif  // MEMERNA_ENERGY_INTERNAL_H

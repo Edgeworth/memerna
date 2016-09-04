@@ -44,28 +44,23 @@ public:
   computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;
 
 private:
-  std::unique_ptr<datatable> data;
-  bool use_lyngso;
+  const std::unique_ptr<datatable> data;
+  const bool use_lyngso;
 };
 
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
 public:
-  Memerna(fold::fold_fn_t* const fold_fn_) : fold_fn(fold_fn_) {}
+  Memerna(const energy::EnergyModel& em_, fold::context_options_t options_) : em(em_), options(options_) {}
 
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  Memerna(Memerna&& meme) {
-    fold_fn = meme.fold_fn;
-  }
-
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
   virtual computed_t Fold(const primary_t& r) const;
-
-  computed_t FoldAndDpTable(const primary_t& r, fold::fold_state_t* fold_state) const;
 private:
-  fold::fold_fn_t* fold_fn;
+  const energy::EnergyModel em;
+  const fold::context_options_t options;
 };
 
 const std::map<std::string, ArgParse::option_t> BRIDGE_OPTIONS = {
