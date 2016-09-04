@@ -44,7 +44,7 @@ energy_t MultiloopEnergy(computed_t& computed,
     // No initiation for the exterior loop.
     if (compute_ctd) {
       ctd_energy = ComputeOptimalCtd(computed.s, em, branches, true, branch_ctds);
-      AddBranchCtdsToComputed(computed, em, branches, branch_ctds);
+      AddBranchCtdsToComputed(computed, branches, branch_ctds);
     } else {
       ctd_energy = GetBranchCtdsFromComputed(computed, em, branches, branch_ctds);
     }
@@ -79,7 +79,7 @@ energy_t MultiloopEnergy(computed_t& computed,
 
       // Write the optimal ctds to computed.
       branches.push_front(en);
-      AddBranchCtdsToComputed(computed, em, branches, branch_ctds);
+      AddBranchCtdsToComputed(computed, branches, branch_ctds);
       branches.pop_front();
     } else {
       branches.push_front(en);

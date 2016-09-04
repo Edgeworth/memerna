@@ -47,7 +47,7 @@ private:
       if (int(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
         prune.erase(--prune.end());
       if (int(prune.size()) < max_structures)
-        q.insert(node);
+        prune.insert(node);
     }
   }
 
