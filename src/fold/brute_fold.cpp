@@ -1,6 +1,5 @@
+#include "fold/brute_fold.h"
 #include "fold/fold.h"
-#include "fold/fold_internal.h"
-#include "parsing.h"
 
 namespace memerna {
 namespace fold {
@@ -10,10 +9,11 @@ namespace {
 computed_t best_computed;
 secondary_t cur_secondary;
 std::vector<std::pair<int, int>> base_pairs;
+const energy::EnergyModel* em;
 
 void FoldBruteForceInternal(int idx) {
   if (idx == int(base_pairs.size())) {
-    auto computed = energy::ComputeEnergy(cur_secondary);
+    auto computed = energy::ComputeEnergy(cur_secondary, *em);
     if (computed.energy < best_computed.energy)
       best_computed = std::move(computed);
     return;
@@ -44,10 +44,11 @@ void FoldBruteForceInternal(int idx) {
 
 }
 
-computed_t FoldBruteForce(const primary_t& r, fold_state_t*) {
+computed_t FoldBruteForce(const primary_t& r, const energy::EnergyModel& em_ref) {
   best_computed = computed_t(r);
   cur_secondary = secondary_t(r);
   base_pairs.clear();
+  em = &em_ref;
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < int(r.size()); ++st) {
     for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {

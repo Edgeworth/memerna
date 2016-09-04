@@ -1,10 +1,10 @@
 #include <constants.h>
+#include "energy/load_model.h"
 #include "energy/energy.h"
 #include "fold/fold.h"
 #include "parsing.h"
 #include "bridge.h"
 #include "energy/structure.h"
-#include "energy/energy_model.h"
 
 #include "nn_unpaired_folder.hpp"
 #include "nn_scorer.hpp"
@@ -82,25 +82,22 @@ energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
   computed_t computed;
   if (desc) {
     std::unique_ptr<energy::Structure> structure;
-    computed = energy::ComputeEnergy(secondary, &structure);
+    computed = energy::ComputeEnergy(secondary, em, &structure);
     for (const auto& s : structure->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    computed = energy::ComputeEnergy(secondary);
+    computed = energy::ComputeEnergy(secondary, em);
   }
 
   return computed.energy;
 }
 
 computed_t Memerna::Fold(const primary_t& r) const {
-  return fold_fn(r, nullptr);
+  return fold::Context(r, em, options).Fold();
 }
 
-computed_t Memerna::FoldAndDpTable(const primary_t& r, fold::fold_state_t* fold_state) const {
-  return fold_fn(r, fold_state);
-}
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   verify_expr(
@@ -111,7 +108,8 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   } else if (argparse.HasFlag("m")) {
     return std::unique_ptr<RnaPackage>(new Rnark("extern/rnark/data_tables/"));
   } else {
-    return std::unique_ptr<RnaPackage>(new Memerna(fold::FoldFunctionFromArgParse(argparse)));
+    return std::unique_ptr<RnaPackage>(new Memerna(
+        energy::LoadEnergyModelFromArgParse(argparse), fold::ContextOptionsFromArgParse(argparse)));
   }
 }
 

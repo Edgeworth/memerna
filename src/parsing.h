@@ -5,7 +5,7 @@
 #include <stack>
 #include <unordered_map>
 #include "base.h"
-#include "energy/energy_globals.h"
+#include "energy/energy_model.h"
 
 namespace memerna {
 namespace parsing {
@@ -16,15 +16,6 @@ secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::str
 std::vector<int> DotBracketToPairs(const std::string& pairs_str);
 std::string PairsToDotBracket(const std::vector<int>& pairs);
 std::string ComputedToCtdString(const computed_t& computed);
-
-void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]);
-void ParseMapFromFile(const std::string& filename, std::unordered_map<std::string, energy_t>& output);
-void ParseInitiationEnergyFromFile(const std::string& filename, energy_t (& output)[energy::INITIATION_CACHE_SZ]);
-void ParseInternalLoop1x1FromFile(const std::string& filename);
-void ParseInternalLoop1x2FromFile(const std::string& filename);
-void ParseInternalLoop2x2FromFile(const std::string& filename);
-void ParseDangleDataFromFile(const std::string& filename, energy_t (& output)[4][4][4]);
-void ParseMiscDataFromFile(const std::string& filename);
 
 }
 }

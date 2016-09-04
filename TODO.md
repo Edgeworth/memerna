@@ -7,6 +7,8 @@
 - Grep codebase for todos -- ** urgent
 - reprofile fuzz, fold after the refactor
 - re-run with msan, ubsan, asan in clang
+- add const; consts in classes, local vars, etc
+- unhack tests
 
 ### Wuchty testing plan
 - Implement reporting stacking for wuchty

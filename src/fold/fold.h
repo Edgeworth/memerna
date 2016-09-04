@@ -1,10 +1,12 @@
 #ifndef MEMERNA_FOLD_H
 #define MEMERNA_FOLD_H
 
+#include <stack>
 #include "argparse.h"
 #include "array.h"
 #include "common.h"
 #include "energy/energy.h"
+#include "fold/fold_internal.h"
 
 namespace memerna {
 namespace fold {
@@ -28,26 +30,105 @@ enum {
   EXT_SIZE
 };
 
-struct fold_state_t {
-  array3d_t<energy_t, DP_SIZE> dp_table;
-  array2d_t<energy_t, EXT_SIZE> ext_table;
+struct index_t {
+  int st, en, a;
+
+  index_t() = default;
+  index_t(int st_, int en_, int a_) : st(st_), en(en_), a(a_) {}
+
+  bool operator==(const index_t& o) const {
+    return st == o.st && en == o.en && a == o.a;
+  }
+
+  bool operator<(const index_t& o) const {
+    if (st != o.st) return st < o.st;
+    if (en != o.en) return en < o.en;
+    if (a != o.a) return a < o.a;
+    return false;
+  }
 };
 
-computed_t Fold3(const primary_t& r, fold_state_t* fold_state = nullptr);
-computed_t Fold2(const primary_t& r, fold_state_t* fold_state = nullptr);
-computed_t Fold1(const primary_t& r, fold_state_t* fold_state = nullptr);
-computed_t Fold0(const primary_t& r, fold_state_t* fold_state = nullptr);
-computed_t FoldBruteForce(const primary_t& r, fold_state_t* fold_state = nullptr);
+struct context_options_t {
+  enum class TableAlg {
+    ZERO,
+    ONE,
+    TWO,
+    THREE
+  };
 
-typedef computed_t (fold_fn_t)(const primary_t&, fold_state_t* fold_state);
+  enum class SuboptimalAlg {
+    ZERO
+  };
 
-fold_fn_t* const FOLD_FUNCTIONS[] = {&Fold0, &Fold1, &Fold2, &Fold3};
+  static constexpr TableAlg TABLE_ALGS[] = {TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
+  static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO};
+
+  context_options_t(TableAlg table_alg_ = TableAlg::ZERO,
+      SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
+      energy_t subopt_energy_ = -1, int subopt_num_ = -1)
+      : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_),
+        subopt_energy(subopt_energy_), subopt_num(subopt_num_) {}
+
+  TableAlg table_alg;
+  SuboptimalAlg suboptimal_alg;
+  energy_t subopt_energy;
+  int subopt_num;
+};
+
+class Context {
+public:
+  Context(const primary_t& r_, const energy::EnergyModel& em_);
+  Context(const primary_t& r_, const energy::EnergyModel& em_, context_options_t options_);
+
+  Context() = delete;
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+  Context(Context&& o) : r(o.r), em(o.em), options(o.options), N(o.N), pc(o.pc) {
+    arr = std::move(o.arr);
+    exterior = std::move(o.exterior);
+  }
+  Context& operator=(Context&&) = delete;
+
+  computed_t Fold();
+  std::vector<computed_t> Suboptimal();
+
+  const array3d_t<energy_t, DP_SIZE>& GetDpState() const {return arr;};
+  const array2d_t<energy_t, EXT_SIZE>& GetExteriorState() const {return exterior;};
+  const energy::EnergyModel& GetEnergyModel() const {return em;};
+  const primary_t& GetPrimary() const {return r;}
+
+  energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
+  energy_t FastHairpin(int st, int en);
+
+private:
+  const primary_t r;
+  const energy::EnergyModel em;
+  const context_options_t options;
+  const int N;
+  const internal::precomp_t pc;
+
+  array3d_t<energy_t, DP_SIZE> arr;
+  array2d_t<energy_t, EXT_SIZE> exterior;
+
+  void ComputeTables();
+  void ComputeTables0();
+  void ComputeTables1();
+  void ComputeTables2();
+  void ComputeTables3();
+
+  typedef std::stack<index_t> traceback_stack_t;
+
+  traceback_stack_t ComputeExterior();
+  computed_t Traceback(traceback_stack_t& q);
+};
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})}
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3"})},
+    {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
+    {"subopt-num", ArgParse::option_t("maximum number of reported structures").Arg("-1")}
 };
 
-fold::fold_fn_t* FoldFunctionFromArgParse(const ArgParse& argparse);
+context_options_t ContextOptionsFromArgParse(const ArgParse& argparse);
 
 }
 }

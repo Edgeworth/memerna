@@ -2,33 +2,35 @@
 #include <random>
 #include <chrono>
 #include <cinttypes>
+#include "fold/brute_fold.h"
 #include "bridge/bridge.h"
 #include "parsing.h"
-#include "energy/energy_model.h"
+#include "energy/load_model.h"
 
 using namespace memerna;
 
 template<typename RandomEngine>
-void FuzzRna(const primary_t& r, bool use_random_energy_model,
-    const std::vector<bridge::Memerna>& memernas, const bridge::Rnastructure& rnastructure,
+void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::EnergyModel& loaded,
+    const std::vector<fold::context_options_t>& memernas, const bridge::Rnastructure& rnastructure,
     RandomEngine& eng) {
   uint_fast32_t seed = eng();
+  auto em = loaded;
   if (use_random_energy_model)
-    energy::LoadRandomEnergyModel(seed);
+    em = energy::LoadRandomEnergyModel(seed);
 
-  std::vector<fold::fold_state_t> memerna_states;
+  std::vector<fold::Context> memerna_ctxs;
   std::vector<computed_t> memerna_folds;
   std::vector<energy_t> memerna_efns;
   std::vector<energy_t> memerna_optimal_efns;
-  for (const auto& memerna : memernas) {
-    fold::fold_state_t state;
-    auto computed = memerna.FoldAndDpTable(r, &state);
+  for (const auto& options : memernas) {
+    fold::Context ctx(r, em, options);
+    auto computed = ctx.Fold();
     // First compute with the CTDs that fold returned to check the energy.
-    memerna_efns.push_back(energy::ComputeEnergyWithCtds(computed).energy);
+    memerna_efns.push_back(energy::ComputeEnergyWithCtds(computed, em).energy);
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s).energy);
-    memerna_states.push_back(std::move(state));
+    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, em).energy);
+    memerna_ctxs.push_back(std::move(ctx));
     memerna_folds.push_back(std::move(computed));
   }
 
@@ -43,7 +45,7 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
   bool use_brute = r.size() <= 24;
   computed_t brute_computed;
   if (use_brute) {
-    brute_computed = fold::FoldBruteForce(r, nullptr);
+    brute_computed = fold::FoldBruteForce(r, em);
     if (memerna_folds[0].energy != brute_computed.energy)
       mfe_diff = true;
   }
@@ -65,9 +67,9 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
   for (st = N - 1; st >= 0; --st) {
     for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       for (a = 0; a < fold::DP_SIZE; ++a) {
-        auto memerna0 = memerna_states[0].dp_table[st][en][a];
+        auto memerna0 = memerna_ctxs[0].GetDpState()[st][en][a];
         for (int i = 0; i < int(memernas.size()); ++i) {
-          auto memernai = memerna_states[i].dp_table[st][en][a];
+          auto memernai = memerna_ctxs[i].GetDpState()[st][en][a];
           // If meant to be infinity and not.
           if (((memerna0 < constants::CAP_E) != (memernai < constants::CAP_E)) ||
               (memerna0 < constants::CAP_E && memerna0 != memernai)) {
@@ -113,7 +115,7 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model,
     if (dp_table_diff) {
       printf("  DP table difference at %d %d %d:\n", st, en, a);
       for (int i = 0; i < int(memernas.size()); ++i)
-        printf("    Fold%d: %d\n", i, memerna_states[i].dp_table[st][en][a]);
+        printf("    Fold%d: %d\n", i, memerna_ctxs[i].GetDpState()[st][en][a]);
       if (!use_random_energy_model)
         printf("    RNAstructure: V: %d W: %d\n",
             rnastructure_state.v.f(st + 1, en + 1),
@@ -138,17 +140,17 @@ int main(int argc, char* argv[]) {
   int max_len = atoi(pos[1].c_str());
   verify_expr(min_len > 0, "invalid min length");
   verify_expr(max_len >= min_len, "invalid max len");
-  energy::LoadEnergyModelFromArgParse(argparse);
 
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
-  std::vector<bridge::Memerna> memernas;
-  for (const auto& fold_fn : fold::FOLD_FUNCTIONS) {
-    memernas.emplace_back(fold_fn);
+  std::vector<fold::context_options_t> memernas;
+  for (auto table_alg : fold::context_options_t::TABLE_ALGS) {
+    memernas.emplace_back(table_alg);
   }
 
   auto start_time = std::chrono::steady_clock::now();
   auto interval = atoi(argparse.GetOption("print-interval").c_str());
   std::uniform_int_distribution<int> len_dist(min_len, max_len);
+  auto em = energy::LoadEnergyModelFromArgParse(argparse);
   for (int i = 0;; ++i) {
     int length = len_dist(eng);
     if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
@@ -157,7 +159,7 @@ int main(int argc, char* argv[]) {
       start_time = std::chrono::steady_clock::now();
     }
     auto r = GenerateRandomPrimary(length, eng);
-    FuzzRna(r, argparse.HasFlag("random"), memernas, rnastructure, eng);
+    FuzzRna(r, argparse.HasFlag("random"), em, memernas, rnastructure, eng);
   }
 }
 

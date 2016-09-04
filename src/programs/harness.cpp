@@ -1,9 +1,8 @@
 #include <iostream>
 #include <memory>
 #include "parsing.h"
-#include "argparse.h"
 #include "bridge/bridge.h"
-#include "energy/energy_model.h"
+#include "energy/load_model.h"
 
 using namespace memerna;
 
@@ -20,10 +19,8 @@ int main(int argc, char* argv[]) {
   verify_expr(
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
-  energy::LoadEnergyModelFromArgParse(argparse);
 
   auto package = bridge::RnaPackageFromArgParse(argparse);
-
   const auto& pos = argparse.GetPositional();
   bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());
