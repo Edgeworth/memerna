@@ -116,11 +116,9 @@ private:
   void ComputeTables1();
   void ComputeTables2();
   void ComputeTables3();
+  void ComputeExterior();
 
-  typedef std::stack<index_t> traceback_stack_t;
-
-  traceback_stack_t ComputeExterior();
-  computed_t Traceback(traceback_stack_t& q);
+  computed_t Traceback();
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
