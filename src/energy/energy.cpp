@@ -115,7 +115,7 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds,
   std::deque<int> branches;
   for (int i = st; i <= en; ++i) {
     int pair = p[i];
-    assert(pair <= en);
+    assert(pair <= en && (pair == -1 || p[pair] == i));
     if (!(i == st && pair == en) && !(i == en && pair == st) && pair != -1) {
       branches.push_back(i);
       // Skip ahead.

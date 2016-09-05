@@ -58,8 +58,8 @@ void Context::ComputeTables() {
 
 computed_t Context::Fold() {
   ComputeTables();
-  traceback_stack_t q = ComputeExterior();
-  return Traceback(q);
+  ComputeExterior();
+  return Traceback();
 }
 
 std::vector<computed_t> Context::Suboptimal() {
