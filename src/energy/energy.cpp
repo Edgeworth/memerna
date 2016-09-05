@@ -10,12 +10,12 @@ namespace energy {
 
 using namespace internal;
 
-energy_t MultiloopEnergy(computed_t& computed,
+energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds,
     int st, int en, std::deque<int>& branches, const EnergyModel& em,
     std::unique_ptr<Structure>* ss) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
-  bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
+  const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   energy_t energy = 0;
 
   std::unique_ptr<MultiLoopStructure> s = nullptr;
@@ -37,12 +37,11 @@ energy_t MultiloopEnergy(computed_t& computed,
   num_unpaired = en - st - 1 - num_unpaired + exterior_loop * 2;
   if (s) s->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
-  bool compute_ctd = branches.empty() || computed.base_ctds[branches.front()] == CTD_NA;
   branch_ctd_t branch_ctds;
   energy_t ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
-    if (compute_ctd) {
+    if (compute_ctds) {
       ctd_energy = ComputeOptimalCtd(computed.s, em, branches, true, branch_ctds);
       AddBranchCtdsToComputed(computed, branches, branch_ctds);
     } else {
@@ -57,7 +56,7 @@ energy_t MultiloopEnergy(computed_t& computed,
     if (s) s->AddNote("%de - initiation", initiation);
     energy += initiation;
 
-    if (compute_ctd) {
+    if (compute_ctds) {
       branch_ctd_t config_ctds[4] = {};
       std::pair<energy_t, int> config_energies[4] = {};
       branches.push_front(en);
@@ -105,7 +104,7 @@ energy_t MultiloopEnergy(computed_t& computed,
   return energy;
 }
 
-energy_t ComputeEnergyInternal(computed_t& computed,
+energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds,
     int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* s) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
@@ -126,29 +125,28 @@ energy_t ComputeEnergyInternal(computed_t& computed,
 
   // We're in the exterior loop if we were called with the entire RNA and there's no match on the very ends that takes
   // us out of the exterior loop.
-  bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
+  const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(computed, st, en, branches, em, s);
+    energy += MultiloopEnergy(computed, compute_ctds, st, en, branches, em, s);
   } else if (branches.size() == 0) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
     energy += em.Hairpin(r, st, en, s);
   } else if (branches.size() == 1) {
-    int loop_st = branches.front(), loop_en = p[branches.front()];
+    const int loop_st = branches.front(), loop_en = p[branches.front()];
     energy += em.TwoLoop(r, st, en, loop_st, loop_en, s);
   }
 
   if (s) (*s)->SetSelfEnergy(energy);
   // Add energy from children.
   for (auto i : branches) {
-    int pair = p[i];
     if (s) {
       std::unique_ptr<Structure> structure;
-      energy += ComputeEnergyInternal(computed, i, pair, em, &structure);
+      energy += ComputeEnergyInternal(computed, compute_ctds, i, p[i], em, &structure);
       (*s)->AddBranch(std::move(structure));
     } else {
-      energy += ComputeEnergyInternal(computed, i, pair, em, nullptr);
+      energy += ComputeEnergyInternal(computed, compute_ctds, i, p[i], em, nullptr);
     }
   }
   if (s) (*s)->SetTotalEnergy(energy);
@@ -160,15 +158,15 @@ energy_t ComputeEnergyInternal(computed_t& computed,
 computed_t ComputeEnergy(const secondary_t& secondary,
     const EnergyModel& em, std::unique_ptr<Structure>* s) {
   computed_t computed(secondary);
-  return ComputeEnergyWithCtds(computed, em, s);
+  return ComputeEnergyWithCtds(computed, em, true, s);
 }
 
 computed_t ComputeEnergyWithCtds(const computed_t& computed,
-    const EnergyModel& em, std::unique_ptr<Structure>* s) {
+    const EnergyModel& em, bool compute_ctds, std::unique_ptr<Structure>* s) {
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy = ComputeEnergyInternal(computed_copy, 0, (int) r.size() - 1, em, s);
+  energy_t energy = ComputeEnergyInternal(computed_copy, compute_ctds, 0, (int) r.size() - 1, em, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;
     if (s) {

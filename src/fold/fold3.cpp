@@ -19,10 +19,10 @@ void Context::ComputeTables3() {
     for (int i = 0; i < CAND_SIZE; ++i)
       cand_st[i].clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
+      const base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
-      int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+      const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
 
       for (int l = 0; l <= max_inter; ++l) {
         // Don't add asymmetry here
@@ -73,7 +73,7 @@ void Context::ComputeTables3() {
             em.internal_2x2[stb][st1b][st2b][r[st + 3]][r[en - 3]][en2b][en1b][enb] + arr[st + 3][en - 3][DP_P]);
 
         // 2x3 and 3x2 loops
-        auto two_by_three = base_internal_loop + em.internal_init[5] +
+        const auto two_by_three = base_internal_loop + em.internal_init[5] +
             std::min(em.internal_asym, NINIO_MAX_ASYM) +
             em.internal_2x3_mismatch[stb][st1b][en1b][enb];
         mins[DP_P] = std::min(mins[DP_P], two_by_three + em.InternalLoopAuGuPenalty(r[st + 3], r[en - 4]) +
@@ -92,7 +92,7 @@ void Context::ComputeTables3() {
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en));
 
-        auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
+        const auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
         // (<   ><   >)
         mins[DP_P] = std::min(mins[DP_P], base_branch_cost + arr[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
@@ -107,7 +107,7 @@ void Context::ComputeTables3() {
         for (auto cand : cand_st[CAND_P_MISMATCH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy + arr[cand.idx + 1][en - 1][DP_U]);
         // (.(   )   .) Left outer coax
-        auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+        const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - pc.min_mismatch_coax +
               outer_coax + arr[cand.idx + 1][en - 2][DP_U]);
@@ -141,23 +141,23 @@ void Context::ComputeTables3() {
         mins[DP_U2] = std::min(mins[DP_U2], cand.energy + arr[cand.idx + 1][en][DP_U]);
       }
       for (auto cand : cand_st[CAND_U_LCOAX]) {
-        auto val = cand.energy + std::min(arr[cand.idx + 1][en][DP_U_WC], arr[cand.idx + 1][en][DP_U_GU]);
+        const auto val = cand.energy + std::min(arr[cand.idx + 1][en][DP_U_WC], arr[cand.idx + 1][en][DP_U_GU]);
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_RCOAX_FWD]) {
-        auto val = cand.energy - pc.min_mismatch_coax + arr[cand.idx + 1][en][DP_U_RCOAX];
+        const auto val = cand.energy - pc.min_mismatch_coax + arr[cand.idx + 1][en][DP_U_RCOAX];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
         // (   )<(   ) > Flush coax - U
-        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_WC];
+        const auto val = cand.energy + arr[cand.idx + 1][en][DP_U_WC];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
-        auto val = cand.energy + arr[cand.idx + 1][en][DP_U_GU];
+        const auto val = cand.energy + arr[cand.idx + 1][en][DP_U_GU];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
@@ -181,7 +181,7 @@ void Context::ComputeTables3() {
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
 
       // (   ) - Normal - U, U2
-      auto normal_base = arr[st][en][DP_P] + pc.augubranch[stb][enb];
+      const auto normal_base = arr[st][en][DP_P] + pc.augubranch[stb][enb];
       if (normal_base < arr[st][en][DP_U] && normal_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = normal_base;
 
@@ -198,30 +198,30 @@ void Context::ComputeTables3() {
       }
 
       // (   ). - 3' - U, U2
-      auto dangle3_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.dangle3[en1b][enb][stb];
+      const auto dangle3_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.dangle3[en1b][enb][stb];
       if (dangle3_base < arr[st][en][DP_U] && dangle3_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = dangle3_base;
       // .(   ) - 5' - U, U2
-      auto dangle5_base = arr[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + em.dangle5[enb][stb][st1b];
+      const auto dangle5_base = arr[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + em.dangle5[enb][stb][st1b];
       if (dangle5_base < arr[st][en][DP_U] && dangle5_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = dangle5_base;
       // .(   ). - Terminal mismatch - U, U2
-      auto terminal_base = arr[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] + em.terminal[en1b][enb][stb][st1b];
+      const auto terminal_base = arr[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] + em.terminal[en1b][enb][stb][st1b];
       if (terminal_base < arr[st][en][DP_U] && terminal_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = terminal_base;
       // .(   ).<(   ) > - Left coax - U, U2
-      auto lcoax_base = arr[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
+      const auto lcoax_base = arr[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
           em.MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < arr[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
-      auto rcoaxf_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_mismatch_coax;
+      const auto rcoaxf_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_mismatch_coax;
       if (rcoaxf_base < arr[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
 
       // (   ).<( * ). > Right coax backward - RCOAX
       if (st > 0) {
-        auto rcoaxb_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] +
+        const auto rcoaxb_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] +
             em.MismatchCoaxial(en1b, enb, r[st - 1], stb);
         if (rcoaxb_base < arr[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
           cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
@@ -231,9 +231,9 @@ void Context::ComputeTables3() {
 
       // (   )<(   ) > Flush coax - U, U2
       if (en + 1 < N) {
-        auto enr1b = r[en + 1];
-        auto wc_flush_base = arr[st][en][DP_P] + pc.augubranch[stb][enb] + em.stack[enb][enr1b][enr1b ^ 3][stb];
-        auto gu_flush_base = arr[st][en][DP_P] + pc.augubranch[stb][enb] + em.stack[enb][enr1b][enr1b ^ 1][stb];
+        const auto enr1b = r[en + 1];
+        const auto wc_flush_base = arr[st][en][DP_P] + pc.augubranch[stb][enb] + em.stack[enb][enr1b][enr1b ^ 3][stb];
+        const auto gu_flush_base = arr[st][en][DP_P] + pc.augubranch[stb][enb] + em.stack[enb][enr1b][enr1b ^ 1][stb];
         if (wc_flush_base < CAP_E && wc_flush_base < arr[st][en][DP_U])
           cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
         if (gu_flush_base < CAP_E && (enr1b == G || enr1b == U) && gu_flush_base < arr[st][en][DP_U])
@@ -249,29 +249,29 @@ void Context::ComputeTables3() {
 
       // Paired cases
       // (.(   )   .) Left outer coax - P
-      auto plocoax_base = arr[st + 2][en][DP_P] + pc.augubranch[st2b][enb] + pc.min_mismatch_coax;
+      const auto plocoax_base = arr[st + 2][en][DP_P] + pc.augubranch[st2b][enb] + pc.min_mismatch_coax;
       if (plocoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_OUTER].push_back({plocoax_base, en});
       // (.   (   ).) Right outer coax
-      auto procoax_base = arr[st][en - 2][DP_P] + pc.augubranch[stb][en2b] + pc.min_mismatch_coax;
+      const auto procoax_base = arr[st][en - 2][DP_P] + pc.augubranch[stb][en2b] + pc.min_mismatch_coax;
       if (procoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
-      auto plrcoax_base = arr[st + 2][en - 1][DP_P] + pc.augubranch[st2b][en1b] +
+      const auto plrcoax_base = arr[st + 2][en - 1][DP_P] + pc.augubranch[st2b][en1b] +
           em.MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
-      auto prlcoax_base = arr[st + 1][en - 2][DP_P] + pc.augubranch[st1b][en2b] +
+      const auto prlcoax_base = arr[st + 1][en - 2][DP_P] + pc.augubranch[st1b][en2b] +
           em.MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax
-      auto plfcoax_base = arr[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + pc.min_flush_coax;
+      const auto plfcoax_base = arr[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + pc.min_flush_coax;
       if (plfcoax_base < arr[st + 1][en][DP_U])
         cand_st[CAND_P_FLUSH].push_back({plfcoax_base, en});
       // (   (   )) Right flush coax
-      auto prfcoax_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_flush_coax;
+      const auto prfcoax_base = arr[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_flush_coax;
       if (prfcoax_base < arr[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_FLUSH][en].push_back({prfcoax_base, st});
 

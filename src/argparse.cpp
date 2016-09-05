@@ -21,7 +21,7 @@ std::string ArgParse::option_t::Desc() const {
 std::string ArgParse::Parse(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    bool is_flag = arg[0] == '-';
+    const bool is_flag = arg[0] == '-';
     while (*arg == '-') ++arg;
 
     if (is_flag) {
@@ -67,7 +67,7 @@ void ArgParse::AddOptions(const std::map<std::string, ArgParse::option_t>& possi
 }
 
 void ArgParse::ParseOrExit(int argc, char** argv) {
-  auto ret = Parse(argc, argv);
+  const auto ret = Parse(argc, argv);
   verify_expr(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
 

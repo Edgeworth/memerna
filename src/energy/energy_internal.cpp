@@ -188,10 +188,10 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   // but that actually needs to be at the end.
   bool rot_left = false;
   for (int i = 0; i < int(branches.size()); ++i) {
-    int branch = branches[i];
-    int prev_branch = i > 0 ? branches[i - 1] : branches.back();
+    const int branch = branches[i];
+    const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     energy_t energy = 0;
-    auto stb = r[branch], enb = r[p[branch]];
+    const auto stb = r[branch], enb = r[p[branch]];
     switch (computed.base_ctds[branch]) {
       case CTD_UNUSED:
         break;

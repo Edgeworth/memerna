@@ -14,10 +14,10 @@ void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
-    base_t a = CharToBase((char) fgetc(fp));
-    base_t b = CharToBase((char) fgetc(fp));
-    base_t c = CharToBase((char) fgetc(fp));
-    base_t d = CharToBase((char) fgetc(fp));
+    const base_t a = CharToBase((char) fgetc(fp));
+    const base_t b = CharToBase((char) fgetc(fp));
+    const base_t c = CharToBase((char) fgetc(fp));
+    const base_t d = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1, "expected base");
     verify_expr(fscanf(fp, " %d ", &output[a][b][c][d]) == 1, "expected energy");
@@ -50,12 +50,12 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
-    base_t a = CharToBase((char) fgetc(fp));
-    base_t b = CharToBase((char) fgetc(fp));
-    base_t c = CharToBase((char) fgetc(fp));
-    base_t d = CharToBase((char) fgetc(fp));
-    base_t e = CharToBase((char) fgetc(fp));
-    base_t f = CharToBase((char) fgetc(fp));
+    const base_t a = CharToBase((char) fgetc(fp));
+    const base_t b = CharToBase((char) fgetc(fp));
+    const base_t c = CharToBase((char) fgetc(fp));
+    const base_t d = CharToBase((char) fgetc(fp));
+    const base_t e = CharToBase((char) fgetc(fp));
+    const base_t f = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
     verify_expr(fscanf(fp, " %d ", &em.internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
@@ -67,13 +67,13 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
-    base_t a = CharToBase((char) fgetc(fp));
-    base_t b = CharToBase((char) fgetc(fp));
-    base_t c = CharToBase((char) fgetc(fp));
-    base_t d = CharToBase((char) fgetc(fp));
-    base_t e = CharToBase((char) fgetc(fp));
-    base_t f = CharToBase((char) fgetc(fp));
-    base_t g = CharToBase((char) fgetc(fp));
+    const base_t a = CharToBase((char) fgetc(fp));
+    const base_t b = CharToBase((char) fgetc(fp));
+    const base_t c = CharToBase((char) fgetc(fp));
+    const base_t d = CharToBase((char) fgetc(fp));
+    const base_t e = CharToBase((char) fgetc(fp));
+    const base_t f = CharToBase((char) fgetc(fp));
+    const base_t g = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 &&
         e != -1 && f != -1 && g != -1, "expected base");
@@ -86,14 +86,14 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
-    base_t a = CharToBase((char) fgetc(fp));
-    base_t b = CharToBase((char) fgetc(fp));
-    base_t c = CharToBase((char) fgetc(fp));
-    base_t d = CharToBase((char) fgetc(fp));
-    base_t e = CharToBase((char) fgetc(fp));
-    base_t f = CharToBase((char) fgetc(fp));
-    base_t g = CharToBase((char) fgetc(fp));
-    base_t h = CharToBase((char) fgetc(fp));
+    const base_t a = CharToBase((char) fgetc(fp));
+    const base_t b = CharToBase((char) fgetc(fp));
+    const base_t c = CharToBase((char) fgetc(fp));
+    const base_t d = CharToBase((char) fgetc(fp));
+    const base_t e = CharToBase((char) fgetc(fp));
+    const base_t f = CharToBase((char) fgetc(fp));
+    const base_t g = CharToBase((char) fgetc(fp));
+    const base_t h = CharToBase((char) fgetc(fp));
     if (a == -1) break;
     verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 &&
         f != -1 && g != -1 && h != -1, "expected base");

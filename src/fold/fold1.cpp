@@ -10,12 +10,12 @@ void Context::ComputeTables1() {
   static_assert(HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
+      const base_t stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
 
       // Update paired - only if can actually pair.
       if (internal::ViableFoldingPair(r, st, en)) {
         energy_t p_min = MAX_E;
-        int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+        const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (arr[ist][ien][DP_P] < CAP_E)
@@ -27,7 +27,7 @@ void Context::ComputeTables1() {
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
+        const auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
 
         // (<   ><   >)
         p_min = std::min(p_min, base_branch_cost + arr[st + 1][en - 1][DP_U2]);
@@ -45,7 +45,7 @@ void Context::ComputeTables1() {
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
           // (.(   )   .) Left outer coax - P
-          auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+          const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
           p_min = std::min(p_min, base_branch_cost + arr[st + 2][piv][DP_P] +
               pc.augubranch[st2b][plb] + arr[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
@@ -82,14 +82,14 @@ void Context::ComputeTables1() {
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        auto pb = r[piv], pl1b = r[piv - 1];
+        const auto pb = r[piv], pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[st][piv][DP_P] + pc.augubranch[stb][pb];
-        auto base01 = arr[st][piv - 1][DP_P] + pc.augubranch[stb][pl1b];
-        auto base10 = arr[st + 1][piv][DP_P] + pc.augubranch[st1b][pb];
-        auto base11 = arr[st + 1][piv - 1][DP_P] + pc.augubranch[st1b][pl1b];
+        const auto base00 = arr[st][piv][DP_P] + pc.augubranch[stb][pb];
+        const auto base01 = arr[st][piv - 1][DP_P] + pc.augubranch[stb][pl1b];
+        const auto base10 = arr[st + 1][piv][DP_P] + pc.augubranch[st1b][pb];
+        const auto base11 = arr[st + 1][piv - 1][DP_P] + pc.augubranch[st1b][pl1b];
         // Min is for either placing another unpaired or leaving it as nothing.
-        auto right_unpaired = std::min(arr[piv + 1][en][DP_U], 0);
+        const auto right_unpaired = std::min(arr[piv + 1][en][DP_U], 0);
 
         // (   )<   > - U, U_WC?, U_GU?
         u2_min = std::min(u2_min, base00 + arr[piv + 1][en][DP_U]);
@@ -125,7 +125,7 @@ void Context::ComputeTables1() {
 
         // There has to be remaining bases to even have a chance at these cases.
         if (piv < en) {
-          auto pr1b = r[piv + 1];
+          const auto pr1b = r[piv + 1];
           // (   )<(   ) > Flush coax - U
           val = base00 + em.stack[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC];
           u_min = std::min(u_min, val);

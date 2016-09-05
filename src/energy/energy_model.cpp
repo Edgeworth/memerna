@@ -29,14 +29,14 @@ energy_t EnergyModel::Hairpin(const primary_t& r, int st, int en, std::unique_pt
   std::string seq;
   for (int i = st; i <= en; ++i)
     seq += BaseToChar(r[i]);
-  auto iter = hairpin.find(seq);
+  const auto iter = hairpin.find(seq);
   if (iter != hairpin.end()) {
     if (s) (*s)->AddNote("special hairpin");
     return iter->second;
   }
 
   // Subtract two for the initiating base pair.
-  int length = en - st - 1;
+  const int length = en - st - 1;
   if (length < 3) return MAX_E;  // Disallowed by T04.
   energy_t energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
@@ -59,7 +59,7 @@ energy_t EnergyModel::Hairpin(const primary_t& r, int st, int en, std::unique_pt
     }
     return energy;
   }
-  base_t left = r[st + 1], right = r[en - 1];
+  const base_t left = r[st + 1], right = r[en - 1];
   if (s) (*s)->AddNote("%de - terminal mismatch", terminal[r[st]][left][right][r[en]]);
   energy += terminal[r[st]][left][right][r[en]];
   if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
@@ -94,7 +94,7 @@ energy_t EnergyModel::Hairpin(const primary_t& r, int st, int en, std::unique_pt
 energy_t EnergyModel::Bulge(const primary_t& r,
     int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) && (oen - ien >= 2 || ist - ost >= 2));
-  int length = std::max(ist - ost, oen - ien) - 1;
+  const int length = std::max(ist - ost, oen - ien) - 1;
   energy_t energy = BulgeInitiation(length);
 
   if (s) {
@@ -148,7 +148,7 @@ energy_t EnergyModel::Bulge(const primary_t& r,
 //   rotate the rna by 180 degrees to look it up for 3x2.
 energy_t EnergyModel::InternalLoop(const primary_t& r,
     int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
-  int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
     (*s)->AddNote("%dx%d internal loop", toplen, botlen);
@@ -175,7 +175,7 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
     energy += internal_augu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
-  energy_t asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
+  const energy_t asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -184,13 +184,13 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
   // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which side is
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
-    energy_t mismatch =
+    const energy_t mismatch =
         internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
             internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
-    energy_t mismatch =
+    const energy_t mismatch =
         internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
             internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
@@ -202,7 +202,7 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
 
 energy_t EnergyModel::TwoLoop(const primary_t& r,
     int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
-  int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
     return stack[r[ost]][r[ist]][r[ien]][r[oen]];

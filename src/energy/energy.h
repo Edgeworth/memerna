@@ -16,9 +16,11 @@ namespace energy {
 
 class Structure;
 
-computed_t ComputeEnergy(const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
-computed_t
-ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
+computed_t ComputeEnergy(
+    const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
+computed_t ComputeEnergyWithCtds(
+    const computed_t& computed, const EnergyModel& em,
+    bool compute_ctds = false, std::unique_ptr<Structure>* s = nullptr);
 
 }
 }
