@@ -31,7 +31,6 @@ std::vector<computed_t> Suboptimal0::Run() {
       std::vector<Ctd>(r.size(), CTD_NA),
       exterior[0][EXT]
   });
-  printf("%d %d\n", max_energy, max_structures);
   while (!q.empty()) {
 //    printf("q size: %zu\n", q.size());
 //    for (const auto& node : q) {
@@ -120,19 +119,19 @@ std::vector<computed_t> Suboptimal0::Run() {
         energy = base_energy + base11 + em.terminal[en1b][enb][stb][st1b] + exterior[en + 1][EXT];
         Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {CTD_TERMINAL_MISMATCH, st + 1});
 
-        // .(   ).<(   ) > Left coax
-        energy = base_energy + base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
-        Expand(energy + exterior[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
-            {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
-        Expand(energy + exterior[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
-            {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st});
-
-        // (   ).<(   ). > Right coax forward
-        energy = base_energy + base01 + exterior[en + 1][EXT_RCOAX];
-        Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en - 1, DP_P},
-            {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, st});
-
         if (en < N - 1) {
+          // .(   ).<(   ) > Left coax
+          energy = base_energy + base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
+          Expand(energy + exterior[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
+              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
+          Expand(energy + exterior[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
+              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st});
+
+          // (   ).<(   ). > Right coax forward
+          energy = base_energy + base01 + exterior[en + 1][EXT_RCOAX];
+          Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en - 1, DP_P},
+              {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, st});
+
           // (   )<(   ) > Flush coax
           const auto enrb = r[en + 1];
           energy = base_energy + base00 + em.stack[enb][enrb][enrb ^ 3][stb] + exterior[en + 1][EXT_WC];
@@ -330,9 +329,6 @@ std::vector<computed_t> Suboptimal0::Run() {
 
   std::vector<computed_t> ret;
   for (const auto& struc : finished) {
-    for (const auto& meme : struc.not_yet_expanded) {
-      printf("%d %d %d\n", meme.st, meme.en, meme.a);
-    }
     assert(struc.not_yet_expanded.empty());
     ret.push_back({{r, struc.p}, struc.base_ctds, struc.energy});
   }

@@ -3,16 +3,11 @@
 
 ### Todo
 - American fuzzy lop?
-- Wutchys
 - Grep codebase for todos -- ** urgent
-- reprofile fuzz, fold after the refactor
 - re-run with msan, ubsan, asan in clang
-- add const; consts in classes, local vars, etc
-- unhack tests
+- Optimise wuchty
 
 ### Wuchty testing plan
-- Implement reporting stacking for wuchty
-- List of CTDs (enum), put into energy/ etc. allow specifying custom stacking for branches
 - Write bruteforce version - needs to enumerate all stackings as well
 -- current bruteforce runs only up to N = 25, which is at most ~11 branches 
 -- will need way to run through every possible

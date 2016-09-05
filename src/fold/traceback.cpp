@@ -137,33 +137,34 @@ computed_t Context::Traceback() {
           q.emplace(en + 1, -1, EXT);
           goto loopend;
         }
-        // .(   ).<(   ) > Left coax  x
-        val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
-        if (val + exterior[en + 1][EXT_WC] == exterior[st][EXT]) {
-          computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-          computed.base_ctds[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
-          q.emplace(st + 1, en - 1, DP_P);
-          q.emplace(en + 1, -1, EXT_WC);
-          goto loopend;
-        }
-        if (val + exterior[en + 1][EXT_GU] == exterior[st][EXT]) {
-          computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-          computed.base_ctds[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
-          q.emplace(st + 1, en - 1, DP_P);
-          q.emplace(en + 1, -1, EXT_GU);
-          goto loopend;
-        }
-
-        // (   ).<(   ). > Right coax forward
-        if (base01 + exterior[en + 1][EXT_RCOAX] == exterior[st][EXT]) {
-          computed.base_ctds[st] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
-          computed.base_ctds[en + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
-          q.emplace(st, en - 1, DP_P);
-          q.emplace(en + 1, -1, EXT_RCOAX);
-          goto loopend;
-        }
 
         if (en < N - 1) {
+          // .(   ).<(   ) > Left coax  x
+          val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
+          if (val + exterior[en + 1][EXT_WC] == exterior[st][EXT]) {
+            computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+            computed.base_ctds[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+            q.emplace(st + 1, en - 1, DP_P);
+            q.emplace(en + 1, -1, EXT_WC);
+            goto loopend;
+          }
+          if (val + exterior[en + 1][EXT_GU] == exterior[st][EXT]) {
+            computed.base_ctds[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+            computed.base_ctds[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+            q.emplace(st + 1, en - 1, DP_P);
+            q.emplace(en + 1, -1, EXT_GU);
+            goto loopend;
+          }
+
+          // (   ).<(   ). > Right coax forward
+          if (base01 + exterior[en + 1][EXT_RCOAX] == exterior[st][EXT]) {
+            computed.base_ctds[st] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+            computed.base_ctds[en + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+            q.emplace(st, en - 1, DP_P);
+            q.emplace(en + 1, -1, EXT_RCOAX);
+            goto loopend;
+          }
+
           // (   )<(   ) > Flush coax
           const auto enrb = r[en + 1];
           if (base00 + em.stack[enb][enrb][enrb ^ 3][stb] + exterior[en + 1][EXT_WC] == exterior[st][EXT]) {
