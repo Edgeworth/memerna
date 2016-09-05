@@ -63,13 +63,13 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
 
   int st = 0, en = 0, a = 0;
   bool dp_table_diff = false;
-  int N = int(r.size());
+  const int N = int(r.size());
   for (st = N - 1; st >= 0; --st) {
     for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       for (a = 0; a < fold::DP_SIZE; ++a) {
-        auto memerna0 = memerna_ctxs[0].GetDpState()[st][en][a];
+        const auto memerna0 = memerna_ctxs[0].GetDpState()[st][en][a];
         for (int i = 0; i < int(memernas.size()); ++i) {
-          auto memernai = memerna_ctxs[i].GetDpState()[st][en][a];
+          const auto memernai = memerna_ctxs[i].GetDpState()[st][en][a];
           // If meant to be infinity and not.
           if (((memerna0 < constants::CAP_E) != (memernai < constants::CAP_E)) ||
               (memerna0 < constants::CAP_E && memerna0 != memernai)) {

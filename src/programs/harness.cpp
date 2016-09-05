@@ -20,9 +20,9 @@ int main(int argc, char* argv[]) {
       argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
 
-  auto package = bridge::RnaPackageFromArgParse(argparse);
+  const auto package = bridge::RnaPackageFromArgParse(argparse);
   const auto& pos = argparse.GetPositional();
-  bool read_stdin = pos.empty();
+  const bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());
   if (argparse.HasFlag("e")) {
     while (1) {
@@ -39,9 +39,9 @@ int main(int argc, char* argv[]) {
         db = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto secondary = parsing::ParseDotBracketSecondary(seq, db);
+      const auto secondary = parsing::ParseDotBracketSecondary(seq, db);
       std::string desc;
-      auto res = package->Efn(secondary, argparse.HasFlag("v") ? &desc : nullptr);
+      const auto res = package->Efn(secondary, argparse.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
     }
   } else {
@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto r = parsing::StringToPrimary(seq);
-      auto res = package->Fold(r);
+      const auto r = parsing::StringToPrimary(seq);
+      const auto res = package->Fold(r);
       printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());
     }
   }

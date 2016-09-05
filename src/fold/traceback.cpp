@@ -22,6 +22,7 @@ Context::traceback_stack_t Context::ComputeExterior() {
   // Holds: st, en, nst, na - nst and na for next index into itself; st, en for the paired.
   array2d_t<std::tuple<int, int, int, int>, EXT_SIZE> exterior_sts(std::size_t(N), 0xFF);
   traceback_stack_t q;
+  // TODO ctds??
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
     exterior[st][EXT] = exterior[st + 1][EXT];
@@ -92,9 +93,8 @@ computed_t Context::Traceback(traceback_stack_t& q) {
   computed_t computed(r);
   computed.energy = exterior[0][EXT];
   while (!q.empty()) {
-    int st = q.top().st, en = q.top().en, a = q.top().a;
-    //printf("%d %d %d\n", st, en, a);
-    auto stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
+    const int st = q.top().st, en = q.top().en, a = q.top().a;
+    const auto stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1], en2b = r[en - 2];
     q.pop();
     if (a == DP_P) {
       // It's paired, so add it to the folding.
@@ -102,11 +102,11 @@ computed_t Context::Traceback(traceback_stack_t& q) {
       computed.s.p[en] = st;
 
       // Following largely matches the above DP so look up there for comments.
-      int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+      const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
       for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
         for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
           if (arr[ist][ien][DP_P] < CAP_E) {
-            auto val = em.TwoLoop(r, st, en, ist, ien) + arr[ist][ien][DP_P];
+            const auto val = em.TwoLoop(r, st, en, ist, ien) + arr[ist][ien][DP_P];
             if (val == arr[st][en][DP_P]) {
               q.emplace(ist, ien, DP_P);
               goto loopend;
@@ -115,7 +115,7 @@ computed_t Context::Traceback(traceback_stack_t& q) {
         }
       }
 
-      auto base_branch_cost = em.AuGuPenalty(stb, enb) + em.multiloop_hack_a + em.multiloop_hack_b;
+      const auto base_branch_cost = em.AuGuPenalty(stb, enb) + em.multiloop_hack_a + em.multiloop_hack_b;
       // (<   ><    >)
       if (base_branch_cost + arr[st + 1][en - 1][DP_U2] == arr[st][en][DP_P]) {
         computed.base_ctds[en] = CTD_UNUSED;
@@ -142,10 +142,10 @@ computed_t Context::Traceback(traceback_stack_t& q) {
       }
 
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-        base_t pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
+        const base_t pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
 
         // (.(   )   .) Left outer coax - P
-        auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+        const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
         if (base_branch_cost + arr[st + 2][piv][DP_P] + em.multiloop_hack_b +
             em.AuGuPenalty(st2b, plb) + arr[piv + 1][en - 2][DP_U] + outer_coax == arr[st][en][DP_P]) {
           computed.base_ctds[en] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
@@ -217,12 +217,12 @@ computed_t Context::Traceback(traceback_stack_t& q) {
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        auto pb = r[piv], pl1b = r[piv - 1];
+        const auto pb = r[piv], pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        auto base00 = arr[st][piv][DP_P] + em.AuGuPenalty(stb, pb) + em.multiloop_hack_b;
-        auto base01 = arr[st][piv - 1][DP_P] + em.AuGuPenalty(stb, pl1b) + em.multiloop_hack_b;
-        auto base10 = arr[st + 1][piv][DP_P] + em.AuGuPenalty(st1b, pb) + em.multiloop_hack_b;
-        auto base11 = arr[st + 1][piv - 1][DP_P] + em.AuGuPenalty(st1b, pl1b) + em.multiloop_hack_b;
+        const auto base00 = arr[st][piv][DP_P] + em.AuGuPenalty(stb, pb) + em.multiloop_hack_b;
+        const auto base01 = arr[st][piv - 1][DP_P] + em.AuGuPenalty(stb, pl1b) + em.multiloop_hack_b;
+        const auto base10 = arr[st + 1][piv][DP_P] + em.AuGuPenalty(st1b, pb) + em.multiloop_hack_b;
+        const auto base11 = arr[st + 1][piv - 1][DP_P] + em.AuGuPenalty(st1b, pl1b) + em.multiloop_hack_b;
 
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.
@@ -313,7 +313,7 @@ computed_t Context::Traceback(traceback_stack_t& q) {
 
         // There has to be remaining bases to even have a chance at these cases.
         if (piv < en) {
-          auto pr1b = r[piv + 1];
+          const auto pr1b = r[piv + 1];
           // (   )<(   ) > Flush coax - U, U2
           if (base00 + em.stack[pb][pr1b][pr1b ^ 3][stb] + arr[piv + 1][en][DP_U_WC] == arr[st][en][a]) {
             computed.base_ctds[st] = CTD_FLUSH_COAX_WITH_NEXT;

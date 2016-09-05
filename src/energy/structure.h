@@ -21,22 +21,22 @@ public:
 
   // This is not a reference because of varargs.
   void AddNote(std::string note, ...);
-  std::vector<std::string> Description(int nesting = 0);
-  virtual std::string ShortDesc() = 0;
+  std::vector<std::string> Description(int nesting = 0) const;
+  virtual std::string ShortDesc() const = 0;
 
   virtual void AddBranch(std::unique_ptr<Structure> b) {
     branches.push_back(std::move(b));
   }
 
-  virtual std::string BranchDesc(int idx) {return branches[idx]->ShortDesc();}
+  virtual std::string BranchDesc(int idx) const {return branches[idx]->ShortDesc();}
 
   void SetSelfEnergy(energy_t e) {self_energy = e;}
 
   void SetTotalEnergy(energy_t e) {total_energy = e;}
 
-  energy_t GetSelfEnergy() {return self_energy;}
+  energy_t GetSelfEnergy() const {return self_energy;}
 
-  energy_t GetTotalEnergy() {return total_energy;}
+  energy_t GetTotalEnergy() const {return total_energy;}
 
 protected:
   std::vector<std::unique_ptr<Structure>> branches;
@@ -56,7 +56,7 @@ public:
     assert(false);
   }
 
-  std::string ShortDesc();
+  std::string ShortDesc() const;
 
 private:
   int st, en;
@@ -71,7 +71,7 @@ public:
     Structure::AddBranch(std::move(b));
   }
 
-  std::string ShortDesc();
+  std::string ShortDesc() const;
 
 private:
   int ost, oen, ist, ien;
@@ -85,12 +85,12 @@ public:
     branch_ctds.emplace_back(ctd, ctd_energy);
   }
 
-  std::string BranchDesc(int idx) {
+  std::string BranchDesc(int idx) const {
     return sfmt("%s - %de - %s", branches[idx]->ShortDesc().c_str(),
         branch_ctds[idx].second, CtdToName(branch_ctds[idx].first));
   }
 
-  std::string ShortDesc();
+  std::string ShortDesc() const;
 
 private:
   int st, en;
@@ -106,7 +106,7 @@ public:
     Structure::AddBranch(std::move(b));
   }
 
-  std::string ShortDesc();
+  std::string ShortDesc() const;
 
 private:
   int st, en;

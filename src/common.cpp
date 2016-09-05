@@ -14,7 +14,7 @@ std::string sgetline(FILE* fp) {
   char buffer[BUF_SIZE];
   if (fgets(buffer, BUF_SIZE, fp) == nullptr)
     return "";
-  std::string s(buffer);
+  const std::string s(buffer);
   // Minus one for null character.
   verify_expr(s.size() < BUF_SIZE - 1, "buffer too small");
   return s;
@@ -31,7 +31,7 @@ std::string sfmt(const char* fmt, ...) {
 
 std::string vsfmt(const char* fmt, va_list l) {
   char buffer[BUF_SIZE];
-  int res = vsnprintf(buffer, BUF_SIZE, fmt, l);
+  const int res = vsnprintf(buffer, BUF_SIZE, fmt, l);
   verify_expr(res >= 0 && res < BUF_SIZE, "buffer too small");
   return buffer;
 }

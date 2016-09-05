@@ -40,7 +40,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
     for (base_t j = 0; j < 4; ++j)
       pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
 
-  auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
+  const auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
 
   // Non continuous (-2.1), -4 for WC, -16 for terminal mismatch.
   pc.min_mismatch_coax = em.coax_mismatch_non_contiguous +
@@ -56,14 +56,15 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       MinEnergy(&em.internal_2x2[0][0][0][0][0][0][0][0], sizeof(em.internal_2x2)));
   verify_expr(em.internal_asym >= 0,
       "min_internal optimisation does not work for negative asymmetry penalties");
-  auto min_mismatch = 2 * std::min(
+  const auto min_mismatch = 2 * std::min(
       MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
       MinEnergy(&em.internal_other_mismatch[0][0][0][0], sizeof(em.internal_other_mismatch)));
-  auto min_internal_init = MinEnergy(&em.internal_init[4], sizeof(em.internal_init) - 4 * sizeof(em.internal_init[0]));
+  const auto min_internal_init = MinEnergy(
+      &em.internal_init[4], sizeof(em.internal_init) - 4 * sizeof(em.internal_init[0]));
   min_internal = std::min(min_internal,
       min_internal_init + std::min(2 * em.internal_augu_penalty, 0) + min_mismatch);
 
-  auto min_bulge_init = MinEnergy(&em.bulge_init[1], sizeof(em.bulge_init) - sizeof(em.bulge_init[0]));
+  const auto min_bulge_init = MinEnergy(&em.bulge_init[1], sizeof(em.bulge_init) - sizeof(em.bulge_init[0]));
 
   energy_t states_bonus = -energy_t(round(10.0 * R * T * log(MaxNumContiguous(r))));
   energy_t min_bulge = min_bulge_init + std::min(2 * em.augu_penalty, 0) +
@@ -81,7 +82,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       pos = rna_str.find(str, pos + 1);
     }
   }
-  int N = int(r.size());
+  const int N = int(r.size());
   pc.hairpin[N - 1].num_c = int(r[N - 1] == C);
   for (int i = N - 2; i >= 0; --i) {
     if (r[i] == C)

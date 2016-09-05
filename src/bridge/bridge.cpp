@@ -18,14 +18,14 @@ Rnark::Rnark(const std::string& data_path) : model(data_path) {
 }
 
 energy_t Rnark::Efn(const secondary_t& secondary, std::string* desc) const {
-  auto r = librnary::StringToPrimary(parsing::PrimaryToString(secondary.r));
-  auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p)));
+  const auto r = librnary::StringToPrimary(parsing::PrimaryToString(secondary.r));
+  const auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p)));
 
   librnary::NNScorer<librnary::NNUnpairedModel> scorer(model);
   scorer.SetRNA(r);
   energy_t energy;
   if (desc) {
-    auto trace = scorer.TraceExterior(ss_tree.RootSurface());
+    const auto trace = scorer.TraceExterior(ss_tree.RootSurface());
     *desc = trace.Describe(' ', 0) + "\n";
     energy = trace.recursive_score;
   } else {
@@ -39,9 +39,9 @@ computed_t Rnark::Fold(const primary_t& r) const {
   folder.SetMaxTwoLoop(constants::TWOLOOP_MAX_SZ);
   folder.SetLonelyPairs(true);
   folder.SetStacking(true);
-  auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(r));
-  energy_t energy = folder.Fold(librnary_primary);
-  auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
+  const auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(r));
+  const energy_t energy = folder.Fold(librnary_primary);
+  const auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
   return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy};
 }
 
@@ -51,7 +51,7 @@ Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
 }
 
 energy_t Rnastructure::Efn(const secondary_t& secondary, std::string*) const {
-  auto structure = librnary::LoadStructure(
+  const auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::PrimaryToString(secondary.r)),
       librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p))
   );
@@ -64,7 +64,7 @@ computed_t Rnastructure::Fold(const primary_t& r) const {
 }
 
 computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
-  auto structure = librnary::LoadStructure(
+  const auto structure = librnary::LoadStructure(
       librnary::StringToPrimary(parsing::PrimaryToString(r)));
   // First false here says also generate the folding itself (not just the MFE).
   // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
@@ -73,7 +73,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true,
       !use_lyngso, dp_state);
-  auto pairs = parsing::DotBracketToPairs(
+  const auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
   return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
 }

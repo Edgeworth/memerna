@@ -60,29 +60,44 @@ private:
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
-  void Expand(energy_t energy, index_t nye, Ctd ctd) {
+  void Expand(energy_t energy, index_t nye) {
     curnode.not_yet_expanded.push_back(nye);
     curnode.energy = energy;
-    if (ctd != CTD_NA) curnode.base_ctds[nye.st] = ctd;
     PruneInsert(q, curnode);
     curnode.not_yet_expanded.pop_back();
-    if (ctd != CTD_NA) curnode.base_ctds[nye.st] = CTD_NA;
+  }
+
+  void Expand(energy_t energy, index_t nye, std::pair<Ctd, int> ctd_idx) {
+    curnode.base_ctds[ctd_idx.second] = ctd_idx.first;
+    Expand(energy, nye);
+    curnode.base_ctds[ctd_idx.second] = CTD_NA;
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
-  // If the ctdX values are CTD_NA, then base_ctds won't be modified. Otherwise, it will be temporarily set to that value,
-  // and then reset back to CTD_NA.
-  void Expand(energy_t energy, index_t nye0, Ctd ctd0, index_t nye1, Ctd ctd1) {
+  // If the ctdX values are CTD_NA, then base_ctds won't be modified.
+  // Otherwise, it will be temporarily set to that value, and then reset back to CTD_NA.
+  void Expand(energy_t energy, index_t nye0, index_t nye1) {
     curnode.not_yet_expanded.push_back(nye0);
     curnode.not_yet_expanded.push_back(nye1);
     curnode.energy = energy;
-    if (ctd0 != CTD_NA) curnode.base_ctds[nye0.st] = ctd0;
-    if (ctd1 != CTD_NA) curnode.base_ctds[nye1.st] = ctd1;
     PruneInsert(q, curnode);
     curnode.not_yet_expanded.pop_back();
     curnode.not_yet_expanded.pop_back();
-    if (ctd0 != CTD_NA) curnode.base_ctds[nye0.st] = CTD_NA;
-    if (ctd1 != CTD_NA) curnode.base_ctds[nye1.st] = CTD_NA;
+  }
+
+  void Expand(energy_t energy, index_t nye0, index_t nye1, std::pair<Ctd, int> ctd_idx) {
+    curnode.base_ctds[ctd_idx.second] = ctd_idx.first;
+    Expand(energy, nye0, nye1);
+    curnode.base_ctds[ctd_idx.second] = CTD_NA;
+  }
+
+  void Expand(energy_t energy, index_t nye0, index_t nye1,
+      std::pair<Ctd, int> ctd_idx0, std::pair<Ctd, int> ctd_idx1) {
+    curnode.base_ctds[ctd_idx0.second] = ctd_idx0.first;
+    curnode.base_ctds[ctd_idx1.second] = ctd_idx1.first;
+    Expand(energy, nye0, nye1);
+    curnode.base_ctds[ctd_idx0.second] = CTD_NA;
+    curnode.base_ctds[ctd_idx1.second] = CTD_NA;
   }
 };
 
