@@ -33,13 +33,16 @@ context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
 
 Context::Context(const primary_t& r_, const energy::EnergyModel& em_)
     : r(r_), em(em_), options(), N(int(r_.size())), pc(internal::PrecomputeData(r_, em_)),
-      arr(r_.size() + 1), exterior(r_.size()) {}
+      tables_computed(false), arr(), exterior() {}
 
 Context::Context(const primary_t& r_, const energy::EnergyModel& em_, context_options_t options_)
-    : r(r_), em(em_), options(options_), N(int(r_.size())),
-      pc(internal::PrecomputeData(r_, em_)), arr(r_.size() + 1), exterior(r_.size() + 1) {}
+    : r(r_), em(em_), options(options_), N(int(r_.size())), pc(internal::PrecomputeData(r_, em_)),
+      tables_computed(false), arr(), exterior() {}
 
-void Context::ComputeTables() {
+void Context::EnsureComputed() {
+  if (tables_computed) return;
+  arr = array3d_t<energy_t, DP_SIZE>(r.size() + 1);
+  exterior = array2d_t<energy_t, EXT_SIZE>(r.size() + 1);
   switch (options.table_alg) {
     case context_options_t::TableAlg::ZERO:
       ComputeTables0();
@@ -54,18 +57,17 @@ void Context::ComputeTables() {
       ComputeTables3();
       break;
   }
+  ComputeExterior();
+  tables_computed = true;
 }
 
 computed_t Context::Fold() {
-  ComputeTables();
-  ComputeExterior();
+  EnsureComputed();
   return Traceback();
 }
 
 std::vector<computed_t> Context::Suboptimal() {
-  // TODO potential recomputation.
-  ComputeTables();
-  ComputeExterior();
+  EnsureComputed();
   energy_t max_energy = exterior[0][EXT] + options.subopt_energy;
   int max_structures = options.subopt_num;
   if (options.subopt_energy < 0) max_energy = constants::CAP_E;

@@ -50,6 +50,10 @@ struct secondary_t {
   explicit secondary_t(const primary_t& r_) : r(r_), p(r_.size(), -1) {}
   secondary_t(const primary_t& r_, const std::vector<int>& p_) : r(r_), p(p_) {}
 
+  bool operator==(const secondary_t& o) const;
+  bool operator!=(const secondary_t& o) const { return !(*this == o); }
+  bool operator<(const secondary_t& o) const;
+
   primary_t r;
   std::vector<int> p;
 };
@@ -63,6 +67,9 @@ struct computed_t {
   explicit computed_t(const primary_t& r_);
   explicit computed_t(const secondary_t& s_);
   computed_t(const secondary_t& s_, const std::vector<Ctd>& base_ctds_, energy_t energy_);
+
+  bool operator==(const computed_t& o) const;
+  bool operator<(const computed_t& o) const;
 
   secondary_t s;
   std::vector<Ctd> base_ctds;

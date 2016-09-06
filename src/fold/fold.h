@@ -83,9 +83,10 @@ public:
   Context() = delete;
   Context(const Context&) = delete;
   Context& operator=(const Context&) = delete;
-  Context(Context&& o) : r(o.r), em(o.em), options(o.options), N(o.N), pc(o.pc) {
+  Context(Context&& o) : r(o.r), em(o.em), options(o.options), N(o.N), pc(o.pc), tables_computed(o.tables_computed) {
     arr = std::move(o.arr);
     exterior = std::move(o.exterior);
+    o.tables_computed = false;
   }
   Context& operator=(Context&&) = delete;
 
@@ -108,15 +109,16 @@ private:
   const int N;
   const internal::precomp_t pc;
 
+  bool tables_computed;
   array3d_t<energy_t, DP_SIZE> arr;
   array2d_t<energy_t, EXT_SIZE> exterior;
 
-  void ComputeTables();
   void ComputeTables0();
   void ComputeTables1();
   void ComputeTables2();
   void ComputeTables3();
   void ComputeExterior();
+  void EnsureComputed();
 
   computed_t Traceback();
 };

@@ -125,7 +125,7 @@ std::vector<computed_t> Suboptimal0::Run() {
           Expand(energy + exterior[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
               {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
           Expand(energy + exterior[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
-              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st});
+              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
 
           // (   ).<(   ). > Right coax forward
           energy = base_energy + base01 + exterior[en + 1][EXT_RCOAX];
@@ -194,7 +194,7 @@ std::vector<computed_t> Suboptimal0::Run() {
         energy = base_and_branch + arr[st + 2][piv][DP_P] + em.multiloop_hack_b +
             em.AuGuPenalty(st2b, plb) + arr[piv + 1][en - 2][DP_U] + outer_coax;
         Expand(energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},
-            {CTD_LEFT_MISMATCH_COAX_WITH_PREV, st + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, en});
+            {CTD_LEFT_MISMATCH_COAX_WITH_PREV, st + 2}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, en});
 
         // (.   (   ).) Right outer coax
         energy = base_and_branch + arr[st + 2][piv][DP_U] + em.multiloop_hack_b +
