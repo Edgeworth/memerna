@@ -4,6 +4,8 @@
 #include <set>
 #include "common.h"
 #include "fold/fold.h"
+#include "parsing.h"
+#include "energy/structure.h"
 
 namespace memerna {
 namespace fold {
@@ -29,6 +31,7 @@ private:
       if (energy != o.energy) return energy < o.energy;
       if (not_yet_expanded != o.not_yet_expanded) return not_yet_expanded < o.not_yet_expanded;
       if (history != o.history) return history < o.history;
+      if (base_ctds != o.base_ctds) return base_ctds < o.base_ctds;
       assert(false);  // Should never happen.
       return false;
     }
@@ -41,6 +44,20 @@ private:
   suboptimal_node_t curnode;
   std::set<suboptimal_node_t> finished;
   std::set<suboptimal_node_t> q;
+
+  void PrintNodeDebug(const suboptimal_node_t& node) {
+    printf("Node - not yet expanded:\n  ");
+    for (const auto& idx : node.not_yet_expanded)
+      printf("(%d, %d, %d), ", idx.st, idx.en, idx.a);
+    printf("\nhistory:\n  ");
+    for (const auto& idx : node.history)
+      printf("(%d, %d, %d), ", idx.st, idx.en, idx.a);
+    printf("\npairs so far: %s\nbase ctds:\n  ", parsing::PairsToDotBracket(node.p).c_str());
+    for (const auto& ctd : node.base_ctds) {
+      printf("%s, ", energy::CtdToName(ctd));
+    }
+    printf("\nenergy: %d\n", node.energy);
+  }
 
   void PruneInsert(std::set<suboptimal_node_t>& prune, const suboptimal_node_t& node) {
     if (node.energy <= max_energy) {
@@ -55,8 +72,7 @@ private:
   // need to expand any more ranges than it currently has.
   void Expand(energy_t energy) {
     curnode.energy = energy;
-    PruneInsert(q, curnode); \
-
+    PruneInsert(q, curnode);
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.

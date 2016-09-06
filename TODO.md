@@ -3,8 +3,7 @@
 
 ### Todo
 - American fuzzy lop?
-- Grep codebase for todos -- ** urgent
-- re-run with msan, ubsan, asan in clang
+- Grep codebase for todos
 - Optimise wuchty
 
 ### Wuchty testing plan
@@ -12,7 +11,3 @@
 -- current bruteforce runs only up to N = 25, which is at most ~11 branches 
 -- will need way to run through every possible
 - Compare to brute force
-- Check MFE is always top result
-- Check for no duplicated structures (must include stacking)
-- Check efn gives same energy value for each thing
-- All of above for random energy models

@@ -53,6 +53,15 @@ uint32_t Crc32(const std::string& data) {
   return ~window;
 }
 
+bool secondary_t::operator==(const secondary_t& o) const {
+  return r == o.r && p == o.p;
+}
+bool secondary_t::operator<(const secondary_t& o) const {
+  if (r != o.r) return r < o.r;
+  if (p != o.p) return p < o.p;
+  return false;
+}
+
 computed_t::computed_t(const primary_t& r_)
     : s(r_), base_ctds(r_.size(), CTD_NA), energy(constants::MAX_E) {}
 
@@ -65,5 +74,17 @@ computed_t::computed_t(const secondary_t& s_,
 computed_t::computed_t(const secondary_t& s_) : s(s_), base_ctds(s_.r.size(), CTD_NA), energy(constants::MAX_E) {
   assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
 }
+
+bool computed_t::operator==(const computed_t& o) const {
+  return s == o.s && base_ctds == o.base_ctds && energy == o.energy;
+}
+
+bool computed_t::operator<(const computed_t& o) const {
+  if (s != o.s) return s < o.s;
+  if (base_ctds != o.base_ctds) return base_ctds < o.base_ctds;
+  if (energy != o.energy) return energy < o.energy;
+  return false;
+}
+
 
 }

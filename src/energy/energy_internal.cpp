@@ -235,6 +235,17 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
         // All these cases will be handled in the next branch (PREV).
         continue;
       default:
+        // TODO remove
+        printf("at %d\n%s\n%s\n", branch, parsing::PrimaryToString(computed.s.r).c_str(),
+            parsing::PairsToDotBracket(computed.s.p).c_str());
+        for (auto b : branches) {
+          printf("%d, ", b);
+        }
+        printf("\n");
+        for (int k = 0; k < computed.base_ctds.size(); ++k) {
+          printf("%s, ", CtdToName(computed.base_ctds[k]));
+        }
+        printf("\n");
         verify_expr(false, "bug");  // Should never happen
     }
     branch_ctds.emplace_back(computed.base_ctds[branch], energy);
