@@ -1,7 +1,7 @@
 #include <constants.h>
 #include "energy/load_model.h"
 #include "energy/energy.h"
-#include "fold/fold.h"
+#include "fold/context.h"
 #include "parsing.h"
 #include "bridge.h"
 #include "energy/structure.h"
@@ -82,13 +82,13 @@ energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
   computed_t computed;
   if (desc) {
     std::unique_ptr<energy::Structure> structure;
-    computed = energy::ComputeEnergy(secondary, em, &structure);
+    computed = energy::ComputeEnergy(secondary, *em, &structure);
     for (const auto& s : structure->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    computed = energy::ComputeEnergy(secondary, em);
+    computed = energy::ComputeEnergy(secondary, *em);
   }
 
   return computed.energy;

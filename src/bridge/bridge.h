@@ -3,7 +3,7 @@
 
 #include "argparse.h"
 #include "common.h"
-#include "fold/fold.h"
+#include "fold/context.h"
 
 #include "nn_unpaired_model.hpp"
 #include "RNAstructure/rna_library.h"
@@ -51,7 +51,7 @@ private:
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
 public:
-  Memerna(const energy::EnergyModel& em_, fold::context_options_t options_) : em(em_), options(options_) {}
+  Memerna(energy::EnergyModelPtr em_, fold::context_options_t options_) : em(em_), options(options_) {}
 
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
@@ -59,7 +59,7 @@ public:
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
   virtual computed_t Fold(const primary_t& r) const;
 private:
-  const energy::EnergyModel em;
+  const energy::EnergyModelPtr em;
   const fold::context_options_t options;
 };
 

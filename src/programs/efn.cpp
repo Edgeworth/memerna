@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   const auto em = energy::LoadEnergyModelFromArgParse(argparse);
   const auto secondary = parsing::ParseDotBracketSecondary(pos.front(), pos.back());
   std::unique_ptr<energy::Structure> structure;
-  printf("Energy: %d\n", energy::ComputeEnergy(secondary, em, &structure).energy);
+  printf("Energy: %d\n", energy::ComputeEnergy(secondary, *em, &structure).energy);
   const auto descs = structure->Description();
   for (const auto& desc : descs) {
     printf("%s\n", desc.c_str());

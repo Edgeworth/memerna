@@ -3,16 +3,17 @@
 
 #include <set>
 #include "common.h"
-#include "fold/fold.h"
 #include "parsing.h"
+#include "fold/fold_internal.h"
 #include "energy/structure.h"
 
 namespace memerna {
 namespace fold {
+namespace internal {
 
 class Suboptimal0 {
 public:
-  Suboptimal0(const Context& ctx_, energy_t max_energy_, int max_structures_);
+  Suboptimal0(energy_t max_energy_, int max_structures_);
   std::vector<computed_t> Run();
 
 private:
@@ -37,7 +38,6 @@ private:
     }
   };
 
-  const Context& ctx;
   const energy_t max_energy;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
@@ -90,8 +90,6 @@ private:
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
-  // If the ctdX values are CTD_NA, then base_ctds won't be modified.
-  // Otherwise, it will be temporarily set to that value, and then reset back to CTD_NA.
   void Expand(energy_t energy, index_t nye0, index_t nye1) {
     curnode.not_yet_expanded.push_back(nye0);
     curnode.not_yet_expanded.push_back(nye1);
@@ -117,6 +115,7 @@ private:
   }
 };
 
+}
 }
 }
 

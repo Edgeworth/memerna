@@ -1,4 +1,5 @@
-#include "fold/fold_internal.h"
+#include "precomp.h"
+#include "fold/globals.h"
 #include "parsing.h"
 
 namespace memerna {
@@ -90,6 +91,69 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   }
 
   return pc;
+}
+
+
+energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
+  int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  if (toplen == 0 && botlen == 0)
+    return gem.stack[gr[ost]][gr[ist]][gr[ien]][gr[oen]];
+  if (toplen == 0 || botlen == 0)
+    return gem.Bulge(gr, ost, oen, ist, ien);
+  if (toplen == 1 && botlen == 1)
+    return gem.internal_1x1[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[oen]];
+  if (toplen == 1 && botlen == 2)
+    return gem.internal_1x2[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[ien + 2]][gr[oen]];
+  if (toplen == 2 && botlen == 1)
+    return gem.internal_1x2[gr[ien]][gr[ien + 1]][gr[oen]][gr[ost]][gr[ost + 1]][gr[ost + 2]][gr[ist]];
+  if (toplen == 2 && botlen == 2)
+    return gem.internal_2x2[gr[ost]][gr[ost + 1]][gr[ost + 2]][gr[ist]][gr[ien]][gr[ien + 1]][gr[ien + 2]][gr[oen]];
+
+  static_assert(TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
+  energy_t energy =
+      gem.internal_init[toplen + botlen] +
+          std::min(std::abs(toplen - botlen) * gem.internal_asym, NINIO_MAX_ASYM);
+
+  energy += gem.InternalLoopAuGuPenalty(gr[ost], gr[oen]);
+  energy += gem.InternalLoopAuGuPenalty(gr[ist], gr[ien]);
+
+  if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
+    energy += gem.internal_2x3_mismatch[gr[ost]][gr[ost + 1]][gr[oen - 1]][gr[oen]] +
+        gem.internal_2x3_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
+  else if (toplen != 1 && botlen != 1)
+    energy += gem.internal_other_mismatch[gr[ost]][gr[ost + 1]][gr[oen - 1]][gr[oen]] +
+        gem.internal_other_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
+
+  return energy;
+}
+
+energy_t FastHairpin(int st, int en) {
+  int length = en - st - 1;
+  assert(length >= HAIRPIN_MIN_SZ);
+  if (length <= internal::hairpin_precomp_t::MAX_SPECIAL_HAIRPIN_SZ && gpc.hairpin[st].special[length] != MAX_E)
+    return gpc.hairpin[st].special[length];
+  base_t stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
+  energy_t energy = gem.HairpinInitiation(length) + gem.AuGuPenalty(stb, enb);
+
+  bool all_c = gpc.hairpin[st + 1].num_c >= length;
+
+  if (length == 3) {
+    if (all_c)
+      energy += gem.hairpin_c3_loop;
+    return energy;
+  }
+  energy += gem.terminal[gr[st]][st1b][en1b][gr[en]];
+
+  if ((st1b == U && en1b == U) || (st1b == G && en1b == A))
+    energy += gem.hairpin_uu_ga_first_mismatch;
+  if (st1b == G && en1b == G)
+    energy += gem.hairpin_gg_first_mismatch;
+  if (all_c)
+    energy += gem.hairpin_all_c_a * length + gem.hairpin_all_c_b;
+  if (stb == G && enb == U && st >= 2 && gr[st - 1] == G && gr[st - 2] == G)
+    energy += gem.hairpin_special_gu_closure;
+
+  return energy;
 }
 
 }
