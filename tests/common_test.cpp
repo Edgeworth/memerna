@@ -2,7 +2,7 @@
 
 namespace memerna {
 
-energy::EnergyModel g_em;
-std::vector<energy::EnergyModel> g_ems;
+energy::EnergyModelPtr g_em;
+std::vector<energy::EnergyModelPtr> g_ems;
 
 }

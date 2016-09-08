@@ -51,7 +51,7 @@ struct secondary_t {
   secondary_t(const primary_t& r_, const std::vector<int>& p_) : r(r_), p(p_) {}
 
   bool operator==(const secondary_t& o) const;
-  bool operator!=(const secondary_t& o) const { return !(*this == o); }
+  bool operator!=(const secondary_t& o) const {return !(*this == o);}
   bool operator<(const secondary_t& o) const;
 
   primary_t r;

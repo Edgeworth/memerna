@@ -1,7 +1,7 @@
 #include <cstdio>
-#include "fold/suboptimal0.h"
-#include "parsing.h"
+#include "fold/context.h"
 #include "energy/load_model.h"
+#include "parsing.h"
 
 using namespace memerna;
 
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
       computed.energy, parsing::PairsToDotBracket(computed.s.p).c_str(),
       parsing::ComputedToCtdString(computed).c_str());
 
-  if (ctx.GetOptions().subopt_energy >= 0 || ctx.GetOptions().subopt_num > 0) {
+  if (ctx.GetOptions().subopt_delta >= 0 || ctx.GetOptions().subopt_num > 0) {
     const auto structures = ctx.Suboptimal();
     printf("%zu suboptimal structures:\n", structures.size());
     for (const auto& subopt : structures) {

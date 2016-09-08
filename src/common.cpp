@@ -56,6 +56,7 @@ uint32_t Crc32(const std::string& data) {
 bool secondary_t::operator==(const secondary_t& o) const {
   return r == o.r && p == o.p;
 }
+
 bool secondary_t::operator<(const secondary_t& o) const {
   if (r != o.r) return r < o.r;
   if (p != o.p) return p < o.p;
@@ -80,9 +81,9 @@ bool computed_t::operator==(const computed_t& o) const {
 }
 
 bool computed_t::operator<(const computed_t& o) const {
+  if (energy != o.energy) return energy < o.energy;
   if (s != o.s) return s < o.s;
   if (base_ctds != o.base_ctds) return base_ctds < o.base_ctds;
-  if (energy != o.energy) return energy < o.energy;
   return false;
 }
 

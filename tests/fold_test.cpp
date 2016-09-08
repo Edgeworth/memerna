@@ -1,9 +1,9 @@
 #include <cstdlib>
-#include "energy/load_model.h"
-#include "fold/fold.h"
-#include "parsing.h"
-#include "gtest/gtest.h"
 #include "common_test.h"
+#include "gtest/gtest.h"
+#include "fold/context.h"
+#include "fold/precomp.h"
+#include "parsing.h"
 
 namespace memerna {
 namespace fold {
@@ -79,7 +79,7 @@ INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(fold::contex
 TEST(FoldTest, Precomp) {
   ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
-  auto pc = internal::PrecomputeData(parsing::StringToPrimary("GGGGAAACCCC"), g_em);
+  auto pc = internal::PrecomputeData(parsing::StringToPrimary("GGGGAAACCCC"), *g_em);
   EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);

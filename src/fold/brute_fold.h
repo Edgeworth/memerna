@@ -7,7 +7,12 @@
 namespace memerna {
 namespace fold {
 
-computed_t FoldBruteForce(const primary_t& r, const energy::EnergyModel& em);
+namespace internal {
+std::vector<int> GetBranchCounts(const std::vector<int>& p);
+}
+
+std::vector<computed_t> FoldBruteForce(const primary_t& r,
+    const energy::EnergyModel& em, int max_structures);
 
 }
 }

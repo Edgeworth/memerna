@@ -12,9 +12,9 @@ const std::map<std::string, ArgParse::option_t> ENERGY_OPTIONS = {
     {"data-path", ArgParse::option_t("data path for given energy model for memerna").Arg("data/")}
 };
 
-EnergyModel LoadEnergyModelFromDataDir(const std::string& data_dir);
-EnergyModel LoadRandomEnergyModel(uint_fast32_t seed);
-EnergyModel LoadEnergyModelFromArgParse(const ArgParse& argparse);
+EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
+EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
+EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
 
 }
 }

@@ -130,6 +130,8 @@ public:
   uint32_t Checksum() const;
 };
 
+typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
+
 }
 }
 

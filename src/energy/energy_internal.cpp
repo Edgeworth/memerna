@@ -211,6 +211,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
         break;
       case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
         // .(   ).(   )
+        assert(p[prev_branch] + 1 < int(r.size()) && prev_branch - 1 >= 0);
         energy = em.MismatchCoaxial(r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
         branch_ctds.emplace_back(CTD_LEFT_MISMATCH_COAX_WITH_NEXT, energy);
         rot_left = (i == 0) || rot_left;

@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
   argparse.ParseOrExit(argc, argv);
   g_em = energy::LoadEnergyModelFromArgParse(argparse);
   g_ems.push_back(g_em);
-  for (int i = 0; i < 4; ++i)
+  for (int_fast32_t i = 0; i < 4; ++i)
     g_ems.push_back(energy::LoadRandomEnergyModel(i));
   return RUN_ALL_TESTS();
 }

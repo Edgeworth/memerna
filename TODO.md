@@ -1,10 +1,8 @@
-### Zuker optimisation ideas
-- Sliding window, reduce memory usage - needs st en not sz st?
-
 ### Todo
 - American fuzzy lop?
 - Grep codebase for todos
 - Optimise wuchty
+- Find out why gtest memes asan on clang
 
 ### Wuchty testing plan
 - Write bruteforce version - needs to enumerate all stackings as well
