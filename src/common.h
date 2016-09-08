@@ -26,7 +26,7 @@ typedef int8_t base_t;
 typedef std::vector<base_t> primary_t;
 typedef int32_t energy_t;
 
-enum Ctd {
+enum Ctd : int8_t {
   CTD_NA,
   CTD_UNUSED,
   CTD_3_DANGLE,
