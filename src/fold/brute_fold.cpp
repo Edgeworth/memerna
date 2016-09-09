@@ -35,6 +35,7 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
           j = p[j];
         }
       }
+      branch_count[p[i]] = count;
     } else {
       q.pop();
     }
@@ -56,27 +57,20 @@ int max_structures;
 void AddAllCombinations(int idx) {
   // Base case
   if (idx == int(gr.size())) {
-    printf("%s\n%s\n", parsing::PrimaryToString(gr).c_str(), parsing::PairsToDotBracket(gp).c_str());
-    for (auto ctd : gctd) {
-      printf("%s, ", energy::CtdToName(ctd));
-    }
-    printf("\n");
-    for (auto cnt : branch_count)
-      printf("%d, ", cnt);
-    printf("\n");
-    const auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, gem);
+    auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, gem);
     if (int(best_computeds.size()) < max_structures || best_computeds.rbegin()->energy > computed.energy)
       best_computeds.insert(std::move(computed));
     if (int(best_computeds.size()) > max_structures)
       best_computeds.erase(--best_computeds.end());
     return;
   }
-  // If we already set this, this isn't a valid base pair, it's not part of a multiloop, or it's the right side
-  // of a branch, can't or don't want to set ctds so continue.
-  if (gctd[idx] != CTD_NA || gp[idx] == -1 || branch_count[idx] < 2 || gp[idx] < idx) {
+
+  // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set ctds so continue.
+  if (gctd[idx] != CTD_NA || gp[idx] == -1 || branch_count[idx] < 2) {
     AddAllCombinations(idx + 1);
     return;
   }
+
   const int N = int(gr.size());
   const bool lu_exists = idx - 1 >= 0 && gp[idx - 1] == -1;
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
@@ -113,27 +107,33 @@ void AddAllCombinations(int idx) {
     AddAllCombinations(idx + 1);
   }
 
-  // Check that the next branch hasn't been set already.
+  // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
   // CTD_LEFT_MISMATCH_COAX_WITH_NEXT
-  if (lu_usable && ru_usable && ru_shared && gctd[gp[idx] + 2] == CTD_NA) {
+  auto prevval = gctd[gp[idx] + 2];
+  if (lu_usable && ru_usable && ru_shared && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
     gctd[idx] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
     gctd[gp[idx] + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
     AddAllCombinations(idx + 1);
+    gctd[gp[idx] + 2] = prevval;
   }
 
   // Check that the previous branch hasn't been set already.
-  // CTD_RIGHT_MISMATCH_COAX_WITH_NEXT
-  if (lu_usable && lu_shared && ru_usable && gctd[gp[idx - 2]] == CTD_NA) {
-    gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+  // CTD_RIGHT_MISMATCH_COAX_WITH_PREV
+  prevval = gctd[gp[idx - 2]];
+  if (lu_usable && lu_shared && ru_usable && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
     gctd[idx] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+    gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
     AddAllCombinations(idx + 1);
+    gctd[gp[idx - 2]] = prevval;
   }
 
   // CTD_FLUSH_COAX_WITH_NEXT
-  if (gp[idx] + 1 < N && gp[gp[idx] + 1] != -1 && gctd[gp[idx] + 1] == CTD_NA) {
+  prevval = gctd[gp[idx] + 1];
+  if (gp[idx] + 1 < N && gp[gp[idx] + 1] != -1 && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
     gctd[idx] = CTD_FLUSH_COAX_WITH_NEXT;
     gctd[gp[idx] + 1] = CTD_FLUSH_COAX_WITH_PREV;
     AddAllCombinations(idx + 1);
+    gctd[gp[idx] + 1] = prevval;
   }
 
   // Reset back to NA.

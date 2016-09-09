@@ -66,7 +66,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
       case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
         s[i] = '>';
         s[i - 1] = 'm';
-        s[p[i] - 1] = 'm';
+        s[p[i] + 1] = 'm';
         break;
       case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
         s[i] = '<';
@@ -77,7 +77,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
       case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
         s[i] = '<';
         s[i - 1] = 'm';
-        s[p[i] - 1] = 'm';
+        s[p[i] + 1] = 'm';
         break;
       case CTD_FLUSH_COAX_WITH_NEXT:
         s[i] = '>';

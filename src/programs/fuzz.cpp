@@ -14,7 +14,7 @@ using namespace memerna;
 using namespace fold;
 using namespace fold::internal;
 
-const int SUBOPT_MAX_STRUCTURES = 50;
+const int SUBOPT_MAX_STRUCTURES = 100, SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
 
 template<typename RandomEngine>
 void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::EnergyModelPtr loaded,
@@ -52,10 +52,11 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
   }
 
   // Brute force.
-  bool use_brute = r.size() <= 24;
+  bool use_brute = r.size() <= 28;
+  int max_structures = use_brute ? SUBOPT_BRUTE_MAX_STRUCTURES : SUBOPT_MAX_STRUCTURES;
   std::vector<computed_t> brute_computeds;
   if (use_brute) {
-    brute_computeds = FoldBruteForce(r, *em, SUBOPT_MAX_STRUCTURES);
+    brute_computeds = FoldBruteForce(r, *em, SUBOPT_BRUTE_MAX_STRUCTURES);
     if (memerna_folds[0].energy != brute_computeds[0].energy)
       mfe_diff = true;
   }
@@ -75,7 +76,7 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
   // Suboptimal folding:
   bool suboptimal_mfe_diff = false;
   context_options_t options(context_options_t::TableAlg::TWO,
-      context_options_t::SuboptimalAlg::ZERO, -1, SUBOPT_MAX_STRUCTURES);
+      context_options_t::SuboptimalAlg::ZERO, -1, max_structures);
   Context ctx(r, em, options);
   auto computeds = ctx.Suboptimal();
   // Check MFE.
@@ -132,15 +133,15 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
     }
   }
   loop_end:;
-  if (mfe_diff || dp_table_diff) {
+  if (mfe_diff || dp_table_diff || suboptimal_mfe_diff ||
+      suboptimal_duplicate || suboptimal_efn_diff || suboptimal_brute_diff) {
     printf("Difference on len %zu RNA %s\n", r.size(), parsing::PrimaryToString(r).c_str());
     if (use_random_energy_model)
-      printf("  Using random energy model with seed: %"
-    PRIuFAST32
-    "\n", seed);
+      printf("  Using random energy model with seed: %" PRIuFAST32 "\n", seed);
     else
-    printf("  Using T04 energy model.\n");
+      printf("  Using T04 energy model.\n");
     if (mfe_diff) {
+      printf("  MFE diff\n");
       for (int i = 0; i < int(memernas.size()); ++i) {
         printf("  Fold%d: %d (dp), %d (efn), %d (optimal efn) - %s\n", i, memerna_folds[i].energy, memerna_efns[i],
             memerna_optimal_efns[i], parsing::PairsToDotBracket(memerna_folds[i].s.p).c_str());
@@ -168,7 +169,7 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
     if (suboptimal_duplicate)
       printf("  Suboptimal: Duplicate structure.\n");
     if (suboptimal_brute_diff)
-      printf("  Suboptimal: Diff to brute.\n");
+      printf("  Suboptimal: Diff to brute which is:\n");
   }
 }
 
@@ -203,9 +204,7 @@ int main(int argc, char* argv[]) {
     int length = len_dist(eng);
     if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::steady_clock::now() - start_time).count() > interval) {
-      printf("Fuzzed %"
-      PRId64
-      " RNA\n", i);
+      printf("Fuzzed %" PRId64" RNA\n", i);
       start_time = std::chrono::steady_clock::now();
     }
     auto r = GenerateRandomPrimary(length, eng);

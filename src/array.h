@@ -21,7 +21,6 @@ public:
   array3d_t& operator=(const array3d_t&) = delete;
   array3d_t(array3d_t&& o) : data(nullptr), size(0) {*this = std::move(o);}
 
-
   array3d_t& operator=(array3d_t&& o) {
     delete[] data;
     data = o.data;
@@ -30,7 +29,6 @@ public:
     o.size = 0;
     return *this;
   }
-
 
   ArrayType* operator[](std::size_t idx) {
     return reinterpret_cast<ArrayType*>(&data[idx * size * K]);
