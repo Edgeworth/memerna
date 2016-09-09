@@ -14,11 +14,13 @@ struct context_options_t {
     ZERO,
     ONE,
     TWO,
-    THREE
+    THREE,
+    BRUTE  // Not included in the normal table algs since exponential.
   };
 
   enum class SuboptimalAlg {
-    ZERO
+    ZERO,
+    BRUTE
   };
 
   static constexpr TableAlg TABLE_ALGS[] = {TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
@@ -62,7 +64,7 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3"})},
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
     {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
     {"subopt-num", ArgParse::option_t("maximum number of reported structures").Arg("-1")}
 };
