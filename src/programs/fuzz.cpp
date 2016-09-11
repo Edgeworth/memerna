@@ -76,11 +76,11 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
   }
 
   // Suboptimal folding:
+  // TODO add rnastructure suboptimal.
   bool suboptimal_mfe_diff = false;
-  context_options_t options(context_options_t::TableAlg::TWO,
-      context_options_t::SuboptimalAlg::ZERO, -1, max_structures);
+  context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
   Context ctx(r, em, options);
-  auto computeds = ctx.Suboptimal();
+  auto computeds = ctx.Suboptimal(-1, max_structures);
   // Check MFE.
   if (memerna_folds[0].energy != computeds[0].energy)
     suboptimal_mfe_diff = true;

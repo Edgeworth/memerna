@@ -31,8 +31,6 @@ context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else {
     verify_expr(false, "unknown fold option");
   }
-  options.subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
-  options.subopt_num = atoi(argparse.GetOption("subopt-num").c_str());
   return options;
 }
 
@@ -66,15 +64,15 @@ computed_t Context::Fold() {
   return {{internal::gr, internal::gp}, internal::gctd, internal::genergy};
 }
 
-std::vector<computed_t> Context::Suboptimal() {
+std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_num) {
   if (options.suboptimal_alg == context_options_t::SuboptimalAlg::BRUTE)
-    return FoldBruteForce(r, *em, options.subopt_num);
+    return FoldBruteForce(r, *em, subopt_num);
 
   ComputeTables();
-  energy_t max_energy = internal::gext[0][internal::EXT] + options.subopt_delta;
-  int max_structures = options.subopt_num;
-  if (options.subopt_delta < 0) max_energy = constants::CAP_E;
-  if (options.subopt_num < 0) max_structures = INT_MAX;
+  energy_t max_energy = internal::gext[0][internal::EXT] + subopt_delta;
+  int max_structures = subopt_num;
+  if (subopt_delta < 0) max_energy = constants::CAP_E;
+  if (subopt_num < 0) max_structures = INT_MAX;
   switch (options.suboptimal_alg) {
     case context_options_t::SuboptimalAlg::ZERO:
       return internal::Suboptimal0(max_energy, max_structures).Run();

@@ -17,6 +17,7 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;
   virtual computed_t Fold(const primary_t& r) const = 0;
+  virtual std::vector<computed_t> Suboptimal(const primary_t& r, energy_t energy_delta) const = 0;
 };
 
 class Rnark : public RnaPackage {
@@ -27,6 +28,7 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
   virtual computed_t Fold(const primary_t& r) const;
+  virtual std::vector<computed_t> Suboptimal(const primary_t& r, energy_t energy_delta) const;
 
 private:
   librnary::NNUnpairedModel model;
@@ -40,9 +42,9 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
   virtual computed_t Fold(const primary_t& r) const;
+  virtual std::vector<computed_t> Suboptimal(const primary_t& r, energy_t energy_delta) const;
 
   computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;
-
 private:
   const std::unique_ptr<datatable> data;
   const bool use_lyngso;
@@ -58,6 +60,7 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const;
   virtual computed_t Fold(const primary_t& r) const;
+  virtual std::vector<computed_t> Suboptimal(const primary_t& r, energy_t energy_delta) const;
 private:
   const energy::EnergyModelPtr em;
   const fold::context_options_t options;
