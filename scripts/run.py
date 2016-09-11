@@ -8,6 +8,54 @@ from memevault import MemeVault
 from rna import *
 
 
+class RNAstructureDistribution:
+  def __init__(self, loc=None):
+    try:
+      import default_paths
+      loc = loc or default_paths.RNASTRUCTURE_PATH
+    except ImportError:
+      pass
+    assert loc
+    self.loc = fix_path(loc)
+    os.putenv('DATAPATH', os.path.join(self.loc, 'data_tables'))
+
+  def fold(self, rna):
+    with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
+      prev_dir = os.getcwd()
+      os.chdir(self.loc)
+      f.write(rna.to_seq_file())
+      f.flush()
+      benchmark_results, _ = benchmark_command(
+        os.path.join('build', 'Fold'), '-mfe', f.name, out.name)
+      output = out.read()
+      predicted = RNA.from_any_file(output)
+      os.chdir(prev_dir)
+    return predicted, benchmark_results
+
+  def efn(self, rna, logarithmic=False):
+    with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
+      f.write(rna.to_ct_file())
+      f.flush()
+      extra_args = ['-w']
+      # Note that not giving this flag doesn't make it logarithmic.
+      # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
+      # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
+      # the fitted -9.
+      if not logarithmic:
+        extra_args.append('-s')
+      benchmark_results, _ = benchmark_command(
+        os.path.join(self.loc, 'build', 'efn2'), *extra_args, f.name, out.name)
+      output = out.read()
+      match = re.search(r'[eE]nergy = (.+)', output.strip())
+      energy = float(match.group(1))
+    return energy, benchmark_results
+
+  def close(self):
+    pass
+
+  def __str__(self):
+    return 'RNAstructure'
+
 class HarnessFolder:
   def __init__(self, loc, name, flag):
     try:
@@ -51,9 +99,9 @@ class HarnessFolder:
     return self.name
 
 
-class RNAstructure(HarnessFolder):
+class RNAstructureHarness(HarnessFolder):
   def __init__(self, loc=None):
-    super().__init__(loc, 'RNAstructure', '-r')
+    super().__init__(loc, 'RNAstructureHarness', '-r')
 
 
 class Rnark(HarnessFolder):
@@ -136,7 +184,7 @@ class UNAFold:
 def process_benchmark(programs, args):
   dataset = 'archiveii'
   memevault = MemeVault(dataset)
-  rnastructure = RNAstructure(args.memerna_loc)
+  rnastructure = RNAstructureHarness(args.memerna_loc)
   for program in programs:
     with open('%s_%s.results' % (program, dataset), 'w') as f:
       idx = 1
@@ -181,7 +229,7 @@ def process_command(*extra_args):
   programs = []
 
   if args.rnastructure:
-    programs.append(RNAstructure(args.memerna_loc))
+    programs.append(RNAstructureHarness(args.memerna_loc))
   if args.rnark:
     programs.append(Rnark(args.memerna_loc))
   if args.viennarna:

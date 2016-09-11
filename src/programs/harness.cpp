@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
       {"v", {"be verbose (if possible)"}},
       {"e", {"run efn"}},
       {"f", {"run fold"}},
+      {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
   argparse.AddOptions(fold::FOLD_OPTIONS);
@@ -56,8 +57,17 @@ int main(int argc, char* argv[]) {
         rnaqueue.pop_front();
       }
       const auto r = parsing::StringToPrimary(seq);
-      const auto res = package->Fold(r);
-      printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());
+      int subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
+      if (subopt_delta >= 0) {
+        const auto structures = package->Suboptimal(r, subopt_delta);
+        printf("%zu suboptimal structures:\n", structures.size());
+        for (const auto& subopt : structures) {
+          printf("%d %s\n", subopt.energy, parsing::ComputedToCtdString(subopt).c_str());
+        }
+      } else {
+        const auto res = package->Fold(r);
+        printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());
+      }
     }
   }
 }

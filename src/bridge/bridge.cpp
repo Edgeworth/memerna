@@ -8,6 +8,7 @@
 
 #include "nn_unpaired_folder.hpp"
 #include "nn_scorer.hpp"
+#include "RNAstructure/alltrace.h"
 
 namespace memerna {
 namespace bridge {
@@ -45,6 +46,11 @@ computed_t Rnark::Fold(const primary_t& r) const {
   return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy};
 }
 
+std::vector<computed_t> Rnark::Suboptimal(const primary_t&, energy_t) const {
+  verify_expr(false, "not yet implemented");
+  return {};
+}
+
 Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
     data(librnary::LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
@@ -78,6 +84,25 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
   return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
 }
 
+std::vector<computed_t> Rnastructure::Suboptimal(const primary_t& r, energy_t energy_delta) const {
+  const auto structure = librnary::LoadStructure(
+      librnary::StringToPrimary(parsing::PrimaryToString(r)));
+  // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
+  verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
+  alltrace(structure.get(), data.get(), 10000, short(energy_delta), nullptr, nullptr, false);
+  const auto matchings = librnary::StructureToMatchings(*structure);
+  std::vector<computed_t> computeds;
+  for (int i = 0; i < int(matchings.size()); ++i) {
+    const auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(matchings[i]));
+    computeds.emplace_back(
+        secondary_t(r, std::move(pairs)),
+        std::vector<Ctd>(r.size(), CTD_NA),
+        energy_t(structure->GetEnergy(i + 1))
+    );
+  }
+  return computeds;
+}
+
 energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
   computed_t computed;
   if (desc) {
@@ -98,6 +123,9 @@ computed_t Memerna::Fold(const primary_t& r) const {
   return fold::Context(r, em, options).Fold();
 }
 
+std::vector<computed_t> Memerna::Suboptimal(const primary_t& r, energy_t energy_delta) const {
+  return fold::Context(r, em, options).Suboptimal(energy_delta, -1);
+}
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   verify_expr(

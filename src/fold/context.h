@@ -27,15 +27,11 @@ struct context_options_t {
   static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO};
 
   context_options_t(TableAlg table_alg_ = TableAlg::ZERO,
-      SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
-      energy_t subopt_delta_ = -1, int subopt_num_ = -1)
-      : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_),
-        subopt_delta(subopt_delta_), subopt_num(subopt_num_) {}
+      SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO)
+      : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_) {}
 
   TableAlg table_alg;
   SuboptimalAlg suboptimal_alg;
-  energy_t subopt_delta;
-  int subopt_num;
 };
 
 class Context {
@@ -52,7 +48,7 @@ public:
   Context& operator=(Context&&) = delete;
 
   computed_t Fold();
-  std::vector<computed_t> Suboptimal();
+  std::vector<computed_t> Suboptimal(energy_t subopt_delta = -1, int subopt_num = -1);
   const context_options_t& GetOptions() const {return options;}
 
 private:
@@ -64,9 +60,7 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
-    {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
-    {"subopt-num", ArgParse::option_t("maximum number of reported structures").Arg("-1")}
+    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})}
 };
 
 context_options_t ContextOptionsFromArgParse(const ArgParse& argparse);
