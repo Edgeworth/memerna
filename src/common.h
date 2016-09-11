@@ -69,6 +69,7 @@ struct computed_t {
   computed_t(const secondary_t& s_, const std::vector<Ctd>& base_ctds_, energy_t energy_);
 
   bool operator==(const computed_t& o) const;
+  bool operator!=(const computed_t& o) const {return !(*this == o);}
   bool operator<(const computed_t& o) const;
 
   secondary_t s;

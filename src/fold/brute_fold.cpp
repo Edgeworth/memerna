@@ -109,31 +109,37 @@ void AddAllCombinations(int idx) {
 
   // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
   // CTD_LEFT_MISMATCH_COAX_WITH_NEXT
-  auto prevval = gctd[gp[idx] + 2];
-  if (lu_usable && ru_usable && ru_shared && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
-    gctd[idx] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-    gctd[gp[idx] + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
-    AddAllCombinations(idx + 1);
-    gctd[gp[idx] + 2] = prevval;
+  if (lu_usable && ru_usable && ru_shared) {
+    auto prevval = gctd[gp[idx] + 2];
+    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+      gctd[idx] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+      gctd[gp[idx] + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+      AddAllCombinations(idx + 1);
+      gctd[gp[idx] + 2] = prevval;
+    }
   }
 
   // Check that the previous branch hasn't been set already.
   // CTD_RIGHT_MISMATCH_COAX_WITH_PREV
-  prevval = gctd[gp[idx - 2]];
-  if (lu_usable && lu_shared && ru_usable && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
-    gctd[idx] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
-    gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
-    AddAllCombinations(idx + 1);
-    gctd[gp[idx - 2]] = prevval;
+  if (lu_usable && lu_shared && ru_usable) {
+    auto  prevval = gctd[gp[idx - 2]];
+    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+      gctd[idx] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+      gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+      AddAllCombinations(idx + 1);
+      gctd[gp[idx - 2]] = prevval;
+    }
   }
 
   // CTD_FLUSH_COAX_WITH_NEXT
-  prevval = gctd[gp[idx] + 1];
-  if (gp[idx] + 1 < N && gp[gp[idx] + 1] != -1 && (prevval == CTD_UNUSED || prevval == CTD_NA)) {
-    gctd[idx] = CTD_FLUSH_COAX_WITH_NEXT;
-    gctd[gp[idx] + 1] = CTD_FLUSH_COAX_WITH_PREV;
-    AddAllCombinations(idx + 1);
-    gctd[gp[idx] + 1] = prevval;
+  if (gp[idx] + 1 < N && gp[gp[idx] + 1] != -1) {
+    auto prevval = gctd[gp[idx] + 1];
+    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+      gctd[idx] = CTD_FLUSH_COAX_WITH_NEXT;
+      gctd[gp[idx] + 1] = CTD_FLUSH_COAX_WITH_PREV;
+      AddAllCombinations(idx + 1);
+      gctd[gp[idx] + 1] = prevval;
+    }
   }
 
   // Reset back to NA.

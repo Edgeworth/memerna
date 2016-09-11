@@ -2,7 +2,6 @@
 #include <memory>
 #include "energy/energy_internal.h"
 #include "parsing.h"
-#include "structure.h"
 
 namespace memerna {
 namespace energy {
