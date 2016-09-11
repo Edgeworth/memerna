@@ -16,6 +16,8 @@ using namespace fold::internal;
 
 const int SUBOPT_MAX_STRUCTURES = 100, SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
 
+#include "energy/structure.h"
+
 template<typename RandomEngine>
 void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::EnergyModelPtr loaded,
     const std::vector<context_options_t>& memernas, const bridge::Rnastructure& rnastructure,
@@ -85,6 +87,7 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
   bool suboptimal_duplicate = false;  // Check for duplicate structures.
   bool suboptimal_efn_diff = false;  // Check efn gives the same value.
   bool suboptimal_brute_diff = false;  // Check results against brute force.
+  bool parse_diff = false;
   // If energies are different but everything else is the same, it is still a bug.
   std::set<std::pair<secondary_t, std::vector<Ctd>>> suboptimal_set;
   for (int i = 0; i < int(computeds.size()); ++i) {
@@ -97,6 +100,13 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
     auto val = std::make_pair(computeds[i].s, computeds[i].base_ctds);
     if (suboptimal_set.count(val))
       suboptimal_duplicate = true;
+
+    // Test ctd parsing.
+    auto parsed_computed = parsing::ParseCtdComputed(
+        parsing::PrimaryToString(computeds[i].s.r), parsing::ComputedToCtdString(computeds[i]));
+    parsed_computed.energy = computeds[i].energy;
+    if (parsed_computed != computeds[i])
+      parse_diff = true;
     suboptimal_set.insert(std::move(val));
   }
 
@@ -134,7 +144,8 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
   }
   loop_end:;
   if (mfe_diff || dp_table_diff || suboptimal_mfe_diff ||
-      suboptimal_duplicate || suboptimal_efn_diff || suboptimal_brute_diff) {
+      suboptimal_duplicate || suboptimal_efn_diff ||
+      suboptimal_brute_diff || parse_diff) {
     printf("Difference on len %zu RNA %s\n", r.size(), parsing::PrimaryToString(r).c_str());
     if (use_random_energy_model)
       printf("  Using random energy model with seed: %" PRIuFAST32 "\n", seed);
@@ -169,7 +180,9 @@ void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::Ene
     if (suboptimal_duplicate)
       printf("  Suboptimal: Duplicate structure.\n");
     if (suboptimal_brute_diff)
-      printf("  Suboptimal: Diff to brute which is:\n");
+      printf("  Suboptimal: Diff to brute.\n");
+    if (parse_diff)
+      printf("  Parsing: Difference.\n");
   }
 }
 

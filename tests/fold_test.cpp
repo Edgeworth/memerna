@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include "common_test.h"
-#include "gtest/gtest.h"
 #include "fold/context.h"
 #include "fold/precomp.h"
 #include "parsing.h"

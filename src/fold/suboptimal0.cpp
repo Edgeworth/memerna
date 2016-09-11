@@ -285,8 +285,8 @@ std::vector<computed_t> Suboptimal0::Run() {
 
         // 5(   )<   > 5' - U, U2
         energy = base_energy + base10 + gem.dangle5[pb][stb][st1b];
-        if (a == DP_U) Expand(energy, {st + 1, piv, DP_P}, {CTD_3_DANGLE, st + 1});
-        Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv, DP_P}, {piv + 1, en, DP_U}, {CTD_3_DANGLE, st + 1});
+        if (a == DP_U) Expand(energy, {st + 1, piv, DP_P}, {CTD_5_DANGLE, st + 1});
+        Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv, DP_P}, {piv + 1, en, DP_U}, {CTD_5_DANGLE, st + 1});
 
         // .(   ).<   > Terminal mismatch - U, U2
         energy = base_energy + base11 + gem.terminal[pl1b][pb][stb][st1b];
