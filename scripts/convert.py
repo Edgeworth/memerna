@@ -8,11 +8,16 @@ from rna import RNA
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('-t', '--to', choices=['db', 'ct'], required=True)
-  parser.add_argument('filename')
+  parser.add_argument('-f', '--filename', type=str)
+  parser.add_argument('data', type=str, nargs='*')
   args = parser.parse_args()
 
-  rna = RNA.from_any_file(read_file(args.filename))
-
+  if args.filename:
+    rna = RNA.from_any_file(read_file(args.filename))
+  else:
+    if len(args.data) != 2:
+      parser.error('Need exactly two arguments')
+    rna = RNA.from_name_seq_db('user', *args.data)
   if args.to == 'ct':
     print(rna.to_ct_file())
   elif args.to == 'db':

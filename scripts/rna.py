@@ -82,7 +82,7 @@ class RNA:
     return db
 
   def to_ct_file(self):
-    ct = ['%d %s' % (len(self.seq), self.name)]
+    ct = ['%d %s' % (len(self.seq), 'name:' + self.name)]
 
     for i, v in enumerate(self.seq):
       ct.append('%d %s %d %d %d %d' % (i + 1, v, i, i + 2, self.pairs[i] + 1, i + 1))
