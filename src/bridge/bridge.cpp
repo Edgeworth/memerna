@@ -89,7 +89,7 @@ std::vector<computed_t> Rnastructure::Suboptimal(const primary_t& r, energy_t en
       librnary::StringToPrimary(parsing::PrimaryToString(r)));
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
-  alltrace(structure.get(), data.get(), 10000, short(energy_delta), nullptr, nullptr, false);
+  alltrace(structure.get(), data.get(), 100, short(energy_delta), nullptr, nullptr, false);
   const auto matchings = librnary::StructureToMatchings(*structure);
   std::vector<computed_t> computeds;
   for (int i = 0; i < int(matchings.size()); ++i) {

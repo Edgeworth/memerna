@@ -14,177 +14,236 @@ using namespace memerna;
 using namespace fold;
 using namespace fold::internal;
 
-const int SUBOPT_MAX_STRUCTURES = 100, SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
+const int SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
+const energy_t SUBOPT_MAX_DELTA = 6;  // Same as RNAstructure default.
 
 #include "energy/structure.h"
 
-template<typename RandomEngine>
-void FuzzRna(const primary_t& r, bool use_random_energy_model, const energy::EnergyModelPtr loaded,
-    const std::vector<context_options_t>& memernas, const bridge::Rnastructure& rnastructure,
-    RandomEngine& eng) {
-  uint_fast32_t seed = eng();
-  auto em = loaded;
-  if (use_random_energy_model)
-    em = energy::LoadRandomEnergyModel(seed);
+class Fuzzer {
+public:
+  typedef std::deque<std::string> error_t;
 
-  // Memerna.
+  Fuzzer(const primary_t& r_, const energy::EnergyModelPtr em_, bool random_model_, uint_fast32_t seed_,
+      const std::vector<context_options_t>& memernas_, const bridge::Rnastructure& rnastructure_)
+      : r(r_), em(random_model_ ? energy::LoadRandomEnergyModel(seed) : em_),
+        random_model(random_model_), seed(seed_), memernas(memernas_), rnastructure(rnastructure_) {}
+
+  error_t Run() {
+    error_t errors;
+    AppendErrors(errors, MaybePrependHeader(MemernaComputeAndCheckState(), "memerna:"));
+    if (!random_model) {
+      AppendErrors(errors, MaybePrependHeader(RnastructureComputeAndCheckState(), "rnastructure:"));
+
+      // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does strange things
+      // when the energy for suboptimal structures is 0 or above.
+      if (memerna_computeds[0].energy < -SUBOPT_MAX_DELTA) {
+        context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
+        Context ctx(r, em, options);
+        auto memerna_subopt = ctx.Suboptimal(SUBOPT_MAX_DELTA, -1);
+        const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
+        AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(memerna_subopt, true), "memerna suboptimal:"));
+        AppendErrors(errors,
+            MaybePrependHeader(CheckSuboptimal(rnastructure_subopt, false), "rnastructure suboptimal:"));
+        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalPair(
+            memerna_subopt, rnastructure_subopt), "memerna vs rnastructure suboptimal:"));
+      }
+    }
+    if (r.size() <= 25)
+      AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
+    AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
+
+    if (!errors.empty()) {
+      if (random_model)
+        errors.push_front(sfmt("Used random energy model with seed: %" PRIuFAST32 "\n", seed));
+      else
+        errors.push_front(sfmt("Used T04 energy model"));
+      errors = MaybePrependHeader(errors,
+          sfmt("Difference on len %zu RNA %s:", r.size(), parsing::PrimaryToString(r).c_str()));
+    }
+
+    return errors;
+  }
+
+private:
+  const primary_t& r;
+  const energy::EnergyModelPtr em;
+  const bool random_model;
+  const uint_fast32_t seed;
+  const std::vector<context_options_t>& memernas;
+  const bridge::Rnastructure& rnastructure;
+
+  // Fuzz state.
+  std::vector<computed_t> memerna_computeds;
   std::vector<array3d_t<energy_t, DP_SIZE>> memerna_dps;
-  std::vector<computed_t> memerna_folds;
-  std::vector<energy_t> memerna_efns;
-  std::vector<energy_t> memerna_optimal_efns;
-  for (const auto& options : memernas) {
+  dp_state_t rnastructure_dp;
+
+  error_t MaybePrependHeader(const error_t& main, const std::string& header) {
+    if (main.empty()) return main;
+    error_t nmain;
+    nmain.push_front(header);
+    for (auto& error : main)
+      nmain.push_back("  " + error);  // mfw this inefficiency
+    return nmain;
+  }
+
+  void AppendErrors(error_t& main, error_t&& extra) {
+    for (auto& s : extra)
+      main.push_back(std::move(s));
+  }
+
+  bool HasDuplicates(const std::vector<computed_t>& computeds) {
+    // If energies are different but everything else is the same, it is still a bug.
+    std::set<std::pair<secondary_t, std::vector<Ctd>>> suboptimal_set;
+    for (const auto& computed : computeds) {
+      auto val = std::make_pair(computed.s, computed.base_ctds);
+      if (suboptimal_set.count(val))
+        return true;
+      suboptimal_set.insert(val);
+    }
+    return false;
+  }
+
+  error_t CheckSuboptimal(const std::vector<computed_t>& subopt, bool has_ctds) {
+    error_t errors;
+    // Check at least one suboptimal structure.
+    if (subopt.empty())
+      errors.push_back("no structures returned");
+    // Check MFE.
+    if (!subopt.empty() && memerna_computeds[0].energy != subopt[0].energy)
+      errors.push_back(sfmt("lowest structure energy %d != mfe %d", subopt[0].energy, memerna_computeds[0].energy));
+
+    // Only ones with CTDs set can do these tests.
+    if (has_ctds) {
+      // Check for duplicate structures.
+      if (HasDuplicates(subopt))
+        errors.push_back("has duplicates");
+
+      for (int i = 0; i < int(subopt.size()); ++i) {
+        const auto& structure = subopt[i];
+        auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, *em);
+        if (suboptimal_efn.energy != structure.energy) {
+          errors.push_back(sfmt("structure %d: energy %d != efn %d", i, structure.energy, suboptimal_efn.energy));
+          break;
+        }
+
+        // Incidentally test ctd parsing.
+        auto parsed_computed = parsing::ParseCtdComputed(
+            parsing::PrimaryToString(structure.s.r), parsing::ComputedToCtdString(structure));
+        parsed_computed.energy = structure.energy;
+        if (parsed_computed != structure) {
+          errors.push_back(sfmt("structure %d: bug in parsing code", i));
+          break;
+        }
+      }
+    }
+    return errors;
+  }
+
+  error_t CheckSuboptimalPair(const std::vector<computed_t>& a, const std::vector<computed_t>& b) {
+    error_t errors;
+    if (a.size() != b.size()) {
+      errors.push_back(sfmt("first has %d structures != second has %d structures", int(a.size()), int(b.size())));
+    } else {
+      for (int i = 0; i < int(a.size()); ++i) {
+        if (a[i].energy != b[i].energy) {
+          errors.push_back(sfmt("structure %d: first %d != second %d", i, a[i].energy, b[i].energy));
+          break;
+        }
+      }
+    }
+    return errors;
+  }
+
+  error_t CheckDpTables() {
+    error_t errors;
+    int st = 0, en = 0, a = 0;
+    const int N = int(r.size());
+    for (st = N - 1; st >= 0; --st) {
+      for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+        for (a = 0; a < DP_SIZE; ++a) {
+          const auto memerna0 = memerna_dps[0][st][en][a];
+          for (int i = 0; i < int(memernas.size()); ++i) {
+            const auto memernai = memerna_dps[i][st][en][a];
+            // If meant to be infinity and not.
+            if (((memerna0 < constants::CAP_E) != (memernai < constants::CAP_E)) ||
+                (memerna0 < constants::CAP_E && memerna0 != memernai)) {
+              errors.push_back(sfmt("memerna %d at %d %d %d: %d != %d",
+                  i, st, en, a, memerna_dps[i][st][en][a], memerna_dps[0][st][en][a]));
+              goto loopend;
+            }
+          }
+          if (!random_model && (a == DP_P || a == DP_U)) {
+            energy_t rnastructureval = a == DP_P ?
+                rnastructure_dp.v.f(st + 1, en + 1) : rnastructure_dp.w.f(st + 1, en + 1);
+            if (((memerna0 < constants::CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
+                (memerna0 < constants::CAP_E && memerna0 != rnastructureval))) {
+              errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d",
+                  st, en, a, rnastructureval, memerna_dps[0][st][en][a]));
+              goto loopend;
+            }
+          }
+        }
+      }
+    }
+    loopend:
+    return errors;
+  }
+
+  error_t MemernaComputeAndCheckState() {
+    error_t errors;
+    // Memerna.
+    std::vector<energy_t> memerna_ctd_efns;
+    std::vector<energy_t> memerna_optimal_efns;
+    for (const auto& options : memernas) {
+      Context ctx(r, em, options);
+      auto computed = ctx.Fold();
+      memerna_dps.emplace_back(std::move(gdp));
+      // First compute with the CTDs that fold returned to check the energy.
+      memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, *em).energy);
+      // Also check that the optimal CTD configuration has the same energy.
+      // Note that it might not be the same, so we can't do an equality check.
+      memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, *em).energy);
+      memerna_computeds.push_back(std::move(computed));
+    }
+
+    // Check memerna energies.
+    for (int i = 0; i < int(memernas.size()); ++i) {
+      if (memerna_computeds[0].energy != memerna_computeds[i].energy ||
+          memerna_computeds[0].energy != memerna_ctd_efns[i] ||
+          memerna_computeds[0].energy != memerna_optimal_efns[i])
+        errors.push_back(sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d",
+            memerna_computeds[i].energy, memerna_ctd_efns[i], memerna_optimal_efns[i], memerna_computeds[0].energy));
+    }
+
+    return errors;
+  }
+
+  error_t RnastructureComputeAndCheckState() {
+    error_t errors;
+    auto rnastructure_computed = rnastructure.FoldAndDpTable(r, &rnastructure_dp);
+    auto rnastructure_efn = rnastructure.Efn(rnastructure_computed.s);
+    if (memerna_computeds[0].energy != rnastructure_computed.energy ||
+        memerna_computeds[0].energy != rnastructure_efn)
+      errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d",
+          rnastructure_computed.energy, rnastructure_efn, memerna_computeds[0].energy));
+    return errors;
+  }
+
+  error_t CheckBruteForce() {
+    error_t errors;
+    context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
     Context ctx(r, em, options);
-    auto computed = ctx.Fold();
-    memerna_dps.emplace_back(std::move(gdp));
-    // First compute with the CTDs that fold returned to check the energy.
-    memerna_efns.push_back(energy::ComputeEnergyWithCtds(computed, *em).energy);
-    // Also check that the optimal CTD configuration has the same energy.
-    // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, *em).energy);
-    memerna_folds.push_back(std::move(computed));
+    auto subopt_brute = FoldBruteForce(r, *em, SUBOPT_BRUTE_MAX_STRUCTURES);
+    auto subopt_memerna = ctx.Suboptimal(-1, SUBOPT_BRUTE_MAX_STRUCTURES);
+
+    AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(subopt_brute, true), "brute suboptimal:"));
+    AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(subopt_memerna, true), "memerna suboptimal:"));
+    AppendErrors(errors, MaybePrependHeader(CheckSuboptimalPair(subopt_brute, subopt_memerna), "brute vs memerna suboptimal:"));
+    return errors;
   }
 
-  // Check memerna energies.
-  bool mfe_diff = false;
-  for (int i = 0; i < int(memernas.size()); ++i) {
-    if (memerna_folds[0].energy != memerna_folds[i].energy ||
-        memerna_folds[0].energy != memerna_efns[i] ||
-        memerna_folds[0].energy != memerna_optimal_efns[i])
-      mfe_diff = true;
-  }
+};
 
-  // Brute force.
-  bool use_brute = r.size() <= 28;
-  int max_structures = use_brute ? SUBOPT_BRUTE_MAX_STRUCTURES : SUBOPT_MAX_STRUCTURES;
-  std::vector<computed_t> brute_computeds;
-  if (use_brute) {
-    brute_computeds = FoldBruteForce(r, *em, SUBOPT_BRUTE_MAX_STRUCTURES);
-    if (memerna_folds[0].energy != brute_computeds[0].energy)
-      mfe_diff = true;
-  }
-
-  // RNAstructure.
-  computed_t rnastructure_computed;
-  energy_t rnastructure_efn = 0;
-  dp_state_t rnastructure_state;
-  if (!use_random_energy_model) {
-    rnastructure_computed = rnastructure.FoldAndDpTable(r, &rnastructure_state);
-    rnastructure_efn = rnastructure.Efn(rnastructure_computed.s);
-    if (memerna_folds[0].energy != rnastructure_computed.energy ||
-        memerna_folds[0].energy != rnastructure_efn)
-      mfe_diff = true;
-  }
-
-  // Suboptimal folding:
-  // TODO add rnastructure suboptimal.
-  bool suboptimal_mfe_diff = false;
-  context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
-  Context ctx(r, em, options);
-  auto computeds = ctx.Suboptimal(-1, max_structures);
-  // Check MFE.
-  if (memerna_folds[0].energy != computeds[0].energy)
-    suboptimal_mfe_diff = true;
-  bool suboptimal_duplicate = false;  // Check for duplicate structures.
-  bool suboptimal_efn_diff = false;  // Check efn gives the same value.
-  bool suboptimal_brute_diff = false;  // Check results against brute force.
-  bool parse_diff = false;
-  // If energies are different but everything else is the same, it is still a bug.
-  std::set<std::pair<secondary_t, std::vector<Ctd>>> suboptimal_set;
-  for (int i = 0; i < int(computeds.size()); ++i) {
-    auto suboptimal_efn = energy::ComputeEnergyWithCtds(computeds[i], *em);
-    if (suboptimal_efn.energy != computeds[i].energy)
-      suboptimal_efn_diff = true;
-    if (use_brute && (computeds.size() != brute_computeds.size() ||
-        computeds[i].energy != brute_computeds[i].energy))
-      suboptimal_brute_diff = true;
-    auto val = std::make_pair(computeds[i].s, computeds[i].base_ctds);
-    if (suboptimal_set.count(val))
-      suboptimal_duplicate = true;
-
-    // Test ctd parsing.
-    auto parsed_computed = parsing::ParseCtdComputed(
-        parsing::PrimaryToString(computeds[i].s.r), parsing::ComputedToCtdString(computeds[i]));
-    parsed_computed.energy = computeds[i].energy;
-    if (parsed_computed != computeds[i])
-      parse_diff = true;
-    suboptimal_set.insert(std::move(val));
-  }
-
-  int st = 0, en = 0, a = 0;
-  bool dp_table_diff = false;
-  const int N = int(r.size());
-  for (st = N - 1; st >= 0; --st) {
-    for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (a = 0; a < DP_SIZE; ++a) {
-        const auto memerna0 = memerna_dps[0][st][en][a];
-        for (int i = 0; i < int(memernas.size()); ++i) {
-          const auto memernai = memerna_dps[i][st][en][a];
-          // If meant to be infinity and not.
-          if (((memerna0 < constants::CAP_E) != (memernai < constants::CAP_E)) ||
-              (memerna0 < constants::CAP_E && memerna0 != memernai)) {
-            dp_table_diff = true;
-            goto loop_end;
-          }
-        }
-        if (!use_random_energy_model) {
-          energy_t rnastructureval = constants::MAX_E;
-          if (a == DP_P)
-            rnastructureval = rnastructure_state.v.f(st + 1, en + 1);
-          else if (a == DP_U)
-            rnastructureval = rnastructure_state.w.f(st + 1, en + 1);
-          if (rnastructureval != constants::MAX_E &&
-              ((memerna0 < constants::CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
-                  (memerna0 < constants::CAP_E && memerna0 != rnastructureval))) {
-            dp_table_diff = true;
-            goto loop_end;
-          }
-        }
-      }
-    }
-  }
-  loop_end:;
-  if (mfe_diff || dp_table_diff || suboptimal_mfe_diff ||
-      suboptimal_duplicate || suboptimal_efn_diff ||
-      suboptimal_brute_diff || parse_diff) {
-    printf("Difference on len %zu RNA %s\n", r.size(), parsing::PrimaryToString(r).c_str());
-    if (use_random_energy_model)
-      printf("  Using random energy model with seed: %" PRIuFAST32 "\n", seed);
-    else
-      printf("  Using T04 energy model.\n");
-    if (mfe_diff) {
-      printf("  MFE diff\n");
-      for (int i = 0; i < int(memernas.size()); ++i) {
-        printf("  Fold%d: %d (dp), %d (efn), %d (optimal efn) - %s\n", i, memerna_folds[i].energy, memerna_efns[i],
-            memerna_optimal_efns[i], parsing::PairsToDotBracket(memerna_folds[i].s.p).c_str());
-      }
-      if (use_brute)
-        printf("  BruteFold: %d - %s\n", brute_computeds[0].energy,
-            parsing::PairsToDotBracket(brute_computeds[0].s.p).c_str());
-      if (!use_random_energy_model)
-        printf("  RNAstructure: %d (dp), %d (optimal efn) - %s\n", rnastructure_computed.energy,
-            rnastructure_efn, parsing::PairsToDotBracket(rnastructure_computed.s.p).c_str());
-    }
-    if (dp_table_diff) {
-      printf("  DP table difference at %d %d %d:\n", st, en, a);
-      for (int i = 0; i < int(memernas.size()); ++i)
-        printf("    Fold%d: %d\n", i, memerna_dps[i][st][en][a]);
-      if (!use_random_energy_model)
-        printf("    RNAstructure: V: %d W: %d\n",
-            rnastructure_state.v.f(st + 1, en + 1),
-            rnastructure_state.w.f(st + 1, en + 1));
-    }
-    if (suboptimal_mfe_diff)
-      printf("  Suboptimal: First structure was not MFE structure.\n");
-    if (suboptimal_efn_diff)
-      printf("  Suboptimal: Energy differs to EFN.\n");
-    if (suboptimal_duplicate)
-      printf("  Suboptimal: Duplicate structure.\n");
-    if (suboptimal_brute_diff)
-      printf("  Suboptimal: Diff to brute.\n");
-    if (parse_diff)
-      printf("  Parsing: Difference.\n");
-  }
-}
 
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
@@ -195,33 +254,39 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   auto pos = argparse.GetPositional();
-  verify_expr(
-      pos.size() == 2,
-      "require min and max length");
-  int min_len = atoi(pos[0].c_str());
-  int max_len = atoi(pos[1].c_str());
+  verify_expr(pos.size() == 2, "require min and max length");
+  const int min_len = atoi(pos[0].c_str());
+  const int max_len = atoi(pos[1].c_str());
   verify_expr(min_len > 0, "invalid min length");
   verify_expr(max_len >= min_len, "invalid max len");
 
   bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
   std::vector<context_options_t> memernas;
-  for (auto table_alg : context_options_t::TABLE_ALGS) {
+  for (auto table_alg : context_options_t::TABLE_ALGS)
     memernas.emplace_back(table_alg);
-  }
 
   auto start_time = std::chrono::steady_clock::now();
-  auto interval = atoi(argparse.GetOption("print-interval").c_str());
+  const auto interval = atoi(argparse.GetOption("print-interval").c_str());
   std::uniform_int_distribution<int> len_dist(min_len, max_len);
-  auto em = energy::LoadEnergyModelFromArgParse(argparse);
+  const auto t04em = energy::LoadEnergyModelFromArgParse(argparse);
+  const bool random_model = argparse.HasFlag("random");
   for (int64_t i = 0;; ++i) {
-    int length = len_dist(eng);
     if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::steady_clock::now() - start_time).count() > interval) {
       printf("Fuzzed %" PRId64" RNA\n", i);
       start_time = std::chrono::steady_clock::now();
     }
-    auto r = GenerateRandomPrimary(length, eng);
-    FuzzRna(r, argparse.HasFlag("random"), em, memernas, rnastructure, eng);
+    int len = len_dist(eng);
+    auto r = GenerateRandomPrimary(len, eng);
+
+    uint_fast32_t seed = eng();
+    Fuzzer fuzzer(r, t04em, random_model, seed, memernas, rnastructure);
+    const auto res = fuzzer.Run();
+    if (!res.empty()) {
+      for (const auto& s : res)
+        printf("%s\n", s.c_str());
+      printf("\n");
+    }
   }
 }
 
