@@ -13,14 +13,15 @@ namespace internal {
 
 class Suboptimal0 {
 public:
-  Suboptimal0(energy_t max_energy_, int max_structures_);
+  Suboptimal0(energy_t max_energy_, int max_structures_)
+  : max_energy(max_energy_), max_structures(max_structures_) {
+    verify_expr(max_structures > 0, "must request at least one structure");
+  }
   std::vector<computed_t> Run();
 
 private:
-  struct suboptimal_node_t {
-    // TODO Since nodes form a tree, can save memory on these two vectors.
-    // TODO Will also save time in the comparison.
-    // State should be fully defined by |not_yet_expanded| and |history|, which denote
+  struct node_t {
+    // State should be fully defined by |not_yet_expanded|, |history|, and |base_ctds| which denote
     // what it has done so far, and what it can do from now.
     std::vector<index_t> not_yet_expanded;
     std::vector<index_t> history;
@@ -28,7 +29,7 @@ private:
     std::vector<Ctd> base_ctds;
     energy_t energy;  // Stores the minimum energy this state could have.
 
-    bool operator<(const suboptimal_node_t& o) const {
+    bool operator<(const node_t& o) const {
       if (energy != o.energy) return energy < o.energy;
       if (not_yet_expanded != o.not_yet_expanded) return not_yet_expanded < o.not_yet_expanded;
       if (history != o.history) return history < o.history;
@@ -41,25 +42,11 @@ private:
   const energy_t max_energy;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
-  suboptimal_node_t curnode;
-  std::set<suboptimal_node_t> finished;
-  std::set<suboptimal_node_t> q;
+  node_t curnode;
+  std::set<node_t> finished;
+  std::set<node_t> q;
 
-  void PrintNodeDebug(const suboptimal_node_t& node) {
-    printf("Node - not yet expanded:\n  ");
-    for (const auto& idx : node.not_yet_expanded)
-      printf("(%d, %d, %d), ", idx.st, idx.en, idx.a);
-    printf("\nhistory:\n  ");
-    for (const auto& idx : node.history)
-      printf("(%d, %d, %d), ", idx.st, idx.en, idx.a);
-    printf("\npairs so far: %s\nbase ctds:\n  ", parsing::PairsToDotBracket(node.p).c_str());
-    for (const auto& ctd : node.base_ctds) {
-      printf("%s, ", energy::CtdToName(ctd));
-    }
-    printf("\nenergy: %d\n", node.energy);
-  }
-
-  void PruneInsert(std::set<suboptimal_node_t>& prune, const suboptimal_node_t& node) {
+  void PruneInsert(std::set<node_t>& prune, const node_t& node) {
     if (node.energy <= max_energy) {
       if (int(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
         prune.erase(--prune.end());
