@@ -20,11 +20,12 @@ struct context_options_t {
 
   enum class SuboptimalAlg {
     ZERO,
+    ONE,
     BRUTE
   };
 
   static constexpr TableAlg TABLE_ALGS[] = {TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
-  static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO};
+  static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
 
   context_options_t(TableAlg table_alg_ = TableAlg::ZERO,
       SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO)
