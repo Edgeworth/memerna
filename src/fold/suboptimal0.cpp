@@ -24,7 +24,9 @@ std::vector<computed_t> Suboptimal0::Run() {
       std::vector<Ctd>(gr.size(), CTD_NA),
       gext[0][EXT]
   });
+  int num_loops = 0;
   while (!q.empty()) {
+    num_loops++;
     auto node = std::move(*q.begin());
     q.erase(q.begin());
     // Finished state.
@@ -38,7 +40,7 @@ std::vector<computed_t> Suboptimal0::Run() {
     if (int(finished.size()) >= max_structures && (--finished.end())->energy <= node.energy)
       break;
 
-    const auto& to_expand = node.not_yet_expanded.back();
+    auto to_expand = node.not_yet_expanded.back();
     node.not_yet_expanded.pop_back();
     node.history.push_back(to_expand);  // Add to history.
     int st = to_expand.st, en = to_expand.en, a = to_expand.a;
@@ -312,7 +314,6 @@ std::vector<computed_t> Suboptimal0::Run() {
       }
     }
   }
-
   std::vector<computed_t> ret;
   for (const auto& struc : finished) {
     assert(struc.not_yet_expanded.empty());

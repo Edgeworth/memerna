@@ -32,8 +32,7 @@ class BenchmarkResults:
     self.maxrss = maxrss
 
   def __str__(self):
-    return '%.2f real, %.2f usersys %s max rss' % (
-      self.real, self.usersys, human_size(self.maxrss))
+    return '%.2fs, %s ' % (self.real, human_size(self.maxrss))
 
   def to_np_array(self):
     return np.array([self.real, self.usersys, self.maxrss])
