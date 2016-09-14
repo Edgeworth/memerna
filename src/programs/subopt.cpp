@@ -10,7 +10,8 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(fold::FOLD_OPTIONS);
   argparse.AddOptions({
       {"delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
-      {"num", ArgParse::option_t("maximum number of reported structures").Arg("-1")}
+      {"num", ArgParse::option_t("maximum number of reported structures").Arg("-1")},
+      {"q", ArgParse::option_t("quiet")}
   });
   argparse.ParseOrExit(argc, argv);
   const auto pos = argparse.GetPositional();
@@ -27,8 +28,12 @@ int main(int argc, char* argv[]) {
   int subopt_num = atoi(argparse.GetOption("num").c_str());
   verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
   const auto structures = ctx.Suboptimal(subopt_delta, subopt_num);
-  printf("%zu suboptimal structures:\n", structures.size());
-  for (const auto& subopt : structures) {
-    printf("%d %s\n", subopt.energy, parsing::ComputedToCtdString(subopt).c_str());
+  if (argparse.HasFlag("q")) {
+    printf("%zu suboptimal structures\n", structures.size());
+  } else {
+    printf("%zu suboptimal structures:\n", structures.size());
+    for (const auto& subopt : structures) {
+      printf("%d %s\n", subopt.energy, parsing::ComputedToCtdString(subopt).c_str());
+    }
   }
 }

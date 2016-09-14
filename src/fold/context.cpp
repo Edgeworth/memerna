@@ -4,6 +4,7 @@
 #include "fold/context.h"
 #include "fold/suboptimal0.h"
 #include "fold/suboptimal1.h"
+#include "fold/suboptimal2.h"
 #include "fold/brute_fold.h"
 
 namespace memerna {
@@ -17,18 +18,28 @@ constexpr context_options_t::SuboptimalAlg context_options_t::SUBOPTIMAL_ALGS[];
 
 context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   context_options_t options;
-  auto opt = argparse.GetOption("alg");
-  if (opt == "0") {
+  auto dp_alg = argparse.GetOption("dp-alg");
+  if (dp_alg == "0") {
     options.table_alg = context_options_t::TableAlg::ZERO;
-  } else if (opt == "1") {
+  } else if (dp_alg == "1") {
     options.table_alg = context_options_t::TableAlg::ONE;
-  } else if (opt == "2") {
+  } else if (dp_alg == "2") {
     options.table_alg = context_options_t::TableAlg::TWO;
-    options.suboptimal_alg = context_options_t::SuboptimalAlg::ONE;  // Use the fast one.
-  } else if (opt == "3") {
+  } else if (dp_alg == "3") {
     options.table_alg = context_options_t::TableAlg::THREE;
-  } else if (opt == "brute") {
+  } else if (dp_alg == "brute") {
     options.table_alg = context_options_t::TableAlg::BRUTE;
+  } else {
+    verify_expr(false, "unknown fold option");
+  }
+  auto subopt_alg = argparse.GetOption("subopt-alg");
+  if (subopt_alg == "0") {
+    options.suboptimal_alg = context_options_t::SuboptimalAlg::ZERO;
+  } else if (subopt_alg == "1") {
+    options.suboptimal_alg = context_options_t::SuboptimalAlg::ONE;
+  } else if (subopt_alg == "2") {
+    options.suboptimal_alg = context_options_t::SuboptimalAlg::TWO;
+  } else if (subopt_alg == "brute") {
     options.suboptimal_alg = context_options_t::SuboptimalAlg::BRUTE;
   } else {
     verify_expr(false, "unknown fold option");
@@ -80,6 +91,8 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
       return internal::Suboptimal0(max_energy, max_structures).Run();
     case context_options_t::SuboptimalAlg::ONE:
       return internal::Suboptimal1(max_energy, max_structures).Run();
+    case context_options_t::SuboptimalAlg::TWO:
+      return internal::Suboptimal2(max_energy, max_structures).Run();
     default:
       verify_expr(false, "bug");
   }

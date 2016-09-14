@@ -244,21 +244,22 @@ private:
           memerna_subopts[0], memerna_subopts[i]), sfmt("memerna 0 vs memerna %d suboptimal:", i)));
     }
 
-    if (!random_model) {
-      // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does strange things
-      // when the energy for suboptimal structures is 0 or above.
-      if (memerna_computeds[0].energy < -SUBOPT_MAX_DELTA) {
-        context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
-        Context ctx(r, em, options);
-        auto memerna_subopt = ctx.Suboptimal(SUBOPT_MAX_DELTA, -1);
-        const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
-        AppendErrors(errors,
-            MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(
-            memerna_subopt, rnastructure_subopt), "memerna vs rnastructure suboptimal:"));
-      }
-    }
+    // TODO temporarily disabled
+//    if (!random_model) {
+//      // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does strange things
+//      // when the energy for suboptimal structures is 0 or above.
+//      if (memerna_computeds[0].energy < -SUBOPT_MAX_DELTA) {
+//        context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
+//        Context ctx(r, em, options);
+//        auto memerna_subopt = ctx.Suboptimal(SUBOPT_MAX_DELTA, -1);
+//        const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
+//        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
+//        AppendErrors(errors,
+//            MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
+//        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(
+//            memerna_subopt, rnastructure_subopt), "memerna vs rnastructure suboptimal:"));
+//      }
+//    }
 
     return errors;
   }

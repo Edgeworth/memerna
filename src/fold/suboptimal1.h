@@ -25,8 +25,8 @@ private:
   struct node_t {
     // TODO try to reduce size of this? - bitfields, etc - 28 or so bytes might be possible
     // Size limited heap
-    // TODO Cache results of expanding
-    // TODO keep track of empty spots, do GC on the tree
+    // TODO Cache results of expanding - use GC to keep track of unexpanded's that will
+    // be expanded multiple times?
 
     energy_t energy;
     index_t to_expand;  // st is -1 if this does not exist
@@ -51,6 +51,7 @@ private:
   // This node is where we build intermediate results to be pushed onto the queue.
   std::set<int, std::function<bool(int, int)>> finished;
   std::set<int, std::function<bool(int, int)>> q;
+  std::vector<int> free_space;
   std::vector<node_t> nodes;
 
   bool NodeComparator(int a, int b) const {
@@ -70,9 +71,10 @@ private:
   void InsertFinished(int node_idx) {
     const auto& node = nodes[node_idx];
     if (node.energy <= max_energy) {
-      // TODO manipulate child_count in these two if statements.
-      if (int(finished.size()) >= max_structures && nodes[*(--finished.end())].energy > node.energy)
+      if (int(finished.size()) >= max_structures && nodes[*(--finished.end())].energy > node.energy) {
+        GcNode(*(--finished.end()));
         finished.erase(--finished.end());
+      }
       if (int(finished.size()) < max_structures)
         finished.insert(node_idx);
     }
@@ -80,13 +82,31 @@ private:
 
   void InsertQ(const node_t& node) {
     if (node.energy <= max_energy) {
-      // TODO manipulate child_count in these two if statements.
-      if (int(q.size()) >= max_structures && nodes[*(--q.end())].energy > node.energy)
+      int gc_node = -1;
+      if (int(q.size()) >= max_structures && nodes[*(--q.end())].energy > node.energy) {
+        gc_node = *(--q.end());
         q.erase(--q.end());
-      if (int(q.size()) < max_structures) {
-        nodes.push_back(node);
-        q.insert(int(nodes.size() - 1));
       }
+      if (int(q.size()) < max_structures) {
+        if (!free_space.empty()) {
+          int node_idx = free_space.back();
+          free_space.pop_back();
+          assert(q.count(node_idx) == 0);
+          nodes[node_idx] = node;
+          q.insert(node_idx);
+        } else {
+          nodes.push_back(node);
+          q.insert(int(nodes.size() - 1));
+        }
+        // Update child counts.
+        if (node.parent != -1)
+          ++(nodes[node.parent].child_count);
+      }
+      // We have to GC after doing the insert because of this one weird case:
+      // We inserted a child previously whose parent has just that as its one child.
+      // We then removed that child so we can insert |node|, whose parent is the same.
+      // If we had GC'd before, we would have removed the common parent.
+      if (gc_node != -1) GcNode(gc_node);
     }
   }
 
@@ -149,6 +169,9 @@ private:
 
   // Traverses up the tree and reconstructs a computed_t.
   computed_t ReconstructComputed(int node_idx);
+
+  // Determines if |node_idx| is no longer needed, and removes it and anything else that is now useless.
+  void GcNode(int node_idx);
 };
 
 }

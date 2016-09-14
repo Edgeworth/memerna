@@ -21,11 +21,12 @@ struct context_options_t {
   enum class SuboptimalAlg {
     ZERO,
     ONE,
+    TWO,
     BRUTE
   };
 
   static constexpr TableAlg TABLE_ALGS[] = {TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
-  static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
+  static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO, SuboptimalAlg::ONE, SuboptimalAlg::TWO};
 
   context_options_t(TableAlg table_alg_ = TableAlg::ZERO,
       SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO)
@@ -61,7 +62,8 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})}
+    {"dp-alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
+    {"subopt-alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "brute"})}
 };
 
 context_options_t ContextOptionsFromArgParse(const ArgParse& argparse);
