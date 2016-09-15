@@ -50,6 +50,10 @@ class RNAstructureDistribution:
       energy = float(match.group(1))
     return energy, benchmark_results
 
+  def suboptimal(self, rna, delta):
+    # TODO implement
+    raise NotImplementedError
+
   def close(self):
     pass
 
@@ -91,6 +95,10 @@ class HarnessFolder:
   def efn(self, rna):
     energies, benchmark_results = self.batch_efn([rna])
     return energies[0], benchmark_results
+
+  def suboptimal(self, rna, delta):
+    # TODO implement this
+    pass
 
   def close(self):
     pass
@@ -138,7 +146,11 @@ class ViennaRNA:
     return predicted, benchmark_results
 
   def efn(self, rna):
-    print('Not implemented yet')
+    raise NotImplementedError
+
+  def suboptimal(self, rna, delta):
+    # TODO implement this
+    pass
 
   def close(self):
     pass
@@ -172,7 +184,11 @@ class UNAFold:
     return predicted, benchmark_results
 
   def efn(self, rna):
-    pass
+    raise NotImplementedError
+
+  def suboptimal(self, rna, delta):
+    # TODO implement
+    raise NotImplementedError
 
   def close(self):
     shutil.rmtree(self.tempdir)
@@ -180,6 +196,22 @@ class UNAFold:
   def __str__(self):
     return 'UNAFold'
 
+# TODO implement this
+class SparseMFEFold:
+  def fold(self, rna):
+    raise NotImplementedError
+
+  def efn(self, rna):
+    raise NotImplementedError
+
+  def suboptimal(self, rna, delta):
+    raise NotImplementedError
+
+  def close(self):
+    pass
+
+  def __str__(self):
+    return 'SparseMFEFold'
 
 def process_benchmark(programs, args):
   dataset = 'archiveii'

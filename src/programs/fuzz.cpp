@@ -224,7 +224,8 @@ private:
 
     AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(subopt_brute, true), "brute suboptimal:"));
     AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(subopt_memerna, true), "memerna suboptimal:"));
-    AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(subopt_brute, subopt_memerna), "brute vs memerna suboptimal:"));
+    AppendErrors(errors,
+        MaybePrependHeader(CheckSuboptimalResultPair(subopt_brute, subopt_memerna), "brute vs memerna suboptimal:"));
     return errors;
   }
 

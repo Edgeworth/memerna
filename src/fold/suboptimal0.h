@@ -14,7 +14,7 @@ namespace internal {
 class Suboptimal0 {
 public:
   Suboptimal0(energy_t max_energy_, int max_structures_)
-  : max_energy(max_energy_), max_structures(max_structures_) {
+      : max_energy(max_energy_), max_structures(max_structures_) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
   std::vector<computed_t> Run();

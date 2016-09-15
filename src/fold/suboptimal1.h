@@ -14,14 +14,31 @@ namespace internal {
 class Suboptimal1 {
 public:
   Suboptimal1(energy_t max_energy_, int max_structures_)
-    : max_energy(max_energy_), max_structures(max_structures_),
-      finished([this](int a, int b) {return NodeComparator(a, b);}),
-      q([this](int a, int b) {return NodeComparator(a, b);}) {
+      : max_energy(max_energy_), max_structures(max_structures_),
+        finished([this](int a, int b) {return NodeComparator(a, b);}),
+        q([this](int a, int b) {return NodeComparator(a, b);}) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
   std::vector<computed_t> Run();
 
 private:
+  struct expand_t {
+    expand_t() = delete;
+    energy_t energy;
+    index_t to_expand;  // st is -1 if this does not exist
+    index_t unexpanded;  // st is -1 if this does not exist
+    std::pair<Ctd, int> ctd0, ctd1;
+
+    bool operator<(const expand_t& o) const {
+      if (energy != o.energy) return energy < o.energy;
+      if (to_expand != o.to_expand) return to_expand < o.to_expand;
+      if (unexpanded != o.unexpanded) return unexpanded < o.unexpanded;
+      if (ctd0 != o.ctd0) return ctd0 < o.ctd0;
+      if (ctd1 != o.ctd1) return ctd1 < o.ctd1;
+      return false;
+    }
+  };
+
   struct node_t {
     // TODO try to reduce size of this? - bitfields, etc - 28 or so bytes might be possible
     // Size limited heap
@@ -52,6 +69,7 @@ private:
   std::set<int, std::function<bool(int, int)>> finished;
   std::set<int, std::function<bool(int, int)>> q;
   std::vector<int> free_space;
+  std::unordered_map<index_t, std::vector<expand_t>> cache;
   std::vector<node_t> nodes;
 
   bool NodeComparator(int a, int b) const {
@@ -80,7 +98,8 @@ private:
     }
   }
 
-  void InsertQ(const node_t& node) {
+  bool InsertQ(const node_t& node) {
+    bool inserted = false;
     if (node.energy <= max_energy) {
       int gc_node = -1;
       if (int(q.size()) >= max_structures && nodes[*(--q.end())].energy > node.energy) {
@@ -101,6 +120,7 @@ private:
         // Update child counts.
         if (node.parent != -1)
           ++(nodes[node.parent].child_count);
+        inserted = true;
       }
       // We have to GC after doing the insert because of this one weird case:
       // We inserted a child previously whose parent has just that as its one child.
@@ -108,59 +128,7 @@ private:
       // If we had GC'd before, we would have removed the common parent.
       if (gc_node != -1) GcNode(gc_node);
     }
-  }
-
-  // Creates and inserts a new node with energy |energy| that doesn't
-  // need to expand any more ranges than it currently has.
-  void Expand(int parent, energy_t energy) {
-    node_t node = {energy, {-1, -1, -1}, {-1, -1, -1}, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        {CTD_NA, -1}, {CTD_NA, -1}
-    };
-    InsertQ(node);
-  }
-
-  // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
-  void Expand(int parent, energy_t energy, index_t nye) {
-    node_t node = {energy, nye, {-1, -1, -1}, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        {CTD_NA, -1}, {CTD_NA, -1}
-    };
-    InsertQ(node);
-  }
-
-  void Expand(int parent, energy_t energy, index_t nye, std::pair<Ctd, int> ctd_idx) {
-    node_t node = {energy, nye, {-1, -1, -1}, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        ctd_idx, {CTD_NA, -1}
-    };
-    InsertQ(node);
-  }
-
-  // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
-  void Expand(int parent, energy_t energy, index_t nye0, index_t nye1) {
-    node_t node = {energy, nye0, nye1, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        {CTD_NA, -1}, {CTD_NA, -1}
-    };
-    InsertQ(node);
-  }
-
-  void Expand(int parent, energy_t energy, index_t nye0, index_t nye1, std::pair<Ctd, int> ctd_idx) {
-    node_t node = {energy, nye0, nye1, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        ctd_idx, {CTD_NA, -1}
-    };
-    InsertQ(node);
-  }
-
-  void Expand(int parent, energy_t energy, index_t nye0, index_t nye1,
-      std::pair<Ctd, int> ctd_idx0, std::pair<Ctd, int> ctd_idx1) {
-    node_t node = {energy, nye0, nye1, 0, parent,
-        nodes[parent].expand_st, nodes[parent].expand_en, nodes[parent].cur_ancestor,
-        ctd_idx0, ctd_idx1
-    };
-    InsertQ(node);
+    return inserted;
   }
 
   // Looks in the tree for unexpanded bits in node. Returns -1 in st of index_t
@@ -172,6 +140,8 @@ private:
 
   // Determines if |node_idx| is no longer needed, and removes it and anything else that is now useless.
   void GcNode(int node_idx);
+
+  std::vector<expand_t> GenerateExpansions(const index_t& to_expand);
 };
 
 }
