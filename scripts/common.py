@@ -7,7 +7,6 @@ import numpy as np
 
 log = logging.getLogger('')
 
-
 def float_fmt(f):
   return ('%.2f' % f).rstrip('0').rstrip('.')
 
