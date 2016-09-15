@@ -339,6 +339,7 @@ std::vector<Suboptimal1::expand_t> Suboptimal1::GenerateExpansions(const index_t
       }
     }
   }
+
   return exps;
 }
 

@@ -123,7 +123,7 @@ class MemeRNA(HarnessFolder):
 
 
 class ViennaRNA:
-  def __init__(self, loc=None):
+  def __init__(self, loc=None, d3=False):
     try:
       import default_paths
       loc = loc or default_paths.VIENNARNA_PATH
@@ -131,6 +131,9 @@ class ViennaRNA:
       pass
     assert loc
     self.loc = fix_path(loc)
+    self.extra_args = ['-d2']
+    if d3:
+      self.extra_args = ['-d3']
 
   def fold(self, rna):
     with tempfile.NamedTemporaryFile('w') as f:
@@ -138,8 +141,7 @@ class ViennaRNA:
       f.flush()
       benchmark_results, stdout = benchmark_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-        # '-d3',
-        '--noPS', '-i', f.name)
+        *self.extra_args, '--noPS', '-i', f.name)
       seq, db = stdout.strip().split('\n')
       db = db.split(' ')[0]
       predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
@@ -149,8 +151,11 @@ class ViennaRNA:
     raise NotImplementedError
 
   def suboptimal(self, rna, delta):
-    # TODO implement this
-    pass
+    benchmark_results, stdout = benchmark_command(
+      os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
+      *self.extra_args, '-e', '%.1f' % (delta / 10.0), input=rna.seq)
+    print(len(stdout.splitlines()))
+    return benchmark_results
 
   def close(self):
     pass
@@ -287,17 +292,19 @@ def process_command(*extra_args):
             parser.error('Direct specification requires one argument for prediction.')
           seq = args.cmd[0]
           rna = RNA('user', seq, [-1] * len(seq))
-        frna, benchmark_results = program.fold(rna)
-        print('Folding %s with %s: %s\n  %s\n' % (
-          rna.name, program, frna.db(), benchmark_results))
+        # frna, benchmark_results = program.fold(rna)
+        # print('Folding %s with %s: %s\n  %s\n' % (
+        #   rna.name, program, frna.db(), benchmark_results))
+        # TODO - also suboptimals should return # of thingies
+        print(program.suboptimal(rna, 6))
       if args.energy:
-        if args.cmd:
-          if len(args.cmd) != 2:
-            parser.error('Direct specification requires two arguments for efn.')
-          rna = RNA.from_name_seq_db('user', *args.cmd)
-        energy, benchmark_results = program.efn(rna)
-        print('Energy of %s with %s: %f\n  %s\n' % (
-          rna.name, program, energy, benchmark_results))
+          if args.cmd:
+            if len(args.cmd) != 2:
+              parser.error('Direct specification requires two arguments for efn.')
+            rna = RNA.from_name_seq_db('user', *args.cmd)
+          energy, benchmark_results = program.efn(rna)
+          print('Energy of %s with %s: %f\n  %s\n' % (
+            rna.name, program, energy, benchmark_results))
 
   for program in programs:
     program.close()
