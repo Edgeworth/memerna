@@ -51,7 +51,6 @@ public:
 
   computed_t Fold();
   std::vector<computed_t> Suboptimal(energy_t subopt_delta = -1, int subopt_num = -1);
-  const context_options_t& GetOptions() const {return options;}
 
 private:
   const primary_t r;

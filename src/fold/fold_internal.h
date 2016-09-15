@@ -31,6 +31,10 @@ struct index_t {
     return st == o.st && en == o.en && a == o.a;
   }
 
+  bool operator!=(const index_t& o) const {
+    return !(*this == o);
+  }
+
   bool operator<(const index_t& o) const {
     if (st != o.st) return st < o.st;
     if (en != o.en) return en < o.en;
@@ -48,6 +52,19 @@ void Traceback();
 
 }
 }
+}
+
+namespace std {
+template<>
+struct hash<memerna::fold::internal::index_t> {
+  size_t operator()(const memerna::fold::internal::index_t& o) const {
+    size_t v = 0;
+    v ^= hash<int>()(o.st) + 0x9e3779b9 + (v << 6) + (v >> 2);
+    v ^= hash<int>()(o.en) + 0x9e3779b9 + (v << 6) + (v >> 2);
+    v ^= hash<int>()(o.a) + 0x9e3779b9 + (v << 6) + (v >> 2);
+    return v;
+  }
+};
 }
 
 #endif //MEMERNA_FOLD_INTERNAL_H

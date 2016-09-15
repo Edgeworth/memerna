@@ -122,7 +122,7 @@ void AddAllCombinations(int idx) {
   // Check that the previous branch hasn't been set already.
   // CTD_RIGHT_MISMATCH_COAX_WITH_PREV
   if (lu_usable && lu_shared && ru_usable) {
-    auto  prevval = gctd[gp[idx - 2]];
+    auto prevval = gctd[gp[idx - 2]];
     if (prevval == CTD_UNUSED || prevval == CTD_NA) {
       gctd[idx] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
       gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
