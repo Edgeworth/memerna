@@ -349,6 +349,7 @@ std::vector<computed_t> Suboptimal1::Run() {
     int node_idx = *q.begin();
     q.erase(q.begin());
     auto& node = nodes[node_idx];
+    assert(node.energy <= max_energy);
 
     index_t to_expand = node.to_expand;
     // Nothing to do, so either we are done or we need to look up the tree for more nodes to expand.
@@ -357,17 +358,14 @@ std::vector<computed_t> Suboptimal1::Run() {
       auto expand_idx = FindExpansion(node_idx);
 
       if (expand_idx.st == -1) {
-        InsertFinished(node_idx);
-        continue;
+        finished.push_back(node_idx);
+        // Since we add into |finished| in order, if we have enough structures, exit.
+        if (max_structures == int(finished.size())) break;
+        else continue;
       } else {
         to_expand = expand_idx;
       }
     }
-
-    // If we found a non-finished node, but |finished| is full, and the worst in |finished| is as good as
-    // our current node (which is the best in |q|), then we can exit.
-    if (int(finished.size()) >= max_structures && nodes[*(--finished.end())].energy <= node.energy)
-      break;
 
     auto iter = cache.find(to_expand);
     if (iter == cache.end()) {
@@ -384,19 +382,19 @@ std::vector<computed_t> Suboptimal1::Run() {
     // Make a copy now, since the parent might get GC'd.
     node_t child = {0, {}, {}, 0, node_idx, node.expand_st, node.expand_en, node.cur_ancestor, {}, {}};
     for (const auto& exp : iter->second) {
-      // Since this list is sorted, if InsertQ fails once, it will never succeed again after that.
       child.energy = base_energy + exp.energy;
       child.to_expand = exp.to_expand;
       child.unexpanded = exp.unexpanded;
       child.ctd0 = exp.ctd0;
       child.ctd1 = exp.ctd1;
+      // Since this list is sorted we can break if the energy gets too high.
       if (!InsertQ(child))
         break;
     }
   }
 
   std::vector<computed_t> ret;
-  for (auto node_idx : finished)
+  for (int node_idx : finished)
     ret.push_back(ReconstructComputed(node_idx));
   return ret;
 }

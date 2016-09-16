@@ -2,6 +2,7 @@
 #define MEMERNA_SUBOPTIMAL1_H
 
 #include <set>
+#include <algorithm>
 #include "common.h"
 #include "parsing.h"
 #include "fold/fold_internal.h"
@@ -15,7 +16,6 @@ class Suboptimal1 {
 public:
   Suboptimal1(energy_t max_energy_, int max_structures_)
       : max_energy(max_energy_), max_structures(max_structures_),
-        finished([this](int a, int b) {return NodeComparator(a, b);}),
         q([this](int a, int b) {return NodeComparator(a, b);}) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
@@ -41,9 +41,6 @@ private:
 
   struct node_t {
     // TODO try to reduce size of this? - bitfields, etc - 28 or so bytes might be possible
-    // Size limited heap
-    // TODO Cache results of expanding - use GC to keep track of unexpanded's that will
-    // be expanded multiple times?
 
     energy_t energy;
     index_t to_expand;  // st is -1 if this does not exist
@@ -66,7 +63,7 @@ private:
   const energy_t max_energy;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
-  std::set<int, std::function<bool(int, int)>> finished;
+  std::vector<int> finished;
   std::set<int, std::function<bool(int, int)>> q;
   std::vector<int> free_space;
   std::unordered_map<index_t, std::vector<expand_t>> cache;
@@ -76,26 +73,6 @@ private:
     if (nodes[a].energy != nodes[b].energy) return nodes[a].energy < nodes[b].energy;
     if (a != b) return a < b;
     return false;
-  }
-
-  void PrintNodeDebug(int node_idx) {
-    const auto& node = nodes[node_idx];
-    printf("Node %d, energy %d, parent: %d, expand_st: %d, expand_en: %d, cur_anc: %d:\n",
-        node_idx, node.energy, node.parent, node.expand_st, node.expand_en, node.cur_ancestor);
-    printf("  %d %d %d; %d %d %d\n", node.to_expand.st, node.to_expand.en, node.to_expand.a,
-        node.unexpanded.st, node.unexpanded.en, node.unexpanded.a);
-  }
-
-  void InsertFinished(int node_idx) {
-    const auto& node = nodes[node_idx];
-    if (node.energy <= max_energy) {
-      if (int(finished.size()) >= max_structures && nodes[*(--finished.end())].energy > node.energy) {
-        GcNode(*(--finished.end()));
-        finished.erase(--finished.end());
-      }
-      if (int(finished.size()) < max_structures)
-        finished.insert(node_idx);
-    }
   }
 
   bool InsertQ(const node_t& node) {

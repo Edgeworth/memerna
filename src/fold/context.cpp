@@ -85,7 +85,7 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
   energy_t max_energy = internal::gext[0][internal::EXT] + subopt_delta;
   int max_structures = subopt_num;
   if (subopt_delta < 0) max_energy = constants::CAP_E;
-  if (subopt_num < 0) max_structures = INT_MAX;
+  if (subopt_num < 0) max_structures = INT_MAX / 4;
   switch (options.suboptimal_alg) {
     case context_options_t::SuboptimalAlg::ZERO:
       return internal::Suboptimal0(max_energy, max_structures).Run();
