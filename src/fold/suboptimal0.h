@@ -70,10 +70,10 @@ private:
     curnode.not_yet_expanded.pop_back();
   }
 
-  void Expand(energy_t energy, index_t nye, std::pair<Ctd, int> ctd_idx) {
-    curnode.base_ctds[ctd_idx.second] = ctd_idx.first;
+  void Expand(energy_t energy, index_t nye, ctd_idx_t ctd_idx) {
+    curnode.base_ctds[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye);
-    curnode.base_ctds[ctd_idx.second] = CTD_NA;
+    curnode.base_ctds[ctd_idx.idx] = CTD_NA;
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
@@ -86,19 +86,19 @@ private:
     curnode.not_yet_expanded.pop_back();
   }
 
-  void Expand(energy_t energy, index_t nye0, index_t nye1, std::pair<Ctd, int> ctd_idx) {
-    curnode.base_ctds[ctd_idx.second] = ctd_idx.first;
+  void Expand(energy_t energy, index_t nye0, index_t nye1, ctd_idx_t ctd_idx) {
+    curnode.base_ctds[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye0, nye1);
-    curnode.base_ctds[ctd_idx.second] = CTD_NA;
+    curnode.base_ctds[ctd_idx.idx] = CTD_NA;
   }
 
   void Expand(energy_t energy, index_t nye0, index_t nye1,
-      std::pair<Ctd, int> ctd_idx0, std::pair<Ctd, int> ctd_idx1) {
-    curnode.base_ctds[ctd_idx0.second] = ctd_idx0.first;
-    curnode.base_ctds[ctd_idx1.second] = ctd_idx1.first;
+      ctd_idx_t ctd_idx0, ctd_idx_t ctd_idx1) {
+    curnode.base_ctds[ctd_idx0.idx] = ctd_idx0.ctd;
+    curnode.base_ctds[ctd_idx1.idx] = ctd_idx1.ctd;
     Expand(energy, nye0, nye1);
-    curnode.base_ctds[ctd_idx0.second] = CTD_NA;
-    curnode.base_ctds[ctd_idx1.second] = CTD_NA;
+    curnode.base_ctds[ctd_idx0.idx] = CTD_NA;
+    curnode.base_ctds[ctd_idx1.idx] = CTD_NA;
   }
 };
 

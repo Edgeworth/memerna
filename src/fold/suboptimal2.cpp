@@ -84,7 +84,7 @@ std::vector<computed_t> Suboptimal2::Run() {
         // If we are at EXT then this is unused.
         energy = base_energy + base00 + gext[en + 1][EXT];
         if (a == EXT)
-          Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P}, {CTD_UNUSED, st});
+          Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P}, {st, CTD_UNUSED});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a coaxial stack.
@@ -96,39 +96,39 @@ std::vector<computed_t> Suboptimal2::Run() {
 
         // (   )3<   > 3'
         energy = base_energy + base01 + gem.dangle3[en1b][enb][stb] + gext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {CTD_3_DANGLE, st});
+        Expand(energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE});
 
         // 5(   )<   > 5'
         energy = base_energy + base10 + gem.dangle5[enb][stb][st1b] + gext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {CTD_5_DANGLE, st + 1});
+        Expand(energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE});
 
         // .(   ).<   > Terminal mismatch
         energy = base_energy + base11 + gem.terminal[en1b][enb][stb][st1b] + gext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {CTD_TERMINAL_MISMATCH, st + 1});
+        Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
 
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
           energy = base_energy + base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b);
           Expand(energy + gext[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
-              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
+              {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
           Expand(energy + gext[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
-              {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1});
+              {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
 
           // (   ).<(   ). > Right coax forward
           energy = base_energy + base01 + gext[en + 1][EXT_RCOAX];
           Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en - 1, DP_P},
-              {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, en + 1}, {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, st});
+              {en + 1, CTD_RCOAX_WITH_PREV}, {st, CTD_RCOAX_WITH_NEXT});
 
           // (   )<(   ) > Flush coax
           const auto enrb = gr[en + 1];
           energy = base_energy + base00 + gem.stack[enb][enrb][enrb ^ 3][stb] + gext[en + 1][EXT_WC];
           Expand(energy, {en + 1, -1, EXT_WC}, {st, en, DP_P},
-              {CTD_FLUSH_COAX_WITH_PREV, en + 1}, {CTD_FLUSH_COAX_WITH_NEXT, st});
+              {en + 1, CTD_FCOAX_WITH_PREV}, {st, CTD_FCOAX_WITH_NEXT});
 
           if (enrb == G || enrb == U) {
             energy = base_energy + base00 + gem.stack[enb][enrb][enrb ^ 1][stb] + gext[en + 1][EXT_GU];
             Expand(energy, {en + 1, -1, EXT_GU}, {st, en, DP_P},
-                {CTD_FLUSH_COAX_WITH_PREV, en + 1}, {CTD_FLUSH_COAX_WITH_NEXT, st});
+                {en + 1, CTD_FCOAX_WITH_PREV}, {st, CTD_FCOAX_WITH_NEXT});
           }
         }
       }
@@ -162,16 +162,16 @@ std::vector<computed_t> Suboptimal2::Run() {
       auto base_and_branch = base_energy + gpc.augubranch[stb][enb] + gem.multiloop_hack_a;
       // (<   ><    >)
       energy = base_and_branch + gdp[st + 1][en - 1][DP_U2];
-      Expand(energy, {st + 1, en - 1, DP_U2}, {CTD_UNUSED, en});
+      Expand(energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED});
       // (3<   ><   >) 3'
       energy = base_and_branch + gdp[st + 2][en - 1][DP_U2] + gem.dangle3[stb][st1b][enb];
-      Expand(energy, {st + 2, en - 1, DP_U2}, {CTD_3_DANGLE, en});
+      Expand(energy, {st + 2, en - 1, DP_U2}, {en, CTD_3_DANGLE});
       // (<   ><   >5) 5'
       energy = base_and_branch + gdp[st + 1][en - 2][DP_U2] + gem.dangle5[stb][en1b][enb];
-      Expand(energy, {st + 1, en - 2, DP_U2}, {CTD_5_DANGLE, en});
+      Expand(energy, {st + 1, en - 2, DP_U2}, {en, CTD_5_DANGLE});
       // (.<   ><   >.) Terminal mismatch
       energy = base_and_branch + gdp[st + 2][en - 2][DP_U2] + gem.terminal[stb][st1b][en1b][enb];
-      Expand(energy, {st + 2, en - 2, DP_U2}, {CTD_TERMINAL_MISMATCH, en});
+      Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
 
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
         base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
@@ -181,37 +181,37 @@ std::vector<computed_t> Suboptimal2::Run() {
         energy = base_and_branch + gdp[st + 2][piv][DP_P] + gpc.augubranch[st2b][plb] +
             gdp[piv + 1][en - 2][DP_U] + outer_coax;
         Expand(energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},
-            {CTD_LEFT_MISMATCH_COAX_WITH_PREV, st + 2}, {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, en});
+            {st + 2, CTD_LCOAX_WITH_PREV}, {en, CTD_LCOAX_WITH_NEXT});
 
         // (.   (   ).) Right outer coax
         energy = base_and_branch + gdp[st + 2][piv][DP_U] + gpc.augubranch[prb][en2b] +
             gdp[piv + 1][en - 2][DP_P] + outer_coax;
         Expand(energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P},
-            {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, piv + 1}, {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, en});
+            {piv + 1, CTD_RCOAX_WITH_NEXT}, {en, CTD_RCOAX_WITH_PREV});
 
         // (.(   ).   ) Left right coax
         energy = base_and_branch + gdp[st + 2][piv - 1][DP_P] + gpc.augubranch[st2b][pl1b] +
             gdp[piv + 1][en - 1][DP_U] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b);
         Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
-            {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, st + 2}, {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, en});
+            {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT});
 
         // (   .(   ).) Right left coax
         energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[pr1b][en2b] +
             gdp[piv + 2][en - 2][DP_P] + gem.MismatchCoaxial(en2b, en1b, prb, pr1b);
         Expand(energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P},
-            {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, piv + 2}, {CTD_LEFT_MISMATCH_COAX_WITH_PREV, en});
+            {piv + 2, CTD_LCOAX_WITH_NEXT}, {en, CTD_LCOAX_WITH_PREV});
 
         // ((   )   ) Left flush coax
         energy = base_and_branch + gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][plb] +
             gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb];
         Expand(energy, {st + 1, piv, DP_P}, {piv + 1, en - 1, DP_U},
-            {CTD_FLUSH_COAX_WITH_PREV, st + 1}, {CTD_FLUSH_COAX_WITH_NEXT, en});
+            {st + 1, CTD_FCOAX_WITH_PREV}, {en, CTD_FCOAX_WITH_NEXT});
 
         // (   (   )) Right flush coax
         energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[prb][en1b] +
             gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb];
         Expand(energy, {st + 1, piv, DP_U}, {piv + 1, en - 1, DP_P},
-            {CTD_FLUSH_COAX_WITH_NEXT, piv + 1}, {CTD_FLUSH_COAX_WITH_PREV, en});
+            {piv + 1, CTD_FCOAX_WITH_NEXT}, {en, CTD_FCOAX_WITH_PREV});
       }
     } else {
       // Left unpaired. Either DP_U or DP_U2.
@@ -247,11 +247,11 @@ std::vector<computed_t> Suboptimal2::Run() {
         // (   )<   > - U, U2, U_WC?, U_GU?
         energy = base_energy + base00;
         if (a == DP_U) {
-          Expand(energy, {st, piv, DP_P}, {CTD_UNUSED, st});
-          Expand(energy + gdp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U}, {CTD_UNUSED, st});
+          Expand(energy, {st, piv, DP_P}, {st, CTD_UNUSED});
+          Expand(energy + gdp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
         }
         if (a == DP_U2)
-          Expand(energy + gdp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U}, {CTD_UNUSED, st});
+          Expand(energy + gdp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
         if (a == DP_U_WC || a == DP_U_GU) {
           // Make sure we don't form any branches that are not the right type of pair.
           if ((a == DP_U_WC && IsWatsonCrick(stb, pb)) || (a == DP_U_GU && IsGu(stb, pb))) {
@@ -266,31 +266,31 @@ std::vector<computed_t> Suboptimal2::Run() {
         // (   )3<   > 3' - U, U2
         energy = base_energy + base01 + gem.dangle3[pl1b][pb][stb];
         // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
-        if (a == DP_U) Expand(energy, {st, piv - 1, DP_P}, {CTD_3_DANGLE, st});
-        Expand(energy + gdp[piv + 1][en][DP_U], {st, piv - 1, DP_P}, {piv + 1, en, DP_U}, {CTD_3_DANGLE, st});
+        if (a == DP_U) Expand(energy, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE});
+        Expand(energy + gdp[piv + 1][en][DP_U], {st, piv - 1, DP_P}, {piv + 1, en, DP_U}, {st, CTD_3_DANGLE});
 
         // 5(   )<   > 5' - U, U2
         energy = base_energy + base10 + gem.dangle5[pb][stb][st1b];
-        if (a == DP_U) Expand(energy, {st + 1, piv, DP_P}, {CTD_5_DANGLE, st + 1});
-        Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv, DP_P}, {piv + 1, en, DP_U}, {CTD_5_DANGLE, st + 1});
+        if (a == DP_U) Expand(energy, {st + 1, piv, DP_P}, {st + 1, CTD_5_DANGLE});
+        Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv, DP_P}, {piv + 1, en, DP_U}, {st + 1, CTD_5_DANGLE});
 
         // .(   ).<   > Terminal mismatch - U, U2
         energy = base_energy + base11 + gem.terminal[pl1b][pb][stb][st1b];
-        if (a == DP_U) Expand(energy, {st + 1, piv - 1, DP_P}, {CTD_TERMINAL_MISMATCH, st + 1});
+        if (a == DP_U) Expand(energy, {st + 1, piv - 1, DP_P}, {st + 1, CTD_MISMATCH});
         Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv - 1, DP_P},
-            {piv + 1, en, DP_U}, {CTD_TERMINAL_MISMATCH, st + 1});
+            {piv + 1, en, DP_U}, {st + 1, CTD_MISMATCH});
 
         // .(   ).<(   ) > Left coax - U, U2
         energy = base_energy + base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b);
         Expand(energy + gdp[piv + 1][en][DP_U_WC], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U_WC},
-            {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_PREV, piv + 1});
+            {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV});
         Expand(energy + gdp[piv + 1][en][DP_U_GU], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U_GU},
-            {CTD_LEFT_MISMATCH_COAX_WITH_NEXT, st + 1}, {CTD_LEFT_MISMATCH_COAX_WITH_PREV, piv + 1});
+            {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV});
 
         // (   ).<(   ). > Right coax forward - U, U2
         energy = base_energy + base01 + gdp[piv + 1][en][DP_U_RCOAX];
         Expand(energy, {st, piv - 1, DP_P}, {piv + 1, en, DP_U_RCOAX},
-            {CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, st}, {CTD_RIGHT_MISMATCH_COAX_WITH_PREV, piv + 1});
+            {st, CTD_RCOAX_WITH_NEXT}, {piv + 1, CTD_RCOAX_WITH_PREV});
 
         // There has to be remaining bases to even have a chance at these cases.
         if (piv < en) {
@@ -298,12 +298,12 @@ std::vector<computed_t> Suboptimal2::Run() {
           // (   )<(   ) > Flush coax - U, U2
           energy = base_energy + base00 + gem.stack[pb][pr1b][pr1b ^ 3][stb] + gdp[piv + 1][en][DP_U_WC];
           Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_WC},
-              {CTD_FLUSH_COAX_WITH_NEXT, st}, {CTD_FLUSH_COAX_WITH_PREV, piv + 1});
+              {st, CTD_FCOAX_WITH_NEXT}, {piv + 1, CTD_FCOAX_WITH_PREV});
 
           if (pr1b == G || pr1b == U) {
             energy = base_energy + base00 + gem.stack[pb][pr1b][pr1b ^ 1][stb] + gdp[piv + 1][en][DP_U_GU];
             Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_GU},
-                {CTD_FLUSH_COAX_WITH_NEXT, st}, {CTD_FLUSH_COAX_WITH_PREV, piv + 1});
+                {st, CTD_FCOAX_WITH_NEXT}, {piv + 1, CTD_FCOAX_WITH_PREV});
           }
         }
       }

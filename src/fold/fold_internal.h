@@ -24,7 +24,7 @@ struct cand_t {
 struct index_t {
   int st, en, a;
 
-  index_t() = default;
+  index_t() : st(-1), en(-1), a(-1) {}
   index_t(int st_, int en_, int a_) : st(st_), en(en_), a(a_) {}
 
   bool operator==(const index_t& o) const {
@@ -40,6 +40,28 @@ struct index_t {
     if (en != o.en) return en < o.en;
     if (a != o.a) return a < o.a;
     return false;
+  }
+};
+
+struct ctd_idx_t {
+  ctd_idx_t() : idx(-1), ctd(CTD_NA) {}
+  ctd_idx_t(int idx_, Ctd ctd_) : idx(idx_), ctd(ctd_) {}
+
+  int idx;
+  Ctd ctd;
+
+  bool operator<(const ctd_idx_t& o) const {
+    if (idx != o.idx) return idx < idx;
+    if (ctd != o.ctd) return ctd < o.ctd;
+    return false;
+  }
+
+  bool operator==(const ctd_idx_t& o) const {
+    return idx == o.idx && ctd == o.ctd;
+  }
+
+  bool operator!=(const ctd_idx_t& o) const {
+    return !(*this == o);
   }
 };
 

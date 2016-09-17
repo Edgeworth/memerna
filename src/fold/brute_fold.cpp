@@ -76,14 +76,14 @@ void AddAllCombinations(int idx) {
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
   const bool lu_usable = lu_exists && (!lu_shared || (
       gctd[gp[idx - 2]] != CTD_3_DANGLE &&
-          gctd[gp[idx - 2]] != CTD_TERMINAL_MISMATCH &&
-          gctd[gp[idx - 2]] != CTD_RIGHT_MISMATCH_COAX_WITH_PREV));
+          gctd[gp[idx - 2]] != CTD_MISMATCH &&
+          gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
   const bool ru_exists = gp[idx] + 1 < N && gp[gp[idx] + 1] == -1;
   const bool ru_shared = ru_exists && gp[idx] + 2 < N && gp[gp[idx] + 2] != -1;
   const bool ru_usable = ru_exists && (!ru_shared || (
       gctd[gp[idx] + 2] != CTD_5_DANGLE &&
-          gctd[gp[idx] + 2] != CTD_TERMINAL_MISMATCH &&
-          gctd[gp[idx] + 2] != CTD_LEFT_MISMATCH_COAX_WITH_NEXT));
+          gctd[gp[idx] + 2] != CTD_MISMATCH &&
+          gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
   // CTD_UNUSED
   gctd[idx] = CTD_UNUSED;
@@ -101,42 +101,42 @@ void AddAllCombinations(int idx) {
     AddAllCombinations(idx + 1);
   }
 
-  // CTD_TERMINAL_MISMATCH
+  // CTD_MISMATCH
   if (ru_usable && lu_usable) {
-    gctd[idx] = CTD_TERMINAL_MISMATCH;
+    gctd[idx] = CTD_MISMATCH;
     AddAllCombinations(idx + 1);
   }
 
   // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
-  // CTD_LEFT_MISMATCH_COAX_WITH_NEXT
+  // CTD_LCOAX_WITH_NEXT
   if (lu_usable && ru_usable && ru_shared) {
     auto prevval = gctd[gp[idx] + 2];
     if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      gctd[idx] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-      gctd[gp[idx] + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+      gctd[idx] = CTD_LCOAX_WITH_NEXT;
+      gctd[gp[idx] + 2] = CTD_LCOAX_WITH_PREV;
       AddAllCombinations(idx + 1);
       gctd[gp[idx] + 2] = prevval;
     }
   }
 
   // Check that the previous branch hasn't been set already.
-  // CTD_RIGHT_MISMATCH_COAX_WITH_PREV
+  // CTD_RCOAX_WITH_PREV
   if (lu_usable && lu_shared && ru_usable) {
     auto prevval = gctd[gp[idx - 2]];
     if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      gctd[idx] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
-      gctd[gp[idx - 2]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+      gctd[idx] = CTD_RCOAX_WITH_PREV;
+      gctd[gp[idx - 2]] = CTD_RCOAX_WITH_NEXT;
       AddAllCombinations(idx + 1);
       gctd[gp[idx - 2]] = prevval;
     }
   }
 
-  // CTD_FLUSH_COAX_WITH_NEXT
+  // CTD_FCOAX_WITH_NEXT
   if (gp[idx] + 1 < N && gp[gp[idx] + 1] != -1) {
     auto prevval = gctd[gp[idx] + 1];
     if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      gctd[idx] = CTD_FLUSH_COAX_WITH_NEXT;
-      gctd[gp[idx] + 1] = CTD_FLUSH_COAX_WITH_PREV;
+      gctd[idx] = CTD_FCOAX_WITH_NEXT;
+      gctd[gp[idx] + 1] = CTD_FCOAX_WITH_PREV;
       AddAllCombinations(idx + 1);
       gctd[gp[idx] + 1] = prevval;
     }

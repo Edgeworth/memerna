@@ -24,10 +24,22 @@ public:
 private:
   struct expand_t {
     expand_t() = delete;
+    expand_t(energy_t energy_) : energy(energy_) {}
+    expand_t(energy_t energy_, const index_t& to_expand_)
+        : energy(energy_), to_expand(to_expand_) {}
+    expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_)
+        : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_) {}
+    expand_t(energy_t energy_, const index_t& to_expand_, const ctd_idx_t& ctd0_)
+        : energy(energy_), to_expand(to_expand_), ctd0(ctd0_) {}
+    expand_t(energy_t energy_, const index_t& to_expand_,
+        const index_t& unexpanded_, const ctd_idx_t& ctd0_)
+        : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_) {}
+    expand_t(energy_t energy_, const index_t& to_expand_,
+        const index_t& unexpanded_, const ctd_idx_t& ctd0_, const ctd_idx_t& ctd1_)
+        : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_), ctd1(ctd1_) {}
     energy_t energy;
-    index_t to_expand;  // st is -1 if this does not exist
-    index_t unexpanded;  // st is -1 if this does not exist
-    std::pair<Ctd, int> ctd0, ctd1;
+    index_t to_expand, unexpanded;  // st is -1 if this does not exist
+    ctd_idx_t ctd0, ctd1;
 
     bool operator<(const expand_t& o) const {
       if (energy != o.energy) return energy < o.energy;
@@ -40,46 +52,44 @@ private:
   };
 
   struct node_t {
+    node_t() = delete;
+    node_t(const expand_t& exp_)
+        : exp(exp_), child_count(0), parent(-1),
+          exp_st(0), exp_en(-1), cur_anc(0) {}
     // TODO try to reduce size of this? - bitfields, etc - 28 or so bytes might be possible
-
-    energy_t energy;
-    index_t to_expand;  // st is -1 if this does not exist
-    index_t unexpanded;  // st is -1 if this does not exist
-    int child_count;  // For GC.
-    int parent;
+    expand_t exp;
+    // Book-keeping vars:
     // Method for expanding ancestors |unexpanded|s:
-    // Keep track of lowest ancestor which it and everything above is expanded, |expand_en|.
-    // Cur ancestor starts at |expand_st| tracks the next ancestor to expand, and goes up the tree.
-    // Once it reaches |expand_en|, update |expand_en| to |expand_st|, and
-    // |expand_st| and |cur_ancestor|to the current node.
-    // [expand_st, expand_en) is the half-open range saying which nodes we should look
+    // Keep track of lowest ancestor which it and everything above is expanded, |exp_en|.
+    // Cur ancestor starts at |exp_st| tracks the next ancestor to expand, and goes up the tree.
+    // Once it reaches |exp_en|, update |exp_en| to |exp_st|, and
+    // |exp_st| and |cur_anc|to the current node.
+    // [exp_st, exp_en) is the half-open range saying which nodes we should look
     // for things to expand in.
-    int expand_st;
-    int expand_en;
-    int cur_ancestor;
-    std::pair<Ctd, int> ctd0, ctd1;
+    int child_count, parent, exp_st, exp_en, cur_anc;
   };
 
   const energy_t max_energy;
   const int max_structures;
+  std::vector<node_t> nodes;
   // This node is where we build intermediate results to be pushed onto the queue.
   std::vector<int> finished;
-  std::set<int, std::function<bool(int, int)>> q;
   std::vector<int> free_space;
   std::unordered_map<index_t, std::vector<expand_t>> cache;
-  std::vector<node_t> nodes;
+  std::set<int, std::function<bool(int, int)>> q;
 
   bool NodeComparator(int a, int b) const {
-    if (nodes[a].energy != nodes[b].energy) return nodes[a].energy < nodes[b].energy;
+    if (nodes[a].exp.energy != nodes[b].exp.energy)
+      return nodes[a].exp.energy < nodes[b].exp.energy;
     if (a != b) return a < b;
     return false;
   }
 
   bool InsertQ(const node_t& node) {
     bool inserted = false;
-    if (node.energy <= max_energy) {
+    if (node.exp.energy <= max_energy) {
       int gc_node = -1;
-      if (int(q.size()) >= max_structures && nodes[*(--q.end())].energy > node.energy) {
+      if (int(q.size()) >= max_structures && nodes[*(--q.end())].exp.energy > node.exp.energy) {
         gc_node = *(--q.end());
         q.erase(--q.end());
       }
@@ -87,7 +97,6 @@ private:
         if (!free_space.empty()) {
           int node_idx = free_space.back();
           free_space.pop_back();
-          assert(q.count(node_idx) == 0);
           nodes[node_idx] = node;
           q.insert(node_idx);
         } else {
