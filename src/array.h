@@ -2,7 +2,6 @@
 #define MEMERNA_ARRAY_H
 
 #include "common.h"
-#include "constants.h"
 
 namespace memerna {
 
@@ -11,7 +10,7 @@ struct array3d_t {
   typedef T ArrayType[K];
 public:
   array3d_t() : data(nullptr), size(0) {}
-  array3d_t(std::size_t size_, uint8_t init_val = constants::MAX_E & 0xFF) :
+  array3d_t(std::size_t size_, uint8_t init_val = MAX_E & 0xFF) :
       data(new T[size_ * size_ * K]), size(size_) {
     memset(data, init_val, sizeof(data[0]) * size_ * size_ * K);
   }
@@ -49,7 +48,7 @@ public:
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() {delete[] data;}
 
-  array2d_t(std::size_t size_, uint8_t init_val = constants::MAX_E & 0xFF) :
+  array2d_t(std::size_t size_, uint8_t init_val = MAX_E & 0xFF) :
       data(new T[size_ * K]), size(size_) {
     memset(data, init_val, sizeof(data[0]) * size_ * K);
   }

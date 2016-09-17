@@ -29,24 +29,17 @@ private:
     std::vector<Ctd> base_ctds;
     energy_t energy;  // Stores the minimum energy this state could have.
 
-    bool operator<(const node_t& o) const {
-      if (energy != o.energy) return energy < o.energy;
-      if (not_yet_expanded != o.not_yet_expanded) return not_yet_expanded < o.not_yet_expanded;
-      if (history != o.history) return history < o.history;
-      if (base_ctds != o.base_ctds) return base_ctds < o.base_ctds;
-      assert(false);  // Should never happen.
-      return false;
-    }
+    bool operator<(const node_t& o) const {return energy < o.energy;}
   };
 
   const energy_t max_energy;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
   node_t curnode;
-  std::set<node_t> finished;
-  std::set<node_t> q;
+  std::multiset<node_t> finished;
+  std::multiset<node_t> q;
 
-  void PruneInsert(std::set<node_t>& prune, const node_t& node) {
+  void PruneInsert(std::multiset<node_t>& prune, const node_t& node) {
     if (node.energy <= max_energy) {
       if (int(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
         prune.erase(--prune.end());

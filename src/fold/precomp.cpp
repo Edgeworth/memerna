@@ -6,7 +6,6 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace constants;
 using namespace energy;
 
 namespace {

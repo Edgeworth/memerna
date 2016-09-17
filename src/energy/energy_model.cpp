@@ -5,8 +5,6 @@
 namespace memerna {
 namespace energy {
 
-using namespace constants;
-
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:

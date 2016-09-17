@@ -145,14 +145,14 @@ private:
     int st = 0, en = 0, a = 0;
     const int N = int(r.size());
     for (st = N - 1; st >= 0; --st) {
-      for (en = st + constants::HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         for (a = 0; a < DP_SIZE; ++a) {
           const auto memerna0 = memerna_dps[0][st][en][a];
           for (int i = 0; i < int(memerna_dps.size()); ++i) {
             const auto memernai = memerna_dps[i][st][en][a];
             // If meant to be infinity and not.
-            if (((memerna0 < constants::CAP_E) != (memernai < constants::CAP_E)) ||
-                (memerna0 < constants::CAP_E && memerna0 != memernai)) {
+            if (((memerna0 < CAP_E) != (memernai < CAP_E)) ||
+                (memerna0 < CAP_E && memerna0 != memernai)) {
               errors.push_back(sfmt("memerna %d at %d %d %d: %d != %d",
                   i, st, en, a, memerna_dps[i][st][en][a], memerna_dps[0][st][en][a]));
               goto loopend;
@@ -161,8 +161,8 @@ private:
           if (!random_model && (a == DP_P || a == DP_U)) {
             energy_t rnastructureval = a == DP_P ?
                 rnastructure_dp.v.f(st + 1, en + 1) : rnastructure_dp.w.f(st + 1, en + 1);
-            if (((memerna0 < constants::CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
-                (memerna0 < constants::CAP_E && memerna0 != rnastructureval))) {
+            if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
+                (memerna0 < CAP_E && memerna0 != rnastructureval))) {
               errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d",
                   st, en, a, rnastructureval, memerna_dps[0][st][en][a]));
               goto loopend;

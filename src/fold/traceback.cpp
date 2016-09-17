@@ -6,7 +6,6 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace constants;
 using namespace energy;
 
 #define UPDATE_EXT(a_, na_, value_) \
