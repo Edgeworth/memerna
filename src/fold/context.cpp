@@ -4,7 +4,6 @@
 #include "fold/context.h"
 #include "fold/suboptimal0.h"
 #include "fold/suboptimal1.h"
-#include "fold/suboptimal2.h"
 #include "fold/brute_fold.h"
 
 namespace memerna {
@@ -37,8 +36,6 @@ context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
     options.suboptimal_alg = context_options_t::SuboptimalAlg::ZERO;
   } else if (subopt_alg == "1") {
     options.suboptimal_alg = context_options_t::SuboptimalAlg::ONE;
-  } else if (subopt_alg == "2") {
-    options.suboptimal_alg = context_options_t::SuboptimalAlg::TWO;
   } else if (subopt_alg == "brute") {
     options.suboptimal_alg = context_options_t::SuboptimalAlg::BRUTE;
   } else {
@@ -91,8 +88,6 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
       return internal::Suboptimal0(max_energy, max_structures).Run();
     case context_options_t::SuboptimalAlg::ONE:
       return internal::Suboptimal1(max_energy, max_structures).Run();
-    case context_options_t::SuboptimalAlg::TWO:
-      return internal::Suboptimal2(max_energy, max_structures).Run();
     default:
       verify_expr(false, "bug");
   }
