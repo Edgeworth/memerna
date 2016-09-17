@@ -46,7 +46,6 @@ void Suboptimal1Num::GcNode(int node_idx) {
 }
 
 std::vector<computed_t> Suboptimal1Num::Run() {
-  // Start off with zero difference from MFE.
   InsertQ({{gext[0][EXT], {0, -1, EXT}}});
   while (!q.empty()) {
     int node_idx = *q.begin();
@@ -68,13 +67,10 @@ std::vector<computed_t> Suboptimal1Num::Run() {
       }
     }
 
-    energy_t base_energy = node.exp.energy;
-    if (to_expand.en == -1) base_energy -= gext[to_expand.st][to_expand.a];
-    else base_energy -= gdp[to_expand.st][to_expand.en][to_expand.a];
-
     // Make a copy now, since the parent might get GC'd.
     num_node_t child = node;
     child.parent = node_idx;
+    energy_t base_energy = node.exp.energy;
     const auto& exps = GetExpansions(to_expand);
     for (const auto& exp : exps) {
       child.exp = exp;

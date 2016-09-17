@@ -22,16 +22,16 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand) {
         exps.push_back({0});
       else
         // Case: No pair starting here (for EXT only)
-        exps.push_back({gext[st + 1][EXT], {st + 1, -1, EXT}});
+        exps.push_back({gext[st + 1][EXT] - gext[st][a], {st + 1, -1, EXT}});
     }
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
       const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const auto base00 = gdp[st][en][DP_P] + gem.AuGuPenalty(stb, enb);
-      const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b);
-      const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb);
-      const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b);
+      const auto base00 = gdp[st][en][DP_P] + gem.AuGuPenalty(stb, enb) - gext[st][a];
+      const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b) - gext[st][a];
+      const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb) - gext[st][a];
+      const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b) - gext[st][a];
 
       // (   ).<( * ). > Right coax backward
       if (st > 0 && a == EXT_RCOAX) {
@@ -107,16 +107,16 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand) {
     int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
     for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
       for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-        energy = FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P];
+        energy = FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P] - gdp[st][en][a];
         exps.push_back({energy, {ist, ien, DP_P}});
       }
     }
 
     // Hairpin loop
-    energy = FastHairpin(st, en);
+    energy = FastHairpin(st, en) - gdp[st][en][a];
     exps.push_back({energy});
 
-    auto base_and_branch = gpc.augubranch[stb][enb] + gem.multiloop_hack_a;
+    auto base_and_branch = gpc.augubranch[stb][enb] + gem.multiloop_hack_a - gdp[st][en][a];
     // (<   ><    >)
     energy = base_and_branch + gdp[st + 1][en - 1][DP_U2];
     exps.push_back({energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED}});
@@ -175,7 +175,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand) {
 
   // Left unpaired. Either DP_U or DP_U2.
   if (st + 1 < en && (a == DP_U || a == DP_U2)) {
-    energy = gdp[st + 1][en][a];
+    energy = gdp[st + 1][en][a] - gdp[st][en][a];
     exps.push_back({energy, {st + 1, en, a}});
   }
 
@@ -185,10 +185,10 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand) {
     // stb pl1b pb   pr1b
     auto pb = gr[piv], pl1b = gr[piv - 1];
     // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-    auto base00 = gdp[st][piv][DP_P] + gpc.augubranch[stb][pb];
-    auto base01 = gdp[st][piv - 1][DP_P] + gpc.augubranch[stb][pl1b];
-    auto base10 = gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][pb];
-    auto base11 = gdp[st + 1][piv - 1][DP_P] + gpc.augubranch[st1b][pl1b];
+    auto base00 = gdp[st][piv][DP_P] + gpc.augubranch[stb][pb] - gdp[st][en][a];
+    auto base01 = gdp[st][piv - 1][DP_P] + gpc.augubranch[stb][pl1b] - gdp[st][en][a];
+    auto base10 = gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][pb] - gdp[st][en][a];
+    auto base11 = gdp[st + 1][piv - 1][DP_P] + gpc.augubranch[st1b][pl1b] - gdp[st][en][a];
 
     // Check a == U_RCOAX:
     // (   ).<( ** ). > Right coax backward

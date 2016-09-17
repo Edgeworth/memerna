@@ -6,7 +6,6 @@ namespace fold {
 namespace internal {
 
 std::vector<computed_t> Suboptimal1Delta::Run() {
-  // Start off with zero difference from MFE.
   nodes.push_back({{gext[0][EXT], {0, -1, EXT}}});
   q.push_back(0);
   while (!q.empty()) {
@@ -27,13 +26,9 @@ std::vector<computed_t> Suboptimal1Delta::Run() {
       }
     }
 
-    energy_t base_energy = node.exp.energy;
-    if (to_expand.en == -1) base_energy -= gext[to_expand.st][to_expand.a];
-    else base_energy -= gdp[to_expand.st][to_expand.en][to_expand.a];
-
-    // Make a copy now, since the parent might get GC'd.
     delta_node_t child = node;
     child.parent = node_idx;
+    energy_t base_energy = node.exp.energy;
     const auto& exps = GetExpansions(to_expand);
     for (const auto& exp : exps) {
       child.exp = exp;
