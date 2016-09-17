@@ -296,7 +296,7 @@ def process_command(*extra_args):
         # print('Folding %s with %s: %s\n  %s\n' % (
         #   rna.name, program, frna.db(), benchmark_results))
         # TODO - also suboptimals should return # of thingies
-        print(program.suboptimal(rna, 6))
+        print(program.suboptimal(rna, 2))
       if args.energy:
           if args.cmd:
             if len(args.cmd) != 2:
