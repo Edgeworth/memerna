@@ -13,19 +13,19 @@ const char* CtdToName(Ctd ctd) {
       return "3' dangle";
     case CTD_5_DANGLE:
       return "5' dangle";
-    case CTD_TERMINAL_MISMATCH:
+    case CTD_MISMATCH:
       return "terminal mismatch";
-    case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
+    case CTD_LCOAX_WITH_NEXT:
       return "left mismatch coax with next";
-    case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
+    case CTD_LCOAX_WITH_PREV:
       return "left mismatch coax with prev";
-    case CTD_RIGHT_MISMATCH_COAX_WITH_NEXT:
+    case CTD_RCOAX_WITH_NEXT:
       return "right mismatch coax with next";
-    case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
+    case CTD_RCOAX_WITH_PREV:
       return "right mismatch coax with prev";
-    case CTD_FLUSH_COAX_WITH_NEXT:
+    case CTD_FCOAX_WITH_NEXT:
       return "flush coax with next";
-    case CTD_FLUSH_COAX_WITH_PREV:
+    case CTD_FCOAX_WITH_PREV:
       return "flush coax with prev";
     default:
       verify_expr(false, "bug");

@@ -35,8 +35,8 @@ public:
   const computed_t kComputed4 = {
       {StringToPrimary("UACGUUGGUGCUUA"), {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1}},
       {
-          CTD_NA, CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_RIGHT_MISMATCH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA
+          CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA
       }, constants::MAX_E
   };
   const computed_t kComputed5 = {
@@ -49,68 +49,68 @@ public:
   const computed_t kComputed6 = {
       {StringToPrimary("UACGUUGGUGCUUA"), {6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1}},
       {
-          CTD_FLUSH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_FLUSH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA
+          CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA
       }, constants::MAX_E
   };
   const computed_t kComputed7 = {
       {StringToPrimary("UACGUUGGUGCUU"), {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0}},
       {
-          CTD_UNUSED, CTD_FLUSH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FLUSH_COAX_WITH_NEXT
+          CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT
       }, constants::MAX_E
   };
   const computed_t kComputed8 = {
       {StringToPrimary("UACGUUGGUGCUUAA"), {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {
-          CTD_UNUSED, CTD_NA, CTD_LEFT_MISMATCH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LEFT_MISMATCH_COAX_WITH_NEXT
+          CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT
       }, constants::MAX_E
   };
   const computed_t kComputed9 = {
       {StringToPrimary("UACGUUGGUGCUUA"), {13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0}},
       {
-          CTD_UNUSED, CTD_NA, CTD_RIGHT_MISMATCH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RIGHT_MISMATCH_COAX_WITH_NEXT
+          CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT
       }, constants::MAX_E
   };
   const computed_t kComputed10 = {
       {StringToPrimary("UACGUUGGUGCUU"), {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0}},
       {
           CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_FLUSH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FLUSH_COAX_WITH_PREV
+          CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV
       }, constants::MAX_E
   };
   const computed_t kComputed11 = {
       {StringToPrimary("UACGUUGGUGCUUAA"), {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {
           CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_RIGHT_MISMATCH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RIGHT_MISMATCH_COAX_WITH_PREV
+          CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV
       }, constants::MAX_E
   };
   const computed_t kComputed12 = {
       {StringToPrimary("UACGUUGGUGCUUA"), {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0}},
       {
           CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_LEFT_MISMATCH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LEFT_MISMATCH_COAX_WITH_PREV
+          CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_PREV
       }, constants::MAX_E
   };
   const computed_t kComputed13 = {
       {StringToPrimary("UACGUUGGUGCU"), {11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0}},
       {
-          CTD_UNUSED, CTD_FLUSH_COAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_FLUSH_COAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED
+          CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED
       }, constants::MAX_E
   };
   const computed_t kComputed14 = {
       {StringToPrimary("AAAAAAA"), {-1, 5, -1, -1, -1, 1, -1}},
-      {CTD_NA, CTD_TERMINAL_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA}, constants::MAX_E
+      {CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA}, constants::MAX_E
   };
   const computed_t kComputed15 = {
       {StringToPrimary("UACGUUGGUGCUAAAA"), {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
       {
-          CTD_UNUSED, CTD_NA, CTD_TERMINAL_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-          CTD_TERMINAL_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED
+          CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+          CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED
       }, constants::MAX_E
   };
 };

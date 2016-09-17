@@ -65,30 +65,30 @@ std::string ComputedToCtdString(const computed_t& computed) {
       case CTD_5_DANGLE:
         s[i - 1] = '5';
         break;
-      case CTD_TERMINAL_MISMATCH:
+      case CTD_MISMATCH:
         s[i - 1] = 'm';
         s[p[i] + 1] = 'M';
         break;
-      case CTD_LEFT_MISMATCH_COAX_WITH_NEXT:
+      case CTD_LCOAX_WITH_NEXT:
         s[i] = closing ? 'N' : 'n';
         s[i - 1] = 'm';
         s[p[i] + 1] = 'M';
         break;
-      case CTD_LEFT_MISMATCH_COAX_WITH_PREV:
+      case CTD_LCOAX_WITH_PREV:
         s[i] = closing ? 'P' : 'p';
         break;
-      case CTD_RIGHT_MISMATCH_COAX_WITH_NEXT:
+      case CTD_RCOAX_WITH_NEXT:
         s[i] = closing ? 'N' : 'n';
         break;
-      case CTD_RIGHT_MISMATCH_COAX_WITH_PREV:
+      case CTD_RCOAX_WITH_PREV:
         s[i] = closing ? 'P' : 'p';
         s[i - 1] = 'm';
         s[p[i] + 1] = 'M';
         break;
-      case CTD_FLUSH_COAX_WITH_NEXT:
+      case CTD_FCOAX_WITH_NEXT:
         s[i] = closing ? 'N' : 'n';
         break;
-      case CTD_FLUSH_COAX_WITH_PREV:
+      case CTD_FCOAX_WITH_PREV:
         s[i] = closing ? 'P' : 'p';
         break;
       default:
@@ -151,15 +151,15 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
       verify_expr(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
       if (mismatch) {
         if (left_mismatch) {
-          computed.base_ctds[i] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
-          computed.base_ctds[p[prev]] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[i] = CTD_LCOAX_WITH_PREV;
+          computed.base_ctds[p[prev]] = CTD_LCOAX_WITH_NEXT;
         } else {
-          computed.base_ctds[i] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
-          computed.base_ctds[p[prev]] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+          computed.base_ctds[i] = CTD_RCOAX_WITH_PREV;
+          computed.base_ctds[p[prev]] = CTD_RCOAX_WITH_NEXT;
         }
       } else {
-        computed.base_ctds[i] = CTD_FLUSH_COAX_WITH_PREV;
-        computed.base_ctds[p[prev]] = CTD_FLUSH_COAX_WITH_NEXT;
+        computed.base_ctds[i] = CTD_FCOAX_WITH_PREV;
+        computed.base_ctds[p[prev]] = CTD_FCOAX_WITH_NEXT;
       }
     }
     if (c == '3') {
@@ -207,7 +207,7 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
       bool right_branch_viable = i + 1 < N && p[i + 1] != -1 && p[i + 1] + 1 < N && pairs_str[p[i + 1] + 1] == 'M';
       verify_expr(right_branch_viable && computed.base_ctds[i + 1] != CTD_NA, "invalid input");
       if (computed.base_ctds[i + 1] == CTD_UNUSED)
-        computed.base_ctds[i + 1] = CTD_TERMINAL_MISMATCH;
+        computed.base_ctds[i + 1] = CTD_MISMATCH;
     }
   }
   return computed;

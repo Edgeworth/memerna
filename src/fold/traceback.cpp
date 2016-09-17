@@ -135,7 +135,7 @@ void Traceback() {
         }
         // .(   ).<   > Terminal mismatch
         if (base11 + gem.terminal[en1b][enb][stb][st1b] + gext[en + 1][EXT] == gext[st][EXT]) {
-          gctd[st + 1] = CTD_TERMINAL_MISMATCH;
+          gctd[st + 1] = CTD_MISMATCH;
           q.emplace(st + 1, en - 1, DP_P);
           q.emplace(en + 1, -1, EXT);
           goto loopend;
@@ -145,15 +145,15 @@ void Traceback() {
           // .(   ).<(   ) > Left coax  x
           val = base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b);
           if (val + gext[en + 1][EXT_WC] == gext[st][EXT]) {
-            gctd[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-            gctd[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+            gctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+            gctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 1, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT_WC);
             goto loopend;
           }
           if (val + gext[en + 1][EXT_GU] == gext[st][EXT]) {
-            gctd[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-            gctd[en + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+            gctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+            gctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 1, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT_GU);
             goto loopend;
@@ -161,8 +161,8 @@ void Traceback() {
 
           // (   ).<(   ). > Right coax forward
           if (base01 + gext[en + 1][EXT_RCOAX] == gext[st][EXT]) {
-            gctd[st] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
-            gctd[en + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+            gctd[st] = CTD_RCOAX_WITH_NEXT;
+            gctd[en + 1] = CTD_RCOAX_WITH_PREV;
             q.emplace(st, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT_RCOAX);
             goto loopend;
@@ -171,16 +171,16 @@ void Traceback() {
           // (   )<(   ) > Flush coax
           const auto enrb = gr[en + 1];
           if (base00 + gem.stack[enb][enrb][enrb ^ 3][stb] + gext[en + 1][EXT_WC] == gext[st][EXT]) {
-            gctd[st] = CTD_FLUSH_COAX_WITH_NEXT;
-            gctd[en + 1] = CTD_FLUSH_COAX_WITH_PREV;
+            gctd[st] = CTD_FCOAX_WITH_NEXT;
+            gctd[en + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en, DP_P);
             q.emplace(en + 1, -1, EXT_WC);
             goto loopend;
           }
           if ((enrb == G || enrb == U) && base00 + gem.stack[enb][enrb][enrb ^ 1][stb] +
               gext[en + 1][EXT_GU] == gext[st][EXT]) {
-            gctd[st] = CTD_FLUSH_COAX_WITH_NEXT;
-            gctd[en + 1] = CTD_FLUSH_COAX_WITH_PREV;
+            gctd[st] = CTD_FCOAX_WITH_NEXT;
+            gctd[en + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en, DP_P);
             q.emplace(en + 1, -1, EXT_GU);
             goto loopend;
@@ -229,7 +229,7 @@ void Traceback() {
         }
         // (.<   ><   >.) Terminal mismatch
         if (base_branch_cost + gdp[st + 2][en - 2][DP_U2] + gem.terminal[stb][st1b][en1b][enb] == gdp[st][en][DP_P]) {
-          gctd[en] = CTD_TERMINAL_MISMATCH;
+          gctd[en] = CTD_MISMATCH;
           q.emplace(st + 2, en - 2, DP_U2);
           goto loopend;
         }
@@ -241,8 +241,8 @@ void Traceback() {
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
           if (base_branch_cost + gdp[st + 2][piv][DP_P] + gem.multiloop_hack_b +
               gem.AuGuPenalty(st2b, plb) + gdp[piv + 1][en - 2][DP_U] + outer_coax == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-            gctd[st + 2] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+            gctd[en] = CTD_LCOAX_WITH_NEXT;
+            gctd[st + 2] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 2, piv, DP_P);
             q.emplace(piv + 1, en - 2, DP_U);
             goto loopend;
@@ -250,8 +250,8 @@ void Traceback() {
           // (.   (   ).) Right outer coax
           if (base_branch_cost + gdp[st + 2][piv][DP_U] + gem.multiloop_hack_b +
               gem.AuGuPenalty(prb, en2b) + gdp[piv + 1][en - 2][DP_P] + outer_coax == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
-            gctd[piv + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
+            gctd[en] = CTD_RCOAX_WITH_PREV;
+            gctd[piv + 1] = CTD_RCOAX_WITH_NEXT;
             q.emplace(st + 2, piv, DP_U);
             q.emplace(piv + 1, en - 2, DP_P);
             goto loopend;
@@ -261,8 +261,8 @@ void Traceback() {
           if (base_branch_cost + gdp[st + 2][piv - 1][DP_P] + gem.multiloop_hack_b +
               gem.AuGuPenalty(st2b, pl1b) + gdp[piv + 1][en - 1][DP_U] +
               gem.MismatchCoaxial(pl1b, plb, st1b, st2b) == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
-            gctd[st + 2] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+            gctd[en] = CTD_RCOAX_WITH_NEXT;
+            gctd[st + 2] = CTD_RCOAX_WITH_PREV;
             q.emplace(st + 2, piv - 1, DP_P);
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
@@ -271,8 +271,8 @@ void Traceback() {
           if (base_branch_cost + gdp[st + 1][piv][DP_U] + gem.multiloop_hack_b +
               gem.AuGuPenalty(pr1b, en2b) + gdp[piv + 2][en - 2][DP_P] +
               gem.MismatchCoaxial(en2b, en1b, prb, pr1b) == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
-            gctd[piv + 2] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
+            gctd[en] = CTD_LCOAX_WITH_PREV;
+            gctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
             q.emplace(st + 1, piv, DP_U);
             q.emplace(piv + 2, en - 2, DP_P);
             goto loopend;
@@ -282,8 +282,8 @@ void Traceback() {
           if (base_branch_cost + gdp[st + 1][piv][DP_P] +
               gem.multiloop_hack_b + gem.AuGuPenalty(st1b, plb) +
               gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb] == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_FLUSH_COAX_WITH_NEXT;
-            gctd[st + 1] = CTD_FLUSH_COAX_WITH_PREV;
+            gctd[en] = CTD_FCOAX_WITH_NEXT;
+            gctd[st + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st + 1, piv, DP_P);
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
@@ -292,8 +292,8 @@ void Traceback() {
           if (base_branch_cost + gdp[st + 1][piv][DP_U] +
               gem.multiloop_hack_b + gem.AuGuPenalty(prb, en1b) +
               gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb] == gdp[st][en][DP_P]) {
-            gctd[en] = CTD_FLUSH_COAX_WITH_PREV;
-            gctd[piv + 1] = CTD_FLUSH_COAX_WITH_NEXT;
+            gctd[en] = CTD_FCOAX_WITH_PREV;
+            gctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
             q.emplace(st + 1, piv, DP_U);
             q.emplace(piv + 1, en - 1, DP_P);
             goto loopend;
@@ -377,7 +377,7 @@ void Traceback() {
         }
         // .(   ).<   > Terminal mismatch - U, U2
         if (base11 + gem.terminal[pl1b][pb][stb][st1b] + right_unpaired == gdp[st][en][a]) {
-          gctd[st + 1] = CTD_TERMINAL_MISMATCH;
+          gctd[st + 1] = CTD_MISMATCH;
           q.emplace(st + 1, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired)
             q.emplace(piv + 1, en, DP_U);
@@ -386,15 +386,15 @@ void Traceback() {
         // .(   ).<(   ) > Left coax - U, U2
         auto val = base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b);
         if (val + gdp[piv + 1][en][DP_U_WC] == gdp[st][en][a]) {
-          gctd[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-          gctd[piv + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+          gctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          gctd[piv + 1] = CTD_LCOAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_WC);
           goto loopend;
         }
         if (val + gdp[piv + 1][en][DP_U_GU] == gdp[st][en][a]) {
-          gctd[st + 1] = CTD_LEFT_MISMATCH_COAX_WITH_NEXT;
-          gctd[piv + 1] = CTD_LEFT_MISMATCH_COAX_WITH_PREV;
+          gctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          gctd[piv + 1] = CTD_LCOAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_GU);
           goto loopend;
@@ -402,8 +402,8 @@ void Traceback() {
 
         // (   ).<(   ). > Right coax forward - U, U2
         if (base01 + gdp[piv + 1][en][DP_U_RCOAX] == gdp[st][en][a]) {
-          gctd[st] = CTD_RIGHT_MISMATCH_COAX_WITH_NEXT;
-          gctd[piv + 1] = CTD_RIGHT_MISMATCH_COAX_WITH_PREV;
+          gctd[st] = CTD_RCOAX_WITH_NEXT;
+          gctd[piv + 1] = CTD_RCOAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_RCOAX);
           goto loopend;
@@ -414,16 +414,16 @@ void Traceback() {
           const auto pr1b = gr[piv + 1];
           // (   )<(   ) > Flush coax - U, U2
           if (base00 + gem.stack[pb][pr1b][pr1b ^ 3][stb] + gdp[piv + 1][en][DP_U_WC] == gdp[st][en][a]) {
-            gctd[st] = CTD_FLUSH_COAX_WITH_NEXT;
-            gctd[piv + 1] = CTD_FLUSH_COAX_WITH_PREV;
+            gctd[st] = CTD_FCOAX_WITH_NEXT;
+            gctd[piv + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_WC);
             goto loopend;
           }
           if ((pr1b == G || pr1b == U) &&
               base00 + gem.stack[pb][pr1b][pr1b ^ 1][stb] + gdp[piv + 1][en][DP_U_GU] == gdp[st][en][a]) {
-            gctd[st] = CTD_FLUSH_COAX_WITH_NEXT;
-            gctd[piv + 1] = CTD_FLUSH_COAX_WITH_PREV;
+            gctd[st] = CTD_FCOAX_WITH_NEXT;
+            gctd[piv + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, piv, DP_P);
             q.emplace(piv + 1, en, DP_U_GU);
             goto loopend;
