@@ -60,8 +60,8 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"dp-alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "2", "3", "brute"})},
-    {"subopt-alg", ArgParse::option_t("which algorithm for memerna").Arg("0", {"0", "1", "brute"})}
+    {"dp-alg", ArgParse::option_t("which algorithm for memerna").Arg("2", {"0", "1", "2", "3", "brute"})},
+    {"subopt-alg", ArgParse::option_t("which algorithm for memerna").Arg("1", {"0", "1", "brute"})}
 };
 
 context_options_t ContextOptionsFromArgParse(const ArgParse& argparse);
