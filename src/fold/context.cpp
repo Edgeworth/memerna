@@ -1,5 +1,4 @@
 #include <stack>
-#include <climits>
 #include "parsing.h"
 #include "fold/context.h"
 #include "fold/suboptimal0.h"
@@ -78,15 +77,11 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
     return FoldBruteForce(r, *em, subopt_num);
 
   ComputeTables();
-  energy_t max_energy = internal::gext[0][internal::EXT] + subopt_delta;
-  int max_structures = subopt_num;
-  if (subopt_delta < 0) max_energy = CAP_E;
-  if (subopt_num < 0) max_structures = INT_MAX / 4;
   switch (options.suboptimal_alg) {
     case context_options_t::SuboptimalAlg::ZERO:
-      return internal::Suboptimal0(max_energy, max_structures).Run();
+      return internal::Suboptimal0(subopt_delta, subopt_num).Run();
     case context_options_t::SuboptimalAlg::ONE:
-      return internal::Suboptimal1(max_energy, max_structures).Run();
+      return internal::Suboptimal1(subopt_delta, subopt_num).Run();
     default:
       verify_expr(false, "bug");
   }
