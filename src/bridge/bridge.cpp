@@ -1,4 +1,3 @@
-#include <constants.h>
 #include "energy/load_model.h"
 #include "energy/energy.h"
 #include "fold/context.h"
@@ -37,7 +36,7 @@ energy_t Rnark::Efn(const secondary_t& secondary, std::string* desc) const {
 
 computed_t Rnark::Fold(const primary_t& r) const {
   librnary::NNUnpairedFolder folder(model);
-  folder.SetMaxTwoLoop(constants::TWOLOOP_MAX_SZ);
+  folder.SetMaxTwoLoop(TWOLOOP_MAX_SZ);
   folder.SetLonelyPairs(true);
   folder.SetStacking(true);
   const auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(r));
@@ -77,7 +76,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
   // Second last parameter is whether to use Lyngso or not.
   // Last parameter is for returning the DP state.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
-  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, constants::TWOLOOP_MAX_SZ + 2, true,
+  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
       !use_lyngso, dp_state);
   const auto pairs = parsing::DotBracketToPairs(
       librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));

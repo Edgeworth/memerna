@@ -6,13 +6,10 @@
 #include <cmath>
 #include "common.h"
 #include "argparse.h"
-#include "constants.h"
 #include "base.h"
 
 namespace memerna {
 namespace energy {
-
-using namespace constants;
 
 class Structure;
 

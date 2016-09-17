@@ -17,7 +17,7 @@ void SetGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   gr = r;
   gp.resize(gr.size());
   gctd.resize(gr.size());
-  genergy = constants::MAX_E;
+  genergy = MAX_E;
   gem = em;
   gpc = PrecomputeData(gr, gem);
   std::fill(gp.begin(), gp.end(), -1);

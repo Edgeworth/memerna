@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "base.h"
-#include "constants.h"
 #include "fold/globals.h"
 
 namespace memerna {
@@ -12,7 +11,7 @@ namespace internal {
 
 inline bool ViableFoldingPair(int st, int en) {
   return CanPair(gr[st], gr[en]) &&
-      ((en - st - 3 >= constants::HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
+      ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
           (st > 0 && en < int(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
 }
 
@@ -38,8 +37,7 @@ struct index_t {
   bool operator<(const index_t& o) const {
     if (st != o.st) return st < o.st;
     if (en != o.en) return en < o.en;
-    if (a != o.a) return a < o.a;
-    return false;
+    return a < o.a;
   }
 };
 
@@ -52,8 +50,7 @@ struct ctd_idx_t {
 
   bool operator<(const ctd_idx_t& o) const {
     if (idx != o.idx) return idx < idx;
-    if (ctd != o.ctd) return ctd < o.ctd;
-    return false;
+    return ctd < o.ctd;
   }
 
   bool operator==(const ctd_idx_t& o) const {

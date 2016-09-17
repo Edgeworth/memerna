@@ -41,14 +41,7 @@ private:
     index_t to_expand, unexpanded;  // st is -1 if this does not exist
     ctd_idx_t ctd0, ctd1;
 
-    bool operator<(const expand_t& o) const {
-      if (energy != o.energy) return energy < o.energy;
-      if (to_expand != o.to_expand) return to_expand < o.to_expand;
-      if (unexpanded != o.unexpanded) return unexpanded < o.unexpanded;
-      if (ctd0 != o.ctd0) return ctd0 < o.ctd0;
-      if (ctd1 != o.ctd1) return ctd1 < o.ctd1;
-      return false;
-    }
+    bool operator<(const expand_t& o) const {return energy < o.energy;}
   };
 
   struct node_t {

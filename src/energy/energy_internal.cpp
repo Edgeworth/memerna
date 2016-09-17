@@ -41,8 +41,8 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 
   // cache[used][i]
   std::vector<int> cache[2] = {
-      std::vector<int>(size_t(N + 1), constants::MAX_E),
-      std::vector<int>(size_t(N + 1), constants::MAX_E)
+      std::vector<int>(size_t(N + 1), MAX_E),
+      std::vector<int>(size_t(N + 1), MAX_E)
   };
   std::vector<std::tuple<bool, int, energy_t, Ctd>> back[2] = {
       std::vector<std::tuple<bool, int, energy_t, Ctd>>(size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA)),

@@ -49,7 +49,7 @@ namespace {
 
 using namespace internal;
 
-std::set<computed_t> best_computeds;
+std::multiset<computed_t, computed_energy_comparator_t> best_computeds;
 std::vector<std::pair<int, int>> base_pairs;
 std::vector<int> branch_count;
 int max_structures;
@@ -197,7 +197,7 @@ std::vector<computed_t> FoldBruteForce(const primary_t& r,
   max_structures = max_structures_;
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < int(r.size()); ++st) {
-    for (int en = st + constants::HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
       if (internal::ViableFoldingPair(st, en))
         base_pairs.emplace_back(st, en);
     }

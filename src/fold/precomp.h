@@ -2,7 +2,6 @@
 #define MEMERNA_PRECOMP_H
 
 #include "common.h"
-#include "constants.h"
 #include "energy/energy_model.h"
 
 namespace memerna {
@@ -12,7 +11,7 @@ namespace internal {
 struct hairpin_precomp_t {
   static const int MAX_SPECIAL_HAIRPIN_SZ = 6;
   hairpin_precomp_t() : num_c(0) {
-    memset(special, constants::MAX_E & 0xFF, sizeof(special));
+    memset(special, MAX_E & 0xFF, sizeof(special));
   }
 
   energy_t special[MAX_SPECIAL_HAIRPIN_SZ + 1];

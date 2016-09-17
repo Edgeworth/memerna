@@ -1,4 +1,3 @@
-#include "constants.h"
 #include "gtest/gtest.h"
 #include "common_test.h"
 #include "fold/context.h"
@@ -75,7 +74,7 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   EXPECT_EQ(g_em->stack[G][C][G][C] + g_em->stack[C][C][G][G] + g_em->BulgeInitiation(1) +
       g_em->bulge_special_c + g_em->stack[C][G][C][G] + g_em->HairpinInitiation(3) -
-      energy_t(round(10.0 * constants::R * constants::T * log(3))),
+      energy_t(round(10.0 * R * T * log(3))),
       ComputeEnergy(kNNDBBulge1, *g_em).energy);
 
   EXPECT_EQ(g_em->stack[G][A][U][C] + g_em->augu_penalty + g_em->BulgeInitiation(3) + g_em->HairpinInitiation(3),
@@ -94,14 +93,14 @@ TEST_F(EnergyTest, NNDBMultiloopExamples) {
 
 TEST_F(EnergyTest, NNDBInternalLoopExamples) {
   EXPECT_EQ(g_em->stack[C][A][U][G] + g_em->stack[C][G][C][G] + g_em->InternalLoopInitiation(5) +
-      std::min(g_em->internal_asym, constants::NINIO_MAX_ASYM) + g_em->internal_2x3_mismatch[A][G][G][U] +
+      std::min(g_em->internal_asym, NINIO_MAX_ASYM) + g_em->internal_2x3_mismatch[A][G][G][U] +
       g_em->internal_2x3_mismatch[G][G][A][C] + g_em->internal_augu_penalty + g_em->HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal2x3, *g_em).energy);
   EXPECT_EQ(g_em->stack[C][A][U][G] + g_em->stack[C][G][C][G] + g_em->internal_2x2[A][G][A][C][G][G][A][U] +
       g_em->HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal2x2, *g_em).energy);
   EXPECT_EQ(g_em->stack[C][A][U][G] + g_em->stack[C][G][C][G] + g_em->InternalLoopInitiation(6) +
-      std::min(4 * g_em->internal_asym, constants::NINIO_MAX_ASYM) +
+      std::min(4 * g_em->internal_asym, NINIO_MAX_ASYM) +
       g_em->internal_augu_penalty + g_em->HairpinInitiation(3),
       ComputeEnergy(kNNDBInternal1x5, *g_em).energy);
 }
