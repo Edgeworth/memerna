@@ -63,19 +63,6 @@ struct ctd_idx_t {
 
   int16_t idx;
   Ctd ctd;
-
-  bool operator<(const ctd_idx_t& o) const {
-    if (idx != o.idx) return idx < idx;
-    return ctd < o.ctd;
-  }
-
-  bool operator==(const ctd_idx_t& o) const {
-    return idx == o.idx && ctd == o.ctd;
-  }
-
-  bool operator!=(const ctd_idx_t& o) const {
-    return !(*this == o);
-  }
 };
 
 }

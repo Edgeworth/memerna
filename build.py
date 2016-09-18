@@ -7,7 +7,7 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-  '-t', '--type', choices=['debug', 'asan', 'msan', 'ubsan', 'release', 'relwithdebinfo'],
+  '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
 parser.add_argument('-c', '--use_clang', action='store_true', default=False, required=False)
 parser.add_argument('-r', '--regenerate', action='store_true', default=False, required=False)
