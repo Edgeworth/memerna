@@ -6,7 +6,7 @@ namespace internal {
 
 bool Suboptimal1Num::InsertQ(const num_node_t& node) {
   bool inserted = false;
-  if (node.exp.energy <= max_energy) {
+  if (node.exp.energy <= delta) {
     int gc_node = -1;
     if (int(q.size()) >= max_structures && nodes[*(--q.end())].exp.energy > node.exp.energy) {
       gc_node = *(--q.end());
@@ -46,12 +46,12 @@ void Suboptimal1Num::GcNode(int node_idx) {
 }
 
 std::vector<computed_t> Suboptimal1Num::Run() {
-  InsertQ({{gext[0][EXT], {0, -1, EXT}}});
+  InsertQ({{0, {0, -1, EXT}}});
   while (!q.empty()) {
     int node_idx = *q.begin();
     auto& node = nodes[node_idx];
     q.erase(q.begin());
-    assert(node.exp.energy <= max_energy);
+    assert(node.exp.energy <= delta);
 
     index_t to_expand = node.exp.to_expand;
     // Nothing to do, so either we are done or we need to look up the tree for more nodes to expand.

@@ -20,8 +20,8 @@ void ComputeTables0() {
   static_assert(HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1], en2b = gr[en -
-          2];
+      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2],
+          enb = gr[en], en1b = gr[en - 1], en2b = gr[en - 2];
 
       // Update paired - only if can actually pair.
       if (ViableFoldingPair(st, en)) {

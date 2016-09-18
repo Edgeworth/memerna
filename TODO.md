@@ -4,3 +4,10 @@
 - Implement runners in run.py
 - Cache results for ReconstructComputed / write dfs loader - should save O(N) time
 - Write splay-tree
+- Memory optimisation
+-- Suboptimals return iterators that go through the things - avoids instantiating all the things at the same time
+-- Change index_t to use unsigned bitfields
+-- Change stuff in node_ts, expand_ts, index_ts to unsigned
+-- Change ctds representation to indicate an index part instead => ctd_idx_t in one byte
+--- Makes delta_node_t 30 bytes
+--- num_node_t still at 34 bytes

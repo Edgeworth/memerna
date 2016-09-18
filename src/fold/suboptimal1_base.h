@@ -32,11 +32,15 @@ struct expand_t {
   bool operator<(const expand_t& o) const {return energy < o.energy;}
 };
 
-std::vector<expand_t> GenerateExpansions(const index_t& to_expand);
+std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
 
 template<typename Node>
 class Suboptimal1Base {
+  Suboptimal1Base() = delete;
 protected:
+  Suboptimal1Base(energy_t delta_) : delta(delta_) {}
+
+  const energy_t delta;
   std::vector<Node> nodes;
   std::vector<int> finished;  // TODO get rid of this, don't need it with new reconstruction method.
 
@@ -51,10 +55,8 @@ protected:
       } else {
         // Need to find the next node to expand in the tree. Keep looking up the tree while
         // we haven't found a node which we can expand, and while we are still in range.
-        while (node.cur_anc != node.exp_en && nodes[node.cur_anc].exp.unexpanded.st == -1) {
+        while (node.cur_anc != node.exp_en && nodes[node.cur_anc].exp.unexpanded.st == -1)
           node.cur_anc = nodes[node.cur_anc].parent;
-          assert(node.cur_anc == -1 || nodes[node.cur_anc].child_count != 0);
-        }
         if (node.cur_anc == node.exp_en) {
           // Case: We did not find a node. In this case, update expand range to be from us to exp_st.
           node.exp_en = node.exp_st;
@@ -81,7 +83,7 @@ protected:
   const std::vector<expand_t>& GetExpansions(const index_t& to_expand) {
     auto iter = cache.find(to_expand);
     if (iter == cache.end()) {
-      auto exps = GenerateExpansions(to_expand);
+      auto exps = GenerateExpansions(to_expand, delta);
       std::sort(exps.begin(), exps.end());
       auto res = cache.emplace(to_expand, std::move(exps));
       assert(res.second && res.first != cache.end());
@@ -97,7 +99,7 @@ private:
   computed_t ReconstructComputed(int node_idx) {
     assert(nodes[node_idx].exp.to_expand.st == -1 && nodes[node_idx].exp_en == node_idx);
     computed_t computed(gr);
-    computed.energy = nodes[node_idx].exp.energy;
+    computed.energy = nodes[node_idx].exp.energy + gext[0][EXT];
     while (node_idx != -1) {
       const auto& node = nodes[node_idx];
       if (node.exp.to_expand.en != -1 && node.exp.to_expand.a == DP_P) {

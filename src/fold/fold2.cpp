@@ -18,8 +18,8 @@ void ComputeTables2() {
     for (int i = 0; i < CAND_SIZE; ++i)
       cand_st[i].clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1], en2b = gr[en -
-          2];
+      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2],
+          enb = gr[en], en1b = gr[en - 1], en2b = gr[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
@@ -131,7 +131,6 @@ void ComputeTables2() {
       // for a structure (e.g. RCOAX).
       // These orderings are useful to remember:
       // U <= U_WC, U_GU, U2
-
       energy_t cand_st_mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");
 
@@ -178,7 +177,6 @@ void ComputeTables2() {
       if (lcoax_base < CAP_E && lcoax_base < gdp[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
-      // This is probably better than having four candidate lists for each possible mismatch (TODO check this).
       const auto rcoaxf_base = gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] + gpc.min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < gdp[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
@@ -213,8 +211,6 @@ void ComputeTables2() {
       // Note we don't include the stacking here since they can't be base cases for U.
 
       // Paired cases
-      // TODO is it better to use more arrays for each possible coax stack, or min coax here?
-      // TODO could also use the one pair we know to find out the min poss stack -- test if perf gain useful
       // (.(   )   .) Left outer coax - P
       // Since we assumed the minimum energy coax stack and made this structure self contained,
       // we could potentially replace it with U[st + 1][en].

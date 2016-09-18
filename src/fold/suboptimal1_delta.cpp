@@ -6,13 +6,13 @@ namespace fold {
 namespace internal {
 
 std::vector<computed_t> Suboptimal1Delta::Run() {
-  nodes.push_back({{gext[0][EXT], {0, -1, EXT}}});
+  nodes.push_back({{0, {0, -1, EXT}}});
   q.push_back(0);
   while (!q.empty()) {
     int node_idx = q.back();
     q.pop_back();
     auto& node = nodes[node_idx];
-    assert(node.exp.energy <= max_energy);
+    assert(node.exp.energy <= delta);
 
     index_t to_expand = node.exp.to_expand;
     // Nothing to do, so either we are done or we need to look up the tree for more nodes to expand.
@@ -34,7 +34,7 @@ std::vector<computed_t> Suboptimal1Delta::Run() {
       child.exp = exp;
       child.exp.energy += base_energy;
       // Since this list is sorted we can break if the energy gets too high.
-      if (child.exp.energy > max_energy) break;
+      if (child.exp.energy > delta) break;
       q.push_back(int(nodes.size()));
       nodes.push_back(child);
     }
