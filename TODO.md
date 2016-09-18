@@ -2,7 +2,5 @@
 - American fuzzy lop?
 - Grep codebase for todos
 - Implement runners in run.py
-- Cache results for ReconstructComputed
-- Try reducing memory in node.
+- Cache results for ReconstructComputed / write dfs loader - should save O(N) time
 - Write splay-tree
-- Split implementation for max_structures, delta

@@ -71,6 +71,13 @@ protected:
     }
   }
 
+  std::vector<computed_t> ConstructComputedsFromNodes() {
+    std::vector<computed_t> ret;
+    for (int node_idx : finished)
+      ret.push_back(ReconstructComputed(node_idx));
+    return ret;
+  }
+
   const std::vector<expand_t>& GetExpansions(const index_t& to_expand) {
     auto iter = cache.find(to_expand);
     if (iter == cache.end()) {
@@ -81,13 +88,6 @@ protected:
       iter = res.first;
     }
     return iter->second;
-  }
-
-  std::vector<computed_t> ConstructComputedsFromNodes() {
-    std::vector<computed_t> ret;
-    for (int node_idx : finished)
-      ret.push_back(ReconstructComputed(node_idx));
-    return ret;
   }
 
 private:

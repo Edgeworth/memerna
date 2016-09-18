@@ -9,6 +9,7 @@ using namespace energy;
 
 std::vector<computed_t> Suboptimal0::Run() {
   const int N = int(gr.size());
+  verify_expr(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand just one of them.
   // Fully expanding one of them means there will be no duplicates in the tree.
@@ -19,13 +20,11 @@ std::vector<computed_t> Suboptimal0::Run() {
   q.insert({
       {{0, -1, EXT}},
       {},
-      std::vector<int>(gr.size(), -1),
+      std::vector<int16_t>(gr.size(), -1),
       std::vector<Ctd>(gr.size(), CTD_NA),
       gext[0][EXT]
   });
-  int num_loops = 0;
   while (!q.empty()) {
-    num_loops++;
     auto node = std::move(*q.begin());
     q.erase(q.begin());
     // Finished state.
@@ -143,8 +142,8 @@ std::vector<computed_t> Suboptimal0::Run() {
 
     // Normal stuff
     if (a == DP_P) {
-      curnode.p[st] = en;
-      curnode.p[en] = st;
+      curnode.p[st] = int16_t(en);
+      curnode.p[en] = int16_t(st);
 
       // Two loops.
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -316,7 +315,7 @@ std::vector<computed_t> Suboptimal0::Run() {
   std::vector<computed_t> ret;
   for (const auto& struc : finished) {
     assert(struc.not_yet_expanded.empty());
-    ret.push_back({{gr, struc.p}, struc.base_ctds, struc.energy});
+    ret.push_back({{gr, {struc.p.begin(), struc.p.end()}}, struc.base_ctds, struc.energy});
   }
   return ret;
 }
