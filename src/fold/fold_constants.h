@@ -6,7 +6,7 @@ namespace fold {
 namespace internal {
 
 // DP arrays
-enum {
+enum : int8_t {
   DP_P,  // For the paired array.
   DP_U,  // For the unpaired array.
   DP_U2, // Contains at least two branches.
@@ -16,7 +16,7 @@ enum {
   DP_SIZE
 };
 
-enum {
+enum : int8_t {
   EXT,
   EXT_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   EXT_GU,  // Must start with a branch not involved in an interaction that is GU
@@ -28,7 +28,7 @@ enum {
 // In general, for each array we need a new candidate list (except for U and U2 which mirror each other very
 // closely). We also need another candidate list for forward RCOAX since we can't use its energy value directly, not
 // knowing it. Same with flush coaxial stacks.
-enum {
+enum : int8_t {
   CAND_P_MISMATCH,  // No monotonicity.
   CAND_P_OUTER,  // No monotonicity.
   CAND_P_FLUSH,  // No monotonicity.
@@ -43,7 +43,7 @@ enum {
   CAND_SIZE
 };
 
-enum {
+enum : int8_t {
   CAND_EN_P_MISMATCH,
   CAND_EN_P_OUTER,
   CAND_EN_P_FLUSH,

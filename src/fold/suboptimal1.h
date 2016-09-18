@@ -19,6 +19,7 @@ public:
   Suboptimal1(energy_t delta_, int num_) : delta(delta_), num(num_) {}
 
   std::vector<computed_t> Run() {
+    verify_expr(gr.size() < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
     if (num == -1)
       return Suboptimal1Delta(delta).Run();
     return Suboptimal1Num(delta, num).Run();

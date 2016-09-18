@@ -26,7 +26,7 @@ private:
     // what it has done so far, and what it can do from now.
     std::vector<index_t> not_yet_expanded;
     std::vector<index_t> history;
-    std::vector<int> p;
+    std::vector<int16_t> p;
     std::vector<Ctd> base_ctds;
     energy_t energy;  // Stores the minimum energy this state could have.
 
