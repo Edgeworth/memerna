@@ -23,7 +23,7 @@ struct num_node_t {
 class Suboptimal1Num : public Suboptimal1Base<num_node_t> {
 public:
   Suboptimal1Num(energy_t delta_, int num)
-      : max_energy(delta_ == -1 ? CAP_E : delta_ + gext[0][EXT]),
+      : Suboptimal1Base(delta_ == -1 ? CAP_E : delta_),
         max_structures(num == -1 ? std::numeric_limits<int>::max() / 4 : num),
         q([this](int a, int b) {return NodeComparator(a, b);}) {
     verify_expr(max_structures > 0, "must request at least one structure");
@@ -32,7 +32,6 @@ public:
   std::vector<computed_t> Run();
 
 private:
-  const energy_t max_energy;
   const int max_structures;
   std::vector<int> free_space;  // Free space from stuff that has been GC'd.
   std::set<int, std::function<bool(int, int)>> q;  // Queue of nodes ready to be expanded.

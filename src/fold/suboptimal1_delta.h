@@ -28,14 +28,13 @@ struct delta_node_t {
 
 class Suboptimal1Delta : public Suboptimal1Base<delta_node_t> {
 public:
-  Suboptimal1Delta(energy_t delta_) : max_energy(delta_ + gext[0][EXT]) {
+  Suboptimal1Delta(energy_t delta_) : Suboptimal1Base(delta_) {
     verify_expr(delta_ >= 0, "energy delta must be non-negative");
   }
 
   std::vector<computed_t> Run();
 
 private:
-  const energy_t max_energy;
   std::vector<int> q;  // Queue of nodes ready to be expanded.
 };
 
