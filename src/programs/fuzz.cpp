@@ -9,6 +9,7 @@
 #include "bridge/bridge.h"
 #include "parsing.h"
 #include "energy/load_model.h"
+#include "energy/structure.h"
 
 using namespace memerna;
 using namespace fold;
@@ -18,18 +19,17 @@ const int SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
 const int SUBOPT_MEMERNA_MAX_STRUCTURES = 100;
 const energy_t SUBOPT_MAX_DELTA = 6;  // Same as RNAstructure default.
 
-#include "energy/structure.h"
-
 class Fuzzer {
 public:
   typedef std::deque<std::string> error_t;
 
-  Fuzzer(const primary_t& r_, const energy::EnergyModelPtr em_,
+  Fuzzer(primary_t r_, const energy::EnergyModelPtr em_,
       bool random_model_, uint_fast32_t seed_, const bridge::Rnastructure& rnastructure_,
-      bool do_subopt_, bool do_subopt_rnastructure_)
+      bool do_subopt_, bool do_subopt_rnastructure_, int brute_cutoff_)
       : r(r_), em(random_model_ ? energy::LoadRandomEnergyModel(seed_) : em_),
         random_model(random_model_), seed(seed_), rnastructure(rnastructure_),
-        do_subopt(do_subopt_), do_subopt_rnastructure(do_subopt_rnastructure_) {
+        do_subopt(do_subopt_), do_subopt_rnastructure(do_subopt_rnastructure_),
+        brute_cutoff(brute_cutoff_) {
     verify_expr(!do_subopt_rnastructure || do_subopt,
         "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
     verify_expr(!(random_model && do_subopt_rnastructure), "cannot use a random energy model with rnastructure");
@@ -40,7 +40,7 @@ public:
     AppendErrors(errors, MaybePrependHeader(MemernaComputeAndCheckState(), "memerna:"));
     if (!random_model)
       AppendErrors(errors, MaybePrependHeader(RnastructureComputeAndCheckState(), "rnastructure:"));
-    if (r.size() <= 25)
+    if (int(r.size()) <= brute_cutoff)
       AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
     AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
     if (do_subopt)
@@ -59,13 +59,14 @@ public:
   }
 
 private:
-  const primary_t& r;
+  const primary_t r;
   const energy::EnergyModelPtr em;
   const bool random_model;
   const uint_fast32_t seed;
   const bridge::Rnastructure& rnastructure;
   const bool do_subopt;
   const bool do_subopt_rnastructure;
+  const int brute_cutoff;
 
   // Fuzz state.
   std::vector<computed_t> memerna_computeds;
@@ -274,57 +275,92 @@ private:
   }
 };
 
-
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
   ArgParse argparse({
       {"print-interval", ArgParse::option_t("status update every n seconds").Arg("-1")},
       {"random", ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")},
       {"no-subopt", ArgParse::option_t("do not test suboptimal folding")},
-      {"subopt-rnastructure", ArgParse::option_t("test rnastructure suboptimal folding")}
+      {"subopt-rnastructure", ArgParse::option_t("test rnastructure suboptimal folding")},
+      {"afl", ArgParse::option_t("reads one rna from stdin and fuzzes - useful for use with afl")},
+      {"brute-cutoff", ArgParse::option_t("maximum rna size to run brute force on").Arg("25")}
   });
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
-  auto pos = argparse.GetPositional();
-  verify_expr(pos.size() == 2, "require min and max length");
-  const int min_len = atoi(pos[0].c_str());
-  const int max_len = atoi(pos[1].c_str());
-  verify_expr(min_len > 0, "invalid min length");
-  verify_expr(max_len >= min_len, "invalid max len");
 
-  bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
-  auto start_time = std::chrono::steady_clock::now();
-  const auto interval = atoi(argparse.GetOption("print-interval").c_str());
-  std::uniform_int_distribution<int> len_dist(min_len, max_len);
+  const bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
   const auto t04em = energy::LoadEnergyModelFromArgParse(argparse);
   const bool random_model = argparse.HasFlag("random");
   const bool do_subopt = !argparse.HasFlag("no-subopt");
   const bool do_subopt_rnastructure = argparse.HasFlag("subopt-rnastructure");
+  const bool afl_mode = argparse.HasFlag("afl");
+  const int brute_cutoff = atoi(argparse.GetOption("brute-cutoff").c_str());
 
-  printf("Fuzzing [%d, %d] len RNAs - ", min_len, max_len);
-  if (random_model) printf("random energy models");
-  else printf("T04 energy model");
-  if (do_subopt) printf(" - testing suboptimal folders");
-  if (do_subopt_rnastructure) printf(" (including rnastructure)");
-  printf("\n");
-
-  for (int64_t i = 0;; ++i) {
-    if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::steady_clock::now() - start_time).count() > interval) {
-      printf("Fuzzed %" PRId64" RNA\n", i);
-      start_time = std::chrono::steady_clock::now();
+  if (afl_mode) {
+    // AFL mode.
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+    __AFL_INIT();
+    while (__AFL_LOOP(1000)) {
+#endif
+    char buf[4096];
+    std::size_t len = fread(buf, 1, sizeof(buf), stdin);
+    if (len > 0) {
+      uint_fast32_t seed = eng();
+      // Disable brute force testing for AFL since it's too slow.
+      Fuzzer fuzzer(
+          parsing::StringToPrimary(std::string(buf, len)), t04em, random_model, seed,
+          rnastructure, do_subopt, do_subopt_rnastructure, 0);
+      const auto res = fuzzer.Run();
+      if (!res.empty()) {
+        for (const auto& s : res)
+          printf("%s\n", s.c_str());
+        printf("\n");
+        verify_expr(false, "crash!");
+      }
     }
-    int len = len_dist(eng);
-    auto r = GenerateRandomPrimary(len, eng);
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+    }
+#endif
+  } else {
+    auto pos = argparse.GetPositional();
+    verify_expr(pos.size() == 2, "require min and max length");
+    const int min_len = atoi(pos[0].c_str());
+    const int max_len = atoi(pos[1].c_str());
+    const auto interval = atoi(argparse.GetOption("print-interval").c_str());
 
-    uint_fast32_t seed = eng();
-    Fuzzer fuzzer(r, t04em, random_model, seed, rnastructure, do_subopt, do_subopt_rnastructure);
-    const auto res = fuzzer.Run();
-    if (!res.empty()) {
-      for (const auto& s : res)
-        printf("%s\n", s.c_str());
-      printf("\n");
+    verify_expr(min_len > 0, "invalid min length");
+    verify_expr(max_len >= min_len, "invalid max len");
+    std::uniform_int_distribution<int> len_dist(min_len, max_len);
+
+    printf("Fuzzing [%d, %d] len RNAs - ", min_len, max_len);
+    if (random_model) printf("random energy models");
+    else printf("T04 energy model");
+    if (do_subopt) printf(" - testing suboptimal folders");
+    if (do_subopt_rnastructure) printf(" (including rnastructure)");
+    printf("\n");
+
+    // Normal mode.
+    auto start_time = std::chrono::steady_clock::now();
+    for (int64_t i = 0;; ++i) {
+      if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
+          std::chrono::steady_clock::now() - start_time).count() > interval) {
+        printf("Fuzzed %" PRId64" RNA\n", i);
+        start_time = std::chrono::steady_clock::now();
+      }
+      int len = len_dist(eng);
+      auto r = GenerateRandomPrimary(len, eng);
+
+      uint_fast32_t seed = eng();
+      Fuzzer fuzzer(r, t04em, random_model, seed,
+          rnastructure, do_subopt, do_subopt_rnastructure, brute_cutoff);
+      const auto res = fuzzer.Run();
+      if (!res.empty()) {
+        for (const auto& s : res)
+          printf("%s\n", s.c_str());
+        printf("\n");
+      }
     }
   }
+
 }
 

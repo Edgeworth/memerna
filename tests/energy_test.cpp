@@ -154,7 +154,7 @@ TEST_F(EnergyTest, T04Tests) {
   EXPECT_EQ(179, ComputeEnergy(parsing::ParseDotBracketSecondary(
       "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"), *g_em).energy);
 
-  // Special stacking - this is not implg_emented. TODO: Implg_ement this?
+  // Special stacking - this is not implemented. TODO: Implg_ement this?
   EXPECT_EQ(37, ComputeEnergy(parsing::ParseDotBracketSecondary("GGUCAAAGGUC", "((((...))))"), *g_em).energy);
   EXPECT_EQ(-45, ComputeEnergy(parsing::ParseDotBracketSecondary("GGGGAAACCCC", "((((...))))"), *g_em).energy);
   EXPECT_EQ(72, ComputeEnergy(parsing::ParseDotBracketSecondary("UGACAAAGGCGA", "(..(...)...)"), *g_em).energy);

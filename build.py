@@ -29,7 +29,7 @@ compilers = ('cc', 'c++')
 if args.use_clang:
   compilers = ('clang', 'clang++')
 elif args.use_afl:
-  compilers = ('afl-gcc', 'afl-g++')
+  compilers = ('afl-clang-fast', 'afl-clang-fast++')
 elif args.compilers:
   compilers = args.compilers
 
@@ -50,5 +50,5 @@ if regenerate:
   print('Regenerating cmake files.')
   def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
   run_command('cmake %s ../../' % def_str)
-run_command('make -j16 %s' % ' '.join(args.targets))
+run_command('AFL_HARDEN=1 make -j16 %s' % ' '.join(args.targets))
 os.chdir('../../')
