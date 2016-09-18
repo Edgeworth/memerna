@@ -7,7 +7,7 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 Run git submodule init and git submodule update to pull in external dependencies. 
 Memerna requires a modern C++ compiler that supports C++14.
 
-./build.py -t [debug, asan, msan, ubsan, release, 'relwithdebinfo'] -c
+./build.py -t [debug, asan, ubsan, release, 'relwithdebinfo'] -c
 
 Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.
 
