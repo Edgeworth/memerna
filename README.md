@@ -29,7 +29,7 @@ Run from ./build/run_tests after building.
 
 To run AFL, first build the afl binary with build.py -t relwithdebinfo -a, then run:
 
-afl-fuzz -x extern/afl/dict.dct -m 2000 -t 1000 -i ./extern/afl/testcases 
+afl-fuzz -x extern/afl/dict.dct -m 2000 -i ./extern/afl/testcases 
   -o ./build/afl_test ./build/afl-clang-fast++-relwithdebinfo/fuzz -afl
   
 You can optionally specify -random to fuzz.

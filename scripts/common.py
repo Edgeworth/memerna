@@ -7,6 +7,7 @@ import numpy as np
 
 log = logging.getLogger('')
 
+
 def float_fmt(f):
   return ('%.2f' % f).rstrip('0').rstrip('.')
 
@@ -32,26 +33,6 @@ class BenchmarkResults:
 
   def __str__(self):
     return '%.2fs, %s ' % (self.real, human_size(self.maxrss))
-
-  def to_np_array(self):
-    return np.array([self.real, self.usersys, self.maxrss])
-
-  @staticmethod
-  def from_np_array(array):
-    return BenchmarkResults(*array.tolist())
-
-  @staticmethod
-  def combine_benchmarks(benchmarks):
-    num_include = 0
-    total = np.zeros(3)
-    for i in benchmarks:
-      if i.real < 0 or i.usersys < 0:
-        continue
-      total += i.to_np_array()
-      num_include += 1
-    if num_include < len(benchmarks):
-      log.debug('Removed %d results with negative time' % (len(benchmarks) - num_include))
-    return BenchmarkResults.from_np_array(total / num_include)
 
 
 def run_command(*args, input=None):

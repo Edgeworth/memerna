@@ -29,18 +29,16 @@ class MemeVault:
       rna = RNA.from_any_file(read_file(filename))
       rna.name = name
       if rna in self:
-        print('Skipping', rna)
-      else:
-        self.add(rna)
-
-  def add_random(self, num):
-    for i in range(1, num + 1):
-      seq = ''.join(random.choice('GUAC') for _ in range(i))
-      rna = RNA(name='len_%d' % i, seq=seq, pairs=[-1] * i)
+        print('Found duplicate RNAs: %s' % (rna.name))
       self.add(rna)
 
+  def add_random(self, l):
+    seq = ''.join(random.choice('GUAC') for _ in range(l))
+    rna = RNA(name='len_%d' % l, seq=seq, pairs=[-1] * l)
+    self.add(rna)
+
   def __contains__(self, item):
-    c = self.db.execute('SELECT count(*) FROM %s WHERE seq=?' % self.dataset, (item.seq,))
+    c = self.db.execute('SELECT count(*) FROM %s WHERE name=?' % self.dataset, (item.name,))
     return c.fetchone()[0] == 1
 
   def __getitem__(self, item):
