@@ -6,12 +6,14 @@ lendeltanum = [
   (400, 10, 5000), (500, 10, 5000), (800, 5, 5000), (900, 5, 5000),
   (1000, 4, 100000), (1200, 4, 100000), (1400, 3, 100000), (1600, 3, 100000)]
 
+
 def run_num(alg, ldn):
   print('alg%s - nums' % alg)
   for l, _, num in ldn:
     res, _ = benchmark_command(
       './build/subopt', '-q', '-num', str(num), '-subopt-alg', alg, icam1[:l])
     print('  len %d, num %d: %s' % (l, num, res))
+
 
 def run_delta(alg, ldn):
   print('alg%s - deltas' % alg)
@@ -21,10 +23,16 @@ def run_delta(alg, ldn):
     print('  len %d, delta %d: %s' % (l, d, res))
 
 def main():
-  run_delta('0', lendeltanum[:4])
-  run_delta('1', lendeltanum)
-  run_num('0', lendeltanum[:4])
-  run_num('1', lendeltanum)
+  # run_delta('0', lendeltanum[:4])
+  # run_delta('1', lendeltanum)
+  # run_num('0', lendeltanum[:4])
+  # run_num('1', lendeltanum)
+  os.system('./scripts/run.py -b random_large -vd2')
+  os.system('./scripts/run.py -b random_large -vd3')
+  os.system('./scripts/run.py -b random_large -u')
+  os.system('./scripts/run.py -b random_large -k')
+  os.system('./scripts/run.py -b random_large -smf')
+
 
 if __name__ == '__main__':
   main()
