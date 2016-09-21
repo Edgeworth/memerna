@@ -1,11 +1,7 @@
-import logging
 import os
+import resource
 import subprocess
 import sys
-
-import numpy as np
-
-log = logging.getLogger('')
 
 
 def float_fmt(f):
@@ -25,40 +21,49 @@ def human_size(b, binary=True):
   return '%s %s' % (float_fmt(b), units[-1])
 
 
-class BenchmarkResults:
-  def __init__(self, real, usersys, maxrss):
-    self.real = real
-    self.usersys = usersys
+class ProcessResults:
+  def __init__(self, stdout, stderr, ret, real, usersys, maxrss):
     self.maxrss = maxrss
+    self.usersys = usersys
+    self.real = real
+    self.ret = ret
+    self.stdout = stdout
+    self.stderr = stderr
 
   def __str__(self):
     return '%.2fs, %s ' % (self.real, human_size(self.maxrss))
 
 
-def run_command(*args, input=None):
-  log.debug("Running `%s'" % ' '.join(args))
-  try:
-    if input:
-      input = input.encode('utf-8')
-    return subprocess.run(
-      args, input=input, stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE, check=True)
-  except subprocess.CalledProcessError as e:
-    print('Running `%s\' failed with ret code %d. Stdout:\n%s\nStderr:\n%s\n' % (
-      e.cmd, e.returncode, e.stdout.decode('utf-8'), e.stderr.decode('utf-8')
-    ))
+def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
+  stdout = subprocess.PIPE if record_stdout else subprocess.DEVNULL
+  stdin = subprocess.PIPE if input else None
+  if input:
+    input = input.encode('utf-8')
+  cmd = ['/usr/bin/time', '-f', '%e %U %S %M'] + list(cmd)
+
+  def pre_exec():
+    if memlimit:
+      resource.setrlimit(resource.RLIMIT_AS, (memlimit * 1024, memlimit * 1024))
+
+  with subprocess.Popen(
+      cmd, shell=False, stdin=stdin, stdout=stdout,
+      stderr=subprocess.PIPE, preexec_fn=pre_exec) as proc:
+    stdout_data, stderr_data = proc.communicate(input=input)
+    ret = proc.wait()
+    last_line = stderr_data.decode('UTF-8').strip().split('\n')[-1].split(' ')
+    real, user, sys, maxrss = [float(i) for i in last_line]
+    if stdout_data:
+      stdout_data = stdout_data.decode('UTF-8')
+    return ProcessResults(stdout_data, stderr_data, ret, real, user + sys, maxrss * 1024)
+
+
+def run_command(*cmd, record_stdout=False, input=None, memlimit=None):
+  res = try_command(*cmd, record_stdout=record_stdout, input=input, memlimit=memlimit)
+  if res.ret:
+    print('Running `%s\' failed with ret code %d.\nStderr:\n%s\n' % (
+      cmd, res.ret, res.stderr.decode('utf-8')))
     sys.exit(1)
-
-
-def benchmark_command(*args, input=None):
-  stdouts = []
-  res = run_command('/usr/bin/time', '-f', '%e %U %S %M', *args, input=input)
-  last_line = res.stderr.decode('UTF-8').strip().split('\n')[-1].split(' ')
-  real, user, sys, maxrss = [float(i) for i in last_line]
-  return (
-    BenchmarkResults(real=real, usersys=user + sys, maxrss=maxrss * 1024),
-    res.stdout.decode('UTF-8')
-  )
+  return res
 
 
 def fix_path(path):
