@@ -1,6 +1,8 @@
 ### Todo
 - Grep codebase for todos
+- Make codebase compilable without rnark
 - Implement runners in run.py
+- Test suboptimals
 - Cache results for ReconstructComputed / write dfs loader - should save O(N) time
 - Write splay-tree
 - Memory optimisation

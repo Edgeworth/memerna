@@ -25,12 +25,12 @@ class RNAstructureDistribution:
       os.chdir(self.loc)
       f.write(rna.to_seq_file())
       f.flush()
-      benchmark_results, _ = benchmark_command(
+      res = run_command(
         os.path.join(self.loc, 'exe', 'Fold'), '-mfe', f.name, out.name)
       output = out.read()
       predicted = RNA.from_any_file(output)
       os.chdir(prev_dir)
-    return predicted, benchmark_results
+    return predicted, res
 
   def efn(self, rna):
     with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
@@ -40,12 +40,12 @@ class RNAstructureDistribution:
       # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
       # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
       # the fitted -9.
-      benchmark_results, _ = benchmark_command(
+      res = run_command(
         os.path.join(self.loc, 'exe', 'efn2'), '-s', f.name, out.name)
       output = out.read()
       match = re.search(r'[eE]nergy = (.+)', output.strip())
       energy = float(match.group(1))
-    return energy, benchmark_results
+    return energy, res
 
   def suboptimal(self, rna, delta):
     # TODO implement
@@ -73,26 +73,28 @@ class HarnessFolder:
   def fold(self, rna):
     prev_dir = os.getcwd()
     os.chdir(self.loc)
-    benchmark_results, stdout = benchmark_command(
-      os.path.join('build', 'c++-release', 'harness'), '-f', self.flag, input=rna.seq)
+    res = run_command(
+      os.path.join('build', 'c++-release', 'harness'), '-f',
+      self.flag, record_stdout=True, input=rna.seq)
     os.chdir(prev_dir)
-    lines = stdout.strip().split('\n')
+    lines = res.stdout.strip().split('\n')
     assert len(lines) == 2
-    return RNA.from_name_seq_db(rna.name, rna.seq, lines[1]), benchmark_results
+    return RNA.from_name_seq_db(rna.name, rna.seq, lines[1]), res
 
   def batch_efn(self, rnas):
     prev_dir = os.getcwd()
     os.chdir(self.loc)
     input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
-    benchmark_results, stdout = benchmark_command(
-      os.path.join('build', 'c++-release', 'harness'), '-e', self.flag, input=input)
+    res = run_command(
+      os.path.join('build', 'c++-release', 'harness'), '-e',
+      self.flag, record_stdout=True, input=input)
     os.chdir(prev_dir)
-    energies = [float(i) / 10.0 for i in stdout.strip().split('\n')]
-    return energies, benchmark_results
+    energies = [float(i) / 10.0 for i in res.stdout.strip().split('\n')]
+    return energies, res
 
   def efn(self, rna):
-    energies, benchmark_results = self.batch_efn([rna])
-    return energies[0], benchmark_results
+    energies, res = self.batch_efn([rna])
+    return energies[0], res
 
   def suboptimal(self, rna, delta):
     # TODO implement this
@@ -139,23 +141,24 @@ class ViennaRNA:
     with tempfile.NamedTemporaryFile('w') as f:
       f.write(rna.seq)
       f.flush()
-      benchmark_results, stdout = benchmark_command(
+      res = run_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAfold'),
-        *self.extra_args, '--noPS', '-i', f.name)
-      seq, db = stdout.strip().split('\n')
+        *self.extra_args, '--noPS', '-i', f.name, record_stdout=True)
+      seq, db = res.stdout.strip().split('\n')
       db = db.split(' ')[0]
       predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
-    return predicted, benchmark_results
+    return predicted, res
 
   def efn(self, rna):
     raise NotImplementedError
 
   def suboptimal(self, rna, delta):
-    benchmark_results, stdout = benchmark_command(
+    res = run_command(
       os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
-      *self.extra_args, '-e', '%.1f' % (delta / 10.0), input=rna.seq)
-    print(len(stdout.splitlines()))
-    return benchmark_results
+      *self.extra_args, '-e', '%.1f' % (delta / 10.0),
+      input=rna.seq, record_stdout=True)
+    print(len(res.stdout.splitlines())) # TODO FINISH
+    return res
 
   def close(self):
     pass
@@ -182,11 +185,11 @@ class UNAFold:
     with open(os.path.join(self.tempdir, 'rna.seq'), 'w') as f:
       f.write(rna.to_db_file())
       f.flush()
-      benchmark_results, _ = benchmark_command(
+      res = run_command(
         os.path.join(self.loc, 'src', 'hybrid-ss-min'), f.name)
       predicted = RNA.from_any_file(read_file(os.path.splitext(f.name)[0] + '.ct'))
     os.chdir(prev_dir)
-    return predicted, benchmark_results
+    return predicted, res
 
   def efn(self, rna):
     prev_dir = os.getcwd()
@@ -194,11 +197,11 @@ class UNAFold:
     with open(os.path.join(self.tempdir, 'rna.seq'), 'w') as f:
       f.write(rna.to_ct_file())
       f.flush()
-      benchmark_results, stdout = benchmark_command(
-        os.path.join(self.loc, 'src', 'ct-energy'), f.name)
-      energy = float(stdout.strip())
+      res = run_command(
+        os.path.join(self.loc, 'src', 'ct-energy'), f.name, record_stdout=True)
+      energy = float(res.stdout.strip())
     os.chdir(prev_dir)
-    return energy, benchmark_results
+    return energy, res
 
   def suboptimal(self, rna, delta):
     # TODO implement
@@ -223,12 +226,13 @@ class SparseMFEFold:
     self.loc = fix_path(loc)
 
   def fold(self, rna):
-    benchmark_results, stdout = benchmark_command(
-      os.path.join(self.loc, 'src', 'SparseMFEFold'), input=rna.seq)
-    seq, db = stdout.strip().split('\n')
+    res = run_command(
+      os.path.join(self.loc, 'src', 'SparseMFEFold'),
+      input=rna.seq, record_stdout=True)
+    seq, db = res.stdout.strip().split('\n')
     db = db.split(' ')[0]
     predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
-    return predicted, benchmark_results
+    return predicted, res
 
   def efn(self, rna):
     raise NotImplementedError
@@ -244,15 +248,13 @@ class SparseMFEFold:
 
 
 def run_fold(program, rna):
-  frna, benchmark_results = program.fold(rna)
-  print('Folding %s with %s: %s\n  %s' % (
-    rna.name, program, frna.db(), benchmark_results))
+  frna, res = program.fold(rna)
+  print('Folding %s with %s: %s\n  %s' % (rna.name, program, frna.db(), res))
 
 
 def run_efn(program, rna):
-  energy, benchmark_results = program.efn(rna)
-  print('Energy of %s with %s: %f\n  %s' % (
-    rna.name, program, energy, benchmark_results))
+  energy, res = program.efn(rna)
+  print('Energy of %s with %s: %f\n  %s' % (rna.name, program, energy, res))
 
 
 def run_suboptimal(program, rna, delta):
