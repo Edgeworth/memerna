@@ -35,7 +35,10 @@ class ProcessResults:
 
 
 def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
-  stdout = subprocess.PIPE if record_stdout else subprocess.DEVNULL
+  if isinstance(record_stdout, str):
+    stdout = open(record_stdout, 'w')
+  else:
+    stdout = subprocess.PIPE if record_stdout else subprocess.DEVNULL
   stdin = subprocess.PIPE if input else None
   if input:
     input = input.encode('utf-8')
@@ -54,6 +57,9 @@ def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
     real, user, sys, maxrss = [float(i) for i in last_line]
     if stdout_data:
       stdout_data = stdout_data.decode('UTF-8')
+    if isinstance(record_stdout, str):
+      stdout.flush()
+      stdout.close()
     return ProcessResults(stdout_data, stderr_data, ret, real, user + sys, maxrss * 1024)
 
 
