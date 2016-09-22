@@ -21,15 +21,12 @@ class RNAstructureDistribution:
 
   def fold(self, rna):
     with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
-      prev_dir = os.getcwd()
-      os.chdir(self.loc)
       f.write(rna.to_seq_file())
       f.flush()
       res = run_command(
         os.path.join(self.loc, 'exe', 'Fold'), '-mfe', f.name, out.name)
       output = out.read()
       predicted = RNA.from_any_file(output)
-      os.chdir(prev_dir)
     return predicted, res
 
   def efn(self, rna):
@@ -47,9 +44,21 @@ class RNAstructureDistribution:
       energy = float(match.group(1))
     return energy, res
 
-  def suboptimal(self, rna, delta):
-    # TODO implement
-    raise NotImplementedError
+  def suboptimal(self, rna, delta, memlimit, num_only=False):
+    with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
+      f.write(rna.to_seq_file())
+      f.flush()
+      res = try_command(
+        os.path.join(self.loc, 'exe', 'AllSub'), '-a',
+        '%.2f' % (delta / 10.0), f.name, out.name, memlimit=memlimit)
+      if num_only:
+        res2 = run_command('wc', '-l', out.name, record_stdout=True)
+        num_lines = int(res2.stdout.strip().split(' ')[0])
+        retval = num_lines // (len(rna.seq) + 1)
+      else:
+        output = out.read()
+        retval = [(0.0, i) for i in rnas_from_multi_ct_file(output)]  # TODO does not extract energy yet
+    return retval, res
 
   def close(self):
     pass
@@ -96,9 +105,26 @@ class HarnessFolder:
     energies, res = self.batch_efn([rna])
     return energies[0], res
 
-  def suboptimal(self, rna, delta):
-    # TODO implement this
-    pass
+  def suboptimal(self, rna, delta, memlimit, num_only=False):
+    with tempfile.NamedTemporaryFile('r') as out:
+      prev_dir = os.getcwd()
+      os.chdir(self.loc)
+      res = try_command(
+        os.path.join('build', 'c++-release', 'harness'),
+        '-f', self.flag, '-subopt-delta', str(delta),
+        input=rna.seq, record_stdout=out.name, memlimit=memlimit)
+      if num_only:
+        res2 = run_command('wc', '-l', out.name, record_stdout=True)
+        num_lines = int(res2.stdout.strip().split(' ')[0])
+        retval = num_lines - 1
+      else:
+        retval = []
+        output = out.read()
+        for i in output.splitlines()[1:]:
+          energy, db = re.split(r'\s+', i.strip())
+          retval.append((float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db)))
+      os.chdir(prev_dir)
+    return retval, res
 
   def close(self):
     pass
@@ -152,13 +178,23 @@ class ViennaRNA:
   def efn(self, rna):
     raise NotImplementedError
 
-  def suboptimal(self, rna, delta):
-    res = run_command(
-      os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
-      *self.extra_args, '-e', '%.1f' % (delta / 10.0),
-      input=rna.seq, record_stdout=True)
-    print(len(res.stdout.splitlines())) # TODO FINISH
-    return res
+  def suboptimal(self, rna, delta, memlimit, num_only=False):
+    with tempfile.NamedTemporaryFile('r') as out:
+      res = try_command(
+        os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
+        *self.extra_args, '--sorted', '-e', '%.1f' % (delta / 10.0),
+        input=rna.seq, record_stdout=out.name, memlimit=memlimit)
+      if num_only:
+        res2 = run_command('wc', '-l', out.name, record_stdout=True)
+        num_lines = int(res2.stdout.strip().split(' ')[0])
+        retval = num_lines - 1
+      else:
+        retval = []
+        output = out.read()
+        for i in output.splitlines()[1:]:
+          db, energy = re.split(r'\s+', i.strip())
+          retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
+    return retval, res
 
   def close(self):
     pass
@@ -203,7 +239,7 @@ class UNAFold:
     os.chdir(prev_dir)
     return energy, res
 
-  def suboptimal(self, rna, delta):
+  def suboptimal(self, rna, delta, memlimit, num_only=False):
     # TODO implement
     raise NotImplementedError
 
@@ -214,7 +250,6 @@ class UNAFold:
     return 'UNAFold'
 
 
-# TODO implement this
 class SparseMFEFold:
   def __init__(self, loc=None):
     try:
@@ -237,7 +272,7 @@ class SparseMFEFold:
   def efn(self, rna):
     raise NotImplementedError
 
-  def suboptimal(self, rna, delta):
+  def suboptimal(self, rna, delta, memlimit, num_only=False):
     raise NotImplementedError
 
   def close(self):
@@ -258,18 +293,50 @@ def run_efn(program, rna):
 
 
 def run_suboptimal(program, rna, delta):
-  pass  # TODO - also suboptimals should return # of thingies
+  subopts, res = program.suboptimal(rna, delta, None)
+  if res.ret:
+    print('Execution failed')
+    return
+  print('%d suboptimal structures of %s with %s - %s' % (
+    len(subopts), rna.name, program, res))
+  for energy, structure in subopts[:20]:
+    print('%f %s' % (energy, structure.db()))
 
 
 BENCHMARK_NUM_TRIES = 5
+BENCHMARK_MEM_LIMIT = 12 * 1024 * 1024
 
-def run_benchmark(program, dataset, rnastructure_harness):
+
+def run_subopt_benchmark(program, dataset, delta):
+  memevault = MemeVault(dataset)
+  print('Benchmarking suboptimals with %s on %s with delta %d' % (program, dataset, delta))
+  with open('%s_%s_subopt_%d.results' % (program, dataset, delta), 'w') as f:
+    idx = 1
+    for rna in memevault:
+      print('Running %s on #%d %s' % (program, idx, rna.name))
+      len_res = []
+      for i in range(BENCHMARK_NUM_TRIES):
+        length, res = program.suboptimal(rna, delta, BENCHMARK_MEM_LIMIT, True)
+        if res.ret:
+          print('Got OOM (presumably), ending.')
+          return
+        len_res.append((length, res))
+
+      for i, lr in enumerate(len_res):
+        num_subopt, res = lr
+        f.write('%s %d %d %.5f %.5f %.5f %d\n' % (
+          rna.name, i, len(rna.seq), res.real, res.usersys, res.maxrss, num_subopt
+        ))
+      idx += 1
+
+
+def run_fold_benchmark(program, dataset, rnastructure_harness):
   if rnastructure_harness is None:
     print('Need RNAstructure for benchmark efn checking')
     sys.exit(1)
   memevault = MemeVault(dataset)
-  print('Benchmarking %s on %s' % (program, dataset))
-  with open('%s_%s.results' % (program, dataset), 'w') as f:
+  print('Benchmarking folding with %s on %s' % (program, dataset))
+  with open('%s_%s_fold.results' % (program, dataset), 'w') as f:
     idx = 1
     for rna in memevault:
       print('Running %s on #%d %s' % (program, idx, rna.name))
@@ -280,16 +347,18 @@ def run_benchmark(program, dataset, rnastructure_harness):
       accuracy = RNAAccuracy.from_rna(rna, prs[0][0])
       energy, _ = rnastructure_harness.efn(prs[0][0])
       for i, pr in enumerate(prs):
-        predicted, result = pr
+        predicted, res = pr
         f.write('%s %d %d %.5f %.5f %.5f %.5f %.5f %.5f %.2f\n' % (
-          rna.name, i, len(rna.seq), result.real, result.usersys, result.maxrss,
+          rna.name, i, len(rna.seq), res.real, res.usersys, res.maxrss,
           accuracy.fscore, accuracy.ppv, accuracy.sensitivity, energy
         ))
       idx += 1
 
 
 def parse_rna_from_args(parser, args):
-  if bool(args.path) + bool(args.memevault) + bool(args.cmd) != 1 and not args.benchmark:
+  if args.benchmark:
+    return None
+  if bool(args.path) + bool(args.memevault) + bool(args.cmd) != 1:
     parser.error('Exactly one primary/secondary sequence required')
 
   if args.path:
@@ -297,7 +366,7 @@ def parse_rna_from_args(parser, args):
   elif args.memevault:
     return MemeVault('archiveii')[args.memevault]
   elif args.cmd:
-    if args.fold:
+    if args.fold or args.subopt:
       if len(args.cmd) != 1:
         parser.error('Direct specification requires one argument for prediction.')
       seq = args.cmd[0]
@@ -331,13 +400,13 @@ def process_command(*extra_args):
 
   parser.add_argument('-f', '--fold', action='store_true')
   parser.add_argument('-e', '--energy', action='store_true')
-  parser.add_argument('-s', '--subopt', type=str)
+  parser.add_argument('-s', '--subopt', type=int)
   parser.add_argument('-b', '--benchmark', type=str)
 
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
-  if bool(args.fold) + bool(args.energy) + bool(args.subopt) + bool(args.benchmark) != 1:
-    parser.error('Exactly one of --fold, --energy, --subopt, or --benchmark is required.')
+  if bool(args.fold) + bool(args.energy) + bool(args.subopt) != 1:
+    parser.error('Exactly one of --fold, --energy, or --subopt is required.')
 
   programs = []
   rnastructure_harness = RNAstructureHarness(args.memerna_loc)
@@ -360,14 +429,17 @@ def process_command(*extra_args):
 
   rna = parse_rna_from_args(parser, args)
   for program in programs:
-    if args.fold:
+    if args.benchmark:
+      if args.fold:
+        run_fold_benchmark(program, args.benchmark, rnastructure_harness)
+      elif args.subopt:
+        run_subopt_benchmark(program, args.benchmark, args.subopt)
+    elif args.fold:
       run_fold(program, rna)
     elif args.energy:
       run_efn(program, rna)
     elif args.subopt:
-      run_suboptimal(program, rna, 6)  # TODO configurable
-    elif args.benchmark:
-      run_benchmark(program, args.benchmark, rnastructure_harness)
+      run_suboptimal(program, rna, args.subopt)
 
   for program in programs:
     program.close()

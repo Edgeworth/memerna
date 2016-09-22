@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         const auto structures = package->Suboptimal(r, subopt_delta);
         printf("%zu suboptimal structures:\n", structures.size());
         for (const auto& subopt : structures) {
-          printf("%d %s\n", subopt.energy, parsing::ComputedToCtdString(subopt).c_str());
+          printf("%d %s\n", subopt.energy, parsing::PairsToDotBracket(subopt.s.p).c_str());
         }
       } else {
         const auto res = package->Fold(r);

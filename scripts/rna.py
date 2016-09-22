@@ -1,5 +1,6 @@
 import re
 import string
+from collections import deque
 
 BRACKETS = ['()', '[]', '{}', '<>']
 BRACKETS += ['%s%s' % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
@@ -155,3 +156,17 @@ class RNA:
       return RNA.from_db_file(data)
     else:
       return RNA.from_ct_file(data)
+
+def rnas_from_multi_ct_file(data):
+  data = deque(data.strip().split('\n'))
+  rnas = []
+  while len(data) > 0:
+    length = int(re.search(r'(\d+)', data[0].strip()).group(0))
+    subdata = data[0] + '\n'
+    data.popleft()
+    for i in range(length):
+      subdata += data[0] + '\n'
+      data.popleft()
+    rnas.append(RNA.from_ct_file(subdata))
+  return rnas
+

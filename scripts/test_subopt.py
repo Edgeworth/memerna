@@ -27,11 +27,13 @@ def main():
   # run_delta('1', lendeltanum)
   # run_num('0', lendeltanum[:4])
   # run_num('1', lendeltanum)
-  os.system('./scripts/run.py -b random_large -vd2')
-  os.system('./scripts/run.py -b random_large -vd3')
-  os.system('./scripts/run.py -b random_large -u')
-  os.system('./scripts/run.py -b random_large -k')
-  os.system('./scripts/run.py -b random_large -smf')
+  for delta in range(1, 15):
+    os.system('./scripts/run.py -b random -s %d -rh' % delta)
+    os.system('./scripts/run.py -b random -s %d -rd' % delta)
+    os.system('./scripts/run.py -b random -s %d -vd2' % delta)
+    os.system('./scripts/run.py -b random -s %d -vd3' % delta)
+    os.system('./scripts/run.py -b random -s %d -k' % delta)
+
 
 
 if __name__ == '__main__':

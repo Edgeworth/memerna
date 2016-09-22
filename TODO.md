@@ -6,6 +6,7 @@
 - Cache results for ReconstructComputed / write dfs loader - should save O(N) time
 - Write splay-tree
 - Memory optimisation
+-- that one paper https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4335019/
 -- Suboptimals return iterators that go through the things - avoids instantiating all the things at the same time
 -- Change index_t to use unsigned bitfields
 -- Change stuff in node_ts, expand_ts, index_ts to unsigned - just in case there are that many nodes.
