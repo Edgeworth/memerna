@@ -22,18 +22,12 @@ def run_delta(alg, ldn):
       './build/subopt', '-q', '-delta', str(d), '-subopt-alg', alg, icam1[:l])
     print('  len %d, delta %d: %s' % (l, d, res))
 
-def main():
-  # run_delta('0', lendeltanum[:4])
-  # run_delta('1', lendeltanum)
-  # run_num('0', lendeltanum[:4])
-  # run_num('1', lendeltanum)
-  for delta in range(1, 15):
-    os.system('./scripts/run.py -b random -s %d -rh' % delta)
-    os.system('./scripts/run.py -b random -s %d -rd' % delta)
-    os.system('./scripts/run.py -b random -s %d -vd2' % delta)
-    os.system('./scripts/run.py -b random -s %d -vd3' % delta)
-    os.system('./scripts/run.py -b random -s %d -k' % delta)
 
+def main():
+  run_delta('0', lendeltanum[:4])
+  run_delta('1', lendeltanum)
+  run_num('0', lendeltanum[:4])
+  run_num('1', lendeltanum)
 
 
 if __name__ == '__main__':

@@ -157,6 +157,7 @@ class RNA:
     else:
       return RNA.from_ct_file(data)
 
+
 def rnas_from_multi_ct_file(data):
   data = deque(data.strip().split('\n'))
   rnas = []
@@ -169,4 +170,3 @@ def rnas_from_multi_ct_file(data):
       data.popleft()
     rnas.append(RNA.from_ct_file(subdata))
   return rnas
-

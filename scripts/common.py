@@ -34,7 +34,7 @@ class ProcessResults:
     return '%.2fs, %s ' % (self.real, human_size(self.maxrss))
 
 
-def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
+def try_command(*cmd, record_stdout=False, input=None, limits=None):
   if isinstance(record_stdout, str):
     stdout = open(record_stdout, 'w')
   else:
@@ -45,8 +45,11 @@ def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
   cmd = ['/usr/bin/time', '-f', '%e %U %S %M'] + list(cmd)
 
   def pre_exec():
-    if memlimit:
-      resource.setrlimit(resource.RLIMIT_AS, (memlimit * 1024, memlimit * 1024))
+    if limits:
+      if limits[0]:
+        resource.setrlimit(resource.RLIMIT_AS, (limits[0] * 1024, limits[0] * 1024))
+      if limits[1]:
+        resource.setrlimit(resource.RLIMIT_CPU, (limits[1], limits[1]))
 
   with subprocess.Popen(
       cmd, shell=False, stdin=stdin, stdout=stdout,
@@ -63,8 +66,8 @@ def try_command(*cmd, record_stdout=False, input=None, memlimit=None):
     return ProcessResults(stdout_data, stderr_data, ret, real, user + sys, maxrss * 1024)
 
 
-def run_command(*cmd, record_stdout=False, input=None, memlimit=None):
-  res = try_command(*cmd, record_stdout=record_stdout, input=input, memlimit=memlimit)
+def run_command(*cmd, record_stdout=False, input=None, limits=None):
+  res = try_command(*cmd, record_stdout=record_stdout, input=input, limits=limits)
   if res.ret:
     print('Running `%s\' failed with ret code %d.\nStderr:\n%s\n' % (
       cmd, res.ret, res.stderr.decode('utf-8')))
