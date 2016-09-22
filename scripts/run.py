@@ -44,13 +44,13 @@ class RNAstructureDistribution:
       energy = float(match.group(1))
     return energy, res
 
-  def suboptimal(self, rna, delta, memlimit, num_only=False):
+  def suboptimal(self, rna, delta, limits, num_only=False):
     with tempfile.NamedTemporaryFile('w') as f, tempfile.NamedTemporaryFile('r') as out:
       f.write(rna.to_seq_file())
       f.flush()
       res = try_command(
         os.path.join(self.loc, 'exe', 'AllSub'), '-a',
-        '%.2f' % (delta / 10.0), f.name, out.name, memlimit=memlimit)
+        '%.2f' % (delta / 10.0), f.name, out.name, limits=limits)
       if num_only:
         res2 = run_command('wc', '-l', out.name, record_stdout=True)
         num_lines = int(res2.stdout.strip().split(' ')[0])
@@ -105,14 +105,14 @@ class HarnessFolder:
     energies, res = self.batch_efn([rna])
     return energies[0], res
 
-  def suboptimal(self, rna, delta, memlimit, num_only=False):
+  def suboptimal(self, rna, delta, limits, num_only=False):
     with tempfile.NamedTemporaryFile('r') as out:
       prev_dir = os.getcwd()
       os.chdir(self.loc)
       res = try_command(
         os.path.join('build', 'c++-release', 'harness'),
         '-f', self.flag, '-subopt-delta', str(delta),
-        input=rna.seq, record_stdout=out.name, memlimit=memlimit)
+        input=rna.seq, record_stdout=out.name, limits=limits)
       if num_only:
         res2 = run_command('wc', '-l', out.name, record_stdout=True)
         num_lines = int(res2.stdout.strip().split(' ')[0])
@@ -178,12 +178,12 @@ class ViennaRNA:
   def efn(self, rna):
     raise NotImplementedError
 
-  def suboptimal(self, rna, delta, memlimit, num_only=False):
+  def suboptimal(self, rna, delta, limits, num_only=False):
     with tempfile.NamedTemporaryFile('r') as out:
       res = try_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
         *self.extra_args, '--sorted', '-e', '%.1f' % (delta / 10.0),
-        input=rna.seq, record_stdout=out.name, memlimit=memlimit)
+        input=rna.seq, record_stdout=out.name, limits=limits)
       if num_only:
         res2 = run_command('wc', '-l', out.name, record_stdout=True)
         num_lines = int(res2.stdout.strip().split(' ')[0])
@@ -239,7 +239,7 @@ class UNAFold:
     os.chdir(prev_dir)
     return energy, res
 
-  def suboptimal(self, rna, delta, memlimit, num_only=False):
+  def suboptimal(self, rna, delta, limits, num_only=False):
     # TODO implement
     raise NotImplementedError
 
@@ -272,7 +272,7 @@ class SparseMFEFold:
   def efn(self, rna):
     raise NotImplementedError
 
-  def suboptimal(self, rna, delta, memlimit, num_only=False):
+  def suboptimal(self, rna, delta, limits, num_only=False):
     raise NotImplementedError
 
   def close(self):
@@ -304,7 +304,8 @@ def run_suboptimal(program, rna, delta):
 
 
 BENCHMARK_NUM_TRIES = 5
-BENCHMARK_MEM_LIMIT = 12 * 1024 * 1024
+# 12 GiB, 4 minutes
+BENCHMARK_LIMITS = (12 * 1024 * 1024, 5 * 60)
 
 
 def run_subopt_benchmark(program, dataset, delta):
@@ -314,20 +315,22 @@ def run_subopt_benchmark(program, dataset, delta):
     idx = 1
     for rna in memevault:
       print('Running %s on #%d %s' % (program, idx, rna.name))
+      idx += 1
       len_res = []
+      failed = False
       for i in range(BENCHMARK_NUM_TRIES):
-        length, res = program.suboptimal(rna, delta, BENCHMARK_MEM_LIMIT, True)
+        length, res = program.suboptimal(rna, delta, BENCHMARK_LIMITS, True)
         if res.ret:
-          print('Got OOM (presumably), ending.')
-          return
+          print('Got OOM or OOT (presumably), skipping.')
+          failed = True
+          break
         len_res.append((length, res))
-
+      if failed: continue
       for i, lr in enumerate(len_res):
         num_subopt, res = lr
         f.write('%s %d %d %.5f %.5f %.5f %d\n' % (
           rna.name, i, len(rna.seq), res.real, res.usersys, res.maxrss, num_subopt
         ))
-      idx += 1
 
 
 def run_fold_benchmark(program, dataset, rnastructure_harness):
