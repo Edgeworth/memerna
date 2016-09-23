@@ -5,24 +5,25 @@ import seaborn as sns
 from plot.load_data import colmap
 from plot.plot_common import set_up_figure, latex_table, savefig_local, get_subplot_grid
 
+TEXT_LOC = (0.2, 0.9)
 
 def do_accuracy_plot(frames, xid):
   f, axes = get_subplot_grid(len(frames))
-  for i, frame_id in enumerate(frames):
+  for i, frame_id in enumerate(sorted(frames.keys())):
     sns.distplot(frames[frame_id][xid], ax=axes[i], label=frame_id)
-    axes[i].annotate(frame_id, xy=(0.1, 0.85), size=10, textcoords='axes fraction')
+    axes[i].annotate(frame_id, xy=TEXT_LOC, xytext=TEXT_LOC, size=10, textcoords='axes fraction')
 
   set_up_figure(f, names=(colmap[xid], None), legend=False)
-  f.suptitle('F-Score distribution')
+  f.suptitle('F-Score distribution', y=1.00)
   return f
 
 
 def do_comparison_plot(frames, aid, bid):
   f, axes = get_subplot_grid(len(frames))
-  for i, frame_id in enumerate(frames):
+  for i, frame_id in enumerate(sorted(frames.keys())):
     frame = frames[frame_id]
     sns.kdeplot(frame[aid], frame[bid], shade=True, ax=axes[i], label=frame_id)
-    axes[i].annotate(frame_id, xy=(0.1, 0.85), size=10, textcoords='axes fraction')
+    axes[i].annotate(frame_id, xy=TEXT_LOC, xytext=TEXT_LOC, size=10, textcoords='axes fraction')
   set_up_figure(f, names=(colmap[aid], colmap[bid]))
   return f
 
@@ -34,18 +35,21 @@ def do_mfe_table(frames, xid):
   num_unique = num_unique.value_counts().sort_index()
   num_unique /= num_unique.sum()
   table = [
-    num_unique.index.tolist(),
-    ['%.2f\\%%' % (i * 100) for i in num_unique.tolist()]
+    ['Number of MFEs'] + num_unique.index.tolist(),
+    ['Proportion'] + ['%.2f\\%%' % (i * 100) for i in num_unique.tolist()]
   ]
+  print('MFE DISTRIBUTION TABLE:')
   print(latex_table(table))
 
 
 def do_accuracy_table(frames, ids):
   table = [['Package'] + [
     '%s %s' % (colmap[i], t) for i in ids for t in ['mean', 'SD']]]
-  for frame_id, frame in frames.items():
+  for frame_id in sorted(frames.keys()):
+    frame = frames[frame_id]
     table.append([frame_id] + [
-      '%.3f' % val for i in ids for val in (frame[i].mean(), frame[i].std())])
+      '%.5f' % val for i in ids for val in (frame[i].mean(), frame[i].std())])
+  print('ACCURACY TABLE:')
   print(latex_table(table))
 
 
@@ -67,6 +71,7 @@ def do_ttest(frames, xid):
       if i < j:
         entry = '%.3f' % p
       table[-1].append(entry)
+  print('TTEST TABLE:')
   print(latex_table(table))
 
 

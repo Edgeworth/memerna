@@ -16,7 +16,7 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
   f2, ax = plt.subplots(1)
 
   palette = sns.color_palette(n_colors=len(frames))
-  for i, frame_id in enumerate(frames):
+  for i, frame_id in enumerate(sorted(frames.keys())):
     data = frames[frame_id][[xid, yid]].mean()
     data = data[data[yid] > EP]
     if logx:
@@ -52,7 +52,8 @@ def do_quantity_plot(frames, xid, yid):
   f, ax = plt.subplots(1)
 
   palette = sns.color_palette(n_colors=len(frames))
-  for frame_id, frame in frames.items():
+  for frame_id in sorted(frames.keys()):
+    frame = frames[frame_id]
     frame[[xid, yid]].mean().plot(x=xid, y=yid, kind='line', ax=ax, label=frame_id)
     low, high = frame[yid].min(), frame[yid].max()
     ax.fill_between([i for i in sorted(frame.groups)], low, high, alpha=0.2, color=palette.pop(0))
@@ -78,5 +79,9 @@ def fold_perf_results(ds):
   savefig_local(ds.name, 'real_loglog_bestfit', f2)
 
   f1, f2 = do_quantity_log_plot(fmap_by_len, 'length', 'maxrss', logx=False)
+  savefig_local(ds.name, 'maxrss_logy_scatter', f1)
+  savefig_local(ds.name, 'maxrss_logy_bestfit', f2)
+
+  f1, f2 = do_quantity_log_plot(fmap_by_len, 'length', 'maxrss')
   savefig_local(ds.name, 'maxrss_loglog_scatter', f1)
   savefig_local(ds.name, 'maxrss_loglog_bestfit', f2)

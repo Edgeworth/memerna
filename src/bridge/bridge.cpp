@@ -1,139 +1,19 @@
 #include "energy/load_model.h"
 #include "energy/energy.h"
 #include "fold/context.h"
-#include "parsing.h"
-#include "bridge.h"
-#include "energy/structure.h"
-
-#include "nn_unpaired_folder.hpp"
-#include "nn_scorer.hpp"
-#include "RNAstructure/alltrace.h"
+#include "bridge/bridge.h"
+#include "bridge/rnastructure.h"
+#include "bridge/memerna.h"
 
 namespace memerna {
 namespace bridge {
 
-Rnark::Rnark(const std::string& data_path) : model(data_path) {
-  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
-  model.SetMLParams(93, -6, 0, 0, 999999);
-}
-
-energy_t Rnark::Efn(const secondary_t& secondary, std::string* desc) const {
-  const auto r = librnary::StringToPrimary(parsing::PrimaryToString(secondary.r));
-  const auto ss_tree = librnary::SSTree(librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p)));
-
-  librnary::NNScorer<librnary::NNUnpairedModel> scorer(model);
-  scorer.SetRNA(r);
-  energy_t energy;
-  if (desc) {
-    const auto trace = scorer.TraceExterior(ss_tree.RootSurface());
-    *desc = trace.Describe(' ', 0) + "\n";
-    energy = trace.recursive_score;
-  } else {
-    energy = scorer.ScoreExterior(ss_tree.RootSurface());
-  }
-  return energy;
-}
-
-computed_t Rnark::Fold(const primary_t& r) const {
-  librnary::NNUnpairedFolder folder(model);
-  folder.SetMaxTwoLoop(TWOLOOP_MAX_SZ);
-  folder.SetLonelyPairs(true);
-  folder.SetStacking(true);
-  const auto librnary_primary = librnary::StringToPrimary(parsing::PrimaryToString(r));
-  const energy_t energy = folder.Fold(librnary_primary);
-  const auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(folder.Traceback()));
-  return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy};
-}
-
-std::vector<computed_t> Rnark::Suboptimal(const primary_t&, energy_t) const {
-  verify_expr(false, "not yet implemented");
-  return {};
-}
-
-Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_) :
-    data(librnary::LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
-  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
-}
-
-energy_t Rnastructure::Efn(const secondary_t& secondary, std::string*) const {
-  const auto structure = librnary::LoadStructure(
-      librnary::StringToPrimary(parsing::PrimaryToString(secondary.r)),
-      librnary::DotBracketToMatching(parsing::PairsToDotBracket(secondary.p))
-  );
-  efn2(data.get(), structure.get(), 1, true);
-  return energy_t(structure->GetEnergy(1));
-}
-
-computed_t Rnastructure::Fold(const primary_t& r) const {
-  return FoldAndDpTable(r, nullptr);
-}
-
-computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
-  const auto structure = librnary::LoadStructure(
-      librnary::StringToPrimary(parsing::PrimaryToString(r)));
-  // First false here says also generate the folding itself (not just the MFE).
-  // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
-  // Second last parameter is whether to use Lyngso or not.
-  // Last parameter is for returning the DP state.
-  // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
-  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso, dp_state);
-  const auto pairs = parsing::DotBracketToPairs(
-      librnary::MatchingToDotBracket(librnary::StructureToMatching(*structure)));
-  return {{r, pairs}, std::vector<Ctd>(r.size(), CTD_NA), energy_t(structure->GetEnergy(1))};
-}
-
-std::vector<computed_t> Rnastructure::Suboptimal(const primary_t& r, energy_t energy_delta) const {
-  const auto structure = librnary::LoadStructure(
-      librnary::StringToPrimary(parsing::PrimaryToString(r)));
-  // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
-  alltrace(structure.get(), data.get(), 100, short(energy_delta), nullptr, nullptr, false);
-  const auto matchings = librnary::StructureToMatchings(*structure);
-  std::vector<computed_t> computeds;
-  for (int i = 0; i < int(matchings.size()); ++i) {
-    const auto pairs = parsing::DotBracketToPairs(librnary::MatchingToDotBracket(matchings[i]));
-    computeds.emplace_back(
-        secondary_t(r, std::move(pairs)),
-        std::vector<Ctd>(r.size(), CTD_NA),
-        energy_t(structure->GetEnergy(i + 1))
-    );
-  }
-  return computeds;
-}
-
-energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
-  computed_t computed;
-  if (desc) {
-    std::unique_ptr<energy::Structure> structure;
-    computed = energy::ComputeEnergy(secondary, *em, &structure);
-    for (const auto& s : structure->Description()) {
-      *desc += s;
-      *desc += "\n";
-    }
-  } else {
-    computed = energy::ComputeEnergy(secondary, *em);
-  }
-
-  return computed.energy;
-}
-
-computed_t Memerna::Fold(const primary_t& r) const {
-  return fold::Context(r, em, options).Fold();
-}
-
-std::vector<computed_t> Memerna::Suboptimal(const primary_t& r, energy_t energy_delta) const {
-  return fold::Context(r, em, options).Suboptimal(energy_delta, -1);
-}
-
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   verify_expr(
-      argparse.HasFlag("r") + argparse.HasFlag("m") + argparse.HasFlag("k") == 1,
+      argparse.HasFlag("r") + argparse.HasFlag("k") == 1,
       "require exactly one package flag\n%s", argparse.Usage().c_str());
   if (argparse.HasFlag("r")) {
-    return std::unique_ptr<RnaPackage>(new Rnastructure("extern/rnark/data_tables/", false));
-  } else if (argparse.HasFlag("m")) {
-    return std::unique_ptr<RnaPackage>(new Rnark("extern/rnark/data_tables/"));
+    return std::unique_ptr<RnaPackage>(new Rnastructure("extern/miles_rnastructure/data_tables/", false));
   } else {
     return std::unique_ptr<RnaPackage>(new Memerna(
         energy::LoadEnergyModelFromArgParse(argparse), fold::ContextOptionsFromArgParse(argparse)));

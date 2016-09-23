@@ -35,16 +35,21 @@ def main():
   # fold_archiveii_all_ds = read_fold_dataset(
   #   'archiveii',
   #   generate_filename_map('archiveii'),
-  #   os.path.join(PREFIX, 'archiveii_all.subset')
+  #   os.path.join(PREFIX, 'archiveii_all_dedup.subset')
   # )
   fold_archiveii_domains_ds = read_fold_dataset(
     'archiveii_domains',
     generate_filename_map('archiveii'),
-    os.path.join(PREFIX, 'archiveii_domains.subset')
+    os.path.join(PREFIX, 'archiveii_domains_dedup.subset')
   )
   fold_random_all_ds = read_fold_dataset(
     'random',
     generate_filename_map('random'),
+    os.path.join(PREFIX, 'random_all.subset')
+  )
+  fold_random_all_fast_ds = read_fold_dataset(
+    'random_fast',
+    generate_filename_map('random', False, False, False),
     os.path.join(PREFIX, 'random_all.subset')
   )
   fold_random_large_all_ds = read_fold_dataset(
@@ -55,8 +60,8 @@ def main():
   print('Loaded data')
   # fold_perf_results(fold_test_ds)
   fold_perf_results(fold_random_all_ds)
+  fold_perf_results(fold_random_all_fast_ds)
   fold_perf_results(fold_random_large_all_ds)
-  # fold_accuracy_results(fold_archiveii_all_ds)
   fold_accuracy_results(fold_archiveii_domains_ds)
 
 
