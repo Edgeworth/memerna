@@ -1,5 +1,4 @@
 #include "fold/suboptimal1_delta.h"
-#include <algorithm>
 
 namespace memerna {
 namespace fold {

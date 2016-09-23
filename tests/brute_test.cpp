@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include <cstdlib>
 #include "common_test.h"
 #include "fold/brute_fold.h"
 #include "parsing.h"

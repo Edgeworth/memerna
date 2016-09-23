@@ -20,7 +20,8 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     const char* arg = argv[i];
     const bool is_flag = arg[0] == '-';
-    while (*arg == '-') ++arg;
+    while (*arg == '-')
+      ++arg;
 
     if (is_flag) {
       if (possible_args.count(arg) == 0) return sfmt("unknown argument %s", argv[i]);

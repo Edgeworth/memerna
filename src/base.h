@@ -46,7 +46,8 @@ char BaseToChar(base_t b);
 template <typename RandomEngine> primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   std::uniform_int_distribution<int> dist(0, 3);
   primary_t r(std::size_t(length), 0);
-  for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
+  for (int i = 0; i < length; ++i)
+    r[i] = base_t(dist(eng));
   return r;
 }
 }

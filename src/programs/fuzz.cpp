@@ -9,7 +9,6 @@
 #include "energy/load_model.h"
 #include "energy/structure.h"
 #include "fold/brute_fold.h"
-#include "fold/context.h"
 #include "fold/globals.h"
 #include "parsing.h"
 
@@ -79,12 +78,14 @@ private:
     if (main.empty()) return main;
     error_t nmain;
     nmain.push_front(header);
-    for (auto& error : main) nmain.push_back("  " + error);  // mfw this inefficiency
+    for (auto& error : main)
+      nmain.push_back("  " + error);  // mfw this inefficiency
     return nmain;
   }
 
   void AppendErrors(error_t& main, error_t&& extra) {
-    for (auto& s : extra) main.push_back(std::move(s));
+    for (auto& s : extra)
+      main.push_back(std::move(s));
   }
 
   bool HasDuplicates(const std::vector<computed_t>& computeds) {
@@ -322,7 +323,8 @@ int main(int argc, char* argv[]) {
             rnastructure, do_subopt, do_subopt_rnastructure, 0);
         const auto res = fuzzer.Run();
         if (!res.empty()) {
-          for (const auto& s : res) printf("%s\n", s.c_str());
+          for (const auto& s : res)
+            printf("%s\n", s.c_str());
           printf("\n");
           verify_expr(false, "crash!");
         }
@@ -368,7 +370,8 @@ int main(int argc, char* argv[]) {
           brute_cutoff);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
-        for (const auto& s : res) printf("%s\n", s.c_str());
+        for (const auto& s : res)
+          printf("%s\n", s.c_str());
         printf("\n");
       }
     }

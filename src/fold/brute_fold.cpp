@@ -2,7 +2,6 @@
 #include <set>
 #include "energy/structure.h"
 #include "fold/fold_internal.h"
-#include "fold/globals.h"
 #include "parsing.h"
 
 namespace memerna {

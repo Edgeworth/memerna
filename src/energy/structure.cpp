@@ -23,8 +23,10 @@ const char* CtdToName(Ctd ctd) {
 std::vector<std::string> Structure::Description(int nesting) const {
   std::vector<std::string> desc;
   desc.push_back(sfmt("%d - %s", nesting, ShortDesc().c_str()));
-  for (const auto& note : notes) desc.push_back(" | " + note);
-  for (int i = 0; i < int(branches.size()); ++i) desc.push_back(" |-- " + BranchDesc(i));
+  for (const auto& note : notes)
+    desc.push_back(" | " + note);
+  for (int i = 0; i < int(branches.size()); ++i)
+    desc.push_back(" |-- " + BranchDesc(i));
   for (const auto& branch : branches) {
     auto branch_desc = branch->Description(nesting + 1);
     desc.insert(desc.end(), branch_desc.begin(), branch_desc.end());

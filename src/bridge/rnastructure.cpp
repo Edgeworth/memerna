@@ -17,7 +17,8 @@ constexpr int NUM_FILENAMES = sizeof(FILENAMES) / sizeof(FILENAMES[0]);
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   auto dt = std::make_unique<datatable>();
   std::string paths[NUM_FILENAMES];
-  for (int i = 0; i < NUM_FILENAMES; ++i) paths[i] = path + FILENAMES[i];
+  for (int i = 0; i < NUM_FILENAMES; ++i)
+    paths[i] = path + FILENAMES[i];
 
   opendat(paths[0].c_str(), paths[1].c_str(), paths[2].c_str(), paths[3].c_str(), paths[4].c_str(),
       paths[5].c_str(), paths[6].c_str(), paths[7].c_str(), paths[8].c_str(), paths[9].c_str(),
@@ -48,7 +49,8 @@ std::unique_ptr<structure> LoadStructure(const secondary_t& s) {
 
 std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
   std::vector<int> p(struc.GetSequenceLength(), -1);
-  for (int i = 0; i < int(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
+  for (int i = 0; i < int(p.size()); ++i)
+    p[i] = struc.GetPair(i + 1, struc_num) - 1;
   return p;
 }
 

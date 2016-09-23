@@ -1,6 +1,5 @@
 #include "energy/energy_internal.h"
 #include <algorithm>
-#include <memory>
 #include "parsing.h"
 
 namespace memerna {
@@ -65,9 +64,8 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
     // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right
-    // unpaired base,
-    // then we can't use it (as it could be used at the end by a terminal mismatch, dangle, right
-    // facing coaxial stack,
+    // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
+    // dangle, right facing coaxial stack,
     // etc). This is because the loop is cyclic.
     lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && p[lui[i]] == -1;
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);

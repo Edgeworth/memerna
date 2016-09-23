@@ -1,5 +1,4 @@
 #include "fold/fold_internal.h"
-#include "fold/globals.h"
 
 namespace memerna {
 namespace fold {

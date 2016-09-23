@@ -1,8 +1,5 @@
 #include "energy/energy.h"
 #include <algorithm>
-#include <cmath>
-#include <cstdio>
-#include <memory>
 #include "energy/structure.h"
 
 namespace memerna {
@@ -96,7 +93,8 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
           energy::CtdToName(branch_ctds[0].first));
       branch_ctds.pop_front();
     }
-    for (const auto& ctd : branch_ctds) s->AddCtd(ctd.first, ctd.second);
+    for (const auto& ctd : branch_ctds)
+      s->AddCtd(ctd.first, ctd.second);
     // Give the pointer back.
     ss->reset(s.release());
   }
