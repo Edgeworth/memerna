@@ -4,13 +4,11 @@ namespace memerna {
 
 std::string ArgParse::option_t::Desc() const {
   auto res = desc;
-  if (has_default)
-    res += sfmt(" [%s]", default_arg.c_str());
+  if (has_default) res += sfmt(" [%s]", default_arg.c_str());
   if (choices.size()) {
     res += " (";
     for (auto iter = choices.begin(); iter != choices.end(); ++iter) {
-      if (iter != choices.begin())
-        res += ", ";
+      if (iter != choices.begin()) res += ", ";
       res += *iter;
     }
     res += ")";
@@ -25,12 +23,10 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     while (*arg == '-') ++arg;
 
     if (is_flag) {
-      if (possible_args.count(arg) == 0)
-        return sfmt("unknown argument %s", argv[i]);
+      if (possible_args.count(arg) == 0) return sfmt("unknown argument %s", argv[i]);
 
       if (possible_args[arg].has_arg) {
-        if (i + 1 == argc)
-          return sfmt("missing argument for flag %s", arg);
+        if (i + 1 == argc) return sfmt("missing argument for flag %s", arg);
         flags[arg] = argv[++i];
       } else {
         flags[arg] = arg;
@@ -61,7 +57,8 @@ std::string ArgParse::Usage() const {
 
 void ArgParse::AddOptions(const std::map<std::string, ArgParse::option_t>& possible_args_) {
   for (const auto& argpair : possible_args_) {
-    verify_expr(possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
+    verify_expr(
+        possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
     possible_args.insert(argpair);
   }
 }
@@ -70,5 +67,4 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   verify_expr(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
-
 }

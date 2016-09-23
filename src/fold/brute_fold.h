@@ -11,9 +11,8 @@ namespace internal {
 std::vector<int> GetBranchCounts(const std::vector<int>& p);
 }
 
-std::vector<computed_t> FoldBruteForce(const primary_t& r,
-    const energy::EnergyModel& em, int max_structures);
-
+std::vector<computed_t> FoldBruteForce(
+    const primary_t& r, const energy::EnergyModel& em, int max_structures);
 }
 }
 #endif  // MEMERNA_BRUTE_FOLD_H

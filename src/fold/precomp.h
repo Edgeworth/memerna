@@ -10,9 +10,7 @@ namespace internal {
 
 struct hairpin_precomp_t {
   static const int MAX_SPECIAL_HAIRPIN_SZ = 6;
-  hairpin_precomp_t() : num_c(0) {
-    memset(special, MAX_E & 0xFF, sizeof(special));
-  }
+  hairpin_precomp_t() : num_c(0) { memset(special, MAX_E & 0xFF, sizeof(special)); }
 
   energy_t special[MAX_SPECIAL_HAIRPIN_SZ + 1];
   int num_c;
@@ -32,7 +30,6 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em);
 // Must have global state set.
 energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
 energy_t FastHairpin(int st, int en);
-
 }
 }
 }

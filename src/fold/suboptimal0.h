@@ -3,9 +3,9 @@
 
 #include <set>
 #include "common.h"
-#include "parsing.h"
-#include "fold/fold_internal.h"
 #include "energy/structure.h"
+#include "fold/fold_internal.h"
+#include "parsing.h"
 
 namespace memerna {
 namespace fold {
@@ -30,7 +30,7 @@ private:
     std::vector<Ctd> base_ctds;
     energy_t energy;  // Stores the minimum energy this state could have.
 
-    bool operator<(const node_t& o) const {return energy < o.energy;}
+    bool operator<(const node_t& o) const { return energy < o.energy; }
   };
 
   const energy_t max_energy;
@@ -44,8 +44,7 @@ private:
     if (node.energy <= max_energy) {
       if (int(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
         prune.erase(--prune.end());
-      if (int(prune.size()) < max_structures)
-        prune.insert(node);
+      if (int(prune.size()) < max_structures) prune.insert(node);
     }
   }
 
@@ -86,8 +85,7 @@ private:
     curnode.base_ctds[ctd_idx.idx] = CTD_NA;
   }
 
-  void Expand(energy_t energy, index_t nye0, index_t nye1,
-      ctd_idx_t ctd_idx0, ctd_idx_t ctd_idx1) {
+  void Expand(energy_t energy, index_t nye0, index_t nye1, ctd_idx_t ctd_idx0, ctd_idx_t ctd_idx1) {
     curnode.base_ctds[ctd_idx0.idx] = ctd_idx0.ctd;
     curnode.base_ctds[ctd_idx1.idx] = ctd_idx1.ctd;
     Expand(energy, nye0, nye1);
@@ -95,9 +93,8 @@ private:
     curnode.base_ctds[ctd_idx1.idx] = CTD_NA;
   }
 };
-
 }
 }
 }
 
-#endif   // MEMERNA_SUBOPTIMAL0_H
+#endif  // MEMERNA_SUBOPTIMAL0_H

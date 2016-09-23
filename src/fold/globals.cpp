@@ -25,7 +25,6 @@ void SetGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   gdp = array3d_t<energy_t, DP_SIZE>(gr.size() + 1);
   gext = array2d_t<energy_t, EXT_SIZE>(gr.size() + 1);
 }
-
 }
 }
 }

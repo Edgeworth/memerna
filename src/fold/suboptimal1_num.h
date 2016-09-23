@@ -3,8 +3,8 @@
 
 #include <set>
 #include "common.h"
-#include "fold/suboptimal1_base.h"
 #include "fold/fold_internal.h"
+#include "fold/suboptimal1_base.h"
 
 namespace memerna {
 namespace fold {
@@ -13,8 +13,7 @@ namespace internal {
 struct num_node_t {
   num_node_t() = delete;
   num_node_t(const expand_t& exp_)
-      : exp(exp_), child_count(0), parent(-1),
-        exp_st(0), exp_en(-1), cur_anc(0) {}
+      : exp(exp_), child_count(0), parent(-1), exp_st(0), exp_en(-1), cur_anc(0) {}
   expand_t exp;
   // See Suboptimal1Delta for explanation.
   int child_count, parent, exp_st, exp_en, cur_anc;
@@ -25,7 +24,7 @@ public:
   Suboptimal1Num(energy_t delta_, int num)
       : Suboptimal1Base(delta_ == -1 ? CAP_E : delta_),
         max_structures(num == -1 ? std::numeric_limits<int>::max() / 4 : num),
-        q([this](int a, int b) {return NodeComparator(a, b);}) {
+        q([this](int a, int b) { return NodeComparator(a, b); }) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
 
@@ -33,7 +32,7 @@ public:
 
 private:
   const int max_structures;
-  std::vector<int> free_space;  // Free space from stuff that has been GC'd.
+  std::vector<int> free_space;                     // Free space from stuff that has been GC'd.
   std::set<int, std::function<bool(int, int)>> q;  // Queue of nodes ready to be expanded.
 
   bool NodeComparator(int a, int b) const {
@@ -44,11 +43,10 @@ private:
 
   bool InsertQ(const num_node_t& node);
 
-  // Determines if |node_idx| is no longer needed, and removes it and anything else that is now useless.
+  // Determines if |node_idx| is no longer needed, and removes it and anything else that is now
+  // useless.
   void GcNode(int node_idx);
 };
-
-
 }
 }
 }

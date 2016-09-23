@@ -1,10 +1,10 @@
 #ifndef MEMERNA_ARGPARSE_H
 #define MEMERNA_ARGPARSE_H
 
-#include "common.h"
-#include <unordered_set>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
+#include "common.h"
 
 namespace memerna {
 
@@ -12,9 +12,9 @@ class ArgParse {
 public:
   struct option_t {
     option_t(const std::string& desc_ = "", const std::string& default_arg_ = "",
-        bool has_default_ = false, bool has_arg_ = false, bool required_ = false) :
-        desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
-        has_arg(has_arg_), required(required_) {}
+        bool has_default_ = false, bool has_arg_ = false, bool required_ = false)
+        : desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
+          has_arg(has_arg_), required(required_) {}
 
     option_t& Arg(const std::string& default_, const std::unordered_set<std::string>& choices_) {
       default_arg = default_;
@@ -24,7 +24,7 @@ public:
       return *this;
     }
 
-    option_t& Arg(const std::string& default_) {return Arg(default_, {});}
+    option_t& Arg(const std::string& default_) { return Arg(default_, {}); }
 
     option_t& Arg(const std::unordered_set<std::string>& choices_) {
       choices = choices_;
@@ -63,21 +63,18 @@ public:
   void ParseOrExit(int argc, char* argv[]);
   std::string Usage() const;
 
-  const std::vector<std::string>& GetPositional() const {return positional;}
+  const std::vector<std::string>& GetPositional() const { return positional; }
 
   bool HasFlag(const std::string& flag) const {
-    if (possible_args.count(flag) && possible_args.find(flag)->second.has_default)
-      return true;
+    if (possible_args.count(flag) && possible_args.find(flag)->second.has_default) return true;
     return flags.count(flag) > 0;
   }
 
   std::string GetOption(const std::string& flag) const {
     auto flagiter = flags.find(flag);
     auto positer = possible_args.find(flag);
-    if (flagiter != flags.end())
-      return flagiter->second;
-    if (positer != possible_args.end())
-      return positer->second.default_arg;
+    if (flagiter != flags.end()) return flagiter->second;
+    if (positer != possible_args.end()) return positer->second.default_arg;
     return "";
   }
 
@@ -86,7 +83,6 @@ private:
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
-
 }
 
-#endif //MEMERNA_ARGPARSE_H
+#endif  // MEMERNA_ARGPARSE_H

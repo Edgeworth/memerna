@@ -2,8 +2,8 @@
 #define MEMERNA_BASE_H
 
 #include <cstdint>
-#include <memory>
 #include <cstring>
+#include <memory>
 #include <random>
 
 #include "common.h"
@@ -37,24 +37,18 @@ inline bool IsWatsonCrick(base_t a, base_t b) {
   return combined == (A_b | U_b) || combined == (G_b | C_b);
 }
 
-inline bool IsGu(base_t a, base_t b) {
-  return (a == G && b == U) || (a == U && b == G);
-}
+inline bool IsGu(base_t a, base_t b) { return (a == G && b == U) || (a == U && b == G); }
 
 base_t CharToBase(char c);
 
 char BaseToChar(base_t b);
 
-template<typename RandomEngine>
-primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
+template <typename RandomEngine> primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   std::uniform_int_distribution<int> dist(0, 3);
   primary_t r(std::size_t(length), 0);
-  for (int i = 0; i < length; ++i)
-    r[i] = base_t(dist(eng));
+  for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
   return r;
 }
-
-
 }
 
-#endif //MEMERNA_BASE_H
+#endif  // MEMERNA_BASE_H

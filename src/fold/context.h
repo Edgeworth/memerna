@@ -2,8 +2,8 @@
 #define MEMERNA_FOLD_CONTEXT_H
 
 #include <stack>
-#include "common.h"
 #include "argparse.h"
+#include "common.h"
 #include "energy/energy.h"
 
 namespace memerna {
@@ -18,17 +18,14 @@ struct context_options_t {
     BRUTE  // Not included in the normal table algs since exponential.
   };
 
-  enum class SuboptimalAlg {
-    ZERO,
-    ONE,
-    BRUTE
-  };
+  enum class SuboptimalAlg { ZERO, ONE, BRUTE };
 
-  static constexpr TableAlg TABLE_ALGS[] = {TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
+  static constexpr TableAlg TABLE_ALGS[] = {
+      TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
   static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
 
-  context_options_t(TableAlg table_alg_ = TableAlg::ZERO,
-      SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO)
+  context_options_t(
+      TableAlg table_alg_ = TableAlg::ZERO, SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO)
       : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_) {}
 
   TableAlg table_alg;
@@ -37,12 +34,11 @@ struct context_options_t {
 
 class Context {
 public:
-  Context(const primary_t& r_, const energy::EnergyModelPtr em_)
-      : r(r_), em(em_), options() {
+  Context(const primary_t& r_, const energy::EnergyModelPtr em_) : r(r_), em(em_), options() {
     verify_expr(r.size() > 0u, "cannot fold zero length RNA");
   };
-  Context(const primary_t& r_, const energy::EnergyModelPtr em_,
-      context_options_t options_) : r(r_), em(em_), options(options_) {
+  Context(const primary_t& r_, const energy::EnergyModelPtr em_, context_options_t options_)
+      : r(r_), em(em_), options(options_) {
     verify_expr(r.size() > 0u, "cannot fold zero length RNA");
   }
   Context(const Context& o) = default;
@@ -64,12 +60,11 @@ private:
 };
 
 const std::map<std::string, ArgParse::option_t> FOLD_OPTIONS = {
-    {"dp-alg", ArgParse::option_t("which algorithm for memerna").Arg("2", {"0", "1", "2", "3", "brute"})},
-    {"subopt-alg", ArgParse::option_t("which algorithm for memerna").Arg("1", {"0", "1", "brute"})}
-};
+    {"dp-alg",
+        ArgParse::option_t("which algorithm for memerna").Arg("2", {"0", "1", "2", "3", "brute"})},
+    {"subopt-alg", ArgParse::option_t("which algorithm for memerna").Arg("1", {"0", "1", "brute"})}};
 
 context_options_t ContextOptionsFromArgParse(const ArgParse& argparse);
-
 }
 }
 

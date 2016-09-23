@@ -2,24 +2,24 @@
 #define MEMERNA_COMMON_H
 
 #include <cassert>
+#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
-#include <string>
-#include <cstdarg>
 #include <cstring>
-#include <vector>
+#include <string>
 #include <tuple>
+#include <vector>
 
 // Like assert, but can't be disabled.
-#define verify_expr(expr, ...) \
-  do { \
-    if (!(expr)) { \
+#define verify_expr(expr, ...)                        \
+  do {                                                \
+    if (!(expr)) {                                    \
       fprintf(stderr, "%s:%d: ", __func__, __LINE__); \
-      fprintf(stderr, __VA_ARGS__); \
-      fprintf(stderr, "\n"); \
-      exit(1); \
-    } \
-  } while(0)
+      fprintf(stderr, __VA_ARGS__);                   \
+      fprintf(stderr, "\n");                          \
+      exit(1);                                        \
+    }                                                 \
+  } while (0)
 
 namespace memerna {
 
@@ -67,11 +67,9 @@ struct secondary_t {
   explicit secondary_t(const primary_t& r_) : r(r_), p(r_.size(), -1) {}
   secondary_t(const primary_t& r_, const std::vector<int>& p_) : r(r_), p(p_) {}
 
-  bool operator==(const secondary_t& o) const {return r == o.r && p == o.p;}
-  bool operator!=(const secondary_t& o) const {return !(*this == o);}
-  bool operator<(const secondary_t& o) const {
-    return std::tie(r, p) < std::tie(o.r, o.p);
-  }
+  bool operator==(const secondary_t& o) const { return r == o.r && p == o.p; }
+  bool operator!=(const secondary_t& o) const { return !(*this == o); }
+  bool operator<(const secondary_t& o) const { return std::tie(r, p) < std::tie(o.r, o.p); }
 
   primary_t r;
   std::vector<int> p;
@@ -83,16 +81,14 @@ struct computed_t {
   computed_t(computed_t&&) = default;
   computed_t& operator=(computed_t&&) = default;
 
-  explicit computed_t(const primary_t& r_)
-      : s(r_), base_ctds(r_.size(), CTD_NA), energy(MAX_E) {}
+  explicit computed_t(const primary_t& r_) : s(r_), base_ctds(r_.size(), CTD_NA), energy(MAX_E) {}
 
   explicit computed_t(const secondary_t& s_)
       : s(s_), base_ctds(s_.r.size(), CTD_NA), energy(MAX_E) {
     assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
   }
 
-  computed_t(const secondary_t& s_,
-      const std::vector<Ctd>& base_ctds_, energy_t energy_)
+  computed_t(const secondary_t& s_, const std::vector<Ctd>& base_ctds_, energy_t energy_)
       : s(s_), base_ctds(base_ctds_), energy(energy_) {
     assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
   }
@@ -100,7 +96,7 @@ struct computed_t {
   bool operator==(const computed_t& o) const {
     return s == o.s && base_ctds == o.base_ctds && energy == o.energy;
   }
-  bool operator!=(const computed_t& o) const {return !(*this == o);}
+  bool operator!=(const computed_t& o) const { return !(*this == o); }
 
   secondary_t s;
   std::vector<Ctd> base_ctds;
@@ -108,9 +104,7 @@ struct computed_t {
 };
 
 struct computed_energy_comparator_t {
-  bool operator()(const computed_t& a, const computed_t& b) const {
-    return a.energy < b.energy;
-  }
+  bool operator()(const computed_t& a, const computed_t& b) const { return a.energy < b.energy; }
 };
 
 std::string sgetline(FILE* fp);
@@ -118,7 +112,6 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 uint32_t Crc32(const std::string& data);
-
 }
 
-#endif //MEMERNA_COMMON_H
+#endif  // MEMERNA_COMMON_H

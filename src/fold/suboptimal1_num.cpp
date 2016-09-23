@@ -23,8 +23,7 @@ bool Suboptimal1Num::InsertQ(const num_node_t& node) {
         q.insert(int(nodes.size() - 1));
       }
       // Update child counts.
-      if (node.parent != -1)
-        ++(nodes[node.parent].child_count);
+      if (node.parent != -1) ++(nodes[node.parent].child_count);
       inserted = true;
     }
     // We have to GC after doing the insert because of this one weird case:
@@ -62,8 +61,10 @@ std::vector<computed_t> Suboptimal1Num::Run() {
       if (to_expand.st == -1) {
         finished.push_back(node_idx);
         // Since we add into |finished| in order, if we have enough structures, exit.
-        if (max_structures == int(finished.size())) break;
-        else continue;
+        if (max_structures == int(finished.size()))
+          break;
+        else
+          continue;
       }
     }
 
@@ -76,15 +77,13 @@ std::vector<computed_t> Suboptimal1Num::Run() {
       child.exp = exp;
       child.exp.energy += base_energy;
       // Since this list is sorted we can break if the energy gets too high.
-      if (!InsertQ(child))
-        break;
+      if (!InsertQ(child)) break;
     }
   }
 
   // Should be already sorted.
   return ConstructComputedsFromNodes();
 }
-
 }
 }
 }

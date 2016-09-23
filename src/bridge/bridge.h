@@ -18,13 +18,10 @@ public:
 };
 
 const std::map<std::string, ArgParse::option_t> BRIDGE_OPTIONS = {
-    {"r", {"rnastructure"}},
-    {"k", {"memerna"}}
-};
+    {"r", {"rnastructure"}}, {"k", {"memerna"}}};
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
-
 }
 }
 
-#endif //MEMERNA_BRIDGE_H
+#endif  // MEMERNA_BRIDGE_H

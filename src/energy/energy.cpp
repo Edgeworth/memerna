@@ -1,8 +1,8 @@
-#include <cstdio>
-#include <cmath>
-#include <memory>
-#include <algorithm>
 #include "energy/energy.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <memory>
 #include "energy/structure.h"
 
 namespace memerna {
@@ -10,9 +10,8 @@ namespace energy {
 
 using namespace internal;
 
-energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds,
-    int st, int en, std::deque<int>& branches, const EnergyModel& em,
-    std::unique_ptr<Structure>* ss) {
+energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en,
+    std::deque<int>& branches, const EnergyModel& em, std::unique_ptr<Structure>* ss) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
@@ -30,7 +29,9 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds,
     num_unpaired += p[branch_st] - branch_st + 1;
 
     if (IsAuGu(r[branch_st], r[p[branch_st]])) {
-      if (s) s->AddNote("%de - opening AU/GU penalty at %d %d", em.augu_penalty, branch_st, p[branch_st]);
+      if (s)
+        s->AddNote(
+            "%de - opening AU/GU penalty at %d %d", em.augu_penalty, branch_st, p[branch_st]);
       energy += em.augu_penalty;
     }
   }
@@ -95,8 +96,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds,
           energy::CtdToName(branch_ctds[0].first));
       branch_ctds.pop_front();
     }
-    for (const auto& ctd : branch_ctds)
-      s->AddCtd(ctd.first, ctd.second);
+    for (const auto& ctd : branch_ctds) s->AddCtd(ctd.first, ctd.second);
     // Give the pointer back.
     ss->reset(s.release());
   }
@@ -104,8 +104,8 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds,
   return energy;
 }
 
-energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds,
-    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* s) {
+energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, int en,
+    const EnergyModel& em, std::unique_ptr<Structure>* s) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   assert(en >= st);
@@ -123,7 +123,8 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds,
     }
   }
 
-  // We're in the exterior loop if we were called with the entire RNA and there's no match on the very ends that takes
+  // We're in the exterior loop if we were called with the entire RNA and there's no match on the
+  // very ends that takes
   // us out of the exterior loop.
   const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
@@ -154,31 +155,28 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds,
   return energy;
 }
 
-
-computed_t ComputeEnergy(const secondary_t& secondary,
-    const EnergyModel& em, std::unique_ptr<Structure>* s) {
+computed_t ComputeEnergy(
+    const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s) {
   computed_t computed(secondary);
   return ComputeEnergyWithCtds(computed, em, true, s);
 }
 
-computed_t ComputeEnergyWithCtds(const computed_t& computed,
-    const EnergyModel& em, bool compute_ctds, std::unique_ptr<Structure>* s) {
+computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em,
+    bool compute_ctds, std::unique_ptr<Structure>* s) {
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy = ComputeEnergyInternal(computed_copy, compute_ctds, 0, (int) r.size() - 1, em, s);
+  energy_t energy = ComputeEnergyInternal(computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", em.augu_penalty);
-      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + em.augu_penalty);  // Gross.
+      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + em.augu_penalty);    // Gross.
       (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + em.augu_penalty);  // Gross.
     }
   }
   computed_copy.energy = energy;
   return computed_copy;
 }
-
-
 }
 }

@@ -19,14 +19,15 @@ namespace energy {
 //   If the mismatch is UU or GA (not AG), additional bonus
 //   If the mismatch is GG, additional bonus.
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
-//   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy model).
-energy_t EnergyModel::Hairpin(const primary_t& r, int st, int en, std::unique_ptr<Structure>* s) const {
+//   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
+//   model).
+energy_t EnergyModel::Hairpin(
+    const primary_t& r, int st, int en, std::unique_ptr<Structure>* s) const {
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
   std::string seq;
-  for (int i = st; i <= en; ++i)
-    seq += BaseToChar(r[i]);
+  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]);
   const auto iter = hairpin.find(seq);
   if (iter != hairpin.end()) {
     if (s) (*s)->AddNote("special hairpin");
@@ -83,15 +84,19 @@ energy_t EnergyModel::Hairpin(const primary_t& r, int st, int en, std::unique_pt
 
 // Indices are inclusive.
 // Rules for bulge loop energy:
-// 1. If length (number of unpaired bases in the bulge loop) is more than 1, just use initiation energy.
+// 1. If length (number of unpaired bases in the bulge loop) is more than 1, just use initiation
+// energy.
 // 2. Otherwise:
 //    Don't apply AU/GU penalties -- since the helix is able to continue (unlike for lengths > 1).
 //    Since the helix continues, also apply stacking energies for Watson-Crick helices.
-//    If the unpaired base is a C, and is next to another C (at pos - 1 or pos + 1), add special C bulge bonus.
-//    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a bonus from that.
-energy_t EnergyModel::Bulge(const primary_t& r,
-    int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
-  assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) && (oen - ien >= 2 || ist - ost >= 2));
+//    If the unpaired base is a C, and is next to another C (at pos - 1 or pos + 1), add special C
+//    bulge bonus.
+//    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
+//    bonus from that.
+energy_t EnergyModel::Bulge(
+    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+  assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
+         (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
   energy_t energy = BulgeInitiation(length);
 
@@ -125,10 +130,8 @@ energy_t EnergyModel::Bulge(const primary_t& r,
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
   int num_states = 0;
-  for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i)
-    num_states++;
-  for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i)
-    num_states++;
+  for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
+  for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
   energy_t states_bonus = -energy_t(round(10.0 * R * T * log(num_states)));
   if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
   energy += states_bonus;
@@ -141,11 +144,13 @@ energy_t EnergyModel::Bulge(const primary_t& r,
 // 1. If it is 1x1, 1x2, 2x1, or 2x2, then check a lookup table.
 // 2. If not, return G_init plus:
 // 2.1 Internal loop specific AU/GU penalty for each AU/GU end.
-// 2.2 A constant times the absolute difference between the number of unpaired bases on each side of the loop.
-// 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for 2x3, and then
+// 2.2 A constant times the absolute difference between the number of unpaired bases on each side of
+// the loop.
+// 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for
+// 2x3, and then
 //   rotate the rna by 180 degrees to look it up for 3x2.
-energy_t EnergyModel::InternalLoop(const primary_t& r,
-    int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+energy_t EnergyModel::InternalLoop(
+    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
@@ -158,7 +163,8 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
   if (toplen == 2 && botlen == 1)
     return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
+                       [r[oen]];
 
   energy_t energy = InternalLoopInitiation(toplen + botlen);
   if (s) (*s)->AddNote("%de - initiation", energy);
@@ -179,18 +185,17 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
 
   // Special mismatch parameters.
   // To flip an RNA, we flip it vertically and horizontally (180 degree rotation).
-  // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which side is
+  // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which
+  // side is
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
-    const energy_t mismatch =
-        internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-            internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+    const energy_t mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+                              internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
-    const energy_t mismatch =
-        internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-            internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+    const energy_t mismatch = internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+                              internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
   }
@@ -198,24 +203,23 @@ energy_t EnergyModel::InternalLoop(const primary_t& r,
   return energy;
 }
 
-energy_t EnergyModel::TwoLoop(const primary_t& r,
-    int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+energy_t EnergyModel::TwoLoop(
+    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
     return stack[r[ost]][r[ist]][r[ien]][r[oen]];
   }
-  if (toplen >= 1 && botlen >= 1)
-    return InternalLoop(r, ost, oen, ist, ien, s);
+  if (toplen >= 1 && botlen >= 1) return InternalLoop(r, ost, oen, ist, ien, s);
   return Bulge(r, ost, oen, ist, ien, s);
 }
 
 uint32_t EnergyModel::Checksum() const {
   std::string data;
 
-  // This isn't portable across machines with different endianness but I don't care.
-#define APPEND_DATA(d) \
-  do { \
+// This isn't portable across machines with different endianness but I don't care.
+#define APPEND_DATA(d)                           \
+  do {                                           \
     auto dp = reinterpret_cast<const char*>(&d); \
     data.insert(data.end(), dp, dp + sizeof(d)); \
   } while (0)
@@ -265,12 +269,12 @@ uint32_t EnergyModel::Checksum() const {
 }
 
 bool EnergyModel::IsValid(std::string* reason) const {
-#define CHECK_COND(cond, reason_str) \
-  do { \
-    if (!(cond)) { \
+#define CHECK_COND(cond, reason_str)                           \
+  do {                                                         \
+    if (!(cond)) {                                             \
       if (reason) *reason = "expected " #cond ": " reason_str; \
-      return false; \
-    } \
+      return false;                                            \
+    }                                                          \
   } while (0)
 
   for (int a = 0; a < 4; ++a) {
@@ -278,8 +282,8 @@ bool EnergyModel::IsValid(std::string* reason) const {
       for (int c = 0; c < 4; ++c) {
         for (int d = 0; d < 4; ++d) {
           // Expect 180 degree rotations to be the same.
-          CHECK_COND(stack[a][b][c][d] == stack[c][d][a][b],
-              "180 degree rotations should be the same");
+          CHECK_COND(
+              stack[a][b][c][d] == stack[c][d][a][b], "180 degree rotations should be the same");
           CHECK_COND(internal_asym >= 0, "optimisations rely on this");
 
           for (int e = 0; e < 4; ++e) {
@@ -288,7 +292,8 @@ bool EnergyModel::IsValid(std::string* reason) const {
                   "180 degree rotations should be the same");
               for (int g = 0; g < 4; ++g) {
                 for (int h = 0; h < 4; ++h) {
-                  CHECK_COND(internal_2x2[a][b][c][d][e][f][g][h] == internal_2x2[e][f][g][h][a][b][c][d],
+                  CHECK_COND(
+                      internal_2x2[a][b][c][d][e][f][g][h] == internal_2x2[e][f][g][h][a][b][c][d],
                       "180 degree rotations should be the same");
                 }
               }
@@ -301,6 +306,5 @@ bool EnergyModel::IsValid(std::string* reason) const {
 #undef CHECK_COND
   return true;
 }
-
 }
 }
