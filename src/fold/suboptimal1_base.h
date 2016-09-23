@@ -76,7 +76,8 @@ protected:
 
   std::vector<computed_t> ConstructComputedsFromNodes() {
     std::vector<computed_t> ret;
-    for (int node_idx : finished) ret.push_back(ReconstructComputed(node_idx));
+    for (int node_idx : finished)
+      ret.push_back(ReconstructComputed(node_idx));
     return ret;
   }
 

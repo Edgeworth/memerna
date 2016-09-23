@@ -1,5 +1,4 @@
 #include "fold/suboptimal0.h"
-#include <set>
 
 namespace memerna {
 namespace fold {

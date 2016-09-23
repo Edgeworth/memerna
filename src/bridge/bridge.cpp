@@ -1,9 +1,7 @@
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
-#include "energy/energy.h"
 #include "energy/load_model.h"
-#include "fold/context.h"
 
 namespace memerna {
 namespace bridge {

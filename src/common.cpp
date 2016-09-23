@@ -37,7 +37,9 @@ uint32_t Crc32(const std::string& data) {
   uint32_t table[1 << 8] = {};
   for (uint32_t i = 0; i < 1 << 8; ++i) {
     table[i] = i;
-    for (int k = 0; k < 8; ++k) { table[i] = (table[i] >> 1) ^ ((table[i] & 1) ? CRC_MAGIC : 0); }
+    for (int k = 0; k < 8; ++k) {
+      table[i] = (table[i] >> 1) ^ ((table[i] & 1) ? CRC_MAGIC : 0);
+    }
   }
 
   uint32_t window = 0xFFFFFFFF;

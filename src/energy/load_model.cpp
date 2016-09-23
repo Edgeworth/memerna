@@ -31,7 +31,8 @@ void ParseMapFromFile(
   verify_expr(fp != nullptr, "could not open file");
   char buf[1024];
   energy_t energy;
-  while (fscanf(fp, " %s %d ", buf, &energy) == 2) output[buf] = energy;
+  while (fscanf(fp, " %s %d ", buf, &energy) == 2)
+    output[buf] = energy;
   fclose(fp);
 }
 
@@ -41,7 +42,8 @@ void ParseInitiationEnergyFromFile(
   verify_expr(fp != nullptr, "could not open file");
   energy_t energy;
   int idx;
-  while (fscanf(fp, "%d %d ", &idx, &energy) == 2) output[idx] = energy;
+  while (fscanf(fp, "%d %d ", &idx, &energy) == 2)
+    output[idx] = energy;
   fclose(fp);
 }
 
@@ -169,10 +171,12 @@ EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed) {
   std::mt19937 eng(seed);
   std::uniform_int_distribution<energy_t> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   std::uniform_int_distribution<energy_t> nonneg_energy_dist(0, RAND_MAX_ENERGY);
-#define RANDOMISE_DATA(d)                                                                    \
-  do {                                                                                       \
-    auto dp = reinterpret_cast<energy_t*>(&d);                                               \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { dp[i] = energy_dist(eng); } \
+#define RANDOMISE_DATA(d)                                        \
+  do {                                                           \
+    auto dp = reinterpret_cast<energy_t*>(&d);                   \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { \
+      dp[i] = energy_dist(eng);                                  \
+    }                                                            \
   } while (0)
 
   RANDOMISE_DATA(em->stack);

@@ -90,7 +90,9 @@ std::string ComputedToCtdString(const computed_t& computed) {
 std::string PrimaryToString(const primary_t& r) {
   std::string s;
   s.resize(r.size());
-  for (int i = 0; i < int(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
+  for (int i = 0; i < int(r.size()); ++i) {
+    s[i] = BaseToChar(r[i]);
+  }
   return s;
 }
 

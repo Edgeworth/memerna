@@ -12,7 +12,8 @@ namespace {
 
 energy_t MinEnergy(const energy_t* energy, std::size_t size) {
   energy_t min = energy[0];
-  for (int i = 0; i < int(size / sizeof(energy_t)); ++i) min = std::min(min, energy[i]);
+  for (int i = 0; i < int(size / sizeof(energy_t)); ++i)
+    min = std::min(min, energy[i]);
   return min;
 }
 }
@@ -37,7 +38,8 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   precomp_t pc;
   // Initialise fast AUGU branch table
   for (base_t i = 0; i < 4; ++i)
-    for (base_t j = 0; j < 4; ++j) pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
+    for (base_t j = 0; j < 4; ++j)
+      pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
 
   const auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
 

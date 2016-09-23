@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include "common_test.h"
 #include "energy/energy_internal.h"
-#include "energy/load_model.h"
 #include "parsing.h"
 
 namespace memerna {

@@ -1,6 +1,5 @@
 #include "parsing.h"
 #include "gtest/gtest.h"
-#include "common_test.h"
 
 namespace memerna {
 namespace parsing {

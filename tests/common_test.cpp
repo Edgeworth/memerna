@@ -15,7 +15,8 @@ std::ostream& operator<<(std::ostream& os, const secondary_t& s) {
 std::ostream& operator<<(std::ostream& os, const computed_t& computed) {
   os << computed.s;
   os << ", (";
-  for (auto ctd : computed.base_ctds) os << energy::CtdToName(ctd) << ", ";
+  for (auto ctd : computed.base_ctds)
+    os << energy::CtdToName(ctd) << ", ";
   os << "), " << computed.energy;
   return os;
 }

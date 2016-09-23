@@ -1,6 +1,4 @@
 #include "fold/suboptimal1_base.h"
-#include "base.h"
-#include "fold/fold_internal.h"
 
 namespace memerna {
 namespace fold {

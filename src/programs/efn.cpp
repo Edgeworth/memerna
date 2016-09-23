@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
 
   if (argparse.HasFlag("v")) {
     const auto descs = structure->Description();
-    for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
+    for (const auto& desc : descs) {
+      printf("%s\n", desc.c_str());
+    }
   }
 }

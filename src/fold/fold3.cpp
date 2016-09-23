@@ -1,5 +1,4 @@
 #include "fold/fold_internal.h"
-#include "fold/globals.h"
 
 namespace memerna {
 namespace fold {
@@ -14,11 +13,13 @@ void ComputeTables3() {
 
   // See ComputeTables2 for comments - it is mostly the same.
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
-  for (auto& i : p_cand_en) i.resize(gr.size());
+  for (auto& i : p_cand_en)
+    i.resize(gr.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
   array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(gr.size());
   for (int st = N - 1; st >= 0; --st) {
-    for (int i = 0; i < CAND_SIZE; ++i) cand_st[i].clear();
+    for (int i = 0; i < CAND_SIZE; ++i)
+      cand_st[i].clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
                    en1b = gr[en - 1], en2b = gr[en - 2];
