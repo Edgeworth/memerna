@@ -14,15 +14,19 @@ def set_up_axis(ax, names, legend):
 
 
 def set_up_figure(f, names=None, legend=True):
-  f.suptitle('%s vs %s' % tuple(reversed(names)))
+  f.suptitle('%s vs %s' % tuple(reversed(names)), y=1.00)
   for ax in f.get_axes():
     set_up_axis(ax, names, legend)
 
 
 def save_figure(f, name):
   f.tight_layout()
-  f.set_size_inches(12, 8)
-  f.savefig(name, dpi=100)
+  f.savefig(name, dpi=150)
+
+
+def savefig_local(dataset, name, f):
+  save_figure(f, './build/benchmark_figures/%s_%s.png' % (dataset, name))
+  plt.close(f)
 
 
 def latex_table(rows):
@@ -33,27 +37,11 @@ def latex_table(rows):
   return result
 
 
-def savefig_local(dataset, name, f):
-  save_figure(f, './build/benchmark_figures/%s_%s.png' % (dataset, name))
-
-
-def get_best_factors(n):
-  best = 1
-  for i in range(1, int(np.floor(np.sqrt(n))) + 1):
-    if n % i == 0:
-      best = i
-  return best, n // best
-
-
-def get_best_splitting(n):
-  a = get_best_factors(n)
-  if a[0] == 1 and n != 1:
-    return get_best_factors(n + 1)
-  return a
+SPLITTINGS = [(0, 0), (1, 1), (1, 2), (2, 2), (2, 2), (2, 3), (2, 3), (3, 3), (3, 3), (3, 3)]
 
 
 def get_subplot_grid(n, sharex=False, sharey=False):
-  factors = get_best_splitting(n)
+  factors = SPLITTINGS[n]
   if factors == (1, 1):
     f, axes = plt.subplots(n, sharey=sharey, sharex=sharex)
   else:
@@ -61,4 +49,11 @@ def get_subplot_grid(n, sharex=False, sharey=False):
     axes = axes.flatten()
   if n == 1:
     axes = [axes]
+  f.tight_layout()
+  # if factors[0] * factors[1] != n:
+  #   axes[-1].clear()
+  #   axes[-1].set_axis_off()
+  #   axes[-1].get_xaxis().set_visible(False)
+  #   axes[-1].get_yaxis().set_visible(False)
+  f.set_size_inches(factors[1] * 3, factors[0] * 3)
   return f, axes

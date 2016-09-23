@@ -138,11 +138,6 @@ class RNAstructureHarness(HarnessFolder):
     super().__init__(loc, 'RNAstructureHarness', '-r')
 
 
-class Rnark(HarnessFolder):
-  def __init__(self, loc=None):
-    super().__init__(loc, 'Rnark', '-m')
-
-
 class MemeRNA(HarnessFolder):
   def __init__(self, loc=None):
     super().__init__(loc, 'MemeRNA', '-k')
@@ -394,7 +389,6 @@ def process_command(*extra_args):
 
   parser.add_argument('-rh', '--rnastructure-harness', action='store_true')
   parser.add_argument('-rd', '--rnastructure-distribution', action='store_true')
-  parser.add_argument('-m', '--rnark', action='store_true')
   parser.add_argument('-vd2', '--viennarna-d2', action='store_true')
   parser.add_argument('-vd3', '--viennarna-d3', action='store_true')
   parser.add_argument('-u', '--unafold', action='store_true')
@@ -417,8 +411,6 @@ def process_command(*extra_args):
     programs.append(rnastructure_harness)
   if args.rnastructure_distribution:
     programs.append(RNAstructureDistribution(args.rnastructure_loc))
-  if args.rnark:
-    programs.append(Rnark(args.memerna_loc))
   if args.viennarna_d2:
     programs.append(ViennaRNA(args.viennarna_loc, False))
   if args.viennarna_d3:

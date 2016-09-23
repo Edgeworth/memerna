@@ -3,6 +3,8 @@
 #include <chrono>
 #include <cinttypes>
 #include <set>
+#include "bridge/rnastructure.h"
+#include "bridge/memerna.h"
 #include "fold/brute_fold.h"
 #include "fold/globals.h"
 #include "fold/context.h"
@@ -288,7 +290,7 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
 
-  const bridge::Rnastructure rnastructure("extern/rnark/data_tables/", false);
+  const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
   const auto t04em = energy::LoadEnergyModelFromArgParse(argparse);
   const bool random_model = argparse.HasFlag("random");
   const bool do_subopt = !argparse.HasFlag("no-subopt");
