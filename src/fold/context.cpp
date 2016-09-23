@@ -1,9 +1,9 @@
-#include <stack>
-#include "parsing.h"
 #include "fold/context.h"
+#include <stack>
+#include "fold/brute_fold.h"
 #include "fold/suboptimal0.h"
 #include "fold/suboptimal1.h"
-#include "fold/brute_fold.h"
+#include "parsing.h"
 
 namespace memerna {
 namespace fold {
@@ -45,27 +45,17 @@ context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
 void Context::ComputeTables() {
   internal::SetGlobalState(r, *em);
   switch (options.table_alg) {
-    case context_options_t::TableAlg::ZERO:
-      internal::ComputeTables0();
-      break;
-    case context_options_t::TableAlg::ONE:
-      internal::ComputeTables1();
-      break;
-    case context_options_t::TableAlg::TWO:
-      internal::ComputeTables2();
-      break;
-    case context_options_t::TableAlg::THREE:
-      internal::ComputeTables3();
-      break;
-    default:
-      verify_expr(false, "bug");
+  case context_options_t::TableAlg::ZERO: internal::ComputeTables0(); break;
+  case context_options_t::TableAlg::ONE: internal::ComputeTables1(); break;
+  case context_options_t::TableAlg::TWO: internal::ComputeTables2(); break;
+  case context_options_t::TableAlg::THREE: internal::ComputeTables3(); break;
+  default: verify_expr(false, "bug");
   }
   internal::ComputeExterior();
 }
 
 computed_t Context::Fold() {
-  if (options.table_alg == context_options_t::TableAlg::BRUTE)
-    return FoldBruteForce(r, *em, 1)[0];
+  if (options.table_alg == context_options_t::TableAlg::BRUTE) return FoldBruteForce(r, *em, 1)[0];
 
   ComputeTables();
   internal::Traceback();
@@ -78,14 +68,12 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
 
   ComputeTables();
   switch (options.suboptimal_alg) {
-    case context_options_t::SuboptimalAlg::ZERO:
-      return internal::Suboptimal0(subopt_delta, subopt_num).Run();
-    case context_options_t::SuboptimalAlg::ONE:
-      return internal::Suboptimal1(subopt_delta, subopt_num).Run();
-    default:
-      verify_expr(false, "bug");
+  case context_options_t::SuboptimalAlg::ZERO:
+    return internal::Suboptimal0(subopt_delta, subopt_num).Run();
+  case context_options_t::SuboptimalAlg::ONE:
+    return internal::Suboptimal1(subopt_delta, subopt_num).Run();
+  default: verify_expr(false, "bug");
   }
 }
-
 }
 }

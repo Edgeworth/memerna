@@ -13,30 +13,29 @@ namespace internal {
 struct expand_t {
   expand_t() = delete;
   expand_t(energy_t energy_) : energy(energy_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_)
-      : energy(energy_), to_expand(to_expand_) {}
+  expand_t(energy_t energy_, const index_t& to_expand_) : energy(energy_), to_expand(to_expand_) {}
   expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_) {}
   expand_t(energy_t energy_, const index_t& to_expand_, const ctd_idx_t& ctd0_)
       : energy(energy_), to_expand(to_expand_), ctd0(ctd0_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_,
-      const index_t& unexpanded_, const ctd_idx_t& ctd0_)
+  expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_,
+      const ctd_idx_t& ctd0_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_,
-      const index_t& unexpanded_, const ctd_idx_t& ctd0_, const ctd_idx_t& ctd1_)
+  expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_,
+      const ctd_idx_t& ctd0_, const ctd_idx_t& ctd1_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_), ctd1(ctd1_) {}
   energy_t energy;
   index_t to_expand, unexpanded;  // st is -1 if this does not exist
   ctd_idx_t ctd0, ctd1;
 
-  bool operator<(const expand_t& o) const {return energy < o.energy;}
+  bool operator<(const expand_t& o) const { return energy < o.energy; }
 };
 
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
 
-template<typename Node>
-class Suboptimal1Base {
+template <typename Node> class Suboptimal1Base {
   Suboptimal1Base() = delete;
+
 protected:
   Suboptimal1Base(energy_t delta_) : delta(delta_) {}
 
@@ -50,7 +49,8 @@ protected:
     auto& node = nodes[node_idx];
     while (1) {
       if (node.exp_en == node_idx) {
-        // Finished state - when |exp_en| is us, then we have been expanded, and everything above us.
+        // Finished state - when |exp_en| is us, then we have been expanded, and everything above
+        // us.
         return {};
       } else {
         // Need to find the next node to expand in the tree. Keep looking up the tree while
@@ -58,7 +58,8 @@ protected:
         while (node.cur_anc != node.exp_en && nodes[node.cur_anc].exp.unexpanded.st == -1)
           node.cur_anc = nodes[node.cur_anc].parent;
         if (node.cur_anc == node.exp_en) {
-          // Case: We did not find a node. In this case, update expand range to be from us to exp_st.
+          // Case: We did not find a node. In this case, update expand range to be from us to
+          // exp_st.
           node.exp_en = node.exp_st;
           node.exp_st = node_idx;
           node.cur_anc = node_idx;
@@ -75,8 +76,7 @@ protected:
 
   std::vector<computed_t> ConstructComputedsFromNodes() {
     std::vector<computed_t> ret;
-    for (int node_idx : finished)
-      ret.push_back(ReconstructComputed(node_idx));
+    for (int node_idx : finished) ret.push_back(ReconstructComputed(node_idx));
     return ret;
   }
 
@@ -112,16 +112,13 @@ private:
         computed.s.p[node.exp.unexpanded.st] = node.exp.unexpanded.en;
         computed.s.p[node.exp.unexpanded.en] = node.exp.unexpanded.st;
       }
-      if (node.exp.ctd0.idx != -1)
-        computed.base_ctds[node.exp.ctd0.idx] = node.exp.ctd0.ctd;
-      if (node.exp.ctd1.idx != -1)
-        computed.base_ctds[node.exp.ctd1.idx] = node.exp.ctd1.ctd;
+      if (node.exp.ctd0.idx != -1) computed.base_ctds[node.exp.ctd0.idx] = node.exp.ctd0.ctd;
+      if (node.exp.ctd1.idx != -1) computed.base_ctds[node.exp.ctd1.idx] = node.exp.ctd1.ctd;
       node_idx = node.parent;
     }
     return computed;
   }
 };
-
 }
 }
 }

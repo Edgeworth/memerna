@@ -1,15 +1,13 @@
 #include <cstdio>
-#include "parsing.h"
-#include "energy/structure.h"
 #include "energy/load_model.h"
+#include "energy/structure.h"
+#include "parsing.h"
 
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse(energy::ENERGY_OPTIONS);
-  argparse.AddOptions({
-      {"v", {"verbose"}}
-  });
+  argparse.AddOptions({{"v", {"verbose"}}});
   argparse.ParseOrExit(argc, argv);
   const auto pos = argparse.GetPositional();
   verify_expr(pos.size() == 2, "requires primary sequence and dot bracket");
@@ -26,8 +24,6 @@ int main(int argc, char* argv[]) {
 
   if (argparse.HasFlag("v")) {
     const auto descs = structure->Description();
-    for (const auto& desc : descs) {
-      printf("%s\n", desc.c_str());
-    }
+    for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
   }
 }

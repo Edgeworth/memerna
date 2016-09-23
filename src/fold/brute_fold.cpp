@@ -1,9 +1,9 @@
-#include <set>
 #include "fold/brute_fold.h"
-#include "fold/globals.h"
-#include "fold/fold_internal.h"
-#include "parsing.h"
+#include <set>
 #include "energy/structure.h"
+#include "fold/fold_internal.h"
+#include "fold/globals.h"
+#include "parsing.h"
 
 namespace memerna {
 namespace fold {
@@ -17,8 +17,7 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
     if (p[i] == -1) continue;
     if (p[i] > i) {
       // Exterior loop counts a multiloop for CTDs.
-      if (q.empty())
-        branch_count[i] = 2;
+      if (q.empty()) branch_count[i] = 2;
       q.push(i);
 
       // Look at all the children.
@@ -42,7 +41,6 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
   }
   return branch_count;
 }
-
 }
 
 namespace {
@@ -58,14 +56,15 @@ void AddAllCombinations(int idx) {
   // Base case
   if (idx == int(gr.size())) {
     auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, gem);
-    if (int(best_computeds.size()) < max_structures || best_computeds.rbegin()->energy > computed.energy)
+    if (int(best_computeds.size()) < max_structures ||
+        best_computeds.rbegin()->energy > computed.energy)
       best_computeds.insert(std::move(computed));
-    if (int(best_computeds.size()) > max_structures)
-      best_computeds.erase(--best_computeds.end());
+    if (int(best_computeds.size()) > max_structures) best_computeds.erase(--best_computeds.end());
     return;
   }
 
-  // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set ctds so continue.
+  // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set
+  // ctds so continue.
   if (gctd[idx] != CTD_NA || gp[idx] == -1 || branch_count[idx] < 2) {
     AddAllCombinations(idx + 1);
     return;
@@ -74,16 +73,14 @@ void AddAllCombinations(int idx) {
   const int N = int(gr.size());
   const bool lu_exists = idx - 1 >= 0 && gp[idx - 1] == -1;
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
-  const bool lu_usable = lu_exists && (!lu_shared || (
-      gctd[gp[idx - 2]] != CTD_3_DANGLE &&
-          gctd[gp[idx - 2]] != CTD_MISMATCH &&
-          gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
+  const bool lu_usable = lu_exists && (!lu_shared || (gctd[gp[idx - 2]] != CTD_3_DANGLE &&
+                                                         gctd[gp[idx - 2]] != CTD_MISMATCH &&
+                                                         gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
   const bool ru_exists = gp[idx] + 1 < N && gp[gp[idx] + 1] == -1;
   const bool ru_shared = ru_exists && gp[idx] + 2 < N && gp[gp[idx] + 2] != -1;
-  const bool ru_usable = ru_exists && (!ru_shared || (
-      gctd[gp[idx] + 2] != CTD_5_DANGLE &&
-          gctd[gp[idx] + 2] != CTD_MISMATCH &&
-          gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
+  const bool ru_usable = ru_exists && (!ru_shared || (gctd[gp[idx] + 2] != CTD_5_DANGLE &&
+                                                         gctd[gp[idx] + 2] != CTD_MISMATCH &&
+                                                         gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
   // CTD_UNUSED
   gctd[idx] = CTD_UNUSED;
@@ -153,8 +150,7 @@ void FoldBruteForceInternal(int idx) {
       auto computed = energy::ComputeEnergy({gr, gp}, gem);
       if (best_computeds.empty() || computed.energy < best_computeds.begin()->energy)
         best_computeds.insert(std::move(computed));
-      if (best_computeds.size() == 2)
-        best_computeds.erase(--best_computeds.end());
+      if (best_computeds.size() == 2) best_computeds.erase(--best_computeds.end());
     } else {
       // Precompute whether things are multiloops or not.
       branch_count = internal::GetBranchCounts(gp);
@@ -170,7 +166,8 @@ void FoldBruteForceInternal(int idx) {
   bool can_take = true;
   const auto& pair = base_pairs[idx];
   // Only need to check in the range of this base pair. Since we ordered by
-  // increasing st, anything at or after this will either be the start of something starting at st, or
+  // increasing st, anything at or after this will either be the start of something starting at st,
+  // or
   // something ending, both of which conflict with this base pair.
   for (int i = pair.first; i <= pair.second; ++i) {
     if (gp[i] != -1) {
@@ -186,11 +183,10 @@ void FoldBruteForceInternal(int idx) {
     gp[pair.second] = -1;
   }
 }
-
 }
 
-std::vector<computed_t> FoldBruteForce(const primary_t& r,
-    const energy::EnergyModel& em, int max_structures_) {
+std::vector<computed_t> FoldBruteForce(
+    const primary_t& r, const energy::EnergyModel& em, int max_structures_) {
   internal::SetGlobalState(r, em);
   best_computeds.clear();
   base_pairs.clear();
@@ -198,13 +194,11 @@ std::vector<computed_t> FoldBruteForce(const primary_t& r,
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < int(r.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
-      if (internal::ViableFoldingPair(st, en))
-        base_pairs.emplace_back(st, en);
+      if (internal::ViableFoldingPair(st, en)) base_pairs.emplace_back(st, en);
     }
   }
   FoldBruteForceInternal(0);
   return std::vector<computed_t>(best_computeds.begin(), best_computeds.end());
 }
-
 }
 }

@@ -20,13 +20,10 @@ energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
   return computed.energy;
 }
 
-computed_t Memerna::Fold(const primary_t& r) const {
-  return fold::Context(r, em, options).Fold();
-}
+computed_t Memerna::Fold(const primary_t& r) const { return fold::Context(r, em, options).Fold(); }
 
 std::vector<computed_t> Memerna::Suboptimal(const primary_t& r, energy_t energy_delta) const {
   return fold::Context(r, em, options).Suboptimal(energy_delta, -1);
 }
-
 }
 }

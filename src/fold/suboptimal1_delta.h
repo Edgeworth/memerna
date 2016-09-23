@@ -2,8 +2,8 @@
 #define MEMERNA_SUBOPTIMAL1_DELTA_H
 
 #include "common.h"
-#include "fold/suboptimal1_base.h"
 #include "fold/fold_internal.h"
+#include "fold/suboptimal1_base.h"
 
 namespace memerna {
 namespace fold {
@@ -11,8 +11,7 @@ namespace internal {
 
 struct delta_node_t {
   delta_node_t() = delete;
-  delta_node_t(const expand_t& exp_)
-      : exp(exp_), parent(-1), exp_st(0), exp_en(-1), cur_anc(0) {}
+  delta_node_t(const expand_t& exp_) : exp(exp_), parent(-1), exp_st(0), exp_en(-1), cur_anc(0) {}
   // TODO try to reduce size of this? - bitfields, etc - 28 or so bytes might be possible
   expand_t exp;
   // Book-keeping vars:
@@ -37,7 +36,6 @@ public:
 private:
   std::vector<int> q;  // Queue of nodes ready to be expanded.
 };
-
 }
 }
 }

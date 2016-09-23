@@ -1,5 +1,5 @@
-#include <algorithm>
 #include "fold/suboptimal1_delta.h"
+#include <algorithm>
 
 namespace memerna {
 namespace fold {
@@ -44,7 +44,6 @@ std::vector<computed_t> Suboptimal1Delta::Run() {
   std::sort(computeds.begin(), computeds.end(), computed_energy_comparator_t());
   return computeds;
 }
-
 }
 }
 }

@@ -1,24 +1,21 @@
 #include <iostream>
 #include <memory>
-#include "parsing.h"
 #include "bridge/bridge.h"
 #include "energy/load_model.h"
+#include "parsing.h"
 
 using namespace memerna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({
-      {"v", {"be verbose (if possible)"}},
-      {"e", {"run efn"}},
-      {"f", {"run fold"}},
+      {"v", {"be verbose (if possible)"}}, {"e", {"run efn"}}, {"f", {"run fold"}},
       {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
   argparse.AddOptions(fold::FOLD_OPTIONS);
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
-  verify_expr(
-      argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
+  verify_expr(argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
       "require exactly one program flag\n%s", argparse.Usage().c_str());
 
   const auto package = bridge::RnaPackageFromArgParse(argparse);

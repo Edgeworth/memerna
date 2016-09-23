@@ -1,17 +1,17 @@
-#include <cstdio>
-#include <random>
 #include <chrono>
 #include <cinttypes>
+#include <cstdio>
+#include <random>
 #include <set>
-#include "bridge/rnastructure.h"
-#include "bridge/memerna.h"
-#include "fold/brute_fold.h"
-#include "fold/globals.h"
-#include "fold/context.h"
 #include "bridge/bridge.h"
-#include "parsing.h"
+#include "bridge/memerna.h"
+#include "bridge/rnastructure.h"
 #include "energy/load_model.h"
 #include "energy/structure.h"
+#include "fold/brute_fold.h"
+#include "fold/context.h"
+#include "fold/globals.h"
+#include "parsing.h"
 
 using namespace memerna;
 using namespace fold;
@@ -25,16 +25,17 @@ class Fuzzer {
 public:
   typedef std::deque<std::string> error_t;
 
-  Fuzzer(primary_t r_, const energy::EnergyModelPtr em_,
-      bool random_model_, uint_fast32_t seed_, const bridge::Rnastructure& rnastructure_,
-      bool do_subopt_, bool do_subopt_rnastructure_, int brute_cutoff_)
+  Fuzzer(primary_t r_, const energy::EnergyModelPtr em_, bool random_model_, uint_fast32_t seed_,
+      const bridge::Rnastructure& rnastructure_, bool do_subopt_, bool do_subopt_rnastructure_,
+      int brute_cutoff_)
       : r(r_), em(random_model_ ? energy::LoadRandomEnergyModel(seed_) : em_),
         random_model(random_model_), seed(seed_), rnastructure(rnastructure_),
         do_subopt(do_subopt_), do_subopt_rnastructure(do_subopt_rnastructure_),
         brute_cutoff(brute_cutoff_) {
     verify_expr(!do_subopt_rnastructure || do_subopt,
         "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
-    verify_expr(!(random_model && do_subopt_rnastructure), "cannot use a random energy model with rnastructure");
+    verify_expr(!(random_model && do_subopt_rnastructure),
+        "cannot use a random energy model with rnastructure");
   }
 
   error_t Run() {
@@ -45,8 +46,7 @@ public:
     if (int(r.size()) <= brute_cutoff)
       AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
     AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
-    if (do_subopt)
-      AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(), "suboptimal:"));
+    if (do_subopt) AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(), "suboptimal:"));
 
     if (!errors.empty()) {
       if (random_model)
@@ -79,14 +79,12 @@ private:
     if (main.empty()) return main;
     error_t nmain;
     nmain.push_front(header);
-    for (auto& error : main)
-      nmain.push_back("  " + error);  // mfw this inefficiency
+    for (auto& error : main) nmain.push_back("  " + error);  // mfw this inefficiency
     return nmain;
   }
 
   void AppendErrors(error_t& main, error_t&& extra) {
-    for (auto& s : extra)
-      main.push_back(std::move(s));
+    for (auto& s : extra) main.push_back(std::move(s));
   }
 
   bool HasDuplicates(const std::vector<computed_t>& computeds) {
@@ -94,8 +92,7 @@ private:
     std::set<std::pair<secondary_t, std::vector<Ctd>>> suboptimal_set;
     for (const auto& computed : computeds) {
       auto val = std::make_pair(computed.s, computed.base_ctds);
-      if (suboptimal_set.count(val))
-        return true;
+      if (suboptimal_set.count(val)) return true;
       suboptimal_set.insert(val);
     }
     return false;
@@ -104,23 +101,23 @@ private:
   error_t CheckSuboptimalResult(const std::vector<computed_t>& subopt, bool has_ctds) {
     error_t errors;
     // Check at least one suboptimal structure.
-    if (subopt.empty())
-      errors.push_back("no structures returned");
+    if (subopt.empty()) errors.push_back("no structures returned");
     // Check MFE.
     if (!subopt.empty() && memerna_computeds[0].energy != subopt[0].energy)
-      errors.push_back(sfmt("lowest structure energy %d != mfe %d", subopt[0].energy, memerna_computeds[0].energy));
+      errors.push_back(sfmt(
+          "lowest structure energy %d != mfe %d", subopt[0].energy, memerna_computeds[0].energy));
 
     // Only ones with CTDs set can do these tests.
     if (has_ctds) {
       // Check for duplicate structures.
-      if (HasDuplicates(subopt))
-        errors.push_back("has duplicates");
+      if (HasDuplicates(subopt)) errors.push_back("has duplicates");
 
       for (int i = 0; i < int(subopt.size()); ++i) {
         const auto& structure = subopt[i];
         auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, *em);
         if (suboptimal_efn.energy != structure.energy) {
-          errors.push_back(sfmt("structure %d: energy %d != efn %d", i, structure.energy, suboptimal_efn.energy));
+          errors.push_back(sfmt(
+              "structure %d: energy %d != efn %d", i, structure.energy, suboptimal_efn.energy));
           break;
         }
 
@@ -137,14 +134,17 @@ private:
     return errors;
   }
 
-  error_t CheckSuboptimalResultPair(const std::vector<computed_t>& a, const std::vector<computed_t>& b) {
+  error_t CheckSuboptimalResultPair(
+      const std::vector<computed_t>& a, const std::vector<computed_t>& b) {
     error_t errors;
     if (a.size() != b.size()) {
-      errors.push_back(sfmt("first has %d structures != second has %d structures", int(a.size()), int(b.size())));
+      errors.push_back(sfmt(
+          "first has %d structures != second has %d structures", int(a.size()), int(b.size())));
     } else {
       for (int i = 0; i < int(a.size()); ++i) {
         if (a[i].energy != b[i].energy) {
-          errors.push_back(sfmt("structure %d: first %d != second %d", i, a[i].energy, b[i].energy));
+          errors.push_back(
+              sfmt("structure %d: first %d != second %d", i, a[i].energy, b[i].energy));
           break;
         }
       }
@@ -165,25 +165,25 @@ private:
             // If meant to be infinity and not.
             if (((memerna0 < CAP_E) != (memernai < CAP_E)) ||
                 (memerna0 < CAP_E && memerna0 != memernai)) {
-              errors.push_back(sfmt("memerna %d at %d %d %d: %d != %d",
-                  i, st, en, a, memerna_dps[i][st][en][a], memerna_dps[0][st][en][a]));
+              errors.push_back(sfmt("memerna %d at %d %d %d: %d != %d", i, st, en, a,
+                  memerna_dps[i][st][en][a], memerna_dps[0][st][en][a]));
               goto loopend;
             }
           }
           if (!random_model && (a == DP_P || a == DP_U)) {
-            energy_t rnastructureval = a == DP_P ?
-                rnastructure_dp.v.f(st + 1, en + 1) : rnastructure_dp.w.f(st + 1, en + 1);
+            energy_t rnastructureval = a == DP_P ? rnastructure_dp.v.f(st + 1, en + 1)
+                                                 : rnastructure_dp.w.f(st + 1, en + 1);
             if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
-                (memerna0 < CAP_E && memerna0 != rnastructureval))) {
-              errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d",
-                  st, en, a, rnastructureval, memerna_dps[0][st][en][a]));
+                    (memerna0 < CAP_E && memerna0 != rnastructureval))) {
+              errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d", st, en, a,
+                  rnastructureval, memerna_dps[0][st][en][a]));
               goto loopend;
             }
           }
         }
       }
     }
-    loopend:
+  loopend:
     return errors;
   }
 
@@ -209,8 +209,9 @@ private:
       if (memerna_computeds[0].energy != memerna_computeds[i].energy ||
           memerna_computeds[0].energy != memerna_ctd_efns[i] ||
           memerna_computeds[0].energy != memerna_optimal_efns[i])
-        errors.push_back(sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d",
-            memerna_computeds[i].energy, memerna_ctd_efns[i], memerna_optimal_efns[i], memerna_computeds[0].energy));
+        errors.push_back(
+            sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d", memerna_computeds[i].energy,
+                memerna_ctd_efns[i], memerna_optimal_efns[i], memerna_computeds[0].energy));
     }
 
     return errors;
@@ -229,15 +230,18 @@ private:
 
   error_t CheckBruteForce() {
     error_t errors;
-    context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
+    context_options_t options(
+        context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
     Context ctx(r, em, options);
     auto subopt_brute = FoldBruteForce(r, *em, SUBOPT_BRUTE_MAX_STRUCTURES);
     auto subopt_memerna = ctx.Suboptimal(-1, SUBOPT_BRUTE_MAX_STRUCTURES);
 
-    AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(subopt_brute, true), "brute suboptimal:"));
-    AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(subopt_memerna, true), "memerna suboptimal:"));
+    AppendErrors(
+        errors, MaybePrependHeader(CheckSuboptimalResult(subopt_brute, true), "brute suboptimal:"));
     AppendErrors(errors,
-        MaybePrependHeader(CheckSuboptimalResultPair(subopt_brute, subopt_memerna), "brute vs memerna suboptimal:"));
+        MaybePrependHeader(CheckSuboptimalResult(subopt_memerna, true), "memerna suboptimal:"));
+    AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(subopt_brute, subopt_memerna),
+                             "brute vs memerna suboptimal:"));
     return errors;
   }
 
@@ -251,25 +255,30 @@ private:
     }
 
     for (int i = 0; i < int(memerna_subopts.size()); ++i) {
-      AppendErrors(errors, MaybePrependHeader(
-          CheckSuboptimalResult(memerna_subopts[i], true), sfmt("memerna suboptimal %d:", i)));
-      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(
-          memerna_subopts[0], memerna_subopts[i]), sfmt("memerna 0 vs memerna %d suboptimal:", i)));
+      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts[i], true),
+                               sfmt("memerna suboptimal %d:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts[0], memerna_subopts[i]),
+                       sfmt("memerna 0 vs memerna %d suboptimal:", i)));
     }
 
     if (do_subopt_rnastructure) {
-      // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does strange things
+      // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
+      // strange things
       // when the energy for suboptimal structures is 0 or above.
       if (memerna_computeds[0].energy < -SUBOPT_MAX_DELTA) {
-        context_options_t options(context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
+        context_options_t options(
+            context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
         Context ctx(r, em, options);
         auto memerna_subopt = ctx.Suboptimal(SUBOPT_MAX_DELTA, -1);
         const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
         AppendErrors(errors,
-            MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(
-            memerna_subopt, rnastructure_subopt), "memerna vs rnastructure suboptimal:"));
+            MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
+        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false),
+                                 "rnastructure suboptimal:"));
+        AppendErrors(errors,
+            MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopt, rnastructure_subopt),
+                         "memerna vs rnastructure suboptimal:"));
       }
     }
 
@@ -279,14 +288,14 @@ private:
 
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
-  ArgParse argparse({
-      {"print-interval", ArgParse::option_t("status update every n seconds").Arg("-1")},
-      {"random", ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")},
+  ArgParse argparse({{"print-interval",
+                         ArgParse::option_t("status update every n seconds").Arg("-1")},
+      {"random",
+          ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")},
       {"no-subopt", ArgParse::option_t("do not test suboptimal folding")},
       {"subopt-rnastructure", ArgParse::option_t("test rnastructure suboptimal folding")},
       {"afl", ArgParse::option_t("reads one rna from stdin and fuzzes - useful for use with afl")},
-      {"brute-cutoff", ArgParse::option_t("maximum rna size to run brute force on").Arg("25")}
-  });
+      {"brute-cutoff", ArgParse::option_t("maximum rna size to run brute force on").Arg("25")}});
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
 
@@ -299,27 +308,25 @@ int main(int argc, char* argv[]) {
   const int brute_cutoff = atoi(argparse.GetOption("brute-cutoff").c_str());
 
   if (afl_mode) {
-    // AFL mode.
+// AFL mode.
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     __AFL_INIT();
     while (__AFL_LOOP(1000)) {
 #endif
-    char buf[4096];
-    std::size_t len = fread(buf, 1, sizeof(buf), stdin);
-    if (len > 0) {
-      uint_fast32_t seed = eng();
-      // Disable brute force testing for AFL since it's too slow.
-      Fuzzer fuzzer(
-          parsing::StringToPrimary(std::string(buf, len)), t04em, random_model, seed,
-          rnastructure, do_subopt, do_subopt_rnastructure, 0);
-      const auto res = fuzzer.Run();
-      if (!res.empty()) {
-        for (const auto& s : res)
-          printf("%s\n", s.c_str());
-        printf("\n");
-        verify_expr(false, "crash!");
+      char buf[4096];
+      std::size_t len = fread(buf, 1, sizeof(buf), stdin);
+      if (len > 0) {
+        uint_fast32_t seed = eng();
+        // Disable brute force testing for AFL since it's too slow.
+        Fuzzer fuzzer(parsing::StringToPrimary(std::string(buf, len)), t04em, random_model, seed,
+            rnastructure, do_subopt, do_subopt_rnastructure, 0);
+        const auto res = fuzzer.Run();
+        if (!res.empty()) {
+          for (const auto& s : res) printf("%s\n", s.c_str());
+          printf("\n");
+          verify_expr(false, "crash!");
+        }
       }
-    }
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     }
 #endif
@@ -335,8 +342,10 @@ int main(int argc, char* argv[]) {
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
 
     printf("Fuzzing [%d, %d] len RNAs - ", min_len, max_len);
-    if (random_model) printf("random energy models");
-    else printf("T04 energy model");
+    if (random_model)
+      printf("random energy models");
+    else
+      printf("T04 energy model");
     if (do_subopt) printf(" - testing suboptimal folders");
     if (do_subopt_rnastructure) printf(" (including rnastructure)");
     printf("\n");
@@ -344,25 +353,24 @@ int main(int argc, char* argv[]) {
     // Normal mode.
     auto start_time = std::chrono::steady_clock::now();
     for (int64_t i = 0;; ++i) {
-      if (interval > 0 && std::chrono::duration_cast<std::chrono::seconds>(
-          std::chrono::steady_clock::now() - start_time).count() > interval) {
-        printf("Fuzzed %" PRId64" RNA\n", i);
+      if (interval > 0 &&
+          std::chrono::duration_cast<std::chrono::seconds>(
+              std::chrono::steady_clock::now() - start_time)
+                  .count() > interval) {
+        printf("Fuzzed %" PRId64 " RNA\n", i);
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(eng);
       auto r = GenerateRandomPrimary(len, eng);
 
       uint_fast32_t seed = eng();
-      Fuzzer fuzzer(r, t04em, random_model, seed,
-          rnastructure, do_subopt, do_subopt_rnastructure, brute_cutoff);
+      Fuzzer fuzzer(r, t04em, random_model, seed, rnastructure, do_subopt, do_subopt_rnastructure,
+          brute_cutoff);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
-        for (const auto& s : res)
-          printf("%s\n", s.c_str());
+        for (const auto& s : res) printf("%s\n", s.c_str());
         printf("\n");
       }
     }
   }
-
 }
-
