@@ -72,14 +72,14 @@ void AddAllCombinations(int idx) {
   const int N = int(gr.size());
   const bool lu_exists = idx - 1 >= 0 && gp[idx - 1] == -1;
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
-  const bool lu_usable = lu_exists && (!lu_shared || (gctd[gp[idx - 2]] != CTD_3_DANGLE &&
-                                                         gctd[gp[idx - 2]] != CTD_MISMATCH &&
-                                                         gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
+  const bool lu_usable = lu_exists &&
+      (!lu_shared || (gctd[gp[idx - 2]] != CTD_3_DANGLE && gctd[gp[idx - 2]] != CTD_MISMATCH &&
+                         gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
   const bool ru_exists = gp[idx] + 1 < N && gp[gp[idx] + 1] == -1;
   const bool ru_shared = ru_exists && gp[idx] + 2 < N && gp[gp[idx] + 2] != -1;
-  const bool ru_usable = ru_exists && (!ru_shared || (gctd[gp[idx] + 2] != CTD_5_DANGLE &&
-                                                         gctd[gp[idx] + 2] != CTD_MISMATCH &&
-                                                         gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
+  const bool ru_usable = ru_exists &&
+      (!ru_shared || (gctd[gp[idx] + 2] != CTD_5_DANGLE && gctd[gp[idx] + 2] != CTD_MISMATCH &&
+                         gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
   // CTD_UNUSED
   gctd[idx] = CTD_UNUSED;
@@ -166,8 +166,7 @@ void FoldBruteForceInternal(int idx) {
   const auto& pair = base_pairs[idx];
   // Only need to check in the range of this base pair. Since we ordered by
   // increasing st, anything at or after this will either be the start of something starting at st,
-  // or
-  // something ending, both of which conflict with this base pair.
+  // or something ending, both of which conflict with this base pair.
   for (int i = pair.first; i <= pair.second; ++i) {
     if (gp[i] != -1) {
       can_take = false;

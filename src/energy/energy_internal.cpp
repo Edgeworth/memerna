@@ -65,8 +65,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     rui[i] = ri[i] + 1;
     // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right
     // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
-    // dangle, right facing coaxial stack,
-    // etc). This is because the loop is cyclic.
+    // dangle, right facing coaxial stack, etc). This is because the loop is cyclic.
     lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && p[lui[i]] == -1;
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);
     ru_exists[i] = rui[i] >= 0 && rui[i] < RSZ && p[rui[i]] == -1;
@@ -84,15 +83,12 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     if (!ru_exists[i] && i != N - 1) {
       energy_t coax = em.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with
-      // anything, so
-      // just skip to i + 2.
+      // anything, so just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FCOAX_WITH_NEXT);
       if (lu_exists[i]) {
         // If lu exists, and it was used, then it's fine to coaxially stack. If |used| were true but
-        // lu didn't exist
-        // then
-        // we couldn't coaxially stack as the current branch would already have been involved in
-        // one, though.
+        // lu didn't exist then we couldn't coaxially stack as the current branch would already
+        // have been involved in one, though.
         UPDATE_CACHE(0, i + 2, 1, i, coax, CTD_FCOAX_WITH_NEXT);
       }
     }
@@ -105,8 +101,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
       // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
       // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
       // Skip to the branch after next since the next branch can't be involved in any more
-      // interactions anyway:
-      // its left pair is consumed, and its right pair can't dangle towards it.
+      // interactions anyway: its left pair is consumed, and its right pair can't dangle towards it.
       if (ru_shared[i] && i != N - 1) {
         energy_t left_coax = em.MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LCOAX_WITH_NEXT);
@@ -128,9 +123,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RCOAX_WITH_NEXT);
         if (lu_exists[i]) {
           // In the case that lu doesn't exist but it is "used" it means this branch was consumed by
-          // a coaxial
-          // interaction
-          // so don't use it.
+          // a coaxial interaction so don't use it.
           UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, CTD_RCOAX_WITH_NEXT);
         }
       }
@@ -159,8 +152,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
     // We can skip a branch on coaxial stacking interactions, so make sure to insert the ctd energy
-    // for the branch.
-    // We build branch_ctds backwards, so we need to insert this later branch first.
+    // for the branch. We build branch_ctds backwards, so we need to insert this later branch first.
     // To get the PREV versions, just add one.
     if (reason == CTD_LCOAX_WITH_NEXT || reason == CTD_RCOAX_WITH_NEXT ||
         reason == CTD_FCOAX_WITH_NEXT)
@@ -180,10 +172,9 @@ void AddBranchCtdsToComputed(
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < int(branches.size()); ++i) {
     assert(int(computed.base_ctds.size()) > branches[i] &&
-           int(computed.base_ctds.size()) > computed.s.p[branches[i]]);
+        int(computed.base_ctds.size()) > computed.s.p[branches[i]]);
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
-    // swap
-    // the indices in that case.
+    // swap the indices in that case.
     computed.base_ctds[branches[i]] = branch_ctds[i].first;
   }
 }
@@ -195,11 +186,9 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   assert(branch_ctds.empty());
   energy_t total_energy = 0;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
-  // last, to NEXT.
-  // In this case, we need to fix the branch_ctds so that the corresponding branch ctd is on the
-  // right side.
-  // e.g. if the first element refers to PREV, we would put something before it,
-  // but that actually needs to be at the end.
+  // last, to NEXT. In this case, we need to fix the branch_ctds so that the corresponding branch
+  // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
+  // before it, but that actually needs to be at the end.
   bool rot_left = false;
   for (int i = 0; i < int(branches.size()); ++i) {
     const int branch = branches[i];

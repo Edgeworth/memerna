@@ -62,12 +62,11 @@ void ComputeTables2() {
         const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                                                outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
+                  outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
         // ((   )   ) Left flush coax
         for (auto cand : cand_st[CAND_P_FLUSH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                                                gem.stack[stb][st1b][gr[cand.idx]][enb] +
-                                                gdp[cand.idx + 1][en - 1][DP_U]);
+                  gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
           mins[DP_P] = std::min(
@@ -75,12 +74,11 @@ void ComputeTables2() {
         // (.   (   ).) Right outer coax
         for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                                                outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
+                  outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
         // (   (   )) Right flush coax
         for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                                                gem.stack[stb][gr[cand.idx]][en1b][enb] +
-                                                gdp[st + 1][cand.idx - 1][DP_U]);
+                  gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
 
         gdp[st][en][DP_P] = mins[DP_P];
       }
@@ -191,12 +189,12 @@ void ComputeTables2() {
         cand_st_mins[CAND_U] = dangle5_base;
       // .(   ). - Terminal mismatch - U, U2
       const auto terminal_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
-                                 gem.terminal[en1b][enb][stb][st1b];
+          gem.terminal[en1b][enb][stb][st1b];
       if (terminal_base < gdp[st][en][DP_U] && terminal_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = terminal_base;
       // .(   ).<(   ) > - Left coax - U, U2
       const auto lcoax_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
-                              gem.MismatchCoaxial(en1b, enb, stb, st1b);
+          gem.MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < CAP_E && lcoax_base < gdp[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
@@ -210,7 +208,7 @@ void ComputeTables2() {
       // itself.
       if (st > 0) {
         const auto rcoaxb_base = gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] +
-                                 gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb);
+            gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb);
         if (rcoaxb_base < gdp[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
           cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
         // Base case.
@@ -253,12 +251,12 @@ void ComputeTables2() {
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       const auto plrcoax_base = gdp[st + 2][en - 1][DP_P] + gpc.augubranch[st2b][en1b] +
-                                gem.MismatchCoaxial(en1b, enb, st1b, st2b);
+          gem.MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < CAP_E && plrcoax_base < gdp[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       const auto prlcoax_base = gdp[st + 1][en - 2][DP_P] + gpc.augubranch[st1b][en2b] +
-                                gem.MismatchCoaxial(en2b, en1b, stb, st1b);
+          gem.MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < CAP_E && prlcoax_base < gdp[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax

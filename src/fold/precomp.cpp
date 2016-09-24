@@ -44,8 +44,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   const auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
 
   // Non continuous (-2.1), -4 for WC, -16 for terminal mismatch.
-  pc.min_mismatch_coax =
-      em.coax_mismatch_non_contiguous +
+  pc.min_mismatch_coax = em.coax_mismatch_non_contiguous +
       std::min(std::min(em.coax_mismatch_gu_bonus, em.coax_mismatch_wc_bonus), 0) +
       MinEnergy(&em.terminal[0][0][0][0], sizeof(em.terminal));
   // Minimum of all stacking params.
@@ -72,7 +71,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
 
   energy_t states_bonus = -energy_t(round(10.0 * R * T * log(MaxNumContiguous(r))));
   energy_t min_bulge = min_bulge_init + std::min(2 * em.augu_penalty, 0) + min_stack +
-                       std::min(em.bulge_special_c, 0) + states_bonus;
+      std::min(em.bulge_special_c, 0) + states_bonus;
   pc.min_twoloop_not_stack = std::min(min_bulge, min_internal);
 
   pc.hairpin.resize(r.size());
@@ -115,17 +114,17 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   static_assert(
       TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
   energy_t energy = gem.internal_init[toplen + botlen] +
-                    std::min(std::abs(toplen - botlen) * gem.internal_asym, NINIO_MAX_ASYM);
+      std::min(std::abs(toplen - botlen) * gem.internal_asym, NINIO_MAX_ASYM);
 
   energy += gem.InternalLoopAuGuPenalty(gr[ost], gr[oen]);
   energy += gem.InternalLoopAuGuPenalty(gr[ist], gr[ien]);
 
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2))
     energy += gem.internal_2x3_mismatch[gr[ost]][gr[ost + 1]][gr[oen - 1]][gr[oen]] +
-              gem.internal_2x3_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
+        gem.internal_2x3_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
   else if (toplen != 1 && botlen != 1)
     energy += gem.internal_other_mismatch[gr[ost]][gr[ost + 1]][gr[oen - 1]][gr[oen]] +
-              gem.internal_other_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
+        gem.internal_other_mismatch[gr[ien]][gr[ien + 1]][gr[ist - 1]][gr[ist]];
 
   return energy;
 }

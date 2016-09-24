@@ -61,30 +61,28 @@ void ComputeTables0() {
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv][DP_P] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(st2b, plb) + gdp[piv + 1][en - 2][DP_U] +
-                                 outer_coax);
+                  gem.AuGuPenalty(st2b, plb) + gdp[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv][DP_U] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(prb, en2b) + gdp[piv + 1][en - 2][DP_P] +
-                                 outer_coax);
+                  gem.AuGuPenalty(prb, en2b) + gdp[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv - 1][DP_P] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(st2b, pl1b) + gdp[piv + 1][en - 1][DP_U] +
-                                 gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+                  gem.AuGuPenalty(st2b, pl1b) + gdp[piv + 1][en - 1][DP_U] +
+                  gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_U] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(pr1b, en2b) + gdp[piv + 2][en - 2][DP_P] +
-                                 gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
+                  gem.AuGuPenalty(pr1b, en2b) + gdp[piv + 2][en - 2][DP_P] +
+                  gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_P] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(st1b, plb) + gdp[piv + 1][en - 1][DP_U] +
-                                 gem.stack[stb][st1b][plb][enb]);
+                  gem.AuGuPenalty(st1b, plb) + gdp[piv + 1][en - 1][DP_U] +
+                  gem.stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_U] + gem.multiloop_hack_b +
-                                 gem.AuGuPenalty(prb, en1b) + gdp[piv + 1][en - 1][DP_P] +
-                                 gem.stack[stb][prb][en1b][enb]);
+                  gem.AuGuPenalty(prb, en1b) + gdp[piv + 1][en - 1][DP_P] +
+                  gem.stack[stb][prb][en1b][enb]);
         }
       }
 
@@ -130,7 +128,7 @@ void ComputeTables0() {
         UPDATE_CACHE(DP_U2, base11 + gem.terminal[pl1b][pb][stb][st1b] + gdp[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b) +
-              std::min(gdp[piv + 1][en][DP_U_WC], gdp[piv + 1][en][DP_U_GU]);
+            std::min(gdp[piv + 1][en][DP_U_WC], gdp[piv + 1][en][DP_U_GU]);
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
 

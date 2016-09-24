@@ -97,7 +97,7 @@ energy_t EnergyModel::Hairpin(
 energy_t EnergyModel::Bulge(
     const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
-         (oen - ien >= 2 || ist - ost >= 2));
+      (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
   energy_t energy = BulgeInitiation(length);
 
@@ -193,12 +193,12 @@ energy_t EnergyModel::InternalLoop(
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     const energy_t mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-                              internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
     const energy_t mismatch = internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
-                              internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
+        internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
   }
