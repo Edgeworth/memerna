@@ -5,7 +5,8 @@
 
 namespace memerna {
 
-template <typename T, unsigned int K> struct array3d_t {
+template <typename T, unsigned int K>
+struct array3d_t {
   typedef T ArrayType[K];
 
 public:
@@ -42,7 +43,8 @@ private:
   std::size_t size;
 };
 
-template <typename T, unsigned int K> struct array2d_t {
+template <typename T, unsigned int K>
+struct array2d_t {
 public:
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() { delete[] data; }

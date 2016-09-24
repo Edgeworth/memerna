@@ -109,7 +109,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
 
   // Declare the usual base aliases.
   const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
-             en2b = gr[en - 2];
+      en2b = gr[en - 2];
 
   // Normal stuff
   if (a == DP_P) {

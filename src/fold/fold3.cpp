@@ -22,7 +22,7 @@ void ComputeTables3() {
       cand_st[i].clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+          en1b = gr[en - 1], en2b = gr[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -37,12 +37,12 @@ void ComputeTables3() {
         auto val = std::min(l * gem.internal_asym, NINIO_MAX_ASYM) + gem.internal_init[l];
         lyngso[st][en][l] =
             std::min(lyngso[st][en][l], gem.InternalLoopAuGuPenalty(gr[st + l + 1], en1b) +
-                    gem.internal_other_mismatch[en1b][enb][gr[st + l]][gr[st + l + 1]] + val +
-                    gdp[st + l + 1][en - 1][DP_P]);
+                gem.internal_other_mismatch[en1b][enb][gr[st + l]][gr[st + l + 1]] + val +
+                gdp[st + l + 1][en - 1][DP_P]);
         lyngso[st][en][l] =
             std::min(lyngso[st][en][l], gem.InternalLoopAuGuPenalty(st1b, gr[en - l - 1]) +
-                    gem.internal_other_mismatch[gr[en - l - 1]][gr[en - l]][stb][st1b] + val +
-                    gdp[st + 1][en - l - 1][DP_P]);
+                gem.internal_other_mismatch[gr[en - l - 1]][gr[en - l]][stb][st1b] + val +
+                gdp[st + 1][en - l - 1][DP_P]);
       }
 
       // Update paired - only if can actually pair.
@@ -79,10 +79,10 @@ void ComputeTables3() {
             gem.internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + gdp[st + 2][en - 2][DP_P]);
         mins[DP_P] =
             std::min(mins[DP_P], gem.internal_1x2[stb][st1b][st2b][gr[en - 3]][en2b][en1b][enb] +
-                    gdp[st + 2][en - 3][DP_P]);
+                gdp[st + 2][en - 3][DP_P]);
         mins[DP_P] =
             std::min(mins[DP_P], gem.internal_1x2[en2b][en1b][enb][stb][st1b][st2b][gr[st + 3]] +
-                    gdp[st + 3][en - 2][DP_P]);
+                gdp[st + 3][en - 2][DP_P]);
         mins[DP_P] = std::min(
             mins[DP_P], gem.internal_2x2[stb][st1b][st2b][gr[st + 3]][gr[en - 3]][en2b][en1b][enb] +
                 gdp[st + 3][en - 3][DP_P]);
@@ -92,13 +92,13 @@ void ComputeTables3() {
             std::min(gem.internal_asym, NINIO_MAX_ASYM) +
             gem.internal_2x3_mismatch[stb][st1b][en1b][enb];
         mins[DP_P] = std::min(mins[DP_P], two_by_three +
-                gem.InternalLoopAuGuPenalty(gr[st + 3], gr[en - 4]) +
-                gem.internal_2x3_mismatch[gr[en - 4]][gr[en - 3]][st2b][gr[st + 3]] +
-                gdp[st + 3][en - 4][DP_P]);
+            gem.InternalLoopAuGuPenalty(gr[st + 3], gr[en - 4]) +
+            gem.internal_2x3_mismatch[gr[en - 4]][gr[en - 3]][st2b][gr[st + 3]] +
+            gdp[st + 3][en - 4][DP_P]);
         mins[DP_P] = std::min(mins[DP_P], two_by_three +
-                gem.InternalLoopAuGuPenalty(gr[st + 4], gr[en - 3]) +
-                gem.internal_2x3_mismatch[gr[en - 3]][gr[en - 2]][gr[st + 3]][gr[st + 4]] +
-                gdp[st + 4][en - 3][DP_P]);
+            gem.InternalLoopAuGuPenalty(gr[st + 4], gr[en - 3]) +
+            gem.internal_2x3_mismatch[gr[en - 3]][gr[en - 2]][gr[st + 3]][gr[st + 4]] +
+            gdp[st + 4][en - 3][DP_P]);
 
         // For the rest of the loops we need to apply the "other" type mismatches.
         base_internal_loop += gem.internal_other_mismatch[stb][st1b][en1b][enb];
@@ -106,7 +106,7 @@ void ComputeTables3() {
         // Lyngso for the rest.
         for (int l = 6; l <= max_inter; ++l)
           mins[DP_P] = std::min(mins[DP_P], lyngso[st + 2][en - 2][l - 4] -
-                  gem.internal_init[l - 4] + gem.internal_init[l] + base_internal_loop);
+              gem.internal_init[l - 4] + gem.internal_init[l] + base_internal_loop);
 
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en));
@@ -132,11 +132,11 @@ void ComputeTables3() {
         const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                  outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
+              outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
         // ((   )   ) Left flush coax
         for (auto cand : cand_st[CAND_P_FLUSH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                  gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
+              gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
 
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
@@ -145,11 +145,11 @@ void ComputeTables3() {
         // (.   (   ).) Right outer coax
         for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                  outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
+              outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
         // (   (   )) Right flush coax
         for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                  gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
+              gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
 
         gdp[st][en][DP_P] = mins[DP_P];
       }

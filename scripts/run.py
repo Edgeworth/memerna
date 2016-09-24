@@ -57,7 +57,8 @@ class RNAstructureDistribution:
         retval = num_lines // (len(rna.seq) + 1)
       else:
         output = out.read()
-        retval = [(0.0, i) for i in rnas_from_multi_ct_file(output)]  # TODO does not extract energy yet
+        retval = [(0.0, i) for i in
+                  rnas_from_multi_ct_file(output)]  # TODO does not extract energy yet
     return retval, res
 
   def close(self):

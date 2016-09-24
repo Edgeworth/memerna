@@ -13,8 +13,8 @@ namespace internal {
 
 inline bool ViableFoldingPair(int st, int en) {
   return CanPair(gr[st], gr[en]) &&
-         ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
-             (st > 0 && en < int(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
+      ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
+          (st > 0 && en < int(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
 }
 
 struct cand_t {
@@ -63,7 +63,8 @@ struct ctd_idx_t {
 }
 
 namespace std {
-template <> struct hash<memerna::fold::internal::index_t> {
+template <>
+struct hash<memerna::fold::internal::index_t> {
   size_t operator()(const memerna::fold::internal::index_t& o) const {
     size_t v = 0;
     v ^= hash<int16_t>()(o.st) + 0x9e3779b9 + (v << 6) + (v >> 2);

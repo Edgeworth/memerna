@@ -28,7 +28,8 @@ def parse_dangle_file(data):
       values = [parse_number(i.strip()) for i in lines[i + 4].split()]
       for m in range(4):
         for c in range(4):
-          outputs[output_idx] += '%s%s%s %d\n' % (ORDER[idx % 4], ORDER[c], ORDER[m], values[m * 4 + c])
+          outputs[output_idx] += '%s%s%s %d\n' % (
+          ORDER[idx % 4], ORDER[c], ORDER[m], values[m * 4 + c])
       idx += 1
   return outputs
 
@@ -64,7 +65,8 @@ def parse_1x1_internal_loop(data):
           for c in range(4):
             val = parse_number(matrix_lines[r][m * 4 + c])
             output += '%s%s%s%s%s%s %d\n' % (
-              t3prime[2 * m], ORDER[r], t3prime[2 * m + 1], t5prime[2 * m + 1], ORDER[c], t5prime[2 * m], val)
+              t3prime[2 * m], ORDER[r], t3prime[2 * m + 1], t5prime[2 * m + 1], ORDER[c],
+              t5prime[2 * m], val)
   return output
 
 
@@ -85,7 +87,8 @@ def parse_1x2_internal_loop(data):
           for c in range(4):
             val = parse_number(matrix_lines[r][m * 4 + c])
             output += '%s%s%s%s%s%s%s %d\n' % (
-              t3prime[2 * m], ORDER[r], t3prime[2 * m + 1], t5prime[2 * m + 1], extra[m], ORDER[c], t5prime[2 * m], val)
+              t3prime[2 * m], ORDER[r], t3prime[2 * m + 1], t5prime[2 * m + 1], extra[m], ORDER[c],
+              t5prime[2 * m], val)
   return output
 
 
@@ -147,9 +150,12 @@ def main():
   write_file('data/internal_initiation.data', internal)
   write_file('data/bulge_initiation.data', bulge)
   write_file('data/hairpin_initiation.data', hairpin)
-  write_file('data/internal_1x1.data', parse_1x1_internal_loop(read_file('extern/orig_data/int11.txt')))
-  write_file('data/internal_1x2.data', parse_1x2_internal_loop(read_file('extern/orig_data/int21.txt')))
-  write_file('data/internal_2x2.data', parse_2x2_internal_loop(read_file('extern/orig_data/int22.txt')))
+  write_file('data/internal_1x1.data',
+             parse_1x1_internal_loop(read_file('extern/orig_data/int11.txt')))
+  write_file('data/internal_1x2.data',
+             parse_1x2_internal_loop(read_file('extern/orig_data/int21.txt')))
+  write_file('data/internal_2x2.data',
+             parse_2x2_internal_loop(read_file('extern/orig_data/int22.txt')))
 
   dangle3, dangle5 = parse_dangle_file(read_file('extern/orig_data/dangle.txt'))
   write_file('data/dangle3.data', dangle3)

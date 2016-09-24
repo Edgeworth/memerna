@@ -11,11 +11,11 @@ enum : int8_t {
   DP_U,     // For the unpaired array.
   DP_U2,    // Contains at least two branches.
   DP_U_WC,  // Unpaired but must start with a branch not involved in a CTD interaction that is not
-            // GU.
-  DP_U_GU,  // Unpaired but must start with a branch not involved in a CTD interaction that is GU.
+  // GU.
+      DP_U_GU,  // Unpaired but must start with a branch not involved in a CTD interaction that is GU.
   DP_U_RCOAX,  // Unpaired but must start with a branch involved in a right coaxial stack - includes
-               // energy for it.
-  DP_SIZE
+  // energy for it.
+      DP_SIZE
 };
 
 enum : int8_t {
@@ -23,8 +23,8 @@ enum : int8_t {
   EXT_WC,     // Must start with a branch not involved in an interaction that is Watson-Crick
   EXT_GU,     // Must start with a branch not involved in an interaction that is GU
   EXT_RCOAX,  // Must start with a branch, that branch is involved backwards in a right coaxial
-              // stack.
-  EXT_SIZE
+  // stack.
+      EXT_SIZE
 };
 
 // Split candidates up into several lists.
@@ -46,7 +46,9 @@ enum : int8_t {
   CAND_SIZE
 };
 
-enum : int8_t { CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SIZE };
+enum : int8_t {
+  CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SIZE
+};
 }
 }
 }

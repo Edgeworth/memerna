@@ -13,8 +13,8 @@ struct ctd_test_t {
 };
 
 std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&) -> ctd_test_t {
-                                                               return {{}, {}, {}};
-                                                             },
+  return {{}, {}, {}};
+},
     [](const EnergyModel&) -> ctd_test_t {
       return {{parsing::ParseDotBracketSecondary("A", "."), {CTD_NA}, 0}, {}, {}};
     },
@@ -33,19 +33,19 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     // 3' dangle inside the branch.
     [](const EnergyModel& em) -> ctd_test_t {
       return {{parsing::ParseDotBracketSecondary("GAAAC", "(...)"),
-                  {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, 0},
+          {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, 0},
           {{CTD_3_DANGLE, em.dangle3[G][A][C]}}, {4}};
     },
     [](const EnergyModel&) -> ctd_test_t {
       return {{parsing::ParseDotBracketSecondary(
-                   "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
-                  std::vector<Ctd>(26, CTD_NA), 0},
+          "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+          std::vector<Ctd>(26, CTD_NA), 0},
           {}, {}};
     },
     [](const EnergyModel& em) -> ctd_test_t {
       return {
           {parsing::ParseDotBracketSecondary(
-               "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+              "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
                   CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                   CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -57,7 +57,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     [](const EnergyModel& em) -> ctd_test_t {
       return {
           {parsing::ParseDotBracketSecondary(
-               "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+              "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
                   CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                   CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -68,21 +68,21 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     },
     [](const EnergyModel& em) -> ctd_test_t {
       return {{parsing::ParseDotBracketSecondary("GGAAACGAAACC", "((...)(...))"),
-                  {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
-                      CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
-                  0},
+          {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
+              CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
+          0},
           {{CTD_UNUSED, 0}, {CTD_FCOAX_WITH_NEXT, em.stack[G][G][C][C]},
               {CTD_FCOAX_WITH_PREV, em.stack[G][G][C][C]}},
           {1, 6, 11}};
     },
     [](const EnergyModel& em) -> ctd_test_t {
       return {{parsing::ParseDotBracketSecondary(
-                   "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"),
-                  {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_FCOAX_WITH_PREV},
-                  0},
+          "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"),
+          {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_FCOAX_WITH_PREV},
+          0},
           {{CTD_FCOAX_WITH_PREV, em.stack[U][C][G][A]},
               {CTD_LCOAX_WITH_NEXT, em.MismatchCoaxial(C, G, A, G)},
               {CTD_LCOAX_WITH_PREV, em.MismatchCoaxial(C, G, A, G)},
@@ -91,7 +91,8 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     }};
 
 class CtdsTest : public testing::TestWithParam<
-                     std::tuple<EnergyModelPtr, std::function<ctd_test_t(const EnergyModel&)>>> {};
+    std::tuple<EnergyModelPtr, std::function<ctd_test_t(const EnergyModel&)>>> {
+};
 
 TEST_P(CtdsTest, BaseBranchBase) {
   const auto& em = *std::get<0>(GetParam());

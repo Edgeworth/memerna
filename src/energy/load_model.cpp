@@ -10,7 +10,7 @@ const energy_t RAND_MAX_ENERGY = 1000;
 const int RAND_MAX_HAIRPIN_SZ = 8;
 const int RAND_MAX_NUM_HAIRPIN = 50;
 
-void Parse2x2FromFile(const std::string& filename, energy_t (&output)[4][4][4][4]) {
+void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
@@ -37,7 +37,7 @@ void ParseMapFromFile(
 }
 
 void ParseInitiationEnergyFromFile(
-    const std::string& filename, energy_t (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
+    const std::string& filename, energy_t (& output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   energy_t energy;
@@ -105,7 +105,7 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
   fclose(fp);
 }
 
-void ParseDangleDataFromFile(const std::string& filename, energy_t (&output)[4][4][4]) {
+void ParseDangleDataFromFile(const std::string& filename, energy_t (& output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {

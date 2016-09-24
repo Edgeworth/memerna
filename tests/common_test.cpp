@@ -9,7 +9,7 @@ std::vector<energy::EnergyModelPtr> g_ems;
 
 std::ostream& operator<<(std::ostream& os, const secondary_t& s) {
   return os << "(" << parsing::PrimaryToString(s.r) << ", " << parsing::PairsToDotBracket(s.p)
-            << ")";
+      << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const computed_t& computed) {
