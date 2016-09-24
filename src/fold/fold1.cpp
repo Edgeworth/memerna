@@ -53,30 +53,28 @@ void ComputeTables1() {
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
           p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv][DP_P] +
-                                      gpc.augubranch[st2b][plb] + gdp[piv + 1][en - 2][DP_U] +
-                                      outer_coax);
+                  gpc.augubranch[st2b][plb] + gdp[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv][DP_U] +
-                                      gpc.augubranch[prb][en2b] + gdp[piv + 1][en - 2][DP_P] +
-                                      outer_coax);
+                  gpc.augubranch[prb][en2b] + gdp[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv - 1][DP_P] +
-                                      gpc.augubranch[st2b][pl1b] + gdp[piv + 1][en - 1][DP_U] +
-                                      gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+                  gpc.augubranch[st2b][pl1b] + gdp[piv + 1][en - 1][DP_U] +
+                  gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_U] +
-                                      gpc.augubranch[pr1b][en2b] + gdp[piv + 2][en - 2][DP_P] +
-                                      gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
+                  gpc.augubranch[pr1b][en2b] + gdp[piv + 2][en - 2][DP_P] +
+                  gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_P] +
-                                      gpc.augubranch[st1b][plb] + gdp[piv + 1][en - 1][DP_U] +
-                                      gem.stack[stb][st1b][plb][enb]);
+                  gpc.augubranch[st1b][plb] + gdp[piv + 1][en - 1][DP_U] +
+                  gem.stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_U] +
-                                      gpc.augubranch[prb][en1b] + gdp[piv + 1][en - 1][DP_P] +
-                                      gem.stack[stb][prb][en1b][enb]);
+                  gpc.augubranch[prb][en1b] + gdp[piv + 1][en - 1][DP_P] +
+                  gem.stack[stb][prb][en1b][enb]);
         }
 
         gdp[st][en][DP_P] = p_min;
@@ -121,7 +119,7 @@ void ComputeTables1() {
             std::min(u2_min, base11 + gem.terminal[pl1b][pb][stb][st1b] + gdp[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
         val = base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b) +
-              std::min(gdp[piv + 1][en][DP_U_WC], gdp[piv + 1][en][DP_U_GU]);
+            std::min(gdp[piv + 1][en][DP_U_WC], gdp[piv + 1][en][DP_U_GU]);
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
 

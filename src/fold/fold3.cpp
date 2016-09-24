@@ -35,14 +35,14 @@ void ComputeTables3() {
 
         // Add asymmetry here, on left and right
         auto val = std::min(l * gem.internal_asym, NINIO_MAX_ASYM) + gem.internal_init[l];
-        lyngso[st][en][l] = std::min(lyngso[st][en][l],
-            gem.InternalLoopAuGuPenalty(gr[st + l + 1], en1b) +
-                gem.internal_other_mismatch[en1b][enb][gr[st + l]][gr[st + l + 1]] + val +
-                gdp[st + l + 1][en - 1][DP_P]);
-        lyngso[st][en][l] = std::min(lyngso[st][en][l],
-            gem.InternalLoopAuGuPenalty(st1b, gr[en - l - 1]) +
-                gem.internal_other_mismatch[gr[en - l - 1]][gr[en - l]][stb][st1b] + val +
-                gdp[st + 1][en - l - 1][DP_P]);
+        lyngso[st][en][l] =
+            std::min(lyngso[st][en][l], gem.InternalLoopAuGuPenalty(gr[st + l + 1], en1b) +
+                    gem.internal_other_mismatch[en1b][enb][gr[st + l]][gr[st + l + 1]] + val +
+                    gdp[st + l + 1][en - 1][DP_P]);
+        lyngso[st][en][l] =
+            std::min(lyngso[st][en][l], gem.InternalLoopAuGuPenalty(st1b, gr[en - l - 1]) +
+                    gem.internal_other_mismatch[gr[en - l - 1]][gr[en - l]][stb][st1b] + val +
+                    gdp[st + 1][en - l - 1][DP_P]);
       }
 
       // Update paired - only if can actually pair.
@@ -65,7 +65,7 @@ void ComputeTables3() {
         auto base_internal_loop = gem.InternalLoopAuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {
           auto val = base_internal_loop + gem.internal_init[isz] +
-                     std::min((isz - 2) * gem.internal_asym, NINIO_MAX_ASYM);
+              std::min((isz - 2) * gem.internal_asym, NINIO_MAX_ASYM);
           mins[DP_P] = std::min(mins[DP_P],
               val + gem.InternalLoopAuGuPenalty(gr[st + isz], en2b) + gdp[st + isz][en - 2][DP_P]);
           mins[DP_P] = std::min(mins[DP_P],
@@ -79,24 +79,24 @@ void ComputeTables3() {
             gem.internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + gdp[st + 2][en - 2][DP_P]);
         mins[DP_P] =
             std::min(mins[DP_P], gem.internal_1x2[stb][st1b][st2b][gr[en - 3]][en2b][en1b][enb] +
-                                     gdp[st + 2][en - 3][DP_P]);
+                    gdp[st + 2][en - 3][DP_P]);
         mins[DP_P] =
             std::min(mins[DP_P], gem.internal_1x2[en2b][en1b][enb][stb][st1b][st2b][gr[st + 3]] +
-                                     gdp[st + 3][en - 2][DP_P]);
+                    gdp[st + 3][en - 2][DP_P]);
         mins[DP_P] = std::min(
             mins[DP_P], gem.internal_2x2[stb][st1b][st2b][gr[st + 3]][gr[en - 3]][en2b][en1b][enb] +
-                            gdp[st + 3][en - 3][DP_P]);
+                gdp[st + 3][en - 3][DP_P]);
 
         // 2x3 and 3x2 loops
         const auto two_by_three = base_internal_loop + gem.internal_init[5] +
-                                  std::min(gem.internal_asym, NINIO_MAX_ASYM) +
-                                  gem.internal_2x3_mismatch[stb][st1b][en1b][enb];
-        mins[DP_P] = std::min(
-            mins[DP_P], two_by_three + gem.InternalLoopAuGuPenalty(gr[st + 3], gr[en - 4]) +
-                            gem.internal_2x3_mismatch[gr[en - 4]][gr[en - 3]][st2b][gr[st + 3]] +
-                            gdp[st + 3][en - 4][DP_P]);
-        mins[DP_P] = std::min(mins[DP_P],
-            two_by_three + gem.InternalLoopAuGuPenalty(gr[st + 4], gr[en - 3]) +
+            std::min(gem.internal_asym, NINIO_MAX_ASYM) +
+            gem.internal_2x3_mismatch[stb][st1b][en1b][enb];
+        mins[DP_P] = std::min(mins[DP_P], two_by_three +
+                gem.InternalLoopAuGuPenalty(gr[st + 3], gr[en - 4]) +
+                gem.internal_2x3_mismatch[gr[en - 4]][gr[en - 3]][st2b][gr[st + 3]] +
+                gdp[st + 3][en - 4][DP_P]);
+        mins[DP_P] = std::min(mins[DP_P], two_by_three +
+                gem.InternalLoopAuGuPenalty(gr[st + 4], gr[en - 3]) +
                 gem.internal_2x3_mismatch[gr[en - 3]][gr[en - 2]][gr[st + 3]][gr[st + 4]] +
                 gdp[st + 4][en - 3][DP_P]);
 
@@ -105,9 +105,8 @@ void ComputeTables3() {
 
         // Lyngso for the rest.
         for (int l = 6; l <= max_inter; ++l)
-          mins[DP_P] =
-              std::min(mins[DP_P], lyngso[st + 2][en - 2][l - 4] - gem.internal_init[l - 4] +
-                                       gem.internal_init[l] + base_internal_loop);
+          mins[DP_P] = std::min(mins[DP_P], lyngso[st + 2][en - 2][l - 4] -
+                  gem.internal_init[l - 4] + gem.internal_init[l] + base_internal_loop);
 
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], FastHairpin(st, en));
@@ -133,12 +132,11 @@ void ComputeTables3() {
         const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                                                outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
+                  outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
         // ((   )   ) Left flush coax
         for (auto cand : cand_st[CAND_P_FLUSH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                                                gem.stack[stb][st1b][gr[cand.idx]][enb] +
-                                                gdp[cand.idx + 1][en - 1][DP_U]);
+                  gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
 
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
@@ -147,12 +145,11 @@ void ComputeTables3() {
         // (.   (   ).) Right outer coax
         for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                                                outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
+                  outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
         // (   (   )) Right flush coax
         for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                                                gem.stack[stb][gr[cand.idx]][en1b][enb] +
-                                                gdp[st + 1][cand.idx - 1][DP_U]);
+                  gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
 
         gdp[st][en][DP_P] = mins[DP_P];
       }
@@ -241,12 +238,12 @@ void ComputeTables3() {
         cand_st_mins[CAND_U] = dangle5_base;
       // .(   ). - Terminal mismatch - U, U2
       const auto terminal_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
-                                 gem.terminal[en1b][enb][stb][st1b];
+          gem.terminal[en1b][enb][stb][st1b];
       if (terminal_base < gdp[st][en][DP_U] && terminal_base < cand_st_mins[CAND_U])
         cand_st_mins[CAND_U] = terminal_base;
       // .(   ).<(   ) > - Left coax - U, U2
       const auto lcoax_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
-                              gem.MismatchCoaxial(en1b, enb, stb, st1b);
+          gem.MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < gdp[st][en][DP_U]) cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
       // (   ).<(   ). > Right coax forward - U, U2
       const auto rcoaxf_base =
@@ -256,7 +253,7 @@ void ComputeTables3() {
       // (   ).<( * ). > Right coax backward - RCOAX
       if (st > 0) {
         const auto rcoaxb_base = gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] +
-                                 gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb);
+            gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb);
         if (rcoaxb_base < gdp[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
           cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
         // Base case.
@@ -296,12 +293,12 @@ void ComputeTables3() {
         p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st});
       // (.(   ).   ) Left right coax
       const auto plrcoax_base = gdp[st + 2][en - 1][DP_P] + gpc.augubranch[st2b][en1b] +
-                                gem.MismatchCoaxial(en1b, enb, st1b, st2b);
+          gem.MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < gdp[st + 1][en][DP_U])
         cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en});
       // (   .(   ).) Right left coax
       const auto prlcoax_base = gdp[st + 1][en - 2][DP_P] + gpc.augubranch[st1b][en2b] +
-                                gem.MismatchCoaxial(en2b, en1b, stb, st1b);
+          gem.MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < gdp[st][en - 1][DP_U])
         p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st});
       // ((   )   ) Left flush coax

@@ -122,8 +122,7 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, 
   }
 
   // We're in the exterior loop if we were called with the entire RNA and there's no match on the
-  // very ends that takes
-  // us out of the exterior loop.
+  // very ends that takes us out of the exterior loop.
   const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.

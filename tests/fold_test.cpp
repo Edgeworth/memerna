@@ -7,130 +7,52 @@
 namespace memerna {
 namespace fold {
 
-class FoldAlgTest : public testing::TestWithParam<fold::context_options_t::TableAlg> {};
+class FoldAlgTest : public testing::TestWithParam<fold::context_options_t::TableAlg> {
+public:
+  energy_t FoldEnergy(const std::string& s) {
+    return Context(parsing::StringToPrimary(s), g_em, fold::context_options_t(GetParam()))
+        .Fold()
+        .energy;
+  }
+};
 
 TEST_P(FoldAlgTest, T04) {
-  fold::context_options_t options(GetParam());
   ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
+  EXPECT_EQ(-45, FoldEnergy("GGGGAAACCCC"));
+  EXPECT_EQ(-51, FoldEnergy("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   EXPECT_EQ(
-      -45, fold::Context(parsing::StringToPrimary("GGGGAAACCCC"), g_em, options).Fold().energy);
-  EXPECT_EQ(-51, fold::Context(parsing::StringToPrimary(
-                                   "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"),
-                     g_em, options)
-                     .Fold()
-                     .energy);
-  EXPECT_EQ(-133,
-      fold::Context(parsing::StringToPrimary(
-                        "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"),
-          g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-57,
-      fold::Context(parsing::StringToPrimary("AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC"), g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(
-      -121, fold::Context(parsing::StringToPrimary("ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG"),
-                g_em, options)
-                .Fold()
-                .energy);
-  EXPECT_EQ(-74, fold::Context(parsing::StringToPrimary("CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG"),
-                     g_em, options)
-                     .Fold()
-                     .energy);
-  EXPECT_EQ(
-      -32, fold::Context(parsing::StringToPrimary("CCCAACGGAGUAACUUAGCGAAUAGCAGGGG"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(-40,
-      fold::Context(parsing::StringToPrimary("CCGAAGGGGCUGCGGCG"), g_em, options).Fold().energy);
-  EXPECT_EQ(
-      -120, fold::Context(parsing::StringToPrimary("CCGGGCCAGCCCGCUCCUACGGGGGGUC"), g_em, options)
-                .Fold()
-                .energy);
-  EXPECT_EQ(-74,
-      fold::Context(parsing::StringToPrimary("CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG"), g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-6, fold::Context(parsing::StringToPrimary("CCUCCGGG"), g_em, options).Fold().energy);
-  EXPECT_EQ(
-      -30, fold::Context(parsing::StringToPrimary("CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(
-      -65, fold::Context(parsing::StringToPrimary("CGCAGGGUCGGACCCGGGAGAACCGCGA"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(-60,
-      fold::Context(parsing::StringToPrimary("CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA"), g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-6, fold::Context(parsing::StringToPrimary("CGGAAACGG"), g_em, options).Fold().energy);
-  EXPECT_EQ(-22, fold::Context(parsing::StringToPrimary("CUGAAACUGGAAACAGAAAUG"), g_em, options)
-                     .Fold()
-                     .energy);
-  EXPECT_EQ(
-      -12, fold::Context(parsing::StringToPrimary("CUUAUAGUUAAGG"), g_em, options).Fold().energy);
-  EXPECT_EQ(
-      -122, fold::Context(parsing::StringToPrimary(
-                              "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC"),
-                g_em, options)
-                .Fold()
-                .energy);
-  EXPECT_EQ(-29,
-      fold::Context(parsing::StringToPrimary("GCCAAGGCCCCACCCGGA"), g_em, options).Fold().energy);
-  EXPECT_EQ(-39,
-      fold::Context(parsing::StringToPrimary("GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC"),
-          g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-67,
-      fold::Context(parsing::StringToPrimary("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC"), g_em, options)
-          .Fold()
-          .energy);
+      -133, FoldEnergy("AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
+  EXPECT_EQ(-57, FoldEnergy("AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC"));
+  EXPECT_EQ(-121, FoldEnergy("ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG"));
+  EXPECT_EQ(-74, FoldEnergy("CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG"));
+  EXPECT_EQ(-32, FoldEnergy("CCCAACGGAGUAACUUAGCGAAUAGCAGGGG"));
+  EXPECT_EQ(-40, FoldEnergy("CCGAAGGGGCUGCGGCG"));
+  EXPECT_EQ(-120, FoldEnergy("CCGGGCCAGCCCGCUCCUACGGGGGGUC"));
+  EXPECT_EQ(-74, FoldEnergy("CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG"));
+  EXPECT_EQ(-6, FoldEnergy("CCUCCGGG"));
+  EXPECT_EQ(-30, FoldEnergy("CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC"));
+  EXPECT_EQ(-65, FoldEnergy("CGCAGGGUCGGACCCGGGAGAACCGCGA"));
+  EXPECT_EQ(-60, FoldEnergy("CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA"));
+  EXPECT_EQ(-6, FoldEnergy("CGGAAACGG"));
+  EXPECT_EQ(-22, FoldEnergy("CUGAAACUGGAAACAGAAAUG"));
+  EXPECT_EQ(-12, FoldEnergy("CUUAUAGUUAAGG"));
+  EXPECT_EQ(-122, FoldEnergy("GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC"));
+  EXPECT_EQ(-29, FoldEnergy("GCCAAGGCCCCACCCGGA"));
+  EXPECT_EQ(-39, FoldEnergy("GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC"));
+  EXPECT_EQ(-67, FoldEnergy("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC"));
   EXPECT_EQ(-276,
-      fold::Context(
-          parsing::StringToPrimary(
-              "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA"),
-          g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(
-      -53, fold::Context(parsing::StringToPrimary("GCGCCCCAGUCGACGCUGAGCUCCUCUGCU"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(-157,
-      fold::Context(parsing::StringToPrimary("GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG"),
-          g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-49,
-      fold::Context(parsing::StringToPrimary("GGCCGAUGGCAGCGAUAGC"), g_em, options).Fold().energy);
-  EXPECT_EQ(
-      -44, fold::Context(parsing::StringToPrimary("GGCGCACGCGUUAGCCGGGGAUCCACAGUGC"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(
-      -45, fold::Context(parsing::StringToPrimary("GGGGAAACCCC"), g_em, options).Fold().energy);
-  EXPECT_EQ(-29,
-      fold::Context(parsing::StringToPrimary("GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG"), g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(
-      -23, fold::Context(parsing::StringToPrimary("UACCCUGUUCAGCAUUGGAAAUUUCCUGGG"), g_em, options)
-               .Fold()
-               .energy);
-  EXPECT_EQ(-80,
-      fold::Context(parsing::StringToPrimary("UCCACGGCUCGACGGCGCACUUAGUGCGUGGG"), g_em, options)
-          .Fold()
-          .energy);
-  EXPECT_EQ(-4, fold::Context(parsing::StringToPrimary("UGCAAAGCAA"), g_em, options).Fold().energy);
-  EXPECT_EQ(-208, fold::Context(parsing::StringToPrimary(
-                                    "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"),
-                      g_em, options)
-                      .Fold()
-                      .energy);
+      FoldEnergy("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA"));
+  EXPECT_EQ(-53, FoldEnergy("GCGCCCCAGUCGACGCUGAGCUCCUCUGCU"));
+  EXPECT_EQ(-157, FoldEnergy("GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG"));
+  EXPECT_EQ(-49, FoldEnergy("GGCCGAUGGCAGCGAUAGC"));
+  EXPECT_EQ(-44, FoldEnergy("GGCGCACGCGUUAGCCGGGGAUCCACAGUGC"));
+  EXPECT_EQ(-45, FoldEnergy("GGGGAAACCCC"));
+  EXPECT_EQ(-29, FoldEnergy("GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG"));
+  EXPECT_EQ(-23, FoldEnergy("UACCCUGUUCAGCAUUGGAAAUUUCCUGGG"));
+  EXPECT_EQ(-80, FoldEnergy("UCCACGGCUCGACGGCGCACUUAGUGCGUGGG"));
+  EXPECT_EQ(-4, FoldEnergy("UGCAAAGCAA"));
+  EXPECT_EQ(-208, FoldEnergy("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 }
 
 INSTANTIATE_TEST_CASE_P(

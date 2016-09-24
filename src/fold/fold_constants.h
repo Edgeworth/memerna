@@ -29,10 +29,8 @@ enum : int8_t {
 
 // Split candidates up into several lists.
 // In general, for each array we need a new candidate list (except for U and U2 which mirror each
-// other very
-// closely). We also need another candidate list for forward RCOAX since we can't use its energy
-// value directly, not
-// knowing it. Same with flush coaxial stacks.
+// other very closely). We also need another candidate list for forward RCOAX since we can't use
+// its energy value directly, not knowing it. Same with flush coaxial stacks.
 enum : int8_t {
   CAND_P_MISMATCH,  // No monotonicity.
   CAND_P_OUTER,     // No monotonicity.

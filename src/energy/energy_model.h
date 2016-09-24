@@ -92,10 +92,9 @@ public:
   }
 
   // We use the normal terminal mismatch parameters for the mismatch that is on the continuous part
-  // of the
-  // RNA. The stacking for the non-continuous part is set to be an arbitrary given number. There are
-  // two possible
-  // orientations, since the base involved in the terminal mismatch could come from either side.
+  // of the RNA. The stacking for the non-continuous part is set to be an arbitrary given number.
+  // There are two possible orientations, since the base involved in the terminal mismatch could
+  // come from either side.
   // ... _ _ _ _ ...
   // ...|_|  _|_|...
   //      | |

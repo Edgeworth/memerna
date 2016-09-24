@@ -18,10 +18,8 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 // At the index of the right side of a branch, we store the CTD identifier
 // for this branch for when it is an outer loop (i.e. closing a multiloop).
 // At the index of the left side, we store the CTD identifier for this branch for when it is inside
-// a multiloop.
-// This is because in this situation ((...).(...))(...), the first loop can coaxially stack twice,
-// one when it is
-// an outer loop, and the other with the loop on the far right.
+// a multiloop. This is because in this situation ((...).(...))(...), the first loop can coaxially
+// stack twice, one when it is an outer loop, and the other with the loop on the far right.
 
 // List representation:
 // By convention, if there is an outer loop, it comes first (not last), but it does not matter to

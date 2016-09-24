@@ -146,42 +146,42 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
       // (.(   )   .) Left outer coax - P
       auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
       energy = base_and_branch + gdp[st + 2][piv][DP_P] + gpc.augubranch[st2b][plb] +
-               gdp[piv + 1][en - 2][DP_U] + outer_coax;
+          gdp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},
             {st + 2, CTD_LCOAX_WITH_PREV}, {en, CTD_LCOAX_WITH_NEXT}});
 
       // (.   (   ).) Right outer coax
       energy = base_and_branch + gdp[st + 2][piv][DP_U] + gpc.augubranch[prb][en2b] +
-               gdp[piv + 1][en - 2][DP_P] + outer_coax;
+          gdp[piv + 1][en - 2][DP_P] + outer_coax;
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P},
             {piv + 1, CTD_RCOAX_WITH_NEXT}, {en, CTD_RCOAX_WITH_PREV}});
 
       // (.(   ).   ) Left right coax
       energy = base_and_branch + gdp[st + 2][piv - 1][DP_P] + gpc.augubranch[st2b][pl1b] +
-               gdp[piv + 1][en - 1][DP_U] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b);
+          gdp[piv + 1][en - 1][DP_U] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b);
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT}});
 
       // (   .(   ).) Right left coax
       energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[pr1b][en2b] +
-               gdp[piv + 2][en - 2][DP_P] + gem.MismatchCoaxial(en2b, en1b, prb, pr1b);
+          gdp[piv + 2][en - 2][DP_P] + gem.MismatchCoaxial(en2b, en1b, prb, pr1b);
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P},
             {piv + 2, CTD_LCOAX_WITH_NEXT}, {en, CTD_LCOAX_WITH_PREV}});
 
       // ((   )   ) Left flush coax
       energy = base_and_branch + gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][plb] +
-               gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb];
+          gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 1, CTD_FCOAX_WITH_PREV}, {en, CTD_FCOAX_WITH_NEXT}});
 
       // (   (   )) Right flush coax
       energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[prb][en1b] +
-               gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb];
+          gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 1, en - 1, DP_P},
             {piv + 1, CTD_FCOAX_WITH_NEXT}, {en, CTD_FCOAX_WITH_PREV}});
