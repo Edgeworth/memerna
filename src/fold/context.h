@@ -51,7 +51,10 @@ public:
   Context& operator=(Context&&) = delete;
 
   computed_t Fold();
-  std::vector<computed_t> Suboptimal(energy_t subopt_delta = -1, int subopt_num = -1);
+  std::vector<computed_t> SuboptimalSorted(energy_t subopt_delta = -1, int subopt_num = -1);
+  bool IsSuboptimalSorted(energy_t subopt_delta, int subopt_num);
+  void Suboptimal(std::function<void(const computed_t&)> fn,
+      energy_t subopt_delta = -1, int subopt_num = -1);
 
 private:
   const primary_t r;

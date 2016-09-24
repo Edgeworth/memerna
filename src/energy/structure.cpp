@@ -58,8 +58,8 @@ std::string HairpinLoopStructure::ShortDesc() const {
 }
 
 std::string InternalLoopStructure::ShortDesc() const {
-  return sfmt("InternalLoop(%d, %d, %d, %d) - %de:%de", ost, oen, ist, ien, GetTotalEnergy(),
-      GetSelfEnergy());
+  return sfmt("InternalLoop(%d, %d, %d, %d) - %de:%de",
+      ost, oen, ist, ien, GetTotalEnergy(), GetSelfEnergy());
 }
 
 std::string MultiLoopStructure::ShortDesc() const {

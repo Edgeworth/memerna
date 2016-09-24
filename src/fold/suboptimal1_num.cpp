@@ -44,7 +44,7 @@ void Suboptimal1Num::GcNode(int node_idx) {
   }
 }
 
-std::vector<computed_t> Suboptimal1Num::Run() {
+void Suboptimal1Num::Run(std::function<void(const computed_t&)> fn) {
   InsertQ({{0, {0, -1, EXT}}});
   while (!q.empty()) {
     int node_idx = *q.begin();
@@ -81,8 +81,11 @@ std::vector<computed_t> Suboptimal1Num::Run() {
     }
   }
 
-  // Should be already sorted.
-  return ConstructComputedsFromNodes();
+  // Should be already sorted
+  // TODO depends on stuff but at least put this fn call inside construct
+  // TODO computeds and don't use so much memory
+  for (const auto& computed : ConstructComputedsFromNodes())
+    fn(computed);
 }
 }
 }

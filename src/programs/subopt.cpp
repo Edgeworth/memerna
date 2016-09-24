@@ -5,12 +5,17 @@
 
 using namespace memerna;
 
+
+
 int main(int argc, char* argv[]) {
   ArgParse argparse(energy::ENERGY_OPTIONS);
   argparse.AddOptions(fold::FOLD_OPTIONS);
-  argparse.AddOptions({{"delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
+  argparse.AddOptions({
+      {"delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
       {"num", ArgParse::option_t("maximum number of reported structures").Arg("-1")},
-      {"q", ArgParse::option_t("quiet")}});
+      {"q", ArgParse::option_t("quiet")},
+      {"sorted", ArgParse::option_t("if the structures should be sorted")}
+  });
   argparse.ParseOrExit(argc, argv);
   const auto pos = argparse.GetPositional();
   verify_expr(pos.size() == 1, "need primary sequence to fold");
@@ -20,16 +25,26 @@ int main(int argc, char* argv[]) {
   fold::Context ctx(
       parsing::StringToPrimary(pos.front()), energy::LoadEnergyModelFromArgParse(argparse), opt);
 
-  energy_t subopt_delta = atoi(argparse.GetOption("delta").c_str());
-  int subopt_num = atoi(argparse.GetOption("num").c_str());
+  const energy_t subopt_delta = atoi(argparse.GetOption("delta").c_str());
+  const int subopt_num = atoi(argparse.GetOption("num").c_str());
+  const bool should_print = !argparse.HasFlag("q");
+  const bool sorted = argparse.HasFlag("sorted");
   verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
-  const auto structures = ctx.Suboptimal(subopt_delta, subopt_num);
-  if (argparse.HasFlag("q")) {
-    printf("%zu suboptimal structures\n", structures.size());
-  } else {
-    printf("%zu suboptimal structures:\n", structures.size());
-    for (const auto& subopt : structures) {
-      printf("%d %s\n", subopt.energy, parsing::ComputedToCtdString(subopt).c_str());
+
+  int num_structures = 0;
+  if (sorted && !ctx.IsSuboptimalSorted(subopt_delta, subopt_num)) {
+    const auto computeds = ctx.SuboptimalSorted(subopt_delta, subopt_num);
+    num_structures = int(computeds.size());
+    if (should_print) {
+      for (const auto& c : computeds)
+        printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
     }
+  } else {
+    ctx.Suboptimal([&num_structures, should_print](const computed_t& c) {
+      ++num_structures;
+      if (should_print)
+        printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
+    }, subopt_delta, subopt_num);
   }
+  printf("%d suboptimal structures\n", num_structures);
 }

@@ -9,7 +9,6 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-// TODO try to make this smaller?
 struct expand_t {
   expand_t() = delete;
   expand_t(energy_t energy_) : energy(energy_) {}

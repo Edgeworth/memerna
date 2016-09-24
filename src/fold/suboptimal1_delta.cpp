@@ -4,7 +4,7 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-std::vector<computed_t> Suboptimal1Delta::Run() {
+void Suboptimal1Delta::Run(std::function<void(const computed_t&)> fn) {
   nodes.push_back({{0, {0, -1, EXT}}});
   q.push_back(0);
   while (!q.empty()) {
@@ -39,9 +39,8 @@ std::vector<computed_t> Suboptimal1Delta::Run() {
     }
   }
 
-  auto computeds = ConstructComputedsFromNodes();
-  std::sort(computeds.begin(), computeds.end(), computed_energy_comparator_t());
-  return computeds;
+  for (const auto& c : ConstructComputedsFromNodes())
+    fn(c);
 }
 }
 }

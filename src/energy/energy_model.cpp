@@ -166,8 +166,8 @@ energy_t EnergyModel::InternalLoop(
   if (toplen == 2 && botlen == 1)
     return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
-    [r[oen]];
+    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]]
+        [r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
 
   energy_t energy = InternalLoopInitiation(toplen + botlen);
   if (s) (*s)->AddNote("%de - initiation", energy);

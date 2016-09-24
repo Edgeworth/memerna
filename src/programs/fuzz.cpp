@@ -235,7 +235,7 @@ private:
         context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ZERO);
     Context ctx(r, em, options);
     auto subopt_brute = FoldBruteForce(r, *em, SUBOPT_BRUTE_MAX_STRUCTURES);
-    auto subopt_memerna = ctx.Suboptimal(-1, SUBOPT_BRUTE_MAX_STRUCTURES);
+    auto subopt_memerna = ctx.SuboptimalSorted(-1, SUBOPT_BRUTE_MAX_STRUCTURES);
 
     AppendErrors(
         errors, MaybePrependHeader(CheckSuboptimalResult(subopt_brute, true), "brute suboptimal:"));
@@ -248,19 +248,28 @@ private:
 
   error_t CheckSuboptimal() {
     error_t errors;
-    std::vector<std::vector<computed_t>> memerna_subopts;
+    std::vector<std::vector<computed_t>> memerna_subopts_delta, memerna_subopts_num;
     for (auto subopt_alg : context_options_t::SUBOPTIMAL_ALGS) {
       context_options_t options(context_options_t::TableAlg::TWO, subopt_alg);
       Context ctx(r, em, options);
-      memerna_subopts.push_back(ctx.Suboptimal(-1, SUBOPT_MEMERNA_MAX_STRUCTURES));
+      memerna_subopts_delta.push_back(ctx.SuboptimalSorted(SUBOPT_MAX_DELTA, -1));
+      memerna_subopts_num.push_back(ctx.SuboptimalSorted(-1, SUBOPT_MEMERNA_MAX_STRUCTURES));
     }
 
-    for (int i = 0; i < int(memerna_subopts.size()); ++i) {
-      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts[i], true),
-          sfmt("memerna suboptimal %d:", i)));
+    for (int i = 0; i < int(memerna_subopts_delta.size()); ++i) {
+      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
+          sfmt("memerna delta suboptimal %d:", i)));
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts[0], memerna_subopts[i]),
-              sfmt("memerna 0 vs memerna %d suboptimal:", i)));
+          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
+              sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
+    }
+
+    for (int i = 0; i < int(memerna_subopts_num.size()); ++i) {
+      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
+          sfmt("memerna num suboptimal %d:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
+              sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
     }
 
     if (do_subopt_rnastructure) {
@@ -271,7 +280,7 @@ private:
         context_options_t options(
             context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
         Context ctx(r, em, options);
-        auto memerna_subopt = ctx.Suboptimal(SUBOPT_MAX_DELTA, -1);
+        auto memerna_subopt = ctx.SuboptimalSorted(SUBOPT_MAX_DELTA, -1);
         const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
         AppendErrors(errors,
             MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));

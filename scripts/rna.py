@@ -32,7 +32,7 @@ class RNAAccuracy:
 
   def __str__(self):
     return 'F-Score: %.2f - PPV: %.2f - Sensitivity: %.2f' % (
-    self.fscore, self.ppv, self.sensitivity)
+      self.fscore, self.ppv, self.sensitivity)
 
 
 class RNA:
