@@ -20,7 +20,7 @@ void ComputeTables2() {
       cand_st[i].clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+          en1b = gr[en - 1], en2b = gr[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
@@ -62,11 +62,11 @@ void ComputeTables2() {
         const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                  outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
+              outer_coax + gdp[cand.idx + 1][en - 2][DP_U]);
         // ((   )   ) Left flush coax
         for (auto cand : cand_st[CAND_P_FLUSH])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                  gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
+              gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
           mins[DP_P] = std::min(
@@ -74,11 +74,11 @@ void ComputeTables2() {
         // (.   (   ).) Right outer coax
         for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-                  outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
+              outer_coax + gdp[st + 2][cand.idx - 1][DP_U]);
         // (   (   )) Right flush coax
         for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
           mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-                  gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
+              gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
 
         gdp[st][en][DP_P] = mins[DP_P];
       }

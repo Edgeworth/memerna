@@ -33,7 +33,8 @@ struct expand_t {
 
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
 
-template <typename Node> class Suboptimal1Base {
+template <typename Node>
+class Suboptimal1Base {
   Suboptimal1Base() = delete;
 
 protected:

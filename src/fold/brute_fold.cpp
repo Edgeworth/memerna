@@ -74,12 +74,12 @@ void AddAllCombinations(int idx) {
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
   const bool lu_usable = lu_exists &&
       (!lu_shared || (gctd[gp[idx - 2]] != CTD_3_DANGLE && gctd[gp[idx - 2]] != CTD_MISMATCH &&
-                         gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
+          gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
   const bool ru_exists = gp[idx] + 1 < N && gp[gp[idx] + 1] == -1;
   const bool ru_shared = ru_exists && gp[idx] + 2 < N && gp[gp[idx] + 2] != -1;
   const bool ru_usable = ru_exists &&
       (!ru_shared || (gctd[gp[idx] + 2] != CTD_5_DANGLE && gctd[gp[idx] + 2] != CTD_MISMATCH &&
-                         gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
+          gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
   // CTD_UNUSED
   gctd[idx] = CTD_UNUSED;

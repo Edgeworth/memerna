@@ -16,7 +16,8 @@ colmap = {
 
 
 def read_fold_frame(filename, subset):
-  cols = ['name', 'run', 'length', 'real', 'usersys', 'maxrss', 'fscore', 'ppv', 'sensitivity', 'mfe']
+  cols = ['name', 'run', 'length', 'real', 'usersys', 'maxrss', 'fscore', 'ppv', 'sensitivity',
+          'mfe']
   frame = pd.read_csv(filename, delimiter=' ', header=None, names=cols)
   all_rows = []
   for name, group in frame.groupby('name'):

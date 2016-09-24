@@ -43,11 +43,20 @@ context_options_t ContextOptionsFromArgParse(const ArgParse& argparse) {
 void Context::ComputeTables() {
   internal::SetGlobalState(r, *em);
   switch (options.table_alg) {
-  case context_options_t::TableAlg::ZERO: internal::ComputeTables0(); break;
-  case context_options_t::TableAlg::ONE: internal::ComputeTables1(); break;
-  case context_options_t::TableAlg::TWO: internal::ComputeTables2(); break;
-  case context_options_t::TableAlg::THREE: internal::ComputeTables3(); break;
-  default: verify_expr(false, "bug");
+    case context_options_t::TableAlg::ZERO:
+      internal::ComputeTables0();
+      break;
+    case context_options_t::TableAlg::ONE:
+      internal::ComputeTables1();
+      break;
+    case context_options_t::TableAlg::TWO:
+      internal::ComputeTables2();
+      break;
+    case context_options_t::TableAlg::THREE:
+      internal::ComputeTables3();
+      break;
+    default:
+      verify_expr(false, "bug");
   }
   internal::ComputeExterior();
 }
@@ -66,11 +75,12 @@ std::vector<computed_t> Context::Suboptimal(energy_t subopt_delta, int subopt_nu
 
   ComputeTables();
   switch (options.suboptimal_alg) {
-  case context_options_t::SuboptimalAlg::ZERO:
-    return internal::Suboptimal0(subopt_delta, subopt_num).Run();
-  case context_options_t::SuboptimalAlg::ONE:
-    return internal::Suboptimal1(subopt_delta, subopt_num).Run();
-  default: verify_expr(false, "bug");
+    case context_options_t::SuboptimalAlg::ZERO:
+      return internal::Suboptimal0(subopt_delta, subopt_num).Run();
+    case context_options_t::SuboptimalAlg::ONE:
+      return internal::Suboptimal1(subopt_delta, subopt_num).Run();
+    default:
+      verify_expr(false, "bug");
   }
 }
 }

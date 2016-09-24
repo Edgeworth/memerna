@@ -59,8 +59,10 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       "min_internal optimisation does not work for negative asymmetry penalties");
   const auto min_mismatch =
       2 *
-      std::min(MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
-          MinEnergy(&em.internal_other_mismatch[0][0][0][0], sizeof(em.internal_other_mismatch)));
+          std::min(
+              MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
+              MinEnergy(&em.internal_other_mismatch[0][0][0][0],
+                  sizeof(em.internal_other_mismatch)));
   const auto min_internal_init =
       MinEnergy(&em.internal_init[4], sizeof(em.internal_init) - 4 * sizeof(em.internal_init[0]));
   min_internal = std::min(
@@ -103,13 +105,13 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
     return gem.internal_1x1[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[oen]];
   if (toplen == 1 && botlen == 2)
     return gem.internal_1x2[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[ien + 2]]
-                           [gr[oen]];
+    [gr[oen]];
   if (toplen == 2 && botlen == 1)
     return gem.internal_1x2[gr[ien]][gr[ien + 1]][gr[oen]][gr[ost]][gr[ost + 1]][gr[ost + 2]]
-                           [gr[ist]];
+    [gr[ist]];
   if (toplen == 2 && botlen == 2)
     return gem.internal_2x2[gr[ost]][gr[ost + 1]][gr[ost + 2]][gr[ist]][gr[ien]][gr[ien + 1]]
-                           [gr[ien + 2]][gr[oen]];
+    [gr[ien + 2]][gr[oen]];
 
   static_assert(
       TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");

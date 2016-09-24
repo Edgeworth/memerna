@@ -18,7 +18,9 @@ struct context_options_t {
     BRUTE  // Not included in the normal table algs since exponential.
   };
 
-  enum class SuboptimalAlg { ZERO, ONE, BRUTE };
+  enum class SuboptimalAlg {
+    ZERO, ONE, BRUTE
+  };
 
   static constexpr TableAlg TABLE_ALGS[] = {
       TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};

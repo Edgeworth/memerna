@@ -134,7 +134,7 @@ std::vector<computed_t> Suboptimal0::Run() {
     energy_t base_energy = node.energy - gdp[st][en][a];
     // Declare the usual base aliases.
     const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
-               en2b = gr[en - 2];
+        en2b = gr[en - 2];
 
     // Normal stuff
     if (a == DP_P) {

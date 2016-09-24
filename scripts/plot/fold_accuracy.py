@@ -7,6 +7,7 @@ from plot.plot_common import set_up_figure, latex_table, savefig_local, get_subp
 
 TEXT_LOC = (0.2, 0.9)
 
+
 def do_accuracy_plot(frames, xid):
   f, axes = get_subplot_grid(len(frames))
   for i, frame_id in enumerate(sorted(frames.keys())):

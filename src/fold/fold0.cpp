@@ -21,7 +21,7 @@ void ComputeTables0() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+          en1b = gr[en - 1], en2b = gr[en - 2];
 
       // Update paired - only if can actually pair.
       if (ViableFoldingPair(st, en)) {
@@ -61,28 +61,28 @@ void ComputeTables0() {
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv][DP_P] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(st2b, plb) + gdp[piv + 1][en - 2][DP_U] + outer_coax);
+              gem.AuGuPenalty(st2b, plb) + gdp[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv][DP_U] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(prb, en2b) + gdp[piv + 1][en - 2][DP_P] + outer_coax);
+              gem.AuGuPenalty(prb, en2b) + gdp[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 2][piv - 1][DP_P] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(st2b, pl1b) + gdp[piv + 1][en - 1][DP_U] +
-                  gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+              gem.AuGuPenalty(st2b, pl1b) + gdp[piv + 1][en - 1][DP_U] +
+              gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_U] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(pr1b, en2b) + gdp[piv + 2][en - 2][DP_P] +
-                  gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
+              gem.AuGuPenalty(pr1b, en2b) + gdp[piv + 2][en - 2][DP_P] +
+              gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_P] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(st1b, plb) + gdp[piv + 1][en - 1][DP_U] +
-                  gem.stack[stb][st1b][plb][enb]);
+              gem.AuGuPenalty(st1b, plb) + gdp[piv + 1][en - 1][DP_U] +
+              gem.stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           UPDATE_CACHE(DP_P, base_branch_cost + gdp[st + 1][piv][DP_U] + gem.multiloop_hack_b +
-                  gem.AuGuPenalty(prb, en1b) + gdp[piv + 1][en - 1][DP_P] +
-                  gem.stack[stb][prb][en1b][enb]);
+              gem.AuGuPenalty(prb, en1b) + gdp[piv + 1][en - 1][DP_P] +
+              gem.stack[stb][prb][en1b][enb]);
         }
       }
 
