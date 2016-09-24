@@ -28,7 +28,7 @@ public:
     verify_expr(max_structures > 0, "must request at least one structure");
   }
 
-  std::vector<computed_t> Run();
+  void Run(std::function<void(const computed_t&)> fn);
 
 private:
   const int max_structures;

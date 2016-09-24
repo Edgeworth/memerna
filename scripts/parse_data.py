@@ -29,7 +29,7 @@ def parse_dangle_file(data):
       for m in range(4):
         for c in range(4):
           outputs[output_idx] += '%s%s%s %d\n' % (
-          ORDER[idx % 4], ORDER[c], ORDER[m], values[m * 4 + c])
+            ORDER[idx % 4], ORDER[c], ORDER[m], values[m * 4 + c])
       idx += 1
   return outputs
 

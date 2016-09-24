@@ -31,7 +31,7 @@ public:
     verify_expr(delta_ >= 0, "energy delta must be non-negative");
   }
 
-  std::vector<computed_t> Run();
+  void Run(std::function<void(const computed_t&)> fn);
 
 private:
   std::vector<int> q;  // Queue of nodes ready to be expanded.
