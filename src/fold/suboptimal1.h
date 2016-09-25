@@ -1,6 +1,7 @@
 #ifndef MEMERNA_SUBOPTIMAL1_H
 #define MEMERNA_SUBOPTIMAL1_H
 
+#include <algorithm>
 #include "common.h"
 #include "fold/fold_internal.h"
 
@@ -26,12 +27,10 @@ struct expand_t {
   index_t to_expand, unexpanded;  // st is -1 if this does not exist
   ctd_idx_t ctd0, ctd1;
 
-  // TODO return ones with less work first.
   bool operator<(const expand_t& o) const { return energy < o.energy; }
 };
 
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
-
 
 class Suboptimal1 {
 public:
@@ -54,14 +53,25 @@ private:
   const energy_t delta;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
-  std::unordered_map<index_t, std::vector<expand_t>> cache;
+  std::map<index_t, std::vector<expand_t>> cache;
   std::stack<dfs_state_t> q;
   std::vector<index_t> unexpanded;
 
   std::pair<int, int> RunInternal(std::function<void(const computed_t&)> fn,
     energy_t cur_delta, bool exact_energy, int structure_limit);
 
-  const std::vector<expand_t>& GetExpansions(const index_t& to_expand);
+  const std::vector<expand_t>& GetExpansion(const index_t& to_expand) {
+    auto iter = cache.find(to_expand);
+    if (iter == cache.end()) {
+      // Need to generate the full way to delta so we can properly set |next_seen|.
+      auto exps = GenerateExpansions(to_expand, delta);
+      std::sort(exps.begin(), exps.end());
+      auto res = cache.emplace(to_expand, std::move(exps));
+      assert(res.second && res.first != cache.end());
+      iter = res.first;
+    }
+    return iter->second;
+  }
 };
 }
 }

@@ -22,7 +22,6 @@ int Suboptimal1::Run(std::function<void(const computed_t&)> fn, bool sorted) {
     }
     return num_structures;
   }
-
   return RunInternal(fn, delta, false, MAX_STRUCTURES).first;
 }
 
@@ -46,7 +45,7 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
     auto& s = q.top();
     assert(s.expand.st != -1);
 
-    const auto& exps = GetExpansions(s.expand);
+    const auto& exps = GetExpansion(s.expand);
     assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
 
     // Undo previous child's ctds and energy. The pairing is undone by the child.
@@ -123,18 +122,6 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
       gp == std::vector<int>(gp.size(), -1) &&
       gctd == std::vector<Ctd>(gctd.size(), CTD_NA));
   return {num_structures, next_seen};
-}
-
-const std::vector<expand_t>& Suboptimal1::GetExpansions(const index_t& to_expand) {
-  auto iter = cache.find(to_expand);
-  if (iter == cache.end()) {
-    auto exps = GenerateExpansions(to_expand, delta);
-    std::sort(exps.begin(), exps.end());
-    auto res = cache.emplace(to_expand, std::move(exps));
-    assert(res.second && res.first != cache.end());
-    iter = res.first;
-  }
-  return iter->second;
 }
 
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta) {
