@@ -1,6 +1,13 @@
 ### Todo
 - Grep codebase for todos
 - Implement runners in run.py
+- Change std::function into template callback (dat optimisation)
+- Enable LTO and use gold (for gcc)
+-- GCC lto only for release
+-- gcc: -flto -fuse-ld=gold -fuse-linker-plugin
+-- clang: -flto 
+-- try adding -ffast-math -fno-exceptions -fno-rtti
+-- do profile guided optimisation
 - Benchmark http://adenosine.chem.ou.edu/software.html ?
 - Write result stuff for suboptimal
 - Cache results for ReconstructComputed / write dfs loader - should save O(N) time

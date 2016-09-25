@@ -19,12 +19,12 @@ def run_delta(alg, ldn):
   print('alg%s - deltas - sorted, not quiet' % alg)
   for l, d, _ in ldn:
     res = run_command(
-      './build/c++-relwithdebinfo/subopt', '--sorted', '-delta', str(d), '-subopt-alg', alg, icam1[:l])
+      './build/c++-relwithdebinfo/subopt', '-q', '--sorted', '-delta', str(d), '-subopt-alg', alg, icam1[:l])
     print('  len %d, delta %d: %s' % (l, d, res))
 
 
 def main():
-  run_delta('0', lendeltanum[:4])
+  #run_delta('0', lendeltanum[:4])
   run_delta('1', lendeltanum)
   run_num('0', lendeltanum[:4])
   run_num('1', lendeltanum)

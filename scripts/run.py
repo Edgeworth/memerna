@@ -145,7 +145,7 @@ class MemeRNA(HarnessFolder):
 
 
 class ViennaRNA:
-  def __init__(self, loc=None, d3=False):
+  def __init__(self, loc=None, d3=False, sorted=False):
     try:
       import default_paths
       loc = loc or default_paths.VIENNARNA_PATH
@@ -158,6 +158,9 @@ class ViennaRNA:
     if d3:
       self.extra_args = ['-d3']
       self.name = 'ViennaRNA-d3'
+    if sorted:
+      self.extra_args.append('--sorted')
+      self.name += '-sorted'
 
   def fold(self, rna):
     with tempfile.NamedTemporaryFile('w') as f:
@@ -178,7 +181,7 @@ class ViennaRNA:
     with tempfile.NamedTemporaryFile('r') as out:
       res = try_command(
         os.path.join(self.loc, 'src', 'bin', 'RNAsubopt'),
-        *self.extra_args, '--sorted', '-e', '%.1f' % (delta / 10.0),
+        *self.extra_args, '-e', '%.1f' % (delta / 10.0),
         input=rna.seq, record_stdout=out.name, limits=limits)
       if num_only:
         res2 = run_command('wc', '-l', out.name, record_stdout=True)
@@ -307,7 +310,11 @@ BENCHMARK_LIMITS = (12 * 1024 * 1024, 5 * 60)
 def run_subopt_benchmark(program, dataset, delta):
   memevault = MemeVault(dataset)
   print('Benchmarking suboptimals with %s on %s with delta %d' % (program, dataset, delta))
-  with open('%s_%s_subopt_%d.results' % (program, dataset, delta), 'w') as f:
+  filename = '%s_%s_subopt_%d.results' % (program, dataset, delta)
+  if os.path.exists(filename):
+    print('Not overwriting %s' % filename)
+    sys.exit(1)
+  with open(filename, 'w') as f:
     idx = 1
     for rna in memevault:
       print('Running %s on #%d %s' % (program, idx, rna.name))
@@ -335,7 +342,11 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
     sys.exit(1)
   memevault = MemeVault(dataset)
   print('Benchmarking folding with %s on %s' % (program, dataset))
-  with open('%s_%s_fold.results' % (program, dataset), 'w') as f:
+  filename = '%s_%s_fold.results' % (program, dataset)
+  if os.path.exists(filename):
+    print('Not overwriting %s' % filename)
+    sys.exit(1)
+  with open(filename, 'w') as f:
     idx = 1
     for rna in memevault:
       print('Running %s on #%d %s' % (program, idx, rna.name))
@@ -392,6 +403,8 @@ def process_command(*extra_args):
   parser.add_argument('-rd', '--rnastructure-distribution', action='store_true')
   parser.add_argument('-vd2', '--viennarna-d2', action='store_true')
   parser.add_argument('-vd3', '--viennarna-d3', action='store_true')
+  parser.add_argument('-vd2s', '--viennarna-d2-sorted', action='store_true')
+  parser.add_argument('-vd3s', '--viennarna-d3-sorted', action='store_true')
   parser.add_argument('-u', '--unafold', action='store_true')
   parser.add_argument('-k', '--memerna', action='store_true')
   parser.add_argument('-smf', '--sparsemfefold', action='store_true')
@@ -416,6 +429,10 @@ def process_command(*extra_args):
     programs.append(ViennaRNA(args.viennarna_loc, False))
   if args.viennarna_d3:
     programs.append(ViennaRNA(args.viennarna_loc, True))
+  if args.viennarna_d2_sorted:
+    programs.append(ViennaRNA(args.viennarna_loc, False, True))
+  if args.viennarna_d3_sorted:
+    programs.append(ViennaRNA(args.viennarna_loc, True, True))
   if args.unafold:
     programs.append(UNAFold(args.unafold_loc))
   if args.memerna:
