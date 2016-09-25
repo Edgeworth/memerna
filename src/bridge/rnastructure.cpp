@@ -57,7 +57,7 @@ std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
 std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
   std::vector<std::vector<int>> ps;
   for (int i = 0; i < struc.GetNumberofStructures(); ++i)
-    ps.push_back(std::move(StructureToPairs(struc, i + 1)));
+    ps.push_back(StructureToPairs(struc, i + 1));
   return ps;
 }
 }

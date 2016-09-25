@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+import shutil
 
 
 def run_command(cmd):
@@ -41,6 +42,10 @@ defs = {
 
 build_dir = os.path.join('build', defs['CMAKE_CXX_COMPILER'] + '-' + defs['CMAKE_BUILD_TYPE'])
 regenerate = args.regenerate
+
+if regenerate:
+  shutil.rmtree(build_dir)
+
 if not os.path.exists(build_dir):
   os.makedirs(build_dir)
   regenerate = True
