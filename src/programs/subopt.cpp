@@ -32,19 +32,12 @@ int main(int argc, char* argv[]) {
   verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
   int num_structures = 0;
-  if (sorted && !ctx.IsSuboptimalSorted(subopt_delta, subopt_num)) {
-    const auto computeds = ctx.SuboptimalSorted(subopt_delta, subopt_num);
-    num_structures = int(computeds.size());
-    if (should_print) {
-      for (const auto& c : computeds)
-        printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
-    }
+  if (should_print) {
+    num_structures = ctx.Suboptimal([](const computed_t& c) {
+      printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
+    }, sorted, subopt_delta, subopt_num);
   } else {
-    ctx.Suboptimal([&num_structures, should_print](const computed_t& c) {
-      ++num_structures;
-      if (should_print)
-        printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
-    }, subopt_delta, subopt_num);
+    num_structures = ctx.Suboptimal([](const computed_t& c) {}, sorted, subopt_delta, subopt_num);
   }
   printf("%d suboptimal structures\n", num_structures);
 }

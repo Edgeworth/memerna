@@ -27,6 +27,7 @@ struct expand_t {
   index_t to_expand, unexpanded;  // st is -1 if this does not exist
   ctd_idx_t ctd0, ctd1;
 
+  // TODO return ones with less work first.
   bool operator<(const expand_t& o) const { return energy < o.energy; }
 };
 

@@ -19,7 +19,7 @@ public:
     verify_expr(max_structures > 0, "must request at least one structure");
   }
 
-  void Run(std::function<void(const computed_t&)> fn);
+  int Run(std::function<void(const computed_t&)> fn);
 
 private:
   struct num_node_t {

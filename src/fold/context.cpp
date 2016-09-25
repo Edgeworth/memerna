@@ -69,38 +69,33 @@ computed_t Context::Fold() {
   return {{internal::gr, internal::gp}, internal::gctd, internal::genergy};
 }
 
-std::vector<computed_t> Context::SuboptimalSorted(energy_t subopt_delta, int subopt_num) {
+std::vector<computed_t> Context::SuboptimalIntoVector(bool sorted,
+    energy_t subopt_delta, int subopt_num) {
   std::vector<computed_t> computeds;
-  Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
+  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); }, sorted,
       subopt_delta, subopt_num);
-  if (!IsSuboptimalSorted(subopt_delta, subopt_num))
-    std::sort(computeds.begin(), computeds.end(), computed_energy_comparator_t());
+  assert(num_structures == int(computeds.size()));
   return computeds;
 }
 
-void Context::Suboptimal(std::function<void(const computed_t&)> fn,
+int Context::Suboptimal(std::function<void(const computed_t&)> fn, bool sorted,
     energy_t subopt_delta, int subopt_num) {
   if (options.suboptimal_alg == context_options_t::SuboptimalAlg::BRUTE) {
-    for (const auto& computed : FoldBruteForce(r, *em, subopt_num))
+    auto computeds = FoldBruteForce(r, *em, subopt_num);
+    for (const auto& computed : computeds)
       fn(computed);
-    return;
+    return int(computeds.size());
   }
 
   ComputeTables();
   switch (options.suboptimal_alg) {
     case context_options_t::SuboptimalAlg::ZERO:
-      internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
-      break;
+      return internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
     case context_options_t::SuboptimalAlg::ONE:
-      internal::Suboptimal1(subopt_delta, subopt_num).Run(fn);
-      break;
+      return internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
     default:
       verify_expr(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
   }
-}
-
-bool Context::IsSuboptimalSorted(energy_t, int subopt_num) {
-  return !(options.suboptimal_alg == context_options_t::SuboptimalAlg::ONE && subopt_num == -1);
 }
 
 }

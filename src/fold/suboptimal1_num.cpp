@@ -44,7 +44,7 @@ void Suboptimal1Num::GcNode(int node_idx) {
   }
 }
 
-void Suboptimal1Num::Run(std::function<void(const computed_t&)> fn) {
+int Suboptimal1Num::Run(std::function<void(const computed_t&)> fn) {
   InsertQ({{0, {0, -1, EXT}}});
   while (!q.empty()) {
     int node_idx = *q.begin();
@@ -84,8 +84,10 @@ void Suboptimal1Num::Run(std::function<void(const computed_t&)> fn) {
   // Should be already sorted
   // TODO depends on stuff but at least put this fn call inside construct
   // TODO computeds and don't use so much memory
-  for (const auto& computed : ConstructComputedsFromNodes())
+  auto computeds = ConstructComputedsFromNodes();
+  for (const auto& computed : computeds)
     fn(computed);
+  return int(computeds.size());
 }
 
 computed_t Suboptimal1Num::ReconstructComputed(int node_idx) {

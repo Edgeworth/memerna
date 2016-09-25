@@ -11,11 +11,11 @@ namespace internal {
 
 class Suboptimal1Delta : public Suboptimal1Base {
 public:
-  Suboptimal1Delta(energy_t delta_) : Suboptimal1Base(delta_) {
-    verify_expr(delta_ >= 0, "energy delta must be non-negative");
-  }
+  Suboptimal1Delta(energy_t delta_, int num) :
+      Suboptimal1Base(delta_ == -1 ? CAP_E : delta_),
+      max_structures(num == -1 ? MAX_STRUCTURES : num) {}
 
-  void Run(std::function<void(const computed_t&)> fn);
+  int Run(std::function<void(const computed_t&)> fn, bool sorted);
 
 private:
   struct dfs_state_t {
@@ -25,8 +25,14 @@ private:
     bool should_unexpand;
   };
 
+  constexpr static int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
+
+  const int max_structures;
   std::stack<dfs_state_t> q;
   std::vector<index_t> unexpanded;
+
+  std::pair<int, int> RunInternal(std::function<void(const computed_t&)> fn,
+    energy_t cur_delta, bool exact_energy, int structure_limit);
 };
 }
 }
