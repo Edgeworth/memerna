@@ -6,7 +6,7 @@ namespace internal {
 
 using namespace energy;
 
-void Suboptimal0::Run(std::function<void(const computed_t&)> fn) {
+int Suboptimal0::Run(std::function<void(const computed_t&)> fn) {
   const int N = int(gr.size());
   verify_expr(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
@@ -320,6 +320,7 @@ void Suboptimal0::Run(std::function<void(const computed_t&)> fn) {
     assert(struc.not_yet_expanded.empty());
     fn({{gr, {struc.p.begin(), struc.p.end()}}, struc.base_ctds, struc.energy});
   }
+  return int(finished.size());
 }
 }
 }

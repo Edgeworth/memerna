@@ -18,7 +18,7 @@ public:
         max_structures(num == -1 ? std::numeric_limits<int>::max() / 4 : num) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
-  void Run(std::function<void(const computed_t&)> fn);
+  int Run(std::function<void(const computed_t&)> fn);
 
 private:
   struct node_t {

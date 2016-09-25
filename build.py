@@ -43,7 +43,7 @@ defs = {
 build_dir = os.path.join('build', defs['CMAKE_CXX_COMPILER'] + '-' + defs['CMAKE_BUILD_TYPE'])
 regenerate = args.regenerate
 
-if regenerate:
+if regenerate and os.path.exists(build_dir):
   shutil.rmtree(build_dir)
 
 if not os.path.exists(build_dir):

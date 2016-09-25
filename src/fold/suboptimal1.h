@@ -18,11 +18,11 @@ class Suboptimal1 {
 public:
   Suboptimal1(energy_t delta_, int num_) : delta(delta_), num(num_) {}
 
-  void Run(std::function<void(const computed_t&)> fn) {
+  int Run(std::function<void(const computed_t&)> fn, bool sorted) {
     verify_expr(
         gr.size() < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
-    if (num == -1) Suboptimal1Delta(delta).Run(fn);
-    else Suboptimal1Num(delta, num).Run(fn);
+    return Suboptimal1Delta(delta, num).Run(fn, sorted);
+    //else return Suboptimal1Num(delta, num).Run(fn);
   }
 
 private:
