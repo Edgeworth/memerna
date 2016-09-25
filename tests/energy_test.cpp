@@ -129,16 +129,16 @@ TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(g_em->augu_penalty * 2 + g_em->HairpinInitiation(3) +
       std::min(g_em->terminal[U][A][A][A],
           std::min(g_em->dangle3[U][A][A], g_em->dangle5[U][A][A])),
-      GetEnergy(parsing::ParseDotBracketSecondary("AAAAAUA", ".(...)."));
+      GetEnergy(parsing::ParseDotBracketSecondary("AAAAAUA", ".(...).")));
   EXPECT_EQ(g_em->augu_penalty * 2 + g_em->HairpinInitiation(3),
-      GetEnergy(parsing::ParseDotBracketSecondary("AAAAU", "(...)"));
+      GetEnergy(parsing::ParseDotBracketSecondary("AAAAU", "(...)")));
   EXPECT_EQ(g_em->stack[G][C][G][C] + g_em->stack[C][U][A][G] + g_em->BulgeInitiation(1) +
       g_em->stack[U][G][C][A] + g_em->HairpinInitiation(3),
-      GetEnergy(kBulge1);
+      GetEnergy(kBulge1));
   EXPECT_EQ(g_em->InternalLoopInitiation(5) + g_em->internal_asym + g_em->internal_augu_penalty +
       g_em->augu_penalty + g_em->internal_2x3_mismatch[A][G][A][U] +
       g_em->internal_2x3_mismatch[C][A][A][G] + g_em->HairpinInitiation(3),
-      GetEnergy(kInternal1);
+      GetEnergy(kInternal1));
 }
 
 TEST_F(EnergyTest, T04Tests) {
