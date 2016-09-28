@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "common.h"
 #include "fold/fold_internal.h"
+#include "splaymap.h"
 
 namespace memerna {
 namespace fold {
@@ -53,7 +54,7 @@ private:
   const energy_t delta;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
-  std::map<index_t, std::vector<expand_t>> cache;
+  SplayMap<index_t, std::vector<expand_t>> cache;
   std::stack<dfs_state_t> q;
   std::vector<index_t> unexpanded;
 
@@ -61,16 +62,14 @@ private:
     energy_t cur_delta, bool exact_energy, int structure_limit);
 
   const std::vector<expand_t>& GetExpansion(const index_t& to_expand) {
-    auto iter = cache.find(to_expand);
-    if (iter == cache.end()) {
+    if (!cache.Find(to_expand)) {
       // Need to generate the full way to delta so we can properly set |next_seen|.
       auto exps = GenerateExpansions(to_expand, delta);
       std::sort(exps.begin(), exps.end());
-      auto res = cache.emplace(to_expand, std::move(exps));
-      assert(res.second && res.first != cache.end());
-      iter = res.first;
+      auto res = cache.Insert(to_expand, std::move(exps));
+      assert(res);
     }
-    return iter->second;
+    return cache.Get();
   }
 };
 }
