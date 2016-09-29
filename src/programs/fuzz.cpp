@@ -324,12 +324,15 @@ int main(int argc, char* argv[]) {
     __AFL_INIT();
     while (__AFL_LOOP(1000)) {
 #endif
+    std::string data;
+    std::size_t len;
     char buf[4096];
-    std::size_t len = fread(buf, 1, sizeof(buf), stdin);
-    if (len > 0) {
+    while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0)
+      data += std::string(buf, len);
+    if (data.size() > 0) {
       uint_fast32_t seed = eng();
       // Disable brute force testing for AFL since it's too slow.
-      Fuzzer fuzzer(parsing::StringToPrimary(std::string(buf, len)), t04em, random_model, seed,
+      Fuzzer fuzzer(parsing::StringToPrimary(data), t04em, random_model, seed,
           rnastructure, do_subopt, do_subopt_rnastructure, 0);
       const auto res = fuzzer.Run();
       if (!res.empty())

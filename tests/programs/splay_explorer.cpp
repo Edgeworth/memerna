@@ -48,13 +48,17 @@ void DoAfl() {
   SplayMap<int, int> h;
   std::set<int> s;
 
+  std::string data;
+  std::size_t len;
   char buf[4096];
-  std::size_t len = fread(buf, 1, sizeof(buf), stdin);
-  std::stringstream ss(std::string(buf, len));
+  while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0)
+    data += std::string(buf, len);
+  std::stringstream ss(data);
   char op = 0;
   int val = 0;
   while(ss >> std::ws >> op >> std::ws >> val)
     DoOperation(op, val, h, s);
+  printf("%s\n", h.Describe().c_str());
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   }
 #endif
