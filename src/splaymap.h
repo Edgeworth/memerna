@@ -44,24 +44,26 @@ public:
           // Zig-Zig - Rotate right
           ns[root].l = ns[l].r;
           ns[l].r = root;
-          root = l;
-          l = ns[root].l;
-          if (l == NONE) break;
-          // Split left child
-          ns[rnext].l = root;
-          rnext = root;
-          root = l;
+          if (ns[l].l == NONE) {  // No left child
+            root = l;
+            break;
+          } else {  // Split left child
+            root = ns[l].l;
+            ns[rnext].l = l;
+            rnext = l;
+          }
         } else if (ns[l].k < key) {
-          // Zig-Zag
           // Zig - Split left child
           ns[rnext].l = root;
           rnext = root;
-          root = l;
-          if (ns[root].r == NONE) break;
-          // Zag - Split right child
-          root = ns[root].r;
-          ns[lnext].r = l;
-          lnext = l;
+          if (ns[l].r == NONE) {  // No right child.
+            root = l;
+            break;
+          } else {  // Zag - Split right child
+            root = ns[l].r;
+            ns[lnext].r = l;
+            lnext = l;
+          }
         } else {
           // Found (zig) - Split left child
           ns[rnext].l = root;
@@ -77,24 +79,26 @@ public:
           // Zig-Zig - Rotate left
           ns[root].r = ns[r].l;
           ns[r].l = root;
-          root = r;
-          r = ns[root].r;
-          if (r == NONE) break;
-          // Split right child
-          ns[lnext].r = root;
-          lnext = root;
-          root = r;
+          if (ns[r].r == NONE) {  // No right child.
+            root = r;
+            break;
+          } else {  // Split right child
+            root = ns[r].r;
+            ns[lnext].r = r;
+            lnext = r;
+          }
         } else if (key < ns[r].k) {
-          // Zig-Zag
           // Zig - Split right child
           ns[lnext].r = root;
           lnext = root;
-          root = r;
-          if (ns[root].l == NONE) break;
-          // Zag - Split left child.
-          root = ns[root].l;
-          ns[rnext].l = r;
-          rnext = r;
+          if (ns[r].l == NONE) {  // No left child
+            root = r;
+            break;
+          } else {  // Zag - Split left child.
+            root = ns[r].l;
+            ns[rnext].l = r;
+            rnext = r;
+          }
         } else {
           // Found (zig) - Split right child
           ns[lnext].r = root;
@@ -169,7 +173,7 @@ private:
     Key k;
     int l, r;
   };
-  std::vector<node_t> ns;  // TODO: add none at start, eliminate comparisons
+  std::vector<node_t> ns;
   std::vector<Value> vals;
   int root;
   std::size_t size;
