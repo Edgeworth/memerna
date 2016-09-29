@@ -1,6 +1,7 @@
 #ifndef MEMERNA_SPLAYMAP_H
 #define MEMERNA_SPLAYMAP_H
 
+#include <algorithm>
 #include "common.h"
 
 namespace memerna {
@@ -34,7 +35,6 @@ public:
   bool Find(Key key) {
     if (root == NONE) return false;
     int lnext = TMP, rnext = TMP;
-    ns[TMP].l = ns[TMP].r = NONE;
     bool found = false;
     while (!found) {
       if (key < ns[root].k) {
@@ -158,6 +158,7 @@ public:
 
   std::size_t Size() { return size; }
 
+  // Testing / visualisation methods.
   std::string Describe() {
     std::string ans = sfmt(
         "Tree with %zu nodes. Backing node size: %zu, Backing vals size: %zu, root at index %d\n",
@@ -166,6 +167,8 @@ public:
       ans += s + "\n";
     return ans;
   }
+
+  std::vector<Key> Keys() { return KeysInternal(root); }
 private:
   constexpr static int NONE = 0, TMP = 1;
 
@@ -195,6 +198,16 @@ private:
     desc[idx][0] = '|';
     desc[idx][1] = '_';
     return desc;
+  }
+
+  std::vector<Key> KeysInternal(int node) {
+    if (node == NONE) return {};
+    auto a = KeysInternal(ns[node].l);
+    a.push_back(ns[node].k);
+    auto b = KeysInternal(ns[node].r);
+    std::vector<Key> c(a.size() + b.size());
+    std::merge(a.begin(), a.end(), b.begin(), b.end(), c.begin());
+    return c;
   }
 };
 
