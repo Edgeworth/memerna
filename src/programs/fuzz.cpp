@@ -332,12 +332,8 @@ int main(int argc, char* argv[]) {
       Fuzzer fuzzer(parsing::StringToPrimary(std::string(buf, len)), t04em, random_model, seed,
           rnastructure, do_subopt, do_subopt_rnastructure, 0);
       const auto res = fuzzer.Run();
-      if (!res.empty()) {
-        for (const auto& s : res)
-          printf("%s\n", s.c_str());
-        printf("\n");
-        verify_expr(false, "crash!");
-      }
+      if (!res.empty())
+        abort();
     }
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     }
