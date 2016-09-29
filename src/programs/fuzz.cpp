@@ -17,7 +17,7 @@ using namespace fold;
 using namespace fold::internal;
 
 const int SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
-const int SUBOPT_MEMERNA_MAX_STRUCTURES = 10000;
+const int SUBOPT_MEMERNA_MAX_STRUCTURES = 5000;
 const energy_t SUBOPT_MAX_DELTA = 6;  // Same as RNAstructure default.
 
 class Fuzzer {

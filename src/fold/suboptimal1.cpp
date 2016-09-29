@@ -10,6 +10,8 @@ int Suboptimal1::Run(std::function<void(const computed_t&)> fn, bool sorted) {
   // TODO merge max-delta functionality into this, with repeated dfs? at least use for sorted output
   memset(gp.data(), -1, gp.size());
   memset(gctd.data(), CTD_NA, gctd.size());
+  q.reserve(gr.size());  // Reasonable reservation.
+  cache.Reserve(gr.size());
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (sorted || max_structures != MAX_STRUCTURES) {
@@ -40,9 +42,9 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
   // Otherwise, we will completely finish, and definitely see it.
   energy_t next_seen = MAX_E;
   energy_t energy = 0;
-  q.push({0, {0, -1, EXT}, false});
+  q.push_back({0, {0, -1, EXT}, false});
   while (!q.empty()) {
-    auto& s = q.top();
+    auto& s = q.back();
     assert(s.expand.st != -1);
 
     const auto& exps = GetExpansion(s.expand);
@@ -70,7 +72,7 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
         gp[s.expand.st] = gp[s.expand.en] = -1;
       if (s.should_unexpand)
         unexpanded.push_back(s.expand);
-      q.pop();
+      q.pop_back();
       continue;  // Done.
     }
 
@@ -116,7 +118,7 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
       gp[ns.expand.st] = ns.expand.en;
       gp[ns.expand.en] = ns.expand.st;
     }
-    q.push(ns);
+    q.push_back(ns);
   }
   assert(unexpanded.empty() && energy == 0 &&
       gp == std::vector<int>(gp.size(), -1) &&
