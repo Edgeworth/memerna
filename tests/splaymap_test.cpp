@@ -46,16 +46,18 @@ class SplayMapRandomTest : public testing::TestWithParam<int_fast32_t> {
 };
 
 TEST_P(SplayMapRandomTest, CompareAgainstMap) {
-  const int NUM_TRIES = 500000;
+  const int NUM_TRIES = 10000;
   std::mt19937 eng(GetParam());
   SplayMap<int, int> h;
-  std::map<int, int> s;
+  std::set<int> s;
   std::vector<int> keys;
   auto val_dist = std::uniform_int_distribution<int>(
       std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
   auto case_dist = std::uniform_int_distribution<int>(0, 4);
   for (int i = 0; i < NUM_TRIES; ++i) {
     EXPECT_EQ(s.size(), h.Size());
+    auto h_keys = h.Keys();
+    EXPECT_TRUE(std::equal(s.begin(), s.end(), h_keys.begin(), h_keys.end()));
     int key = 0;
     switch (case_dist(eng)) {
       case 0:
@@ -79,7 +81,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
           EXPECT_FALSE(h.Insert(val, val));
         else
           EXPECT_TRUE(h.Insert(val, val));
-        s.insert({val, val});
+        s.insert(val);
         break;
       }
       case 3:

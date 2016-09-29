@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
   const bool afl = argparse.HasFlag("afl");
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   __AFL_INIT();
-    while (__AFL_LOOP(1000)) {
+    while (__AFL_LOOP(100000)) {
 #endif
 
   SplayMap<int, int> h;
@@ -77,6 +77,8 @@ int main(int argc, char** argv) {
     }
     verify_expr(success == set_success, "bug");
     verify_expr(s.size() == h.Size(), "bug");
+    auto keys = h.Keys();
+    verify_expr(std::equal(s.begin(), s.end(), keys.begin(), keys.end()), "bug");
   }
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   }
