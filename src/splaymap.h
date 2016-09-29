@@ -5,15 +5,16 @@
 
 namespace memerna {
 
-template<typename Key, typename Value>
+template <typename Key, typename Value>
 class SplayMap {
 public:
   SplayMap() : ns(2), vals(2), root(NONE), size(0) {}
   // Returns false if already in the tree.
-  bool Insert(Key key, const Value& value) {
+  template<typename ValueRef>
+  bool Insert(Key key, ValueRef&& value) {
     if (Find(key)) return false;
     ++size;
-    vals.push_back(value);
+    vals.emplace_back(std::forward<ValueRef>(value));
 
     int oldroot = root;
     root = int(ns.size());
@@ -167,12 +168,14 @@ public:
   }
 private:
   constexpr static int NONE = 0, TMP = 1;
+
   struct node_t {
     node_t() : k(), l(NONE), r(NONE) {}
     node_t(const Key& k_, int l_, int r_) : k(k_), l(l_), r(r_) {}
     Key k;
     int l, r;
   };
+
   std::vector<node_t> ns;
   std::vector<Value> vals;
   int root;
