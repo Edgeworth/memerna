@@ -10,7 +10,7 @@ class SplayMap {
 public:
   SplayMap() : ns(2), vals(2), root(NONE), size(0) {}
   // Returns false if already in the tree.
-  bool Insert(const Key& key, const Value& value) {
+  bool Insert(Key key, const Value& value) {
     if (Find(key)) return false;
     ++size;
     vals.push_back(value);
@@ -30,12 +30,12 @@ public:
   }
 
   // Returns true if found.
-  bool Find(const Key& key) {
+  bool Find(Key key) {
     if (root == NONE) return false;
     int lnext = TMP, rnext = TMP;
     ns[TMP].l = ns[TMP].r = NONE;
     bool found = false;
-    while (1) {
+    while (!found) {
       if (key < ns[root].k) {
         // Case: we are going left
         int l = ns[root].l;
@@ -68,7 +68,6 @@ public:
           rnext = root;
           root = l;
           found = true;
-          break;
         }
       } else if (ns[root].k < key) {
         // Case: we are going right
@@ -102,12 +101,10 @@ public:
           lnext = root;
           root = r;
           found = true;
-          break;
         }
       } else {
         // Found.
         found = true;
-        break;
       }
     }
     // Reassemble the tree.
@@ -120,7 +117,7 @@ public:
   }
 
   // Returns true if successfully deleted. This only pretend deletes the data.
-  bool Delete(const Key& key) {
+  bool Delete(Key key) {
     if (Find(key)) {
       // Root now contains the key.
       if (ns[root].r == NONE) {
@@ -148,7 +145,7 @@ public:
     return vals[root];
   }
 
-  Value& operator[](const Key& key) {
+  Value& operator[](Key key) {
     if (Find(key)) return Get();
     Insert(key, Value());
     return Get();
