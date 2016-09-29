@@ -55,7 +55,7 @@ private:
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
   SplayMap<index_t, std::vector<expand_t>> cache;
-  std::stack<dfs_state_t> q;
+  std::vector<dfs_state_t> q;
   std::vector<index_t> unexpanded;
 
   std::pair<int, int> RunInternal(std::function<void(const computed_t&)> fn,

@@ -158,6 +158,11 @@ public:
 
   std::size_t Size() { return size; }
 
+  void Reserve(std::size_t s) {
+    ns.reserve(s);
+    vals.reserve(s);
+  }
+
   // Testing / visualisation methods.
   std::string Describe() {
     std::string ans = sfmt(
