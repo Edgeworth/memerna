@@ -31,97 +31,76 @@ public:
 
   // Returns true if found.
   bool Find(const Key& key) {
-    if (root == NONE) return false;  // TODO remove this check?
-    // TODO compare performance replacing Zig-Zag with just Zig
+    if (root == NONE) return false;
     int lnext = TMP, rnext = TMP;
+    ns[TMP].l = ns[TMP].r = NONE;
     bool found = false;
     while (1) {
-      auto& n = ns[root];
-      /*    n
-       *   / \
-       *  l   r
-       * Call the new root we are going to 'x'.
-       */
-      if (key < n.k) {
+      if (key < ns[root].k) {
         // Case: we are going left
-        int l = n.l;
+        int l = ns[root].l;
         if (l == NONE) break;
         if (key < ns[l].k) {
-          // Zig-Zig
-          RotateRight(root);  // Splay tree condition. l is now the parent of x
-          if (ns[l].l == NONE) {
-            // Node isn't in the tree (too small), so set root to the nearest one.
-            root = l;
-            break;
-          }
-          root = ns[l].l;  // Update root.
-          ns[l].l = NONE;  // Split left child
-          ns[rnext].l = l;  // Add to the R tree.
-          rnext = l;  // Update next lowest point for R tree.
-
+          // Zig-Zig - Rotate right
+          ns[root].l = ns[l].r;
+          ns[l].r = root;
+          root = l;
+          l = ns[root].l;
+          if (l == NONE) break;
+          // Split left child
+          ns[rnext].l = root;
+          rnext = root;
+          root = l;
         } else if (ns[l].k < key) {
           // Zig-Zag
-          // Zig:
-          n.l = NONE;  // Split left child
-          ns[rnext].l = root;  // Add to R tree.
-          rnext = root;  // Update next lowest point for R tree.
-          if (ns[l].r == NONE) {
-            // Node isn't in the tree, so set root to nearest.
-            root = l;
-            break;
-          }
-          root = ns[l].r;  // Update root.
-          // Zag:
-          ns[l].r = NONE;  // Split right child next level down.
-          ns[lnext].r = l;  // Add to L tree.
-          lnext = l; // Update next lowest point.
+          // Zig - Split left child
+          ns[rnext].l = root;
+          rnext = root;
+          root = l;
+          if (ns[root].r == NONE) break;
+          // Zag - Split right child
+          root = ns[root].r;
+          ns[lnext].r = l;
+          lnext = l;
         } else {
-          // Found (zig).
-          n.l = NONE;  // Split left child
-          ns[rnext].l = root;  // Add to R tree.
-          rnext = root;  // TODO unnecessary
-          root = l;  // Update root.
+          // Found (zig) - Split left child
+          ns[rnext].l = root;
+          rnext = root;
+          root = l;
           found = true;
           break;
         }
-      } else if (n.k < key) {
+      } else if (ns[root].k < key) {
         // Case: we are going right
-        int r = n.r;
+        int r = ns[root].r;
         if (r == NONE) break;
         if (ns[r].k < key) {
-          // Zig-Zig
-          RotateLeft(root);  // Splay tree condition. r is now the parent of x
-          if (ns[r].r == NONE) {
-            // Node isn't in the tree (too big), so set root to the nearest one.
-            root = r;
-            break;
-          }
-          root = ns[r].r;  // Update root.
-          ns[r].r = NONE;  // Split right child
-          ns[lnext].r = r;  // Add to the L tree.
-          lnext = r;  // Update next lowest point for L tree.
+          // Zig-Zig - Rotate left
+          ns[root].r = ns[r].l;
+          ns[r].l = root;
+          root = r;
+          r = ns[root].r;
+          if (r == NONE) break;
+          // Split right child
+          ns[lnext].r = root;
+          lnext = root;
+          root = r;
         } else if (key < ns[r].k) {
           // Zig-Zag
-          // Zig:
-          n.r = NONE;  // Split right child
-          ns[lnext].r = root;  // Add to L tree.
-          lnext = root;  // Update next lowest point for L tree.
-          if (ns[r].l == NONE) {
-            // Node isn't in the tree, so set root to nearest.
-            root = r;
-            break;
-          }
-          root = ns[r].l;  // Update root.
-          // Zag:
-          ns[r].l = NONE;  // Split left child next level down.
-          ns[rnext].l = r;  // Add to R tree.
-          rnext = r; // Update next lowest point.
+          // Zig - Split right child
+          ns[lnext].r = root;
+          lnext = root;
+          root = r;
+          if (ns[root].l == NONE) break;
+          // Zag - Split left child.
+          root = ns[root].l;
+          ns[rnext].l = r;
+          rnext = r;
         } else {
-          // Found (zig).
-          n.r = NONE;  // Split right child
-          ns[lnext].r = root;  // Add to L tree.
-          lnext = root;  // TODO unnecessary
-          root = r;  // Update root.
+          // Found (zig) - Split right child
+          ns[lnext].r = root;
+          lnext = root;
+          root = r;
           found = true;
           break;
         }
@@ -149,9 +128,9 @@ public:
         root = ns[root].l;
       } else {
         // Or the right subtree is not empty, in which case:
-        // Move the next lowest key up to the top of the right subtree
-        // with another find. Since it is the next lowest, the left child of the right subtree
-        // will be NONE, so we can attach the left subtree there.
+        // Move the next lowest key up to the top of the right subtree with another find.
+        // Since it is the next lowest, the left child of the right subtree will be NONE,
+        // so we can attach the left subtree there.
         int oldroot = root;
         root = ns[root].r;
         Find(key);
@@ -198,20 +177,6 @@ private:
   int root;
   std::size_t size;
 
-  void RotateLeft(int p) {
-    int x = ns[p].r;
-    assert(x != NONE);
-    ns[p].r = ns[x].l;
-    ns[x].l = p;
-  }
-
-  void RotateRight(int p) {
-    int x = ns[p].l;
-    assert(x != NONE);
-    ns[p].l = ns[x].r;
-    ns[x].r = p;
-  }
-
   std::vector<std::string> DescribeInternal(int node) {
     if (node == NONE) return {""};
     const auto& n = ns[node];
@@ -221,9 +186,10 @@ private:
       desc.push_back("| " + s);
     int idx = int(desc.size());
     for (const auto& s : DescribeInternal(n.r))
-      desc.push_back(s);
-    desc[1][1] = '-';
-    desc[idx] = "|-" + desc[idx];
+      desc.push_back("  " + s);
+    desc[1][1] = '_';
+    desc[idx][0] = '|';
+    desc[idx][1] = '_';
     return desc;
   }
 };
