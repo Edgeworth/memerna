@@ -7,7 +7,6 @@ namespace fold {
 namespace internal {
 
 int Suboptimal1::Run(std::function<void(const computed_t&)> fn, bool sorted) {
-  // TODO merge max-delta functionality into this, with repeated dfs? at least use for sorted output
   memset(gp.data(), -1, gp.size());
   memset(gctd.data(), CTD_NA, gctd.size());
   q.reserve(gr.size());  // Reasonable reservation.
@@ -42,6 +41,8 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
   // Otherwise, we will completely finish, and definitely see it.
   energy_t next_seen = MAX_E;
   energy_t energy = 0;
+  q.clear();
+  unexpanded.clear();
   q.push_back({0, {0, -1, EXT}, false});
   while (!q.empty()) {
     auto& s = q.back();
@@ -68,10 +69,8 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
     // we are done with this node.
     if (s.idx == int(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
-      if (s.expand.en != -1 && s.expand.a == DP_P)
-        gp[s.expand.st] = gp[s.expand.en] = -1;
-      if (s.should_unexpand)
-        unexpanded.push_back(s.expand);
+      if (s.expand.en != -1 && s.expand.a == DP_P) gp[s.expand.st] = gp[s.expand.en] = -1;
+      if (s.should_unexpand) unexpanded.push_back(s.expand);
       q.pop_back();
       continue;  // Done.
     }
@@ -111,8 +110,7 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
       // Apply child's modifications to the global state.
       if (exp.ctd0.idx != -1) gctd[exp.ctd0.idx] = exp.ctd0.ctd;
       if (exp.ctd1.idx != -1) gctd[exp.ctd1.idx] = exp.ctd1.ctd;
-      if (exp.unexpanded.st != -1)
-        unexpanded.push_back(exp.unexpanded);
+      if (exp.unexpanded.st != -1) unexpanded.push_back(exp.unexpanded);
     }
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
       gp[ns.expand.st] = ns.expand.en;
