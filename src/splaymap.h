@@ -9,22 +9,21 @@ namespace memerna {
 template <typename Key, typename Value>
 class SplayMap {
 public:
-  SplayMap() : ns(2), vals(2), root(NONE), size(0) {}
+  SplayMap() : ns(2), root(NONE), size(0) {}
   // Returns false if already in the tree.
   template<typename ValueRef>
   bool Insert(Key key, ValueRef&& value) {
     if (Find(key)) return false;
     ++size;
-    vals.emplace_back(std::forward<ValueRef>(value));
 
     int oldroot = root;
     root = int(ns.size());
     // Case where |oldroot| is NONE will be handled magically, since none.{l, r} == none.
     if (key < ns[oldroot].k) {
-      ns.push_back({key, ns[oldroot].l, oldroot});
+      ns.push_back({key, ns[oldroot].l, oldroot, std::forward<ValueRef>(value)});
       ns[oldroot].l = NONE;
     } else {
-      ns.push_back({key, oldroot, ns[oldroot].r});
+      ns.push_back({key, oldroot, ns[oldroot].r, std::forward<ValueRef>(value)});
       ns[oldroot].r = NONE;
     }
     assert(ns[NONE].l == NONE && ns[NONE].r == NONE);  // Keep this invariant.
@@ -147,7 +146,7 @@ public:
 
   const Value& Get() {
     assert(Size() > 0);
-    return vals[root];
+    return ns[root].v;
   }
 
   Value& operator[](Key key) {
@@ -160,14 +159,13 @@ public:
 
   void Reserve(std::size_t s) {
     ns.reserve(s);
-    vals.reserve(s);
   }
 
   // Testing / visualisation methods.
   std::string Describe() {
     std::string ans = sfmt(
-        "Tree with %zu nodes. Backing node size: %zu, Backing vals size: %zu, root at index %d\n",
-        Size(), ns.size(), vals.size(), root);
+        "Tree with %zu nodes. Backing node size: %zu, root at index %d\n",
+        Size(), ns.size(), root);
     for (const auto& s : DescribeInternal(root))
       ans += s + "\n";
     return ans;
@@ -178,14 +176,12 @@ private:
   constexpr static int NONE = 0, TMP = 1;
 
   struct node_t {
-    node_t() : k(), l(NONE), r(NONE) {}
-    node_t(const Key& k_, int l_, int r_) : k(k_), l(l_), r(r_) {}
     Key k;
     int l, r;
+    Value v;
   };
 
   std::vector<node_t> ns;
-  std::vector<Value> vals;
   int root;
   std::size_t size;
 
