@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
       printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
     }, sorted, subopt_delta, subopt_num);
   } else {
-    num_structures = ctx.Suboptimal([](const computed_t& c) {}, sorted, subopt_delta, subopt_num);
+    num_structures = ctx.Suboptimal([](const computed_t&) {}, sorted, subopt_delta, subopt_num);
   }
   printf("%d suboptimal structures\n", num_structures);
 }
