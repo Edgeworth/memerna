@@ -202,6 +202,53 @@ class ViennaRNA:
     return self.name
 
 
+class SJSVienna:
+  def __init__(self, loc=None, sorted=False):
+    try:
+      import default_paths
+      loc = loc or default_paths.SJSVIENNA_PATH
+    except ImportError:
+      pass
+    assert loc
+    self.loc = fix_path(loc)
+    self.extra_args = []
+    self.name = 'SJSVienna'
+    if sorted:
+      self.extra_args.append('-s')
+      self.name += '-sorted'
+
+  def fold(self, rna):
+    raise NotImplementedError
+
+  def efn(self, rna):
+    raise NotImplementedError
+
+  def suboptimal(self, rna, delta, limits, num_only=False):
+    with tempfile.NamedTemporaryFile('r') as out:
+      res = try_command(
+        os.path.join(self.loc, 'Progs', 'RNAsubopt'),
+        '-P', os.path.join(self.loc, '2004.par'),
+        *self.extra_args, '-d2', '-e', '%.1f' % (delta / 10.0),
+        input=rna.seq, record_stdout=out.name, limits=limits)
+      if num_only:
+        res2 = run_command('wc', '-l', out.name, record_stdout=True)
+        num_lines = int(res2.stdout.strip().split(' ')[0])
+        retval = num_lines - 2
+      else:
+        retval = []
+        output = out.read()
+        for i in output.splitlines()[2:]:
+          db, energy = re.split(r'\s+', i.strip())[:2]
+          retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
+    return retval, res
+
+  def close(self):
+    pass
+
+  def __str__(self):
+    return self.name
+
+
 class UNAFold:
   def __init__(self, loc=None):
     try:
@@ -239,7 +286,6 @@ class UNAFold:
     return energy, res
 
   def suboptimal(self, rna, delta, limits, num_only=False):
-    # TODO implement
     raise NotImplementedError
 
   def close(self):
@@ -398,6 +444,7 @@ def process_command(*extra_args):
   parser.add_argument('--viennarna-loc')
   parser.add_argument('--unafold-loc')
   parser.add_argument('--sparsemfefold-loc')
+  parser.add_argument('--sjsvienna-loc')
 
   parser.add_argument('-rh', '--rnastructure-harness', action='store_true')
   parser.add_argument('-rd', '--rnastructure-distribution', action='store_true')
@@ -405,6 +452,8 @@ def process_command(*extra_args):
   parser.add_argument('-vd3', '--viennarna-d3', action='store_true')
   parser.add_argument('-vd2s', '--viennarna-d2-sorted', action='store_true')
   parser.add_argument('-vd3s', '--viennarna-d3-sorted', action='store_true')
+  parser.add_argument('-sjs', '--sjsvienna', action='store_true')
+  parser.add_argument('-sjss', '--sjsvienna-sorted', action='store_true')
   parser.add_argument('-u', '--unafold', action='store_true')
   parser.add_argument('-k', '--memerna', action='store_true')
   parser.add_argument('-smf', '--sparsemfefold', action='store_true')
@@ -416,7 +465,7 @@ def process_command(*extra_args):
 
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
-  if bool(args.fold) + bool(args.energy) + bool(args.subopt) != 1:
+  if bool(args.fold) + bool(args.energy) + bool(args.subopt is not None) != 1:
     parser.error('Exactly one of --fold, --energy, or --subopt is required.')
 
   programs = []
@@ -433,6 +482,10 @@ def process_command(*extra_args):
     programs.append(ViennaRNA(args.viennarna_loc, False, True))
   if args.viennarna_d3_sorted:
     programs.append(ViennaRNA(args.viennarna_loc, True, True))
+  if args.sjsvienna:
+    programs.append(SJSVienna(args.sjsvienna_loc, False))
+  if args.sjsvienna_sorted:
+    programs.append(SJSVienna(args.sjsvienna_loc, True))
   if args.unafold:
     programs.append(UNAFold(args.unafold_loc))
   if args.memerna:
