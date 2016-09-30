@@ -10,7 +10,7 @@ def run_num(alg, ldn):
   print('alg%s - nums, quiet' % alg)
   for l, _, num in ldn:
     res = run_command(
-      './build/c++-relwithdebinfo/subopt', '-q', '-num', str(num), '-subopt-alg', alg, icam1[:l])
+      './build/c++-release/subopt', '-q', '-num', str(num), '-subopt-alg', alg, icam1[:l])
     print('  len %d, num %d: %s' % (l, num, res))
 
 
@@ -18,7 +18,7 @@ def run_delta(alg, ldn):
   print('alg%s - deltas, quiet' % alg)
   for l, d, _ in ldn:
     res = run_command(
-      './build/c++-relwithdebinfo/subopt', '-q', '-delta', str(d), '-subopt-alg', alg, icam1[:l])
+      './build/c++-release/subopt', '-q', '-delta', str(d), '-subopt-alg', alg, icam1[:l])
     print('  len %d, delta %d: %s' % (l, d, res))
 
 
