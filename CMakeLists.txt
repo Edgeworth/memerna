@@ -29,7 +29,8 @@ endif()
 check_c_compiler_flag("-fuse-ld=gold" HAVE_GOLD)
 if(HAVE_GOLD)
   message("Using gold linker")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=gold")
 endif()
 
 # Enable tests.
