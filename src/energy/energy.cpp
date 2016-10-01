@@ -1,5 +1,5 @@
-#include "energy/energy.h"
 #include <algorithm>
+#include "energy/energy.h"
 #include "energy/structure.h"
 
 namespace memerna {
@@ -32,7 +32,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
       energy += em.augu_penalty;
     }
   }
-  num_unpaired = en - st - 1 - num_unpaired + exterior_loop * 2;
+  num_unpaired = en - st - 1 - num_unpaired + int(exterior_loop) * 2;
   if (s) s->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
   branch_ctd_t branch_ctds;
@@ -96,7 +96,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
     for (const auto& ctd : branch_ctds)
       s->AddCtd(ctd.first, ctd.second);
     // Give the pointer back.
-    ss->reset(s.release());
+    *ss = std::move(s);
   }
 
   return energy;
@@ -127,7 +127,7 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, 
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
     energy += MultiloopEnergy(computed, compute_ctds, st, en, branches, em, s);
-  } else if (branches.size() == 0) {
+  } else if (branches.empty()) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
     energy += em.Hairpin(r, st, en, s);

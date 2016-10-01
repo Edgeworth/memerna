@@ -1,5 +1,6 @@
-#include "fold/brute_fold.h"
 #include <set>
+
+#include "fold/brute_fold.h"
 #include "energy/structure.h"
 #include "fold/fold_internal.h"
 #include "parsing.h"
