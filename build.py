@@ -4,23 +4,25 @@ import os
 import sys
 import shutil
 
-
-def run_command(cmd):
-  res = os.system(cmd)
-  if res != 0:
-    sys.exit(1)
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
 parser.add_argument('-c', '--use_clang', action='store_true', default=False, required=False)
 parser.add_argument('-a', '--use_afl', action='store_true', default=False, required=False)
+parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
 parser.add_argument('--compilers', type=str, nargs=2, required=False)
 parser.add_argument('-r', '--regenerate', action='store_true', default=False, required=False)
 parser.add_argument('targets', nargs='*', type=str)
 args = parser.parse_args()
+
+def run_command(cmd):
+  if args.dry:
+    print(cmd)
+  else:
+    res = os.system(cmd)
+    if res != 0:
+      sys.exit(1)
 
 if bool(args.use_clang) + bool(args.use_afl) + bool(args.compilers) > 1:
   parser.error('At most one compiler related flag allowed simultaneously')
