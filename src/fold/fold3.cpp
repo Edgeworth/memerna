@@ -18,8 +18,7 @@ void ComputeTables3() {
   std::vector<cand_t> cand_st[CAND_SIZE];
   array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(gr.size());
   for (int st = N - 1; st >= 0; --st) {
-    for (int i = 0; i < CAND_SIZE; ++i)
-      cand_st[i].clear();
+    for (auto & i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
           en1b = gr[en - 1], en2b = gr[en - 2];

@@ -5,7 +5,7 @@ namespace memerna {
 std::string ArgParse::option_t::Desc() const {
   auto res = desc;
   if (has_default) res += sfmt(" [%s]", default_arg.c_str());
-  if (choices.size()) {
+  if (!choices.empty()) {
     res += " (";
     for (auto iter = choices.begin(); iter != choices.end(); ++iter) {
       if (iter != choices.begin()) res += ", ";
@@ -33,7 +33,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
         flags[arg] = arg;
       }
     } else {
-      positional.push_back(std::move(arg));
+      positional.push_back(arg);
     }
   }
   for (const auto& argpair : possible_args) {

@@ -34,7 +34,7 @@ int MaxNumContiguous(const primary_t& r) {
 }
 
 precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
-  assert(r.size() > 0);
+  assert(!r.empty());
   precomp_t pc;
   // Initialise fast AUGU branch table
   for (base_t i = 0; i < 4; ++i)

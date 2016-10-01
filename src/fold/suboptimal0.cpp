@@ -18,7 +18,7 @@ int Suboptimal0::Run(std::function<void(const computed_t&)> fn) {
   q.insert({{{0, -1, EXT}}, {}, std::vector<int16_t>(gr.size(), -1),
       std::vector<Ctd>(gr.size(), CTD_NA), gext[0][EXT]});
   while (!q.empty()) {
-    auto node = std::move(*q.begin());
+    auto node = *q.begin();
     q.erase(q.begin());
     // Finished state.
     if (node.not_yet_expanded.empty()) {

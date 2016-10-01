@@ -223,7 +223,7 @@ uint32_t EnergyModel::Checksum() const {
 // This isn't portable across machines with different endianness but I don't care.
 #define APPEND_DATA(d)                           \
   do {                                           \
-    auto dp = reinterpret_cast<const char*>(&d); \
+    auto dp = reinterpret_cast<const char*>(&(d)); \
     data.insert(data.end(), dp, dp + sizeof(d)); \
   } while (0)
 

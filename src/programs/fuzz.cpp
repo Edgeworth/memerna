@@ -27,7 +27,7 @@ public:
   Fuzzer(primary_t r_, const energy::EnergyModelPtr em_, bool random_model_, uint_fast32_t seed_,
       const bridge::Rnastructure& rnastructure_, bool do_subopt_, bool do_subopt_rnastructure_,
       int brute_cutoff_)
-      : r(r_), em(random_model_ ? energy::LoadRandomEnergyModel(seed_) : em_),
+      : r(std::move(r_)), em(random_model_ ? energy::LoadRandomEnergyModel(seed_) : em_),
         random_model(random_model_), seed(seed_), rnastructure(rnastructure_),
         do_subopt(do_subopt_), do_subopt_rnastructure(do_subopt_rnastructure_),
         brute_cutoff(brute_cutoff_) {

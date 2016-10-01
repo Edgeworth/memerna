@@ -67,7 +67,7 @@ Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_)
   verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-energy_t Rnastructure::Efn(const secondary_t& secondary, std::string*) const {
+energy_t Rnastructure::Efn(const secondary_t& secondary, std::string* /*desc*/) const {
   const auto structure = LoadStructure(secondary);
   efn2(data.get(), structure.get(), 1, true);
   return energy_t(structure->GetEnergy(1));
@@ -93,7 +93,7 @@ std::vector<computed_t> Rnastructure::Suboptimal(const primary_t& r, energy_t en
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data.get(), 100, short(energy_delta), nullptr, nullptr, false);
-  const auto p_list = StructureToMultiplePairs(*structure);
+  auto p_list = StructureToMultiplePairs(*structure);
   std::vector<computed_t> computeds;
   for (int i = 0; i < int(p_list.size()); ++i) {
     computeds.emplace_back(secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
