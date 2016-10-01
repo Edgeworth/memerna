@@ -42,8 +42,11 @@ void ParseInitiationEnergyFromFile(
   verify_expr(fp != nullptr, "could not open file");
   energy_t energy;
   int idx;
-  while (fscanf(fp, "%d %d ", &idx, &energy) == 2)
+  while (fscanf(fp, "%d %d ", &idx, &energy) == 2) {
+    verify_expr(idx < energy::EnergyModel::INITIATION_CACHE_SZ,
+        "out of bounds index in %s", filename.c_str());
     output[idx] = energy;
+  }
   fclose(fp);
 }
 
