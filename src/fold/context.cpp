@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #include "fold/context.h"
 #include "fold/brute_fold.h"
 #include "fold/suboptimal0.h"
@@ -72,7 +86,8 @@ computed_t Context::Fold() {
 std::vector<computed_t> Context::SuboptimalIntoVector(bool sorted,
     energy_t subopt_delta, int subopt_num) {
   std::vector<computed_t> computeds;
-  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); }, sorted,
+  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
+      sorted,
       subopt_delta, subopt_num);
   assert(num_structures == int(computeds.size()));
   return computeds;

@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #include "fold/fold_internal.h"
 
 namespace memerna {
@@ -18,7 +32,7 @@ void ComputeTables3() {
   std::vector<cand_t> cand_st[CAND_SIZE];
   array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(gr.size());
   for (int st = N - 1; st >= 0; --st) {
-    for (auto & i : cand_st) i.clear();
+    for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
           en1b = gr[en - 1], en2b = gr[en - 2];
