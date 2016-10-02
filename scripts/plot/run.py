@@ -4,65 +4,79 @@ import sys
 
 sys.path.append('scripts')
 
+from plot.subopt_performance import subopt_perf_results
 from plot.fold_performance import fold_perf_results
 from plot.fold_accuracy import fold_accuracy_results
-from plot.load_data import read_fold_dataset
+from plot.load_data import read_fold_dataset, read_subopt_dataset
 
 import seaborn as sns
 
 PREFIX = '../results'
 
 
-def generate_filename_map(dataset_name, rnastructure=True, vd3=True, unafold=True):
+def generate_filename_map(dataset_name, enable):
+  # TODO SJSVienna, SJSViennaMPI
   d = {
     'ViennaRNA-d2': os.path.join(PREFIX, 'ViennaRNA-d2_%s.results' % dataset_name),
+    'ViennaRNA-d2-sorted': os.path.join(PREFIX, 'ViennaRNA-d2-sorted_%s.results' % dataset_name),
     'SparseMFEFold': os.path.join(PREFIX, 'SparseMFEFold_%s.results' % dataset_name),
-    'memerna': os.path.join(PREFIX, 'MemeRNA_%s.results' % dataset_name)
+    'memerna': os.path.join(PREFIX, 'MemeRNA_%s.results' % dataset_name),
+    'RNAstructure': os.path.join(PREFIX, 'RNAstructureDistribution_%s.results' % dataset_name),
+    'RNAstructure-mod': os.path.join(PREFIX, 'RNAstructureHarness_%s.results' % dataset_name),
+    'ViennaRNA-d3': os.path.join(PREFIX, 'ViennaRNA-d3_%s.results' % dataset_name),
+    'ViennaRNA-d3-sorted': os.path.join(PREFIX, 'ViennaRNA-d3-sorted_%s.results' % dataset_name),
+    'SJSViennaMPI': os.path.join(PREFIX, 'SJSViennaMPI_%s.results' % dataset_name),
+    'SJSViennaMPI-sorted': os.path.join(PREFIX, 'SJSViennaMPI-sorted_%s.results' % dataset_name),
+    'UNAFold': os.path.join(PREFIX, 'UNAFold_%s.results' % dataset_name)
   }
-  if rnastructure:
-    d['RNAstructure'] = os.path.join(PREFIX, 'RNAstructureDistribution_%s.results' % dataset_name)
-    d['RNAstructure-mod'] = os.path.join(PREFIX, 'RNAstructureHarness_%s.results' % dataset_name)
-  if vd3:
-    d['ViennaRNA-d3'] = os.path.join(PREFIX, 'ViennaRNA-d3_%s.results' % dataset_name)
-  if unafold:
-    d['UNAFold'] = os.path.join(PREFIX, 'UNAFold_%s.results' % dataset_name)
-  return d
+  return {k:d[k] for k in enable}
 
 
-def main():
-  sns.set(color_codes=True)
-  # fold_test_ds = read_fold_dataset('test', {'test_prog': 'test.results'}, 'test.subset')
-  # fold_archiveii_all_ds = read_fold_dataset(
-  #   'archiveii',
-  #   generate_filename_map('archiveii'),
-  #   os.path.join(PREFIX, 'archiveii_all_dedup.subset')
-  # )
+def fold_graphs():
+  ALL_FOLDERS = ['ViennaRNA-d2', 'SparseMFEFold', 'memerna',
+                 'RNAstructure', 'RNAstructure-mod', 'ViennaRNA-d3', 'UNAFold']
+  FAST_FOLDERS = ['ViennaRNA-d2', 'SparseMFEFold', 'memerna', 'ViennaRNA-d3']
   fold_archiveii_domains_ds = read_fold_dataset(
     'archiveii_domains',
-    generate_filename_map('archiveii'),
+    generate_filename_map('archiveii', ALL_FOLDERS),
     os.path.join(PREFIX, 'archiveii_domains_dedup.subset')
   )
   fold_random_all_ds = read_fold_dataset(
     'random',
-    generate_filename_map('random'),
+    generate_filename_map('random', ALL_FOLDERS),
     os.path.join(PREFIX, 'random_all.subset')
   )
   fold_random_all_fast_ds = read_fold_dataset(
     'random_fast',
-    generate_filename_map('random', False, False, False),
+    generate_filename_map('random', FAST_FOLDERS),
     os.path.join(PREFIX, 'random_all.subset')
   )
   fold_random_large_all_ds = read_fold_dataset(
     'random_large',
-    generate_filename_map('random_large', False),
+    generate_filename_map('random_large', FAST_FOLDERS + ['UNAFold']),
     os.path.join(PREFIX, 'random_large_all.subset')
   )
   print('Loaded data')
-  # fold_perf_results(fold_test_ds)
   fold_perf_results(fold_random_all_ds)
   fold_perf_results(fold_random_all_fast_ds)
   fold_perf_results(fold_random_large_all_ds)
   fold_accuracy_results(fold_archiveii_domains_ds)
+
+
+def main():
+  sns.set(color_codes=True)
+  # TODO SJS Vienna
+  ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'RNAstructure-mod', 'ViennaRNA-d3',
+                 'ViennaRNA-d2-sorted', 'ViennaRNA-d3-sorted']
+  # ALL_SUBOPTS = ['memerna']
+  deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
+  for delta in deltas:
+    subopt_random_all_ds = read_subopt_dataset(
+      'random_subopt_%d' % delta,
+      generate_filename_map('random_subopt_%d' % delta, ALL_SUBOPTS),
+      os.path.join(PREFIX, 'random_all.subset')
+    )
+    subopt_perf_results(subopt_random_all_ds)
 
 
 if __name__ == '__main__':
