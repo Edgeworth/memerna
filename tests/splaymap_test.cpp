@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #include "splaymap.h"
 #include "gtest/gtest.h"
 
@@ -71,7 +85,8 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
         break;
       case 1:
         // Check non-existing
-        do key = val_dist(eng); while (s.count(key));
+        do key = val_dist(eng);
+        while (s.count(key));
         EXPECT_FALSE(h.Find(key));
         break;
       case 2: {
@@ -97,7 +112,8 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
         break;
       case 4:
         // Delete non-existing
-        do key = val_dist(eng); while (s.count(key));
+        do key = val_dist(eng);
+        while (s.count(key));
         EXPECT_FALSE(h.Delete(key));
         break;
       default:

@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #include <set>
 #include <sstream>
 #include <iomanip>
@@ -33,8 +47,8 @@ OpResult DoOperation(char op, int val, SplayMap<int, int>& h, std::set<int>& s) 
   }
   auto keys = h.Keys();
   if (splay_success != set_success || s.size() != h.Size() ||
-       !std::equal(s.begin(), s.end(), keys.begin(), keys.end()))
-     std::abort();
+      !std::equal(s.begin(), s.end(), keys.begin(), keys.end()))
+    std::abort();
   if (invalid) return OpResult::INVALID;
   if (splay_success) return OpResult::SUCCESS;
   return OpResult::FAILURE;
@@ -56,7 +70,7 @@ void DoAfl() {
   std::stringstream ss(data);
   char op = 0;
   int val = 0;
-  while(ss >> std::ws >> op >> std::ws >> val)
+  while (ss >> std::ws >> op >> std::ws >> val)
     DoOperation(op, val, h, s);
   printf("%s\n", h.Describe().c_str());
 #ifdef __AFL_HAVE_MANUAL_CONTROL

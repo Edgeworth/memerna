@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
@@ -261,7 +275,8 @@ private:
       AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
           sfmt("memerna delta suboptimal %d:", i)));
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
+          MaybePrependHeader(
+              CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
               sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
     }
 
@@ -269,7 +284,8 @@ private:
       AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
           sfmt("memerna num suboptimal %d:", i)));
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
+          MaybePrependHeader(
+              CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
               sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
     }
 

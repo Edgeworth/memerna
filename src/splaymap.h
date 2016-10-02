@@ -1,3 +1,17 @@
+// Copyright 2016, E.
+//
+// This file is part of memerna.
+//
+// memerna is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of
+// the License, or (at your option) any later version.
+//
+// memerna is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+// the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along with memerna.
+// If not, see <http://www.gnu.org/licenses/>.
 #ifndef MEMERNA_SPLAYMAP_H
 #define MEMERNA_SPLAYMAP_H
 
@@ -11,7 +25,7 @@ class SplayMap {
 public:
   SplayMap() : ns(2), root(NONE), size(0) {}
   // Returns false if already in the tree.
-  template<typename ValueRef>
+  template <typename ValueRef>
   bool Insert(Key key, ValueRef&& value) {
     if (Find(key)) return false;
     ++size;
