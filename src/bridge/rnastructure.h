@@ -32,7 +32,9 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
   virtual computed_t Fold(const primary_t& r) const override;
-  virtual std::vector<computed_t> Suboptimal(
+  virtual int Suboptimal(std::function<void(const computed_t&)> fn,
+      const primary_t& r, energy_t energy_delta) const override;
+  virtual std::vector<computed_t>  SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const override;
 
   computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;

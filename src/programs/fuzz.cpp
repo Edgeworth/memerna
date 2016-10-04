@@ -31,7 +31,6 @@ using namespace fold;
 using namespace fold::internal;
 
 const int SUBOPT_BRUTE_MAX_STRUCTURES = 10000;
-const int SUBOPT_MEMERNA_MAX_STRUCTURES = 5000;
 const energy_t SUBOPT_MAX_DELTA = 6;  // Same as RNAstructure default.
 
 class Fuzzer {
@@ -40,11 +39,11 @@ public:
 
   Fuzzer(primary_t r_, const energy::EnergyModelPtr em_, bool random_model_, uint_fast32_t seed_,
       const bridge::Rnastructure& rnastructure_, bool do_subopt_, bool do_subopt_rnastructure_,
-      int brute_cutoff_)
+      int max_structures_, int brute_cutoff_)
       : r(std::move(r_)), em(random_model_ ? energy::LoadRandomEnergyModel(seed_) : em_),
         random_model(random_model_), seed(seed_), rnastructure(rnastructure_),
         do_subopt(do_subopt_), do_subopt_rnastructure(do_subopt_rnastructure_),
-        brute_cutoff(brute_cutoff_) {
+        max_structures(max_structures_), brute_cutoff(brute_cutoff_) {
     verify_expr(!do_subopt_rnastructure || do_subopt,
         "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
     verify_expr(!(random_model && do_subopt_rnastructure),
@@ -81,6 +80,7 @@ private:
   const bridge::Rnastructure& rnastructure;
   const bool do_subopt;
   const bool do_subopt_rnastructure;
+  const int max_structures;
   const int brute_cutoff;
 
   // Fuzz state.
@@ -267,8 +267,7 @@ private:
       context_options_t options(context_options_t::TableAlg::TWO, subopt_alg);
       Context ctx(r, em, options);
       memerna_subopts_delta.push_back(ctx.SuboptimalIntoVector(true, SUBOPT_MAX_DELTA, -1));
-      memerna_subopts_num.push_back(
-          ctx.SuboptimalIntoVector(true, -1, SUBOPT_MEMERNA_MAX_STRUCTURES));
+      memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(true, -1, max_structures));
     }
 
     for (int i = 0; i < int(memerna_subopts_delta.size()); ++i) {
@@ -298,7 +297,7 @@ private:
             context_options_t::TableAlg::TWO, context_options_t::SuboptimalAlg::ONE);
         Context ctx(r, em, options);
         auto memerna_subopt = ctx.SuboptimalIntoVector(true, SUBOPT_MAX_DELTA, -1);
-        const auto rnastructure_subopt = rnastructure.Suboptimal(r, SUBOPT_MAX_DELTA);
+        const auto rnastructure_subopt = rnastructure.SuboptimalIntoVector(r, SUBOPT_MAX_DELTA);
         AppendErrors(errors,
             MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
         AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false),
@@ -321,8 +320,11 @@ int main(int argc, char* argv[]) {
           ArgParse::option_t("use random energy models (disables comparison to RNAstructure)")},
       {"no-subopt", ArgParse::option_t("do not test suboptimal folding")},
       {"subopt-rnastructure", ArgParse::option_t("test rnastructure suboptimal folding")},
+      {"subopt-max-structures", ArgParse::option_t(
+          "maximum number of substructures for max-delta fuzz").Arg("5000")},
       {"afl", ArgParse::option_t("reads one rna from stdin and fuzzes - useful for use with afl")},
-      {"brute-cutoff", ArgParse::option_t("maximum rna size to run brute force on").Arg("25")}});
+      {"brute-cutoff", ArgParse::option_t("maximum rna size to run brute force on").Arg("25")}
+  });
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
 
@@ -331,6 +333,7 @@ int main(int argc, char* argv[]) {
   const bool random_model = argparse.HasFlag("random");
   const bool do_subopt = !argparse.HasFlag("no-subopt");
   const bool do_subopt_rnastructure = argparse.HasFlag("subopt-rnastructure");
+  const int max_structures = atoi(argparse.GetOption("subopt-max-structures").c_str());
   const bool afl_mode = argparse.HasFlag("afl");
   const int brute_cutoff = atoi(argparse.GetOption("brute-cutoff").c_str());
 
@@ -349,7 +352,7 @@ int main(int argc, char* argv[]) {
       uint_fast32_t seed = eng();
       // Disable brute force testing for AFL since it's too slow.
       Fuzzer fuzzer(parsing::StringToPrimary(data), t04em, random_model, seed,
-          rnastructure, do_subopt, do_subopt_rnastructure, 0);
+          rnastructure, do_subopt, do_subopt_rnastructure, max_structures, 0);
       const auto res = fuzzer.Run();
       if (!res.empty())
         abort();
@@ -392,7 +395,7 @@ int main(int argc, char* argv[]) {
 
       uint_fast32_t seed = eng();
       Fuzzer fuzzer(r, t04em, random_model, seed, rnastructure, do_subopt, do_subopt_rnastructure,
-          brute_cutoff);
+          max_structures, brute_cutoff);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res)

@@ -102,17 +102,26 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
       energy_t(structure->GetEnergy(1))};
 }
 
-std::vector<computed_t> Rnastructure::Suboptimal(const primary_t& r, energy_t energy_delta) const {
+int Rnastructure::Suboptimal(std::function<void(const computed_t&)> fn,
+    const primary_t& r, energy_t energy_delta) const {
+  auto computeds = SuboptimalIntoVector(r, energy_delta);
+  for (const auto& computed : computeds)
+    fn(computed);
+  return int(computeds.size());
+}
+
+std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
+    const primary_t& r, energy_t energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data.get(), 100, short(energy_delta), nullptr, nullptr, false);
   auto p_list = StructureToMultiplePairs(*structure);
   std::vector<computed_t> computeds;
-  for (int i = 0; i < int(p_list.size()); ++i) {
-    computeds.emplace_back(secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
+  for (int i = 0; i < int(p_list.size()); ++i)
+    computeds.emplace_back(
+        secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
         energy_t(structure->GetEnergy(i + 1)));
-  }
   return computeds;
 }
 }
