@@ -135,7 +135,7 @@ class HarnessFolder:
       else:
         retval = []
         output = out.read()
-        for i in output.splitlines()[1:]:
+        for i in output.splitlines()[:-1]:
           energy, db = re.split(r'\s+', i.strip())
           retval.append((float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db)))
       os.chdir(prev_dir)
@@ -153,10 +153,71 @@ class RNAstructureHarness(HarnessFolder):
     super().__init__(loc, 'RNAstructureHarness', '-r')
 
 
-class MemeRNA(HarnessFolder):
-  def __init__(self, loc=None):
-    super().__init__(loc, 'MemeRNA', '-k')
+class MemeRNA:
+  def __init__(self, loc=None, sorted=False, ctd_output=False):
+    try:
+      import default_paths
+      loc = loc or default_paths.MEMERNA_PATH
+    except ImportError:
+      pass
+    assert loc
+    self.loc = fix_path(loc)
+    self.subopt_args = []
+    self.name = 'memerna'
+    self.ctd_output = ctd_output
+    if sorted:
+      self.subopt_args.append('-sorted')
+      self.name += '-sorted'
+    if ctd_output:
+      self.subopt_args = ['-ctd-output']
+      self.name += '-ctd'
 
+  def fold(self, rna):
+    prev_dir = os.getcwd()
+    os.chdir(self.loc)
+    res = run_command(
+      os.path.join('build', 'c++-release', 'fold'), rna.seq, record_stdout=True)
+    os.chdir(prev_dir)
+    _, db, _ = res.stdout.strip().split('\n')
+    predicted = RNA.from_name_seq_db(rna.name, rna.seq, db.strip())
+    return predicted, res
+
+  def efn(self, rna):
+    prev_dir = os.getcwd()
+    os.chdir(self.loc)
+    res = run_command(
+      os.path.join('build', 'c++-release', 'efn'), rna.seq, rna.db(), record_stdout=True)
+    os.chdir(prev_dir)
+    energy = float(res.stdout.strip().split(' ')[1]) / 10.0
+    return energy, res
+
+  def suboptimal(self, rna, delta, limits, num_only=False):
+    with tempfile.NamedTemporaryFile('r') as out:
+      prev_dir = os.getcwd()
+      os.chdir(self.loc)
+      res = try_command(
+        os.path.join('build', 'c++-release', 'subopt'),
+        *self.subopt_args, '-delta', str(delta),
+        rna.seq, record_stdout=out.name, limits=limits)
+      os.chdir(prev_dir)
+      if num_only:
+        res2 = run_command('wc', '-l', out.name, record_stdout=True)
+        num_lines = int(res2.stdout.strip().split(' ')[0])
+        retval = num_lines - 1
+      else:
+        assert not self.ctd_output
+        retval = []
+        output = out.read()
+        for i in output.splitlines()[:-1]:
+          energy, db = re.split(r'\s+', i.strip())
+          retval.append((float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db)))
+    return retval, res
+
+  def close(self):
+    pass
+
+  def __str__(self):
+    return self.name
 
 class ViennaRNA:
   def __init__(self, loc=None, d3=False, sorted=False):
