@@ -54,24 +54,20 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
   for (int i = 0; i < int(pairs.size()); ++i) {
     if (pairs[i] == -1) continue;
-    if (pairs[i] < i)
-      s[i] = ')';
-    else
-      s[i] = '(';
+    if (pairs[i] < i) s[i] = ')';
+    else s[i] = '(';
   }
   return s;
 }
 
 std::string ComputedToCtdString(const computed_t& computed) {
   const auto& p = computed.s.p;
-  std::string s = PairsToDotBracket(p);
+  std::string s(p.size(), '.');
   for (int i = 0; i < int(p.size()); ++i) {
-    bool closing = false;
-    if (s[i] == '(') s[i] = '[';
-    if (s[i] == ')') {
-      s[i] = ']';
-      closing = true;
-    }
+    if (p[i] == -1) continue;
+    const bool closing = p[i] < i;
+    if (closing) s[i] = ']';
+    else s[i] = '[';
     switch (computed.base_ctds[i]) {
       case CTD_NA:
       case CTD_UNUSED:

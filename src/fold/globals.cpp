@@ -21,6 +21,7 @@ namespace internal {
 primary_t gr;
 std::vector<int> gp;
 std::vector<Ctd> gctd;
+std::string grep;
 precomp_t gpc;
 energy_t genergy;
 energy::EnergyModel gem;

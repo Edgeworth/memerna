@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
   const bool ctd_data = argparse.HasFlag("ctd-output");
   verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
-  std::function<void(const computed_t&)> fn = [](const computed_t&) {};
+  fold::SuboptimalCallback fn = [](const computed_t&) {};
   if (should_print) {
     if (ctd_data) {
       fn = [](const computed_t& c) {
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     } else {
       fn = [](const computed_t& c) {
         printf("%d ", c.energy);
-        puts(parsing::PairsToDotBracket(c.s.p).c_str());
+        puts(fold::internal::grep.c_str());  // meme
       };
     }
   }

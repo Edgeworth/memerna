@@ -16,7 +16,7 @@
 
 #include "fold/brute_fold.h"
 #include "energy/structure.h"
-#include "fold/fold_internal.h"
+#include "fold/fold.h"
 #include "parsing.h"
 
 namespace memerna {

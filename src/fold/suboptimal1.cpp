@@ -20,7 +20,7 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-int Suboptimal1::Run(std::function<void(const computed_t&)> fn, bool sorted) {
+int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   memset(gp.data(), -1, gp.size());
   memset(gctd.data(), CTD_NA, gctd.size());
   q.reserve(gr.size());  // Reasonable reservation.
@@ -40,7 +40,7 @@ int Suboptimal1::Run(std::function<void(const computed_t&)> fn, bool sorted) {
   return RunInternal(fn, delta, false, MAX_STRUCTURES).first;
 }
 
-std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t&)> fn,
+std::pair<int, int> Suboptimal1::RunInternal(SuboptimalCallback fn,
     energy_t cur_delta, bool exact_energy, int structure_limit) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -57,6 +57,7 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
   energy_t energy = 0;
   q.clear();
   unexpanded.clear();
+  grep.resize(gr.size(), '.');
   q.push_back({0, {0, -1, EXT}, false});
   while (!q.empty()) {
     auto& s = q.back();
@@ -83,7 +84,10 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
     // we are done with this node.
     if (s.idx == int(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
-      if (s.expand.en != -1 && s.expand.a == DP_P) gp[s.expand.st] = gp[s.expand.en] = -1;
+      if (s.expand.en != -1 && s.expand.a == DP_P) {
+        gp[s.expand.st] = gp[s.expand.en] = -1;
+        grep[s.expand.st] = grep[s.expand.en] = '.';
+      }
       if (s.should_unexpand) unexpanded.push_back(s.expand);
       q.pop_back();
       continue;  // Done.
@@ -129,6 +133,8 @@ std::pair<int, int> Suboptimal1::RunInternal(std::function<void(const computed_t
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
       gp[ns.expand.st] = ns.expand.en;
       gp[ns.expand.en] = ns.expand.st;
+      grep[ns.expand.st] = '(';
+      grep[ns.expand.en] = ')';
     }
     q.push_back(ns);
   }

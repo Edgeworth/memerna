@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <stack>
-#include "fold/fold_internal.h"
+#include "fold/fold.h"
 
 namespace memerna {
 namespace fold {

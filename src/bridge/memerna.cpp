@@ -36,7 +36,7 @@ energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
 
 computed_t Memerna::Fold(const primary_t& r) const { return fold::Context(r, em, options).Fold(); }
 
-int Memerna::Suboptimal(std::function<void(const computed_t&)> fn,
+int Memerna::Suboptimal(fold::SuboptimalCallback fn,
     const primary_t& r, energy_t energy_delta) const {
   return fold::Context(r, em, options).Suboptimal(fn, true, energy_delta, -1);
 }

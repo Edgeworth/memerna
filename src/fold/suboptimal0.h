@@ -18,7 +18,7 @@
 #include <set>
 #include "common.h"
 #include "energy/structure.h"
-#include "fold/fold_internal.h"
+#include "fold/fold.h"
 #include "parsing.h"
 
 namespace memerna {
@@ -32,7 +32,7 @@ public:
         max_structures(num == -1 ? std::numeric_limits<int>::max() / 4 : num) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
-  int Run(std::function<void(const computed_t&)> fn);
+  int Run(SuboptimalCallback fn);
 
 private:
   struct node_t {

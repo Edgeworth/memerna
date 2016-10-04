@@ -20,7 +20,7 @@ namespace internal {
 
 using namespace energy;
 
-int Suboptimal0::Run(std::function<void(const computed_t&)> fn) {
+int Suboptimal0::Run(SuboptimalCallback fn) {
   const int N = int(gr.size());
   verify_expr(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 

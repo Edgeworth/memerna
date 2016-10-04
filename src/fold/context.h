@@ -19,6 +19,7 @@
 #include "argparse.h"
 #include "common.h"
 #include "energy/energy.h"
+#include "fold/fold.h"
 
 namespace memerna {
 namespace fold {
@@ -67,7 +68,7 @@ public:
   computed_t Fold();
   std::vector<computed_t> SuboptimalIntoVector(bool sorted,
       energy_t subopt_delta = -1, int subopt_num = -1);
-  int Suboptimal(std::function<void(const computed_t&)> fn, bool sorted,
+  int Suboptimal(SuboptimalCallback fn, bool sorted,
       energy_t subopt_delta = -1, int subopt_num = -1);
 
 private:
