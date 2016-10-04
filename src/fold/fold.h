@@ -71,6 +71,9 @@ struct ctd_idx_t {
   Ctd ctd;
 };
 }
+
+typedef std::function<void(const computed_t&)> SuboptimalCallback;
+
 }
 }
 

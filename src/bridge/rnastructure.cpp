@@ -102,7 +102,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
       energy_t(structure->GetEnergy(1))};
 }
 
-int Rnastructure::Suboptimal(std::function<void(const computed_t&)> fn,
+int Rnastructure::Suboptimal(fold::SuboptimalCallback fn,
     const primary_t& r, energy_t energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds)

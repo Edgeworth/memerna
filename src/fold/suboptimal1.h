@@ -17,7 +17,7 @@
 
 #include <algorithm>
 #include "common.h"
-#include "fold/fold_internal.h"
+#include "fold/fold.h"
 #include "splaymap.h"
 
 namespace memerna {
@@ -53,7 +53,7 @@ public:
       delta(delta_ == -1 ? CAP_E : delta_),
       max_structures(num == -1 ? MAX_STRUCTURES : num) {}
 
-  int Run(std::function<void(const computed_t&)> fn, bool sorted);
+  int Run(SuboptimalCallback fn, bool sorted);
 
 private:
   constexpr static int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
@@ -72,7 +72,7 @@ private:
   std::vector<dfs_state_t> q;
   std::vector<index_t> unexpanded;
 
-  std::pair<int, int> RunInternal(std::function<void(const computed_t&)> fn,
+  std::pair<int, int> RunInternal(SuboptimalCallback fn,
       energy_t cur_delta, bool exact_energy, int structure_limit);
 
   const std::vector<expand_t>& GetExpansion(const index_t& to_expand) {

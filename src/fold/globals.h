@@ -28,6 +28,7 @@ namespace internal {
 extern primary_t gr;
 extern std::vector<int> gp;
 extern std::vector<Ctd> gctd;
+extern std::string grep;
 extern energy_t genergy;
 extern energy::EnergyModel gem;
 extern precomp_t gpc;

@@ -86,14 +86,15 @@ computed_t Context::Fold() {
 std::vector<computed_t> Context::SuboptimalIntoVector(bool sorted,
     energy_t subopt_delta, int subopt_num) {
   std::vector<computed_t> computeds;
-  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
+  int num_structures = Suboptimal(
+      [&computeds](const computed_t& c) { computeds.push_back(c); },
       sorted,
       subopt_delta, subopt_num);
   assert(num_structures == int(computeds.size()));
   return computeds;
 }
 
-int Context::Suboptimal(std::function<void(const computed_t&)> fn, bool sorted,
+int Context::Suboptimal(SuboptimalCallback fn, bool sorted,
     energy_t subopt_delta, int subopt_num) {
   if (options.suboptimal_alg == context_options_t::SuboptimalAlg::BRUTE) {
     auto computeds = FoldBruteForce(r, *em, subopt_num);
