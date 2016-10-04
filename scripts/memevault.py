@@ -42,7 +42,7 @@ class MemeVault:
       rna = RNA.from_any_file(read_file(filename))
       rna.name = name
       if rna in self:
-        print('Found duplicate RNAs: %s' % (rna.name))
+        print('Found duplicate RNAs: %s' % rna.name)
       self.add(rna)
 
   def add_random(self, l):

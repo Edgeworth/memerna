@@ -70,11 +70,10 @@ int main(int argc, char* argv[]) {
       const auto r = parsing::StringToPrimary(seq);
       int subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
-        const auto structures = package->Suboptimal(r, subopt_delta);
-        printf("%zu suboptimal structures:\n", structures.size());
-        for (const auto& subopt : structures) {
-          printf("%d %s\n", subopt.energy, parsing::PairsToDotBracket(subopt.s.p).c_str());
-        }
+        int num_structures = package->Suboptimal([](const computed_t& c) {
+          printf("%d %s\n", c.energy, parsing::PairsToDotBracket(c.s.p).c_str());
+        }, r, subopt_delta);
+        printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);
         printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());

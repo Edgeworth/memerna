@@ -26,7 +26,8 @@ int main(int argc, char* argv[]) {
       {"delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
       {"num", ArgParse::option_t("maximum number of reported structures").Arg("-1")},
       {"q", ArgParse::option_t("quiet")},
-      {"sorted", ArgParse::option_t("if the structures should be sorted")}
+      {"sorted", ArgParse::option_t("if the structures should be sorted")},
+      {"ctd-output", ArgParse::option_t("if we should output CTD data")}
   });
   argparse.ParseOrExit(argc, argv);
   const auto pos = argparse.GetPositional();
@@ -41,15 +42,23 @@ int main(int argc, char* argv[]) {
   const int subopt_num = atoi(argparse.GetOption("num").c_str());
   const bool should_print = !argparse.HasFlag("q");
   const bool sorted = argparse.HasFlag("sorted");
+  const bool ctd_data = argparse.HasFlag("ctd-output");
   verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
-  int num_structures = 0;
+  std::function<void(const computed_t&)> fn = [](const computed_t&) {};
   if (should_print) {
-    num_structures = ctx.Suboptimal([](const computed_t& c) {
-      printf("%d %s\n", c.energy, parsing::ComputedToCtdString(c).c_str());
-    }, sorted, subopt_delta, subopt_num);
-  } else {
-    num_structures = ctx.Suboptimal([](const computed_t&) {}, sorted, subopt_delta, subopt_num);
+    if (ctd_data) {
+      fn = [](const computed_t& c) {
+        printf("%d ", c.energy);
+        puts(parsing::ComputedToCtdString(c).c_str());
+      };
+    } else {
+      fn = [](const computed_t& c) {
+        printf("%d ", c.energy);
+        puts(parsing::PairsToDotBracket(c.s.p).c_str());
+      };
+    }
   }
+  int num_structures = ctx.Suboptimal(fn, sorted, subopt_delta, subopt_num);
   printf("%d suboptimal structures\n", num_structures);
 }

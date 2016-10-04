@@ -1,2 +1,2 @@
 ### Todo
-- Write result stuff for suboptimal
+- Update documentation / readmes
