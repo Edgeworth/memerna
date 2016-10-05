@@ -219,6 +219,7 @@ class MemeRNA:
   def __str__(self):
     return self.name
 
+
 class ViennaRNA:
   def __init__(self, loc=None, d3=False, sorted=False):
     try:

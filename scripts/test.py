@@ -28,8 +28,8 @@ def main():
     # os.system('./scripts/run.py -b random -s %d -vd3s' % delta)
     # os.system('./scripts/run.py -b random -s %d -sjsmpi' % delta)
     # os.system('./scripts/run.py -b random -s %d -sjsmpis' % delta)
-    # os.system('./scripts/run.py -b random -s %d -k' % delta)
-    pass
+    os.system('./scripts/run.py -b random -s %d -k' % delta)
+    # pass
   # TODO do next:
 
   # os.system('./scripts/run.py -b random -s %d -k' % delta)
