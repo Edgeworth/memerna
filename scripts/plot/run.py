@@ -77,8 +77,7 @@ def fold_graphs():
   fold_accuracy_results(fold_archiveii_domains_ds)
 
 
-def main():
-  sns.set(color_codes=True)
+def subopt_graphs():
   # TODO SJS Vienna
   ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'RNAstructure-mod', 'ViennaRNA-d3',
                  'ViennaRNA-d2-sorted', 'ViennaRNA-d3-sorted']
@@ -91,6 +90,16 @@ def main():
       os.path.join(PREFIX, 'random_all.subset')
     )
     subopt_perf_results(subopt_random_all_ds)
+
+def main():
+  sns.set(color_codes=True)
+  testds = read_fold_dataset(
+    'random_test',
+    {'memernaold': '../results/MemeRNA_random_large.results', 'memernanew': '../results/memerna_random_large_fold.results'},
+    os.path.join(PREFIX, 'random_large_all.subset')
+  )
+  fold_perf_results(testds)
+
 
 
 if __name__ == '__main__':

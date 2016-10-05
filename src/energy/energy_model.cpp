@@ -135,6 +135,7 @@ energy_t EnergyModel::Bulge(
   }
   // Stacking energy.
   energy += stack[r[ost]][r[ist]][r[ien]][r[oen]];
+  if (s) (*s)->AddNote("%de - stacking", stack[r[ost]][r[ist]][r[ien]][r[oen]]);
   int unpaired = ost + 1;
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
