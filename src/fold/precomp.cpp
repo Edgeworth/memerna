@@ -71,12 +71,9 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       min_internal, MinEnergy(&em.internal_2x2[0][0][0][0][0][0][0][0], sizeof(em.internal_2x2)));
   verify_expr(em.internal_asym >= 0,
       "min_internal optimisation does not work for negative asymmetry penalties");
-  const auto min_mismatch =
-      2 *
-          std::min(
-              MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
-              MinEnergy(&em.internal_other_mismatch[0][0][0][0],
-                  sizeof(em.internal_other_mismatch)));
+  const auto min_mismatch = 2 * std::min(
+      MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
+      MinEnergy(&em.internal_other_mismatch[0][0][0][0], sizeof(em.internal_other_mismatch)));
   const auto min_internal_init =
       MinEnergy(&em.internal_init[4], sizeof(em.internal_init) - 4 * sizeof(em.internal_init[0]));
   min_internal = std::min(
@@ -104,9 +101,8 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   }
   const int N = int(r.size());
   pc.hairpin[N - 1].num_c = int(r[N - 1] == C);
-  for (int i = N - 2; i >= 0; --i) {
+  for (int i = N - 2; i >= 0; --i)
     if (r[i] == C) pc.hairpin[i].num_c = pc.hairpin[i + 1].num_c + 1;
-  }
 
   return pc;
 }

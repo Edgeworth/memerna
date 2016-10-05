@@ -251,7 +251,12 @@ class ViennaRNA:
     return predicted, res
 
   def efn(self, rna):
-    raise NotImplementedError
+    res = run_command(
+      os.path.join(self.loc, 'src', 'bin', 'RNAeval'),
+      *self.extra_args, input=rna.seq + '\n' + rna.db(), record_stdout=True)
+    match = re.search(r'\s+\(\s*([0-9\.\-]+)\s*\)', res.stdout.strip())  # mfw this regex
+    energy = float(match.group(1))
+    return energy, res
 
   def suboptimal(self, rna, delta, limits, num_only=False):
     with tempfile.NamedTemporaryFile('r') as out:
@@ -473,14 +478,17 @@ def run_efn(program, rna):
   print('Energy of %s with %s: %f\n  %s' % (rna.name, program, energy, res))
 
 
-def run_suboptimal(program, rna, delta):
+def run_suboptimal(program, rna, delta, subopt_max_print):
   subopts, res = program.suboptimal(rna, delta, None)
   if res.ret:
     print('Execution failed')
     return
   print('%d suboptimal structures of %s with %s - %s' % (
     len(subopts), rna.name, program, res))
-  for energy, structure in subopts[:20]:
+  subopt_subset = subopts
+  if subopt_max_print > 0:
+    subopt_subset = subopts[:subopt_max_print]
+  for energy, structure in subopt_subset:
     print('%f %s' % (energy, structure.db()))
 
 
@@ -601,6 +609,7 @@ def process_command(*extra_args):
   parser.add_argument('-e', '--energy', action='store_true')
   parser.add_argument('-s', '--subopt', type=int)
   parser.add_argument('-b', '--benchmark', type=str)
+  parser.add_argument('--subopt-max-print', type=int, default=20)
 
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
 
@@ -648,7 +657,7 @@ def process_command(*extra_args):
     elif args.energy:
       run_efn(program, rna)
     elif args.subopt:
-      run_suboptimal(program, rna, args.subopt)
+      run_suboptimal(program, rna, args.subopt, args.subopt_max_print)
 
   for program in programs:
     program.close()
