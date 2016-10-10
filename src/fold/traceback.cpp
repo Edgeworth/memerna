@@ -62,7 +62,7 @@ void ComputeExterior() {
       UPDATE_EXT(EXT, EXT_GU, val);
       UPDATE_EXT(EXT, EXT_WC, val);
 
-      // (   ).<(   ). > Right coax forwardconst
+      // (   ).<(   ). > Right coax forward
       UPDATE_EXT(EXT, EXT_RCOAX, base01);
       // (   ).<( * ). > Right coax backward
       if (st > 0)

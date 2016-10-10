@@ -18,10 +18,11 @@ import sys
 
 sys.path.append('scripts')
 
+import pandas as pd
 from plot.subopt_performance import subopt_perf_results
 from plot.fold_performance import fold_perf_results
 from plot.fold_accuracy import fold_accuracy_results
-from plot.load_data import read_fold_dataset, read_subopt_dataset
+from plot.load_data import read_fold_dataset, read_subopt_dataset, load_subset_file
 
 import seaborn as sns
 
@@ -29,12 +30,12 @@ PREFIX = '../results'
 
 
 def generate_filename_map(dataset_name, enable):
-  # TODO SJSVienna, SJSViennaMPI
   d = {
     'ViennaRNA-d2': os.path.join(PREFIX, 'ViennaRNA-d2_%s.results' % dataset_name),
     'ViennaRNA-d2-sorted': os.path.join(PREFIX, 'ViennaRNA-d2-sorted_%s.results' % dataset_name),
     'SparseMFEFold': os.path.join(PREFIX, 'SparseMFEFold_%s.results' % dataset_name),
-    'memerna': os.path.join(PREFIX, 'MemeRNA_%s.results' % dataset_name),
+    'memerna': os.path.join(PREFIX, 'memerna_%s.results' % dataset_name),
+    'memerna-sorted': os.path.join(PREFIX, 'memerna-sorted_%s.results' % dataset_name),
     'RNAstructure': os.path.join(PREFIX, 'RNAstructureDistribution_%s.results' % dataset_name),
     'RNAstructure-mod': os.path.join(PREFIX, 'RNAstructureHarness_%s.results' % dataset_name),
     'ViennaRNA-d3': os.path.join(PREFIX, 'ViennaRNA-d3_%s.results' % dataset_name),
@@ -43,21 +44,27 @@ def generate_filename_map(dataset_name, enable):
     'SJSViennaMPI-sorted': os.path.join(PREFIX, 'SJSViennaMPI-sorted_%s.results' % dataset_name),
     'UNAFold': os.path.join(PREFIX, 'UNAFold_%s.results' % dataset_name)
   }
-  return {k:d[k] for k in enable}
+  return {k: d[k] for k in enable}
+
+
+FAST_FOLDERS = ['ViennaRNA-d2', 'SparseMFEFold', 'memerna', 'ViennaRNA-d3']
+PERF_FOLDERS = FAST_FOLDERS + ['RNAstructure', 'UNAFold']
+ACCURACY_FOLDERS = PERF_FOLDERS + ['RNAstructure-mod']
+
+
+def fold_accuracy_graphs():
+  fold_archiveii_domains_ds = read_fold_dataset(
+    'archiveii_domains',
+    generate_filename_map('archiveii', ACCURACY_FOLDERS),
+    os.path.join(PREFIX, 'archiveii_domains_dedup.subset')
+  )
+  fold_accuracy_results(fold_archiveii_domains_ds)
 
 
 def fold_graphs():
-  ALL_FOLDERS = ['ViennaRNA-d2', 'SparseMFEFold', 'memerna',
-                 'RNAstructure', 'RNAstructure-mod', 'ViennaRNA-d3', 'UNAFold']
-  FAST_FOLDERS = ['ViennaRNA-d2', 'SparseMFEFold', 'memerna', 'ViennaRNA-d3']
-  fold_archiveii_domains_ds = read_fold_dataset(
-    'archiveii_domains',
-    generate_filename_map('archiveii', ALL_FOLDERS),
-    os.path.join(PREFIX, 'archiveii_domains_dedup.subset')
-  )
   fold_random_all_ds = read_fold_dataset(
     'random',
-    generate_filename_map('random', ALL_FOLDERS),
+    generate_filename_map('random', PERF_FOLDERS),
     os.path.join(PREFIX, 'random_all.subset')
   )
   fold_random_all_fast_ds = read_fold_dataset(
@@ -74,15 +81,17 @@ def fold_graphs():
   fold_perf_results(fold_random_all_ds)
   fold_perf_results(fold_random_all_fast_ds)
   fold_perf_results(fold_random_large_all_ds)
-  fold_accuracy_results(fold_archiveii_domains_ds)
+
+
+DELTAS = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
 
 def subopt_graphs():
   # TODO SJS Vienna
-  ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'RNAstructure-mod', 'ViennaRNA-d3',
-                 'ViennaRNA-d2-sorted', 'ViennaRNA-d3-sorted']
+  ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3',
+                 'ViennaRNA-d2-sorted', 'ViennaRNA-d3-sorted']  # , 'memerna']
   # ALL_SUBOPTS = ['memerna']
-  deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
+  deltas = []
   for delta in deltas:
     subopt_random_all_ds = read_subopt_dataset(
       'random_subopt_%d' % delta,
@@ -90,16 +99,42 @@ def subopt_graphs():
       os.path.join(PREFIX, 'random_all.subset')
     )
     subopt_perf_results(subopt_random_all_ds)
+  subopt_max_ds = read_subopt_dataset(
+    'random_subopt_max',
+    generate_filename_map('random_subopt_max', ['memerna', 'ViennaRNA-d2']),
+    os.path.join(PREFIX, 'random_all.subset')
+  )
+  subopt_perf_results(subopt_max_ds)
+
+
+def extract_highest_structure_count_rows(subopt_name):
+  all_ds = []
+  cols = ['name', 'run', 'length', 'real', 'usersys', 'maxrss', 'numstruc']
+  for delta in DELTAS:
+    fmap = generate_filename_map('random_subopt_%d' % delta, [subopt_name])
+    frame = pd.read_csv(fmap[subopt_name], delimiter=' ', header=None, names=cols)
+    all_ds.append(frame.groupby(frame['name']))
+  subset = load_subset_file(os.path.join(PREFIX, 'random_all.subset'))
+
+  def lookup(ds):
+    try:
+      return ds[1].get_group(s)['numstruc'].iloc[0]
+    except:
+      return -1
+
+  all_rows = []
+  for s in subset:
+    idx, val = max(enumerate(all_ds), key=lookup)
+    all_rows += val.get_group(s).values.tolist()
+  max_frame = pd.DataFrame(all_rows, columns=cols)
+  max_frame.to_csv('test.results', sep=' ', header=False, index=False)
+
 
 def main():
   sns.set(color_codes=True)
-  testds = read_fold_dataset(
-    'random_test',
-    {'memernaold': '../results/MemeRNA_random_large.results', 'memernanew': '../results/memerna_random_large_fold.results'},
-    os.path.join(PREFIX, 'random_large_all.subset')
-  )
-  fold_perf_results(testds)
-
+  fold_graphs()
+  # subopt_graphs()
+  # extract_highest_structure_count_rows('ViennaRNA-d2-sorted')
 
 
 if __name__ == '__main__':

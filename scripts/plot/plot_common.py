@@ -20,7 +20,7 @@ import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
 from matplotlib import pyplot as plt
 
-from common import human_size
+from common import human_size, read_file, fix_path
 from plot.load_data import colmap
 
 EP = 1e-2
@@ -80,6 +80,10 @@ def get_subplot_grid(n, sharex=False, sharey=False):
   return f, axes
 
 
+def get_marker(idx):
+  s = ' .ov^sp*+xD|'
+  return {'marker': s[idx % len(s)], 'markersize': 5, 'markevery': 5}
+
 def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
   f, axes = get_subplot_grid(len(frames), True, True)
   f2, ax = plt.subplots(1)
@@ -98,11 +102,11 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
     label = '%s\n$R^2 = %.3f$' % (frame_id, res.rsquared)
     sns.regplot(xid, yid, label=label, data=data, fit_reg=False, ax=axes[i])
     sm.graphics.regressionplots.abline_plot(
-      model_results=res, ax=axes[i], c=(0, 0, 0, 0.8))
+      model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), **get_marker(i))
 
     eq_label = '{0}: ${2:.5f}x + {1:.2f}$'.format(frame_id, *res.params.tolist())
     sm.graphics.regressionplots.abline_plot(
-      model_results=res, ax=ax, label=eq_label, c=palette[i])
+      model_results=res, ax=ax, label=eq_label, c=palette[i], **get_marker(i))
 
   ax.set_xlim(axes[0].get_xlim())
   ax.set_ylim(axes[0].get_ylim())
@@ -121,9 +125,10 @@ def do_quantity_plot(frames, xid, yid):
   f, ax = plt.subplots(1)
 
   palette = sns.color_palette(n_colors=len(frames))
-  for frame_id in sorted(frames.keys()):
+  for idx, frame_id in enumerate(sorted(frames.keys())):
     frame = frames[frame_id]
-    frame[[xid, yid]].mean().plot(x=xid, y=yid, kind='line', ax=ax, label=frame_id)
+    frame[[xid, yid]].mean().plot(
+      x=xid, y=yid, kind='line', ax=ax, label=frame_id, **get_marker(idx))
     low, high = frame[yid].min(), frame[yid].max()
     ax.fill_between([i for i in sorted(frame.groups)], low, high, alpha=0.2, color=palette.pop(0))
 

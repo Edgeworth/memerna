@@ -19,11 +19,15 @@ def subopt_perf_results(ds):
   fmap_by_len = {name: frame.groupby('length') for name, frame in ds.fmap.items()}
 
   savefig_local(
+    ds.name, 'strucpersec',
+    do_quantity_plot(fmap_by_len, 'length', 'strucpersec'))
+
+  savefig_local(
     ds.name, 'real',
     do_quantity_plot(fmap_by_len, 'length', 'real'))
-  savefig_local(
-    ds.name, 'numstruc',
-    do_quantity_plot(fmap_by_len, 'length', 'numstruc'))
+  # savefig_local(
+  #   ds.name, 'numstruc',
+  #   do_quantity_plot(fmap_by_len, 'length', 'numstruc'))
   savefig_local(
     ds.name, 'maxrss',
     do_quantity_plot(fmap_by_len, 'length', 'maxrss'))
