@@ -192,12 +192,21 @@ class MemeRNA:
     return energy, res
 
   def suboptimal(self, rna, delta, limits, num_only=False):
+    return self.suboptimal_maxdelta(rna, -1, delta, limits, num_only)
+
+  def suboptimal_maxdelta(self, rna, max_num, delta, limits, num_only):
+    maxdelta_args = []
+    if delta >= 0:
+      maxdelta_args += ['-delta', str(delta)]
+    if max_num >= 0:
+      maxdelta_args += ['-num', str(max_num)]
+    assert len(maxdelta_args) > 0
     with tempfile.NamedTemporaryFile('r') as out:
       prev_dir = os.getcwd()
       os.chdir(self.loc)
       res = try_command(
         os.path.join('build', 'c++-release', 'subopt'),
-        *self.subopt_args, '-delta', str(delta),
+        *self.subopt_args, *maxdelta_args,
         rna.seq, record_stdout=out.name, limits=limits)
       os.chdir(prev_dir)
       if num_only:
@@ -497,7 +506,11 @@ BENCHMARK_NUM_TRIES = 5
 BENCHMARK_LIMITS = (12 * 1024 * 1024, 5 * 60)
 
 
-def run_subopt_benchmark(program, dataset, delta):
+def run_subopt_benchmark(program, dataset, delta, num_file):
+  nums = None
+  if num_file:
+    assert isinstance(program, MemeRNA)  # Only memerna supports num folding.
+    nums = {a : int(b) for a, b in [i.split(' ') for i in read_file(num_file).splitlines()]}
   memevault = MemeVault(dataset)
   print('Benchmarking suboptimals with %s on %s with delta %d' % (program, dataset, delta))
   filename = '%s_%s_subopt_%d.results' % (program, dataset, delta)
@@ -512,7 +525,10 @@ def run_subopt_benchmark(program, dataset, delta):
       len_res = []
       failed = False
       for i in range(BENCHMARK_NUM_TRIES):
-        length, res = program.suboptimal(rna, delta, BENCHMARK_LIMITS, True)
+        if nums:
+          length, res = program.suboptimal_maxdelta(rna, nums[rna.name], -1, BENCHMARK_LIMITS, True)
+        else:
+          length, res = program.suboptimal(rna, delta, BENCHMARK_LIMITS, True)
         if res.ret:
           print('Got OOM or OOT (presumably), skipping.')
           failed = True
@@ -603,12 +619,14 @@ def process_command(*extra_args):
   parser.add_argument('-sjsmpis', '--sjsviennampi-sorted', action='store_true')
   parser.add_argument('-u', '--unafold', action='store_true')
   parser.add_argument('-k', '--memerna', action='store_true')
+  parser.add_argument('-ks', '--memerna-sorted', action='store_true')
   parser.add_argument('-smf', '--sparsemfefold', action='store_true')
 
   parser.add_argument('-f', '--fold', action='store_true')
   parser.add_argument('-e', '--energy', action='store_true')
   parser.add_argument('-s', '--subopt', type=int)
   parser.add_argument('-b', '--benchmark', type=str)
+  parser.add_argument('-bn', '--benchmark_nums', type=str)
   parser.add_argument('--subopt-max-print', type=int, default=20)
 
   args = parser.parse_args(sys.argv[1:] + list(*extra_args))
@@ -641,7 +659,9 @@ def process_command(*extra_args):
   if args.unafold:
     programs.append(UNAFold(args.unafold_loc))
   if args.memerna:
-    programs.append(MemeRNA(args.memerna_loc))
+    programs.append(MemeRNA(args.memerna_loc, False))
+  if args.memerna_sorted:
+    programs.append(MemeRNA(args.memerna_loc, True))
   if args.sparsemfefold:
     programs.append(SparseMFEFold(args.sparsemfefold_loc))
 
@@ -651,7 +671,7 @@ def process_command(*extra_args):
       if args.fold:
         run_fold_benchmark(program, args.benchmark, rnastructure_harness)
       elif args.subopt:
-        run_subopt_benchmark(program, args.benchmark, args.subopt)
+        run_subopt_benchmark(program, args.benchmark, args.subopt, args.benchmark_nums)
     elif args.fold:
       run_fold(program, rna)
     elif args.energy:

@@ -26,7 +26,8 @@ colmap = {
   'ppv': 'PPV',
   'sensitivity': 'Sensitivity',
   'mfe': 'MFE',
-  'numstruc': 'Number of structures'
+  'numstruc': 'Number of structures',
+  'strucpersec': 'Structures per second'
 }
 
 
@@ -37,7 +38,8 @@ def read_general_frame(frame, subset, cols, samecols, avgcols):
     if name not in subset: continue
     # Assert that some columns are all the same
     for colname in samecols:
-      assert (group[colname] == group[colname].iloc[0]).all()
+      if not (group[colname] == group[colname].iloc[0]).all():
+        assert (group[colname] == group[colname].iloc[0]).all()
     rows = [[v for i, v in enumerate(group.iloc[0]) if i != 1] for _ in range(3)]
     # Remove outliers and average
     for colname in avgcols:
@@ -62,16 +64,18 @@ def read_fold_frame(filename, subset):
 
 
 def read_subopt_frame(filename, subset):
-  cols = ['name', 'run', 'length', 'real', 'usersys', 'maxrss', 'numstruc']
-  samecols = ['length', 'numstruc']
-  avgcols = ['real', 'usersys', 'maxrss']
+  cols = ['name', 'run', 'length', 'real', 'usersys', 'maxrss', 'numstruc', 'strucpersec']
+  samecols = ['length']
+  avgcols = ['real', 'usersys', 'maxrss', 'numstruc', 'strucpersec']
   frame = pd.read_csv(filename, delimiter=' ', header=None, names=cols)
+  frame['strucpersec'] = frame['numstruc'] / frame['real']
   # Have to put in NaNs for failed runs
   extra_rows = []
   for s in subset:
     if not frame[frame['name'] == s].empty: continue
     extra_rows += [[s, i, int(s[4:]), float('inf'),
-                    float('inf'), float('inf'), float('inf')] for i in range(5)]  # TODO numstruc is 0, should be like inf or something
+                    float('inf'), float('inf'), float('inf'), float('inf')] for i in
+                   range(5)]
   extra_frame = pd.DataFrame(extra_rows, columns=cols)
   return read_general_frame(frame.append(extra_frame), subset, cols, samecols, avgcols)
 
@@ -82,13 +86,17 @@ class DataSet:
     self.fmap = fmap
 
 
-def read_fold_dataset(name, filename_map, subset_file):
-  subset = set(i.strip() for i in read_file(fix_path(subset_file)).strip().splitlines())
+def load_subset_file(subset_filename):
+  return set(i.strip() for i in read_file(fix_path(subset_filename)).strip().splitlines())
+
+
+def read_fold_dataset(name, filename_map, subset_filename):
+  subset = load_subset_file(subset_filename)
   frames = {name: read_fold_frame(filename, subset) for name, filename in filename_map.items()}
   return DataSet(name, frames)
 
 
-def read_subopt_dataset(name, filename_map, subset_file):
-  subset = set(i.strip() for i in read_file(fix_path(subset_file)).strip().splitlines())
+def read_subopt_dataset(name, filename_map, subset_filename):
+  subset = load_subset_file(subset_filename)
   frames = {name: read_subopt_frame(filename, subset) for name, filename in filename_map.items()}
   return DataSet(name, frames)
