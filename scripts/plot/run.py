@@ -19,7 +19,8 @@ import sys
 sys.path.append('scripts')
 
 import pandas as pd
-from plot.subopt_performance import subopt_perf_results
+from plot.plot_common import savefig_local
+from plot.subopt_performance import subopt_distribution
 from plot.fold_performance import fold_perf_results
 from plot.fold_accuracy import fold_accuracy_results
 from plot.load_data import read_fold_dataset, read_subopt_dataset, load_subset_file
@@ -78,33 +79,42 @@ def fold_graphs():
     os.path.join(PREFIX, 'random_large_all.subset')
   )
   print('Loaded data')
-  fold_perf_results(fold_random_all_ds)
-  fold_perf_results(fold_random_all_fast_ds)
-  fold_perf_results(fold_random_large_all_ds)
+  fold_perf_results(fold_random_all_ds, True, True)
+  fold_perf_results(fold_random_all_fast_ds, True, False)
+  fold_perf_results(fold_random_large_all_ds, True, True)
 
 
 DELTAS = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
 
 def subopt_graphs():
-  # TODO SJS Vienna
-  ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3',
-                 'ViennaRNA-d2-sorted', 'ViennaRNA-d3-sorted']  # , 'memerna']
-  # ALL_SUBOPTS = ['memerna']
-  deltas = []
+  ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'ViennaRNA-d2-sorted',
+                 'ViennaRNA-d3-sorted', 'SJSViennaMPI', 'SJSViennaMPI-sorted', 'memerna', 'memerna-sorted']
+  #ALL_SUBOPTS = ['RNAstructure',  'memerna', 'SJSViennaMPI', 'SJSViennaMPI-sorted']
+  # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'ViennaRNA-d3', 'ViennaRNA-d3-sorted',]
+  #ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'SJSViennaMPI', 'memerna']
+  #ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'memerna-sorted', 'memerna']
+  #ALL_SUBOPTS = ['memerna', 'ViennaRNA-d2']
+  deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
+
+  all_ds = []
   for delta in deltas:
     subopt_random_all_ds = read_subopt_dataset(
       'random_subopt_%d' % delta,
       generate_filename_map('random_subopt_%d' % delta, ALL_SUBOPTS),
       os.path.join(PREFIX, 'random_all.subset')
     )
-    subopt_perf_results(subopt_random_all_ds)
-  subopt_max_ds = read_subopt_dataset(
-    'random_subopt_max',
-    generate_filename_map('random_subopt_max', ['memerna', 'ViennaRNA-d2']),
-    os.path.join(PREFIX, 'random_all.subset')
-  )
-  subopt_perf_results(subopt_max_ds)
+    all_ds.append(subopt_random_all_ds.fmap)
+    # subopt_perf_results(subopt_random_all_ds)
+  savefig_local(
+    'subopt_distribution', 'numstruc',
+    subopt_distribution(all_ds, ALL_SUBOPTS))
+  # subopt_max_ds = read_subopt_dataset(
+  #   'random_subopt_max',
+  #   generate_filename_map('random_subopt_max', ['memerna', 'ViennaRNA-d2']),
+  #   os.path.join(PREFIX, 'random_all.subset')
+  # )
+  # subopt_perf_results(subopt_max_ds)
 
 
 def extract_highest_structure_count_rows(subopt_name):
@@ -132,8 +142,8 @@ def extract_highest_structure_count_rows(subopt_name):
 
 def main():
   sns.set(color_codes=True)
-  fold_graphs()
-  # subopt_graphs()
+  # fold_graphs()
+  subopt_graphs()
   # extract_highest_structure_count_rows('ViennaRNA-d2-sorted')
 
 

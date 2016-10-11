@@ -81,12 +81,11 @@ def get_subplot_grid(n, sharex=False, sharey=False):
 
 
 def get_marker(idx):
-  s = ' .ov^sp*+xD|'
+  s = ' ov^sp*+xD|'
   return {'marker': s[idx % len(s)], 'markersize': 5, 'markevery': 5}
 
 def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
   f, axes = get_subplot_grid(len(frames), True, True)
-  f2, ax = plt.subplots(1)
 
   palette = sns.color_palette(n_colors=len(frames))
   for i, frame_id in enumerate(sorted(frames.keys())):
@@ -99,41 +98,52 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
     mod = smf.ols('%s ~ %s' % (yid, xid), data=data)
     res = mod.fit()
 
-    label = '%s\n$R^2 = %.3f$' % (frame_id, res.rsquared)
+    label = '{0}\n${3:.5f}x + {2:.2f}$\n$R^2 = {1:.3f}$'.format(
+      frame_id, res.rsquared, *res.params.tolist())
     sns.regplot(xid, yid, label=label, data=data, fit_reg=False, ax=axes[i])
     sm.graphics.regressionplots.abline_plot(
       model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), **get_marker(i))
 
-    eq_label = '{0}: ${2:.5f}x + {1:.2f}$'.format(frame_id, *res.params.tolist())
-    sm.graphics.regressionplots.abline_plot(
-      model_results=res, ax=ax, label=eq_label, c=palette[i], **get_marker(i))
-
-  ax.set_xlim(axes[0].get_xlim())
-  ax.set_ylim(axes[0].get_ylim())
   names = [colmap[xid], colmap[yid]]
   if logx:
     names[0] = 'log(%s)' % names[0]
   if logy:
     names[1] = 'log(%s)' % names[1]
   set_up_figure(f, names=names)
-  set_up_figure(f2, names=names)
 
-  return f, f2
+  return f
 
 
-def do_quantity_plot(frames, xid, yid):
+def do_quantity_plot(frames, xid, yids):
+  if not isinstance(yids, list): yids = [yids]
   f, ax = plt.subplots(1)
 
-  palette = sns.color_palette(n_colors=len(frames))
   for idx, frame_id in enumerate(sorted(frames.keys())):
     frame = frames[frame_id]
-    frame[[xid, yid]].mean().plot(
-      x=xid, y=yid, kind='line', ax=ax, label=frame_id, **get_marker(idx))
-    low, high = frame[yid].min(), frame[yid].max()
-    ax.fill_between([i for i in sorted(frame.groups)], low, high, alpha=0.2, color=palette.pop(0))
+    for yid in yids:
+      palette = sns.color_palette(n_colors=len(frames))
+      frame[[xid, yid]].mean().plot(
+        x=xid, y=yid, kind='line', ax=ax, label=frame_id, **get_marker(idx))
+      low, high = frame[yid].min(), frame[yid].max()
+      ax.fill_between([i for i in sorted(frame.groups)], low, high, alpha=0.2, color=palette.pop(0))
 
-  set_up_figure(f, names=(colmap[xid], colmap[yid]))
-  if yid == 'maxrss':
+  set_up_figure(f, names=(colmap[xid], colmap[yids[0]]))
+  if yids[0] == 'maxrss':
     ax.yaxis.set_major_formatter(
       mpl.ticker.FuncFormatter(lambda x, pos: human_size(x, False)))
   return f
+
+
+def do_table(frames, ids, do_median=False):
+  cols = ['mean', 'SD']
+  if do_median: cols.append('median')
+  table = [['Package'] + [
+    '%s %s' % (colmap[i], t) for i in ids for t in cols]]
+  for frame_id in sorted(frames.keys()):
+    frame = frames[frame_id]
+    for i in ids:
+      cols = [frame[i].mean(), frame[i].std()]
+      if do_median: cols.append(frame[i].median())
+      table.append([frame_id] + ['%.5f' % val for val in cols])
+  print('TABLE:')
+  print(latex_table(table))

@@ -17,7 +17,7 @@ import scipy
 import seaborn as sns
 
 from plot.load_data import colmap
-from plot.plot_common import set_up_figure, latex_table, savefig_local, get_subplot_grid
+from plot.plot_common import set_up_figure, latex_table, savefig_local, get_subplot_grid, do_table
 
 TEXT_LOC = (0.2, 0.9)
 
@@ -57,17 +57,6 @@ def do_mfe_table(frames, xid):
   print(latex_table(table))
 
 
-def do_accuracy_table(frames, ids):
-  table = [['Package'] + [
-    '%s %s' % (colmap[i], t) for i in ids for t in ['mean', 'SD']]]
-  for frame_id in sorted(frames.keys()):
-    frame = frames[frame_id]
-    table.append([frame_id] + [
-      '%.5f' % val for i in ids for val in (frame[i].mean(), frame[i].std())])
-  print('ACCURACY TABLE:')
-  print(latex_table(table))
-
-
 def do_ttest(frames, xid):
   frame_keys = sorted(frames.keys())
   table = [['Package'] + frame_keys]
@@ -94,5 +83,5 @@ def fold_accuracy_results(ds):
   savefig_local(ds.name, 'fscore', do_accuracy_plot(ds.fmap, 'fscore'))
   savefig_local(ds.name, 'comparison', do_comparison_plot(ds.fmap, 'ppv', 'sensitivity'))
   do_mfe_table(ds.fmap, 'mfe')
-  do_accuracy_table(ds.fmap, ['fscore', 'ppv', 'sensitivity'])
+  do_table(ds.fmap, ['fscore', 'ppv', 'sensitivity'])
   do_ttest(ds.fmap, 'fscore')
