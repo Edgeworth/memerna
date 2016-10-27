@@ -142,8 +142,9 @@ def extract_highest_structure_count_rows(subopt_name):
 
 def main():
   sns.set(color_codes=True)
+  # fold_accuracy_graphs()
   # fold_graphs()
-  subopt_graphs()
+  # subopt_graphs()
   # extract_highest_structure_count_rows('ViennaRNA-d2-sorted')
 
 
