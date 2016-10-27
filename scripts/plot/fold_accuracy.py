@@ -61,6 +61,8 @@ def do_ttest(frames, xid):
   frame_keys = sorted(frames.keys())
   table = [['Package'] + frame_keys]
   for i, a_fid in enumerate(frame_keys):
+    print('Package %s on %s: kurtosis: %lf, skew: %lf' % (
+      a_fid, xid, frames[a_fid][xid].kurtosis(), frames[a_fid][xid].skew()))
     table.append([a_fid])
     for j, b_fid in enumerate(frame_keys):
       if i == j:
@@ -69,7 +71,6 @@ def do_ttest(frames, xid):
       frameA, frameB = frames[a_fid][xid], frames[b_fid][xid]
       if i < j:
         frameA, frameB = frameB, frameA
-      # t, p = scipy.stats.wilcoxon(frameA, frameB)
       t, p = scipy.stats.ttest_rel(frameA, frameB)
       entry = '%.3f' % t
       if i < j:
