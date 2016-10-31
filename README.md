@@ -1,5 +1,8 @@
 # memerna
 
+Check out docs/thesis/thesis.pdf for my thesis which will explain a bit about
+what this is all about.
+
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
 ### Building
@@ -18,6 +21,7 @@ No guarantees this runs or even builds on Windows.
 - build: build output directory
 - cmake: CMake scripts
 - data: energy model data for memerna
+- docs: documentation
 - examples: various dot-bracket example folded RNAs
 - extern: external projects and data (gtest, original data from rnastructure and nndb, rnark)
 - scripts: scripts for various things (see below)
@@ -39,12 +43,9 @@ You can optionally specify -random to fuzz.
 ./scripts/run_benchmarks.py
 Runs benchmarking for various packages.
 
-./scripts/run.py --rnastructure-loc=<> -p <ct or db filename>
+./scripts/run.py
 Supports EFN or folding through -e and -f respectively. Benchmarking through -b.
 Can also specify memevault RNA via -kv <memevault name>.
-
-./scripts/plot_benchmarks.py
-Plots the output of the benchmarking.
 
 ./scripts/parse_data.py
 Parses the original data files from orig_data and outputs them in memerna format in data/.
