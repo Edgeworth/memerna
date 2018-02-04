@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "splaymap.h"
+#include <random>
 #include "gtest/gtest.h"
 
 namespace memerna {
