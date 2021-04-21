@@ -17,19 +17,14 @@
 
 #include "base.h"
 #include "common.h"
-#include "fold/globals.h"
+#include "globals.h"
+#include "fold/fold_globals.h"
 
 namespace memerna {
 namespace fold {
 namespace internal {
 
 // MFE folding related
-
-inline bool ViableFoldingPair(int st, int en) {
-  return CanPair(gr[st], gr[en]) &&
-      ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
-          (st > 0 && en < int(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
-}
 
 struct cand_t {
   energy_t energy;

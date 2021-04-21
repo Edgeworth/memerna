@@ -60,6 +60,9 @@ enum : int8_t {
 enum : int8_t {
   CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SIZE
 };
+
+const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
+
 }
 }
 }

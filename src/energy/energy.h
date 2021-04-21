@@ -29,6 +29,9 @@ namespace energy {
 
 class Structure;
 
+// If (st, en) is not paired, treated as an exterior loop.
+energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds,
+    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
 computed_t ComputeEnergy(
     const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
 computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em,

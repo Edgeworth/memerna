@@ -17,6 +17,7 @@
 
 #include "bridge/bridge.h"
 #include "common.h"
+#include "context.h"
 
 namespace memerna {
 namespace bridge {
@@ -24,7 +25,7 @@ namespace bridge {
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
 public:
-  Memerna(energy::EnergyModelPtr em_, fold::context_options_t options_)
+  Memerna(energy::EnergyModelPtr em_, context_opt_t options_)
       : em(em_), options(options_) {}
 
   Memerna(const Memerna&) = delete;
@@ -36,10 +37,12 @@ public:
       const primary_t& r, energy_t energy_delta) const override;
   virtual std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const override;
+  virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
+      const primary_t& r) const override;
 
 private:
   const energy::EnergyModelPtr em;
-  const fold::context_options_t options;
+  const context_opt_t options;
 };
 }
 }

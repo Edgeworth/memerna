@@ -23,10 +23,10 @@ using namespace memerna;
 int main(int argc, char* argv[]) {
   ArgParse argparse({
       {"v", {"be verbose (if possible)"}}, {"e", {"run efn"}}, {"f", {"run fold"}},
-      {"subopt-delta", ArgParse::option_t("maximum energy delta from minimum").Arg("-1")},
+      {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
-  argparse.AddOptions(fold::FOLD_OPTIONS);
+  argparse.AddOptions(CONTEXT_OPTIONS);
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   verify_expr(argparse.HasFlag("e") + argparse.HasFlag("f") == 1,

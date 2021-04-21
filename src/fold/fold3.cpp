@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "fold/fold.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -22,8 +23,8 @@ using namespace energy;
 
 void ComputeTables3() {
   const int N = int(gr.size());
-  static_assert(
-      HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
+  static_assert(HAIRPIN_MIN_SZ >= 3,
+      "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   // See ComputeTables2 for comments - it is mostly the same.
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
@@ -188,7 +189,7 @@ void ComputeTables3() {
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
-        // (   )<(   ) > Flush coax - U
+        // (   )(<   ) > Flush coax - U
         const auto val = cand.energy + gdp[cand.idx + 1][en][DP_U_WC];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
@@ -205,8 +206,7 @@ void ComputeTables3() {
         mins[DP_U_GU] =
             std::min(mins[DP_U_GU], cand.energy + std::min(gdp[cand.idx + 1][en][DP_U], 0));
       for (auto cand : cand_st[CAND_U_RCOAX]) {
-        // (   ).<( * ). > Right coax backward
-        assert(st > 0);
+        // (   )<.( * ). > Right coax backward
         mins[DP_U_RCOAX] =
             std::min(mins[DP_U_RCOAX], cand.energy + std::min(gdp[cand.idx + 1][en][DP_U], 0));
       }
@@ -258,34 +258,29 @@ void ComputeTables3() {
       const auto lcoax_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
           gem.MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < gdp[st][en][DP_U]) cand_st[CAND_U_LCOAX].push_back({lcoax_base, en});
-      // (   ).<(   ). > Right coax forward - U, U2
-      const auto rcoaxf_base =
-          gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] + gpc.min_mismatch_coax;
+      // (   )<.(   ). > Right coax forward - U, U2
+      const auto rcoaxf_base = gdp[st][en][DP_P] +
+          gpc.augubranch[stb][enb] + gpc.min_mismatch_coax;
       if (rcoaxf_base < gdp[st][en][DP_U]) cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en});
 
-      // (   ).<( * ). > Right coax backward - RCOAX
-      if (st > 0) {
-        const auto rcoaxb_base = gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] +
-            gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb);
-        if (rcoaxb_base < gdp[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
-          cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
-        // Base case.
-        gdp[st][en][DP_U_RCOAX] = std::min(gdp[st][en][DP_U_RCOAX], rcoaxb_base);
-      }
+      // (   )<.( * ). > Right coax backward - RCOAX
+      const auto rcoaxb_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
+          gem.MismatchCoaxial(en1b, enb, stb, st1b);
+      if (rcoaxb_base < gdp[st][en][DP_U_RCOAX] && rcoaxb_base < cand_st_mins[CAND_U_RCOAX])
+        cand_st_mins[CAND_U_RCOAX] = rcoaxb_base;
+      // Base case.
+      gdp[st][en][DP_U_RCOAX] = std::min(gdp[st][en][DP_U_RCOAX], rcoaxb_base);
 
-      // (   )<(   ) > Flush coax - U, U2
-      if (en + 1 < N) {
-        const auto enr1b = gr[en + 1];
-        const auto wc_flush_base =
-            gdp[st][en][DP_P] + gpc.augubranch[stb][enb] + gem.stack[enb][enr1b][enr1b ^ 3][stb];
-        const auto gu_flush_base =
-            gdp[st][en][DP_P] + gpc.augubranch[stb][enb] + gem.stack[enb][enr1b][enr1b ^ 1][stb];
-        if (wc_flush_base < CAP_E && wc_flush_base < gdp[st][en][DP_U])
-          cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
-        if (gu_flush_base < CAP_E && (enr1b == G || enr1b == U) &&
-            gu_flush_base < gdp[st][en][DP_U])
-          cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
-      }
+      // (   )(<   ) > Flush coax - U, U2
+      const auto wc_flush_base = gdp[st][en - 1][DP_P] +
+          gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 3][stb];
+      const auto gu_flush_base = gdp[st][en - 1][DP_P] +
+          gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 1][stb];
+      if (wc_flush_base < CAP_E && wc_flush_base < gdp[st][en - 1][DP_U])
+        cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en - 1});
+      if (gu_flush_base < CAP_E && (enb == G || enb == U) &&
+          gu_flush_base < gdp[st][en - 1][DP_U])
+        cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en - 1});
 
       // Base cases.
       gdp[st][en][DP_U] = std::min(gdp[st][en][DP_U], normal_base);

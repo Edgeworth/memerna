@@ -175,6 +175,13 @@ public:
     ns.reserve(s);
   }
 
+  void Clear() {
+    ns.resize(2);
+    assert(ns[NONE].l == NONE && ns[NONE].r == NONE);
+    root = NONE;
+    size = 0;
+  }
+
   // Testing / visualisation methods.
   std::string Describe() {
     std::string ans = sfmt(

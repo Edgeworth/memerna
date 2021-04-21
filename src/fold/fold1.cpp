@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "fold/fold.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -137,26 +138,21 @@ void ComputeTables1() {
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
 
-        // (   ).<(   ). > Right coax forward and backward
-        val = base01 + gdp[piv + 1][en][DP_U_RCOAX];
+        // (   )<.(   ). > Right coax forward and backward
+        val = base00 + gdp[piv + 1][en][DP_U_RCOAX];
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
-        if (st > 0)
-          rcoax_min = std::min(
-              rcoax_min, base01 + gem.MismatchCoaxial(pl1b, pb, gr[st - 1], stb) + right_unpaired);
+        rcoax_min = std::min(rcoax_min, base11 +
+            gem.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
-        // There has to be remaining bases to even have a chance at these cases.
-        if (piv < en) {
-          const auto pr1b = gr[piv + 1];
-          // (   )<(   ) > Flush coax - U
-          val = base00 + gem.stack[pb][pr1b][pr1b ^ 3][stb] + gdp[piv + 1][en][DP_U_WC];
+        // (   )(<   ) > Flush coax - U
+        val = base01 + gem.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
+        u_min = std::min(u_min, val);
+        u2_min = std::min(u2_min, val);
+        if (pb == G || pb == U) {
+          val = base01 + gem.stack[pl1b][pb][pb ^ 1][stb] + gdp[piv][en][DP_U_GU];
           u_min = std::min(u_min, val);
           u2_min = std::min(u2_min, val);
-          if (pr1b == G || pr1b == U) {
-            val = base00 + gem.stack[pb][pr1b][pr1b ^ 1][stb] + gdp[piv + 1][en][DP_U_GU];
-            u_min = std::min(u_min, val);
-            u2_min = std::min(u2_min, val);
-          }
         }
       }
 

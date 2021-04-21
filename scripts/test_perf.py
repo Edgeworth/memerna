@@ -46,6 +46,7 @@ def run_fold(alg, lens):
       '-dp-alg', alg, icam1[:l])
     print('  len %d: %s' % (l, res))
 
+
 def main():
   run_fold('2', [1800, 2500, 2900])
   # run_delta('1', lendeltanum)

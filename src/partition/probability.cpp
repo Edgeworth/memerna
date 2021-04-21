@@ -12,24 +12,20 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "bridge/bridge.h"
-#include "bridge/memerna.h"
-#include "bridge/rnastructure.h"
-#include "energy/load_model.h"
+#include <energy/energy_model.h>
+#include "partition/partition.h"
 
 namespace memerna {
-namespace bridge {
+namespace partition {
 
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
-  verify_expr(argparse.HasFlag("r") + argparse.HasFlag("k") == 1,
-      "require exactly one package flag\n%s", argparse.Usage().c_str());
-  if (argparse.HasFlag("r")) {
-    return std::unique_ptr<RnaPackage>(
-        new Rnastructure("extern/miles_rnastructure/data_tables/", false));
-  } else {
-    return std::unique_ptr<RnaPackage>(new Memerna(
-        energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
-  }
+probabilities_t ComputeProbabilities(const partition_t& partition) {
+  const int N = int(partition.p.Size());
+  probabilities_t probabilities(std::size_t(N), 0);
+  for (int i = 0; i < N; ++i)
+    for (int j = i; j < N; ++j)
+      probabilities[i][j][0] = partition.p[i][j][0] * partition.p[j][i][0] / partition.q;
+  return probabilities;
 }
+
 }
 }

@@ -20,7 +20,7 @@ import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
 from matplotlib import pyplot as plt
 
-from common import human_size, read_file, fix_path
+from common import human_size
 from plot.load_data import colmap
 
 EP = 1e-2
@@ -83,6 +83,7 @@ def get_subplot_grid(n, sharex=False, sharey=False):
 def get_marker(idx):
   s = ' ov^sp*+xD|'
   return {'marker': s[idx % len(s)], 'markersize': 5, 'markevery': 5}
+
 
 def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
   f, axes = get_subplot_grid(len(frames), True, True)

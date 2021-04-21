@@ -19,8 +19,8 @@ namespace memerna {
 namespace energy {
 
 namespace {
-const energy_t RAND_MIN_ENERGY = -1000;
-const energy_t RAND_MAX_ENERGY = 1000;
+const energy_t RAND_MIN_ENERGY = -100;
+const energy_t RAND_MAX_ENERGY = 100;
 const int RAND_MAX_HAIRPIN_SZ = 8;
 const int RAND_MAX_NUM_HAIRPIN = 50;
 

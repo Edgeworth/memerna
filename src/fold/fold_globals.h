@@ -12,24 +12,30 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "bridge/bridge.h"
-#include "bridge/memerna.h"
-#include "bridge/rnastructure.h"
-#include "energy/load_model.h"
+#ifndef MEMERNA_FOLD_GLOBALS_H
+#define MEMERNA_FOLD_GLOBALS_H
+
+#include "array.h"
+#include "common.h"
+#include "energy/energy_model.h"
+#include "fold/fold_constants.h"
 
 namespace memerna {
-namespace bridge {
+namespace fold {
+namespace internal {
 
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
-  verify_expr(argparse.HasFlag("r") + argparse.HasFlag("k") == 1,
-      "require exactly one package flag\n%s", argparse.Usage().c_str());
-  if (argparse.HasFlag("r")) {
-    return std::unique_ptr<RnaPackage>(
-        new Rnastructure("extern/miles_rnastructure/data_tables/", false));
-  } else {
-    return std::unique_ptr<RnaPackage>(new Memerna(
-        energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
-  }
+extern std::vector<int> gp;
+extern std::vector<Ctd> gctd;
+extern std::string grep;
+extern energy_t genergy;
+extern array3d_t<energy_t, DP_SIZE> gdp;
+extern array2d_t<energy_t, EXT_SIZE> gext;
+
+}
+
+void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
+
 }
 }
-}
+
+#endif  // MEMERNA_FOLD_GLOBALS_H

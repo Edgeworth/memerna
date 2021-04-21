@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "fold/suboptimal0.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -77,12 +78,12 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
         const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b);
         curnode = node;
 
-        // (   ).<( * ). > Right coax backward
-        if (st > 0 && a == EXT_RCOAX) {
-          energy = base_energy + base01 + gem.MismatchCoaxial(en1b, enb, gr[st - 1], stb) +
+        // (   )<.( * ). > Right coax backward
+        if (a == EXT_RCOAX) {
+          energy = base_energy + base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b) +
               gext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
-          Expand(energy, {en + 1, -1, EXT}, {st, en - 1, DP_P});
+          Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P});
         }
 
         // Cases for EXT, EXT_WC, EXT_GU.
@@ -112,6 +113,16 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
         energy = base_energy + base11 + gem.terminal[en1b][enb][stb][st1b] + gext[en + 1][EXT];
         Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
 
+        // (   )(<   ) > Flush coax
+        energy = base_energy + base01 + gem.stack[en1b][enb][enb ^ 3][stb] + gext[en][EXT_WC];
+        Expand(energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+            {st, CTD_FCOAX_WITH_NEXT});
+        if (enb == G || enb == U) {
+          energy = base_energy + base01 + gem.stack[en1b][enb][enb ^ 1][stb] + gext[en][EXT_GU];
+          Expand(energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+              {st, CTD_FCOAX_WITH_NEXT});
+        }
+
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
           energy = base_energy + base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b);
@@ -119,25 +130,12 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
               {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
           Expand(energy + gext[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
               {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
-
-          // (   ).<(   ). > Right coax forward
-          energy = base_energy + base01 + gext[en + 1][EXT_RCOAX];
-          Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en - 1, DP_P}, {en + 1, CTD_RCOAX_WITH_PREV},
+        }
+        if (en < N - 2) {
+          // (   )<.(   ). > Right coax forward
+          energy = base_energy + base00 + gext[en + 1][EXT_RCOAX];
+          Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en, DP_P}, {en + 2, CTD_RCOAX_WITH_PREV},
               {st, CTD_RCOAX_WITH_NEXT});
-
-          // (   )<(   ) > Flush coax
-          const auto enrb = gr[en + 1];
-          energy =
-              base_energy + base00 + gem.stack[enb][enrb][enrb ^ 3][stb] + gext[en + 1][EXT_WC];
-          Expand(energy, {en + 1, -1, EXT_WC}, {st, en, DP_P}, {en + 1, CTD_FCOAX_WITH_PREV},
-              {st, CTD_FCOAX_WITH_NEXT});
-
-          if (enrb == G || enrb == U) {
-            energy =
-                base_energy + base00 + gem.stack[enb][enrb][enrb ^ 1][stb] + gext[en + 1][EXT_GU];
-            Expand(energy, {en + 1, -1, EXT_GU}, {st, en, DP_P}, {en + 1, CTD_FCOAX_WITH_PREV},
-                {st, CTD_FCOAX_WITH_NEXT});
-          }
         }
       }
       // Finished exterior loop, don't do anymore.
@@ -247,14 +245,12 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
             gdp[st + 1][piv - 1][DP_P] + gem.AuGuPenalty(st1b, pl1b) + gem.multiloop_hack_b;
 
         // Check a == U_RCOAX:
-        // (   ).<( ** ). > Right coax backward
+        // (   )<.( ** ). > Right coax backward
         if (a == DP_U_RCOAX) {
-          if (st > 0) {
-            energy = base_energy + base01 + gem.MismatchCoaxial(pl1b, pb, gr[st - 1], stb);
-            // Our ctds will have already been set by now.
-            Expand(energy, {st, piv - 1, DP_P});
-            Expand(energy + gdp[piv + 1][en][DP_U], {st, piv - 1, DP_P}, {piv + 1, en, DP_U});
-          }
+          energy = base_energy + base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b);
+          // Our ctds will have already been set by now.
+          Expand(energy, {st + 1, piv - 1, DP_P});
+          Expand(energy + gdp[piv + 1][en][DP_U], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U});
           continue;
         }
         // From here on, a must be U, U2, U_WC, or U_GU.
@@ -306,26 +302,22 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
         Expand(energy + gdp[piv + 1][en][DP_U_GU], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U_GU},
             {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV});
 
-        // (   ).<(   ). > Right coax forward - U, U2
-        energy = base_energy + base01 + gdp[piv + 1][en][DP_U_RCOAX];
-        Expand(energy, {st, piv - 1, DP_P}, {piv + 1, en, DP_U_RCOAX}, {st, CTD_RCOAX_WITH_NEXT},
-            {piv + 1, CTD_RCOAX_WITH_PREV});
+        // (   )(<   ) > Flush coax - U, U2
+        energy = base_energy + base01 + gem.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
+        Expand(energy, {st, piv - 1, DP_P}, {piv, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
+            {piv, CTD_FCOAX_WITH_PREV});
 
-        // There has to be remaining bases to even have a chance at these cases.
-        if (piv < en) {
-          auto pr1b = gr[piv + 1];
-          // (   )<(   ) > Flush coax - U, U2
-          energy =
-              base_energy + base00 + gem.stack[pb][pr1b][pr1b ^ 3][stb] + gdp[piv + 1][en][DP_U_WC];
-          Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
-              {piv + 1, CTD_FCOAX_WITH_PREV});
+        if (pb == G || pb == U) {
+          energy = base_energy + base01 + gem.stack[pl1b][pb][pb ^ 1][stb] + gdp[piv][en][DP_U_GU];
+          Expand(energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
+              {piv, CTD_FCOAX_WITH_PREV});
+        }
 
-          if (pr1b == G || pr1b == U) {
-            energy = base_energy + base00 + gem.stack[pb][pr1b][pr1b ^ 1][stb] +
-                gdp[piv + 1][en][DP_U_GU];
-            Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
-                {piv + 1, CTD_FCOAX_WITH_PREV});
-          }
+        if (piv < en - 1) {
+          // (   )<.(   ). > Right coax forward - U, U2
+          energy = base_energy + base00 + gdp[piv + 1][en][DP_U_RCOAX];
+          Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_RCOAX}, {st, CTD_RCOAX_WITH_NEXT},
+              {piv + 2, CTD_RCOAX_WITH_PREV});
         }
       }
     }

@@ -14,9 +14,9 @@
 // If not, see <http://www.gnu.org/licenses/>.
 #include "gtest/gtest.h"
 #include "common_test.h"
-#include "fold/context.h"
-#include "fold/globals.h"
+#include "context.h"
 #include "parsing.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
 namespace energy {
@@ -76,27 +76,27 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
       g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
       GetEnergy(kNNDBHairpin5));
 
-  fold::internal::SetGlobalState(kNNDBHairpin1.r, *g_em);
+  SetEnergyGlobalState(kNNDBHairpin1.r, *g_em);
   EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][A][A][U] + g_em->HairpinInitiation(6),
-      fold::internal::FastHairpin(3, 10));
+      FastHairpin(3, 10));
 
-  fold::internal::SetGlobalState(kNNDBHairpin2.r, *g_em);
+  SetEnergyGlobalState(kNNDBHairpin2.r, *g_em);
   EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][G][G][U] + g_em->hairpin_gg_first_mismatch +
       g_em->HairpinInitiation(5),
-      fold::internal::FastHairpin(3, 9));
+      FastHairpin(3, 9));
 
-  fold::internal::SetGlobalState(kNNDBHairpin3.r, *g_em);
-  EXPECT_EQ(g_em->hairpin["CCGAGG"], fold::internal::FastHairpin(3, 8));
+  SetEnergyGlobalState(kNNDBHairpin3.r, *g_em);
+  EXPECT_EQ(g_em->hairpin["CCGAGG"], FastHairpin(3, 8));
 
-  fold::internal::SetGlobalState(kNNDBHairpin4.r, *g_em);
+  SetEnergyGlobalState(kNNDBHairpin4.r, *g_em);
   EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][C][C][U] + g_em->HairpinInitiation(6) +
       g_em->hairpin_all_c_a * 6 + g_em->hairpin_all_c_b,
-      fold::internal::FastHairpin(3, 10));
+      FastHairpin(3, 10));
 
-  fold::internal::SetGlobalState(kNNDBHairpin5.r, *g_em);
+  SetEnergyGlobalState(kNNDBHairpin5.r, *g_em);
   EXPECT_EQ(g_em->augu_penalty + g_em->terminal[G][G][G][U] + g_em->hairpin_gg_first_mismatch +
       g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
-      fold::internal::FastHairpin(3, 9));
+      FastHairpin(3, 9));
 }
 
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
@@ -184,5 +184,32 @@ TEST_F(EnergyTest, T04Tests) {
   EXPECT_EQ(-45, GetEnergy("GGGGAAACCCC", "((((...))))"));
   EXPECT_EQ(72, GetEnergy("UGACAAAGGCGA", "(..(...)...)"));
 }
+
+TEST_F(EnergyTest, Precomp) {
+  ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
+
+  auto pc = PrecomputeData(parsing::StringToPrimary("GGGGAAACCCC"), *g_em);
+  EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
+  EXPECT_EQ(-34, pc.min_flush_coax);
+  EXPECT_EQ(-26, pc.min_twoloop_not_stack);
+
+  energy_t augubranch[4][4] = {
+      {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};
+  EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
+  EXPECT_TRUE(std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)) == 0);
+}
+
+TEST_F(EnergyTest, Helpers) {
+  EXPECT_EQ(0, internal::MaxNumContiguous(parsing::StringToPrimary("")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("A")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("AA")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("GUAAC")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("GUACA")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GAUCCC")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUC")));
+  EXPECT_EQ(4, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUCAAAA")));
+  EXPECT_EQ(5, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUUUUUCAAAA")));
+}
+
 }
 }

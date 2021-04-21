@@ -14,17 +14,16 @@
 // If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include "common_test.h"
-#include "fold/context.h"
-#include "fold/precomp.h"
+#include "context.h"
 #include "parsing.h"
 
 namespace memerna {
 namespace fold {
 
-class FoldAlgTest : public testing::TestWithParam<fold::context_options_t::TableAlg> {
+class FoldAlgTest : public testing::TestWithParam<context_opt_t::TableAlg> {
 public:
   energy_t FoldEnergy(const std::string& s) {
-    return Context(parsing::StringToPrimary(s), g_em, fold::context_options_t(GetParam()))
+    return Context(parsing::StringToPrimary(s), g_em, context_opt_t(GetParam()))
         .Fold()
         .energy;
   }
@@ -70,32 +69,6 @@ TEST_P(FoldAlgTest, T04) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    FoldAlgTest, FoldAlgTest, testing::ValuesIn(fold::context_options_t::TABLE_ALGS));
-
-TEST(FoldTest, Precomp) {
-  ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
-
-  auto pc = internal::PrecomputeData(parsing::StringToPrimary("GGGGAAACCCC"), *g_em);
-  EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
-  EXPECT_EQ(-34, pc.min_flush_coax);
-  EXPECT_EQ(-26, pc.min_twoloop_not_stack);
-
-  energy_t augubranch[4][4] = {
-      {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};
-  EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
-  EXPECT_TRUE(std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)) == 0);
-}
-
-TEST(FoldTest, Helpers) {
-  EXPECT_EQ(0, internal::MaxNumContiguous(parsing::StringToPrimary("")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("A")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("AA")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("GUAAC")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("GUACA")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GAUCCC")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUC")));
-  EXPECT_EQ(4, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUCAAAA")));
-  EXPECT_EQ(5, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUUUUUCAAAA")));
-}
+    FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
 }
 }

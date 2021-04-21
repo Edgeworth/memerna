@@ -56,8 +56,6 @@ public:
   int Run(SuboptimalCallback fn, bool sorted);
 
 private:
-  constexpr static int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
-
   struct dfs_state_t {
     int idx;
     index_t expand;

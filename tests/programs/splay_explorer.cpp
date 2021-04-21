@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
   ArgParse argparse({
       {"h", {"help"}},
       {"afl", {"afl mode"}},
-      {"r", ArgParse::option_t("load range from 1 until r").Arg("-1")}
+      {"r", opt_t("load range from 1 until r").Arg("-1")}
   });
   argparse.ParseOrExit(argc, argv);
   if (argparse.HasFlag("h")) {

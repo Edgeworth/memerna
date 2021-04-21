@@ -32,7 +32,7 @@
 
 namespace memerna {
 
-const uint32_t T04_MODEL_HASH = 0x03b94db8;
+const uint32_t T04_MODEL_HASH = 0xcf2538f8;
 extern energy::EnergyModelPtr g_em;
 extern std::vector<energy::EnergyModelPtr> g_ems;
 
