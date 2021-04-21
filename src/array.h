@@ -25,9 +25,9 @@ struct array3d_t {
 
 public:
   array3d_t() : data(nullptr), size(0) {}
-  array3d_t(std::size_t size_, uint8_t init_val = MAX_E & 0xFF)
+  array3d_t(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * size_ * K]), size(size_) {
-    memset(data, init_val, sizeof(data[0]) * size_ * size_ * K);
+    std::fill(data, data + size * size * K, init_val);
   }
   ~array3d_t() { delete[] data; }
 
@@ -52,6 +52,8 @@ public:
     return reinterpret_cast<const ArrayType*>(&data[idx * size * K]);
   }
 
+  std::size_t Size() const { return size; }
+
 private:
   T* data;
   std::size_t size;
@@ -63,9 +65,9 @@ public:
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() { delete[] data; }
 
-  array2d_t(std::size_t size_, uint8_t init_val = MAX_E & 0xFF)
+  array2d_t(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * K]), size(size_) {
-    memset(data, init_val, sizeof(data[0]) * size_ * K);
+    std::fill(data, data + size * K, init_val);
   }
 
   array2d_t(const array2d_t&) = delete;

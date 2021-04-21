@@ -17,7 +17,8 @@
 
 #include "argparse.h"
 #include "common.h"
-#include "fold/context.h"
+#include "context.h"
+#include "partition/partition.h"
 
 namespace memerna {
 namespace bridge {
@@ -32,9 +33,11 @@ public:
       const primary_t& r, energy_t energy_delta) const = 0;
   virtual std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const = 0;
+  virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
+      const primary_t& r) const = 0;
 };
 
-const std::map<std::string, ArgParse::option_t> BRIDGE_OPTIONS = {
+const std::map<std::string, opt_t> BRIDGE_OPTIONS = {
     {"r", {"rnastructure"}}, {"k", {"memerna"}}};
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);

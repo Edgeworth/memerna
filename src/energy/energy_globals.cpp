@@ -12,24 +12,19 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "bridge/bridge.h"
-#include "bridge/memerna.h"
-#include "bridge/rnastructure.h"
-#include "energy/load_model.h"
+#include "energy/energy_globals.h"
 
 namespace memerna {
-namespace bridge {
+namespace energy {
 
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
-  verify_expr(argparse.HasFlag("r") + argparse.HasFlag("k") == 1,
-      "require exactly one package flag\n%s", argparse.Usage().c_str());
-  if (argparse.HasFlag("r")) {
-    return std::unique_ptr<RnaPackage>(
-        new Rnastructure("extern/miles_rnastructure/data_tables/", false));
-  } else {
-    return std::unique_ptr<RnaPackage>(new Memerna(
-        energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
-  }
+EnergyModel gem;
+precomp_t gpc;
+
+void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em) {
+  SetGlobalState(r);
+  gem = em;
+  gpc = PrecomputeData(gr, gem);
 }
+
 }
 }

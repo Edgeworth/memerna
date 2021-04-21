@@ -52,7 +52,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
   int N = int(branches.size());
   int RSZ = int(r.size());
   assert(branch_ctds.empty());
-  // Could be on the exterior loop.
+  // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return 0;
 
   // cache[used][i]

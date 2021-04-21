@@ -25,6 +25,14 @@
 #include <tuple>
 #include <vector>
 
+#ifdef PARTITION_MPFR
+#include <boost/multiprecision/mpfr.hpp>
+inline void boost::throw_exception(const std::exception& e) {
+  fprintf(stderr, "Boost exception: %s\n", e.what());
+  std::abort();
+}
+#endif
+
 // Like assert, but can't be disabled.
 #define verify_expr(expr, ...)                        \
   do {                                                \
@@ -41,6 +49,14 @@ namespace memerna {
 typedef int8_t base_t;
 typedef std::vector<base_t> primary_t;
 typedef int32_t energy_t;
+
+#ifdef PARTITION_MPFR
+typedef boost::multiprecision::mpfr_float_1000 penergy_t;
+const penergy_t EP{1e-30};
+#else
+typedef double penergy_t;
+const penergy_t EP{1e-3};
+#endif
 
 enum Ctd : int8_t {
   CTD_NA,
@@ -65,7 +81,7 @@ const energy_t CAP_E = 0x07070707;
 // Values affecting the energy model:
 const int HAIRPIN_MIN_SZ = 3;
 // N.B. This is for kcal/mol so it's not 8.315.
-const double R = 1.985877534e-3;
+const double R = 1.9872036e-3;
 // This is 37 degrees Celsius. Changing this is not a good idea.
 const double T = 310.15;
 // Ninio maximum asymmetry.

@@ -510,7 +510,7 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
   nums = None
   if num_file:
     assert isinstance(program, MemeRNA)  # Only memerna supports num folding.
-    nums = {a : int(b) for a, b in [i.split(' ') for i in read_file(num_file).splitlines()]}
+    nums = {a: int(b) for a, b in [i.split(' ') for i in read_file(num_file).splitlines()]}
   memevault = MemeVault(dataset)
   print('Benchmarking suboptimals with %s on %s with delta %d' % (program, dataset, delta))
   filename = '%s_%s_subopt_%d.results' % (program, dataset, delta)

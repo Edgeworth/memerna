@@ -16,7 +16,7 @@
 
 namespace memerna {
 
-std::string ArgParse::option_t::Desc() const {
+std::string opt_t::Desc() const {
   auto res = desc;
   if (has_default) res += sfmt(" [%s]", default_arg.c_str());
   if (!choices.empty()) {
@@ -70,7 +70,7 @@ std::string ArgParse::Usage() const {
   return usage;
 }
 
-void ArgParse::AddOptions(const std::map<std::string, ArgParse::option_t>& possible_args_) {
+void ArgParse::AddOptions(const std::map<std::string, opt_t>& possible_args_) {
   for (const auto& argpair : possible_args_) {
     verify_expr(
         possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());

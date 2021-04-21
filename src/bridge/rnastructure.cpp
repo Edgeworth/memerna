@@ -87,9 +87,12 @@ energy_t Rnastructure::Efn(const secondary_t& secondary, std::string* /*desc*/) 
   return energy_t(structure->GetEnergy(1));
 }
 
-computed_t Rnastructure::Fold(const primary_t& r) const { return FoldAndDpTable(r, nullptr); }
+computed_t Rnastructure::Fold(const primary_t& r) const {
+  dp_state_t state;
+  return FoldAndDpTable(r, state);
+}
 
-computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
+computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t& dp_state) const {
   const auto structure = LoadStructure(r);
   // First false here says also generate the folding itself (not just the MFE).
   // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
@@ -97,7 +100,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
   // Last parameter is for returning the DP state.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso, dp_state);
+      !use_lyngso, &dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
       energy_t(structure->GetEnergy(1))};
 }
@@ -124,5 +127,47 @@ std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
         energy_t(structure->GetEnergy(i + 1)));
   return computeds;
 }
+
+std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Partition(
+    const primary_t& r) const {
+  const auto structure = LoadStructure(r);
+  const int length = int(r.size());
+  const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
+  DynProgArray<PFPRECISION> w(length);
+  DynProgArray<PFPRECISION> v(length);
+  DynProgArray<PFPRECISION> wmb(length);
+  DynProgArray<PFPRECISION> wl(length);
+  DynProgArray<PFPRECISION> wmbl(length);
+  DynProgArray<PFPRECISION> wcoax(length);
+  const auto w5 = std::make_unique<PFPRECISION[]>(std::size_t(length + 1));
+  const auto w3 = std::make_unique<PFPRECISION[]>(std::size_t(length + 2));
+  const auto pfdata = std::make_unique<pfdatatable>(data.get(), scaling, T);
+  const auto fce = std::make_unique<forceclass>(length);
+  const auto lfce = std::make_unique<bool[]>(std::size_t(2 * length + 1));
+  const auto mod = std::make_unique<bool[]>(std::size_t(2 * length + 1));
+
+  calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr,
+      &w, &v, &wmb, &wl, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
+
+  partition::partition_t partition = {{std::size_t(length)}, 0};
+  partition.q = penergy_t(w5[length]);
+  for (int i = 1; i <= length; ++i) {
+    for (int j = i; j < length + i; ++j) {
+      int adjusted = j > length ? j - length - 1 : j - 1;
+      partition.p[i - 1][adjusted][0] = penergy_t(v.f(i, j));
+    }
+  }
+
+  partition::probabilities_t probability(std::size_t(length), 0);
+  for (int i = 0; i < length; ++i) {
+    for (int j = i; j < length; ++j) {
+      probability[i][j][0] = penergy_t(calculateprobability(
+          i + 1, j + 1, &v, w5.get(), structure.get(),
+          pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
+    }
+  }
+  return {std::move(partition), std::move(probability)};
+}
+
 }
 }

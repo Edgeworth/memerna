@@ -25,7 +25,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
     std::deque<int>& branches, const EnergyModel& em, std::unique_ptr<Structure>* ss) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
-  const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
+  const bool exterior_loop = p[st] != en;
   energy_t energy = 0;
 
   std::unique_ptr<MultiLoopStructure> s = nullptr;
@@ -116,10 +116,11 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
   return energy;
 }
 
-energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, int en,
-    const EnergyModel& em, std::unique_ptr<Structure>* s) {
+energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds,
+    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* s) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
+  const bool exterior_loop = p[st] != en;
   assert(en >= st);
   energy_t energy = 0;
 
@@ -135,9 +136,6 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, 
     }
   }
 
-  // We're in the exterior loop if we were called with the entire RNA and there's no match on the
-  // very ends that takes us out of the exterior loop.
-  const bool exterior_loop = st == 0 && en == int(r.size() - 1) && p[st] != en;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
     energy += MultiloopEnergy(computed, compute_ctds, st, en, branches, em, s);
@@ -155,10 +153,10 @@ energy_t ComputeEnergyInternal(computed_t& computed, bool compute_ctds, int st, 
   for (auto i : branches) {
     if (s) {
       std::unique_ptr<Structure> structure;
-      energy += ComputeEnergyInternal(computed, compute_ctds, i, p[i], em, &structure);
+      energy += ComputeSubstructureEnergy(computed, compute_ctds, i, p[i], em, &structure);
       (*s)->AddBranch(std::move(structure));
     } else {
-      energy += ComputeEnergyInternal(computed, compute_ctds, i, p[i], em, nullptr);
+      energy += ComputeSubstructureEnergy(computed, compute_ctds, i, p[i], em, nullptr);
     }
   }
   if (s) (*s)->SetTotalEnergy(energy);
@@ -177,7 +175,8 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy = ComputeEnergyInternal(computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
+  energy_t energy = ComputeSubstructureEnergy(
+      computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;
     if (s) {
@@ -189,5 +188,6 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   computed_copy.energy = energy;
   return computed_copy;
 }
+
 }
 }

@@ -89,12 +89,13 @@ DELTAS = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
 def subopt_graphs():
   ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'ViennaRNA-d2-sorted',
-                 'ViennaRNA-d3-sorted', 'SJSViennaMPI', 'SJSViennaMPI-sorted', 'memerna', 'memerna-sorted']
-  #ALL_SUBOPTS = ['RNAstructure',  'memerna', 'SJSViennaMPI', 'SJSViennaMPI-sorted']
+                 'ViennaRNA-d3-sorted', 'SJSViennaMPI', 'SJSViennaMPI-sorted', 'memerna',
+                 'memerna-sorted']
+  # ALL_SUBOPTS = ['RNAstructure',  'memerna', 'SJSViennaMPI', 'SJSViennaMPI-sorted']
   # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'ViennaRNA-d3', 'ViennaRNA-d3-sorted',]
-  #ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'SJSViennaMPI', 'memerna']
-  #ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'memerna-sorted', 'memerna']
-  #ALL_SUBOPTS = ['memerna', 'ViennaRNA-d2']
+  # ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'SJSViennaMPI', 'memerna']
+  # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'memerna-sorted', 'memerna']
+  # ALL_SUBOPTS = ['memerna', 'ViennaRNA-d2']
   deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
   all_ds = []

@@ -29,7 +29,7 @@ class Suboptimal0 {
 public:
   Suboptimal0(energy_t delta_, int num)
       : max_energy(delta_ == -1 ? CAP_E : gext[0][EXT] + delta_),
-        max_structures(num == -1 ? std::numeric_limits<int>::max() / 4 : num) {
+        max_structures(num == -1 ? MAX_STRUCTURES : num) {
     verify_expr(max_structures > 0, "must request at least one structure");
   }
   int Run(SuboptimalCallback fn);

@@ -12,14 +12,13 @@
 #
 # You should have received a copy of the GNU General Public License along with memerna.
 # If not, see <http://www.gnu.org/licenses/>.
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 
-from plot.fold_accuracy import TEXT_LOC
 from plot.load_data import colmap
-from plot.plot_common import savefig_local, do_quantity_plot, do_quantity_log_plot, get_subplot_grid, \
-  set_up_figure, latex_table, do_table
+from plot.plot_common import get_subplot_grid, \
+  set_up_figure, do_table
 
 
 def subopt_distribution(all_ds, subopts):
@@ -74,4 +73,3 @@ def subopt_perf_results(ds):
   # f1, f2 = do_quantity_log_plot(fmap_by_len, 'length', 'maxrss')
   # savefig_local(ds.name, 'maxrss_loglog_scatter', f1)
   # savefig_local(ds.name, 'maxrss_loglog_bestfit', f2)
-

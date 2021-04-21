@@ -1,9 +1,9 @@
-*.o
-*.obj
-.idea/
 build/
+.cache/
+.mypy_cache/
+.vscode/
 __pycache__
 *.pyc
 scripts/default_paths.py
 scripts/memevault.db
-
+compile_commands.json
