@@ -12,23 +12,30 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include <cstdio>
 #include <algorithm>
-#include "fold/brute_fold.h"
+#include <cstdio>
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
-#include "partition/partition_globals.h"
+#include "fold/brute_fold.h"
 #include "parsing.h"
+#include "partition/partition_globals.h"
 
 using namespace memerna;
 
-void PrintPartition(const partition::partition_t& p,
-    const std::string& name) {
+void PrintPartition(const partition::partition_t& p, const std::string& name) {
   const int N = int(p.p.Size());
-  std::cout << name << " total: " << p.q << std::endl;
+  // std::cout << name << " total: " << p.q << std::endl;
+  // for (int i = 0; i < N; ++i) {
+  //   for (int j = 0; j < N; ++j) {
+  //     std::cout << p.p[i][j][0] << ' ';
+  //   }
+  //   std::cout << '\n';
+  // }
+
+  auto probs = partition::ComputeProbabilities(p);
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
-      std::cout << p.p[i][j][0] << ' ';
+      std::cout << probs[i][j][0] << ' ';
     }
     std::cout << '\n';
   }
