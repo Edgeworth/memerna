@@ -54,7 +54,25 @@ endif ()
 
 # Enable tests.
 set(THREADS_PREFER_PTHREAD_FLAG ON)  # Gtest needs this.
-add_subdirectory(extern/gtest)
+# Download and unpack googletest at configure time
+configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+if (result)
+  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+endif ()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+if (result)
+  message(FATAL_ERROR "Build step for googletest failed: ${result}")
+endif ()
+
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
+include(GoogleTest)
+
 enable_testing()
 
 # Flags for each build configuration.

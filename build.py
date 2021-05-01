@@ -17,8 +17,10 @@ import argparse
 import os
 import sys
 import shutil
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home(), "bin"), required=False)
 parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
@@ -61,7 +63,7 @@ defs = {
 if args.use_mpfr:
   defs['PARTITION_MPFR'] = 'ON'
 
-build_dir = os.path.join('build', defs['CMAKE_CXX_COMPILER'] + '-' + defs['CMAKE_BUILD_TYPE'])
+build_dir = os.path.join(args.prefix, 'memerna', defs['CMAKE_CXX_COMPILER'] + '-' + defs['CMAKE_BUILD_TYPE'])
 if defs['PARTITION_MPFR'] == 'ON':
   build_dir += '-mpfr'
 regenerate = args.regenerate
@@ -69,14 +71,17 @@ regenerate = args.regenerate
 if regenerate and os.path.exists(build_dir):
   shutil.rmtree(build_dir)
 
+print(build_dir)
 if not os.path.exists(build_dir):
   os.makedirs(build_dir)
   regenerate = True
+
+proj_dir = os.getcwd()
 
 os.chdir(build_dir)
 if regenerate:
   print('Regenerating cmake files.')
   def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
-  run_command('cmake %s ../../' % def_str)
+  run_command('cmake %s %s' % (def_str, proj_dir))
 run_command('AFL_HARDEN=1 make -j16 %s' % ' '.join(args.targets))
 os.chdir('../../')
