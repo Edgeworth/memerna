@@ -12,12 +12,14 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include <iostream>
 #include <energy/energy_globals.h>
-#include "partition/partition.h"
-#include "globals.h"
-#include "partition/partition_globals.h"
+
+#include <iostream>
+
 #include "energy/energy_globals.h"
+#include "globals.h"
+#include "partition/partition.h"
+#include "partition/partition_globals.h"
 
 namespace memerna {
 namespace partition {
@@ -30,9 +32,9 @@ void Partition1() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-          en1b = gr[en - 1], en2b = gr[en - 2];
+                   en1b = gr[en - 1], en2b = gr[en - 2];
 
-      //if (CanPair(stb, enb)) {  // TODO lonely pairs?
+      // if (CanPair(stb, enb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(st, en)) {
         penergy_t p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -51,8 +53,7 @@ void Partition1() {
         // (<   ><   >5) 5'
         p += base_branch_cost * gpt[st + 1][en - 2][PT_U2] * gppc.em.dangle5[stb][en1b][enb];
         // (.<   ><   >.) Terminal mismatch
-        p += base_branch_cost * gpt[st + 2][en - 2][PT_U2] *
-            gppc.em.terminal[stb][st1b][en1b][enb];
+        p += base_branch_cost * gpt[st + 2][en - 2][PT_U2] * gppc.em.terminal[stb][st1b][en1b][enb];
 
         const auto outer_coax = gppc.em.MismatchCoaxial(stb, st1b, en1b, enb);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -105,8 +106,10 @@ void Partition1() {
         u2 += base00 * gpt[piv + 1][en][PT_U];
         penergy_t val = base00 + base00 * gpt[piv + 1][en][PT_U];
         u += val;
-        if (IsGu(stb, pb)) gu += val;
-        else wc += val;
+        if (IsGu(stb, pb))
+          gu += val;
+        else
+          wc += val;
 
         // (   )3<   > 3' - U
         val = base01 * gppc.em.dangle3[pl1b][pb][stb];
@@ -172,14 +175,12 @@ void Partition1() {
       //        ..)...(..
       // rspace  en   st  lspace
       const int lspace = N - st - 1, rspace = en;
-      const base_t stb = gr[st],
-          st1b = lspace ? gr[st + 1] : base_t(-1),
-          st2b = lspace > 1 ? gr[st + 2] : base_t(-1),
-          enb = gr[en],
-          en1b = rspace ? gr[en - 1] : base_t(-1),
-          en2b = rspace > 1 ? gr[en - 2] : base_t(-1);
+      const base_t stb = gr[st], st1b = lspace ? gr[st + 1] : base_t(-1),
+                   st2b = lspace > 1 ? gr[st + 2] : base_t(-1), enb = gr[en],
+                   en1b = rspace ? gr[en - 1] : base_t(-1),
+                   en2b = rspace > 1 ? gr[en - 2] : base_t(-1);
 
-      //if (CanPair(enb, stb)) {  // TODO lonely pairs?
+      // if (CanPair(enb, stb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(en, st)) {
         penergy_t p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
@@ -189,8 +190,8 @@ void Partition1() {
             p += FastTwoLoop(oen, ost, en, st) * gpt[ost][oen][PT_P];
         }
         const penergy_t base_branch_cost = gppc.augubranch[stb][enb] * gppc.em.multiloop_hack_a;
-        const penergy_t outer_coax = lspace && rspace ?
-            gppc.em.MismatchCoaxial(stb, st1b, en1b, enb) : 0.0;
+        const penergy_t outer_coax =
+            lspace && rspace ? gppc.em.MismatchCoaxial(stb, st1b, en1b, enb) : 0.0;
         // Try being an exterior loop - coax cases handled in the loop after this.
         {
           const penergy_t augu = gppc.em.AuGuPenalty(enb, stb);
@@ -281,8 +282,8 @@ void Partition1() {
         // At worst the enclosing loop has to start at st + 1.
         const int limit = en + N;
         for (int tpiv = st + 2; tpiv < limit; ++tpiv) {
-          const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N),
-              pr = FastMod(tpiv + 1, N), pr1 = FastMod(tpiv + 2, N);
+          const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N), pr = FastMod(tpiv + 1, N),
+                    pr1 = FastMod(tpiv + 2, N);
           // Left block is: [st, piv], Right block is: [piv + 1, en].
           base_t pl1b = gr[pl], plb = gr[piv], prb = gr[pr], pr1b = gr[pr1];
           // When neither the left block nor the right block straddles the border
@@ -290,7 +291,8 @@ void Partition1() {
           const bool straddling = tpiv != (N - 1);
           // Left loop formable if not straddling, and is big enough or crosses over.
           const bool left_formable = straddling && (piv - st - 2 >= HAIRPIN_MIN_SZ || tpiv >= N);
-          const bool right_formable = straddling && (en - piv - 3 >= HAIRPIN_MIN_SZ || tpiv < N - 1);
+          const bool right_formable =
+              straddling && (en - piv - 3 >= HAIRPIN_MIN_SZ || tpiv < N - 1);
           const bool left_dot_formable = left_formable && tpiv != N;  // Can't split a dot.
           const bool right_dot_formable = right_formable && tpiv != N - 2;  // Can't split a dot.
 
@@ -367,13 +369,17 @@ void Partition1() {
           val = base00 * gpt[pr][en][PT_U];
           u2 += val;
           u += val;
-          if (IsGu(stb, pb)) gu += val;
-          else wc += val;
+          if (IsGu(stb, pb))
+            gu += val;
+          else
+            wc += val;
           // U must cross the boundary to have the rest of it be nothing.
           if (tpiv >= N) {
             u += base00;
-            if (IsGu(stb, pb)) gu += base00;
-            else wc += base00;
+            if (IsGu(stb, pb))
+              gu += base00;
+            else
+              wc += base00;
           }
 
           // |  )  >>   <(   )<(  | Flush coax
@@ -446,6 +452,6 @@ void Partition1() {
   }
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace partition
+}  // namespace memerna

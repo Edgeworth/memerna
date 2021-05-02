@@ -16,6 +16,7 @@
 #define MEMERNA_SPLAYMAP_H
 
 #include <algorithm>
+
 #include "common.h"
 
 namespace memerna {
@@ -171,9 +172,7 @@ public:
 
   std::size_t Size() { return size; }
 
-  void Reserve(std::size_t s) {
-    ns.reserve(s);
-  }
+  void Reserve(std::size_t s) { ns.reserve(s); }
 
   void Clear() {
     ns.resize(2);
@@ -185,14 +184,13 @@ public:
   // Testing / visualisation methods.
   std::string Describe() {
     std::string ans = sfmt(
-        "Tree with %zu nodes. Backing node size: %zu, root at index %d\n",
-        Size(), ns.size(), root);
-    for (const auto& s : DescribeInternal(root))
-      ans += s + "\n";
+        "Tree with %zu nodes. Backing node size: %zu, root at index %d\n", Size(), ns.size(), root);
+    for (const auto& s : DescribeInternal(root)) ans += s + "\n";
     return ans;
   }
 
   std::vector<Key> Keys() { return KeysInternal(root); }
+
 private:
   constexpr static int NONE = 0, TMP = 1;
 
@@ -211,11 +209,9 @@ private:
     const auto& n = ns[node];
     std::vector<std::string> desc;
     desc.push_back(std::to_string(n.k));
-    for (const auto& s : DescribeInternal(n.l))
-      desc.push_back("| " + s);
+    for (const auto& s : DescribeInternal(n.l)) desc.push_back("| " + s);
     int idx = int(desc.size());
-    for (const auto& s : DescribeInternal(n.r))
-      desc.push_back("  " + s);
+    for (const auto& s : DescribeInternal(n.r)) desc.push_back("  " + s);
     desc[1][1] = '_';
     desc[idx][0] = '|';
     desc[idx][1] = '_';
@@ -233,6 +229,6 @@ private:
   }
 };
 
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_SPLAYMAP_H

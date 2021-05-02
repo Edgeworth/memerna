@@ -26,7 +26,7 @@ extern EnergyModel gem;
 extern precomp_t gpc;
 void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em);
 
-}
-}
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_ENERGY_GLOBALS_H

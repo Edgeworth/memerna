@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "base.h"
+
 #include "gtest/gtest.h"
 
 namespace memerna {
@@ -54,4 +55,4 @@ TEST(BaseTest, IsAuGu) {
   EXPECT_FALSE(IsAuGu(C, U));
   EXPECT_FALSE(IsAuGu(U, C));
 }
-}
+}  // namespace memerna

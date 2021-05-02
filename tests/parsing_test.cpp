@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "parsing.h"
+
 #include "gtest/gtest.h"
 
 namespace memerna {
@@ -64,7 +65,7 @@ public:
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT},
       MAX_E};
   const computed_t kComputed8 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+                                     {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT},
       MAX_E};
@@ -79,7 +80,7 @@ public:
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
       MAX_E};
   const computed_t kComputed11 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+                                      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV},
       MAX_E};
@@ -96,7 +97,7 @@ public:
   const computed_t kComputed14 = {{StringToPrimary("AAAAAAA"), {-1, 5, -1, -1, -1, 1, -1}},
       {CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA}, MAX_E};
   const computed_t kComputed15 = {{StringToPrimary("UACGUUGGUGCUAAAA"),
-      {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
+                                      {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
           CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED},
       MAX_E};
@@ -157,5 +158,5 @@ TEST_F(ParsingTest, IsCtdString) {
   EXPECT_FALSE(IsCtdString("(...)"));
   EXPECT_FALSE(IsCtdString("((...))"));
 }
-}
-}
+}  // namespace parsing
+}  // namespace memerna

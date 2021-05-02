@@ -31,9 +31,9 @@ computed_t FoldBruteForce(const primary_t& r, const energy::EnergyModel& em);
 std::vector<computed_t> SuboptimalBruteForce(
     const primary_t& r, const energy::EnergyModel& em, int max_structures_);
 
-std::pair<partition::partition_t, partition::probabilities_t>
-PartitionBruteForce(const primary_t& r, const energy::EnergyModel& em);
+std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForce(
+    const primary_t& r, const energy::EnergyModel& em);
 
-}
-}
+}  // namespace fold
+}  // namespace memerna
 #endif  // MEMERNA_BRUTE_FOLD_H

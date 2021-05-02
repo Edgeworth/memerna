@@ -16,29 +16,22 @@
 #define MEMERNA_PARTITION_H
 
 #include <cmath>
-#include "energy/fast_energy.h"
-#include "common.h"
+
 #include "array.h"
+#include "common.h"
 #include "energy/energy_model.h"
+#include "energy/fast_energy.h"
 
 namespace memerna {
 namespace partition {
 
-enum : int8_t {
-  PT_P,
-  PT_U,
-  PT_U2,
-  PT_U_WC,
-  PT_U_GU,
-  PT_U_RCOAX,
-  PT_SIZE
-};
+enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RCOAX, PT_SIZE };
 
 enum : int8_t {
   PTEXT_R,
   PTEXT_L,
-  PTEXT_R_WC,     // Must start with a branch not involved in an interaction that is Watson-Crick
-  PTEXT_R_GU,     // Must start with a branch not involved in an interaction that is GU
+  PTEXT_R_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
+  PTEXT_R_GU,  // Must start with a branch not involved in an interaction that is GU
   PTEXT_R_RCOAX,  // Must start with a branch, that branch is involved backwards in a RCOAX stack.
   PTEXT_L_WC,
   PTEXT_L_GU,
@@ -93,16 +86,17 @@ struct penergy_model_t {
     return IsAuGu(stb, enb) ? augu_penalty : 1.0;
   }
 
-  penergy_t MismatchCoaxial(base_t five_top, base_t mismatch_top,
-      base_t mismatch_bot, base_t three_bot) const {
+  penergy_t MismatchCoaxial(
+      base_t five_top, base_t mismatch_top, base_t mismatch_bot, base_t three_bot) const {
     assert(IsBase(five_top) && IsBase(mismatch_top) && IsBase(mismatch_bot) && IsBase(three_bot));
-    penergy_t coax = terminal[five_top][mismatch_top][mismatch_bot][three_bot] *
-        coax_mismatch_non_contiguous;
-    if (IsWatsonCrick(mismatch_top, mismatch_bot)) coax *= coax_mismatch_wc_bonus;
-    else if (IsGu(mismatch_top, mismatch_bot)) coax *= coax_mismatch_gu_bonus;
+    penergy_t coax =
+        terminal[five_top][mismatch_top][mismatch_bot][three_bot] * coax_mismatch_non_contiguous;
+    if (IsWatsonCrick(mismatch_top, mismatch_bot))
+      coax *= coax_mismatch_wc_bonus;
+    else if (IsGu(mismatch_top, mismatch_bot))
+      coax *= coax_mismatch_gu_bonus;
     return coax;
   }
-
 };
 
 struct precomp_t {
@@ -124,8 +118,8 @@ inline int FastMod(int a, int m) {
   return a;
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace partition
+}  // namespace memerna
 
 #endif  // MEMERNA_PARTITION_H

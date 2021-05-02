@@ -14,6 +14,8 @@
 // If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <cstdio>
+#include <iomanip>
+
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
 #include "fold/brute_fold.h"
@@ -34,9 +36,7 @@ void PrintPartition(const partition::partition_t& p, const std::string& name) {
 
   auto probs = partition::ComputeProbabilities(p);
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) {
-      std::cout << probs[i][j][0] << ' ';
-    }
+    for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << probs[i][j][0] << ' '; }
     std::cout << '\n';
   }
 }

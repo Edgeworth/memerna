@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "common.h"
+
 #include <random>
+
 #include "parsing.h"
 
 namespace memerna {
@@ -21,7 +23,7 @@ namespace memerna {
 namespace {
 const int BUF_SIZE = 1024;
 const uint32_t CRC_MAGIC = 0xEDB88320;
-}
+}  // namespace
 
 std::string sgetline(FILE* fp) {
   char buffer[BUF_SIZE];
@@ -51,14 +53,12 @@ uint32_t Crc32(const std::string& data) {
   uint32_t table[1 << 8] = {};
   for (uint32_t i = 0; i < 1 << 8; ++i) {
     table[i] = i;
-    for (int k = 0; k < 8; ++k)
-      table[i] = (table[i] >> 1) ^ (bool(table[i] & 1) ? CRC_MAGIC : 0);
+    for (int k = 0; k < 8; ++k) table[i] = (table[i] >> 1) ^ (bool(table[i] & 1) ? CRC_MAGIC : 0);
   }
 
   uint32_t window = 0xFFFFFFFF;
-  for (char i : data)
-    window = (window >> 8) ^ (table[(window & 0xFF) ^ uint8_t(i)]);
+  for (char i : data) window = (window >> 8) ^ (table[(window & 0xFF) ^ uint8_t(i)]);
 
   return ~window;
 }
-}
+}  // namespace memerna

@@ -27,9 +27,9 @@ def main():
   args = parser.parse_args()
 
   p0 = [decimal.Decimal(i) for i in read_file(args.file0).split()]
-  p1 = [decimal.Decimal(i) for i in read_file(args.file0).split()]
-  rms = math.sqrt(sum([abs(p0[i] - p1[i]) for i in range(len(p0))]))
-  print(rms)
+  p1 = [decimal.Decimal(i) for i in read_file(args.file1).split()]
+  rms = math.sqrt(sum([(p0[i] - p1[i])*(p0[i] - p1[i]) for i in range(len(p0))]))
+  print('%.20f' % rms)
 
 
 if __name__ == "__main__":

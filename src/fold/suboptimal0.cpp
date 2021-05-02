@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "fold/suboptimal0.h"
+
 #include "energy/energy_globals.h"
 
 namespace memerna {
@@ -80,8 +81,8 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
 
         // (   )<.( * ). > Right coax backward
         if (a == EXT_RCOAX) {
-          energy = base_energy + base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b) +
-              gext[en + 1][EXT];
+          energy =
+              base_energy + base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b) + gext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P});
         }
@@ -146,7 +147,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     energy_t base_energy = node.energy - gdp[st][en][a];
     // Declare the usual base aliases.
     const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
-        en2b = gr[en - 2];
+               en2b = gr[en - 2];
 
     // Normal stuff
     if (a == DP_P) {
@@ -328,6 +329,6 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   }
   return int(finished.size());
 }
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna

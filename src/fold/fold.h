@@ -17,8 +17,8 @@
 
 #include "base.h"
 #include "common.h"
-#include "globals.h"
 #include "fold/fold_globals.h"
+#include "globals.h"
 
 namespace memerna {
 namespace fold {
@@ -65,11 +65,11 @@ struct ctd_idx_t {
   int16_t idx;
   Ctd ctd;
 };
-}
+}  // namespace internal
 
 typedef std::function<void(const computed_t&)> SuboptimalCallback;
 
-}
-}
+}  // namespace fold
+}  // namespace memerna
 
 #endif  // MEMERNA_FOLD_INTERNAL_H

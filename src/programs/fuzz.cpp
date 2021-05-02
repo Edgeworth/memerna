@@ -18,6 +18,7 @@
 #include <random>
 #include <set>
 #include <sstream>
+
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
@@ -49,8 +50,10 @@ struct cfg_t {
 
   std::string Describe() {
     std::string desc;
-    if (random_model) desc += "random energy models";
-    else desc += "specified energy model";
+    if (random_model)
+      desc += "random energy models";
+    else
+      desc += "specified energy model";
     if (subopt) {
       desc += " - testing suboptimal";
       if (subopt_rnastructure) desc += " (including rnastructure)";
@@ -106,9 +109,7 @@ cfg_t CfgFromArgParse(const ArgParse& argparse) {
   return cfg;
 }
 
-inline bool equ(penergy_t a, penergy_t b) {
-  return fabs(a - b) < EP;
-}
+inline bool equ(penergy_t a, penergy_t b) { return fabs(a - b) < EP; }
 
 class Fuzzer {
 public:
@@ -131,8 +132,7 @@ public:
     if (int(r.size()) <= cfg.brute_cutoff)
       AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
 
-    if (cfg.partition)
-      AppendErrors(errors, MaybePrependHeader(CheckPartition(), "partition:"));
+    if (cfg.partition) AppendErrors(errors, MaybePrependHeader(CheckPartition(), "partition:"));
 
     if (!errors.empty()) {
       if (cfg.random_model)
@@ -162,14 +162,12 @@ private:
     if (main.empty()) return main;
     error_t nmain;
     nmain.push_front(header);
-    for (auto& error : main)
-      nmain.push_back("  " + error);  // mfw this inefficiency
+    for (auto& error : main) nmain.push_back("  " + error);  // mfw this inefficiency
     return nmain;
   }
 
   void AppendErrors(error_t& main, error_t&& extra) {
-    for (auto& s : extra)
-      main.push_back(std::move(s));
+    for (auto& s : extra) main.push_back(std::move(s));
   }
 
   bool HasDuplicates(const std::vector<computed_t>& computeds) {
@@ -248,19 +246,23 @@ private:
     }
 
     for (int i = 0; i < int(memerna_subopts_delta.size()); ++i) {
-      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
-          sfmt("memerna delta suboptimal %d:", i)));
-      AppendErrors(errors, MaybePrependHeader(
-          CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
-          sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
+              sfmt("memerna delta suboptimal %d:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(
+              CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
+              sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
     }
 
     for (int i = 0; i < int(memerna_subopts_num.size()); ++i) {
-      AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
-          sfmt("memerna num suboptimal %d:", i)));
-      AppendErrors(errors, MaybePrependHeader(
-          CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
-          sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
+              sfmt("memerna num suboptimal %d:", i)));
+      AppendErrors(errors,
+          MaybePrependHeader(
+              CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
+              sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
     }
 
     if (cfg.subopt_rnastructure) {
@@ -269,10 +271,13 @@ private:
       // when the energy for suboptimal structures is 0 or above.
       if (memerna_computeds[0].energy < -cfg.subopt_delta) {
         const auto rnastructure_subopt = rnastructure.SuboptimalIntoVector(r, cfg.subopt_delta);
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResult(rnastructure_subopt, false),
-            "rnastructure suboptimal:"));
-        AppendErrors(errors, MaybePrependHeader(CheckSuboptimalResultPair(
-            memerna_subopts_delta[0], rnastructure_subopt), "memerna vs rnastructure suboptimal:"));
+        AppendErrors(errors,
+            MaybePrependHeader(
+                CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
+        AppendErrors(errors,
+            MaybePrependHeader(
+                CheckSuboptimalResultPair(memerna_subopts_delta[0], rnastructure_subopt),
+                "memerna vs rnastructure suboptimal:"));
       }
     }
 
@@ -297,9 +302,9 @@ private:
           }
           if (cfg.rnastructure && (a == DP_P || a == DP_U)) {
             energy_t rnastructureval = a == DP_P ? rnastructure_dp.v.f(st + 1, en + 1)
-                : rnastructure_dp.w.f(st + 1, en + 1);
+                                                 : rnastructure_dp.w.f(st + 1, en + 1);
             if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
-                (memerna0 < CAP_E && memerna0 != rnastructureval))) {
+                    (memerna0 < CAP_E && memerna0 != rnastructureval))) {
               errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d", st, en, a,
                   rnastructureval, memerna_dps[0][st][en][a]));
               goto loopend;
@@ -308,7 +313,7 @@ private:
         }
       }
     }
-    loopend:
+  loopend:
     return errors;
   }
 
@@ -335,8 +340,8 @@ private:
           memerna_computeds[0].energy != memerna_ctd_efns[i] ||
           memerna_computeds[0].energy != memerna_optimal_efns[i])
         errors.push_back(sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d", i,
-            memerna_computeds[i].energy, memerna_ctd_efns[i],
-            memerna_optimal_efns[i], memerna_computeds[0].energy));
+            memerna_computeds[i].energy, memerna_ctd_efns[i], memerna_optimal_efns[i],
+            memerna_computeds[0].energy));
     }
 
     return errors;
@@ -355,9 +360,7 @@ private:
 
   error_t CheckBruteForce() {
     error_t errors;
-    context_opt_t options(
-        context_opt_t::TableAlg::TWO,
-        context_opt_t::SuboptimalAlg::ONE,
+    context_opt_t options(context_opt_t::TableAlg::TWO, context_opt_t::SuboptimalAlg::ONE,
         context_opt_t::PartitionAlg::ZERO);
     Context ctx(r, em, options);
 
@@ -369,8 +372,9 @@ private:
           MaybePrependHeader(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
       AppendErrors(errors,
           MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
-      AppendErrors(errors, MaybePrependHeader(
-          CheckSuboptimalResultPair(brute_subopt, memerna_subopt), "brute vs memerna suboptimal:"));
+      AppendErrors(errors,
+          MaybePrependHeader(CheckSuboptimalResultPair(brute_subopt, memerna_subopt),
+              "brute vs memerna suboptimal:"));
     }
 
     if (cfg.partition) {
@@ -380,9 +384,9 @@ private:
       // Types for the partition function are meant to be a bit configurable, so use sstream here.
       if (!equ(brute_partition.first.q, memerna_partition.q)) {
         std::stringstream sstream;
-        sstream << "q: brute partition " << brute_partition.first.q
-            << " != memerna " << memerna_partition.q << "; difference: "
-            << brute_partition.first.q - memerna_partition.q;
+        sstream << "q: brute partition " << brute_partition.first.q << " != memerna "
+                << memerna_partition.q
+                << "; difference: " << brute_partition.first.q - memerna_partition.q;
         errors.push_back(sstream.str());
       }
 
@@ -391,8 +395,8 @@ private:
           if (!equ(brute_partition.first.p[st][en][0], memerna_partition.p[st][en][0])) {
             std::stringstream sstream;
             sstream << "memerna " << st << " " << en << ": " << memerna_partition.p[st][en][0]
-                << " != brute force " << brute_partition.first.p[st][en][0] << "; difference: "
-                << brute_partition.first.p[st][en][0] - memerna_partition.p[st][en][0];
+                    << " != brute force " << brute_partition.first.p[st][en][0] << "; difference: "
+                    << brute_partition.first.p[st][en][0] - memerna_partition.p[st][en][0];
             errors.push_back(sstream.str());
           }
         }
@@ -405,8 +409,9 @@ private:
     error_t errors;
     std::vector<partition::partition_t> memerna_partitions;
     for (auto partition_alg : context_opt_t::PARTITION_ALGS) {
-      Context ctx(r, em, context_opt_t(context_opt_t::TableAlg::TWO,
-          context_opt_t::SuboptimalAlg::ONE, partition_alg));
+      Context ctx(r, em,
+          context_opt_t(
+              context_opt_t::TableAlg::TWO, context_opt_t::SuboptimalAlg::ONE, partition_alg));
       memerna_partitions.emplace_back(ctx.Partition());
     }
 
@@ -414,8 +419,8 @@ private:
       if (!equ(memerna_partitions[i].q, memerna_partitions[0].q)) {
         std::stringstream sstream;
         sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].q
-            << " != " << memerna_partitions[0].q << "; difference: "
-            << memerna_partitions[i].q - memerna_partitions[0].q;
+                << " != " << memerna_partitions[0].q
+                << "; difference: " << memerna_partitions[i].q - memerna_partitions[0].q;
         errors.push_back(sstream.str());
       }
 
@@ -424,9 +429,9 @@ private:
           if (!equ(memerna_partitions[i].p[st][en][0], memerna_partitions[0].p[st][en][0])) {
             std::stringstream sstream;
             sstream << "memerna " << i << " at " << st << " " << en << ": "
-                << memerna_partitions[i].p[st][en][0] << " != " << memerna_partitions[0].p[st][en][0]
-                << "; difference: "
-                << memerna_partitions[i].p[st][en][0] - memerna_partitions[0].p[st][en][0];
+                    << memerna_partitions[i].p[st][en][0]
+                    << " != " << memerna_partitions[0].p[st][en][0] << "; difference: "
+                    << memerna_partitions[i].p[st][en][0] - memerna_partitions[0].p[st][en][0];
             errors.push_back(sstream.str());
           }
         }
@@ -438,9 +443,9 @@ private:
       // Types for the partition function are meant to be a bit configurable, so use sstream here.
       if (!equ(rnastructure_part.first.q, memerna_partitions[0].q)) {
         std::stringstream sstream;
-        sstream << "q: rnastructure partition " << rnastructure_part.first.q
-            << " != memerna " << memerna_partitions[0].q << "; difference: "
-            << rnastructure_part.first.q - memerna_partitions[0].q;
+        sstream << "q: rnastructure partition " << rnastructure_part.first.q << " != memerna "
+                << memerna_partitions[0].q
+                << "; difference: " << rnastructure_part.first.q - memerna_partitions[0].q;
         errors.push_back(sstream.str());
       }
 
@@ -449,8 +454,9 @@ private:
           if (!equ(rnastructure_part.first.p[st][en][0], memerna_partitions[0].p[st][en][0])) {
             std::stringstream sstream;
             sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p[st][en][0]
-                << " != rnastructure " << rnastructure_part.first.p[st][en][0] << "; difference: "
-                << rnastructure_part.first.p[st][en][0] - memerna_partitions[0].p[st][en][0];
+                    << " != rnastructure " << rnastructure_part.first.p[st][en][0]
+                    << "; difference: "
+                    << rnastructure_part.first.p[st][en][0] - memerna_partitions[0].p[st][en][0];
             errors.push_back(sstream.str());
           }
         }
@@ -460,7 +466,7 @@ private:
   }
 };
 
-}
+}  // namespace
 
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
@@ -486,18 +492,16 @@ int main(int argc, char* argv[]) {
     __AFL_INIT();
     while (__AFL_LOOP(1000)) {
 #endif
-    std::string data;
-    std::size_t len;
-    char buf[4096];
-    while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0)
-      data += std::string(buf, len);
-    if (data.size() > 0) {
-      cfg.seed = eng();
-      Fuzzer fuzzer(parsing::StringToPrimary(data), cfg, t04em, rnastructure);
-      const auto res = fuzzer.Run();
-      if (!res.empty())
-        abort();
-    }
+      std::string data;
+      std::size_t len;
+      char buf[4096];
+      while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0) data += std::string(buf, len);
+      if (data.size() > 0) {
+        cfg.seed = eng();
+        Fuzzer fuzzer(parsing::StringToPrimary(data), cfg, t04em, rnastructure);
+        const auto res = fuzzer.Run();
+        if (!res.empty()) abort();
+      }
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     }
 #endif
@@ -519,7 +523,8 @@ int main(int argc, char* argv[]) {
     for (int64_t i = 0;; ++i) {
       if (interval > 0 &&
           std::chrono::duration_cast<std::chrono::seconds>(
-              std::chrono::steady_clock::now() - start_time).count() > interval) {
+              std::chrono::steady_clock::now() - start_time)
+                  .count() > interval) {
         printf("Fuzzed %" PRId64 " RNA\n", i);
         start_time = std::chrono::steady_clock::now();
       }
@@ -530,8 +535,7 @@ int main(int argc, char* argv[]) {
       Fuzzer fuzzer(r, cfg, t04em, rnastructure);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
-        for (const auto& s : res)
-          printf("%s\n", s.c_str());
+        for (const auto& s : res) printf("%s\n", s.c_str());
         printf("\n");
       }
     }

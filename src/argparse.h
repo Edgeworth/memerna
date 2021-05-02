@@ -18,6 +18,7 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+
 #include "common.h"
 
 namespace memerna {
@@ -97,6 +98,6 @@ private:
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_ARGPARSE_H

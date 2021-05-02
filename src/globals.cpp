@@ -18,8 +18,6 @@ namespace memerna {
 
 primary_t gr;
 
-void SetGlobalState(const memerna::primary_t& r) {
-  gr = r;
-}
+void SetGlobalState(const memerna::primary_t& r) { gr = r; }
 
-}
+}  // namespace memerna

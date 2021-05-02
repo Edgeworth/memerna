@@ -27,11 +27,11 @@ extern array3d_t<penergy_t, PT_SIZE> gpt;
 extern array2d_t<penergy_t, PTEXT_SIZE> gptext;
 extern precomp_t gppc;
 
-}
+}  // namespace internal
 
 void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
-}
-}
+}  // namespace partition
+}  // namespace memerna
 
 #endif  // MEMERNA_PARTITION_GLOBALS_H

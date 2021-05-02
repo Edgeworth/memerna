@@ -12,9 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "globals.h"
 #include "fold/fold_globals.h"
+
 #include "energy/energy_globals.h"
+#include "globals.h"
 
 namespace memerna {
 namespace fold {
@@ -27,7 +28,7 @@ energy_t genergy;
 array3d_t<energy_t, DP_SIZE> gdp;
 array2d_t<energy_t, EXT_SIZE> gext;
 
-}
+}  // namespace internal
 
 void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   energy::SetEnergyGlobalState(r, em);
@@ -40,5 +41,5 @@ void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   internal::gext = array2d_t<energy_t, internal::EXT_SIZE>(gr.size() + 1);
 }
 
-}
-}
+}  // namespace fold
+}  // namespace memerna

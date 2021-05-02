@@ -65,8 +65,7 @@ public:
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() { delete[] data; }
 
-  array2d_t(std::size_t size_, const T init_val = MAX_E)
-      : data(new T[size_ * K]), size(size_) {
+  array2d_t(std::size_t size_, const T init_val = MAX_E) : data(new T[size_ * K]), size(size_) {
     std::fill(data, data + size * K, init_val);
   }
 
@@ -91,6 +90,6 @@ private:
   T* data;
   std::size_t size;
 };
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_ARRAY_H

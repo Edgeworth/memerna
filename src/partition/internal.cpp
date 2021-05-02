@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
+
 #include "energy/energy_globals.h"
 #include "energy/fast_energy.h"
 #include "partition/partition.h"
@@ -29,8 +30,7 @@ constexpr auto Decay(T& a) {
 }
 
 void FillPenergyArray(penergy_t* output, const energy_t* input, int elements) {
-  for (int i = 0; i < elements; ++i)
-    output[i] = energy::Boltzmann(input[i]);
+  for (int i = 0; i < elements; ++i) output[i] = energy::Boltzmann(input[i]);
 }
 }  // namespace
 
@@ -68,8 +68,7 @@ penergy_model_t::penergy_model_t(const energy::EnergyModel& em) {
   FILL_PENERGY(coax_mismatch_gu_bonus);
   FILL_PENERGY(augu_penalty);
 
-  for (const auto& kv : em.hairpin)
-    hairpin[kv.first] = energy::Boltzmann(kv.second);
+  for (const auto& kv : em.hairpin) hairpin[kv.first] = energy::Boltzmann(kv.second);
 #undef FILL_PENERGY
 }
 

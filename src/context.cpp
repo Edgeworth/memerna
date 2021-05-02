@@ -13,10 +13,11 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "context.h"
-#include "partition/partition_globals.h"
+
 #include "fold/brute_fold.h"
 #include "fold/suboptimal0.h"
 #include "fold/suboptimal1.h"
+#include "partition/partition_globals.h"
 
 namespace memerna {
 
@@ -66,83 +67,63 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
 void Context::ComputeTables() {
   fold::SetFoldGlobalState(r, *em);
   switch (options.table_alg) {
-    case context_opt_t::TableAlg::ZERO:
-      fold::internal::ComputeTables0();
-      break;
-    case context_opt_t::TableAlg::ONE:
-      fold::internal::ComputeTables1();
-      break;
-    case context_opt_t::TableAlg::TWO:
-      fold::internal::ComputeTables2();
-      break;
-    case context_opt_t::TableAlg::THREE:
-      fold::internal::ComputeTables3();
-      break;
-    default:
-      verify_expr(false, "bug");
+  case context_opt_t::TableAlg::ZERO: fold::internal::ComputeTables0(); break;
+  case context_opt_t::TableAlg::ONE: fold::internal::ComputeTables1(); break;
+  case context_opt_t::TableAlg::TWO: fold::internal::ComputeTables2(); break;
+  case context_opt_t::TableAlg::THREE: fold::internal::ComputeTables3(); break;
+  default: verify_expr(false, "bug");
   }
   fold::internal::ComputeExterior();
 }
 
 computed_t Context::Fold() {
-  if (options.table_alg == context_opt_t::TableAlg::BRUTE)
-    return fold::FoldBruteForce(r, *em);
+  if (options.table_alg == context_opt_t::TableAlg::BRUTE) return fold::FoldBruteForce(r, *em);
 
   ComputeTables();
   fold::internal::Traceback();
   return {{gr, fold::internal::gp}, fold::internal::gctd, fold::internal::genergy};
 }
 
-std::vector<computed_t> Context::SuboptimalIntoVector(bool sorted,
-    energy_t subopt_delta, int subopt_num) {
+std::vector<computed_t> Context::SuboptimalIntoVector(
+    bool sorted, energy_t subopt_delta, int subopt_num) {
   std::vector<computed_t> computeds;
-  int num_structures = Suboptimal(
-      [&computeds](const computed_t& c) { computeds.push_back(c); },
-      sorted,
-      subopt_delta, subopt_num);
+  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
+      sorted, subopt_delta, subopt_num);
   assert(num_structures == int(computeds.size()));
   return computeds;
 }
 
-int Context::Suboptimal(fold::SuboptimalCallback fn, bool sorted,
-    energy_t subopt_delta, int subopt_num) {
+int Context::Suboptimal(
+    fold::SuboptimalCallback fn, bool sorted, energy_t subopt_delta, int subopt_num) {
   if (options.suboptimal_alg == context_opt_t::SuboptimalAlg::BRUTE) {
     auto computeds = fold::SuboptimalBruteForce(r, *em, subopt_num);
-    for (const auto& computed : computeds)
-      fn(computed);
+    for (const auto& computed : computeds) fn(computed);
     return int(computeds.size());
   }
 
   ComputeTables();
   switch (options.suboptimal_alg) {
-    case context_opt_t::SuboptimalAlg::ZERO:
-      return fold::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
-    case context_opt_t::SuboptimalAlg::ONE:
-      return fold::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
-    default:
-      verify_expr(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
+  case context_opt_t::SuboptimalAlg::ZERO:
+    return fold::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
+  case context_opt_t::SuboptimalAlg::ONE:
+    return fold::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
+  default: verify_expr(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
   }
 }
 
 partition::partition_t Context::Partition() {
   partition::SetPartitionGlobalState(r, *em);
   switch (options.partition_alg) {
-    case context_opt_t::PartitionAlg::ZERO:
-      partition::internal::Partition0();
-      break;
-    case context_opt_t::PartitionAlg::ONE:
-      partition::internal::Partition1();
-      break;
-    case context_opt_t::PartitionAlg::BRUTE:
-      return fold::PartitionBruteForce(r, *em).first;
+  case context_opt_t::PartitionAlg::ZERO: partition::internal::Partition0(); break;
+  case context_opt_t::PartitionAlg::ONE: partition::internal::Partition1(); break;
+  case context_opt_t::PartitionAlg::BRUTE: return fold::PartitionBruteForce(r, *em).first;
   }
   const auto& gpt = partition::internal::gpt;
   const int size = int(r.size());
   array3d_t<penergy_t, 1> p((std::size_t(size)));
   for (int i = 0; i < size; ++i)  // TODO optimise this?
-    for (int j = 0; j < size; ++j)
-      p[i][j][0] = gpt[i][j][partition::PT_P];
+    for (int j = 0; j < size; ++j) p[i][j][0] = gpt[i][j][partition::PT_P];
   return {std::move(p), partition::internal::gptext[0][partition::PTEXT_R]};
 }
 
-}
+}  // namespace memerna

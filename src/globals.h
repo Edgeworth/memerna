@@ -22,6 +22,6 @@ namespace memerna {
 extern primary_t gr;
 void SetGlobalState(const primary_t& r);
 
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_GLOBALS_H

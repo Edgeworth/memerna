@@ -12,9 +12,9 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "gtest/gtest.h"
 #include "common_test.h"
 #include "fold/brute_fold.h"
+#include "gtest/gtest.h"
 #include "parsing.h"
 
 namespace memerna {
@@ -33,5 +33,5 @@ TEST(BruteFold, GetBranchCounts) {
   EXPECT_EQ((std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}),
       internal::GetBranchCounts(parsing::DotBracketToPairs("((()()))")));
 }
-}
-}
+}  // namespace fold
+}  // namespace memerna

@@ -12,8 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include <algorithm>
 #include "energy/energy.h"
+
+#include <algorithm>
+
 #include "energy/structure.h"
 
 namespace memerna {
@@ -107,8 +109,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
           energy::CtdToName(branch_ctds[0].first));
       branch_ctds.pop_front();
     }
-    for (const auto& ctd : branch_ctds)
-      s->AddCtd(ctd.first, ctd.second);
+    for (const auto& ctd : branch_ctds) s->AddCtd(ctd.first, ctd.second);
     // Give the pointer back.
     *ss = std::move(s);
   }
@@ -116,8 +117,8 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
   return energy;
 }
 
-energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds,
-    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* s) {
+energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds, int st, int en,
+    const EnergyModel& em, std::unique_ptr<Structure>* s) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   const bool exterior_loop = p[st] != en;
@@ -175,13 +176,13 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy = ComputeSubstructureEnergy(
-      computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
+  energy_t energy =
+      ComputeSubstructureEnergy(computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
   if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", em.augu_penalty);
-      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + em.augu_penalty);    // Gross.
+      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + em.augu_penalty);  // Gross.
       (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + em.augu_penalty);  // Gross.
     }
   }
@@ -189,5 +190,5 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   return computed_copy;
 }
 
-}
-}
+}  // namespace energy
+}  // namespace memerna

@@ -13,8 +13,9 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <cstdio>
-#include "energy/load_model.h"
+
 #include "context.h"
+#include "energy/load_model.h"
 #include "parsing.h"
 
 using namespace memerna;
@@ -22,13 +23,10 @@ using namespace memerna;
 int main(int argc, char* argv[]) {
   ArgParse argparse(energy::ENERGY_OPTIONS);
   argparse.AddOptions(CONTEXT_OPTIONS);
-  argparse.AddOptions({
-      {"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
-      {"num", opt_t("maximum number of reported structures").Arg("-1")},
-      {"q", opt_t("quiet")},
+  argparse.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
+      {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
       {"sorted", opt_t("if the structures should be sorted")},
-      {"ctd-output", opt_t("if we should output CTD data")}
-  });
+      {"ctd-output", opt_t("if we should output CTD data")}});
   argparse.ParseOrExit(argc, argv);
   const auto& pos = argparse.GetPositional();
   verify_expr(pos.size() == 1, "need primary sequence to fold");

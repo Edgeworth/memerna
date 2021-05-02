@@ -26,5 +26,5 @@ void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em) {
   gpc = PrecomputeData(gr, gem);
 }
 
-}
-}
+}  // namespace energy
+}  // namespace memerna

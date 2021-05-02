@@ -16,9 +16,9 @@
 #define MEMERNA_FAST_ENERGY_H
 
 #include "common.h"
+#include "energy/energy_model.h"
 #include "globals.h"
 #include "parsing.h"
-#include "energy/energy_model.h"
 
 namespace memerna {
 namespace energy {
@@ -32,7 +32,7 @@ int MaxNumContiguous(const primary_t& r);
 const int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
 // This is templated because the partition function wants to use it with a different type.
-template<typename T, int InitVal>
+template <typename T, int InitVal>
 struct hairpin_precomp_t {
   hairpin_precomp_t() : num_c(0) {
     std::fill(special, special + sizeof(special) / sizeof(special[0]), InitVal);
@@ -51,16 +51,15 @@ struct precomp_t {
   std::vector<hairpin_precomp_t<energy_t, MAX_E>> hairpin;
 };
 
-
-template<typename HairpinPrecomp, typename EM>
+template <typename HairpinPrecomp, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;
   pc.resize(r.size());
   std::string rna_str = parsing::PrimaryToString(r);
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
-    verify_expr(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ,
-        "need to increase MAX_SPECIAL_HAIRPIN_SZ");
+    verify_expr(
+        str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");
     auto pos = rna_str.find(str, 0);
     while (pos != std::string::npos) {
       pc[pos].special[str.size() - 2] = hairpinpair.second;
@@ -90,7 +89,7 @@ inline penergy_t Boltzmann(energy_t energy) {
   return exp(penergy_t(energy) * (penergy_t(-1) / penergy_t(10.0 * R * T)));
 }
 
-}
-}
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_FAST_ENERGY_H

@@ -16,6 +16,7 @@
 #define MEMERNA_STRUCTURE_H
 
 #include <memory>
+
 #include "common.h"
 #include "energy/energy.h"
 #include "energy/energy_internal.h"
@@ -110,7 +111,7 @@ public:
 private:
   int st, en;
 };
-}
-}
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_PARSING_H

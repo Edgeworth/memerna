@@ -15,10 +15,11 @@
 #ifndef MEMERNA_COMMON_TEST_H
 #define MEMERNA_COMMON_TEST_H
 
-#include "gtest/gtest.h"
 #include <cstdint>
 #include <iostream>
+
 #include "energy/energy_model.h"
+#include "gtest/gtest.h"
 
 #define ONLY_FOR_THIS_MODEL(em_, hash_)                                                          \
   do {                                                                                           \
@@ -38,6 +39,6 @@ extern std::vector<energy::EnergyModelPtr> g_ems;
 
 std::ostream& operator<<(std::ostream& os, const secondary_t& s);
 std::ostream& operator<<(std::ostream& os, const computed_t& computed);
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_COMMON_TEST_H
