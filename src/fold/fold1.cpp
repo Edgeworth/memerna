@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "fold/fold.h"
 #include "energy/energy_globals.h"
+#include "fold/fold.h"
 
 namespace memerna {
 namespace fold {
@@ -28,7 +28,7 @@ void ComputeTables1() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-          en1b = gr[en - 1], en2b = gr[en - 2];
+                   en1b = gr[en - 1], en2b = gr[en - 2];
 
       // Update paired - only if can actually pair.
       if (ViableFoldingPair(st, en)) {
@@ -67,29 +67,31 @@ void ComputeTables1() {
 
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv][DP_P] +
-              gpc.augubranch[st2b][plb] + gdp[piv + 1][en - 2][DP_U] + outer_coax);
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 2][piv][DP_P] + gpc.augubranch[st2b][plb] +
+                  gdp[piv + 1][en - 2][DP_U] + outer_coax);
           // (.   (   ).) Right outer coax
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv][DP_U] +
-              gpc.augubranch[prb][en2b] + gdp[piv + 1][en - 2][DP_P] + outer_coax);
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 2][piv][DP_U] + gpc.augubranch[prb][en2b] +
+                  gdp[piv + 1][en - 2][DP_P] + outer_coax);
 
           // (.(   ).   ) Left right coax
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 2][piv - 1][DP_P] +
-              gpc.augubranch[st2b][pl1b] + gdp[piv + 1][en - 1][DP_U] +
-              gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 2][piv - 1][DP_P] + gpc.augubranch[st2b][pl1b] +
+                  gdp[piv + 1][en - 1][DP_U] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_U] +
-              gpc.augubranch[pr1b][en2b] + gdp[piv + 2][en - 2][DP_P] +
-              gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 1][piv][DP_U] + gpc.augubranch[pr1b][en2b] +
+                  gdp[piv + 2][en - 2][DP_P] + gem.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_P] +
-              gpc.augubranch[st1b][plb] + gdp[piv + 1][en - 1][DP_U] +
-              gem.stack[stb][st1b][plb][enb]);
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][plb] +
+                  gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
-          p_min = std::min(p_min, base_branch_cost + gdp[st + 1][piv][DP_U] +
-              gpc.augubranch[prb][en1b] + gdp[piv + 1][en - 1][DP_P] +
-              gem.stack[stb][prb][en1b][enb]);
+          p_min = std::min(p_min,
+              base_branch_cost + gdp[st + 1][piv][DP_U] + gpc.augubranch[prb][en1b] +
+                  gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb]);
         }
 
         gdp[st][en][DP_P] = p_min;
@@ -142,8 +144,8 @@ void ComputeTables1() {
         val = base00 + gdp[piv + 1][en][DP_U_RCOAX];
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
-        rcoax_min = std::min(rcoax_min, base11 +
-            gem.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
+        rcoax_min =
+            std::min(rcoax_min, base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
         // (   )(<   ) > Flush coax - U
         val = base01 + gem.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
@@ -164,6 +166,6 @@ void ComputeTables1() {
     }
   }
 }
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna

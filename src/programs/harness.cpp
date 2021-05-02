@@ -14,6 +14,7 @@
 // If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <memory>
+
 #include "bridge/bridge.h"
 #include "energy/load_model.h"
 #include "parsing.h"
@@ -22,7 +23,9 @@ using namespace memerna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({
-      {"v", {"be verbose (if possible)"}}, {"e", {"run efn"}}, {"f", {"run fold"}},
+      {"v", {"be verbose (if possible)"}},
+      {"e", {"run efn"}},
+      {"f", {"run fold"}},
       {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
   });
   argparse.AddOptions(bridge::BRIDGE_OPTIONS);
@@ -70,9 +73,11 @@ int main(int argc, char* argv[]) {
       const auto r = parsing::StringToPrimary(seq);
       int subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
-        int num_structures = package->Suboptimal([](const computed_t& c) {
-          printf("%d %s\n", c.energy, parsing::PairsToDotBracket(c.s.p).c_str());
-        }, r, subopt_delta);
+        int num_structures = package->Suboptimal(
+            [](const computed_t& c) {
+              printf("%d %s\n", c.energy, parsing::PairsToDotBracket(c.s.p).c_str());
+            },
+            r, subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);

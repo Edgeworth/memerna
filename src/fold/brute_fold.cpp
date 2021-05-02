@@ -12,13 +12,15 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include <set>
 #include "fold/brute_fold.h"
+
+#include <set>
+
+#include "energy/energy_globals.h"
 #include "energy/structure.h"
 #include "fold/fold.h"
 #include "parsing.h"
 #include "splaymap.h"
-#include "energy/energy_globals.h"
 
 namespace memerna {
 namespace fold {
@@ -56,7 +58,7 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
   }
   return branch_count;
 }
-}
+}  // namespace internal
 
 namespace {
 
@@ -89,8 +91,7 @@ struct substructure_id_t {
 bool compute_partition;
 partition::partition_t partition;
 partition::probabilities_t probabilities;
-struct nothing_t {
-};
+struct nothing_t {};
 SplayMap<substructure_id_t, nothing_t> substructure_map;
 
 substructure_id_t WriteBits(int st, int en, int N, bool inside) {
@@ -170,13 +171,15 @@ void AddAllCombinations(int idx) {
   const bool lu_exists = idx - 1 >= 0 && gp[idx - 1] == -1;
   const bool lu_shared = lu_exists && idx - 2 >= 0 && gp[idx - 2] != -1;
   const bool lu_usable = lu_exists &&
-      (!lu_shared || (gctd[gp[idx - 2]] != CTD_3_DANGLE && gctd[gp[idx - 2]] != CTD_MISMATCH &&
-          gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
+      (!lu_shared ||
+          (gctd[gp[idx - 2]] != CTD_3_DANGLE && gctd[gp[idx - 2]] != CTD_MISMATCH &&
+              gctd[gp[idx - 2]] != CTD_RCOAX_WITH_PREV));
   const bool ru_exists = gp[idx] + 1 < N && gp[gp[idx] + 1] == -1;
   const bool ru_shared = ru_exists && gp[idx] + 2 < N && gp[gp[idx] + 2] != -1;
   const bool ru_usable = ru_exists &&
-      (!ru_shared || (gctd[gp[idx] + 2] != CTD_5_DANGLE && gctd[gp[idx] + 2] != CTD_MISMATCH &&
-          gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
+      (!ru_shared ||
+          (gctd[gp[idx] + 2] != CTD_5_DANGLE && gctd[gp[idx] + 2] != CTD_MISMATCH &&
+              gctd[gp[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
   // CTD_UNUSED
   gctd[idx] = CTD_UNUSED;
@@ -279,8 +282,8 @@ void BruteForce(int idx) {
   }
 }
 
-void InvokeBruteForce(const primary_t& r, const energy::EnergyModel& em,
-    int max_structures_, bool compute_partition_, bool allow_lonely_pairs) {
+void InvokeBruteForce(const primary_t& r, const energy::EnergyModel& em, int max_structures_,
+    bool compute_partition_, bool allow_lonely_pairs) {
   SetFoldGlobalState(r, em);
   best_computeds.clear();
   base_pairs.clear();
@@ -301,7 +304,7 @@ void InvokeBruteForce(const primary_t& r, const energy::EnergyModel& em,
   BruteForce(0);
 }
 
-}
+}  // namespace
 
 computed_t FoldBruteForce(const primary_t& r, const energy::EnergyModel& em) {
   return SuboptimalBruteForce(r, em, 1)[0];
@@ -313,8 +316,8 @@ std::vector<computed_t> SuboptimalBruteForce(
   return std::vector<computed_t>(best_computeds.begin(), best_computeds.end());
 }
 
-std::pair<partition::partition_t, partition::probabilities_t>
-PartitionBruteForce(const primary_t& r, const energy::EnergyModel& em) {
+std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForce(
+    const primary_t& r, const energy::EnergyModel& em) {
   const int N = int(r.size());
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
@@ -324,10 +327,9 @@ PartitionBruteForce(const primary_t& r, const energy::EnergyModel& em) {
   InvokeBruteForce(r, em, 1, true, false);  // Allow lonely pairs for the partition function. TODO?
   substructure_map.Clear();  // Don't waste memory.
   for (int i = 0; i < N; ++i)
-    for (int j = i; j < N; ++j)
-      probabilities[i][j][0] /= partition.q;
+    for (int j = i; j < N; ++j) probabilities[i][j][0] /= partition.q;
   return {std::move(partition), std::move(probabilities)};
 }
 
-}
-}
+}  // namespace fold
+}  // namespace memerna

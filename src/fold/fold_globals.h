@@ -31,11 +31,11 @@ extern energy_t genergy;
 extern array3d_t<energy_t, DP_SIZE> gdp;
 extern array2d_t<energy_t, EXT_SIZE> gext;
 
-}
+}  // namespace internal
 
 void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
-}
-}
+}  // namespace fold
+}  // namespace memerna
 
 #endif  // MEMERNA_FOLD_GLOBALS_H

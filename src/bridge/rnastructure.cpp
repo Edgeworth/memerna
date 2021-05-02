@@ -31,8 +31,7 @@ constexpr int NUM_FILENAMES = sizeof(FILENAMES) / sizeof(FILENAMES[0]);
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   auto dt = std::make_unique<datatable>();
   std::string paths[NUM_FILENAMES];
-  for (int i = 0; i < NUM_FILENAMES; ++i)
-    paths[i] = path + FILENAMES[i];
+  for (int i = 0; i < NUM_FILENAMES; ++i) paths[i] = path + FILENAMES[i];
 
   opendat(paths[0].c_str(), paths[1].c_str(), paths[2].c_str(), paths[3].c_str(), paths[4].c_str(),
       paths[5].c_str(), paths[6].c_str(), paths[7].c_str(), paths[8].c_str(), paths[9].c_str(),
@@ -63,8 +62,7 @@ std::unique_ptr<structure> LoadStructure(const secondary_t& s) {
 
 std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
   std::vector<int> p(struc.GetSequenceLength(), -1);
-  for (int i = 0; i < int(p.size()); ++i)
-    p[i] = struc.GetPair(i + 1, struc_num) - 1;
+  for (int i = 0; i < int(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
   return p;
 }
 
@@ -74,7 +72,7 @@ std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
     ps.push_back(StructureToPairs(struc, i + 1));
   return ps;
 }
-}
+}  // namespace
 
 Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_)
     : data(LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
@@ -105,11 +103,10 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t& dp_state
       energy_t(structure->GetEnergy(1))};
 }
 
-int Rnastructure::Suboptimal(fold::SuboptimalCallback fn,
-    const primary_t& r, energy_t energy_delta) const {
+int Rnastructure::Suboptimal(
+    fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
-  for (const auto& computed : computeds)
-    fn(computed);
+  for (const auto& computed : computeds) fn(computed);
   return int(computeds.size());
 }
 
@@ -122,8 +119,7 @@ std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
   auto p_list = StructureToMultiplePairs(*structure);
   std::vector<computed_t> computeds;
   for (int i = 0; i < int(p_list.size()); ++i)
-    computeds.emplace_back(
-        secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
+    computeds.emplace_back(secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
         energy_t(structure->GetEnergy(i + 1)));
   return computeds;
 }
@@ -146,8 +142,8 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   const auto lfce = std::make_unique<bool[]>(std::size_t(2 * length + 1));
   const auto mod = std::make_unique<bool[]>(std::size_t(2 * length + 1));
 
-  calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr,
-      &w, &v, &wmb, &wl, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
+  calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
+      &wl, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
   partition::partition_t partition = {{std::size_t(length)}, 0};
   partition.q = penergy_t(w5[length]);
@@ -161,13 +157,12 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   partition::probabilities_t probability(std::size_t(length), 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
-      probability[i][j][0] = penergy_t(calculateprobability(
-          i + 1, j + 1, &v, w5.get(), structure.get(),
-          pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
+      probability[i][j][0] = penergy_t(calculateprobability(i + 1, j + 1, &v, w5.get(),
+          structure.get(), pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }
   return {std::move(partition), std::move(probability)};
 }
 
-}
-}
+}  // namespace bridge
+}  // namespace memerna

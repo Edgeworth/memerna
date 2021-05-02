@@ -18,6 +18,7 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+
 #include "base.h"
 #include "energy/energy_model.h"
 
@@ -32,7 +33,7 @@ std::string PairsToDotBracket(const std::vector<int>& pairs);
 computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str);
 std::string ComputedToCtdString(const computed_t& computed);
 bool IsCtdString(const std::string& pairs_str);
-}
-}
+}  // namespace parsing
+}  // namespace memerna
 
 #endif  // MEMERNA_PARSING_H

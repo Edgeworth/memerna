@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <cstdlib>
+
 #include "common_test.h"
 #include "context.h"
 #include "parsing.h"
@@ -23,9 +24,7 @@ namespace fold {
 class FoldAlgTest : public testing::TestWithParam<context_opt_t::TableAlg> {
 public:
   energy_t FoldEnergy(const std::string& s) {
-    return Context(parsing::StringToPrimary(s), g_em, context_opt_t(GetParam()))
-        .Fold()
-        .energy;
+    return Context(parsing::StringToPrimary(s), g_em, context_opt_t(GetParam())).Fold().energy;
   }
 };
 
@@ -68,7 +67,6 @@ TEST_P(FoldAlgTest, T04) {
   EXPECT_EQ(-208, FoldEnergy("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 }
 
-INSTANTIATE_TEST_CASE_P(
-    FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
-}
-}
+INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
+}  // namespace fold
+}  // namespace memerna

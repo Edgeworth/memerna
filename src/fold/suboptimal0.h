@@ -16,6 +16,7 @@
 #define MEMERNA_SUBOPTIMAL0_H
 
 #include <set>
+
 #include "common.h"
 #include "energy/structure.h"
 #include "fold/fold.h"
@@ -107,8 +108,8 @@ private:
     curnode.base_ctds[ctd_idx1.idx] = CTD_NA;
   }
 };
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna
 
 #endif  // MEMERNA_SUBOPTIMAL0_H

@@ -54,8 +54,10 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
   for (int i = 0; i < int(pairs.size()); ++i) {
     if (pairs[i] == -1) continue;
-    if (pairs[i] < i) s[i] = ')';
-    else s[i] = '(';
+    if (pairs[i] < i)
+      s[i] = ')';
+    else
+      s[i] = '(';
   }
   return s;
 }
@@ -66,46 +68,34 @@ std::string ComputedToCtdString(const computed_t& computed) {
   for (int i = 0; i < int(p.size()); ++i) {
     if (p[i] == -1) continue;
     const bool closing = p[i] < i;
-    if (closing) s[i] = ']';
-    else s[i] = '[';
+    if (closing)
+      s[i] = ']';
+    else
+      s[i] = '[';
     switch (computed.base_ctds[i]) {
-      case CTD_NA:
-      case CTD_UNUSED:
-        break;
-      case CTD_3_DANGLE:
-        s[p[i] + 1] = '3';
-        break;
-      case CTD_5_DANGLE:
-        s[i - 1] = '5';
-        break;
-      case CTD_MISMATCH:
-        s[i - 1] = 'm';
-        s[p[i] + 1] = 'M';
-        break;
-      case CTD_LCOAX_WITH_NEXT:
-        s[i] = closing ? 'N' : 'n';
-        s[i - 1] = 'm';
-        s[p[i] + 1] = 'M';
-        break;
-      case CTD_LCOAX_WITH_PREV:
-        s[i] = closing ? 'P' : 'p';
-        break;
-      case CTD_RCOAX_WITH_NEXT:
-        s[i] = closing ? 'N' : 'n';
-        break;
-      case CTD_RCOAX_WITH_PREV:
-        s[i] = closing ? 'P' : 'p';
-        s[i - 1] = 'm';
-        s[p[i] + 1] = 'M';
-        break;
-      case CTD_FCOAX_WITH_NEXT:
-        s[i] = closing ? 'N' : 'n';
-        break;
-      case CTD_FCOAX_WITH_PREV:
-        s[i] = closing ? 'P' : 'p';
-        break;
-      default:
-        verify_expr(false, "bug");
+    case CTD_NA:
+    case CTD_UNUSED: break;
+    case CTD_3_DANGLE: s[p[i] + 1] = '3'; break;
+    case CTD_5_DANGLE: s[i - 1] = '5'; break;
+    case CTD_MISMATCH:
+      s[i - 1] = 'm';
+      s[p[i] + 1] = 'M';
+      break;
+    case CTD_LCOAX_WITH_NEXT:
+      s[i] = closing ? 'N' : 'n';
+      s[i - 1] = 'm';
+      s[p[i] + 1] = 'M';
+      break;
+    case CTD_LCOAX_WITH_PREV: s[i] = closing ? 'P' : 'p'; break;
+    case CTD_RCOAX_WITH_NEXT: s[i] = closing ? 'N' : 'n'; break;
+    case CTD_RCOAX_WITH_PREV:
+      s[i] = closing ? 'P' : 'p';
+      s[i - 1] = 'm';
+      s[p[i] + 1] = 'M';
+      break;
+    case CTD_FCOAX_WITH_NEXT: s[i] = closing ? 'N' : 'n'; break;
+    case CTD_FCOAX_WITH_PREV: s[i] = closing ? 'P' : 'p'; break;
+    default: verify_expr(false, "bug");
     }
   }
   return s;
@@ -114,9 +104,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
 std::string PrimaryToString(const primary_t& r) {
   std::string s;
   s.resize(r.size());
-  for (int i = 0; i < int(r.size()); ++i) {
-    s[i] = BaseToChar(r[i]);
-  }
+  for (int i = 0; i < int(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
   return s;
 }
 
@@ -180,8 +168,9 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
     }
     if (c == '3') {
       // If we optimistically set an exterior loop to CTD_UNUSED, we might want to rewrite it here.
-      verify_expr(i - 1 >= 0 && p[i - 1] != -1 && (computed.base_ctds[p[i - 1]] == CTD_NA ||
-          computed.base_ctds[p[i - 1]] == CTD_UNUSED),
+      verify_expr(i - 1 >= 0 && p[i - 1] != -1 &&
+              (computed.base_ctds[p[i - 1]] == CTD_NA ||
+                  computed.base_ctds[p[i - 1]] == CTD_UNUSED),
           "invalid input");
       computed.base_ctds[p[i - 1]] = CTD_3_DANGLE;
     }
@@ -232,5 +221,5 @@ bool IsCtdString(const std::string& pairs_str) {
     if (c == '(') return false;
   return true;
 }
-}
-}
+}  // namespace parsing
+}  // namespace memerna

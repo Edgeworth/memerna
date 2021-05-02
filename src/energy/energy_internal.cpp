@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "energy/energy_internal.h"
+
 #include <algorithm>
+
 #include "parsing.h"
 
 namespace memerna {
@@ -210,49 +212,47 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
     energy_t energy = 0;
     const auto stb = r[branch], enb = r[p[branch]];
     switch (computed.base_ctds[branch]) {
-      case CTD_UNUSED:
-        break;
-      case CTD_3_DANGLE:
-        assert(p[branch] + 1 < int(r.size()));
-        energy = em.dangle3[enb][r[p[branch] + 1]][stb];
-        break;
-      case CTD_5_DANGLE:
-        assert(branch > 0);
-        energy = em.dangle5[enb][r[branch - 1]][stb];
-        break;
-      case CTD_MISMATCH:
-        assert(p[branch] + 1 < int(r.size()) && branch > 0);
-        energy = em.terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
-        break;
-      case CTD_LCOAX_WITH_PREV:
-        // .(   ).(   )
-        assert(p[prev_branch] + 1 < int(r.size()) && prev_branch - 1 >= 0);
-        energy = em.MismatchCoaxial(
-            r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
-        branch_ctds.emplace_back(CTD_LCOAX_WITH_NEXT, energy);
-        rot_left = (i == 0) || rot_left;
-        break;
-      case CTD_RCOAX_WITH_PREV:
-        assert(branch > 0 && p[branch] + 1 < int(r.size()));
-        // (   ).(   ). or (.(   ).   )
-        energy = em.MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
-        // Need to do rotations
-        branch_ctds.emplace_back(CTD_RCOAX_WITH_NEXT, energy);
-        rot_left = (i == 0) || rot_left;
-        break;
-      case CTD_FCOAX_WITH_PREV:
-        // (   )(   ) or ((   )   ) or (   (   ))
-        energy = em.stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
-        branch_ctds.emplace_back(CTD_FCOAX_WITH_NEXT, energy);
-        rot_left = (i == 0) || rot_left;
-        break;
-      case CTD_LCOAX_WITH_NEXT:
-      case CTD_RCOAX_WITH_NEXT:
-      case CTD_FCOAX_WITH_NEXT:
-        // All these cases will be handled in the next branch (PREV).
-        continue;
-      default:
-        verify_expr(false, "bug");  // Should never happen
+    case CTD_UNUSED: break;
+    case CTD_3_DANGLE:
+      assert(p[branch] + 1 < int(r.size()));
+      energy = em.dangle3[enb][r[p[branch] + 1]][stb];
+      break;
+    case CTD_5_DANGLE:
+      assert(branch > 0);
+      energy = em.dangle5[enb][r[branch - 1]][stb];
+      break;
+    case CTD_MISMATCH:
+      assert(p[branch] + 1 < int(r.size()) && branch > 0);
+      energy = em.terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
+      break;
+    case CTD_LCOAX_WITH_PREV:
+      // .(   ).(   )
+      assert(p[prev_branch] + 1 < int(r.size()) && prev_branch - 1 >= 0);
+      energy = em.MismatchCoaxial(
+          r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
+      branch_ctds.emplace_back(CTD_LCOAX_WITH_NEXT, energy);
+      rot_left = (i == 0) || rot_left;
+      break;
+    case CTD_RCOAX_WITH_PREV:
+      assert(branch > 0 && p[branch] + 1 < int(r.size()));
+      // (   ).(   ). or (.(   ).   )
+      energy = em.MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
+      // Need to do rotations
+      branch_ctds.emplace_back(CTD_RCOAX_WITH_NEXT, energy);
+      rot_left = (i == 0) || rot_left;
+      break;
+    case CTD_FCOAX_WITH_PREV:
+      // (   )(   ) or ((   )   ) or (   (   ))
+      energy = em.stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
+      branch_ctds.emplace_back(CTD_FCOAX_WITH_NEXT, energy);
+      rot_left = (i == 0) || rot_left;
+      break;
+    case CTD_LCOAX_WITH_NEXT:
+    case CTD_RCOAX_WITH_NEXT:
+    case CTD_FCOAX_WITH_NEXT:
+      // All these cases will be handled in the next branch (PREV).
+      continue;
+    default: verify_expr(false, "bug");  // Should never happen
     }
     branch_ctds.emplace_back(computed.base_ctds[branch], energy);
     total_energy += energy;
@@ -263,6 +263,6 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   }
   return total_energy;
 }
-}
-}
-}
+}  // namespace internal
+}  // namespace energy
+}  // namespace memerna

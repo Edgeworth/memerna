@@ -12,18 +12,18 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "partition/partition.h"
-#include "globals.h"
-#include "partition/partition_globals.h"
 #include "energy/energy_globals.h"
+#include "globals.h"
+#include "partition/partition.h"
+#include "partition/partition_globals.h"
 
 namespace memerna {
 namespace partition {
 namespace internal {
 
+using energy::Boltzmann;
 using energy::gem;
 using energy::gpc;
-using energy::Boltzmann;
 
 void Partition0() {
   const int N = int(gr.size());
@@ -32,9 +32,9 @@ void Partition0() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-          en1b = gr[en - 1], en2b = gr[en - 2];
+                   en1b = gr[en - 1], en2b = gr[en - 2];
 
-      //if (CanPair(stb, enb)) {  // TODO lonely pairs?
+      // if (CanPair(stb, enb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(st, en)) {
         penergy_t p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -44,7 +44,8 @@ void Partition0() {
         // Hairpin loops.
         p += Boltzmann(gem.Hairpin(gr, st, en));
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const penergy_t base_branch_cost = Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
+        const penergy_t base_branch_cost =
+            Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
 
         // (<   ><   >)
         p += base_branch_cost * gpt[st + 1][en - 1][PT_U2];
@@ -107,8 +108,10 @@ void Partition0() {
         u2 += base00 * gpt[piv + 1][en][PT_U];
         penergy_t val = base00 + base00 * gpt[piv + 1][en][PT_U];
         u += val;
-        if (IsGu(stb, pb)) gu += val;
-        else wc += val;
+        if (IsGu(stb, pb))
+          gu += val;
+        else
+          wc += val;
 
         // (   )3<   > 3' - U
         val = base01 * Boltzmann(gem.dangle3[pl1b][pb][stb]);
@@ -174,14 +177,12 @@ void Partition0() {
       //        ..)...(..
       // rspace  en   st  lspace
       const int lspace = N - st - 1, rspace = en;
-      const base_t stb = gr[st],
-          st1b = lspace ? gr[st + 1] : base_t(-1),
-          st2b = lspace > 1 ? gr[st + 2] : base_t(-1),
-          enb = gr[en],
-          en1b = rspace ? gr[en - 1] : base_t(-1),
-          en2b = rspace > 1 ? gr[en - 2] : base_t(-1);
+      const base_t stb = gr[st], st1b = lspace ? gr[st + 1] : base_t(-1),
+                   st2b = lspace > 1 ? gr[st + 2] : base_t(-1), enb = gr[en],
+                   en1b = rspace ? gr[en - 1] : base_t(-1),
+                   en2b = rspace > 1 ? gr[en - 2] : base_t(-1);
 
-      //if (CanPair(enb, stb)) {  // TODO lonely pairs?
+      // if (CanPair(enb, stb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(en, st)) {
         penergy_t p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
@@ -190,10 +191,10 @@ void Partition0() {
           for (int oen = en - 1; oen >= oen_min; --oen)
             p += Boltzmann(energy::FastTwoLoop(oen, ost, en, st)) * gpt[ost][oen][PT_P];
         }
-        const penergy_t base_branch_cost = Boltzmann(
-            gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
-        const energy_t outer_coax = lspace && rspace ?
-            gem.MismatchCoaxial(stb, st1b, en1b, enb) : MAX_E;
+        const penergy_t base_branch_cost =
+            Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
+        const energy_t outer_coax =
+            lspace && rspace ? gem.MismatchCoaxial(stb, st1b, en1b, enb) : MAX_E;
         // Try being an exterior loop - coax cases handled in the loop after this.
         {
           const penergy_t augu = Boltzmann(gem.AuGuPenalty(enb, stb));
@@ -245,18 +246,20 @@ void Partition0() {
               const penergy_t rp1ext = gptext[piv + 1][PTEXT_R];
               // |<   >)   (.(   ).<   >| Exterior loop - Left right coax
               // lspace > 1 && not enclosed
-              p += gpt[st + 2][pl][PT_P] * lext * rp1ext * Boltzmann(gem.AuGuPenalty(stb, enb) +
-                  gem.AuGuPenalty(st2b, pl1b) + gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+              p += gpt[st + 2][pl][PT_P] * lext * rp1ext *
+                  Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(st2b, pl1b) +
+                      gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
               // |<   >)   ((   )<   >| Exterior loop - Left flush coax
               // lspace > 0 && not enclosed
-              p += gpt[st + 1][piv][PT_P] * lext * rp1ext * Boltzmann(gem.AuGuPenalty(stb, enb) +
-                  gem.AuGuPenalty(st1b, plb) + gem.stack[stb][st1b][plb][enb]);
+              p += gpt[st + 1][piv][PT_P] * lext * rp1ext *
+                  Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(st1b, plb) +
+                      gem.stack[stb][st1b][plb][enb]);
 
               if (rspace) {
                 // |<   >.)   (.(   )<   >| Exterior loop - Left outer coax
                 // lspace > 0 && rspace > 0 && not enclosed
-                p += gpt[st + 2][piv][PT_P] * l1ext * rp1ext * Boltzmann(
-                    gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(st2b, plb) + outer_coax);
+                p += gpt[st + 2][piv][PT_P] * l1ext * rp1ext *
+                    Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(st2b, plb) + outer_coax);
               }
             }
 
@@ -264,18 +267,20 @@ void Partition0() {
               const penergy_t lpext = piv > 0 ? gptext[piv - 1][PTEXT_L] : penergy_t{1};
               // |<   >.(   ).)   (<   >| Exterior loop - Right left coax
               // rspace > 1 && not enclosed
-              p += gpt[pr][en - 2][PT_P] * lpext * rext * Boltzmann(gem.AuGuPenalty(stb, enb) +
-                  gem.AuGuPenalty(prb, en2b) + gem.MismatchCoaxial(en2b, en1b, plb, prb));
+              p += gpt[pr][en - 2][PT_P] * lpext * rext *
+                  Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(prb, en2b) +
+                      gem.MismatchCoaxial(en2b, en1b, plb, prb));
               // |<   >(   ))   (<   >| Exterior loop - Right flush coax
               // rspace > 0 && not enclosed
-              p += gpt[piv][en - 1][PT_P] * lpext * rext * Boltzmann(gem.AuGuPenalty(stb, enb) +
-                  gem.AuGuPenalty(plb, en1b) + gem.stack[en1b][enb][stb][plb]);
+              p += gpt[piv][en - 1][PT_P] * lpext * rext *
+                  Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(plb, en1b) +
+                      gem.stack[en1b][enb][stb][plb]);
 
               if (lspace) {
                 // |<   >(   ).)   (.<   >| Exterior loop - Right outer coax
                 // lspace > 0 && rspace > 1 && not enclosed
-                p += gpt[piv][en - 2][PT_P] * lpext * r1ext * Boltzmann(
-                    gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(plb, en2b) + outer_coax);
+                p += gpt[piv][en - 2][PT_P] * lpext * r1ext *
+                    Boltzmann(gem.AuGuPenalty(stb, enb) + gem.AuGuPenalty(plb, en2b) + outer_coax);
               }
             }
           }
@@ -286,8 +291,8 @@ void Partition0() {
         // At worst the enclosing loop has to start at st + 1.
         const int limit = en + N;
         for (int tpiv = st + 2; tpiv < limit; ++tpiv) {
-          const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N),
-              pr = FastMod(tpiv + 1, N), pr1 = FastMod(tpiv + 2, N);
+          const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N), pr = FastMod(tpiv + 1, N),
+                    pr1 = FastMod(tpiv + 2, N);
           // Left block is: [st, piv], Right block is: [piv + 1, en].
           base_t pl1b = gr[pl], plb = gr[piv], prb = gr[pr], pr1b = gr[pr1];
           // When neither the left block nor the right block straddles the border
@@ -295,7 +300,8 @@ void Partition0() {
           const bool straddling = tpiv != (N - 1);
           // Left loop formable if not straddling, and is big enough or crosses over.
           const bool left_formable = straddling && (piv - st - 2 >= HAIRPIN_MIN_SZ || tpiv >= N);
-          const bool right_formable = straddling && (en - piv - 3 >= HAIRPIN_MIN_SZ || tpiv < N - 1);
+          const bool right_formable =
+              straddling && (en - piv - 3 >= HAIRPIN_MIN_SZ || tpiv < N - 1);
           const bool left_dot_formable = left_formable && tpiv != N;  // Can't split a dot.
           const bool right_dot_formable = right_formable && tpiv != N - 2;  // Can't split a dot.
 
@@ -318,8 +324,8 @@ void Partition0() {
           if (lspace > 1 && rspace && left_dot_formable) {
             // |  >)   (.(   ).<  | Enclosing loop - Left right coax
             // lspace > 1 && rspace > 0 && enclosed && no dot split
-            p += base_branch_cost * gpt[st + 2][pl][PT_P] * gpt[pr][en - 1][PT_U] * Boltzmann(
-                gpc.augubranch[st2b][pl1b] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
+            p += base_branch_cost * gpt[st + 2][pl][PT_P] * gpt[pr][en - 1][PT_U] *
+                Boltzmann(gpc.augubranch[st2b][pl1b] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b));
           }
 
           if (lspace && rspace > 1 && right_dot_formable) {
@@ -373,13 +379,17 @@ void Partition0() {
           val = base00 * gpt[pr][en][PT_U];
           u2 += val;
           u += val;
-          if (IsGu(stb, pb)) gu += val;
-          else wc += val;
+          if (IsGu(stb, pb))
+            gu += val;
+          else
+            wc += val;
           // U must cross the boundary to have the rest of it be nothing.
           if (tpiv >= N) {
             u += base00;
-            if (IsGu(stb, pb)) gu += base00;
-            else wc += base00;
+            if (IsGu(stb, pb))
+              gu += base00;
+            else
+              wc += base00;
           }
 
           // |  )  >>   <(   )<(  | Flush coax
@@ -452,6 +462,6 @@ void Partition0() {
   }
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace partition
+}  // namespace memerna

@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "fold/fold.h"
 #include "energy/energy_globals.h"
+#include "fold/fold.h"
 
 namespace memerna {
 namespace fold {
@@ -27,14 +27,13 @@ void ComputeTables2() {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
-  for (auto& i : p_cand_en)
-    i.resize(gr.size());
+  for (auto& i : p_cand_en) i.resize(gr.size());
   std::vector<cand_t> cand_st[CAND_SIZE];
   for (int st = N - 1; st >= 0; --st) {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-          en1b = gr[en - 1], en2b = gr[en - 2];
+                   en1b = gr[en - 1], en2b = gr[en - 2];
       energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
@@ -70,29 +69,33 @@ void ComputeTables2() {
 
         // (.(   ).   ) Left right coax
         for (auto cand : cand_st[CAND_P_MISMATCH])
-          mins[DP_P] = std::min(
-              mins[DP_P], base_branch_cost + cand.energy + gdp[cand.idx][en - 1][DP_U]);
+          mins[DP_P] =
+              std::min(mins[DP_P], base_branch_cost + cand.energy + gdp[cand.idx][en - 1][DP_U]);
         // (.(   )   .) Left outer coax
         const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
         for (auto cand : cand_st[CAND_P_OUTER])
-          mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-              outer_coax + gdp[cand.idx][en - 2][DP_U]);
+          mins[DP_P] = std::min(mins[DP_P],
+              base_branch_cost + cand.energy - gpc.min_mismatch_coax + outer_coax +
+                  gdp[cand.idx][en - 2][DP_U]);
         // ((   )   ) Left flush coax
         for (auto cand : cand_st[CAND_P_FLUSH])
-          mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-              gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
+          mins[DP_P] = std::min(mins[DP_P],
+              base_branch_cost + cand.energy - gpc.min_flush_coax +
+                  gem.stack[stb][st1b][gr[cand.idx]][enb] + gdp[cand.idx + 1][en - 1][DP_U]);
         // (   .(   ).) Right left coax
         for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
-          mins[DP_P] = std::min(
-              mins[DP_P], base_branch_cost + cand.energy + gdp[st + 1][cand.idx][DP_U]);
+          mins[DP_P] =
+              std::min(mins[DP_P], base_branch_cost + cand.energy + gdp[st + 1][cand.idx][DP_U]);
         // (.   (   ).) Right outer coax
         for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
-          mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_mismatch_coax +
-              outer_coax + gdp[st + 2][cand.idx][DP_U]);
+          mins[DP_P] = std::min(mins[DP_P],
+              base_branch_cost + cand.energy - gpc.min_mismatch_coax + outer_coax +
+                  gdp[st + 2][cand.idx][DP_U]);
         // (   (   )) Right flush coax
         for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
-          mins[DP_P] = std::min(mins[DP_P], base_branch_cost + cand.energy - gpc.min_flush_coax +
-              gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
+          mins[DP_P] = std::min(mins[DP_P],
+              base_branch_cost + cand.energy - gpc.min_flush_coax +
+                  gem.stack[stb][gr[cand.idx]][en1b][enb] + gdp[st + 1][cand.idx - 1][DP_U]);
 
         gdp[st][en][DP_P] = mins[DP_P];
       }
@@ -129,11 +132,9 @@ void ComputeTables2() {
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
       for (auto cand : cand_st[CAND_U_WC])
-        mins[DP_U_WC] =
-            std::min(mins[DP_U_WC], cand.energy + std::min(gdp[cand.idx][en][DP_U], 0));
+        mins[DP_U_WC] = std::min(mins[DP_U_WC], cand.energy + std::min(gdp[cand.idx][en][DP_U], 0));
       for (auto cand : cand_st[CAND_U_GU])
-        mins[DP_U_GU] =
-            std::min(mins[DP_U_GU], cand.energy + std::min(gdp[cand.idx][en][DP_U], 0));
+        mins[DP_U_GU] = std::min(mins[DP_U_GU], cand.energy + std::min(gdp[cand.idx][en][DP_U], 0));
       for (auto cand : cand_st[CAND_U_RCOAX]) {
         // (   )<.( * ). > Right coax backward
         mins[DP_U_RCOAX] =
@@ -152,10 +153,9 @@ void ComputeTables2() {
       // that is as good.
       // e.g. we could replace a (   )3' with the equivalent U since we know the energy for (   )3'
       // that is, it is self contained. If replacing it with U[st][en] is better, then we do not
-      // need to consider (...)3' when computing a larger U. In some cases we use the minimum possible
-      // energy if we don't know the energy exactly for a structure (e.g. RCOAX).
-      // These orderings are useful to remember:
-      // U <= U_WC, U_GU, U2
+      // need to consider (...)3' when computing a larger U. In some cases we use the minimum
+      // possible energy if we don't know the energy exactly for a structure (e.g. RCOAX). These
+      // orderings are useful to remember: U <= U_WC, U_GU, U2
       energy_t cand_st_u = MAX_E;
 
       // Unpaired cases. These store the best pairs u_cand that begin at st.
@@ -163,8 +163,7 @@ void ComputeTables2() {
       // paren.
       // (   ) - Normal - U, U2
       const auto normal_base = gdp[st][en][DP_P] + gpc.augubranch[stb][enb];
-      if (normal_base < gdp[st][en][DP_U] && normal_base < cand_st_u)
-        cand_st_u = normal_base;
+      if (normal_base < gdp[st][en][DP_U] && normal_base < cand_st_u) cand_st_u = normal_base;
 
       // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare them to
       // something they can be
@@ -189,18 +188,15 @@ void ComputeTables2() {
       // (   ). - 3' - U, U2
       const auto dangle3_base =
           gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] + gem.dangle3[en1b][enb][stb];
-      if (dangle3_base < gdp[st][en][DP_U] && dangle3_base < cand_st_u)
-        cand_st_u = dangle3_base;
+      if (dangle3_base < gdp[st][en][DP_U] && dangle3_base < cand_st_u) cand_st_u = dangle3_base;
       // .(   ) - 5' - U, U2
       const auto dangle5_base =
           gdp[st + 1][en][DP_P] + gpc.augubranch[st1b][enb] + gem.dangle5[enb][stb][st1b];
-      if (dangle5_base < gdp[st][en][DP_U] && dangle5_base < cand_st_u)
-        cand_st_u = dangle5_base;
+      if (dangle5_base < gdp[st][en][DP_U] && dangle5_base < cand_st_u) cand_st_u = dangle5_base;
       // .(   ). - Terminal mismatch - U, U2
       const auto terminal_base = gdp[st + 1][en - 1][DP_P] + gpc.augubranch[st1b][en1b] +
           gem.terminal[en1b][enb][stb][st1b];
-      if (terminal_base < gdp[st][en][DP_U] && terminal_base < cand_st_u)
-        cand_st_u = terminal_base;
+      if (terminal_base < gdp[st][en][DP_U] && terminal_base < cand_st_u) cand_st_u = terminal_base;
 
       // Add potentials to the candidate lists.
       if (cand_st_u < CAP_E &&
@@ -213,8 +209,7 @@ void ComputeTables2() {
       if (lcoax_base < CAP_E && lcoax_base < gdp[st][en][DP_U])
         cand_st[CAND_U_LCOAX].push_back({lcoax_base, en + 1});
       // (   )<.(   ). > Right coax forward - U, U2
-      const auto rcoaxf_base = gdp[st][en][DP_P] +
-          gpc.augubranch[stb][enb] + gpc.min_mismatch_coax;
+      const auto rcoaxf_base = gdp[st][en][DP_P] + gpc.augubranch[stb][enb] + gpc.min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < gdp[st][en][DP_U])
         cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en + 1});
 
@@ -230,14 +225,13 @@ void ComputeTables2() {
       gdp[st][en][DP_U_RCOAX] = std::min(gdp[st][en][DP_U_RCOAX], rcoaxb_base);
 
       // (   )(<   ) > Flush coax - U, U2
-      const auto wc_flush_base = gdp[st][en - 1][DP_P] +
-          gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 3][stb];
-      const auto gu_flush_base = gdp[st][en - 1][DP_P] +
-          gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 1][stb];
+      const auto wc_flush_base =
+          gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 3][stb];
+      const auto gu_flush_base =
+          gdp[st][en - 1][DP_P] + gpc.augubranch[stb][en1b] + gem.stack[en1b][enb][enb ^ 1][stb];
       if (wc_flush_base < CAP_E && wc_flush_base < gdp[st][en - 1][DP_U])
         cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
-      if (gu_flush_base < CAP_E && (enb == G || enb == U) &&
-          gu_flush_base < gdp[st][en - 1][DP_U])
+      if (gu_flush_base < CAP_E && (enb == G || enb == U) && gu_flush_base < gdp[st][en - 1][DP_U])
         cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
 
       // Base cases.
@@ -283,6 +277,6 @@ void ComputeTables2() {
     }
   }
 }
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna

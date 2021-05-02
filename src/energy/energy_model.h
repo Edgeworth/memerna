@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <cstring>
+
 #include "argparse.h"
 #include "base.h"
 #include "common.h"
@@ -120,13 +121,15 @@ public:
   //    1. A terminal mismatch is formed around the branch being straddled.
   //    2. An arbitrary bonus is added.
   //    2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
-  energy_t MismatchCoaxial(base_t five_top, base_t mismatch_top,
-      base_t mismatch_bot, base_t three_bot) const {
+  energy_t MismatchCoaxial(
+      base_t five_top, base_t mismatch_top, base_t mismatch_bot, base_t three_bot) const {
     assert(IsBase(five_top) && IsBase(mismatch_top) && IsBase(mismatch_bot) && IsBase(three_bot));
-    energy_t coax = terminal[five_top][mismatch_top][mismatch_bot][three_bot] +
-        coax_mismatch_non_contiguous;
-    if (IsWatsonCrick(mismatch_top, mismatch_bot)) coax += coax_mismatch_wc_bonus;
-    else if (IsGu(mismatch_top, mismatch_bot)) coax += coax_mismatch_gu_bonus;
+    energy_t coax =
+        terminal[five_top][mismatch_top][mismatch_bot][three_bot] + coax_mismatch_non_contiguous;
+    if (IsWatsonCrick(mismatch_top, mismatch_bot))
+      coax += coax_mismatch_wc_bonus;
+    else if (IsGu(mismatch_top, mismatch_bot))
+      coax += coax_mismatch_gu_bonus;
     return coax;
   }
 
@@ -144,7 +147,7 @@ public:
 };
 
 typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
-}
-}
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_ENERGY_MODEL_H

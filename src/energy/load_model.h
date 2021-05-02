@@ -28,7 +28,7 @@ const std::map<std::string, opt_t> ENERGY_OPTIONS = {
 EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
 EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
-}
-}
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_LOAD_MODEL_H

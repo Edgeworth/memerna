@@ -12,16 +12,16 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "partition/partition.h"
-#include "partition/partition_globals.h"
 #include "energy/energy_globals.h"
 #include "parsing.h"
+#include "partition/partition.h"
+#include "partition/partition_globals.h"
 namespace memerna {
 namespace partition {
 namespace internal {
 
-using energy::gem;
 using energy::Boltzmann;
+using energy::gem;
 
 void Exterior() {
   const int N = int(gr.size());
@@ -41,8 +41,10 @@ void Exterior() {
       // (   )<   >
       penergy_t val = base00 * gptext[en + 1][PTEXT_R];
       gptext[st][PTEXT_R] += val;
-      if (IsGu(stb, enb)) gptext[st][PTEXT_R_GU] += val;
-      else gptext[st][PTEXT_R_WC] += val;
+      if (IsGu(stb, enb))
+        gptext[st][PTEXT_R_GU] += val;
+      else
+        gptext[st][PTEXT_R_WC] += val;
 
       // (   )3<   > 3'
       gptext[st][PTEXT_R] +=
@@ -51,8 +53,8 @@ void Exterior() {
       gptext[st][PTEXT_R] +=
           base10 * Boltzmann(gem.dangle5[enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
       // .(   ).<   > Terminal mismatch
-      gptext[st][PTEXT_R] += base11 *
-          Boltzmann(gem.terminal[en1b][enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
+      gptext[st][PTEXT_R] +=
+          base11 * Boltzmann(gem.terminal[en1b][enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
       // .(   ).<(   ) > Left coax
       val = base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b));
       gptext[st][PTEXT_R] += val * gptext[en + 1][PTEXT_R_GU];
@@ -61,15 +63,15 @@ void Exterior() {
       // (   )<.(   ). > Right coax forward
       gptext[st][PTEXT_R] += base00 * gptext[en + 1][PTEXT_R_RCOAX];
       // (   )<.( * ). > Right coax backward
-      gptext[st][PTEXT_R_RCOAX] += base11 *
-          Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * gptext[en + 1][PTEXT_R];
+      gptext[st][PTEXT_R_RCOAX] +=
+          base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * gptext[en + 1][PTEXT_R];
 
       // (   )(<   ) > Flush coax
-      gptext[st][PTEXT_R] += base01 *
-          Boltzmann(gem.stack[en1b][enb][enb ^ 3][stb]) * gptext[en][PTEXT_R_WC];
+      gptext[st][PTEXT_R] +=
+          base01 * Boltzmann(gem.stack[en1b][enb][enb ^ 3][stb]) * gptext[en][PTEXT_R_WC];
       if (enb == G || enb == U)
-        gptext[st][PTEXT_R] += base01 *
-            Boltzmann(gem.stack[en1b][enb][enb ^ 1][stb]) * gptext[en][PTEXT_R_GU];
+        gptext[st][PTEXT_R] +=
+            base01 * Boltzmann(gem.stack[en1b][enb][enb ^ 1][stb]) * gptext[en][PTEXT_R_GU];
     }
   }
 
@@ -98,8 +100,10 @@ void Exterior() {
       // <   >(   )
       penergy_t val = base00 * ptextl;
       gptext[en][PTEXT_L] += val;
-      if (IsGu(stb, enb)) gptext[en][PTEXT_L_GU] += val;
-      else gptext[en][PTEXT_L_WC] += val;
+      if (IsGu(stb, enb))
+        gptext[en][PTEXT_L_GU] += val;
+      else
+        gptext[en][PTEXT_L_WC] += val;
 
       // <   >(   )3 3'
       gptext[en][PTEXT_L] += base01 * Boltzmann(gem.dangle3[en1b][enb][stb]) * ptextl;
@@ -115,21 +119,21 @@ void Exterior() {
       // <  .(   ).>(   ) Left coax forward
       gptext[en][PTEXT_L] += base00 * ptextllcoaxx;
       // <  .( * ).>(   ) Left coax backward
-      gptext[en][PTEXT_L_LCOAX] += base11 *
-          Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * ptextl;
+      gptext[en][PTEXT_L_LCOAX] +=
+          base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * ptextl;
 
       // < (   >)(   ) Flush coax
-      gptext[en][PTEXT_L] += base10 * Boltzmann(
-          gem.stack[stb][st1b][enb][stb ^ 3]) * gptext[st][PTEXT_L_WC];
+      gptext[en][PTEXT_L] +=
+          base10 * Boltzmann(gem.stack[stb][st1b][enb][stb ^ 3]) * gptext[st][PTEXT_L_WC];
       if (stb == G || stb == U)
-        gptext[en][PTEXT_L] += base10 * Boltzmann(
-            gem.stack[stb][st1b][enb][stb ^ 1]) * gptext[st][PTEXT_L_GU];
+        gptext[en][PTEXT_L] +=
+            base10 * Boltzmann(gem.stack[stb][st1b][enb][stb ^ 1]) * gptext[st][PTEXT_L_GU];
     }
   }
 
   assert(fabs(gptext[N - 1][PTEXT_L] - gptext[0][PTEXT_R]) < EP);
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace partition
+}  // namespace memerna

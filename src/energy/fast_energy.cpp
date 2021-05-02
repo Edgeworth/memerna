@@ -13,8 +13,9 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "energy/fast_energy.h"
-#include "parsing.h"
+
 #include "energy/energy_globals.h"
+#include "parsing.h"
 
 namespace memerna {
 namespace energy {
@@ -23,12 +24,11 @@ namespace {
 
 energy_t MinEnergy(const energy_t* energy, std::size_t size) {
   energy_t min = energy[0];
-  for (int i = 0; i < int(size / sizeof(energy_t)); ++i)
-    min = std::min(min, energy[i]);
+  for (int i = 0; i < int(size / sizeof(energy_t)); ++i) min = std::min(min, energy[i]);
   return min;
 }
 
-}
+}  // namespace
 namespace internal {
 
 int MaxNumContiguous(const primary_t& r) {
@@ -46,15 +46,14 @@ int MaxNumContiguous(const primary_t& r) {
   return max_num_contig;
 }
 
-}
+}  // namespace internal
 
 precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   assert(!r.empty());
   precomp_t pc;
   // Initialise fast AUGU branch table
   for (base_t i = 0; i < 4; ++i)
-    for (base_t j = 0; j < 4; ++j)
-      pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
+    for (base_t j = 0; j < 4; ++j) pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
 
   const auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
 
@@ -72,9 +71,9 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       min_internal, MinEnergy(&em.internal_2x2[0][0][0][0][0][0][0][0], sizeof(em.internal_2x2)));
   verify_expr(em.internal_asym >= 0,
       "min_internal optimisation does not work for negative asymmetry penalties");
-  const auto min_mismatch = 2 * std::min(
-      MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
-      MinEnergy(&em.internal_other_mismatch[0][0][0][0], sizeof(em.internal_other_mismatch)));
+  const auto min_mismatch = 2 *
+      std::min(MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),
+          MinEnergy(&em.internal_other_mismatch[0][0][0][0], sizeof(em.internal_other_mismatch)));
   const auto min_internal_init =
       MinEnergy(&em.internal_init[4], sizeof(em.internal_init) - 4 * sizeof(em.internal_init[0]));
   min_internal = std::min(
@@ -100,14 +99,14 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   if (toplen == 1 && botlen == 1)
     return gem.internal_1x1[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[oen]];
   if (toplen == 1 && botlen == 2)
-    return gem.internal_1x2[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[ien + 2]]
-    [gr[oen]];
+    return gem
+        .internal_1x2[gr[ost]][gr[ost + 1]][gr[ist]][gr[ien]][gr[ien + 1]][gr[ien + 2]][gr[oen]];
   if (toplen == 2 && botlen == 1)
-    return gem.internal_1x2[gr[ien]][gr[ien + 1]][gr[oen]][gr[ost]][gr[ost + 1]][gr[ost + 2]]
-    [gr[ist]];
+    return gem
+        .internal_1x2[gr[ien]][gr[ien + 1]][gr[oen]][gr[ost]][gr[ost + 1]][gr[ost + 2]][gr[ist]];
   if (toplen == 2 && botlen == 2)
     return gem.internal_2x2[gr[ost]][gr[ost + 1]][gr[ost + 2]][gr[ist]][gr[ien]][gr[ien + 1]]
-    [gr[ien + 2]][gr[oen]];
+                           [gr[ien + 2]][gr[oen]];
 
   static_assert(
       TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
@@ -131,8 +130,7 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
 energy_t FastHairpin(int st, int en) {
   int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
-  if (length <= MAX_SPECIAL_HAIRPIN_SZ &&
-      gpc.hairpin[st].special[length] != MAX_E)
+  if (length <= MAX_SPECIAL_HAIRPIN_SZ && gpc.hairpin[st].special[length] != MAX_E)
     return gpc.hairpin[st].special[length];
   base_t stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
   energy_t energy = gem.HairpinInitiation(length) + gem.AuGuPenalty(stb, enb);
@@ -155,5 +153,5 @@ energy_t FastHairpin(int st, int en) {
   return energy;
 }
 
-}
-}
+}  // namespace energy
+}  // namespace memerna

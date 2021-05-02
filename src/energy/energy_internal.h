@@ -16,6 +16,7 @@
 #define MEMERNA_ENERGY_INTERNAL_H
 
 #include <deque>
+
 #include "common.h"
 #include "energy/energy_model.h"
 
@@ -49,8 +50,8 @@ void AddBranchCtdsToComputed(
 // writes it in list representation to |branch_ctds|.
 energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, branch_ctd_t& branch_ctds);
-}
-}
-}
+}  // namespace internal
+}  // namespace energy
+}  // namespace memerna
 
 #endif  // MEMERNA_ENERGY_INTERNAL_H

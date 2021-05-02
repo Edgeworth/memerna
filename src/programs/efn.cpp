@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <cstdio>
+
 #include "energy/load_model.h"
 #include "energy/structure.h"
 #include "parsing.h"
@@ -41,8 +42,6 @@ int main(int argc, char* argv[]) {
   if (argparse.HasFlag("v")) {
     printf("%s\n", parsing::ComputedToCtdString(computed).c_str());
     const auto descs = structure->Description();
-    for (const auto& desc : descs) {
-      printf("%s\n", desc.c_str());
-    }
+    for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
   }
 }

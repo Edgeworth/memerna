@@ -16,6 +16,7 @@
 #define MEMERNA_SUBOPTIMAL1_H
 
 #include <algorithm>
+
 #include "common.h"
 #include "fold/fold.h"
 #include "splaymap.h"
@@ -49,9 +50,8 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
 
 class Suboptimal1 {
 public:
-  Suboptimal1(energy_t delta_, int num) :
-      delta(delta_ == -1 ? CAP_E : delta_),
-      max_structures(num == -1 ? MAX_STRUCTURES : num) {}
+  Suboptimal1(energy_t delta_, int num)
+      : delta(delta_ == -1 ? CAP_E : delta_), max_structures(num == -1 ? MAX_STRUCTURES : num) {}
 
   int Run(SuboptimalCallback fn, bool sorted);
 
@@ -70,8 +70,8 @@ private:
   std::vector<dfs_state_t> q;
   std::vector<index_t> unexpanded;
 
-  std::pair<int, int> RunInternal(SuboptimalCallback fn,
-      energy_t cur_delta, bool exact_energy, int structure_limit);
+  std::pair<int, int> RunInternal(
+      SuboptimalCallback fn, energy_t cur_delta, bool exact_energy, int structure_limit);
 
   const std::vector<expand_t>& GetExpansion(const index_t& to_expand) {
     if (!cache.Find(to_expand)) {
@@ -84,8 +84,8 @@ private:
     return cache.Get();
   }
 };
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna
 
 #endif  // MEMERNA_SUBOPTIMAL1_H

@@ -12,8 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include <algorithm>
 #include "fold/suboptimal1.h"
+
+#include <algorithm>
+
 #include "energy/energy_globals.h"
 
 namespace memerna {
@@ -43,8 +45,8 @@ int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   return RunInternal(fn, delta, false, MAX_STRUCTURES).first;
 }
 
-std::pair<int, int> Suboptimal1::RunInternal(SuboptimalCallback fn,
-    energy_t cur_delta, bool exact_energy, int structure_limit) {
+std::pair<int, int> Suboptimal1::RunInternal(
+    SuboptimalCallback fn, energy_t cur_delta, bool exact_energy, int structure_limit) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -107,8 +109,8 @@ std::pair<int, int> Suboptimal1::RunInternal(SuboptimalCallback fn,
       if (unexpanded.empty()) {
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
-          computed_t tmp_computed = {{
-              std::move(gr), std::move(gp)}, std::move(gctd), energy + gext[0][EXT]};
+          computed_t tmp_computed = {
+              {std::move(gr), std::move(gp)}, std::move(gctd), energy + gext[0][EXT]};
           fn(tmp_computed);
           ++num_structures;
           // Move everything back
@@ -117,8 +119,7 @@ std::pair<int, int> Suboptimal1::RunInternal(SuboptimalCallback fn,
           gctd = std::move(tmp_computed.base_ctds);
 
           // Hit structure limit.
-          if (num_structures == structure_limit)
-            return {num_structures, -1};
+          if (num_structures == structure_limit) return {num_structures, -1};
         }
         continue;  // Done
       } else {
@@ -141,8 +142,7 @@ std::pair<int, int> Suboptimal1::RunInternal(SuboptimalCallback fn,
     }
     q.push_back(ns);
   }
-  assert(unexpanded.empty() && energy == 0 &&
-      gp == std::vector<int>(gp.size(), -1) &&
+  assert(unexpanded.empty() && energy == 0 && gp == std::vector<int>(gp.size(), -1) &&
       gctd == std::vector<Ctd>(gctd.size(), CTD_NA));
   return {num_structures, next_seen};
 }
@@ -215,13 +215,13 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
         // .(   ).<(   ) > Left coax
         energy = base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b);
         if (energy + gext[en + 1][EXT_GU] <= delta)
-          exps.push_back({energy + gext[en + 1][EXT_GU], {en + 1, -1, EXT_GU},
-              {st + 1, en - 1, DP_P}, {en + 1, CTD_LCOAX_WITH_PREV},
-              {st + 1, CTD_LCOAX_WITH_NEXT}});
+          exps.push_back(
+              {energy + gext[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
+                  {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT}});
         if (energy + gext[en + 1][EXT_WC] <= delta)
-          exps.push_back({energy + gext[en + 1][EXT_WC], {en + 1, -1, EXT_WC},
-              {st + 1, en - 1, DP_P}, {en + 1, CTD_LCOAX_WITH_PREV},
-              {st + 1, CTD_LCOAX_WITH_NEXT}});
+          exps.push_back(
+              {energy + gext[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
+                  {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT}});
       }
 
       if (en < N - 2) {
@@ -235,14 +235,14 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
       // (   )(<   ) > Flush coax
       energy = base01 + gem.stack[en1b][enb][enb ^ 3][stb] + gext[en][EXT_WC];
       if (energy <= delta)
-        exps.push_back({energy, {en, -1, EXT_WC}, {st, en - 1, DP_P},
-            {en, CTD_FCOAX_WITH_PREV}, {st, CTD_FCOAX_WITH_NEXT}});
+        exps.push_back({energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+            {st, CTD_FCOAX_WITH_NEXT}});
 
       if (enb == G || enb == U) {
         energy = base01 + gem.stack[en1b][enb][enb ^ 1][stb] + gext[en][EXT_GU];
         if (energy <= delta)
-          exps.push_back({energy, {en, -1, EXT_GU}, {st, en - 1, DP_P},
-              {en, CTD_FCOAX_WITH_PREV}, {st, CTD_FCOAX_WITH_NEXT}});
+          exps.push_back({energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+              {st, CTD_FCOAX_WITH_NEXT}});
       }
     }
     // Finished exterior loop, don't do anymore.
@@ -251,7 +251,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
 
   // Declare the usual base aliases.
   const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
-      en2b = gr[en - 2];
+             en2b = gr[en - 2];
 
   // Normal stuff
   if (a == DP_P) {
@@ -370,8 +370,8 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
             {st, CTD_UNUSED}});
     }
     if (a == DP_U2 && energy + gdp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({energy + gdp[piv + 1][en][DP_U],
-          {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED}});
+      exps.push_back({energy + gdp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U},
+          {st, CTD_UNUSED}});
     if (a == DP_U_WC || a == DP_U_GU) {
       // Make sure we don't form any branches that are not the right type of pair.
       if ((a == DP_U_WC && IsWatsonCrick(stb, pb)) || (a == DP_U_GU && IsGu(stb, pb))) {
@@ -421,8 +421,8 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
     // (   )<.(   ). > Right coax forward - U, U2
     energy = base00 + gdp[piv + 1][en][DP_U_RCOAX];
     if (energy <= delta)
-      exps.push_back({energy, {st, piv, DP_P}, {piv + 1, en, DP_U_RCOAX},
-          {st, CTD_RCOAX_WITH_NEXT}, {piv + 2, CTD_RCOAX_WITH_PREV}});
+      exps.push_back({energy, {st, piv, DP_P}, {piv + 1, en, DP_U_RCOAX}, {st, CTD_RCOAX_WITH_NEXT},
+          {piv + 2, CTD_RCOAX_WITH_PREV}});
 
     // (   )(<   ) > Flush coax - U, U2
     energy = base01 + gem.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
@@ -433,14 +433,14 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
     if (pb == G || pb == U) {
       energy = base01 + gem.stack[pl1b][pb][pb ^ 1][stb] + gdp[piv][en][DP_U_GU];
       if (energy <= delta)
-        exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU},
-            {st, CTD_FCOAX_WITH_NEXT}, {piv, CTD_FCOAX_WITH_PREV}});
+        exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
+            {piv, CTD_FCOAX_WITH_PREV}});
     }
   }
 
   return exps;
 }
 
-}
-}
-}
+}  // namespace internal
+}  // namespace fold
+}  // namespace memerna

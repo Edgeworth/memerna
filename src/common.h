@@ -143,6 +143,6 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 uint32_t Crc32(const std::string& data);
-}
+}  // namespace memerna
 
 #endif  // MEMERNA_COMMON_H

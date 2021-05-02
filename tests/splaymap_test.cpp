@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "splaymap.h"
+
 #include <random>
+
 #include "gtest/gtest.h"
 
 namespace memerna {
@@ -57,8 +59,7 @@ TEST(SplayMapTest, SmallCase2) {
   EXPECT_EQ(2u, h.Size());
 }
 
-class SplayMapRandomTest : public testing::TestWithParam<int_fast32_t> {
-};
+class SplayMapRandomTest : public testing::TestWithParam<int_fast32_t> {};
 
 TEST_P(SplayMapRandomTest, CompareAgainstMap) {
   const int NUM_TRIES = 5000;
@@ -75,55 +76,54 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
     EXPECT_TRUE(std::equal(s.begin(), s.end(), h_keys.begin(), h_keys.end()));
     int key = 0;
     switch (case_dist(eng)) {
-      case 0:
-        // Check existing
-        if (!keys.empty()) {
-          key = keys[std::uniform_int_distribution<std::size_t>(0, keys.size() - 1)(eng)];
-          EXPECT_TRUE(s.count(key));
-          EXPECT_TRUE(h.Find(key));
-          EXPECT_EQ(key, h.Get());
-        }
-        break;
-      case 1:
-        // Check non-existing
-        do key = val_dist(eng);
-        while (s.count(key));
-        EXPECT_FALSE(h.Find(key));
-        break;
-      case 2: {
-        // Insert case
-        int val = val_dist(eng);
-        if (s.count(val))
-          EXPECT_FALSE(h.Insert(val, val));
-        else
-          EXPECT_TRUE(h.Insert(val, val));
-        s.insert(val);
-        break;
+    case 0:
+      // Check existing
+      if (!keys.empty()) {
+        key = keys[std::uniform_int_distribution<std::size_t>(0, keys.size() - 1)(eng)];
+        EXPECT_TRUE(s.count(key));
+        EXPECT_TRUE(h.Find(key));
+        EXPECT_EQ(key, h.Get());
       }
-      case 3:
-        // Delete existing
-        if (!keys.empty()) {
-          auto idx = std::uniform_int_distribution<std::size_t>(0, keys.size() - 1)(eng);
-          std::swap(keys[idx], keys.back());
-          key = keys.back();
-          keys.pop_back();
-          EXPECT_TRUE(s.count(key));
-          EXPECT_TRUE(h.Delete(key));
-        }
-        break;
-      case 4:
-        // Delete non-existing
-        do key = val_dist(eng);
-        while (s.count(key));
-        EXPECT_FALSE(h.Delete(key));
-        break;
-      default:
-        verify_expr(false, "bug");
+      break;
+    case 1:
+      // Check non-existing
+      do key = val_dist(eng);
+      while (s.count(key));
+      EXPECT_FALSE(h.Find(key));
+      break;
+    case 2: {
+      // Insert case
+      int val = val_dist(eng);
+      if (s.count(val))
+        EXPECT_FALSE(h.Insert(val, val));
+      else
+        EXPECT_TRUE(h.Insert(val, val));
+      s.insert(val);
+      break;
+    }
+    case 3:
+      // Delete existing
+      if (!keys.empty()) {
+        auto idx = std::uniform_int_distribution<std::size_t>(0, keys.size() - 1)(eng);
+        std::swap(keys[idx], keys.back());
+        key = keys.back();
+        keys.pop_back();
+        EXPECT_TRUE(s.count(key));
+        EXPECT_TRUE(h.Delete(key));
+      }
+      break;
+    case 4:
+      // Delete non-existing
+      do key = val_dist(eng);
+      while (s.count(key));
+      EXPECT_FALSE(h.Delete(key));
+      break;
+    default: verify_expr(false, "bug");
     }
   }
 }
 
-INSTANTIATE_TEST_CASE_P(SplayMapRandomTest, SplayMapRandomTest,
-    testing::Range(int_fast32_t(0), int_fast32_t(5)));
+INSTANTIATE_TEST_CASE_P(
+    SplayMapRandomTest, SplayMapRandomTest, testing::Range(int_fast32_t(0), int_fast32_t(5)));
 
-}
+}  // namespace memerna

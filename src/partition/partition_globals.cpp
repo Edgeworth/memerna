@@ -12,9 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#include "globals.h"
 #include "partition/partition_globals.h"
+
 #include "energy/energy_globals.h"
+#include "globals.h"
 
 namespace memerna {
 namespace partition {
@@ -24,7 +25,7 @@ array3d_t<penergy_t, PT_SIZE> gpt;
 array2d_t<penergy_t, PTEXT_SIZE> gptext;
 precomp_t gppc;
 
-}
+}  // namespace internal
 
 void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   energy::SetEnergyGlobalState(r, em);
@@ -34,5 +35,5 @@ void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em) 
   internal::gppc = internal::PrecomputeData(r, em);
 }
 
-}
-}
+}  // namespace partition
+}  // namespace memerna

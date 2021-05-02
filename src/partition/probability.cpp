@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include <energy/energy_model.h>
+
 #include "partition/partition.h"
 
 namespace memerna {
@@ -27,5 +28,5 @@ probabilities_t ComputeProbabilities(const partition_t& partition) {
   return probabilities;
 }
 
-}
-}
+}  // namespace partition
+}  // namespace memerna

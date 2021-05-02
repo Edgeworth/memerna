@@ -17,10 +17,9 @@
 
 #include "bridge/bridge.h"
 #include "common.h"
-
 #include "miles_rnastructure/include/algorithm.h"
-#include "miles_rnastructure/include/rna_library.h"
 #include "miles_rnastructure/include/pfunction.h"
+#include "miles_rnastructure/include/rna_library.h"
 
 namespace memerna {
 namespace bridge {
@@ -33,8 +32,8 @@ public:
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
   virtual computed_t Fold(const primary_t& r) const override;
-  virtual int Suboptimal(fold::SuboptimalCallback fn,
-      const primary_t& r, energy_t energy_delta) const override;
+  virtual int Suboptimal(
+      fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const override;
   virtual std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const override;
   virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
@@ -46,7 +45,7 @@ private:
   const std::unique_ptr<datatable> data;
   const bool use_lyngso;
 };
-}
-}
+}  // namespace bridge
+}  // namespace memerna
 
 #endif  // MEMERNA_RNASTRUCTURE_H

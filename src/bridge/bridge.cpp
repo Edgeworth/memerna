@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "bridge/bridge.h"
+
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
@@ -31,5 +32,5 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
         energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
   }
 }
-}
-}
+}  // namespace bridge
+}  // namespace memerna

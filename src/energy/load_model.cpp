@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
 #include "load_model.h"
+
 #include "parsing.h"
 
 namespace memerna {
@@ -24,7 +25,7 @@ const energy_t RAND_MAX_ENERGY = 100;
 const int RAND_MAX_HAIRPIN_SZ = 8;
 const int RAND_MAX_NUM_HAIRPIN = 50;
 
-void Parse2x2FromFile(const std::string& filename, energy_t (& output)[4][4][4][4]) {
+void Parse2x2FromFile(const std::string& filename, energy_t (&output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
@@ -45,20 +46,19 @@ void ParseMapFromFile(
   verify_expr(fp != nullptr, "could not open file");
   char buf[1024];
   energy_t energy;
-  while (fscanf(fp, " %s %d ", buf, &energy) == 2)
-    output[buf] = energy;
+  while (fscanf(fp, " %s %d ", buf, &energy) == 2) output[buf] = energy;
   fclose(fp);
 }
 
 void ParseInitiationEnergyFromFile(
-    const std::string& filename, energy_t (& output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
+    const std::string& filename, energy_t (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   energy_t energy;
   int idx;
   while (fscanf(fp, "%d %d ", &idx, &energy) == 2) {
-    verify_expr(idx < energy::EnergyModel::INITIATION_CACHE_SZ,
-        "out of bounds index in %s", filename.c_str());
+    verify_expr(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
+        filename.c_str());
     output[idx] = energy;
   }
   fclose(fp);
@@ -122,7 +122,7 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
   fclose(fp);
 }
 
-void ParseDangleDataFromFile(const std::string& filename, energy_t (& output)[4][4][4]) {
+void ParseDangleDataFromFile(const std::string& filename, energy_t (&output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify_expr(fp != nullptr, "could not open file");
   while (1) {
@@ -181,19 +181,17 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em)
 
   fclose(fp);
 }
-}
+}  // namespace
 
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed) {
   auto em = std::make_shared<EnergyModel>();
   std::mt19937 eng(seed);
   std::uniform_int_distribution<energy_t> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   std::uniform_int_distribution<energy_t> nonneg_energy_dist(0, RAND_MAX_ENERGY);
-#define RANDOMISE_DATA(d)                                          \
-  do {                                                             \
-    auto dp = reinterpret_cast<energy_t*>(&(d));                   \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) {   \
-      dp[i] = energy_dist(eng);                                    \
-    }                                                              \
+#define RANDOMISE_DATA(d)                                                                    \
+  do {                                                                                       \
+    auto dp = reinterpret_cast<energy_t*>(&(d));                                             \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { dp[i] = energy_dist(eng); } \
   } while (0)
 
   RANDOMISE_DATA(em->stack);
@@ -307,5 +305,5 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse) {
     return LoadEnergyModelFromDataDir(argparse.GetOption("data-path"));
   }
 }
-}
-}
+}  // namespace energy
+}  // namespace memerna
