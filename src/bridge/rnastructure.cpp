@@ -14,29 +14,15 @@
 // If not, see <http://www.gnu.org/licenses/>.
 #include "bridge/rnastructure.h"
 
-#include "miles_rnastructure/include/alltrace.h"
-
 namespace memerna {
 namespace bridge {
 
 namespace {
 
-const char* FILENAMES[] = {"loop.dat", "stack.dat", "tstackh.dat", "tstacki.dat", "tloop.dat",
-    "miscloop.dat", "dangle.dat", "int22.dat", "int21.dat", "coaxial.dat", "tstackcoax.dat",
-    "coaxstack.dat", "tstack.dat", "tstackm.dat", "triloop.dat", "int11.dat", "hexaloop.dat",
-    "tstacki23.dat", "tstacki1n.dat"};
-constexpr int NUM_FILENAMES = sizeof(FILENAMES) / sizeof(FILENAMES[0]);
-
-// Paraphrased with permission from Max Ward.
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
+  setDataPath(path.c_str());  // Set RNAstructure data path.
   auto dt = std::make_unique<datatable>();
-  std::string paths[NUM_FILENAMES];
-  for (int i = 0; i < NUM_FILENAMES; ++i) paths[i] = path + FILENAMES[i];
-
-  opendat(paths[0].c_str(), paths[1].c_str(), paths[2].c_str(), paths[3].c_str(), paths[4].c_str(),
-      paths[5].c_str(), paths[6].c_str(), paths[7].c_str(), paths[8].c_str(), paths[9].c_str(),
-      paths[10].c_str(), paths[11].c_str(), paths[12].c_str(), paths[13].c_str(), paths[14].c_str(),
-      paths[15].c_str(), paths[16].c_str(), paths[17].c_str(), paths[18].c_str(), dt.get());
+  dt->opendat(path.c_str(), "rna");
   return dt;
 }
 
@@ -133,6 +119,7 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   DynProgArray<PFPRECISION> v(length);
   DynProgArray<PFPRECISION> wmb(length);
   DynProgArray<PFPRECISION> wl(length);
+  DynProgArray<PFPRECISION> wlc(length);
   DynProgArray<PFPRECISION> wmbl(length);
   DynProgArray<PFPRECISION> wcoax(length);
   const auto w5 = std::make_unique<PFPRECISION[]>(std::size_t(length + 1));
@@ -143,7 +130,7 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   const auto mod = std::make_unique<bool[]>(std::size_t(2 * length + 1));
 
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
-      &wl, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
+      &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
   partition::partition_t partition = {{std::size_t(length)}, 0};
   partition.q = penergy_t(w5[length]);
