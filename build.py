@@ -24,10 +24,10 @@ parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home()
 parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
-parser.add_argument('-c', '--use_clang', action='store_true', default=False, required=False)
-parser.add_argument('-a', '--use_afl', action='store_true', default=False, required=False)
+parser.add_argument('-c', '--use-clang', action='store_true', default=False, required=False)
+parser.add_argument('-a', '--use-afl', action='store_true', default=False, required=False)
 parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
-parser.add_argument('-m', '--use_mpfr', action='store_true', default=False, required=False)
+parser.add_argument('-m', '--use-mpfr', action='store_true', default=False, required=False)
 parser.add_argument('--compilers', type=str, nargs=2, required=False)
 parser.add_argument('-r', '--regenerate', action='store_true', default=False, required=False)
 parser.add_argument('targets', nargs='*', type=str)
@@ -49,7 +49,7 @@ compilers = ('cc', 'c++')
 if args.use_clang:
   compilers = ('clang', 'clang++')
 elif args.use_afl:
-  compilers = ('afl-clang-fast', 'afl-clang-fast++')
+  compilers = ('afl-clang-lto', 'afl-clang-lto++')
 elif args.compilers:
   compilers = args.compilers
 

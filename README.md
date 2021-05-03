@@ -7,12 +7,12 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 
 ### Building
 
-Run git submodule init and git submodule update to pull in external dependencies. 
+Run git submodule init and git submodule update to pull in external dependencies.
 Memerna requires a modern C++ compiler that supports C++14.
 
 ./build.py -t [debug, asan, ubsan, release, relwithdebinfo] -c
 
-Will use clang with -c. The flag -t specifies the build type. Then run from ./build/memerna.
+Will use clang with -c. The flag -t specifies the build type. Then run from $PREFIX/memerna.
 
 No guarantees this runs or even builds on Windows.
 
@@ -29,13 +29,13 @@ No guarantees this runs or even builds on Windows.
 - tests: tests
 
 ### Running the tests
-Run from ./build/run_tests after building.
+Run from $PREFIX/run_tests after building.
 
 To run AFL, first build the afl binary with build.py -t relwithdebinfo -a, then run:
 
-afl-fuzz -x extern/afl/dict.dct -m 2000 -i ./extern/afl/testcases 
+afl-fuzz -x extern/afl/dict.dct -m 2000 -i ./extern/afl/testcases
   -o ./build/afl_test ./build/afl-clang-fast++-relwithdebinfo/fuzz -afl
-  
+
 You can optionally specify -random to fuzz.
 
 ### Useful commands
