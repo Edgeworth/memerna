@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <iomanip>
+#include <iostream>
 
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
@@ -24,25 +25,25 @@
 
 using namespace memerna;
 
-void PrintPartition(const partition::partition_t& p, const std::string& name) {
-  const int N = int(p.p.Size());
-  // std::cout << name << " total: " << p.q << std::endl;
-  // for (int i = 0; i < N; ++i) {
-  //   for (int j = 0; j < N; ++j) {
-  //     std::cout << p.p[i][j][0] << ' ';
-  //   }
-  //   std::cout << '\n';
-  // }
-
+void PrintProbabilities(const partition::partition_t& p) {
   auto probs = partition::ComputeProbabilities(p);
+  const int N = int(p.p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << probs[i][j][0] << ' '; }
     std::cout << '\n';
   }
 }
 
+void PrintPartition(const partition::partition_t& p) {
+  const int N = int(p.p.Size());
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j) { std::cout << p.p[i][j][0] << ' '; }
+    std::cout << '\n';
+  }
+}
+
 int main(int argc, char* argv[]) {
-  ArgParse argparse({{"cutoff", opt_t("Only return probabilities larger than this.").Arg("0.1")}});
+  ArgParse argparse;
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.AddOptions(CONTEXT_OPTIONS);
   argparse.ParseOrExit(argc, argv);
@@ -50,9 +51,8 @@ int main(int argc, char* argv[]) {
   verify_expr(pos.size() == 1, "need primary sequence to fold");
   const auto primary = parsing::StringToPrimary(pos.front());
   const auto em = energy::LoadEnergyModelFromArgParse(argparse);
-  const auto cutoff = atof(argparse.GetOption("cutoff").c_str());
   const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
 
   Context ctx(parsing::StringToPrimary(pos.front()), em, ContextOptionsFromArgParse(argparse));
-  PrintPartition(ctx.Partition(), "memerna");
+  PrintProbabilities(ctx.Partition());
 }
