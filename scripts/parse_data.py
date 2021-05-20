@@ -15,7 +15,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from common import write_file, read_file
+from scripts.common import write_file, read_file
 
 MAX = 0x0F0F0F0F
 ORDER = 'ACGU'

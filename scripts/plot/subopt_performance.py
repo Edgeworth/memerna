@@ -16,9 +16,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from plot.load_data import colmap
-from plot.plot_common import get_subplot_grid, \
-  set_up_figure, do_table
+from scripts.plot.load_data import colmap
+from scripts.plot.plot_common import get_subplot_grid, set_up_figure, do_table
 
 
 def subopt_distribution(all_ds, subopts):

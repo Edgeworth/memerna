@@ -17,7 +17,7 @@ import argparse
 import decimal
 import math
 
-from common import read_file
+from scripts.common import read_file
 
 
 def main():

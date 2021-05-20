@@ -19,11 +19,11 @@ import sys
 sys.path.append('scripts')
 
 import pandas as pd
-from plot.plot_common import savefig_local
-from plot.subopt_performance import subopt_distribution
-from plot.fold_performance import fold_perf_results
-from plot.fold_accuracy import fold_accuracy_results
-from plot.load_data import read_fold_dataset, read_subopt_dataset, load_subset_file
+from scripts.plot.plot_common import savefig_local
+from scripts.plot.subopt_performance import subopt_distribution
+from scripts.plot.fold_performance import fold_perf_results
+from scripts.plot.fold_accuracy import fold_accuracy_results
+from scripts.plot.load_data import read_fold_dataset, read_subopt_dataset, load_subset_file
 
 import seaborn as sns
 
