@@ -15,7 +15,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 import argparse
 
-from common import read_file
+from scripts.common import read_file
 
 
 def main():

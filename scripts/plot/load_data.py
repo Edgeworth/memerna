@@ -14,7 +14,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 import pandas as pd
 
-from common import fix_path, read_file
+from scripts.common import fix_path, read_file
 
 colmap = {
   'name': 'Name',

@@ -16,8 +16,8 @@ import glob
 import random
 import sqlite3
 
-from common import *
-from rna import RNA
+from scripts.common import *
+from scripts.rna import RNA
 
 
 class MemeVault:

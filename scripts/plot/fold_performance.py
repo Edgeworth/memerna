@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along with memerna.
 # If not, see <http://www.gnu.org/licenses/>.
-from plot.plot_common import savefig_local, do_quantity_plot, do_quantity_log_plot
+from scripts.plot.plot_common import savefig_local, do_quantity_plot, do_quantity_log_plot
 
 
 def fold_perf_results(ds, do_normal_plots=True, do_log_plots=True):

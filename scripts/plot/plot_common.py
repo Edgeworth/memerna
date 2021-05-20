@@ -20,8 +20,8 @@ import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
 from matplotlib import pyplot as plt
 
-from common import human_size
-from plot.load_data import colmap
+from scripts.common import human_size
+from scripts.plot.load_data import colmap
 
 EP = 1e-2
 

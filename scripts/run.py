@@ -16,17 +16,18 @@
 import argparse
 import shutil
 import tempfile
+import os
 
-from common import *
-from memevault import MemeVault
-from rna import *
+from scripts.common import *
+from scripts.memevault import MemeVault
+from scripts.rna import *
 
 
 class RNAstructureDistribution:
   def __init__(self, loc=None):
     try:
-      import default_paths
-      loc = loc or default_paths.RNASTRUCTURE_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.RNASTRUCTURE_PATH
     except ImportError:
       pass
     assert loc
@@ -85,8 +86,8 @@ class RNAstructureDistribution:
 class HarnessFolder:
   def __init__(self, loc, name, flag):
     try:
-      import default_paths
-      loc = loc or default_paths.MEMERNA_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.MEMERNA_PATH
     except ImportError:
       pass
     assert loc
@@ -98,7 +99,7 @@ class HarnessFolder:
     prev_dir = os.getcwd()
     os.chdir(self.loc)
     res = run_command(
-      os.path.join('build', 'c++-release', 'harness'), '-f',
+      os.path.join('harness'), '-f',
       self.flag, record_stdout=True, input=rna.seq)
     os.chdir(prev_dir)
     lines = res.stdout.strip().split('\n')
@@ -110,7 +111,7 @@ class HarnessFolder:
     os.chdir(self.loc)
     input = '\n'.join('%s\n%s' % (rna.seq, rna.db()) for rna in rnas)
     res = run_command(
-      os.path.join('build', 'c++-release', 'harness'), '-e',
+      os.path.join('harness'), '-e',
       self.flag, record_stdout=True, input=input)
     os.chdir(prev_dir)
     energies = [float(i) / 10.0 for i in res.stdout.strip().split('\n')]
@@ -125,7 +126,7 @@ class HarnessFolder:
       prev_dir = os.getcwd()
       os.chdir(self.loc)
       res = try_command(
-        os.path.join('build', 'c++-release', 'harness'),
+        os.path.join('harness'),
         '-f', self.flag, '-subopt-delta', str(delta),
         input=rna.seq, record_stdout=out.name, limits=limits)
       if num_only:
@@ -156,8 +157,8 @@ class RNAstructureHarness(HarnessFolder):
 class MemeRNA:
   def __init__(self, loc=None, sorted=False, ctd_output=False):
     try:
-      import default_paths
-      loc = loc or default_paths.MEMERNA_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.MEMERNA_PATH
     except ImportError:
       pass
     assert loc
@@ -176,7 +177,7 @@ class MemeRNA:
     prev_dir = os.getcwd()
     os.chdir(self.loc)
     res = run_command(
-      os.path.join('build', 'c++-release', 'fold'), rna.seq, record_stdout=True)
+      os.path.join('fold'), rna.seq, record_stdout=True)
     os.chdir(prev_dir)
     _, db, _ = res.stdout.strip().split('\n')
     predicted = RNA.from_name_seq_db(rna.name, rna.seq, db.strip())
@@ -186,7 +187,7 @@ class MemeRNA:
     prev_dir = os.getcwd()
     os.chdir(self.loc)
     res = run_command(
-      os.path.join('build', 'c++-release', 'efn'), rna.seq, rna.db(), record_stdout=True)
+      os.path.join('efn'), rna.seq, rna.db(), record_stdout=True)
     os.chdir(prev_dir)
     energy = float(res.stdout.strip().split(' ')[1]) / 10.0
     return energy, res
@@ -205,7 +206,7 @@ class MemeRNA:
       prev_dir = os.getcwd()
       os.chdir(self.loc)
       res = try_command(
-        os.path.join('build', 'c++-release', 'subopt'),
+        os.path.join('subopt'),
         *self.subopt_args, *maxdelta_args,
         rna.seq, record_stdout=out.name, limits=limits)
       os.chdir(prev_dir)
@@ -232,8 +233,8 @@ class MemeRNA:
 class ViennaRNA:
   def __init__(self, loc=None, d3=False, sorted=False):
     try:
-      import default_paths
-      loc = loc or default_paths.VIENNARNA_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.VIENNARNA_PATH
     except ImportError:
       pass
     assert loc
@@ -295,8 +296,8 @@ class ViennaRNA:
 class SJSVienna:
   def __init__(self, loc=None, sorted=False):
     try:
-      import default_paths
-      loc = loc or default_paths.SJSVIENNA_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.SJSVIENNA_PATH
     except ImportError:
       pass
     assert loc
@@ -342,8 +343,8 @@ class SJSVienna:
 class SJSViennaMPI:
   def __init__(self, loc=None, sorted=False, n=4):
     try:
-      import default_paths
-      loc = loc or default_paths.SJSVIENNAMPI_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.SJSVIENNAMPI_PATH
     except ImportError:
       pass
     assert loc
@@ -402,8 +403,8 @@ class SJSViennaMPI:
 class UNAFold:
   def __init__(self, loc=None):
     try:
-      import default_paths
-      loc = loc or default_paths.UNAFOLD_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.UNAFOLD_PATH
     except ImportError:
       pass
     assert loc
@@ -448,8 +449,8 @@ class UNAFold:
 class SparseMFEFold:
   def __init__(self, loc=None):
     try:
-      import default_paths
-      loc = loc or default_paths.SPARSEMFEFOLD_PATH
+      import scripts.default_paths
+      loc = loc or scripts.default_paths.SPARSEMFEFOLD_PATH
     except ImportError:
       pass
     assert loc

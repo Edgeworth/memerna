@@ -16,8 +16,8 @@ import pandas as pd
 import scipy
 import seaborn as sns
 
-from plot.load_data import colmap
-from plot.plot_common import set_up_figure, latex_table, savefig_local, get_subplot_grid, do_table
+from scripts.plot.load_data import colmap
+from scripts.plot.plot_common import set_up_figure, latex_table, savefig_local, get_subplot_grid, do_table
 
 TEXT_LOC = (0.2, 0.9)
 
