@@ -12,6 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
+#include "partition/partition.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <iomanip>
@@ -25,11 +27,10 @@
 
 using namespace memerna;
 
-void PrintProbabilities(const partition::partition_t& p) {
-  auto probs = partition::ComputeProbabilities(p);
-  const int N = int(p.p.Size());
+void PrintProbabilities(const partition::probabilities_t& p) {
+  const int N = int(p.Size());
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << probs[i][j][0] << ' '; }
+    for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << p[i][j][0] << ' '; }
     std::cout << '\n';
   }
 }
@@ -53,6 +54,9 @@ int main(int argc, char* argv[]) {
   const auto em = energy::LoadEnergyModelFromArgParse(argparse);
   const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
 
-  Context ctx(parsing::StringToPrimary(pos.front()), em, ContextOptionsFromArgParse(argparse));
-  PrintProbabilities(ctx.Partition());
+  Context ctx(primary, em, ContextOptionsFromArgParse(argparse));
+  std::cout << "MEMRNA:\n";
+  PrintProbabilities(partition::ComputeProbabilities(ctx.Partition()));
+  std::cout << "RNAstructure:\n";
+  PrintProbabilities(rnastructure.Partition(primary).second);
 }

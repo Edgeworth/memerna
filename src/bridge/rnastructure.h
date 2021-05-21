@@ -45,7 +45,11 @@ public:
 private:
   const std::unique_ptr<datatable> data;
   const bool use_lyngso;
+
+  std::unique_ptr<structure> LoadStructure(const primary_t& r) const;
+  std::unique_ptr<structure> LoadStructure(const secondary_t& s) const;
 };
+
 }  // namespace bridge
 }  // namespace memerna
 

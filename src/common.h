@@ -27,10 +27,12 @@
 
 #ifdef PARTITION_MPFR
 #include <boost/multiprecision/mpfr.hpp>
-inline void boost::throw_exception(const std::exception& e) {
+namespace boost {
+inline void throw_exception(const std::exception& e) {
   fprintf(stderr, "Boost exception: %s\n", e.what());
   std::abort();
 }
+}  // namespace boost
 #endif
 
 // Like assert, but can't be disabled.
