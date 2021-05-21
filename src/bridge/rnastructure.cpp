@@ -26,26 +26,6 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   return dt;
 }
 
-std::unique_ptr<structure> LoadStructure(const primary_t& r) {
-  auto struc = std::make_unique<structure>();
-  struc->allocate(int(r.size()));
-  for (int i = 0; i < int(r.size()); ++i) {
-    struc->numseq[i + 1] = short(r[i] + 1);
-    struc->nucs[i + 1] = BaseToChar(r[i]);
-    struc->hnumber[i + 1] = short(i + 1);
-  }
-  return struc;
-}
-
-std::unique_ptr<structure> LoadStructure(const secondary_t& s) {
-  auto struc = LoadStructure(s.r);
-  struc->AddStructure();
-  for (int i = 0; i < int(s.p.size()); ++i) {
-    if (i < s.p[i]) struc->SetPair(i + 1, s.p[i] + 1);
-  }
-  return struc;
-}
-
 std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
   std::vector<int> p(struc.GetSequenceLength(), -1);
   for (int i = 0; i < int(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
@@ -149,6 +129,27 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
     }
   }
   return {std::move(partition), std::move(probability)};
+}
+
+std::unique_ptr<structure> Rnastructure::LoadStructure(const primary_t& r) const {
+  auto struc = std::make_unique<structure>();
+  struc->allocate(int(r.size()));
+  for (int i = 0; i < int(r.size()); ++i) {
+    struc->numseq[i + 1] = short(r[i] + 1);
+    struc->nucs[i + 1] = BaseToChar(r[i]);
+    struc->hnumber[i + 1] = short(i + 1);
+  }
+  struc->SetThermodynamicDataTable(data.get());
+  return struc;
+}
+
+std::unique_ptr<structure> Rnastructure::LoadStructure(const secondary_t& s) const {
+  auto struc = LoadStructure(s.r);
+  struc->AddStructure();
+  for (int i = 0; i < int(s.p.size()); ++i) {
+    if (i < s.p[i]) struc->SetPair(i + 1, s.p[i] + 1);
+  }
+  return struc;
 }
 
 }  // namespace bridge
