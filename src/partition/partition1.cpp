@@ -34,7 +34,7 @@ void Partition1() {
       const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
                    en1b = gr[en - 1], en2b = gr[en - 2];
 
-      // if (CanPair(stb, enb)) {  // TODO lonely pairs?
+      // if (CanPair(stb, enb)) {  // <- This disables lonely pairs vs ViableFoldingPair
       if (energy::ViableFoldingPair(st, en)) {
         penergy_t p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);

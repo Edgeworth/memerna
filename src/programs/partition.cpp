@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
 
   Context ctx(primary, em, ContextOptionsFromArgParse(argparse));
-  std::cout << "MEMRNA:\n";
+  std::cout << "MEMERNA:\n";
   PrintProbabilities(partition::ComputeProbabilities(ctx.Partition()));
   std::cout << "RNAstructure:\n";
   PrintProbabilities(rnastructure.Partition(primary).second);
