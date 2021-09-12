@@ -14,7 +14,7 @@
 #include "miles_rnastructure/include/pfunction.h"
 #include "miles_rnastructure/include/rna_library.h"
 
-namespace memerna {
+namespace mrna {
 namespace bridge {
 
 class Rnastructure : public RnaPackage {
@@ -43,6 +43,6 @@ class Rnastructure : public RnaPackage {
 };
 
 }  // namespace bridge
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // BRIDGE_RNASTRUCTURE_H_

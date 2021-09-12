@@ -10,7 +10,7 @@
 #include "base.h"
 #include "energy/energy_model.h"
 
-namespace memerna {
+namespace mrna {
 namespace parsing {
 
 primary_t StringToPrimary(const std::string& s);
@@ -22,6 +22,6 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
 std::string ComputedToCtdString(const computed_t& computed);
 bool IsCtdString(const std::string& pairs_str);
 }  // namespace parsing
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // PARSING_H_

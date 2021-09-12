@@ -3,7 +3,7 @@
 
 #include "gtest/gtest.h"
 
-namespace memerna {
+namespace mrna {
 
 TEST(BaseTest, CanPair) {
   EXPECT_TRUE(CanPair(A, U));
@@ -42,4 +42,4 @@ TEST(BaseTest, IsAuGu) {
   EXPECT_FALSE(IsAuGu(C, U));
   EXPECT_FALSE(IsAuGu(U, C));
 }
-}  // namespace memerna
+}  // namespace mrna

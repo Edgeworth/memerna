@@ -13,7 +13,7 @@
 #include "parsing.h"
 #include "splaymap.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 
 namespace internal {
@@ -325,4 +325,4 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
 }
 
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

@@ -3,7 +3,7 @@
 #include "energy/load_model.h"
 #include "gtest/gtest.h"
 
-using namespace memerna;
+using namespace mrna;
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);

@@ -10,7 +10,7 @@
 #include "fold/fold.h"
 #include "splaymap.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -75,6 +75,6 @@ class Suboptimal1 {
 };
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // FOLD_SUBOPTIMAL1_H_

@@ -5,7 +5,7 @@
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
 
-namespace memerna {
+namespace mrna {
 namespace bridge {
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
@@ -20,4 +20,4 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
   }
 }
 }  // namespace bridge
-}  // namespace memerna
+}  // namespace mrna

@@ -4,7 +4,7 @@
 #include "energy/energy_globals.h"
 #include "globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -30,4 +30,4 @@ void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em) {
 }
 
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

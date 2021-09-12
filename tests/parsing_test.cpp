@@ -3,7 +3,7 @@
 
 #include "gtest/gtest.h"
 
-namespace memerna {
+namespace mrna {
 namespace parsing {
 
 class ParsingTest : public testing::Test {
@@ -146,4 +146,4 @@ TEST_F(ParsingTest, IsCtdString) {
   EXPECT_FALSE(IsCtdString("((...))"));
 }
 }  // namespace parsing
-}  // namespace memerna
+}  // namespace mrna

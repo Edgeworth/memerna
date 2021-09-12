@@ -1,10 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "globals.h"
 
-namespace memerna {
+namespace mrna {
 
 primary_t gr;
 
-void SetGlobalState(const memerna::primary_t& r) { gr = r; }
+void SetGlobalState(const primary_t& r) { gr = r; }
 
-}  // namespace memerna
+}  // namespace mrna

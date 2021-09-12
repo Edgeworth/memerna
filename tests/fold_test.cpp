@@ -5,7 +5,7 @@
 #include "context.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 
 class FoldAlgTest : public testing::TestWithParam<context_opt_t::TableAlg> {
@@ -56,4 +56,4 @@ TEST_P(FoldAlgTest, T04) {
 
 INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

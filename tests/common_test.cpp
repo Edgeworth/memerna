@@ -4,7 +4,7 @@
 #include "energy/structure.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 
 energy::EnergyModelPtr g_em;
 std::vector<energy::EnergyModelPtr> g_ems;
@@ -21,4 +21,4 @@ std::ostream& operator<<(std::ostream& os, const computed_t& computed) {
   os << "), " << computed.energy;
   return os;
 }
-}  // namespace memerna
+}  // namespace mrna

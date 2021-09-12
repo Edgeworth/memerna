@@ -4,7 +4,7 @@
 #include "energy/energy_globals.h"
 #include "fold/fold.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -428,9 +428,9 @@ void Traceback() {
       }
     }
 
-  loopend: {};
+  loopend : {};
   }
 }
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

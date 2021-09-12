@@ -6,7 +6,7 @@
 #include "energy/energy_globals.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 namespace {
@@ -144,4 +144,4 @@ energy_t FastHairpin(int st, int en) {
 }
 
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

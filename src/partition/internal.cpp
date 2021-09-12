@@ -6,7 +6,7 @@
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace partition {
 namespace internal {
 
@@ -136,4 +136,4 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
 
 }  // namespace internal
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna

@@ -6,7 +6,7 @@
 #include "energy/load_model.h"
 #include "parsing.h"
 
-using namespace memerna;
+using namespace mrna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse({

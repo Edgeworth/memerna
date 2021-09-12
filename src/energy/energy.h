@@ -12,7 +12,7 @@
 #include "common.h"
 #include "energy/energy_model.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 class Structure;
@@ -25,6 +25,6 @@ computed_t ComputeEnergy(
 computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em,
     bool compute_ctds = false, std::unique_ptr<Structure>* s = nullptr);
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_ENERGY_H_

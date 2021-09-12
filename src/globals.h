@@ -4,11 +4,11 @@
 
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 
 extern primary_t gr;
 void SetGlobalState(const primary_t& r);
 
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // GLOBALS_H_

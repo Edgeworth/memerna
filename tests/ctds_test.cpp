@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 struct ctd_test_t {
@@ -121,4 +121,4 @@ TEST_P(CtdsTest, BaseBranchBase) {
 INSTANTIATE_TEST_CASE_P(
     CtdsTest, CtdsTest, testing::Combine(testing::ValuesIn(g_ems), testing::ValuesIn(CTD_TESTS)));
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

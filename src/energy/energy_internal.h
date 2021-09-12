@@ -8,7 +8,7 @@
 #include "common.h"
 #include "energy/energy_model.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 namespace internal {
 
@@ -40,6 +40,6 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
     const std::deque<int>& branches, branch_ctd_t& branch_ctds);
 }  // namespace internal
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_ENERGY_INTERNAL_H_

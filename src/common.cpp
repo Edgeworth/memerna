@@ -5,7 +5,7 @@
 
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 
 namespace {
 const int BUF_SIZE = 1024;
@@ -49,4 +49,4 @@ uint32_t Crc32(const std::string& data) {
 
   return ~window;
 }
-}  // namespace memerna
+}  // namespace mrna

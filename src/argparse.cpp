@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace memerna {
+namespace mrna {
 
 std::string opt_t::Desc() const {
   auto res = desc;
@@ -69,4 +69,4 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   verify(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
-}  // namespace memerna
+}  // namespace mrna

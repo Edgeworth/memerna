@@ -9,7 +9,7 @@
 #include "energy/energy_model.h"
 #include "partition/partition.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 
 namespace internal {
@@ -25,5 +25,5 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
     const primary_t& r, const energy::EnergyModel& em);
 
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 #endif  // FOLD_BRUTE_FOLD_H_

@@ -7,7 +7,7 @@
 
 #include "energy/energy_globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -324,4 +324,4 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
 }
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

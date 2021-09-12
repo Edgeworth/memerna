@@ -12,7 +12,7 @@
 #include "parsing.h"
 #include "partition/partition_globals.h"
 
-using namespace memerna;
+using namespace mrna;
 
 void PrintProbabilities(const partition::probabilities_t& p) {
   const int N = static_cast<int>(p.Size());

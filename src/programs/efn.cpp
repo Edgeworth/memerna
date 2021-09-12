@@ -5,7 +5,7 @@
 #include "energy/structure.h"
 #include "parsing.h"
 
-using namespace memerna;
+using namespace mrna;
 
 int main(int argc, char* argv[]) {
   ArgParse argparse(energy::ENERGY_OPTIONS);

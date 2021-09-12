@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 
 TEST(BruteFold, GetBranchCounts) {
@@ -21,4 +21,4 @@ TEST(BruteFold, GetBranchCounts) {
       internal::GetBranchCounts(parsing::DotBracketToPairs("((()()))")));
 }
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

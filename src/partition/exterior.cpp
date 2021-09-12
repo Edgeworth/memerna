@@ -3,7 +3,7 @@
 #include "parsing.h"
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
-namespace memerna {
+namespace mrna {
 namespace partition {
 namespace internal {
 
@@ -123,4 +123,4 @@ void Exterior() {
 
 }  // namespace internal
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna

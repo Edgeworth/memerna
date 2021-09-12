@@ -4,7 +4,7 @@
 #include "energy/energy_globals.h"
 #include "globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace partition {
 namespace internal {
 
@@ -23,4 +23,4 @@ void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em) 
 }
 
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna

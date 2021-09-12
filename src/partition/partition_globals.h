@@ -6,7 +6,7 @@
 #include "energy/energy_model.h"
 #include "partition/partition.h"
 
-namespace memerna {
+namespace mrna {
 namespace partition {
 namespace internal {
 
@@ -19,6 +19,6 @@ extern precomp_t gppc;
 void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // PARTITION_PARTITION_GLOBALS_H_

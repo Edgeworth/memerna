@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 
 template <typename Key, typename Value>
 class SplayMap {
@@ -219,6 +219,6 @@ class SplayMap {
   }
 };
 
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // SPLAYMAP_H_
