@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-namespace memerna {
+namespace mrna {
 
 TEST(SplayMapTest, SmallCase1) {
   SplayMap<int, int> h;
@@ -113,4 +113,4 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
 INSTANTIATE_TEST_SUITE_P(
     SplayMapRandomTest, SplayMapRandomTest, testing::Range(int_fast32_t(0), int_fast32_t(5)));
 
-}  // namespace memerna
+}  // namespace mrna

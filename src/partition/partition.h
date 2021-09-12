@@ -12,7 +12,7 @@
 #include "energy/energy_model.h"
 #include "energy/fast_energy.h"
 
-namespace memerna {
+namespace mrna {
 namespace partition {
 
 enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RCOAX, PT_SIZE };
@@ -110,6 +110,6 @@ inline int FastMod(int a, int m) {
 
 }  // namespace internal
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // PARTITION_PARTITION_H_

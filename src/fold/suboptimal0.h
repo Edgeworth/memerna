@@ -10,7 +10,7 @@
 #include "fold/fold.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -98,6 +98,6 @@ class Suboptimal0 {
 };
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // FOLD_SUBOPTIMAL0_H_

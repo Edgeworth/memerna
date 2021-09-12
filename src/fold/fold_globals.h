@@ -10,7 +10,7 @@
 #include "energy/energy_model.h"
 #include "fold/fold_constants.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -26,6 +26,6 @@ extern array2d_t<energy_t, EXT_SIZE> gext;
 void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // FOLD_FOLD_GLOBALS_H_

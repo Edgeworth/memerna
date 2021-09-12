@@ -3,7 +3,7 @@
 #include "energy/fast_energy.h"
 #include "fold/fold.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -166,4 +166,4 @@ void ComputeTables0() {
 #undef UPDATE_CACHE
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

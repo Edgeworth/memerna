@@ -7,7 +7,7 @@
 
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 namespace {
@@ -296,4 +296,4 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse) {
   }
 }
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

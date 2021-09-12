@@ -10,7 +10,7 @@
 
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 
 struct opt_t {
   opt_t(const std::string& desc_ = "", const std::string& default_arg_ = "",
@@ -88,6 +88,6 @@ class ArgParse {
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ARGPARSE_H_

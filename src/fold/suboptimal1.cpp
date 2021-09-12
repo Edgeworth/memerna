@@ -7,7 +7,7 @@
 
 #include "energy/energy_globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -432,4 +432,4 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
 
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

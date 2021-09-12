@@ -13,7 +13,7 @@
 #include "base.h"
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 class Structure;
@@ -138,6 +138,6 @@ class EnergyModel {
 
 typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_ENERGY_MODEL_H_

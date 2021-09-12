@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include "base.h"
 
-namespace memerna {
+namespace mrna {
 
 base_t CharToBase(char c) {
   switch (c) {
@@ -17,4 +17,4 @@ char BaseToChar(base_t b) {
   if (b < 0 || b > 4) return '?';
   return "ACGU"[b];
 }
-}  // namespace memerna
+}  // namespace mrna

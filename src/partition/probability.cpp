@@ -3,7 +3,7 @@
 
 #include "partition/partition.h"
 
-namespace memerna {
+namespace mrna {
 namespace partition {
 
 probabilities_t ComputeProbabilities(const partition_t& partition) {
@@ -16,4 +16,4 @@ probabilities_t ComputeProbabilities(const partition_t& partition) {
 }
 
 }  // namespace partition
-}  // namespace memerna
+}  // namespace mrna

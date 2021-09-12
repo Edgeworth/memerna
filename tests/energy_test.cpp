@@ -5,7 +5,7 @@
 #include "gtest/gtest.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 class EnergyTest : public testing::Test {
@@ -199,4 +199,4 @@ TEST_F(EnergyTest, Helpers) {
 }
 
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

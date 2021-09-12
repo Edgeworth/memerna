@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 const char* CtdToName(Ctd ctd) {
@@ -61,4 +61,4 @@ std::string StackingStructure::ShortDesc() const {
   return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

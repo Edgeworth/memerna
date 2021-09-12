@@ -12,7 +12,7 @@
 #include "fold/fold.h"
 #include "partition/partition.h"
 
-namespace memerna {
+namespace mrna {
 
 struct context_opt_t {
   enum class TableAlg {
@@ -81,6 +81,6 @@ const std::map<std::string, opt_t> CONTEXT_OPTIONS = {
 
 context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse);
 
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // CONTEXT_H_

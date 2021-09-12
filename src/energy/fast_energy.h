@@ -10,7 +10,7 @@
 #include "globals.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 namespace internal {
@@ -79,6 +79,6 @@ inline penergy_t Boltzmann(energy_t energy) {
 }
 
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_FAST_ENERGY_H_

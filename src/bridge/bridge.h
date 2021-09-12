@@ -13,7 +13,7 @@
 #include "context.h"
 #include "partition/partition.h"
 
-namespace memerna {
+namespace mrna {
 namespace bridge {
 
 class RnaPackage {
@@ -34,6 +34,6 @@ const std::map<std::string, opt_t> BRIDGE_OPTIONS = {{"r", {"rnastructure"}}, {"
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
 }  // namespace bridge
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // BRIDGE_BRIDGE_H_

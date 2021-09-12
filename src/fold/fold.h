@@ -7,7 +7,7 @@
 #include "fold/fold_globals.h"
 #include "globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -57,6 +57,6 @@ struct ctd_idx_t {
 typedef std::function<void(const computed_t&)> SuboptimalCallback;
 
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // FOLD_FOLD_H_

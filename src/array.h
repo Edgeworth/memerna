@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 
 template <typename T, unsigned int K>
 struct array3d_t {
@@ -80,6 +80,6 @@ struct array2d_t {
   T* data;
   std::size_t size;
 };
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ARRAY_H_

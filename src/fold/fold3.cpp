@@ -3,12 +3,12 @@
 #include "energy/energy_model.h"
 #include "fold/fold.h"
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
-using energy::FastHairpin;
 using energy::EnergyModel;
+using energy::FastHairpin;
 using energy::gem;
 using energy::gpc;
 using energy::ViableFoldingPair;
@@ -324,4 +324,4 @@ void ComputeTables3() {
 }
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna

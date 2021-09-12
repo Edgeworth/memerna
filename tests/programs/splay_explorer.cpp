@@ -7,7 +7,7 @@
 #include "common.h"
 #include "splaymap.h"
 
-using namespace memerna;
+using namespace mrna;
 
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 

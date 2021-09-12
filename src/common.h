@@ -33,7 +33,7 @@ inline void throw_exception(const std::exception& e) {
     }                                                 \
   } while (0)
 
-namespace memerna {
+namespace mrna {
 
 typedef int8_t base_t;
 typedef std::vector<base_t> primary_t;
@@ -132,6 +132,6 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 uint32_t Crc32(const std::string& data);
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // COMMON_H_

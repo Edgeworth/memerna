@@ -9,7 +9,7 @@
 #include "fold/suboptimal1.h"
 #include "partition/partition_globals.h"
 
-namespace memerna {
+namespace mrna {
 
 constexpr context_opt_t::TableAlg context_opt_t::TABLE_ALGS[];
 constexpr context_opt_t::SuboptimalAlg context_opt_t::SUBOPTIMAL_ALGS[];
@@ -118,4 +118,4 @@ partition::partition_t Context::Partition() {
   return {std::move(p), partition::internal::gptext[0][partition::PTEXT_R]};
 }
 
-}  // namespace memerna
+}  // namespace mrna

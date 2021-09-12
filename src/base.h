@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-namespace memerna {
+namespace mrna {
 
 // Don't ever change these values.
 const base_t A = 0, C = 1, G = 2, U = 3;
@@ -53,6 +53,6 @@ primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
   return r;
 }
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // BASE_H_

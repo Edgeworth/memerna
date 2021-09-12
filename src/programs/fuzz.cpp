@@ -14,7 +14,7 @@
 #include "fold/brute_fold.h"
 #include "parsing.h"
 
-using namespace memerna;
+using namespace mrna;
 using namespace fold;
 using namespace fold::internal;
 

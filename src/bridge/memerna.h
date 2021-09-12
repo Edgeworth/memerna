@@ -10,7 +10,7 @@
 #include "common.h"
 #include "context.h"
 
-namespace memerna {
+namespace mrna {
 namespace bridge {
 
 // Note that only one energy model can be loaded at a time.
@@ -35,6 +35,6 @@ class Memerna : public RnaPackage {
   const context_opt_t options;
 };
 }  // namespace bridge
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // BRIDGE_MEMERNA_H_

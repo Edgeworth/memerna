@@ -8,7 +8,7 @@
 #include "common.h"
 #include "energy/energy_model.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 const std::map<std::string, opt_t> ENERGY_OPTIONS = {
@@ -20,6 +20,6 @@ EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
 EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
 
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_LOAD_MODEL_H_

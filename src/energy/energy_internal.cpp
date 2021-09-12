@@ -8,7 +8,7 @@
 
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 namespace internal {
 
@@ -255,4 +255,4 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
 }
 }  // namespace internal
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

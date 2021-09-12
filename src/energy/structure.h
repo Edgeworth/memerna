@@ -3,15 +3,15 @@
 #define ENERGY_STRUCTURE_H_
 
 #include <memory>
-#include <vector>
-#include <utility>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "common.h"
 #include "energy/energy.h"
 #include "energy/energy_internal.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 const char* CtdToName(Ctd ctd);
@@ -102,6 +102,6 @@ class StackingStructure : public Structure {
   int st, en;
 };
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // ENERGY_STRUCTURE_H_

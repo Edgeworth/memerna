@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace memerna {
+namespace mrna {
 namespace fold {
 namespace internal {
 
@@ -53,6 +53,6 @@ const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
 
 }  // namespace internal
 }  // namespace fold
-}  // namespace memerna
+}  // namespace mrna
 
 #endif  // FOLD_FOLD_CONSTANTS_H_

@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace memerna {
+namespace mrna {
 namespace bridge {
 
 namespace {
@@ -145,4 +145,4 @@ std::unique_ptr<structure> Rnastructure::LoadStructure(const secondary_t& s) con
 }
 
 }  // namespace bridge
-}  // namespace memerna
+}  // namespace mrna

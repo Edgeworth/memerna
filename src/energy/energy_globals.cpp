@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include "energy/energy_globals.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 EnergyModel gem;
@@ -14,4 +14,4 @@ void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em) {
 }
 
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna

@@ -8,7 +8,7 @@
 #include "energy/structure.h"
 #include "parsing.h"
 
-namespace memerna {
+namespace mrna {
 namespace energy {
 
 // Indices are inclusive, include the initiating base pair.
@@ -314,4 +314,4 @@ bool EnergyModel::IsValid(std::string* reason) const {
   return true;
 }
 }  // namespace energy
-}  // namespace memerna
+}  // namespace mrna
