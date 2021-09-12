@@ -13,7 +13,7 @@ namespace memerna {
 namespace bridge {
 
 class Rnastructure : public RnaPackage {
-public:
+ public:
   Rnastructure(const std::string& data_path, bool use_lyngso_);
   Rnastructure(const Rnastructure&) = delete;
   Rnastructure& operator=(Rnastructure&) = delete;
@@ -29,7 +29,7 @@ public:
 
   computed_t FoldAndDpTable(const primary_t& r, dp_state_t& dp_state) const;
 
-private:
+ private:
   const std::unique_ptr<datatable> data;
   const bool use_lyngso;
 

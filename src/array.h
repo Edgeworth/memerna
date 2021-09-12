@@ -10,7 +10,7 @@ template <typename T, unsigned int K>
 struct array3d_t {
   typedef T ArrayType[K];
 
-public:
+ public:
   array3d_t() : data(nullptr), size(0) {}
   array3d_t(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * size_ * K]), size(size_) {
@@ -41,14 +41,14 @@ public:
 
   std::size_t Size() const { return size; }
 
-private:
+ private:
   T* data;
   std::size_t size;
 };
 
 template <typename T, unsigned int K>
 struct array2d_t {
-public:
+ public:
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() { delete[] data; }
 
@@ -73,7 +73,7 @@ public:
 
   const T* operator[](std::size_t idx) const { return &data[idx * K]; }
 
-private:
+ private:
   T* data;
   std::size_t size;
 };

@@ -9,7 +9,7 @@ namespace memerna {
 namespace energy {
 
 class EnergyTest : public testing::Test {
-public:
+ public:
   secondary_t kNNDBHairpin1 = parsing::ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
   secondary_t kNNDBHairpin2 = parsing::ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
   secondary_t kNNDBHairpin3 = parsing::ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");

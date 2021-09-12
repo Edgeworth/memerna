@@ -9,7 +9,7 @@ namespace memerna {
 namespace fold {
 
 class FoldAlgTest : public testing::TestWithParam<context_opt_t::TableAlg> {
-public:
+ public:
   energy_t FoldEnergy(const std::string& s) {
     return Context(parsing::StringToPrimary(s), g_em, context_opt_t(GetParam())).Fold().energy;
   }

@@ -99,7 +99,7 @@ cfg_t CfgFromArgParse(const ArgParse& argparse) {
 inline bool equ(penergy_t a, penergy_t b) { return fabs(a - b) < EP; }
 
 class Fuzzer {
-public:
+ public:
   typedef std::deque<std::string> error_t;
 
   Fuzzer(primary_t r_, const cfg_t& cfg_, const energy::EnergyModelPtr em_,
@@ -133,7 +133,7 @@ public:
     return errors;
   }
 
-private:
+ private:
   const int N;
   const primary_t r;
   const cfg_t cfg;

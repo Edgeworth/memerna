@@ -7,7 +7,7 @@ namespace memerna {
 namespace parsing {
 
 class ParsingTest : public testing::Test {
-public:
+ public:
   const std::string kCtd1 = "";
   const std::string kCtd2 = ".";
   const std::string kCtd3 = "[[...].[...]3]";

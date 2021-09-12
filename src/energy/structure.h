@@ -14,7 +14,7 @@ namespace energy {
 const char* CtdToName(Ctd ctd);
 
 class Structure {
-public:
+ public:
   Structure() = default;
   Structure(const Structure&) = delete;
   Structure& operator=(const Structure&) = delete;
@@ -34,28 +34,28 @@ public:
   energy_t GetSelfEnergy() const { return self_energy; }
   energy_t GetTotalEnergy() const { return total_energy; }
 
-protected:
+ protected:
   std::vector<std::unique_ptr<Structure>> branches;
 
-private:
+ private:
   energy_t self_energy;
   energy_t total_energy;
   std::vector<std::string> notes;
 };
 
 class HairpinLoopStructure : public Structure {
-public:
+ public:
   HairpinLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddBranch(std::unique_ptr<Structure>) { assert(false); }
   std::string ShortDesc() const;
 
-private:
+ private:
   int st, en;
 };
 
 class InternalLoopStructure : public Structure {
-public:
+ public:
   InternalLoopStructure(int ost_, int oen_, int ist_, int ien_)
       : ost(ost_), oen(oen_), ist(ist_), ien(ien_) {}
 
@@ -65,12 +65,12 @@ public:
   }
   std::string ShortDesc() const;
 
-private:
+ private:
   int ost, oen, ist, ien;
 };
 
 class MultiLoopStructure : public Structure {
-public:
+ public:
   MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddCtd(Ctd ctd, energy_t ctd_energy) { branch_ctds.emplace_back(ctd, ctd_energy); }
@@ -80,13 +80,13 @@ public:
   }
   std::string ShortDesc() const;
 
-private:
+ private:
   int st, en;
   internal::branch_ctd_t branch_ctds;
 };
 
 class StackingStructure : public Structure {
-public:
+ public:
   StackingStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddBranch(std::unique_ptr<Structure> b) {
@@ -95,7 +95,7 @@ public:
   }
   std::string ShortDesc() const;
 
-private:
+ private:
   int st, en;
 };
 }  // namespace energy

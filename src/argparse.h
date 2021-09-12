@@ -53,7 +53,7 @@ struct opt_t {
 };
 
 class ArgParse {
-public:
+ public:
   ArgParse(const std::map<std::string, opt_t>& possible_args_) : possible_args(possible_args_) {}
 
   ArgParse() = default;
@@ -80,7 +80,7 @@ public:
     return "";
   }
 
-private:
+ private:
   std::map<std::string, opt_t> possible_args;
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
