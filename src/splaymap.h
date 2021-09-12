@@ -10,7 +10,7 @@ namespace memerna {
 
 template <typename Key, typename Value>
 class SplayMap {
-public:
+ public:
   SplayMap() : ns(2), root(NONE), size(0) {}
   // Returns false if already in the tree.
   template <typename ValueRef>
@@ -178,7 +178,7 @@ public:
 
   std::vector<Key> Keys() { return KeysInternal(root); }
 
-private:
+ private:
   constexpr static int NONE = 0, TMP = 1;
 
   struct node_t {

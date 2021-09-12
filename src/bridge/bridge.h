@@ -11,7 +11,7 @@ namespace memerna {
 namespace bridge {
 
 class RnaPackage {
-public:
+ public:
   virtual ~RnaPackage() = default;
 
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;

@@ -36,13 +36,13 @@ struct expand_t {
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
 
 class Suboptimal1 {
-public:
+ public:
   Suboptimal1(energy_t delta_, int num)
       : delta(delta_ == -1 ? CAP_E : delta_), max_structures(num == -1 ? MAX_STRUCTURES : num) {}
 
   int Run(SuboptimalCallback fn, bool sorted);
 
-private:
+ private:
   struct dfs_state_t {
     int idx;
     index_t expand;

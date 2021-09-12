@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_MEMERNA_H_
-#define MEMERNA_MEMERNA_H_
+#ifndef BRIDGE_MEMERNA_H_
+#define BRIDGE_MEMERNA_H_
 
 #include "bridge/bridge.h"
 #include "common.h"
@@ -11,7 +11,7 @@ namespace bridge {
 
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
-public:
+ public:
   Memerna(energy::EnergyModelPtr em_, context_opt_t options_) : em(em_), options(options_) {}
 
   Memerna(const Memerna&) = delete;
@@ -26,11 +26,11 @@ public:
   virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
       const primary_t& r) const override;
 
-private:
+ private:
   const energy::EnergyModelPtr em;
   const context_opt_t options;
 };
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_MEMERNA_H_
+#endif  // BRIDGE_MEMERNA_H_

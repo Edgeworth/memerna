@@ -14,7 +14,7 @@ namespace fold {
 namespace internal {
 
 class Suboptimal0 {
-public:
+ public:
   Suboptimal0(energy_t delta_, int num)
       : max_energy(delta_ == -1 ? CAP_E : gext[0][EXT] + delta_),
         max_structures(num == -1 ? MAX_STRUCTURES : num) {
@@ -22,7 +22,7 @@ public:
   }
   int Run(SuboptimalCallback fn);
 
-private:
+ private:
   struct node_t {
     // State should be fully defined by |not_yet_expanded|, |history|, and |base_ctds| which denote
     // what it has done so far, and what it can do from now.

@@ -39,7 +39,7 @@ struct context_opt_t {
 };
 
 class Context {
-public:
+ public:
   Context(const primary_t& r_, const energy::EnergyModelPtr em_) : r(r_), em(em_), options() {
     verify_expr(r.size() > 0u, "cannot process zero length RNA");
   };
@@ -61,7 +61,7 @@ public:
       fold::SuboptimalCallback fn, bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
   partition::partition_t Partition();
 
-private:
+ private:
   const primary_t r;
   const energy::EnergyModelPtr em;
   const context_opt_t options;

@@ -16,7 +16,7 @@ namespace energy {
 class Structure;
 
 class EnergyModel {
-public:
+ public:
   static const int INITIATION_CACHE_SZ = 31;
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
