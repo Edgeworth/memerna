@@ -14,15 +14,15 @@ const int RAND_MAX_NUM_HAIRPIN = 50;
 
 void Parse2x2FromFile(const std::string& filename, energy_t (&output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   while (1) {
     const base_t a = CharToBase(char(fgetc(fp)));
     const base_t b = CharToBase(char(fgetc(fp)));
     const base_t c = CharToBase(char(fgetc(fp)));
     const base_t d = CharToBase(char(fgetc(fp)));
     if (a == -1) break;
-    verify_expr(a != -1 && b != -1 && c != -1 && d != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &output[a][b][c][d]) == 1, "expected energy");
+    verify(a != -1 && b != -1 && c != -1 && d != -1, "expected base");
+    verify(fscanf(fp, " %d ", &output[a][b][c][d]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -30,7 +30,7 @@ void Parse2x2FromFile(const std::string& filename, energy_t (&output)[4][4][4][4
 void ParseMapFromFile(
     const std::string& filename, std::unordered_map<std::string, energy_t>& output) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   char buf[1024];
   energy_t energy;
   while (fscanf(fp, " %s %d ", buf, &energy) == 2) output[buf] = energy;
@@ -40,11 +40,11 @@ void ParseMapFromFile(
 void ParseInitiationEnergyFromFile(
     const std::string& filename, energy_t (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   energy_t energy;
   int idx;
   while (fscanf(fp, "%d %d ", &idx, &energy) == 2) {
-    verify_expr(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
+    verify(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
         filename.c_str());
     output[idx] = energy;
   }
@@ -53,7 +53,7 @@ void ParseInitiationEnergyFromFile(
 
 void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel& em) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   while (1) {
     const base_t a = CharToBase(char(fgetc(fp)));
     const base_t b = CharToBase(char(fgetc(fp)));
@@ -62,15 +62,15 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
     const base_t e = CharToBase(char(fgetc(fp)));
     const base_t f = CharToBase(char(fgetc(fp)));
     if (a == -1) break;
-    verify_expr(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &em.internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
+    verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
+    verify(fscanf(fp, " %d ", &em.internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
 void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel& em) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   while (1) {
     const base_t a = CharToBase(char(fgetc(fp)));
     const base_t b = CharToBase(char(fgetc(fp)));
@@ -80,16 +80,16 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
     const base_t f = CharToBase(char(fgetc(fp)));
     const base_t g = CharToBase(char(fgetc(fp)));
     if (a == -1) break;
-    verify_expr(
+    verify(
         a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &em.internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em.internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
 void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel& em) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   while (1) {
     const base_t a = CharToBase(char(fgetc(fp)));
     const base_t b = CharToBase(char(fgetc(fp)));
@@ -100,42 +100,40 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
     const base_t g = CharToBase(char(fgetc(fp)));
     const base_t h = CharToBase(char(fgetc(fp)));
     if (a == -1) break;
-    verify_expr(
-        a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1 && h != -1,
+    verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1 && h != -1,
         "expected base");
-    verify_expr(
-        fscanf(fp, " %d ", &em.internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em.internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
 void ParseDangleDataFromFile(const std::string& filename, energy_t (&output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
   while (1) {
     base_t a = CharToBase(char(fgetc(fp)));
     base_t b = CharToBase(char(fgetc(fp)));
     base_t c = CharToBase(char(fgetc(fp)));
     if (a == -1) break;
-    verify_expr(a != -1 && b != -1 && c != -1, "expected base");
-    verify_expr(fscanf(fp, " %d ", &output[a][b][c]) == 1, "expected energy");
+    verify(a != -1 && b != -1 && c != -1, "expected base");
+    verify(fscanf(fp, " %d ", &output[a][b][c]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
 void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em) {
   FILE* fp = fopen(filename.c_str(), "r");
-  verify_expr(fp != nullptr, "could not open file");
+  verify(fp != nullptr, "could not open file");
 
-#define READ_DATA(var)                                                      \
-  do {                                                                      \
-    while (1) {                                                             \
-      std::string line = sgetline(fp);                                      \
-      verify_expr(line.size() > 0, "unexpected EOF or error");              \
-      if (line[0] == '/' || line[0] == '\n') continue;                      \
-      verify_expr(sscanf(line.c_str(), "%d", &(var)) == 1, "expected int"); \
-      break;                                                                \
-    }                                                                       \
+#define READ_DATA(var)                                                 \
+  do {                                                                 \
+    while (1) {                                                        \
+      std::string line = sgetline(fp);                                 \
+      verify(line.size() > 0, "unexpected EOF or error");              \
+      if (line[0] == '/' || line[0] == '\n') continue;                 \
+      verify(sscanf(line.c_str(), "%d", &(var)) == 1, "expected int"); \
+      break;                                                           \
+    }                                                                  \
   } while (0)
 
   // Bulge loops.
@@ -246,7 +244,7 @@ EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed) {
   }
 
   std::string reason;
-  verify_expr(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
+  verify(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
   return em;
 }
 
@@ -281,7 +279,7 @@ EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir) {
   ParseMiscDataFromFile(data_dir + "/misc.data", *em);
 
   std::string reason;
-  verify_expr(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
+  verify(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
   return em;
 }
 

@@ -45,8 +45,7 @@ std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) 
   std::string rna_str = parsing::PrimaryToString(r);
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
-    verify_expr(
-        str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");
+    verify(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");
     auto pos = rna_str.find(str, 0);
     while (pos != std::string::npos) {
       pc[pos].special[str.size() - 2] = hairpinpair.second;

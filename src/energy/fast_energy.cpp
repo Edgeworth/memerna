@@ -56,7 +56,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
       min_internal, MinEnergy(&em.internal_1x2[0][0][0][0][0][0][0], sizeof(em.internal_1x2)));
   min_internal = std::min(
       min_internal, MinEnergy(&em.internal_2x2[0][0][0][0][0][0][0][0], sizeof(em.internal_2x2)));
-  verify_expr(em.internal_asym >= 0,
+  verify(em.internal_asym >= 0,
       "min_internal optimisation does not work for negative asymmetry penalties");
   const auto min_mismatch = 2 *
       std::min(MinEnergy(&em.internal_2x3_mismatch[0][0][0][0], sizeof(em.internal_2x3_mismatch)),

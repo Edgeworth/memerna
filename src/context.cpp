@@ -29,7 +29,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else if (dp_alg == "brute") {
     options.table_alg = context_opt_t::TableAlg::BRUTE;
   } else {
-    verify_expr(false, "unknown fold option");
+    verify(false, "unknown fold option");
   }
   const auto subopt_alg = argparse.GetOption("subopt-alg");
   if (subopt_alg == "0") {
@@ -39,7 +39,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else if (subopt_alg == "brute") {
     options.suboptimal_alg = context_opt_t::SuboptimalAlg::BRUTE;
   } else {
-    verify_expr(false, "unknown suboptimal option");
+    verify(false, "unknown suboptimal option");
   }
   const auto part_alg = argparse.GetOption("part-alg");
   if (part_alg == "0") {
@@ -49,7 +49,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else if (part_alg == "brute") {
     options.partition_alg = context_opt_t::PartitionAlg::BRUTE;
   } else {
-    verify_expr(false, "unknown partition option");
+    verify(false, "unknown partition option");
   }
   return options;
 }
@@ -61,7 +61,7 @@ void Context::ComputeTables() {
   case context_opt_t::TableAlg::ONE: fold::internal::ComputeTables1(); break;
   case context_opt_t::TableAlg::TWO: fold::internal::ComputeTables2(); break;
   case context_opt_t::TableAlg::THREE: fold::internal::ComputeTables3(); break;
-  default: verify_expr(false, "bug");
+  default: verify(false, "bug");
   }
   fold::internal::ComputeExterior();
 }
@@ -97,7 +97,7 @@ int Context::Suboptimal(
     return fold::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
   case context_opt_t::SuboptimalAlg::ONE:
     return fold::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
-  default: verify_expr(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
+  default: verify(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
   }
 }
 

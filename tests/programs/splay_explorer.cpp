@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
   }
   const bool afl = argparse.HasFlag("afl");
   const int r = atoi(argparse.GetOption("r").c_str());
-  verify_expr(!(afl && (r != -1)), "incompatible options");
+  verify(!(afl && (r != -1)), "incompatible options");
 
   if (afl)
     DoAfl();

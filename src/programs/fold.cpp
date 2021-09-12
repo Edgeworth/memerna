@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(CONTEXT_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   const auto& pos = argparse.GetPositional();
-  verify_expr(pos.size() == 1, "need primary sequence to fold");
+  verify(pos.size() == 1, "need primary sequence to fold");
 
   Context ctx(parsing::StringToPrimary(pos.front()), energy::LoadEnergyModelFromArgParse(argparse),
       ContextOptionsFromArgParse(argparse));

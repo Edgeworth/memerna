@@ -23,7 +23,7 @@ inline void throw_exception(const std::exception& e) {
 #endif
 
 // Like assert, but can't be disabled.
-#define verify_expr(expr, ...)                        \
+#define verify(expr, ...)                             \
   do {                                                \
     if (!(expr)) {                                    \
       fprintf(stderr, "%s:%d: ", __func__, __LINE__); \

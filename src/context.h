@@ -45,11 +45,11 @@ struct context_opt_t {
 class Context {
  public:
   Context(const primary_t& r_, const energy::EnergyModelPtr em_) : r(r_), em(em_), options() {
-    verify_expr(r.size() > 0u, "cannot process zero length RNA");
+    verify(r.size() > 0u, "cannot process zero length RNA");
   }
   Context(const primary_t& r_, const energy::EnergyModelPtr em_, context_opt_t options_)
       : r(r_), em(em_), options(options_) {
-    verify_expr(r.size() > 0u, "cannot process zero length RNA");
+    verify(r.size() > 0u, "cannot process zero length RNA");
   }
   Context(const Context& o) = default;
 

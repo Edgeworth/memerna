@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions({{"v", {"verbose"}}});
   argparse.ParseOrExit(argc, argv);
   const auto& pos = argparse.GetPositional();
-  verify_expr(pos.size() == 2, "requires primary sequence and dot bracket");
+  verify(pos.size() == 2, "requires primary sequence and dot bracket");
 
   const auto em = energy::LoadEnergyModelFromArgParse(argparse);
   std::unique_ptr<energy::Structure> structure;
