@@ -1,8 +1,11 @@
 // Copyright 2016 E.
-#ifndef STRUCTURE_H_
-#define STRUCTURE_H_
+#ifndef ENERGY_STRUCTURE_H_
+#define ENERGY_STRUCTURE_H_
 
 #include <memory>
+#include <vector>
+#include <utility>
+#include <string>
 
 #include "common.h"
 #include "energy/energy.h"
@@ -101,4 +104,4 @@ class StackingStructure : public Structure {
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // PARSING_H_
+#endif  // ENERGY_STRUCTURE_H_

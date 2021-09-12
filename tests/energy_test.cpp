@@ -183,7 +183,7 @@ TEST_F(EnergyTest, Precomp) {
   energy_t augubranch[4][4] = {
       {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
-  EXPECT_TRUE(std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)) == 0);
+  EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
 
 TEST_F(EnergyTest, Helpers) {

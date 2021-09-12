@@ -1,6 +1,8 @@
 // Copyright 2016 E.
 #include "parsing.h"
 
+#include <vector>
+
 namespace memerna {
 namespace parsing {
 
@@ -8,7 +10,7 @@ using namespace energy;
 
 primary_t StringToPrimary(const std::string& s) {
   primary_t r(s.size());
-  for (int i = 0; i < int(s.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     r[i] = CharToBase(s[i]);
     verify(r[i] != -1, "unexpected base %c", s[i]);
   }
@@ -23,7 +25,7 @@ secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::str
 std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
   std::vector<int> pairs(pairs_str.size(), -1);
   std::stack<int> s;
-  for (int i = 0; i < int(pairs_str.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
     if (pairs_str[i] == '(') {
       s.push(i);
     } else if (pairs_str[i] == ')') {
@@ -38,7 +40,7 @@ std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
 
 std::string PairsToDotBracket(const std::vector<int>& pairs) {
   std::string s(pairs.size(), '.');
-  for (int i = 0; i < int(pairs.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(pairs.size()); ++i) {
     if (pairs[i] == -1) continue;
     if (pairs[i] < i)
       s[i] = ')';
@@ -51,7 +53,7 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
 std::string ComputedToCtdString(const computed_t& computed) {
   const auto& p = computed.s.p;
   std::string s(p.size(), '.');
-  for (int i = 0; i < int(p.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(p.size()); ++i) {
     if (p[i] == -1) continue;
     const bool closing = p[i] < i;
     if (closing)
@@ -90,7 +92,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
 std::string PrimaryToString(const primary_t& r) {
   std::string s;
   s.resize(r.size());
-  for (int i = 0; i < int(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
+  for (int i = 0; i < static_cast<int>(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
   return s;
 }
 
@@ -102,7 +104,7 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
   computed_t computed(StringToPrimary(prim_str));
   verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
-  const int N = int(prim_str.size());
+  const int N = static_cast<int>(prim_str.size());
   std::stack<int> s;
   auto& p = computed.s.p;
   for (int i = 0; i < N; ++i) {

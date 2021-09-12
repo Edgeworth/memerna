@@ -79,7 +79,7 @@ std::vector<computed_t> Context::SuboptimalIntoVector(
   std::vector<computed_t> computeds;
   int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
       sorted, subopt_delta, subopt_num);
-  assert(num_structures == int(computeds.size()));
+  assert(num_structures == static_cast<int>(computeds.size()));
   return computeds;
 }
 
@@ -88,7 +88,7 @@ int Context::Suboptimal(
   if (options.suboptimal_alg == context_opt_t::SuboptimalAlg::BRUTE) {
     auto computeds = fold::SuboptimalBruteForce(r, *em, subopt_num);
     for (const auto& computed : computeds) fn(computed);
-    return int(computeds.size());
+    return static_cast<int>(computeds.size());
   }
 
   ComputeTables();
@@ -97,7 +97,9 @@ int Context::Suboptimal(
     return fold::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
   case context_opt_t::SuboptimalAlg::ONE:
     return fold::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
-  default: verify(false, "bug - no such suboptimal algorithm %d", int(options.suboptimal_alg));
+  default:
+    verify(
+        false, "bug - no such suboptimal algorithm %d", static_cast<int>(options.suboptimal_alg));
   }
 }
 
@@ -109,7 +111,7 @@ partition::partition_t Context::Partition() {
   case context_opt_t::PartitionAlg::BRUTE: return fold::PartitionBruteForce(r, *em).first;
   }
   const auto& gpt = partition::internal::gpt;
-  const int size = int(r.size());
+  const int size = static_cast<int>(r.size());
   array3d_t<penergy_t, 1> p((std::size_t(size)));
   for (int i = 0; i < size; ++i)  // TODO optimise this?
     for (int j = 0; j < size; ++j) p[i][j][0] = gpt[i][j][partition::PT_P];

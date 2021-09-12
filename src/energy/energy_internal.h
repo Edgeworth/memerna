@@ -3,6 +3,7 @@
 #define ENERGY_ENERGY_INTERNAL_H_
 
 #include <deque>
+#include <utility>
 
 #include "common.h"
 #include "energy/energy_model.h"

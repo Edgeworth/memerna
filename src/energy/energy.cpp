@@ -35,7 +35,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
       energy += em.augu_penalty;
     }
   }
-  num_unpaired = en - st - 1 - num_unpaired + int(exterior_loop) * 2;
+  num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
   if (s) s->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
   branch_ctd_t branch_ctds;
@@ -53,7 +53,7 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
       if (s) s->AddNote("%de - closing AU/GU penalty at %d %d", em.augu_penalty, st, en);
       energy += em.augu_penalty;
     }
-    energy_t initiation = em.MultiloopInitiation(int(branches.size() + 1));
+    energy_t initiation = em.MultiloopInitiation(static_cast<int>(branches.size() + 1));
     if (s) s->AddNote("%de - initiation", initiation);
     energy += initiation;
 
@@ -163,9 +163,9 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy =
-      ComputeSubstructureEnergy(computed_copy, compute_ctds, 0, int(r.size()) - 1, em, s);
-  if (p[0] == int(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
+  energy_t energy = ComputeSubstructureEnergy(
+      computed_copy, compute_ctds, 0, static_cast<int>(r.size()) - 1, em, s);
+  if (p[0] == static_cast<int>(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", em.augu_penalty);
