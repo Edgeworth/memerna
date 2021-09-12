@@ -7,7 +7,7 @@ namespace memerna {
 namespace partition {
 
 probabilities_t ComputeProbabilities(const partition_t& partition) {
-  const int N = int(partition.p.Size());
+  const int N = static_cast<int>(partition.p.Size());
   probabilities_t probabilities(std::size_t(N), 0);
   for (int i = 0; i < N; ++i)
     for (int j = i; j < N; ++j)

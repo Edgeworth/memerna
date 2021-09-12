@@ -1,14 +1,15 @@
 // Copyright 2016 Eliot Courtney.
 #include "fold/brute_fold.h"
 
-#include <stack>
 #include <set>
+#include <stack>
 #include <utility>
 #include <vector>
 
 #include "energy/energy_globals.h"
 #include "energy/structure.h"
 #include "fold/fold.h"
+#include "fold/fold_globals.h"
 #include "parsing.h"
 #include "splaymap.h"
 
@@ -52,7 +53,8 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
 
 namespace {
 
-using namespace internal;
+using internal::gctd;
+using internal::gp;
 
 // Common:
 std::vector<std::pair<int, int>> base_pairs;
@@ -278,7 +280,7 @@ void InvokeBruteForce(const primary_t& r, const energy::EnergyModel& em, int max
   SetFoldGlobalState(r, em);
   best_computeds.clear();
   base_pairs.clear();
-  max_structures = max_structures_ == -1 ? MAX_STRUCTURES : max_structures_;
+  max_structures = max_structures_ == -1 ? internal::MAX_STRUCTURES : max_structures_;
   compute_partition = compute_partition_;
   if (compute_partition_) {
     partition.q = 0;

@@ -1,12 +1,14 @@
 // Copyright 2016 Eliot Courtney.
 #include "energy/energy_globals.h"
+#include "energy/fast_energy.h"
 #include "fold/fold.h"
 
 namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace energy;
+using energy::gem;
+using energy::ViableFoldingPair;
 
 #define UPDATE_CACHE(a, value)                                           \
   do {                                                                   \
@@ -17,7 +19,7 @@ using namespace energy;
   } while (0)
 
 void ComputeTables0() {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {

@@ -15,7 +15,7 @@
 using namespace memerna;
 
 void PrintProbabilities(const partition::probabilities_t& p) {
-  const int N = int(p.Size());
+  const int N = static_cast<int>(p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << p[i][j][0] << ' '; }
     std::cout << '\n';
@@ -23,7 +23,7 @@ void PrintProbabilities(const partition::probabilities_t& p) {
 }
 
 void PrintPartition(const partition::partition_t& p) {
-  const int N = int(p.p.Size());
+  const int N = static_cast<int>(p.p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << p.p[i][j][0] << ' '; }
     std::cout << '\n';

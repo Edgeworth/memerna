@@ -45,9 +45,9 @@ class Suboptimal0 {
 
   void PruneInsert(std::multiset<node_t>& prune, const node_t& node) {
     if (node.energy <= max_energy) {
-      if (int(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
+      if (static_cast<int>(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
         prune.erase(--prune.end());
-      if (int(prune.size()) < max_structures) prune.insert(node);
+      if (static_cast<int>(prune.size()) < max_structures) prune.insert(node);
     }
   }
 

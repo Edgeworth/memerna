@@ -11,7 +11,7 @@ using energy::Boltzmann;
 using energy::gem;
 
 void Exterior() {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   gptext[N][PTEXT_R] = 1;
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here

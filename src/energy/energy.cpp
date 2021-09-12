@@ -3,12 +3,16 @@
 
 #include <algorithm>
 
+#include "energy/energy_internal.h"
 #include "energy/structure.h"
 
 namespace memerna {
 namespace energy {
 
-using namespace internal;
+using internal::AddBranchCtdsToComputed;
+using internal::branch_ctd_t;
+using internal::ComputeOptimalCtd;
+using internal::GetBranchCtdsFromComputed;
 
 energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en,
     std::deque<int>& branches, const EnergyModel& em, std::unique_ptr<Structure>* ss) {
