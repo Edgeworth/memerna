@@ -309,7 +309,7 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
   // Plus one to N, since -1 takes up a spot.
-  verify_expr(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
+  verify(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
 
   InvokeBruteForce(r, em, 1, true, false);  // Allow lonely pairs for the partition function. TODO?
   substructure_map.Clear();  // Don't waste memory.

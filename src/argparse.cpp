@@ -41,7 +41,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   for (const auto& argpair : possible_args) {
     const auto& flag = argpair.first;
     const auto& arg = argpair.second;
-    verify_expr(!arg.has_default || arg.has_arg, "bad option somehow");
+    verify(!arg.has_default || arg.has_arg, "bad option somehow");
     if (arg.has_arg && flags.count(flag) == 0 && !arg.has_default && arg.required)
       return sfmt("missing argument for flag %s", flag.c_str());
     if (!arg.choices.empty() && arg.choices.count(GetOption(flag)) == 0)
@@ -60,14 +60,13 @@ std::string ArgParse::Usage() const {
 
 void ArgParse::AddOptions(const std::map<std::string, opt_t>& possible_args_) {
   for (const auto& argpair : possible_args_) {
-    verify_expr(
-        possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
+    verify(possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
     possible_args.insert(argpair);
   }
 }
 
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
-  verify_expr(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
+  verify(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
 }  // namespace memerna

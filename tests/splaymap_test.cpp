@@ -105,7 +105,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       while (s.count(key));
       EXPECT_FALSE(h.Delete(key));
       break;
-    default: verify_expr(false, "bug");
+    default: verify(false, "bug");
     }
   }
 }

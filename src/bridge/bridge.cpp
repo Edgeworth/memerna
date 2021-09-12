@@ -9,8 +9,8 @@ namespace memerna {
 namespace bridge {
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
-  verify_expr(argparse.HasFlag("r") + argparse.HasFlag("k") == 1,
-      "require exactly one package flag\n%s", argparse.Usage().c_str());
+  verify(argparse.HasFlag("r") + argparse.HasFlag("k") == 1, "require exactly one package flag\n%s",
+      argparse.Usage().c_str());
   if (argparse.HasFlag("r")) {
     return std::unique_ptr<RnaPackage>(
         new Rnastructure("extern/miles_rnastructure/data_tables/", false));

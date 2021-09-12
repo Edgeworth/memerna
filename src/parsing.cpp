@@ -10,14 +10,13 @@ primary_t StringToPrimary(const std::string& s) {
   primary_t r(s.size());
   for (int i = 0; i < int(s.size()); ++i) {
     r[i] = CharToBase(s[i]);
-    verify_expr(r[i] != -1, "unexpected base %c", s[i]);
+    verify(r[i] != -1, "unexpected base %c", s[i]);
   }
   return r;
 }
 
 secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str) {
-  verify_expr(
-      prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
+  verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
   return {StringToPrimary(prim_str), DotBracketToPairs(pairs_str)};
 }
 
@@ -28,7 +27,7 @@ std::vector<int> DotBracketToPairs(const std::string& pairs_str) {
     if (pairs_str[i] == '(') {
       s.push(i);
     } else if (pairs_str[i] == ')') {
-      verify_expr(!s.empty(), "unmatched bracket");
+      verify(!s.empty(), "unmatched bracket");
       pairs[i] = s.top();
       pairs[s.top()] = i;
       s.pop();
@@ -82,7 +81,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
       break;
     case CTD_FCOAX_WITH_NEXT: s[i] = closing ? 'N' : 'n'; break;
     case CTD_FCOAX_WITH_PREV: s[i] = closing ? 'P' : 'p'; break;
-    default: verify_expr(false, "bug");
+    default: verify(false, "bug");
     }
   }
   return s;
@@ -101,7 +100,7 @@ std::string PrimaryToString(const primary_t& r) {
 
 computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str) {
   computed_t computed(StringToPrimary(prim_str));
-  verify_expr(
+  verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
   const int N = int(prim_str.size());
   std::stack<int> s;
@@ -111,13 +110,13 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
     if (c == 'p' || c == 'n' || c == '[') {
       s.push(i);
     } else if (c == 'P' || c == 'N' || c == ']') {
-      verify_expr(!s.empty(), "invalid input");
+      verify(!s.empty(), "invalid input");
       p[s.top()] = i;
       p[i] = s.top();
       s.pop();
     }
   }
-  verify_expr(s.empty(), "invalid input");
+  verify(s.empty(), "invalid input");
 
   const std::string allowed_characters = "[]nNpP.mM35";
   const std::string branch_characters = "nNpP[]";
@@ -127,19 +126,18 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
     if (c == 'P' || c == 'p') {
       int prev = i - 1;
       bool mismatch = false;
-      verify_expr(prev >= 0, "invalid input");
+      verify(prev >= 0, "invalid input");
       if (p[prev] == -1) {
         --prev;
         mismatch = true;
       }
-      verify_expr(
-          prev >= 0 && p[prev] != -1 && (pairs_str[p[prev]] == 'n' || pairs_str[p[prev]] == 'N'),
+      verify(prev >= 0 && p[prev] != -1 && (pairs_str[p[prev]] == 'n' || pairs_str[p[prev]] == 'N'),
           "invalid input");
-      verify_expr(computed.base_ctds[i] == CTD_NA && computed.base_ctds[p[prev]] == CTD_NA,
+      verify(computed.base_ctds[i] == CTD_NA && computed.base_ctds[p[prev]] == CTD_NA,
           "invalid input");
       bool left_mismatch = p[prev] - 1 >= 0 && pairs_str[p[prev] - 1] == 'm';
       bool right_mismatch = p[i] + 1 < N && pairs_str[p[i] + 1] == 'M';
-      verify_expr(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
+      verify(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
       if (mismatch) {
         if (left_mismatch) {
           computed.base_ctds[i] = CTD_LCOAX_WITH_PREV;
@@ -155,14 +153,14 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
     }
     if (c == '3') {
       // If we optimistically set an exterior loop to CTD_UNUSED, we might want to rewrite it here.
-      verify_expr(i - 1 >= 0 && p[i - 1] != -1 &&
+      verify(i - 1 >= 0 && p[i - 1] != -1 &&
               (computed.base_ctds[p[i - 1]] == CTD_NA ||
                   computed.base_ctds[p[i - 1]] == CTD_UNUSED),
           "invalid input");
       computed.base_ctds[p[i - 1]] = CTD_3_DANGLE;
     }
     if (c == '5') {
-      verify_expr(i + 1 < N && computed.base_ctds[i + 1] == CTD_NA, "invalid input");
+      verify(i + 1 < N && computed.base_ctds[i + 1] == CTD_NA, "invalid input");
       computed.base_ctds[i + 1] = CTD_5_DANGLE;
     }
     // Opening a branch.
@@ -188,7 +186,7 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
       s.pop();
     }
     if (allowed_characters.find(c) == std::string::npos)
-      verify_expr(false, "invalid input '%c'", pairs_str[i]);
+      verify(false, "invalid input '%c'", pairs_str[i]);
   }
   // Add in the terminal mismatches.
   for (int i = 0; i < N; ++i) {
@@ -196,7 +194,7 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
     if (c == 'm') {
       bool right_branch_viable =
           i + 1 < N && p[i + 1] != -1 && p[i + 1] + 1 < N && pairs_str[p[i + 1] + 1] == 'M';
-      verify_expr(right_branch_viable && computed.base_ctds[i + 1] != CTD_NA, "invalid input");
+      verify(right_branch_viable && computed.base_ctds[i + 1] != CTD_NA, "invalid input");
       if (computed.base_ctds[i + 1] == CTD_UNUSED) computed.base_ctds[i + 1] = CTD_MISMATCH;
     }
   }

@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
       {"ctd-output", opt_t("if we should output CTD data")}});
   argparse.ParseOrExit(argc, argv);
   const auto& pos = argparse.GetPositional();
-  verify_expr(pos.size() == 1, "need primary sequence to fold");
+  verify(pos.size() == 1, "need primary sequence to fold");
 
   auto opt = ContextOptionsFromArgParse(argparse);
   opt.table_alg = context_opt_t::TableAlg::TWO;
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
   const bool should_print = !argparse.HasFlag("q");
   const bool sorted = argparse.HasFlag("sorted");
   const bool ctd_data = argparse.HasFlag("ctd-output");
-  verify_expr(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
+  verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
   fold::SuboptimalCallback fn = [](const computed_t&) {};
   if (should_print) {

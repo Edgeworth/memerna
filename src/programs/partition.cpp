@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(CONTEXT_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   const auto& pos = argparse.GetPositional();
-  verify_expr(pos.size() == 1, "need primary sequence to fold");
+  verify(pos.size() == 1, "need primary sequence to fold");
   const auto primary = parsing::StringToPrimary(pos.front());
   const auto em = energy::LoadEnergyModelFromArgParse(argparse);
   const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);

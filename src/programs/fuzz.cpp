@@ -85,13 +85,13 @@ cfg_t CfgFromArgParse(const ArgParse& argparse) {
     cfg.brute_subopt_max = atoi(argparse.GetOption("brute-subopt-max").c_str());
   cfg.partition = !argparse.HasFlag("no-partition");
 
-  verify_expr(!cfg.subopt_rnastructure || cfg.subopt,
+  verify(!cfg.subopt_rnastructure || cfg.subopt,
       "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
-  verify_expr(!(cfg.random_model && cfg.subopt_rnastructure),
+  verify(!(cfg.random_model && cfg.subopt_rnastructure),
       "cannot use a random energy model with rnastructure");
-  verify_expr(cfg.rnastructure || (!cfg.subopt_rnastructure && !cfg.partition_rnastructure),
+  verify(cfg.rnastructure || (!cfg.subopt_rnastructure && !cfg.partition_rnastructure),
       "rnastructure must be enabled to use it for suboptimal or partition");
-  verify_expr(!cfg.random_model || !cfg.rnastructure,
+  verify(!cfg.random_model || !cfg.rnastructure,
       "rnastructure testing does not support random models");
   return cfg;
 }
@@ -104,7 +104,7 @@ class Fuzzer {
 
   Fuzzer(primary_t r_, const cfg_t& cfg_, const energy::EnergyModelPtr em_,
       const bridge::Rnastructure& rnastructure_)
-      : N(int(r_.size())), r(std::move(r_)), cfg(cfg_),
+      : N(static_cast<int>(r_.size())), r(std::move(r_)), cfg(cfg_),
         em(cfg.random_model ? energy::LoadRandomEnergyModel(cfg.seed) : em_),
         rnastructure(rnastructure_) {}
 
@@ -116,7 +116,7 @@ class Fuzzer {
     AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
     if (cfg.subopt) AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(), "suboptimal:"));
 
-    if (int(r.size()) <= cfg.brute_cutoff)
+    if (static_cast<int>(r.size()) <= cfg.brute_cutoff)
       AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
 
     if (cfg.partition) AppendErrors(errors, MaybePrependHeader(CheckPartition(), "partition:"));
@@ -182,7 +182,7 @@ class Fuzzer {
       // Check for duplicate structures.
       if (HasDuplicates(subopt)) errors.push_back("has duplicates");
 
-      for (int i = 0; i < int(subopt.size()); ++i) {
+      for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
         const auto& structure = subopt[i];
         auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, *em);
         if (suboptimal_efn.energy != structure.energy) {
@@ -208,10 +208,10 @@ class Fuzzer {
       const std::vector<computed_t>& a, const std::vector<computed_t>& b) {
     error_t errors;
     if (a.size() != b.size()) {
-      errors.push_back(sfmt(
-          "first has %d structures != second has %d structures", int(a.size()), int(b.size())));
+      errors.push_back(
+          sfmt("first has %zu structures != second has %zu structures", a.size(), b.size()));
     } else {
-      for (int i = 0; i < int(a.size()); ++i) {
+      for (int i = 0; i < static_cast<int>(a.size()); ++i) {
         if (a[i].energy != b[i].energy) {
           errors.push_back(
               sfmt("structure %d: first %d != second %d", i, a[i].energy, b[i].energy));
@@ -232,7 +232,7 @@ class Fuzzer {
       memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(true, -1, cfg.subopt_max));
     }
 
-    for (int i = 0; i < int(memerna_subopts_delta.size()); ++i) {
+    for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
       AppendErrors(errors,
           MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
               sfmt("memerna delta suboptimal %d:", i)));
@@ -242,7 +242,7 @@ class Fuzzer {
               sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
     }
 
-    for (int i = 0; i < int(memerna_subopts_num.size()); ++i) {
+    for (int i = 0; i < static_cast<int>(memerna_subopts_num.size()); ++i) {
       AppendErrors(errors,
           MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
               sfmt("memerna num suboptimal %d:", i)));
@@ -277,7 +277,7 @@ class Fuzzer {
       for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         for (int a = 0; a < DP_SIZE; ++a) {
           const auto memerna0 = memerna_dps[0][st][en][a];
-          for (int i = 0; i < int(memerna_dps.size()); ++i) {
+          for (int i = 0; i < static_cast<int>(memerna_dps.size()); ++i) {
             const auto memernai = memerna_dps[i][st][en][a];
             // If meant to be infinity and not.
             if (((memerna0 < CAP_E) != (memernai < CAP_E)) ||
@@ -322,7 +322,7 @@ class Fuzzer {
     }
 
     // Check memerna energies.
-    for (int i = 0; i < int(memerna_dps.size()); ++i) {
+    for (int i = 0; i < static_cast<int>(memerna_dps.size()); ++i) {
       if (memerna_computeds[0].energy != memerna_computeds[i].energy ||
           memerna_computeds[0].energy != memerna_ctd_efns[i] ||
           memerna_computeds[0].energy != memerna_optimal_efns[i])
@@ -402,7 +402,7 @@ class Fuzzer {
       memerna_partitions.emplace_back(ctx.Partition());
     }
 
-    for (int i = 0; i < int(memerna_partitions.size()); ++i) {
+    for (int i = 0; i < static_cast<int>(memerna_partitions.size()); ++i) {
       if (!equ(memerna_partitions[i].q, memerna_partitions[0].q)) {
         std::stringstream sstream;
         sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].q
@@ -470,7 +470,7 @@ int main(int argc, char* argv[]) {
 
   auto cfg = CfgFromArgParse(argparse);
   const bool afl_mode = argparse.HasFlag("afl");
-  verify_expr(!cfg.rnastructure || !argparse.HasFlag("seed"),
+  verify(!cfg.rnastructure || !argparse.HasFlag("seed"),
       "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
@@ -494,13 +494,13 @@ int main(int argc, char* argv[]) {
 #endif
   } else {
     auto pos = argparse.GetPositional();
-    verify_expr(pos.size() == 2, "require min and max length");
+    verify(pos.size() == 2, "require min and max length");
     const int min_len = atoi(pos[0].c_str());
     const int max_len = atoi(pos[1].c_str());
     const auto interval = atoi(argparse.GetOption("print-interval").c_str());
 
-    verify_expr(min_len > 0, "invalid min length");
-    verify_expr(max_len >= min_len, "invalid max len");
+    verify(min_len > 0, "invalid min length");
+    verify(max_len >= min_len, "invalid max len");
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
 
     printf("Fuzzing [%d, %d] len RNAs - %s\n", min_len, max_len, cfg.Describe().c_str());

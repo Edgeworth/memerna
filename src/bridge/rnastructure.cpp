@@ -34,7 +34,7 @@ std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
 
 Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_)
     : data(LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
-  verify_expr(data_path.size() && data_path.back() == '/', "invalid data path");
+  verify(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
 energy_t Rnastructure::Efn(const secondary_t& secondary, std::string* /*desc*/) const {
@@ -72,7 +72,7 @@ std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
     const primary_t& r, energy_t energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  verify_expr(int16_t(energy_delta) == energy_delta, "energy_delta too big");
+  verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
   auto p_list = StructureToMultiplePairs(*structure);
   std::vector<computed_t> computeds;

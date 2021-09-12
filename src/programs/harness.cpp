@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(CONTEXT_OPTIONS);
   argparse.AddOptions(energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
-  verify_expr(argparse.HasFlag("e") + argparse.HasFlag("f") == 1,
-      "require exactly one program flag\n%s", argparse.Usage().c_str());
+  verify(argparse.HasFlag("e") + argparse.HasFlag("f") == 1, "require exactly one program flag\n%s",
+      argparse.Usage().c_str());
 
   const auto package = bridge::RnaPackageFromArgParse(argparse);
   const auto& pos = argparse.GetPositional();
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
         if (!std::cin) break;
       } else {
         if (rnaqueue.empty()) break;
-        verify_expr(rnaqueue.size() >= 2, "need even number of positional args");
+        verify(rnaqueue.size() >= 2, "need even number of positional args");
         seq = rnaqueue.front();
         rnaqueue.pop_front();
         db = rnaqueue.front();
