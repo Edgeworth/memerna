@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_GLOBALS_H_
-#define MEMERNA_GLOBALS_H_
+#ifndef GLOBALS_H_
+#define GLOBALS_H_
 
 #include "common.h"
 
@@ -11,4 +11,4 @@ void SetGlobalState(const primary_t& r);
 
 }  // namespace memerna
 
-#endif  // MEMERNA_GLOBALS_H_
+#endif  // GLOBALS_H_

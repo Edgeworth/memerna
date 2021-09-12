@@ -1,6 +1,8 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_ARRAY_H_
-#define MEMERNA_ARRAY_H_
+#ifndef ARRAY_H_
+#define ARRAY_H_
+
+#include <utility>
 
 #include "common.h"
 
@@ -12,7 +14,7 @@ struct array3d_t {
 
  public:
   array3d_t() : data(nullptr), size(0) {}
-  array3d_t(std::size_t size_, const T init_val = MAX_E)
+  explicit array3d_t(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * size_ * K]), size(size_) {
     std::fill(data, data + size * size * K, init_val);
   }
@@ -52,7 +54,8 @@ struct array2d_t {
   array2d_t() : data(nullptr), size(0) {}
   ~array2d_t() { delete[] data; }
 
-  array2d_t(std::size_t size_, const T init_val = MAX_E) : data(new T[size_ * K]), size(size_) {
+  explicit array2d_t(std::size_t size_, const T init_val = MAX_E)
+      : data(new T[size_ * K]), size(size_) {
     std::fill(data, data + size * K, init_val);
   }
 
@@ -79,4 +82,4 @@ struct array2d_t {
 };
 }  // namespace memerna
 
-#endif  // MEMERNA_ARRAY_H_
+#endif  // ARRAY_H_

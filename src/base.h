@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_BASE_H_
-#define MEMERNA_BASE_H_
+#ifndef BASE_H_
+#define BASE_H_
 
 #include <cstdint>
 #include <cstring>
@@ -55,4 +55,4 @@ primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
 }
 }  // namespace memerna
 
-#endif  // MEMERNA_BASE_H_
+#endif  // BASE_H_

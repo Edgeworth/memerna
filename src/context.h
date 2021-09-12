@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_CONTEXT_H_
-#define MEMERNA_CONTEXT_H_
+#ifndef CONTEXT_H_
+#define CONTEXT_H_
 
 #include "argparse.h"
 #include "common.h"
@@ -79,4 +79,4 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse);
 
 }  // namespace memerna
 
-#endif  // MEMERNA_CONTEXT_H_
+#endif  // CONTEXT_H_

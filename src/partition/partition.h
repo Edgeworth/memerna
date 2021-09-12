@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_PARTITION_H_
-#define MEMERNA_PARTITION_H_
+#ifndef PARTITION_H_
+#define PARTITION_H_
 
 #include <cmath>
 
@@ -109,4 +109,4 @@ inline int FastMod(int a, int m) {
 }  // namespace partition
 }  // namespace memerna
 
-#endif  // MEMERNA_PARTITION_H_
+#endif  // PARTITION_H_

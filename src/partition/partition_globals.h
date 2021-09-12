@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_PARTITION_GLOBALS_H_
-#define MEMERNA_PARTITION_GLOBALS_H_
+#ifndef PARTITION_GLOBALS_H_
+#define PARTITION_GLOBALS_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -21,4 +21,4 @@ void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
 }  // namespace partition
 }  // namespace memerna
 
-#endif  // MEMERNA_PARTITION_GLOBALS_H_
+#endif  // PARTITION_GLOBALS_H_

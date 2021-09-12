@@ -99,7 +99,7 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  partition::partition_t partition = {{std::size_t(length)}, 0};
+  partition::partition_t partition = {array3d_t<penergy_t, 1>(std::size_t(length)), 0};
   partition.q = penergy_t(w5[length]);
   for (int i = 1; i <= length; ++i) {
     for (int j = i; j < length + i; ++j) {

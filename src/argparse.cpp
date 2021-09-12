@@ -1,6 +1,8 @@
 // Copyright 2016 E.
 #include "argparse.h"
 
+#include <string>
+
 namespace memerna {
 
 std::string opt_t::Desc() const {

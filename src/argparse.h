@@ -1,10 +1,12 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_ARGPARSE_H_
-#define MEMERNA_ARGPARSE_H_
+#ifndef ARGPARSE_H_
+#define ARGPARSE_H_
 
 #include <map>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "common.h"
 
@@ -54,7 +56,8 @@ struct opt_t {
 
 class ArgParse {
  public:
-  ArgParse(const std::map<std::string, opt_t>& possible_args_) : possible_args(possible_args_) {}
+  explicit ArgParse(const std::map<std::string, opt_t>& possible_args_)
+      : possible_args(possible_args_) {}
 
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
@@ -87,4 +90,4 @@ class ArgParse {
 };
 }  // namespace memerna
 
-#endif  // MEMERNA_ARGPARSE_H_
+#endif  // ARGPARSE_H_

@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_BRUTE_FOLD_H_
-#define MEMERNA_BRUTE_FOLD_H_
+#ifndef BRUTE_FOLD_H_
+#define BRUTE_FOLD_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -23,4 +23,4 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
 
 }  // namespace fold
 }  // namespace memerna
-#endif  // MEMERNA_BRUTE_FOLD_H_
+#endif  // BRUTE_FOLD_H_

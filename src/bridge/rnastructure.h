@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_RNASTRUCTURE_H_
-#define MEMERNA_RNASTRUCTURE_H_
+#ifndef RNASTRUCTURE_H_
+#define RNASTRUCTURE_H_
 
 #include "bridge/bridge.h"
 #include "common.h"
@@ -40,4 +40,4 @@ class Rnastructure : public RnaPackage {
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_RNASTRUCTURE_H_
+#endif  // RNASTRUCTURE_H_

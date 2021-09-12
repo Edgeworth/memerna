@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_BRIDGE_H_
-#define MEMERNA_BRIDGE_H_
+#ifndef BRIDGE_H_
+#define BRIDGE_H_
 
 #include "argparse.h"
 #include "common.h"
@@ -30,4 +30,4 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_BRIDGE_H_
+#endif  // BRIDGE_H_

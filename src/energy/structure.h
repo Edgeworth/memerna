@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_STRUCTURE_H_
-#define MEMERNA_STRUCTURE_H_
+#ifndef STRUCTURE_H_
+#define STRUCTURE_H_
 
 #include <memory>
 
@@ -101,4 +101,4 @@ class StackingStructure : public Structure {
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_PARSING_H_
+#endif  // PARSING_H_

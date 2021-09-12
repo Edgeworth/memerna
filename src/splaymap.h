@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_SPLAYMAP_H_
-#define MEMERNA_SPLAYMAP_H_
+#ifndef SPLAYMAP_H_
+#define SPLAYMAP_H_
 
 #include <algorithm>
 
@@ -218,4 +218,4 @@ class SplayMap {
 
 }  // namespace memerna
 
-#endif  // MEMERNA_SPLAYMAP_H_
+#endif  // SPLAYMAP_H_

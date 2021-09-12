@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef MEMERNA_COMMON_TEST_H_
-#define MEMERNA_COMMON_TEST_H_
+#ifndef COMMON_TEST_H_
+#define COMMON_TEST_H_
 
 #include <cstdint>
 #include <iostream>
@@ -28,4 +28,4 @@ std::ostream& operator<<(std::ostream& os, const secondary_t& s);
 std::ostream& operator<<(std::ostream& os, const computed_t& computed);
 }  // namespace memerna
 
-#endif  // MEMERNA_COMMON_TEST_H_
+#endif  // COMMON_TEST_H_
