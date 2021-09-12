@@ -1,8 +1,11 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef PARTITION_H_
-#define PARTITION_H_
+#ifndef PARTITION_PARTITION_H_
+#define PARTITION_PARTITION_H_
 
 #include <cmath>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "array.h"
 #include "common.h"
@@ -61,7 +64,7 @@ struct penergy_model_t {
   penergy_t augu_penalty;
 
   penergy_model_t() = default;
-  penergy_model_t(const energy::EnergyModel& em);
+  explicit penergy_model_t(const energy::EnergyModel& em);
 
   penergy_t InternalLoopAuGuPenalty(base_t stb, base_t enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -109,4 +112,4 @@ inline int FastMod(int a, int m) {
 }  // namespace partition
 }  // namespace memerna
 
-#endif  // PARTITION_H_
+#endif  // PARTITION_PARTITION_H_

@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef ENERGY_H_
-#define ENERGY_H_
+#ifndef ENERGY_ENERGY_H_
+#define ENERGY_ENERGY_H_
 
 #include <cmath>
 #include <deque>
@@ -27,4 +27,4 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // ENERGY_H_
+#endif  // ENERGY_ENERGY_H_

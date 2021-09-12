@@ -1,6 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "fold/suboptimal0.h"
 
+#include <algorithm>
+#include <limits>
+#include <vector>
+
 #include "energy/energy_globals.h"
 
 namespace memerna {
@@ -10,7 +14,7 @@ namespace internal {
 using namespace energy;
 
 int Suboptimal0::Run(SuboptimalCallback fn) {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
@@ -31,7 +35,9 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
 
     // If we found a non-finished node, but |finished| is full, and the worst in |finished| is as
     // good as our current node (which is the best in |q|), then we can exit.
-    if (int(finished.size()) >= max_structures && (--finished.end())->energy <= node.energy) break;
+    if (static_cast<int>(finished.size()) >= max_structures &&
+        (--finished.end())->energy <= node.energy)
+      break;
 
     auto to_expand = node.not_yet_expanded.back();
     node.not_yet_expanded.pop_back();
@@ -314,7 +320,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     assert(struc.not_yet_expanded.empty());
     fn({{gr, {struc.p.begin(), struc.p.end()}}, struc.base_ctds, struc.energy});
   }
-  return int(finished.size());
+  return static_cast<int>(finished.size());
 }
 }  // namespace internal
 }  // namespace fold

@@ -41,8 +41,8 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     const std::deque<int>& branches, bool use_first_lu, branch_ctd_t& branch_ctds) {
   const auto& r = secondary.r;
   const auto& p = secondary.p;
-  int N = int(branches.size());
-  int RSZ = int(r.size());
+  int N = static_cast<int>(branches.size());
+  int RSZ = static_cast<int>(r.size());
   assert(branch_ctds.empty());
   // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return 0;
@@ -176,9 +176,9 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 void AddBranchCtdsToComputed(
     computed_t& computed, const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
   assert(branches.size() == branch_ctds.size());
-  for (int i = 0; i < int(branches.size()); ++i) {
-    assert(int(computed.base_ctds.size()) > branches[i] &&
-        int(computed.base_ctds.size()) > computed.s.p[branches[i]]);
+  for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
+    assert(static_cast<int>(computed.base_ctds.size()) > branches[i] &&
+        static_cast<int>(computed.base_ctds.size()) > computed.s.p[branches[i]]);
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
     // swap the indices in that case.
     computed.base_ctds[branches[i]] = branch_ctds[i].first;
@@ -196,7 +196,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
   // before it, but that actually needs to be at the end.
   bool rot_left = false;
-  for (int i = 0; i < int(branches.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     energy_t energy = 0;
@@ -204,7 +204,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
     switch (computed.base_ctds[branch]) {
     case CTD_UNUSED: break;
     case CTD_3_DANGLE:
-      assert(p[branch] + 1 < int(r.size()));
+      assert(p[branch] + 1 < static_cast<int>(r.size()));
       energy = em.dangle3[enb][r[p[branch] + 1]][stb];
       break;
     case CTD_5_DANGLE:
@@ -212,19 +212,19 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
       energy = em.dangle5[enb][r[branch - 1]][stb];
       break;
     case CTD_MISMATCH:
-      assert(p[branch] + 1 < int(r.size()) && branch > 0);
+      assert(p[branch] + 1 < static_cast<int>(r.size()) && branch > 0);
       energy = em.terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
       break;
     case CTD_LCOAX_WITH_PREV:
       // .(   ).(   )
-      assert(p[prev_branch] + 1 < int(r.size()) && prev_branch - 1 >= 0);
+      assert(p[prev_branch] + 1 < static_cast<int>(r.size()) && prev_branch - 1 >= 0);
       energy = em.MismatchCoaxial(
           r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
       branch_ctds.emplace_back(CTD_LCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_RCOAX_WITH_PREV:
-      assert(branch > 0 && p[branch] + 1 < int(r.size()));
+      assert(branch > 0 && p[branch] + 1 < static_cast<int>(r.size()));
       // (   ).(   ). or (.(   ).   )
       energy = em.MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
       // Need to do rotations

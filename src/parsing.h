@@ -5,6 +5,7 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base.h"
 #include "energy/energy_model.h"

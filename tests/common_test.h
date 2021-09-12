@@ -1,9 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMMON_TEST_H_
-#define COMMON_TEST_H_
+#ifndef TESTS_COMMON_TEST_H_
+#define TESTS_COMMON_TEST_H_
 
 #include <cstdint>
 #include <iostream>
+#include <vector>
 
 #include "energy/energy_model.h"
 #include "gtest/gtest.h"
@@ -28,4 +29,4 @@ std::ostream& operator<<(std::ostream& os, const secondary_t& s);
 std::ostream& operator<<(std::ostream& os, const computed_t& computed);
 }  // namespace memerna
 
-#endif  // COMMON_TEST_H_
+#endif  // TESTS_COMMON_TEST_H_

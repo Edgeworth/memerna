@@ -137,7 +137,7 @@ energy_t EnergyModel::Bulge(
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
   int num_states = 0;
-  for (int i = unpaired; i < int(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
+  for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
   for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
   energy_t states_bonus = -energy_t(round(10.0 * R * T * log(num_states)));
   if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);

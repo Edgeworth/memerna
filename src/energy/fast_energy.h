@@ -1,6 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef FAST_ENERGY_H_
-#define FAST_ENERGY_H_
+#ifndef ENERGY_FAST_ENERGY_H_
+#define ENERGY_FAST_ENERGY_H_
+
+#include <string>
+#include <vector>
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -52,8 +55,8 @@ std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) 
       pos = rna_str.find(str, pos + 1);
     }
   }
-  const int N = int(r.size());
-  pc[N - 1].num_c = int(r[N - 1] == C);
+  const int N = static_cast<int>(r.size());
+  pc[N - 1].num_c = static_cast<int>(r[N - 1] == C);
   for (int i = N - 2; i >= 0; --i)
     if (r[i] == C) pc[i].num_c = pc[i + 1].num_c + 1;
   return pc;
@@ -67,7 +70,7 @@ energy_t FastHairpin(int st, int en);
 inline bool ViableFoldingPair(int st, int en) {
   return CanPair(gr[st], gr[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
       ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
-          (st > 0 && en < int(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
+          (st > 0 && en < static_cast<int>(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
 }
 
 inline penergy_t Boltzmann(energy_t energy) {
@@ -78,4 +81,4 @@ inline penergy_t Boltzmann(energy_t energy) {
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // FAST_ENERGY_H_
+#endif  // ENERGY_FAST_ENERGY_H_

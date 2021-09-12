@@ -1,9 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include <energy/energy_globals.h>
 
-#include <iostream>
-
-#include "energy/energy_globals.h"
 #include "globals.h"
 #include "partition/partition.h"
 #include "partition/partition_globals.h"

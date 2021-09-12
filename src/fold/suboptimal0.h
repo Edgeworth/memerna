@@ -3,6 +3,7 @@
 #define FOLD_SUBOPTIMAL0_H_
 
 #include <set>
+#include <vector>
 
 #include "common.h"
 #include "energy/structure.h"

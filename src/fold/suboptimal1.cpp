@@ -2,6 +2,8 @@
 #include "fold/suboptimal1.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "energy/energy_globals.h"
 
@@ -69,12 +71,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
     }
 
     // Update the next best seen variable
-    if (s.idx != int(exps.size()) && exps[s.idx].energy + energy > cur_delta)
+    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].energy + energy > cur_delta)
       next_seen = std::min(next_seen, exps[s.idx].energy + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.idx == int(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
+    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
       if (s.expand.en != -1 && s.expand.a == DP_P) {
         gp[s.expand.st] = gp[s.expand.en] = -1;
@@ -135,7 +137,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
 }
 
 std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta) {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   int st = to_expand.st, en = to_expand.en, a = to_expand.a;
   std::vector<expand_t> exps;
   // Temporary variable to hold energy calculations.
@@ -145,7 +147,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
     if (a == EXT) {
       // Base case: do nothing.
       if (st == N)
-        exps.push_back({0});
+        exps.emplace_back(0);
       else
         // Case: No pair starting here (for EXT only)
         exps.push_back({gext[st + 1][EXT] - gext[st][a], {st + 1, -1, EXT}});
@@ -253,7 +255,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
 
     // Hairpin loop
     energy = energy::FastHairpin(st, en) - gdp[st][en][a];
-    if (energy <= delta) exps.push_back({energy});
+    if (energy <= delta) exps.emplace_back(energy);
 
     auto base_and_branch = gpc.augubranch[stb][enb] + gem.multiloop_hack_a - gdp[st][en][a];
     // (<   ><    >)

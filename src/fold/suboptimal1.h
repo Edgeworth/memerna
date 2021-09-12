@@ -1,8 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef SUBOPTIMAL1_H_
-#define SUBOPTIMAL1_H_
+#ifndef FOLD_SUBOPTIMAL1_H_
+#define FOLD_SUBOPTIMAL1_H_
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "common.h"
 #include "fold/fold.h"
@@ -14,7 +16,7 @@ namespace internal {
 
 struct expand_t {
   expand_t() = delete;
-  expand_t(energy_t energy_) : energy(energy_) {}
+  explicit expand_t(energy_t energy_) : energy(energy_) {}
   expand_t(energy_t energy_, const index_t& to_expand_) : energy(energy_), to_expand(to_expand_) {}
   expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_) {}
@@ -75,4 +77,4 @@ class Suboptimal1 {
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // SUBOPTIMAL1_H_
+#endif  // FOLD_SUBOPTIMAL1_H_

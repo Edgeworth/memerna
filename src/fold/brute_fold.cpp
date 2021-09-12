@@ -1,7 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "fold/brute_fold.h"
 
+#include <stack>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "energy/energy_globals.h"
 #include "energy/structure.h"
@@ -17,7 +20,7 @@ namespace internal {
 std::vector<int> GetBranchCounts(const std::vector<int>& p) {
   std::vector<int> branch_count(p.size(), 0);
   std::stack<int> q;
-  for (int i = 0; i < int(p.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(p.size()); ++i) {
     if (p[i] == -1) continue;
     if (p[i] > i) {
       // Exterior loop counts a multiloop for CTDs.
@@ -111,7 +114,7 @@ substructure_id_t BuildOutsideStructure(int st, int en, int N) {
 }
 
 void AddAllCombinations(int idx) {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   // Base case
   if (idx == N) {
     auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, energy::gem);
@@ -140,10 +143,11 @@ void AddAllCombinations(int idx) {
         }
       }
     } else {
-      if (int(best_computeds.size()) < max_structures ||
+      if (static_cast<int>(best_computeds.size()) < max_structures ||
           best_computeds.rbegin()->energy > computed.energy)
         best_computeds.insert(std::move(computed));
-      if (int(best_computeds.size()) > max_structures) best_computeds.erase(--best_computeds.end());
+      if (static_cast<int>(best_computeds.size()) > max_structures)
+        best_computeds.erase(--best_computeds.end());
     }
     return;
   }
@@ -230,7 +234,7 @@ void AddAllCombinations(int idx) {
 }
 
 void BruteForce(int idx) {
-  if (idx == int(base_pairs.size())) {
+  if (idx == static_cast<int>(base_pairs.size())) {
     // Small optimisation for case when we're just getting one structure.
     if (max_structures == 1 && !compute_partition) {
       auto computed = energy::ComputeEnergy({gr, gp}, energy::gem);
@@ -282,8 +286,8 @@ void InvokeBruteForce(const primary_t& r, const energy::EnergyModel& em, int max
     probabilities = array3d_t<penergy_t, 1>(r.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
-  for (int st = 0; st < int(r.size()); ++st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < int(r.size()); ++en) {
+  for (int st = 0; st < static_cast<int>(r.size()); ++st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r.size()); ++en) {
       bool allowed = allow_lonely_pairs ? CanPair(r[st], r[en]) : energy::ViableFoldingPair(st, en);
       if (allowed) base_pairs.emplace_back(st, en);
     }
@@ -305,7 +309,7 @@ std::vector<computed_t> SuboptimalBruteForce(
 
 std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForce(
     const primary_t& r, const energy::EnergyModel& em) {
-  const int N = int(r.size());
+  const int N = static_cast<int>(r.size());
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
   // Plus one to N, since -1 takes up a spot.

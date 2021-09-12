@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "energy/fast_energy.h"
 
+#include <algorithm>
+
 #include "energy/energy_globals.h"
 #include "parsing.h"
 
@@ -11,7 +13,8 @@ namespace {
 
 energy_t MinEnergy(const energy_t* energy, std::size_t size) {
   energy_t min = energy[0];
-  for (int i = 0; i < int(size / sizeof(energy_t)); ++i) min = std::min(min, energy[i]);
+  for (int i = 0; i < static_cast<int>(size / sizeof(energy_t)); ++i)
+    min = std::min(min, energy[i]);
   return min;
 }
 

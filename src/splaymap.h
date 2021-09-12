@@ -3,6 +3,9 @@
 #define SPLAYMAP_H_
 
 #include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "common.h"
 

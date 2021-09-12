@@ -1,6 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef LOAD_MODEL_H_
-#define LOAD_MODEL_H_
+#ifndef ENERGY_LOAD_MODEL_H_
+#define ENERGY_LOAD_MODEL_H_
+
+#include <map>
+#include <string>
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -15,7 +18,8 @@ const std::map<std::string, opt_t> ENERGY_OPTIONS = {
 EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
 EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
+
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // LOAD_MODEL_H_
+#endif  // ENERGY_LOAD_MODEL_H_

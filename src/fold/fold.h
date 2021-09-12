@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef FOLD_INTERNAL_H_
-#define FOLD_INTERNAL_H_
+#ifndef FOLD_FOLD_H_
+#define FOLD_FOLD_H_
 
 #include "base.h"
 #include "common.h"
@@ -59,4 +59,4 @@ typedef std::function<void(const computed_t&)> SuboptimalCallback;
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // FOLD_INTERNAL_H_
+#endif  // FOLD_FOLD_H_
