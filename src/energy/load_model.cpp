@@ -180,6 +180,7 @@ EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed) {
 #define RANDOMISE_DATA(d)                                                                    \
   do {                                                                                       \
     auto dp = reinterpret_cast<energy_t*>(&(d));                                             \
+    /* NOLINTNEXTLINE */                                                                     \
     for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { dp[i] = energy_dist(eng); } \
   } while (0)
 

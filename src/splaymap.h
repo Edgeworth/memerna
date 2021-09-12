@@ -22,7 +22,7 @@ class SplayMap {
     ++size;
 
     int oldroot = root;
-    root = int(ns.size());
+    root = static_cast<int>(ns.size());
     // Case where |oldroot| is NONE will be handled magically, since none.{l, r} == none.
     if (key < ns[oldroot].k) {
       ns.push_back({key, ns[oldroot].l, oldroot, std::forward<ValueRef>(value)});
@@ -200,7 +200,7 @@ class SplayMap {
     std::vector<std::string> desc;
     desc.push_back(std::to_string(n.k));
     for (const auto& s : DescribeInternal(n.l)) desc.push_back("| " + s);
-    int idx = int(desc.size());
+    int idx = static_cast<int>(desc.size());
     for (const auto& s : DescribeInternal(n.r)) desc.push_back("  " + s);
     desc[1][1] = '_';
     desc[idx][0] = '|';

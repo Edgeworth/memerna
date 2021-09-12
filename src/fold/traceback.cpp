@@ -8,10 +8,10 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace energy;
+using energy::gem;
 
 void ComputeExterior() {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   // Exterior loop calculation. There can be no paired base on gext[en].
   gext[N][EXT] = 0;
   for (int st = N - 1; st >= 0; --st) {
@@ -65,7 +65,7 @@ void ComputeExterior() {
 #undef UPDATE_EXT
 
 void Traceback() {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   genergy = gext[0][EXT];
   std::stack<index_t> q;
   q.emplace(0, -1, EXT);
@@ -428,7 +428,7 @@ void Traceback() {
       }
     }
 
-  loopend:;
+  loopend: {};
   }
 }
 }  // namespace internal

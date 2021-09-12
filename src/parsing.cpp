@@ -6,8 +6,6 @@
 namespace memerna {
 namespace parsing {
 
-using namespace energy;
-
 primary_t StringToPrimary(const std::string& s) {
   primary_t r(s.size());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {

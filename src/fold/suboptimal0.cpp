@@ -11,7 +11,7 @@ namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace energy;
+using energy::gem;
 
 int Suboptimal0::Run(SuboptimalCallback fn) {
   const int N = static_cast<int>(gr.size());

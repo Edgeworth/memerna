@@ -10,6 +10,7 @@ namespace internal {
 
 std::vector<int> gp;
 std::vector<Ctd> gctd;
+// NOLINTNEXTLINE
 std::string grep;
 energy_t genergy;
 array3d_t<energy_t, DP_SIZE> gdp;

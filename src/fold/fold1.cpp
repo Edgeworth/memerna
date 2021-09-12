@@ -1,15 +1,19 @@
 // Copyright 2016 E.
 #include "energy/energy_globals.h"
+#include "energy/fast_energy.h"
 #include "fold/fold.h"
 
 namespace memerna {
 namespace fold {
 namespace internal {
 
-using namespace energy;
+using energy::FastTwoLoop;
+using energy::gem;
+using energy::gpc;
+using energy::ViableFoldingPair;
 
 void ComputeTables1() {
-  const int N = int(gr.size());
+  const int N = static_cast<int>(gr.size());
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
