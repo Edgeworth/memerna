@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_SUBOPTIMAL1_H
-#define MEMERNA_SUBOPTIMAL1_H
+#ifndef MEMERNA_SUBOPTIMAL1_H_
+#define MEMERNA_SUBOPTIMAL1_H_
 
 #include <algorithm>
 
@@ -88,4 +88,4 @@ private:
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // MEMERNA_SUBOPTIMAL1_H
+#endif  // MEMERNA_SUBOPTIMAL1_H_

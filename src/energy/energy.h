@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_ENERGY_H
-#define MEMERNA_ENERGY_H
+#ifndef MEMERNA_ENERGY_H_
+#define MEMERNA_ENERGY_H_
 
 #include <cmath>
 #include <deque>
@@ -40,4 +40,4 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_H
+#endif  // MEMERNA_ENERGY_H_

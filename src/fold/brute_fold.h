@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_BRUTE_FOLD_H
-#define MEMERNA_BRUTE_FOLD_H
+#ifndef MEMERNA_BRUTE_FOLD_H_
+#define MEMERNA_BRUTE_FOLD_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -36,4 +36,4 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
 
 }  // namespace fold
 }  // namespace memerna
-#endif  // MEMERNA_BRUTE_FOLD_H
+#endif  // MEMERNA_BRUTE_FOLD_H_

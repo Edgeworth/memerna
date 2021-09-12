@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_MEMERNA_H
-#define MEMERNA_MEMERNA_H
+#ifndef MEMERNA_MEMERNA_H_
+#define MEMERNA_MEMERNA_H_
 
 #include "bridge/bridge.h"
 #include "common.h"
@@ -46,4 +46,4 @@ private:
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_MEMERNA_H
+#endif  // MEMERNA_MEMERNA_H_

@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_FAST_ENERGY_H
-#define MEMERNA_FAST_ENERGY_H
+#ifndef MEMERNA_FAST_ENERGY_H_
+#define MEMERNA_FAST_ENERGY_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -92,4 +92,4 @@ inline penergy_t Boltzmann(energy_t energy) {
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_FAST_ENERGY_H
+#endif  // MEMERNA_FAST_ENERGY_H_

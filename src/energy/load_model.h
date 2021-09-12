@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_LOAD_MODEL_H
-#define MEMERNA_LOAD_MODEL_H
+#ifndef MEMERNA_LOAD_MODEL_H_
+#define MEMERNA_LOAD_MODEL_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -31,4 +31,4 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_LOAD_MODEL_H
+#endif  // MEMERNA_LOAD_MODEL_H_

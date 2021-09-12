@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_BRIDGE_H
-#define MEMERNA_BRIDGE_H
+#ifndef MEMERNA_BRIDGE_H_
+#define MEMERNA_BRIDGE_H_
 
 #include "argparse.h"
 #include "common.h"
@@ -43,4 +43,4 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_BRIDGE_H
+#endif  // MEMERNA_BRIDGE_H_

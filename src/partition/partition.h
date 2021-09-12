@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_PARTITION_H
-#define MEMERNA_PARTITION_H
+#ifndef MEMERNA_PARTITION_H_
+#define MEMERNA_PARTITION_H_
 
 #include <cmath>
 
@@ -122,4 +122,4 @@ inline int FastMod(int a, int m) {
 }  // namespace partition
 }  // namespace memerna
 
-#endif  // MEMERNA_PARTITION_H
+#endif  // MEMERNA_PARTITION_H_

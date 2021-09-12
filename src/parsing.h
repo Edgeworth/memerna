@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_PARSING_H
-#define MEMERNA_PARSING_H
+#ifndef MEMERNA_PARSING_H_
+#define MEMERNA_PARSING_H_
 
 #include <stack>
 #include <string>
@@ -36,4 +36,4 @@ bool IsCtdString(const std::string& pairs_str);
 }  // namespace parsing
 }  // namespace memerna
 
-#endif  // MEMERNA_PARSING_H
+#endif  // MEMERNA_PARSING_H_

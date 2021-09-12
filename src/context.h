@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_CONTEXT_H
-#define MEMERNA_CONTEXT_H
+#ifndef MEMERNA_CONTEXT_H_
+#define MEMERNA_CONTEXT_H_
 
 #include "argparse.h"
 #include "common.h"
@@ -92,4 +92,4 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse);
 
 }  // namespace memerna
 
-#endif  // MEMERNA_CONTEXT_H
+#endif  // MEMERNA_CONTEXT_H_
