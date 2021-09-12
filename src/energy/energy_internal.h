@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_ENERGY_INTERNAL_H_
-#define MEMERNA_ENERGY_INTERNAL_H_
+#ifndef ENERGY_INTERNAL_H_
+#define ENERGY_INTERNAL_H_
 
 #include <deque>
 
@@ -41,4 +41,4 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_INTERNAL_H_
+#endif  // ENERGY_INTERNAL_H_

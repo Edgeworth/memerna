@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_LOAD_MODEL_H_
-#define MEMERNA_LOAD_MODEL_H_
+#ifndef LOAD_MODEL_H_
+#define LOAD_MODEL_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -18,4 +18,4 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_LOAD_MODEL_H_
+#endif  // LOAD_MODEL_H_

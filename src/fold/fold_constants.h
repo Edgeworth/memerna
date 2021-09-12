@@ -1,8 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_FOLD_CONSTANTS_H_
-#define MEMERNA_FOLD_CONSTANTS_H_
+#ifndef FOLD_FOLD_CONSTANTS_H_
+#define FOLD_FOLD_CONSTANTS_H_
 
 #include <cstdint>
+#include <limits>
 
 namespace memerna {
 namespace fold {
@@ -54,4 +55,4 @@ const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // MEMERNA_FOLD_CONSTANTS_H_
+#endif  // FOLD_FOLD_CONSTANTS_H_

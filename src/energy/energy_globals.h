@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_ENERGY_GLOBALS_H_
-#define MEMERNA_ENERGY_GLOBALS_H_
+#ifndef ENERGY_GLOBALS_H_
+#define ENERGY_GLOBALS_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -16,4 +16,4 @@ void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em);
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_GLOBALS_H_
+#endif  // ENERGY_GLOBALS_H_

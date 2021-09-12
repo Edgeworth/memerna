@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_FAST_ENERGY_H_
-#define MEMERNA_FAST_ENERGY_H_
+#ifndef FAST_ENERGY_H_
+#define FAST_ENERGY_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -79,4 +79,4 @@ inline penergy_t Boltzmann(energy_t energy) {
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_FAST_ENERGY_H_
+#endif  // FAST_ENERGY_H_

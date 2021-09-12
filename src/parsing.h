@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_PARSING_H_
-#define MEMERNA_PARSING_H_
+#ifndef PARSING_H_
+#define PARSING_H_
 
 #include <stack>
 #include <string>
@@ -23,4 +23,4 @@ bool IsCtdString(const std::string& pairs_str);
 }  // namespace parsing
 }  // namespace memerna
 
-#endif  // MEMERNA_PARSING_H_
+#endif  // PARSING_H_

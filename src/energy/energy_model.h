@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MEMERNA_ENERGY_MODEL_H_
-#define MEMERNA_ENERGY_MODEL_H_
+#ifndef ENERGY_MODEL_H_
+#define ENERGY_MODEL_H_
 
 #include <cmath>
 #include <cstdarg>
@@ -137,4 +137,4 @@ typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_MODEL_H_
+#endif  // ENERGY_MODEL_H_
