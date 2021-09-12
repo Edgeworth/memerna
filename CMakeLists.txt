@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.12)
 
-project(memerna)
+project(memerna VERSION 0.1 LANGUAGES CXX)
 
 # Options
 option(PARTITION_MPFR "Use higher precision with MPFR for the partition function" OFF)
-
-# I want LTO to work if I decide to use it.
-set(BUILD_SHARED_LIBS OFF)
 
 # Always have RNAstructure compiled as release.
 set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
@@ -14,8 +11,17 @@ set(CMAKE_BUILD_TYPE Release)
 add_subdirectory("extern/miles_rnastructure")
 set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
 
+# Flags for each build configuration.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
+set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
+
 # Include things to find libraries.
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 find_package(UBSan)
 find_package(ASan)
 find_package(Threads)
@@ -44,14 +50,6 @@ if (PARTITION_MPFR)
   message("Building using MPFR for the partition function.")
 endif ()
 
-# Gold linker.
-check_c_compiler_flag("-fuse-ld=gold" HAVE_GOLD)
-if (HAVE_GOLD)
-  message("Using gold linker")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=gold")
-endif ()
-
 # Enable tests.
 set(THREADS_PREFER_PTHREAD_FLAG ON)  # Gtest needs this.
 # Download and unpack googletest at configure time
@@ -72,22 +70,53 @@ endif ()
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
 include(GoogleTest)
-
 enable_testing()
 
-# Flags for each build configuration.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wshadow \
-  -fno-rtti -Wconversion -Wfloat-equal -Wformat-security -Wno-sign-conversion -pedantic")
-set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
-set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fno-omit-frame-pointer -march=native -O3")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
-
 # Source set definitions.
-file(GLOB MEMERNA_SOURCE "src/*.cpp" "src/*.h" "src/energy/*.cpp"
-    "src/energy/*.h" "src/fold/*.cpp" "src/fold/*.h" "src/partition/*.h" "src/partition/*.cpp")
-file(GLOB BRIDGE_SOURCE "src/bridge/*.cpp" "src/bridge/*.h")
-file(GLOB TEST_SOURCE "tests/*.cpp" "tests/*.h")
+set(MEMERNA_SOURCE
+    src/argparse.cpp src/argparse.h src/array.h
+    src/base.cpp src/base.h
+    src/fold/brute_fold.cpp src/fold/brute_fold.h
+    src/common.cpp src/common.h
+    src/context.cpp src/context.h
+    src/energy/energy.cpp src/energy/energy.h
+    src/energy/energy_globals.cpp src/energy/energy_globals.h
+    src/energy/energy_internal.cpp src/energy/energy_internal.h
+    src/energy/energy_model.cpp src/energy/energy_model.h
+    src/partition/exterior.cpp
+    src/energy/fast_energy.cpp src/energy/fast_energy.h
+    src/fold/fold.h
+    src/fold/fold0.cpp
+    src/fold/fold1.cpp
+    src/fold/fold2.cpp
+    src/fold/fold3.cpp src/fold/fold_constants.h
+    src/fold/fold_globals.cpp src/fold/fold_globals.h
+    src/globals.cpp src/globals.h
+    src/partition/internal.cpp
+    src/energy/load_model.cpp src/energy/load_model.h
+    src/parsing.cpp src/parsing.h src/partition/partition.h
+    src/partition/partition0.cpp
+    src/partition/partition1.cpp
+    src/partition/partition_globals.cpp src/partition/partition_globals.h
+    src/partition/probability.cpp src/splaymap.h
+    src/energy/structure.cpp src/energy/structure.h
+    src/fold/suboptimal0.cpp src/fold/suboptimal0.h
+    src/fold/suboptimal1.cpp src/fold/suboptimal1.h
+    src/fold/traceback.cpp)
+set(BRIDGE_SOURCE
+    src/bridge/bridge.cpp src/bridge/bridge.h
+    src/bridge/memerna.cpp src/bridge/memerna.h
+    src/bridge/rnastructure.cpp src/bridge/rnastructure.h)
+set(TEST_SOURCE
+    tests/base_test.cpp
+    tests/brute_test.cpp
+    tests/common_test.cpp
+    tests/common_test.h
+    tests/ctds_test.cpp
+    tests/energy_test.cpp
+    tests/fold_test.cpp
+    tests/parsing_test.cpp
+    tests/splaymap_test.cpp)
 
 include_directories(src)
 # Suppress warnings.
