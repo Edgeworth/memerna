@@ -9,16 +9,25 @@
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
+#include "common.h"
 #include "energy/load_model.h"
 #include "energy/structure.h"
 #include "fold/brute_fold.h"
+#include "fold/fold_constants.h"
+#include "fold/fold_globals.h"
 #include "parsing.h"
 
-using namespace mrna;
-using namespace fold;
-using namespace fold::internal;
+using mrna::opt_t;
 
-namespace {
+namespace mrna {
+
+using fold::PartitionBruteForce;
+using fold::SuboptimalBruteForce;
+using fold::internal::DP_P;
+using fold::internal::DP_SIZE;
+using fold::internal::DP_U;
+using fold::internal::gdp;
+
 struct cfg_t {
   bool random_model = false;
   bool rnastructure = false;
@@ -453,20 +462,20 @@ class Fuzzer {
   }
 };
 
-}  // namespace
+}  // namespace mrna
 
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
-  ArgParse argparse({
+  mrna::ArgParse argparse({
       {"print-interval", opt_t("status update every n seconds").Arg("-1")},
       {"afl", opt_t("reads one rna from stdin and fuzzes - useful for use with afl")},
   });
-  argparse.AddOptions(CFG_OPTIONS);
-  argparse.AddOptions(energy::ENERGY_OPTIONS);
+  argparse.AddOptions(mrna::CFG_OPTIONS);
+  argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
 
-  const bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
-  const auto t04em = energy::LoadEnergyModelFromArgParse(argparse);
+  const mrna::bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
+  const auto t04em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
 
   auto cfg = CfgFromArgParse(argparse);
   const bool afl_mode = argparse.HasFlag("afl");
@@ -485,7 +494,7 @@ int main(int argc, char* argv[]) {
       while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0) data += std::string(buf, len);
       if (data.size() > 0) {
         cfg.seed = eng();
-        Fuzzer fuzzer(parsing::StringToPrimary(data), cfg, t04em, rnastructure);
+        mrna::Fuzzer fuzzer(mrna::parsing::StringToPrimary(data), cfg, t04em, rnastructure);
         const auto res = fuzzer.Run();
         if (!res.empty()) abort();
       }
@@ -516,10 +525,10 @@ int main(int argc, char* argv[]) {
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(eng);
-      auto r = GenerateRandomPrimary(len, eng);
+      auto r = mrna::GenerateRandomPrimary(len, eng);
 
       cfg.seed = eng();
-      Fuzzer fuzzer(r, cfg, t04em, rnastructure);
+      mrna::Fuzzer fuzzer(r, cfg, t04em, rnastructure);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());

@@ -1,15 +1,19 @@
 // Copyright 2016 E.
 #include <cstdio>
 
+#include "common.h"
 #include "context.h"
 #include "energy/load_model.h"
 #include "parsing.h"
 
-using namespace mrna;
+using mrna::computed_t;
+using mrna::context_opt_t;
+using mrna::energy_t;
+using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  ArgParse argparse(energy::ENERGY_OPTIONS);
-  argparse.AddOptions(CONTEXT_OPTIONS);
+  mrna::ArgParse argparse(mrna::energy::ENERGY_OPTIONS);
+  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
   argparse.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
       {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
       {"sorted", opt_t("if the structures should be sorted")},
@@ -20,8 +24,8 @@ int main(int argc, char* argv[]) {
 
   auto opt = ContextOptionsFromArgParse(argparse);
   opt.table_alg = context_opt_t::TableAlg::TWO;
-  Context ctx(
-      parsing::StringToPrimary(pos.front()), energy::LoadEnergyModelFromArgParse(argparse), opt);
+  mrna::Context ctx(mrna::parsing::StringToPrimary(pos.front()),
+      mrna::energy::LoadEnergyModelFromArgParse(argparse), opt);
 
   const energy_t subopt_delta = atoi(argparse.GetOption("delta").c_str());
   const int subopt_num = atoi(argparse.GetOption("num").c_str());
@@ -30,17 +34,17 @@ int main(int argc, char* argv[]) {
   const bool ctd_data = argparse.HasFlag("ctd-output");
   verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
-  fold::SuboptimalCallback fn = [](const computed_t&) {};
+  mrna::fold::SuboptimalCallback fn = [](const computed_t&) {};
   if (should_print) {
     if (ctd_data) {
       fn = [](const computed_t& c) {
         printf("%d ", c.energy);
-        puts(parsing::ComputedToCtdString(c).c_str());
+        puts(mrna::parsing::ComputedToCtdString(c).c_str());
       };
     } else {
       fn = [](const computed_t& c) {
         printf("%d ", c.energy);
-        puts(fold::internal::grep.c_str());  // meme
+        puts(mrna::fold::internal::grep.c_str());  // meme
       };
     }
   }
