@@ -1,6 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include "context.h"
 
+#include <utility>
+#include <vector>
+
 #include "fold/brute_fold.h"
 #include "fold/suboptimal0.h"
 #include "fold/suboptimal1.h"

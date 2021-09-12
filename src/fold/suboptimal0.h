@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef SUBOPTIMAL0_H_
-#define SUBOPTIMAL0_H_
+#ifndef FOLD_SUBOPTIMAL0_H_
+#define FOLD_SUBOPTIMAL0_H_
 
 #include <set>
 
@@ -99,4 +99,4 @@ class Suboptimal0 {
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // SUBOPTIMAL0_H_
+#endif  // FOLD_SUBOPTIMAL0_H_

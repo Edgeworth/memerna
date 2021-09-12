@@ -2,6 +2,10 @@
 #ifndef BRIDGE_MEMERNA_H_
 #define BRIDGE_MEMERNA_H_
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "bridge/bridge.h"
 #include "common.h"
 #include "context.h"
@@ -17,13 +21,13 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
-  virtual computed_t Fold(const primary_t& r) const override;
-  virtual int Suboptimal(
+  energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
+  computed_t Fold(const primary_t& r) const override;
+  int Suboptimal(
       fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const override;
-  virtual std::vector<computed_t> SuboptimalIntoVector(
+  std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const override;
-  virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
+  std::pair<partition::partition_t, partition::probabilities_t> Partition(
       const primary_t& r) const override;
 
  private:

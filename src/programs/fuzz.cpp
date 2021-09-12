@@ -336,7 +336,7 @@ class Fuzzer {
 
   error_t RnastructureComputeAndCheckState() {
     error_t errors;
-    auto rnastructure_computed = rnastructure.FoldAndDpTable(r, rnastructure_dp);
+    auto rnastructure_computed = rnastructure.FoldAndDpTable(r, &rnastructure_dp);
     auto rnastructure_efn = rnastructure.Efn(rnastructure_computed.s);
     if (memerna_computeds[0].energy != rnastructure_computed.energy ||
         memerna_computeds[0].energy != rnastructure_efn)

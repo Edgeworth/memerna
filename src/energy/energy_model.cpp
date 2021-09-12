@@ -1,6 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "energy/energy_model.h"
 
+#include <algorithm>
+#include <string>
+#include <memory>
+
 #include "energy/structure.h"
 #include "parsing.h"
 

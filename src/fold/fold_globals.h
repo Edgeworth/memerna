@@ -1,6 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef FOLD_GLOBALS_H_
-#define FOLD_GLOBALS_H_
+#ifndef FOLD_FOLD_GLOBALS_H_
+#define FOLD_FOLD_GLOBALS_H_
+
+#include <string>
+#include <vector>
 
 #include "array.h"
 #include "common.h"
@@ -25,4 +28,4 @@ void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // FOLD_GLOBALS_H_
+#endif  // FOLD_FOLD_GLOBALS_H_

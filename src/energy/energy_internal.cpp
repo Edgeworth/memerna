@@ -2,6 +2,9 @@
 #include "energy/energy_internal.h"
 
 #include <algorithm>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "parsing.h"
 

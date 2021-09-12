@@ -1,6 +1,12 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef BRIDGE_H_
-#define BRIDGE_H_
+#ifndef BRIDGE_BRIDGE_H_
+#define BRIDGE_BRIDGE_H_
+
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "argparse.h"
 #include "common.h"
@@ -30,4 +36,4 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse);
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // BRIDGE_H_
+#endif  // BRIDGE_BRIDGE_H_
