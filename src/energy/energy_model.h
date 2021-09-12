@@ -1,10 +1,13 @@
 // Copyright 2016 E.
-#ifndef ENERGY_MODEL_H_
-#define ENERGY_MODEL_H_
+#ifndef ENERGY_ENERGY_MODEL_H_
+#define ENERGY_ENERGY_MODEL_H_
 
 #include <cmath>
 #include <cstdarg>
 #include <cstring>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include "argparse.h"
 #include "base.h"
@@ -137,4 +140,4 @@ typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // ENERGY_MODEL_H_
+#endif  // ENERGY_ENERGY_MODEL_H_

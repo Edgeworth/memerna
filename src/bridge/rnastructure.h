@@ -1,6 +1,11 @@
 // Copyright 2016 E.
-#ifndef RNASTRUCTURE_H_
-#define RNASTRUCTURE_H_
+#ifndef BRIDGE_RNASTRUCTURE_H_
+#define BRIDGE_RNASTRUCTURE_H_
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "bridge/bridge.h"
 #include "common.h"
@@ -18,16 +23,16 @@ class Rnastructure : public RnaPackage {
   Rnastructure(const Rnastructure&) = delete;
   Rnastructure& operator=(Rnastructure&) = delete;
 
-  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
-  virtual computed_t Fold(const primary_t& r) const override;
-  virtual int Suboptimal(
+  energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
+  computed_t Fold(const primary_t& r) const override;
+  int Suboptimal(
       fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const override;
-  virtual std::vector<computed_t> SuboptimalIntoVector(
+  std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const override;
-  virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
+  std::pair<partition::partition_t, partition::probabilities_t> Partition(
       const primary_t& r) const override;
 
-  computed_t FoldAndDpTable(const primary_t& r, dp_state_t& dp_state) const;
+  computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;
 
  private:
   const std::unique_ptr<datatable> data;
@@ -40,4 +45,4 @@ class Rnastructure : public RnaPackage {
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // RNASTRUCTURE_H_
+#endif  // BRIDGE_RNASTRUCTURE_H_

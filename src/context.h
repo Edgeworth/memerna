@@ -2,6 +2,10 @@
 #ifndef CONTEXT_H_
 #define CONTEXT_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "argparse.h"
 #include "common.h"
 #include "energy/energy.h"
@@ -42,7 +46,7 @@ class Context {
  public:
   Context(const primary_t& r_, const energy::EnergyModelPtr em_) : r(r_), em(em_), options() {
     verify_expr(r.size() > 0u, "cannot process zero length RNA");
-  };
+  }
   Context(const primary_t& r_, const energy::EnergyModelPtr em_, context_opt_t options_)
       : r(r_), em(em_), options(options_) {
     verify_expr(r.size() > 0u, "cannot process zero length RNA");

@@ -1,6 +1,11 @@
 // Copyright 2016 E.
 #include "bridge/rnastructure.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace memerna {
 namespace bridge {
 
@@ -15,7 +20,7 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
 
 std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
   std::vector<int> p(struc.GetSequenceLength(), -1);
-  for (int i = 0; i < int(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
+  for (int i = 0; i < static_cast<int>(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
   return p;
 }
 
@@ -40,10 +45,10 @@ energy_t Rnastructure::Efn(const secondary_t& secondary, std::string* /*desc*/) 
 
 computed_t Rnastructure::Fold(const primary_t& r) const {
   dp_state_t state;
-  return FoldAndDpTable(r, state);
+  return FoldAndDpTable(r, &state);
 }
 
-computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t& dp_state) const {
+computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   // First false here says also generate the folding itself (not just the MFE).
   // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
@@ -51,7 +56,7 @@ computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t& dp_state
   // Last parameter is for returning the DP state.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso, &dp_state);
+      !use_lyngso, dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
       energy_t(structure->GetEnergy(1))};
 }
@@ -60,18 +65,18 @@ int Rnastructure::Suboptimal(
     fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds) fn(computed);
-  return int(computeds.size());
+  return static_cast<int>(computeds.size());
 }
 
 std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
     const primary_t& r, energy_t energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  verify_expr(short(energy_delta) == energy_delta, "energy_delta too big");
-  alltrace(structure.get(), data.get(), 100, short(energy_delta), nullptr, nullptr, false);
+  verify_expr(int16_t(energy_delta) == energy_delta, "energy_delta too big");
+  alltrace(structure.get(), data.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
   auto p_list = StructureToMultiplePairs(*structure);
   std::vector<computed_t> computeds;
-  for (int i = 0; i < int(p_list.size()); ++i)
+  for (int i = 0; i < static_cast<int>(p_list.size()); ++i)
     computeds.emplace_back(secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
         energy_t(structure->GetEnergy(i + 1)));
   return computeds;
@@ -80,7 +85,7 @@ std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
 std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Partition(
     const primary_t& r) const {
   const auto structure = LoadStructure(r);
-  const int length = int(r.size());
+  const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
   DynProgArray<PFPRECISION> w(length);
   DynProgArray<PFPRECISION> v(length);
@@ -120,11 +125,11 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
 
 std::unique_ptr<structure> Rnastructure::LoadStructure(const primary_t& r) const {
   auto struc = std::make_unique<structure>();
-  struc->allocate(int(r.size()));
-  for (int i = 0; i < int(r.size()); ++i) {
-    struc->numseq[i + 1] = short(r[i] + 1);
+  struc->allocate(static_cast<int>(r.size()));
+  for (int i = 0; i < static_cast<int>(r.size()); ++i) {
+    struc->numseq[i + 1] = int16_t(r[i] + 1);
     struc->nucs[i + 1] = BaseToChar(r[i]);
-    struc->hnumber[i + 1] = short(i + 1);
+    struc->hnumber[i + 1] = int16_t(i + 1);
   }
   struc->SetThermodynamicDataTable(data.get());
   return struc;
@@ -133,7 +138,7 @@ std::unique_ptr<structure> Rnastructure::LoadStructure(const primary_t& r) const
 std::unique_ptr<structure> Rnastructure::LoadStructure(const secondary_t& s) const {
   auto struc = LoadStructure(s.r);
   struc->AddStructure();
-  for (int i = 0; i < int(s.p.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(s.p.size()); ++i) {
     if (i < s.p[i]) struc->SetPair(i + 1, s.p[i] + 1);
   }
   return struc;

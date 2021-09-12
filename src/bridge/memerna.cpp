@@ -1,6 +1,11 @@
 // Copyright 2016 E.
 #include "bridge/memerna.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "energy/structure.h"
 
 namespace memerna {
