@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_ENERGY_MODEL_H
-#define MEMERNA_ENERGY_MODEL_H
+#ifndef MEMERNA_ENERGY_MODEL_H_
+#define MEMERNA_ENERGY_MODEL_H_
 
 #include <cmath>
 #include <cstdarg>
@@ -150,4 +150,4 @@ typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_MODEL_H
+#endif  // MEMERNA_ENERGY_MODEL_H_

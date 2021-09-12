@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_ARGPARSE_H
-#define MEMERNA_ARGPARSE_H
+#ifndef MEMERNA_ARGPARSE_H_
+#define MEMERNA_ARGPARSE_H_
 
 #include <map>
 #include <unordered_map>
@@ -100,4 +100,4 @@ private:
 };
 }  // namespace memerna
 
-#endif  // MEMERNA_ARGPARSE_H
+#endif  // MEMERNA_ARGPARSE_H_

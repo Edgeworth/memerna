@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_PARTITION_GLOBALS_H
-#define MEMERNA_PARTITION_GLOBALS_H
+#ifndef MEMERNA_PARTITION_GLOBALS_H_
+#define MEMERNA_PARTITION_GLOBALS_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -34,4 +34,4 @@ void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
 }  // namespace partition
 }  // namespace memerna
 
-#endif  // MEMERNA_PARTITION_GLOBALS_H
+#endif  // MEMERNA_PARTITION_GLOBALS_H_

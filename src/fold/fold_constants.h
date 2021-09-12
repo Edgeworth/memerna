@@ -12,8 +12,10 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_FOLD_CONSTANTS_H
-#define MEMERNA_FOLD_CONSTANTS_H
+#ifndef MEMERNA_FOLD_CONSTANTS_H_
+#define MEMERNA_FOLD_CONSTANTS_H_
+
+#include <cstdint>
 
 namespace memerna {
 namespace fold {
@@ -65,4 +67,4 @@ const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // MEMERNA_FOLD_CONSTANTS_H
+#endif  // MEMERNA_FOLD_CONSTANTS_H_

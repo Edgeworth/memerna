@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_COMMON_TEST_H
-#define MEMERNA_COMMON_TEST_H
+#ifndef MEMERNA_COMMON_TEST_H_
+#define MEMERNA_COMMON_TEST_H_
 
 #include <cstdint>
 #include <iostream>
@@ -41,4 +41,4 @@ std::ostream& operator<<(std::ostream& os, const secondary_t& s);
 std::ostream& operator<<(std::ostream& os, const computed_t& computed);
 }  // namespace memerna
 
-#endif  // MEMERNA_COMMON_TEST_H
+#endif  // MEMERNA_COMMON_TEST_H_

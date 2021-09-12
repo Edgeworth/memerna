@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_STRUCTURE_H
-#define MEMERNA_STRUCTURE_H
+#ifndef MEMERNA_STRUCTURE_H_
+#define MEMERNA_STRUCTURE_H_
 
 #include <memory>
 
@@ -114,4 +114,4 @@ private:
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_PARSING_H
+#endif  // MEMERNA_PARSING_H_

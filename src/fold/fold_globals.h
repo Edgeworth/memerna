@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_FOLD_GLOBALS_H
-#define MEMERNA_FOLD_GLOBALS_H
+#ifndef MEMERNA_FOLD_GLOBALS_H_
+#define MEMERNA_FOLD_GLOBALS_H_
 
 #include "array.h"
 #include "common.h"
@@ -38,4 +38,4 @@ void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // MEMERNA_FOLD_GLOBALS_H
+#endif  // MEMERNA_FOLD_GLOBALS_H_

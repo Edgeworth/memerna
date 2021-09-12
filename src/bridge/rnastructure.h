@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_RNASTRUCTURE_H
-#define MEMERNA_RNASTRUCTURE_H
+#ifndef MEMERNA_RNASTRUCTURE_H_
+#define MEMERNA_RNASTRUCTURE_H_
 
 #include "bridge/bridge.h"
 #include "common.h"
@@ -53,4 +53,4 @@ private:
 }  // namespace bridge
 }  // namespace memerna
 
-#endif  // MEMERNA_RNASTRUCTURE_H
+#endif  // MEMERNA_RNASTRUCTURE_H_

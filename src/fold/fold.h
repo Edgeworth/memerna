@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_FOLD_INTERNAL_H
-#define MEMERNA_FOLD_INTERNAL_H
+#ifndef MEMERNA_FOLD_INTERNAL_H_
+#define MEMERNA_FOLD_INTERNAL_H_
 
 #include "base.h"
 #include "common.h"
@@ -72,4 +72,4 @@ typedef std::function<void(const computed_t&)> SuboptimalCallback;
 }  // namespace fold
 }  // namespace memerna
 
-#endif  // MEMERNA_FOLD_INTERNAL_H
+#endif  // MEMERNA_FOLD_INTERNAL_H_

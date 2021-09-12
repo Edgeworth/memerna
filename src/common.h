@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_COMMON_H
-#define MEMERNA_COMMON_H
+#ifndef MEMERNA_COMMON_H_
+#define MEMERNA_COMMON_H_
 
 #include <cassert>
 #include <cstdarg>
@@ -147,4 +147,4 @@ std::string vsfmt(const char* fmt, va_list l);
 uint32_t Crc32(const std::string& data);
 }  // namespace memerna
 
-#endif  // MEMERNA_COMMON_H
+#endif  // MEMERNA_COMMON_H_

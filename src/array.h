@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_ARRAY_H
-#define MEMERNA_ARRAY_H
+#ifndef MEMERNA_ARRAY_H_
+#define MEMERNA_ARRAY_H_
 
 #include "common.h"
 
@@ -92,4 +92,4 @@ private:
 };
 }  // namespace memerna
 
-#endif  // MEMERNA_ARRAY_H
+#endif  // MEMERNA_ARRAY_H_

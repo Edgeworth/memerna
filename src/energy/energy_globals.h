@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_ENERGY_GLOBALS_H
-#define MEMERNA_ENERGY_GLOBALS_H
+#ifndef MEMERNA_ENERGY_GLOBALS_H_
+#define MEMERNA_ENERGY_GLOBALS_H_
 
 #include "common.h"
 #include "energy/energy_model.h"
@@ -29,4 +29,4 @@ void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em);
 }  // namespace energy
 }  // namespace memerna
 
-#endif  // MEMERNA_ENERGY_GLOBALS_H
+#endif  // MEMERNA_ENERGY_GLOBALS_H_

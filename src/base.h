@@ -12,8 +12,8 @@
 //
 // You should have received a copy of the GNU General Public License along with memerna.
 // If not, see <http://www.gnu.org/licenses/>.
-#ifndef MEMERNA_BASE_H
-#define MEMERNA_BASE_H
+#ifndef MEMERNA_BASE_H_
+#define MEMERNA_BASE_H_
 
 #include <cstdint>
 #include <cstring>
@@ -68,4 +68,4 @@ primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
 }
 }  // namespace memerna
 
-#endif  // MEMERNA_BASE_H
+#endif  // MEMERNA_BASE_H_
