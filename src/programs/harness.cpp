@@ -6,23 +6,25 @@
 #include "energy/load_model.h"
 #include "parsing.h"
 
-using namespace mrna;
+using mrna::computed_t;
+using mrna::energy_t;
+using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  ArgParse argparse({
+  mrna::ArgParse argparse({
       {"v", {"be verbose (if possible)"}},
       {"e", {"run efn"}},
       {"f", {"run fold"}},
       {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
   });
-  argparse.AddOptions(bridge::BRIDGE_OPTIONS);
-  argparse.AddOptions(CONTEXT_OPTIONS);
-  argparse.AddOptions(energy::ENERGY_OPTIONS);
+  argparse.AddOptions(mrna::bridge::BRIDGE_OPTIONS);
+  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
+  argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
   verify(argparse.HasFlag("e") + argparse.HasFlag("f") == 1, "require exactly one program flag\n%s",
       argparse.Usage().c_str());
 
-  const auto package = bridge::RnaPackageFromArgParse(argparse);
+  const auto package = mrna::bridge::RnaPackageFromArgParse(argparse);
   const auto& pos = argparse.GetPositional();
   const bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());
@@ -41,7 +43,7 @@ int main(int argc, char* argv[]) {
         db = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      const auto secondary = parsing::ParseDotBracketSecondary(seq, db);
+      const auto secondary = mrna::parsing::ParseDotBracketSecondary(seq, db);
       std::string desc;
       const auto res = package->Efn(secondary, argparse.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
@@ -57,18 +59,18 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      const auto r = parsing::StringToPrimary(seq);
+      const auto r = mrna::parsing::StringToPrimary(seq);
       int subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const computed_t& c) {
-              printf("%d %s\n", c.energy, parsing::PairsToDotBracket(c.s.p).c_str());
+              printf("%d %s\n", c.energy, mrna::parsing::PairsToDotBracket(c.s.p).c_str());
             },
             r, subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.energy, parsing::PairsToDotBracket(res.s.p).c_str());
+        printf("%d\n%s\n", res.energy, mrna::parsing::PairsToDotBracket(res.s.p).c_str());
       }
     }
   }

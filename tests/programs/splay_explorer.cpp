@@ -7,11 +7,9 @@
 #include "common.h"
 #include "splaymap.h"
 
-using namespace mrna;
-
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 
-OpResult DoOperation(char op, int val, SplayMap<int, int>& h, std::set<int>& s) {
+OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>& h, std::set<int>& s) {
   bool splay_success = false, set_success = false, invalid = false;
   switch (op) {
   case 'i':
@@ -44,7 +42,7 @@ void DoAfl() {
   __AFL_INIT();
   while (__AFL_LOOP(100000)) {
 #endif
-    SplayMap<int, int> h;
+    mrna::SplayMap<int, int> h;
     std::set<int> s;
 
     std::string data;
@@ -62,7 +60,7 @@ void DoAfl() {
 }
 
 void DoInteractive(int r) {
-  SplayMap<int, int> h;
+  mrna::SplayMap<int, int> h;
   std::set<int> s;
 
   for (int i = 1; i <= r; ++i) {
@@ -91,8 +89,8 @@ void DoInteractive(int r) {
 }
 
 int main(int argc, char** argv) {
-  ArgParse argparse({{"h", {"help"}}, {"afl", {"afl mode"}},
-      {"r", opt_t("load range from 1 until r").Arg("-1")}});
+  mrna::ArgParse argparse({{"h", {"help"}}, {"afl", {"afl mode"}},
+      {"r", mrna::opt_t("load range from 1 until r").Arg("-1")}});
   argparse.ParseOrExit(argc, argv);
   if (argparse.HasFlag("h")) {
     printf("Commands:\n Insert: i <val>\n Delete: d <val>\n "

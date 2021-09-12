@@ -74,8 +74,8 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       break;
     case 1:
       // Check non-existing
-      do key = val_dist(eng);
-      while (s.count(key));
+      // NOLINTNEXTLINE
+      do { key = val_dist(eng); } while (s.count(key));
       EXPECT_FALSE(h.Find(key));
       break;
     case 2: {
@@ -101,8 +101,8 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       break;
     case 4:
       // Delete non-existing
-      do key = val_dist(eng);
-      while (s.count(key));
+      // NOLINTNEXTLINE
+      do { key = val_dist(eng); } while (s.count(key));
       EXPECT_FALSE(h.Delete(key));
       break;
     default: verify(false, "bug");
