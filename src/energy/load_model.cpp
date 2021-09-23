@@ -293,7 +293,7 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& args) {
   if (args.HasFlag("seed")) {
     return LoadRandomEnergyModel(uint_fast32_t(atoi(args.GetOption("seed").c_str())));
   } else {
-    return LoadEnergyModelFromDataDir(args.GetOption("data-path"));
+    return LoadEnergyModelFromDataDir(args.GetOption("memerna-data"));
   }
 }
 
