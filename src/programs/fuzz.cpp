@@ -77,22 +77,19 @@ const std::map<std::string, opt_t> CFG_OPTIONS = {
     {"partition-rnastructure", opt_t("test rnastructure partition function")},
 };
 
-cfg_t CfgFromArgParse(const ArgParse& argparse) {
+cfg_t CfgFromArgParse(const ArgParse& args) {
   cfg_t cfg;
-  cfg.random_model = argparse.HasFlag("random");
-  cfg.rnastructure = !argparse.HasFlag("no-rnastructure");
-  cfg.subopt = !argparse.HasFlag("no-subopt");
-  cfg.subopt_rnastructure = argparse.HasFlag("subopt-rnastructure");
-  cfg.partition_rnastructure = argparse.HasFlag("partition-rnastructure");
-  if (argparse.HasFlag("subopt-max"))
-    cfg.subopt_max = atoi(argparse.GetOption("subopt-max").c_str());
-  if (argparse.HasFlag("subopt-delta"))
-    cfg.subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
-  if (argparse.HasFlag("brute-cutoff"))
-    cfg.brute_cutoff = atoi(argparse.GetOption("brute-cutoff").c_str());
-  if (argparse.HasFlag("brute-subopt-max"))
-    cfg.brute_subopt_max = atoi(argparse.GetOption("brute-subopt-max").c_str());
-  cfg.partition = !argparse.HasFlag("no-partition");
+  cfg.random_model = args.HasFlag("random");
+  cfg.rnastructure = !args.HasFlag("no-rnastructure");
+  cfg.subopt = !args.HasFlag("no-subopt");
+  cfg.subopt_rnastructure = args.HasFlag("subopt-rnastructure");
+  cfg.partition_rnastructure = args.HasFlag("partition-rnastructure");
+  if (args.HasFlag("subopt-max")) cfg.subopt_max = atoi(args.GetOption("subopt-max").c_str());
+  if (args.HasFlag("subopt-delta")) cfg.subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
+  if (args.HasFlag("brute-cutoff")) cfg.brute_cutoff = atoi(args.GetOption("brute-cutoff").c_str());
+  if (args.HasFlag("brute-subopt-max"))
+    cfg.brute_subopt_max = atoi(args.GetOption("brute-subopt-max").c_str());
+  cfg.partition = !args.HasFlag("no-partition");
 
   verify(!cfg.subopt_rnastructure || cfg.subopt,
       "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
@@ -472,20 +469,20 @@ __AFL_FUZZ_INIT();
 
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
-  mrna::ArgParse argparse({
+  mrna::ArgParse args({
       {"print-interval", opt_t("status update every n seconds").Arg("-1")},
       {"afl", opt_t("reads one rna from stdin and fuzzes - useful for use with afl")},
   });
-  argparse.AddOptions(mrna::CFG_OPTIONS);
-  argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
-  argparse.ParseOrExit(argc, argv);
+  args.AddOptions(mrna::CFG_OPTIONS);
+  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.ParseOrExit(argc, argv);
 
-  const mrna::bridge::RNAstructure rnastructure("extern/miles_rnastructure/data_tables/", false);
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
+  const mrna::bridge::RNAstructure rnastructure(args.GetOption("data-path"), false);
+  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
-  auto cfg = CfgFromArgParse(argparse);
-  const bool afl_mode = argparse.HasFlag("afl");
-  verify(!cfg.rnastructure || !argparse.HasFlag("seed"),
+  auto cfg = CfgFromArgParse(args);
+  const bool afl_mode = args.HasFlag("afl");
+  verify(!cfg.rnastructure || !args.HasFlag("seed"),
       "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
@@ -503,11 +500,11 @@ int main(int argc, char* argv[]) {
     }
 #endif
   } else {
-    auto pos = argparse.GetPositional();
+    auto pos = args.GetPositional();
     verify(pos.size() == 2, "require min and max length");
     const int min_len = atoi(pos[0].c_str());
     const int max_len = atoi(pos[1].c_str());
-    const auto interval = atoi(argparse.GetOption("print-interval").c_str());
+    const auto interval = atoi(args.GetOption("print-interval").c_str());
 
     verify(min_len > 0, "invalid min length");
     verify(max_len >= min_len, "invalid max len");

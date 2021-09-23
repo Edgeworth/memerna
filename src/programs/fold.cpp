@@ -6,14 +6,14 @@
 #include "parsing.h"
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse argparse(mrna::energy::ENERGY_OPTIONS);
-  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
-  argparse.ParseOrExit(argc, argv);
-  const auto& pos = argparse.GetPositional();
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.ParseOrExit(argc, argv);
+  const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
   mrna::Context ctx(mrna::parsing::StringToPrimary(pos.front()),
-      mrna::energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse));
+      mrna::energy::LoadEnergyModelFromArgParse(args), ContextOptionsFromArgParse(args));
   const auto computed = ctx.Fold();
 
   printf("Energy: %d\n%s\n%s\n", computed.energy,

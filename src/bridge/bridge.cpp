@@ -8,14 +8,14 @@
 namespace mrna {
 namespace bridge {
 
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
-  verify(argparse.HasFlag("r") + argparse.HasFlag("k") == 1, "require exactly one package flag\n%s",
-      argparse.Usage().c_str());
-  if (argparse.HasFlag("r")) {
-    return std::unique_ptr<RnaPackage>(new RNAstructure(argparse.GetOption("data-path"), false));
+std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
+  verify(args.HasFlag("r") + args.HasFlag("k") == 1, "require exactly one package flag\n%s",
+      args.Usage().c_str());
+  if (args.HasFlag("r")) {
+    return std::unique_ptr<RnaPackage>(new RNAstructure(args.GetOption("data-path"), false));
   } else {
-    return std::unique_ptr<RnaPackage>(new Memerna(
-        energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
+    return std::unique_ptr<RnaPackage>(
+        new Memerna(energy::LoadEnergyModelFromArgParse(args), ContextOptionsFromArgParse(args)));
   }
 }
 

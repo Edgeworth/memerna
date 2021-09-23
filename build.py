@@ -14,7 +14,8 @@ parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
 parser.add_argument('-c', '--use-clang', action='store_true', default=False, required=False)
-parser.add_argument('-a', '--use-afl', action='store_true', default=False, required=False)
+parser.add_argument('--use-afl-fast', action='store_true', default=False, required=False)
+parser.add_argument('--use-afl-lto', action='store_true', default=False, required=False)
 parser.add_argument('-r', '--regenerate', action='store_true', default=False, required=False)
 parser.add_argument('--compilers', type=str, nargs=2, required=False)
 parser.add_argument('targets', nargs='*', type=str)
@@ -35,21 +36,22 @@ def run_command(cmd):
     if res != 0:
       sys.exit(1)
 
-if bool(args.use_clang) + bool(args.use_afl) + bool(args.compilers) > 1:
+if bool(args.use_clang) + bool(args.use_afl_lto) + \
+    bool(args.use_afl_fast) + bool(args.compilers) > 1:
   parser.error('At most one compiler related flag allowed simultaneously')
 
 compilers = ('cc', 'c++')
 env = [
   # Add stack protector etc to catch non-crashing memory bugs.
   'AFL_HARDEN=1',
-  # Find more paths
-  'AFL_LLVM_LAF_ALL=1'
 ]
 
 if args.use_clang:
   compilers = ('clang', 'clang++')
-elif args.use_afl:
+elif args.use_afl_lto:
   compilers = ('afl-clang-lto', 'afl-clang-lto++')
+elif args.use_afl_fast:
+  compilers = ('afl-clang-fast', 'afl-clang-fast++')
 elif args.compilers:
   compilers = args.compilers
 

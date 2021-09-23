@@ -31,12 +31,22 @@ No guarantees this runs or even builds on Windows.
 ### Running the tests
 Run from $PREFIX/run_tests after building.
 
+
+### AFL
 To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, then run:
 
-afl-fuzz -x extern/afl/dict.dct -m 2000 -i ./extern/afl/testcases
-  -o ./build/afl_test ./build/afl-clang-lto++-relwithdebinfo/fuzz -afl
+```
+sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
+AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
+  afl-fuzz -x extern/afl/fuzz/dict.dct -m 2000 -i ./extern/afl/fuzz/testcases \
+  -o ~/bin/memerna/afl ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl
+```
 
-You can optionally specify -random to fuzz.
+Minimising test cases:
+```
+afl-tmin -i ~/bin/memerna/afl/default/crashes/<FILE> -o ~/bin/memerna/afl/min \
+  -- ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl
+```
 
 ### Useful commands
 

@@ -80,6 +80,7 @@ class ArgParse {
     auto positer = possible_args.find(flag);
     if (flagiter != flags.end()) return flagiter->second;
     if (positer != possible_args.end()) return positer->second.default_arg;
+    verify(false, "missing flag %s", flag.c_str());
     return "";
   }
 

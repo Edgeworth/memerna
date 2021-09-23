@@ -289,11 +289,11 @@ EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir) {
   return em;
 }
 
-EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse) {
-  if (argparse.HasFlag("seed")) {
-    return LoadRandomEnergyModel(uint_fast32_t(atoi(argparse.GetOption("seed").c_str())));
+EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& args) {
+  if (args.HasFlag("seed")) {
+    return LoadRandomEnergyModel(uint_fast32_t(atoi(args.GetOption("seed").c_str())));
   } else {
-    return LoadEnergyModelFromDataDir(argparse.GetOption("data-path"));
+    return LoadEnergyModelFromDataDir(args.GetOption("data-path"));
   }
 }
 
