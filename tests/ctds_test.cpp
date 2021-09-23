@@ -1,6 +1,7 @@
 // Copyright 2016 E.
 #include "common_test.h"
 #include "energy/energy_internal.h"
+#include "energy/load_model.h"
 #include "gtest/gtest.h"
 #include "parsing.h"
 
@@ -118,8 +119,10 @@ TEST_P(CtdsTest, BaseBranchBase) {
   EXPECT_EQ(previous_base_ctds, ctd_test.computed.base_ctds);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    CtdsTest, CtdsTest, testing::Combine(testing::ValuesIn(g_ems), testing::ValuesIn(CTD_TESTS)));
+INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
+    testing::Combine(testing::Values(LoadRandomEnergyModel(0), LoadRandomEnergyModel(1),
+                         LoadRandomEnergyModel(2), LoadRandomEnergyModel(3)),
+        testing::ValuesIn(CTD_TESTS)));
 
 }  // namespace energy
 }  // namespace mrna
