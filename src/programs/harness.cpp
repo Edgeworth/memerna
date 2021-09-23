@@ -23,6 +23,8 @@ int main(int argc, char* argv[]) {
   argparse.ParseOrExit(argc, argv);
   verify(argparse.HasFlag("e") + argparse.HasFlag("f") == 1, "require exactly one program flag\n%s",
       argparse.Usage().c_str());
+  verify(argparse.HasFlag("seed") + argparse.HasFlag("data-path") == 1,
+      "require exactly one seed or data-path flag\n%s", argparse.Usage().c_str());
 
   const auto package = mrna::bridge::RnaPackageFromArgParse(argparse);
   const auto& pos = argparse.GetPositional();

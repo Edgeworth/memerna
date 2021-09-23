@@ -77,8 +77,9 @@ computed_t Context::Fold() {
 std::vector<computed_t> Context::SuboptimalIntoVector(
     bool sorted, energy_t subopt_delta, int subopt_num) {
   std::vector<computed_t> computeds;
-  int num_structures = Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); },
-      sorted, subopt_delta, subopt_num);
+  [[maybe_unused]] int num_structures =
+      Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); }, sorted,
+          subopt_delta, subopt_num);
   assert(num_structures == static_cast<int>(computeds.size()));
   return computeds;
 }
