@@ -7,17 +7,24 @@ import shutil
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home(), "bin"), required=False)
+# Build environment options
+parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home(), "bin"),
+  required=False, help='Where to place build directory')
 parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
 parser.add_argument('-c', '--use-clang', action='store_true', default=False, required=False)
 parser.add_argument('-a', '--use-afl', action='store_true', default=False, required=False)
-parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
-parser.add_argument('-m', '--use-mpfr', action='store_true', default=False, required=False)
-parser.add_argument('--compilers', type=str, nargs=2, required=False)
 parser.add_argument('-r', '--regenerate', action='store_true', default=False, required=False)
+parser.add_argument('--compilers', type=str, nargs=2, required=False)
 parser.add_argument('targets', nargs='*', type=str)
+
+# Memerna configuration options:
+parser.add_argument('-m', '--use-mpfr', action='store_true', default=False, required=False)
+
+# Misc options:
+parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
+
 args = parser.parse_args()
 
 def run_command(cmd):
@@ -32,6 +39,12 @@ if bool(args.use_clang) + bool(args.use_afl) + bool(args.compilers) > 1:
   parser.error('At most one compiler related flag allowed simultaneously')
 
 compilers = ('cc', 'c++')
+env = [
+  # Add stack protector etc to catch non-crashing memory bugs.
+  'AFL_HARDEN=1',
+  # Find more paths
+  'AFL_LLVM_LAF_ALL=1'
+]
 
 if args.use_clang:
   compilers = ('clang', 'clang++')
@@ -70,5 +83,5 @@ if regenerate:
   print('Regenerating cmake files.')
   def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
   run_command('cmake %s %s' % (def_str, proj_dir))
-run_command('AFL_HARDEN=1 make -j16 %s' % ' '.join(args.targets))
+run_command('%s make -j$(nproc) %s' % (' '.join(env), ' '.join(args.targets)))
 os.chdir('../../')

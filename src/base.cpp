@@ -17,4 +17,5 @@ char BaseToChar(base_t b) {
   if (b < 0 || b > 4) return '?';
   return "ACGU"[b];
 }
+
 }  // namespace mrna

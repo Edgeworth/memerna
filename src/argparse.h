@@ -88,6 +88,7 @@ class ArgParse {
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };
+
 }  // namespace mrna
 
 #endif  // ARGPARSE_H_

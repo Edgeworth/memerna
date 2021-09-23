@@ -18,5 +18,6 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& argparse) {
         energy::LoadEnergyModelFromArgParse(argparse), ContextOptionsFromArgParse(argparse)));
   }
 }
+
 }  // namespace bridge
 }  // namespace mrna

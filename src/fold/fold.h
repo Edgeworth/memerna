@@ -52,6 +52,7 @@ struct ctd_idx_t {
   int16_t idx;
   Ctd ctd;
 };
+
 }  // namespace internal
 
 typedef std::function<void(const computed_t&)> SuboptimalCallback;

@@ -11,6 +11,7 @@ namespace partition {
 namespace internal {
 
 namespace {
+
 template <typename T>
 constexpr auto Decay(T& a) {
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
@@ -19,6 +20,7 @@ constexpr auto Decay(T& a) {
 void FillPenergyArray(penergy_t* output, const energy_t* input, int elements) {
   for (int i = 0; i < elements; ++i) output[i] = energy::Boltzmann(input[i]);
 }
+
 }  // namespace
 
 penergy_model_t::penergy_model_t(const energy::EnergyModel& em) {

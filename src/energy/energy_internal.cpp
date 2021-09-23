@@ -253,6 +253,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   }
   return total_energy;
 }
+
 }  // namespace internal
 }  // namespace energy
 }  // namespace mrna

@@ -101,6 +101,7 @@ class StackingStructure : public Structure {
  private:
   int st, en;
 };
+
 }  // namespace energy
 }  // namespace mrna
 

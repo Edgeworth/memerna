@@ -145,5 +145,6 @@ TEST_F(ParsingTest, IsCtdString) {
   EXPECT_FALSE(IsCtdString("(...)"));
   EXPECT_FALSE(IsCtdString("((...))"));
 }
+
 }  // namespace parsing
 }  // namespace mrna

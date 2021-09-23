@@ -15,10 +15,12 @@
 #ifdef PARTITION_MPFR
 #include <boost/multiprecision/mpfr.hpp>
 namespace boost {
+
 inline void throw_exception(const std::exception& e) {
   fprintf(stderr, "Boost exception: %s\n", e.what());
   std::abort();
 }
+
 }  // namespace boost
 #endif
 
@@ -132,6 +134,7 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 uint32_t Crc32(const std::string& data);
+
 }  // namespace mrna
 
 #endif  // COMMON_H_

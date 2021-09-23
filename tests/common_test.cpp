@@ -20,4 +20,5 @@ std::ostream& operator<<(std::ostream& os, const computed_t& computed) {
   os << "), " << computed.energy;
   return os;
 }
+
 }  // namespace mrna

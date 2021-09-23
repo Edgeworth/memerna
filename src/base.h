@@ -53,6 +53,7 @@ primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
   for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
   return r;
 }
+
 }  // namespace mrna
 
 #endif  // BASE_H_

@@ -20,5 +20,6 @@ TEST(BruteFold, GetBranchCounts) {
   EXPECT_EQ((std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}),
       internal::GetBranchCounts(parsing::DotBracketToPairs("((()()))")));
 }
+
 }  // namespace fold
 }  // namespace mrna
