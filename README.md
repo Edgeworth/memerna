@@ -23,7 +23,7 @@ No guarantees this runs or even builds on Windows.
 - data: energy model data for memerna
 - docs: documentation
 - examples: various dot-bracket example folded RNAs
-- extern: external projects and data (gtest, original data from rnastructure and nndb, rnark)
+- extern: external projects and data (original data from rnastructure and nndb, rnark)
 - scripts: scripts for various things (see below)
 - src: source
 - tests: tests
@@ -31,10 +31,10 @@ No guarantees this runs or even builds on Windows.
 ### Running the tests
 Run from $PREFIX/run_tests after building.
 
-To run AFL, first build the afl binary with build.py -t relwithdebinfo -a, then run:
+To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, then run:
 
 afl-fuzz -x extern/afl/dict.dct -m 2000 -i ./extern/afl/testcases
-  -o ./build/afl_test ./build/afl-clang-fast++-relwithdebinfo/fuzz -afl
+  -o ./build/afl_test ./build/afl-clang-lto++-relwithdebinfo/fuzz -afl
 
 You can optionally specify -random to fuzz.
 

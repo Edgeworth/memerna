@@ -313,5 +313,6 @@ bool EnergyModel::IsValid(std::string* reason) const {
 #undef CHECK_COND
   return true;
 }
+
 }  // namespace energy
 }  // namespace mrna

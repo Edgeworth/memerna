@@ -80,6 +80,7 @@ struct array2d_t {
   T* data;
   std::size_t size;
 };
+
 }  // namespace mrna
 
 #endif  // ARRAY_H_

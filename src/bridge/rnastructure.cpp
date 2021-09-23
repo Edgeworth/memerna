@@ -30,11 +30,14 @@ std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
     ps.push_back(StructureToPairs(struc, i + 1));
   return ps;
 }
+
 }  // namespace
 
 RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso_)
     : data(LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
   verify(data_path.size() && data_path.back() == '/', "invalid data path");
+  verify(data->loadedTables, "BUG: data tables not loaded");
+  verify(data->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
 energy_t RNAstructure::Efn(const secondary_t& secondary, std::string* /*desc*/) const {
@@ -50,14 +53,17 @@ computed_t RNAstructure::Fold(const primary_t& r) const {
 
 computed_t RNAstructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
-  // First false here says also generate the folding itself (not just the MFE).
-  // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
-  // Second last parameter is whether to use Lyngso or not.
-  // Last parameter is for returning the DP state.
-  // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
-  fprintf(stderr, "DATA: %hu\n", data->auend);
-  dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
-      !use_lyngso, dp_state);
+  constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
+  constexpr auto percent_sort = 0;
+  constexpr auto window = 0;
+  constexpr auto progress = nullptr;
+  constexpr auto energy_only = false;
+  constexpr auto save_file = nullptr;
+  constexpr auto max_twoloop = TWOLOOP_MAX_SZ + 2;  // BUG: Add two to TWOLOOP_MAX_SZ.
+  constexpr auto mfe_structure_only = true;
+  constexpr auto disable_coax = false;
+  dynamic(structure.get(), data.get(), num_tracebacks, percent_sort, window, progress, energy_only,
+      save_file, max_twoloop, mfe_structure_only, !use_lyngso, disable_coax, dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
       energy_t(structure->GetEnergy(1))};
 }
@@ -126,8 +132,9 @@ std::pair<partition::partition_t, partition::probabilities_t> RNAstructure::Part
 
 std::unique_ptr<structure> RNAstructure::LoadStructure(const primary_t& r) const {
   auto struc = std::make_unique<structure>();
-  struc->SetSequence(parsing::PrimaryToString(r));
   struc->SetThermodynamicDataTable(data.get());
+  struc->SetSequence(parsing::PrimaryToString(r));
+  verify(struc->GetSequenceLength() == static_cast<int>(r.size()), "BUG: structure not loaded");
   return struc;
 }
 

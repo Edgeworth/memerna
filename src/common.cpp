@@ -8,8 +8,10 @@
 namespace mrna {
 
 namespace {
+
 const int BUF_SIZE = 1024;
 const uint32_t CRC_MAGIC = 0xEDB88320;
+
 }  // namespace
 
 std::string sgetline(FILE* fp) {

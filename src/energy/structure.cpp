@@ -60,5 +60,6 @@ std::string MultiLoopStructure::ShortDesc() const {
 std::string StackingStructure::ShortDesc() const {
   return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
+
 }  // namespace energy
 }  // namespace mrna

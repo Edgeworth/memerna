@@ -170,6 +170,7 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em)
 
   fclose(fp);
 }
+
 }  // namespace
 
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed) {
@@ -295,5 +296,6 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse) {
     return LoadEnergyModelFromDataDir(argparse.GetOption("data-path"));
   }
 }
+
 }  // namespace energy
 }  // namespace mrna

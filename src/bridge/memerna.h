@@ -34,6 +34,7 @@ class Memerna : public RnaPackage {
   const energy::EnergyModelPtr em;
   const context_opt_t options;
 };
+
 }  // namespace bridge
 }  // namespace mrna
 

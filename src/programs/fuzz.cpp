@@ -464,6 +464,12 @@ class Fuzzer {
 
 }  // namespace mrna
 
+#ifdef __AFL_FUZZ_TESTCASE_LEN
+#include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
+
+__AFL_FUZZ_INIT();
+#endif
+
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
   mrna::ArgParse argparse({
@@ -475,7 +481,7 @@ int main(int argc, char* argv[]) {
   argparse.ParseOrExit(argc, argv);
 
   const mrna::bridge::RNAstructure rnastructure("extern/miles_rnastructure/data_tables/", false);
-  const auto t04em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
+  const auto em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
 
   auto cfg = CfgFromArgParse(argparse);
   const bool afl_mode = argparse.HasFlag("afl");
@@ -483,22 +489,17 @@ int main(int argc, char* argv[]) {
       "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
-// AFL mode.
-#ifdef __AFL_HAVE_MANUAL_CONTROL
+#ifdef __AFL_FUZZ_TESTCASE_LEN
     __AFL_INIT();
     while (__AFL_LOOP(1000)) {
-#endif
-      std::string data;
-      std::size_t len;
-      char buf[4096];
-      while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0) data += std::string(buf, len);
+      std::string data(
+          reinterpret_cast<const char*>(__AFL_FUZZ_TESTCASE_BUF), __AFL_FUZZ_TESTCASE_LEN);
       if (data.size() > 0) {
         cfg.seed = eng();
-        mrna::Fuzzer fuzzer(mrna::parsing::StringToPrimary(data), cfg, t04em, rnastructure);
+        mrna::Fuzzer fuzzer(mrna::parsing::StringToPrimary(data), cfg, em, rnastructure);
         const auto res = fuzzer.Run();
         if (!res.empty()) abort();
       }
-#ifdef __AFL_HAVE_MANUAL_CONTROL
     }
 #endif
   } else {
@@ -528,7 +529,7 @@ int main(int argc, char* argv[]) {
       auto r = mrna::GenerateRandomPrimary(len, eng);
 
       cfg.seed = eng();
-      mrna::Fuzzer fuzzer(r, cfg, t04em, rnastructure);
+      mrna::Fuzzer fuzzer(r, cfg, em, rnastructure);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());

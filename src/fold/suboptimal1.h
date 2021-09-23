@@ -73,6 +73,7 @@ class Suboptimal1 {
     return cache.Get();
   }
 };
+
 }  // namespace internal
 }  // namespace fold
 }  // namespace mrna

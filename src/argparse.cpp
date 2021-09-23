@@ -69,4 +69,5 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   verify(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
 }
+
 }  // namespace mrna

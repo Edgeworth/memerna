@@ -42,4 +42,5 @@ TEST(BaseTest, IsAuGu) {
   EXPECT_FALSE(IsAuGu(C, U));
   EXPECT_FALSE(IsAuGu(U, C));
 }
+
 }  // namespace mrna

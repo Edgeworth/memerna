@@ -137,6 +137,7 @@ class EnergyModel {
 };
 
 typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
+
 }  // namespace energy
 }  // namespace mrna
 

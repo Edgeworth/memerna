@@ -206,5 +206,6 @@ bool IsCtdString(const std::string& pairs_str) {
     if (c == '(') return false;
   return true;
 }
+
 }  // namespace parsing
 }  // namespace mrna

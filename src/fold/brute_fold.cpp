@@ -49,6 +49,7 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
   }
   return branch_count;
 }
+
 }  // namespace internal
 
 namespace {
