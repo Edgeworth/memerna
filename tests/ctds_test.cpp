@@ -118,7 +118,8 @@ TEST_P(CtdsTest, BaseBranchBase) {
   EXPECT_EQ(previous_base_ctds, ctd_test.computed.base_ctds);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CtdsTest, CtdsTest, testing::Combine(testing::ValuesIn(g_ems), testing::ValuesIn(CTD_TESTS)));
+
 }  // namespace energy
 }  // namespace mrna

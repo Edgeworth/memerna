@@ -112,7 +112,7 @@ class Fuzzer {
   typedef std::deque<std::string> error_t;
 
   Fuzzer(primary_t r_, const cfg_t& cfg_, const energy::EnergyModelPtr em_,
-      const bridge::Rnastructure& rnastructure_)
+      const bridge::RNAstructure& rnastructure_)
       : N(static_cast<int>(r_.size())), r(std::move(r_)), cfg(cfg_),
         em(cfg.random_model ? energy::LoadRandomEnergyModel(cfg.seed) : em_),
         rnastructure(rnastructure_) {}
@@ -147,7 +147,7 @@ class Fuzzer {
   const primary_t r;
   const cfg_t cfg;
   const energy::EnergyModelPtr em;
-  const bridge::Rnastructure& rnastructure;
+  const bridge::RNAstructure& rnastructure;
 
   // Fuzz state.
   std::vector<computed_t> memerna_computeds;
@@ -474,7 +474,7 @@ int main(int argc, char* argv[]) {
   argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
   argparse.ParseOrExit(argc, argv);
 
-  const mrna::bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
+  const mrna::bridge::RNAstructure rnastructure("extern/miles_rnastructure/data_tables/", false);
   const auto t04em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
 
   auto cfg = CfgFromArgParse(argparse);

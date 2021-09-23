@@ -67,7 +67,7 @@ class Suboptimal1 {
       // Need to generate the full way to delta so we can properly set |next_seen|.
       auto exps = GenerateExpansions(to_expand, delta);
       std::sort(exps.begin(), exps.end());
-      auto res = cache.Insert(to_expand, std::move(exps));
+      [[maybe_unused]] auto res = cache.Insert(to_expand, std::move(exps));
       assert(res);
     }
     return cache.Get();

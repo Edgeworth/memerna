@@ -17,11 +17,11 @@
 namespace mrna {
 namespace bridge {
 
-class Rnastructure : public RnaPackage {
+class RNAstructure : public RnaPackage {
  public:
-  Rnastructure(const std::string& data_path, bool use_lyngso_);
-  Rnastructure(const Rnastructure&) = delete;
-  Rnastructure& operator=(Rnastructure&) = delete;
+  RNAstructure(const std::string& data_path, bool use_lyngso_);
+  RNAstructure(const RNAstructure&) = delete;
+  RNAstructure& operator=(RNAstructure&) = delete;
 
   energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
   computed_t Fold(const primary_t& r) const override;

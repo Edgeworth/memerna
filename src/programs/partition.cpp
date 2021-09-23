@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
   verify(pos.size() == 1, "need primary sequence to fold");
   const auto primary = mrna::parsing::StringToPrimary(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
-  const mrna::bridge::Rnastructure rnastructure("extern/miles_rnastructure/data_tables/", false);
+  const mrna::bridge::RNAstructure rnastructure("extern/miles_rnastructure/data_tables/", false);
 
   mrna::Context ctx(primary, em, ContextOptionsFromArgParse(argparse));
   std::cout << "MEMERNA:\n";

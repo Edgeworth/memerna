@@ -14,7 +14,7 @@ namespace {
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   setDataPath(path.c_str());  // Set RNAstructure data path.
   auto dt = std::make_unique<datatable>();
-  dt->opendat(path.c_str(), "rna");
+  verify(dt->opendat(path.c_str(), "rna") == 1, "could not load RNAstructure data tables");
   return dt;
 }
 
@@ -32,43 +32,44 @@ std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
 }
 }  // namespace
 
-Rnastructure::Rnastructure(const std::string& data_path, bool use_lyngso_)
+RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso_)
     : data(LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
   verify(data_path.size() && data_path.back() == '/', "invalid data path");
 }
 
-energy_t Rnastructure::Efn(const secondary_t& secondary, std::string* /*desc*/) const {
+energy_t RNAstructure::Efn(const secondary_t& secondary, std::string* /*desc*/) const {
   const auto structure = LoadStructure(secondary);
   efn2(data.get(), structure.get(), 1, true);
   return energy_t(structure->GetEnergy(1));
 }
 
-computed_t Rnastructure::Fold(const primary_t& r) const {
+computed_t RNAstructure::Fold(const primary_t& r) const {
   dp_state_t state;
   return FoldAndDpTable(r, &state);
 }
 
-computed_t Rnastructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
+computed_t RNAstructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   // First false here says also generate the folding itself (not just the MFE).
   // Third last parameter is whether to generate the mfe structure only -- i.e. just one.
   // Second last parameter is whether to use Lyngso or not.
   // Last parameter is for returning the DP state.
   // Add two to TWOLOOP_MAX_SZ because rnastructure bug.
+  fprintf(stderr, "DATA: %hu\n", data->auend);
   dynamic(structure.get(), data.get(), 1, 0, 0, nullptr, false, nullptr, TWOLOOP_MAX_SZ + 2, true,
       !use_lyngso, dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
       energy_t(structure->GetEnergy(1))};
 }
 
-int Rnastructure::Suboptimal(
+int RNAstructure::Suboptimal(
     fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds) fn(computed);
   return static_cast<int>(computeds.size());
 }
 
-std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
+std::vector<computed_t> RNAstructure::SuboptimalIntoVector(
     const primary_t& r, energy_t energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
@@ -82,7 +83,7 @@ std::vector<computed_t> Rnastructure::SuboptimalIntoVector(
   return computeds;
 }
 
-std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Partition(
+std::pair<partition::partition_t, partition::probabilities_t> RNAstructure::Partition(
     const primary_t& r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
@@ -123,19 +124,14 @@ std::pair<partition::partition_t, partition::probabilities_t> Rnastructure::Part
   return {std::move(partition), std::move(probability)};
 }
 
-std::unique_ptr<structure> Rnastructure::LoadStructure(const primary_t& r) const {
+std::unique_ptr<structure> RNAstructure::LoadStructure(const primary_t& r) const {
   auto struc = std::make_unique<structure>();
-  struc->allocate(static_cast<int>(r.size()));
-  for (int i = 0; i < static_cast<int>(r.size()); ++i) {
-    struc->numseq[i + 1] = int16_t(r[i] + 1);
-    struc->nucs[i + 1] = BaseToChar(r[i]);
-    struc->hnumber[i + 1] = int16_t(i + 1);
-  }
+  struc->SetSequence(parsing::PrimaryToString(r));
   struc->SetThermodynamicDataTable(data.get());
   return struc;
 }
 
-std::unique_ptr<structure> Rnastructure::LoadStructure(const secondary_t& s) const {
+std::unique_ptr<structure> RNAstructure::LoadStructure(const secondary_t& s) const {
   auto struc = LoadStructure(s.r);
   struc->AddStructure();
   for (int i = 0; i < static_cast<int>(s.p.size()); ++i) {

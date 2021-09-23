@@ -49,4 +49,5 @@ uint32_t Crc32(const std::string& data) {
 
   return ~window;
 }
+
 }  // namespace mrna
