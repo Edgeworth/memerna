@@ -54,6 +54,7 @@ TEST_P(FoldAlgTest, T04) {
   EXPECT_EQ(-208, FoldEnergy("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 }
 
-INSTANTIATE_TEST_CASE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
+INSTANTIATE_TEST_SUITE_P(FoldAlgTest, FoldAlgTest, testing::ValuesIn(context_opt_t::TABLE_ALGS));
+
 }  // namespace fold
 }  // namespace mrna
