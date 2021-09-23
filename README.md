@@ -40,13 +40,14 @@ sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
 AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
   afl-fuzz -x extern/afl/fuzz/dict.dct -m 2000 -i ./extern/afl/fuzz/testcases \
   -o ~/bin/memerna/afl ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl \
-  -data-path 
+  -memerna-data ./data/ -rnastructure-data ./extern/miles_rnastructure/data_tables/
 ```
 
 Minimising test cases:
 ```
 afl-tmin -i ~/bin/memerna/afl/default/crashes/<FILE> -o ~/bin/memerna/afl/min \
-  -- ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl
+  -- ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl \
+  -memerna-data ./data/ -rnastructure-data ./extern/miles_rnastructure/data_tables/
 ```
 
 ### Useful commands

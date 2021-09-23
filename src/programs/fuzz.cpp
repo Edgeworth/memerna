@@ -477,7 +477,7 @@ int main(int argc, char* argv[]) {
   args.AddOptions(mrna::energy::ENERGY_OPTIONS);
   args.ParseOrExit(argc, argv);
 
-  const mrna::bridge::RNAstructure rnastructure(args.GetOption("data-path"), false);
+  const mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
   auto cfg = CfgFromArgParse(args);

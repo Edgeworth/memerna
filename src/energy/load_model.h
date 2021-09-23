@@ -13,7 +13,8 @@ namespace energy {
 
 const std::map<std::string, opt_t> ENERGY_OPTIONS = {
     {"seed", opt_t("seed for random energy model for memerna").Arg()},
-    {"data-path", opt_t("data path for given energy model for memerna").Arg("data/")}};
+    {"rnastructure-data", opt_t("data path for RNAstructure").Arg()},
+    {"memerna-data", opt_t("data path for given energy model for memerna").Arg()}};
 
 EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
