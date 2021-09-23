@@ -12,26 +12,26 @@ using mrna::energy_t;
 using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse argparse(mrna::energy::ENERGY_OPTIONS);
-  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
-  argparse.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
       {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
       {"sorted", opt_t("if the structures should be sorted")},
       {"ctd-output", opt_t("if we should output CTD data")}});
-  argparse.ParseOrExit(argc, argv);
-  const auto& pos = argparse.GetPositional();
+  args.ParseOrExit(argc, argv);
+  const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  auto opt = ContextOptionsFromArgParse(argparse);
+  auto opt = ContextOptionsFromArgParse(args);
   opt.table_alg = context_opt_t::TableAlg::TWO;
   mrna::Context ctx(mrna::parsing::StringToPrimary(pos.front()),
-      mrna::energy::LoadEnergyModelFromArgParse(argparse), opt);
+      mrna::energy::LoadEnergyModelFromArgParse(args), opt);
 
-  const energy_t subopt_delta = atoi(argparse.GetOption("delta").c_str());
-  const int subopt_num = atoi(argparse.GetOption("num").c_str());
-  const bool should_print = !argparse.HasFlag("q");
-  const bool sorted = argparse.HasFlag("sorted");
-  const bool ctd_data = argparse.HasFlag("ctd-output");
+  const energy_t subopt_delta = atoi(args.GetOption("delta").c_str());
+  const int subopt_num = atoi(args.GetOption("num").c_str());
+  const bool should_print = !args.HasFlag("q");
+  const bool sorted = args.HasFlag("sorted");
+  const bool ctd_data = args.HasFlag("ctd-output");
   verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
   mrna::fold::SuboptimalCallback fn = [](const computed_t&) {};

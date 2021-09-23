@@ -79,7 +79,7 @@ const std::map<std::string, opt_t> CONTEXT_OPTIONS = {
     {"part-alg",
         opt_t("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
 
-context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse);
+context_opt_t ContextOptionsFromArgParse(const ArgParse& args);
 
 }  // namespace mrna
 

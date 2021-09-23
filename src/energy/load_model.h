@@ -17,7 +17,7 @@ const std::map<std::string, opt_t> ENERGY_OPTIONS = {
 
 EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
-EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& argparse);
+EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& args);
 
 }  // namespace energy
 }  // namespace mrna

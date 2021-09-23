@@ -29,17 +29,17 @@ void PrintPartition(const mrna::partition::partition_t& p) {
 }
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse argparse;
-  argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
-  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
-  argparse.ParseOrExit(argc, argv);
-  const auto& pos = argparse.GetPositional();
+  mrna::ArgParse args;
+  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.ParseOrExit(argc, argv);
+  const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
   const auto primary = mrna::parsing::StringToPrimary(pos.front());
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
-  const mrna::bridge::RNAstructure rnastructure("extern/miles_rnastructure/data_tables/", false);
+  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
+  const mrna::bridge::RNAstructure rnastructure(args.GetOption("data-path"), false);
 
-  mrna::Context ctx(primary, em, ContextOptionsFromArgParse(argparse));
+  mrna::Context ctx(primary, em, ContextOptionsFromArgParse(args));
   std::cout << "MEMERNA:\n";
   PrintProbabilities(mrna::partition::ComputeProbabilities(ctx.Partition()));
   std::cout << "RNAstructure:\n";

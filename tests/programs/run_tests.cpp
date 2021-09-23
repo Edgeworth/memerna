@@ -5,8 +5,8 @@
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
-  mrna::ArgParse argparse(mrna::energy::ENERGY_OPTIONS);
-  argparse.ParseOrExit(argc, argv);
-  mrna::g_em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  args.ParseOrExit(argc, argv);
+  mrna::g_em = mrna::energy::LoadEnergyModelFromArgParse(args);
   return RUN_ALL_TESTS();
 }

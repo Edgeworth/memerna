@@ -15,9 +15,9 @@ constexpr context_opt_t::TableAlg context_opt_t::TABLE_ALGS[];
 constexpr context_opt_t::SuboptimalAlg context_opt_t::SUBOPTIMAL_ALGS[];
 constexpr context_opt_t::PartitionAlg context_opt_t::PARTITION_ALGS[];
 
-context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
+context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
   context_opt_t options;
-  const auto dp_alg = argparse.GetOption("dp-alg");
+  const auto dp_alg = args.GetOption("dp-alg");
   if (dp_alg == "0") {
     options.table_alg = context_opt_t::TableAlg::ZERO;
   } else if (dp_alg == "1") {
@@ -31,7 +31,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else {
     verify(false, "unknown fold option");
   }
-  const auto subopt_alg = argparse.GetOption("subopt-alg");
+  const auto subopt_alg = args.GetOption("subopt-alg");
   if (subopt_alg == "0") {
     options.suboptimal_alg = context_opt_t::SuboptimalAlg::ZERO;
   } else if (subopt_alg == "1") {
@@ -41,7 +41,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& argparse) {
   } else {
     verify(false, "unknown suboptimal option");
   }
-  const auto part_alg = argparse.GetOption("part-alg");
+  const auto part_alg = args.GetOption("part-alg");
   if (part_alg == "0") {
     options.partition_alg = context_opt_t::PartitionAlg::ZERO;
   } else if (part_alg == "1") {

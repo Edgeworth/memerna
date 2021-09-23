@@ -11,26 +11,26 @@ using mrna::energy_t;
 using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse argparse({
+  mrna::ArgParse args({
       {"v", {"be verbose (if possible)"}},
       {"e", {"run efn"}},
       {"f", {"run fold"}},
       {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
   });
-  argparse.AddOptions(mrna::bridge::BRIDGE_OPTIONS);
-  argparse.AddOptions(mrna::CONTEXT_OPTIONS);
-  argparse.AddOptions(mrna::energy::ENERGY_OPTIONS);
-  argparse.ParseOrExit(argc, argv);
-  verify(argparse.HasFlag("e") + argparse.HasFlag("f") == 1, "require exactly one program flag\n%s",
-      argparse.Usage().c_str());
-  verify(argparse.HasFlag("seed") + argparse.HasFlag("data-path") == 1,
-      "require exactly one seed or data-path flag\n%s", argparse.Usage().c_str());
+  args.AddOptions(mrna::bridge::BRIDGE_OPTIONS);
+  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.ParseOrExit(argc, argv);
+  verify(args.HasFlag("e") + args.HasFlag("f") == 1, "require exactly one program flag\n%s",
+      args.Usage().c_str());
+  verify(args.HasFlag("seed") + args.HasFlag("data-path") == 1,
+      "require exactly one seed or data-path flag\n%s", args.Usage().c_str());
 
-  const auto package = mrna::bridge::RnaPackageFromArgParse(argparse);
-  const auto& pos = argparse.GetPositional();
+  const auto package = mrna::bridge::RnaPackageFromArgParse(args);
+  const auto& pos = args.GetPositional();
   const bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());
-  if (argparse.HasFlag("e")) {
+  if (args.HasFlag("e")) {
     while (1) {
       std::string seq, db;
       if (read_stdin) {
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
       }
       const auto secondary = mrna::parsing::ParseDotBracketSecondary(seq, db);
       std::string desc;
-      const auto res = package->Efn(secondary, argparse.HasFlag("v") ? &desc : nullptr);
+      const auto res = package->Efn(secondary, args.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
     }
   } else {
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         rnaqueue.pop_front();
       }
       const auto r = mrna::parsing::StringToPrimary(seq);
-      int subopt_delta = atoi(argparse.GetOption("subopt-delta").c_str());
+      int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const computed_t& c) {

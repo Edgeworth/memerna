@@ -6,13 +6,13 @@
 #include "parsing.h"
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse argparse(mrna::energy::ENERGY_OPTIONS);
-  argparse.AddOptions({{"v", {"verbose"}}});
-  argparse.ParseOrExit(argc, argv);
-  const auto& pos = argparse.GetPositional();
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions({{"v", {"verbose"}}});
+  args.ParseOrExit(argc, argv);
+  const auto& pos = args.GetPositional();
   verify(pos.size() == 2, "requires primary sequence and dot bracket");
 
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(argparse);
+  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
   std::unique_ptr<mrna::energy::Structure> structure;
   mrna::computed_t computed;
   if (mrna::parsing::IsCtdString(pos.back())) {
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     printf("Energy: %d\n", computed.energy);
   }
 
-  if (argparse.HasFlag("v")) {
+  if (args.HasFlag("v")) {
     printf("%s\n", mrna::parsing::ComputedToCtdString(computed).c_str());
     const auto descs = structure->Description();
     for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
