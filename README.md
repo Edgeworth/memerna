@@ -39,7 +39,8 @@ To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, the
 sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
 AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
   afl-fuzz -x extern/afl/fuzz/dict.dct -m 2000 -i ./extern/afl/fuzz/testcases \
-  -o ~/bin/memerna/afl ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl
+  -o ~/bin/memerna/afl ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl \
+  -data-path 
 ```
 
 Minimising test cases:
