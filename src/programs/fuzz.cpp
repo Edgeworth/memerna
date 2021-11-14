@@ -31,6 +31,7 @@ using fold::internal::gdp;
 struct cfg_t {
   bool random_model = false;
   bool rnastructure = false;
+  bool table_check = true;
   uint_fast32_t seed = 0;
 
   bool subopt = true;
@@ -68,6 +69,7 @@ const std::map<std::string, opt_t> CFG_OPTIONS = {
     {"random", opt_t("use random energy models (disables comparison to RNAstructure)")},
     {"no-rnastructure", opt_t("disable rnastructure testing")},
     {"no-subopt", opt_t("whether to test suboptimal folding")},
+    {"no-table-check", opt_t("whether to compare dp tables between memerna and rnastructure")},
     {"subopt-rnastructure", opt_t("test rnastructure suboptimal folding")},
     {"subopt-max", opt_t("maximum number of substructures for subopt max-delta fuzz").Arg()},
     {"subopt-delta", opt_t("delta for subopt delta fuzz").Arg()},
@@ -81,6 +83,7 @@ cfg_t CfgFromArgParse(const ArgParse& args) {
   cfg_t cfg;
   cfg.random_model = args.HasFlag("random");
   cfg.rnastructure = !args.HasFlag("no-rnastructure");
+  cfg.table_check = !args.HasFlag("no-table-check");
   cfg.subopt = !args.HasFlag("no-subopt");
   cfg.subopt_rnastructure = args.HasFlag("subopt-rnastructure");
   cfg.partition_rnastructure = args.HasFlag("partition-rnastructure");
@@ -119,7 +122,7 @@ class Fuzzer {
     AppendErrors(errors, MaybePrependHeader(MemernaComputeAndCheckState(), "memerna:"));
     if (cfg.rnastructure)
       AppendErrors(errors, MaybePrependHeader(RnastructureComputeAndCheckState(), "rnastructure:"));
-    AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
+    if (cfg.table_check) AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
     if (cfg.subopt) AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(), "suboptimal:"));
 
     if (static_cast<int>(r.size()) <= cfg.brute_cutoff)
@@ -463,7 +466,6 @@ class Fuzzer {
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
-
 __AFL_FUZZ_INIT();
 #endif
 
@@ -488,9 +490,11 @@ int main(int argc, char* argv[]) {
   if (afl_mode) {
 #ifdef __AFL_FUZZ_TESTCASE_LEN
     __AFL_INIT();
+    // This must be after __AFL_INIT and before __AFL_LOOP.
+    auto buf = reinterpret_cast<const char*>(__AFL_FUZZ_TESTCASE_BUF);
     while (__AFL_LOOP(1000)) {
-      std::string data(
-          reinterpret_cast<const char*>(__AFL_FUZZ_TESTCASE_BUF), __AFL_FUZZ_TESTCASE_LEN);
+      int len = __AFL_FUZZ_TESTCASE_LEN;
+      std::string data(buf, len);
       if (data.size() > 0) {
         cfg.seed = eng();
         mrna::Fuzzer fuzzer(mrna::parsing::StringToPrimary(data), cfg, em, rnastructure);
