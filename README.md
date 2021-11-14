@@ -6,6 +6,7 @@ what this is all about.
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
 ### Building
+The rest of this document uses $MRNA to locate the memerna directory.
 
 Run git submodule init and git submodule update to pull in external dependencies.
 Memerna requires a modern C++ compiler that supports C++14.
@@ -29,25 +30,35 @@ No guarantees this runs or even builds on Windows.
 - tests: tests
 
 ### Running the tests
-Run from $PREFIX/run_tests after building.
+Run from $MRNA/run_tests after building.
 
 
-### AFL
+### Fuzzing
+
+#### Randomized fuzzing
+```
+make -j32 && ./fuzz -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
+  -memerna-data $MRNA/data/ 6 8 -print-interval 5 -no-partition -no-subopt
+```
+
+Use the -no-table-check option to only compare the result of memerna vs another
+program, rather than the internal dp tables.
+
+#### AFL
 To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, then run:
 
 ```
 sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
 AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
-  afl-fuzz -x extern/afl/fuzz/dict.dct -m 2000 -i ./extern/afl/fuzz/testcases \
-  -o ~/bin/memerna/afl ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl \
-  -memerna-data ./data/ -rnastructure-data ./extern/miles_rnastructure/data_tables/
+  afl-fuzz -x $MRNA/extern/afl/fuzz/dict.dct -m 2000 -i $MRNA/extern/afl/fuzz/testcases \
+  -o ./afl -- ./fuzz -afl \
+  -memerna-data $MRNA/data/ -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/
 ```
 
 Minimising test cases:
 ```
-afl-tmin -i ~/bin/memerna/afl/default/crashes/<FILE> -o ~/bin/memerna/afl/min \
-  -- ~/bin/memerna/afl-clang-lto++-relwithdebinfo/fuzz -afl \
-  -memerna-data ./data/ -rnastructure-data ./extern/miles_rnastructure/data_tables/
+afl-tmin -i case -o ./afl/min -- ./fuzz -afl -memerna-data $MRNA/data/ \
+  -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/
 ```
 
 ### Useful commands
