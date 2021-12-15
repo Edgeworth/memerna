@@ -2,6 +2,8 @@
 #ifndef MODEL_STRUCTURE_H_
 #define MODEL_STRUCTURE_H_
 
+#include <vector>
+
 #include "common.h"
 #include "model/base.h"
 

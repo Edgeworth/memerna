@@ -9,8 +9,7 @@
 #include "energy/energy_model.h"
 #include "partition/partition.h"
 
-namespace mrna {
-namespace fold {
+namespace mrna::fold {
 
 namespace internal {
 std::vector<int> GetBranchCounts(const std::vector<int>& p);
@@ -24,6 +23,5 @@ std::vector<computed_t> SuboptimalBruteForce(
 std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForce(
     const primary_t& r, const energy::EnergyModel& em);
 
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold
 #endif  // FOLD_BRUTE_FOLD_H_

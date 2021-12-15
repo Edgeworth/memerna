@@ -8,9 +8,7 @@
 
 #include "model/parsing.h"
 
-namespace mrna {
-namespace energy {
-namespace internal {
+namespace mrna::energy::internal {
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
 // This DP needs to be run four times. The series of branches is actually cyclic, and there are two
@@ -254,6 +252,4 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   return total_energy;
 }
 
-}  // namespace internal
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy::internal

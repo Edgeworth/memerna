@@ -6,8 +6,7 @@
 #include "energy/energy_internal.h"
 #include "energy/structure.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 using internal::AddBranchCtdsToComputed;
 using internal::branch_ctd_t;
@@ -181,5 +180,4 @@ computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& 
   return computed_copy;
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy

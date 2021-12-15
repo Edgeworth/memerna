@@ -4,7 +4,6 @@
 #include "gtest/gtest.h"
 
 namespace mrna {
-namespace parsing {
 
 class ParsingTest : public testing::Test {
  public:
@@ -146,5 +145,4 @@ TEST_F(ParsingTest, IsCtdString) {
   EXPECT_FALSE(IsCtdString("((...))"));
 }
 
-}  // namespace parsing
 }  // namespace mrna

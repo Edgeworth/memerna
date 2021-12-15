@@ -10,8 +10,7 @@
 #include "model/globals.h"
 #include "model/parsing.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 namespace internal {
 
@@ -78,7 +77,6 @@ inline penergy_t Boltzmann(energy_t energy) {
   return exp(penergy_t(energy) * (penergy_t(-1) / penergy_t(10.0 * R * T)));
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy
 
 #endif  // ENERGY_FAST_ENERGY_H_

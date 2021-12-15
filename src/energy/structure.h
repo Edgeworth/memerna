@@ -11,8 +11,7 @@
 #include "energy/energy.h"
 #include "energy/energy_internal.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 const char* CtdToName(Ctd ctd);
 
@@ -93,7 +92,6 @@ class StackingStructure : public Structure {
   int st, en;
 };
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy
 
 #endif  // ENERGY_STRUCTURE_H_

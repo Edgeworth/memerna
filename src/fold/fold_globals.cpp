@@ -4,8 +4,8 @@
 #include "energy/energy_globals.h"
 #include "model/globals.h"
 
-namespace mrna {
-namespace fold {
+namespace mrna::fold {
+
 namespace internal {
 
 std::vector<int> gp;
@@ -29,5 +29,4 @@ void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em) {
   internal::gext = array2d_t<energy_t, internal::EXT_SIZE>(gr.size() + 1);
 }
 
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold

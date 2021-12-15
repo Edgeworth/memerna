@@ -7,8 +7,8 @@
 #include "model/base.h"
 #include "model/globals.h"
 
-namespace mrna {
-namespace fold {
+namespace mrna::fold {
+
 namespace internal {
 
 // MFE folding related
@@ -57,7 +57,6 @@ struct ctd_idx_t {
 
 typedef std::function<void(const computed_t&)> SuboptimalCallback;
 
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold
 
 #endif  // FOLD_FOLD_H_

@@ -9,8 +9,7 @@
 #include "model/parsing.h"
 #include "util/string.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 namespace {
 const energy_t RAND_MIN_ENERGY = -100;
@@ -299,5 +298,4 @@ EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& args) {
   }
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy

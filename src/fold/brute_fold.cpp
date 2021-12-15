@@ -13,8 +13,7 @@
 #include "model/parsing.h"
 #include "util/splaymap.h"
 
-namespace mrna {
-namespace fold {
+namespace mrna::fold {
 
 namespace internal {
 
@@ -325,5 +324,4 @@ std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForc
   return {std::move(partition), std::move(probabilities)};
 }
 
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold

@@ -14,8 +14,7 @@
 #include "model/structure.h"
 #include "util/argparse.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 class Structure;
 
@@ -139,7 +138,6 @@ class EnergyModel {
 
 typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy
 
 #endif  // ENERGY_ENERGY_MODEL_H_

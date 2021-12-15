@@ -6,8 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace mrna {
-namespace bridge {
+namespace mrna::bridge {
 
 namespace {
 
@@ -150,5 +149,4 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const secondary_t& s) con
   return struc;
 }
 
-}  // namespace bridge
-}  // namespace mrna
+}  // namespace mrna::bridge

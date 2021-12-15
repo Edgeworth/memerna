@@ -7,9 +7,7 @@
 
 #include "energy/energy_globals.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 using energy::gem;
 
@@ -322,6 +320,5 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   }
   return static_cast<int>(finished.size());
 }
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+
+}  // namespace mrna::fold::internal

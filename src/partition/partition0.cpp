@@ -4,9 +4,7 @@
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
 
-namespace mrna {
-namespace partition {
-namespace internal {
+namespace mrna::partition::internal {
 
 using energy::Boltzmann;
 using energy::gem;
@@ -449,6 +447,4 @@ void Partition0() {
   }
 }
 
-}  // namespace internal
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition::internal

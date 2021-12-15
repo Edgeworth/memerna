@@ -14,8 +14,7 @@
 #include "miles_rnastructure/include/pfunction.h"
 #include "miles_rnastructure/include/rna_library.h"
 
-namespace mrna {
-namespace bridge {
+namespace mrna::bridge {
 
 class RNAstructure : public RnaPackage {
  public:
@@ -42,7 +41,6 @@ class RNAstructure : public RnaPackage {
   std::unique_ptr<structure> LoadStructure(const secondary_t& s) const;
 };
 
-}  // namespace bridge
-}  // namespace mrna
+}  // namespace mrna::bridge
 
 #endif  // BRIDGE_RNASTRUCTURE_H_
