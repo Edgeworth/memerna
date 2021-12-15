@@ -1,10 +1,9 @@
 // Copyright 2016 E.
-#include "parsing.h"
+#include "model/parsing.h"
 
 #include <vector>
 
 namespace mrna {
-namespace parsing {
 
 primary_t StringToPrimary(const std::string& s) {
   primary_t r(s.size());
@@ -207,5 +206,4 @@ bool IsCtdString(const std::string& pairs_str) {
   return true;
 }
 
-}  // namespace parsing
 }  // namespace mrna

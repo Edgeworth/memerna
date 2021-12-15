@@ -1,8 +1,9 @@
 // Copyright 2016 E.
-#ifndef GLOBALS_H_
-#define GLOBALS_H_
+#ifndef MODEL_GLOBALS_H_
+#define MODEL_GLOBALS_H_
 
 #include "common.h"
+#include "model/structure.h"
 
 namespace mrna {
 
@@ -11,4 +12,4 @@ void SetGlobalState(const primary_t& r);
 
 }  // namespace mrna
 
-#endif  // GLOBALS_H_
+#endif  // MODEL_GLOBALS_H_

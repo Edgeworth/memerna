@@ -7,10 +7,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "array.h"
 #include "common.h"
 #include "energy/energy_model.h"
 #include "energy/fast_energy.h"
+#include "util/array.h"
 
 namespace mrna {
 namespace partition {

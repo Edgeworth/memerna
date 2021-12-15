@@ -8,7 +8,7 @@
 
 #include "bridge/bridge.h"
 #include "common.h"
-#include "context.h"
+#include "model/context.h"
 
 namespace mrna {
 namespace bridge {

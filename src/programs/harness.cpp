@@ -4,7 +4,7 @@
 
 #include "bridge/bridge.h"
 #include "energy/load_model.h"
-#include "parsing.h"
+#include "model/parsing.h"
 
 using mrna::computed_t;
 using mrna::energy_t;
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
         db = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      const auto secondary = mrna::parsing::ParseDotBracketSecondary(seq, db);
+      const auto secondary = mrna::ParseDotBracketSecondary(seq, db);
       std::string desc;
       const auto res = package->Efn(secondary, args.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
@@ -61,18 +61,18 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      const auto r = mrna::parsing::StringToPrimary(seq);
+      const auto r = mrna::StringToPrimary(seq);
       int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const computed_t& c) {
-              printf("%d %s\n", c.energy, mrna::parsing::PairsToDotBracket(c.s.p).c_str());
+              printf("%d %s\n", c.energy, mrna::PairsToDotBracket(c.s.p).c_str());
             },
             r, subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.energy, mrna::parsing::PairsToDotBracket(res.s.p).c_str());
+        printf("%d\n%s\n", res.energy, mrna::PairsToDotBracket(res.s.p).c_str());
       }
     }
   }

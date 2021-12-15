@@ -8,7 +8,7 @@
 #include "common.h"
 #include "energy/structure.h"
 #include "fold/fold.h"
-#include "parsing.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace fold {

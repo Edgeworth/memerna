@@ -3,9 +3,9 @@
 #include <set>
 #include <sstream>
 
-#include "argparse.h"
 #include "common.h"
-#include "splaymap.h"
+#include "util/argparse.h"
+#include "util/splaymap.h"
 
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 

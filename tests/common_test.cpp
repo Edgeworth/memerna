@@ -2,15 +2,14 @@
 #include "common_test.h"
 
 #include "energy/structure.h"
-#include "parsing.h"
+#include "model/parsing.h"
 
 namespace mrna {
 
 energy::EnergyModelPtr g_em;
 
 std::ostream& operator<<(std::ostream& os, const secondary_t& s) {
-  return os << "(" << parsing::PrimaryToString(s.r) << ", " << parsing::PairsToDotBracket(s.p)
-            << ")";
+  return os << "(" << PrimaryToString(s.r) << ", " << PairsToDotBracket(s.p) << ")";
 }
 
 std::ostream& operator<<(std::ostream& os, const computed_t& computed) {

@@ -2,9 +2,9 @@
 #include <cstdio>
 
 #include "common.h"
-#include "context.h"
 #include "energy/load_model.h"
-#include "parsing.h"
+#include "model/context.h"
+#include "model/parsing.h"
 
 using mrna::computed_t;
 using mrna::context_opt_t;
@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
 
   auto opt = ContextOptionsFromArgParse(args);
   opt.table_alg = context_opt_t::TableAlg::TWO;
-  mrna::Context ctx(mrna::parsing::StringToPrimary(pos.front()),
-      mrna::energy::LoadEnergyModelFromArgParse(args), opt);
+  mrna::Context ctx(
+      mrna::StringToPrimary(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), opt);
 
   const energy_t subopt_delta = atoi(args.GetOption("delta").c_str());
   const int subopt_num = atoi(args.GetOption("num").c_str());
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     if (ctd_data) {
       fn = [](const computed_t& c) {
         printf("%d ", c.energy);
-        puts(mrna::parsing::ComputedToCtdString(c).c_str());
+        puts(mrna::ComputedToCtdString(c).c_str());
       };
     } else {
       fn = [](const computed_t& c) {

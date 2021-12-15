@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "energy/energy_globals.h"
-#include "parsing.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {

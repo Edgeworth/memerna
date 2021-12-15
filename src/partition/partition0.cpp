@@ -1,6 +1,6 @@
 // Copyright 2016 E.
 #include "energy/energy_globals.h"
-#include "globals.h"
+#include "model/globals.h"
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
 

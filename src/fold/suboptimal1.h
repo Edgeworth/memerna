@@ -8,7 +8,7 @@
 
 #include "common.h"
 #include "fold/fold.h"
-#include "splaymap.h"
+#include "util/splaymap.h"
 
 namespace mrna {
 namespace fold {

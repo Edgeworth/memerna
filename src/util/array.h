@@ -1,10 +1,11 @@
 // Copyright 2016 E.
-#ifndef ARRAY_H_
-#define ARRAY_H_
+#ifndef UTIL_ARRAY_H_
+#define UTIL_ARRAY_H_
 
 #include <utility>
 
 #include "common.h"
+#include "model/structure.h"
 
 namespace mrna {
 
@@ -83,4 +84,4 @@ struct array2d_t {
 
 }  // namespace mrna
 
-#endif  // ARRAY_H_
+#endif  // UTIL_ARRAY_H_

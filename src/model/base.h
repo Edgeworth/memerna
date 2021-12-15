@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef BASE_H_
-#define BASE_H_
+#ifndef MODEL_BASE_H_
+#define MODEL_BASE_H_
 
 #include <cstdint>
 #include <cstring>
@@ -10,6 +10,8 @@
 #include "common.h"
 
 namespace mrna {
+
+typedef int8_t base_t;
 
 // Don't ever change these values.
 const base_t A = 0, C = 1, G = 2, U = 3;
@@ -46,14 +48,6 @@ base_t CharToBase(char c);
 
 char BaseToChar(base_t b);
 
-template <typename RandomEngine>
-primary_t GenerateRandomPrimary(int length, RandomEngine& eng) {
-  std::uniform_int_distribution<int> dist(0, 3);
-  primary_t r(std::size_t(length), 0);
-  for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
-  return r;
-}
-
 }  // namespace mrna
 
-#endif  // BASE_H_
+#endif  // MODEL_BASE_H_

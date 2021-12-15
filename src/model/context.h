@@ -1,16 +1,17 @@
 // Copyright 2016 E.
-#ifndef CONTEXT_H_
-#define CONTEXT_H_
+#ifndef MODEL_CONTEXT_H_
+#define MODEL_CONTEXT_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "argparse.h"
 #include "common.h"
 #include "energy/energy.h"
 #include "fold/fold.h"
+#include "model/structure.h"
 #include "partition/partition.h"
+#include "util/argparse.h"
 
 namespace mrna {
 
@@ -83,4 +84,4 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& args);
 
 }  // namespace mrna
 
-#endif  // CONTEXT_H_
+#endif  // MODEL_CONTEXT_H_

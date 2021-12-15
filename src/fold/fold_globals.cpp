@@ -2,7 +2,7 @@
 #include "fold/fold_globals.h"
 
 #include "energy/energy_globals.h"
-#include "globals.h"
+#include "model/globals.h"
 
 namespace mrna {
 namespace fold {

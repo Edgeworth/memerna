@@ -1,9 +1,9 @@
 // Copyright 2016 E.
 #include <cstdio>
 
-#include "context.h"
 #include "energy/load_model.h"
-#include "parsing.h"
+#include "model/context.h"
+#include "model/parsing.h"
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
@@ -12,11 +12,10 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  mrna::Context ctx(mrna::parsing::StringToPrimary(pos.front()),
+  mrna::Context ctx(mrna::StringToPrimary(pos.front()),
       mrna::energy::LoadEnergyModelFromArgParse(args), ContextOptionsFromArgParse(args));
   const auto computed = ctx.Fold();
 
-  printf("Energy: %d\n%s\n%s\n", computed.energy,
-      mrna::parsing::PairsToDotBracket(computed.s.p).c_str(),
-      mrna::parsing::ComputedToCtdString(computed).c_str());
+  printf("Energy: %d\n%s\n%s\n", computed.energy, mrna::PairsToDotBracket(computed.s.p).c_str(),
+      mrna::ComputedToCtdString(computed).c_str());
 }

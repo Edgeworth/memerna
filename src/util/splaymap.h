@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef SPLAYMAP_H_
-#define SPLAYMAP_H_
+#ifndef UTIL_SPLAYMAP_H_
+#define UTIL_SPLAYMAP_H_
 
 #include <algorithm>
 #include <string>
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "common.h"
+#include "util/string.h"
 
 namespace mrna {
 
@@ -221,4 +222,4 @@ class SplayMap {
 
 }  // namespace mrna
 
-#endif  // SPLAYMAP_H_
+#endif  // UTIL_SPLAYMAP_H_

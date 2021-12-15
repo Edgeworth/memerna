@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "util/string.h"
+
 namespace mrna {
 namespace energy {
 
@@ -53,12 +55,27 @@ std::string InternalLoopStructure::ShortDesc() const {
       GetSelfEnergy());
 }
 
+void InternalLoopStructure::AddBranch(std::unique_ptr<Structure> b) {
+  assert(branches.empty());
+  Structure::AddBranch(std::move(b));
+}
+
 std::string MultiLoopStructure::ShortDesc() const {
   return sfmt("MultiLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
 }
 
+std::string MultiLoopStructure::BranchDesc(int idx) const {
+  return sfmt("%s - %de - %s", branches[idx]->ShortDesc().c_str(), branch_ctds[idx].second,
+      CtdToName(branch_ctds[idx].first));
+}
+
 std::string StackingStructure::ShortDesc() const {
   return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+}
+
+void StackingStructure::AddBranch(std::unique_ptr<Structure> b) {
+  assert(branches.empty());
+  Structure::AddBranch(std::move(b));
 }
 
 }  // namespace energy

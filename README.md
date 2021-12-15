@@ -1,5 +1,4 @@
 # memerna
-
 Check out docs/thesis/thesis.pdf for my thesis which will explain a bit about
 what this is all about.
 
@@ -32,7 +31,6 @@ No guarantees this runs or even builds on Windows.
 ### Running the tests
 Run from $MRNA/run_tests after building.
 
-
 ### Fuzzing
 
 #### Randomized fuzzing
@@ -50,15 +48,17 @@ To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, the
 ```
 sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
 AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
-  afl-fuzz -x $MRNA/extern/afl/fuzz/dict.dct -m 2000 -i $MRNA/extern/afl/fuzz/testcases \
-  -o ./afl -- ./fuzz -afl \
-  -memerna-data $MRNA/data/ -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/
+  afl-fuzz -x $MRNA/extern/afl/fuzz/dict.dct -m 2000 -t 2000 \
+  -i $MRNA/extern/afl/fuzz/testcases -o ./afl -- ./fuzz -afl \
+  -memerna-data $MRNA/data/ -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
+  -rnastructure -table-check
 ```
 
 Minimising test cases:
 ```
 afl-tmin -i case -o ./afl/min -- ./fuzz -afl -memerna-data $MRNA/data/ \
-  -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/
+  -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
+  -rnastructure -table-check
 ```
 
 ### Useful commands

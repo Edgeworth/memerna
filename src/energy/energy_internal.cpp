@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "parsing.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {

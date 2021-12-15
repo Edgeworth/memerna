@@ -10,8 +10,8 @@
 #include "energy/structure.h"
 #include "fold/fold.h"
 #include "fold/fold_globals.h"
-#include "parsing.h"
-#include "splaymap.h"
+#include "model/parsing.h"
+#include "util/splaymap.h"
 
 namespace mrna {
 namespace fold {
