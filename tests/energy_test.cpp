@@ -1,39 +1,35 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
-#include "context.h"
 #include "energy/energy_globals.h"
 #include "gtest/gtest.h"
-#include "parsing.h"
+#include "model/context.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {
 
 class EnergyTest : public testing::Test {
  public:
-  secondary_t kNNDBHairpin1 = parsing::ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
-  secondary_t kNNDBHairpin2 = parsing::ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
-  secondary_t kNNDBHairpin3 = parsing::ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");
-  secondary_t kNNDBHairpin4 = parsing::ParseDotBracketSecondary("CACACCCCCCUGUG", "((((......))))");
-  secondary_t kNNDBHairpin5 = parsing::ParseDotBracketSecondary("CGGGGGAAGUCCG", "((((.....))))");
-  secondary_t kNNDBBulge1 = parsing::ParseDotBracketSecondary("GCCCGAAACGGC", "(((.(...))))");
-  secondary_t kNNDBBulge2 = parsing::ParseDotBracketSecondary("GAACAGAAACUC", "((...(...)))");
-  secondary_t kNNDBInternal2x3 =
-      parsing::ParseDotBracketSecondary("CAGACGAAACGGAGUG", "((..((...))...))");
-  secondary_t kNNDBInternal1x5 =
-      parsing::ParseDotBracketSecondary("CAGCGAAACGGAAAGUG", "((.((...)).....))");
-  secondary_t kNNDBInternal2x2 =
-      parsing::ParseDotBracketSecondary("CAGACGAAACGGAUG", "((..((...))..))");
-  secondary_t kFlushCoax =
-      parsing::ParseDotBracketSecondary("GUGAAACACAAAAUGA", ".((...))((...)).");
+  secondary_t kNNDBHairpin1 = ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
+  secondary_t kNNDBHairpin2 = ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
+  secondary_t kNNDBHairpin3 = ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");
+  secondary_t kNNDBHairpin4 = ParseDotBracketSecondary("CACACCCCCCUGUG", "((((......))))");
+  secondary_t kNNDBHairpin5 = ParseDotBracketSecondary("CGGGGGAAGUCCG", "((((.....))))");
+  secondary_t kNNDBBulge1 = ParseDotBracketSecondary("GCCCGAAACGGC", "(((.(...))))");
+  secondary_t kNNDBBulge2 = ParseDotBracketSecondary("GAACAGAAACUC", "((...(...)))");
+  secondary_t kNNDBInternal2x3 = ParseDotBracketSecondary("CAGACGAAACGGAGUG", "((..((...))...))");
+  secondary_t kNNDBInternal1x5 = ParseDotBracketSecondary("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+  secondary_t kNNDBInternal2x2 = ParseDotBracketSecondary("CAGACGAAACGGAUG", "((..((...))..))");
+  secondary_t kFlushCoax = ParseDotBracketSecondary("GUGAAACACAAAAUGA", ".((...))((...)).");
   // NNDB T99 Multiloop example
   secondary_t kNNDBMultiloop =
-      parsing::ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+      ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
 
-  secondary_t kBulge1 = parsing::ParseDotBracketSecondary("GCUCGAAACAGC", "(((.(...))))");
-  secondary_t kInternal1 = parsing::ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)");
+  secondary_t kBulge1 = ParseDotBracketSecondary("GCUCGAAACAGC", "(((.(...))))");
+  secondary_t kInternal1 = ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)");
 
   energy_t GetEnergy(const std::string& r, const std::string& db) {
-    return GetEnergy({parsing::StringToPrimary(r), parsing::DotBracketToPairs(db)});
+    return GetEnergy({StringToPrimary(r), DotBracketToPairs(db)});
   }
 
   energy_t GetEnergy(const secondary_t& s) { return ComputeEnergy(s, *g_em).energy; }
@@ -124,15 +120,15 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
 
 TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(g_em->augu_penalty + g_em->stack[G][A][U][C] + g_em->hairpin_init[3],
-      GetEnergy(parsing::ParseDotBracketSecondary("GAAAAUC", "((...))")));
+      GetEnergy(ParseDotBracketSecondary("GAAAAUC", "((...))")));
   EXPECT_EQ(g_em->augu_penalty * 2 + g_em->stack[G][A][U][U] + g_em->hairpin_init[3],
-      GetEnergy(parsing::ParseDotBracketSecondary("GAAAAUU", "((...))")));
+      GetEnergy(ParseDotBracketSecondary("GAAAAUU", "((...))")));
   EXPECT_EQ(g_em->augu_penalty * 2 + g_em->HairpinInitiation(3) +
           std::min(
               g_em->terminal[U][A][A][A], std::min(g_em->dangle3[U][A][A], g_em->dangle5[U][A][A])),
-      GetEnergy(parsing::ParseDotBracketSecondary("AAAAAUA", ".(...).")));
+      GetEnergy(ParseDotBracketSecondary("AAAAAUA", ".(...).")));
   EXPECT_EQ(g_em->augu_penalty * 2 + g_em->HairpinInitiation(3),
-      GetEnergy(parsing::ParseDotBracketSecondary("AAAAU", "(...)")));
+      GetEnergy(ParseDotBracketSecondary("AAAAU", "(...)")));
   EXPECT_EQ(g_em->stack[G][C][G][C] + g_em->stack[C][U][A][G] + g_em->BulgeInitiation(1) +
           g_em->stack[U][G][C][A] + g_em->HairpinInitiation(3),
       GetEnergy(kBulge1));
@@ -175,7 +171,7 @@ TEST_F(EnergyTest, T04Tests) {
 TEST_F(EnergyTest, Precomp) {
   ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
-  auto pc = PrecomputeData(parsing::StringToPrimary("GGGGAAACCCC"), *g_em);
+  auto pc = PrecomputeData(StringToPrimary("GGGGAAACCCC"), *g_em);
   EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);
@@ -187,15 +183,15 @@ TEST_F(EnergyTest, Precomp) {
 }
 
 TEST_F(EnergyTest, Helpers) {
-  EXPECT_EQ(0, internal::MaxNumContiguous(parsing::StringToPrimary("")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("A")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("AA")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(parsing::StringToPrimary("GUAAC")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(parsing::StringToPrimary("GUACA")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GAUCCC")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUC")));
-  EXPECT_EQ(4, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUCAAAA")));
-  EXPECT_EQ(5, internal::MaxNumContiguous(parsing::StringToPrimary("GGGAUUUUUCAAAA")));
+  EXPECT_EQ(0, internal::MaxNumContiguous(StringToPrimary("")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(StringToPrimary("A")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(StringToPrimary("AA")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(StringToPrimary("GUAAC")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(StringToPrimary("GUACA")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(StringToPrimary("GAUCCC")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(StringToPrimary("GGGAUC")));
+  EXPECT_EQ(4, internal::MaxNumContiguous(StringToPrimary("GGGAUCAAAA")));
+  EXPECT_EQ(5, internal::MaxNumContiguous(StringToPrimary("GGGAUUUUUCAAAA")));
 }
 
 }  // namespace energy

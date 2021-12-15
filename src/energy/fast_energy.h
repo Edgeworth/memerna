@@ -7,8 +7,8 @@
 
 #include "common.h"
 #include "energy/energy_model.h"
-#include "globals.h"
-#include "parsing.h"
+#include "model/globals.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {
@@ -45,7 +45,7 @@ template <typename HairpinPrecomp, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;
   pc.resize(r.size());
-  std::string rna_str = parsing::PrimaryToString(r);
+  std::string rna_str = PrimaryToString(r);
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
     verify(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");

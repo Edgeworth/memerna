@@ -6,7 +6,8 @@
 #include <string>
 
 #include "energy/structure.h"
-#include "parsing.h"
+#include "model/parsing.h"
+#include "util/string.h"
 
 namespace mrna {
 namespace energy {

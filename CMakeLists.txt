@@ -74,39 +74,47 @@ enable_testing()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
-    src/argparse.cpp src/argparse.h src/array.h
-    src/base.cpp src/base.h
-    src/fold/brute_fold.cpp src/fold/brute_fold.h
     src/common.cpp src/common.h
-    src/context.cpp src/context.h
-    src/energy/energy.cpp src/energy/energy.h
     src/energy/energy_globals.cpp src/energy/energy_globals.h
     src/energy/energy_internal.cpp src/energy/energy_internal.h
     src/energy/energy_model.cpp src/energy/energy_model.h
-    src/partition/exterior.cpp
+    src/energy/energy.cpp src/energy/energy.h
     src/energy/fast_energy.cpp src/energy/fast_energy.h
+    src/energy/load_model.cpp src/energy/load_model.h
+    src/energy/structure.cpp src/energy/structure.h
+    src/fold/brute_fold.cpp src/fold/brute_fold.h
+    src/fold/fold_globals.cpp src/fold/fold_globals.h
     src/fold/fold.h
     src/fold/fold0.cpp
     src/fold/fold1.cpp
     src/fold/fold2.cpp
     src/fold/fold3.cpp src/fold/fold_constants.h
-    src/fold/fold_globals.cpp src/fold/fold_globals.h
-    src/globals.cpp src/globals.h
-    src/partition/internal.cpp
-    src/energy/load_model.cpp src/energy/load_model.h
-    src/parsing.cpp src/parsing.h src/partition/partition.h
-    src/partition/partition0.cpp
-    src/partition/partition1.cpp
-    src/partition/partition_globals.cpp src/partition/partition_globals.h
-    src/partition/probability.cpp src/splaymap.h
-    src/energy/structure.cpp src/energy/structure.h
     src/fold/suboptimal0.cpp src/fold/suboptimal0.h
     src/fold/suboptimal1.cpp src/fold/suboptimal1.h
-    src/fold/traceback.cpp)
+    src/fold/traceback.cpp
+    src/model/base.cpp src/model/base.h
+    src/model/context.cpp src/model/context.h
+    src/model/gen.cpp src/model/gen.h
+    src/model/globals.cpp src/model/globals.h
+    src/model/parsing.cpp src/model/parsing.h
+    src/model/structure.h
+    src/partition/exterior.cpp
+    src/partition/internal.cpp
+    src/partition/partition_globals.cpp src/partition/partition_globals.h
+    src/partition/partition.h
+    src/partition/partition0.cpp
+    src/partition/partition1.cpp
+    src/partition/probability.cpp
+    src/util/argparse.cpp src/util/argparse.h
+    src/util/array.h
+    src/util/splaymap.h
+    src/util/string.cpp src/util/string.h
+)
 set(BRIDGE_SOURCE
     src/bridge/bridge.cpp src/bridge/bridge.h
     src/bridge/memerna.cpp src/bridge/memerna.h
-    src/bridge/rnastructure.cpp src/bridge/rnastructure.h)
+    src/bridge/rnastructure.cpp src/bridge/rnastructure.h
+)
 set(TEST_SOURCE
     tests/base_test.cpp
     tests/brute_test.cpp
@@ -116,7 +124,8 @@ set(TEST_SOURCE
     tests/energy_test.cpp
     tests/fold_test.cpp
     tests/parsing_test.cpp
-    tests/splaymap_test.cpp)
+    tests/splaymap_test.cpp
+)
 
 include_directories(src)
 # Suppress warnings.

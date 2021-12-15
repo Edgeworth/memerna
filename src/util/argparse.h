@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef ARGPARSE_H_
-#define ARGPARSE_H_
+#ifndef UTIL_ARGPARSE_H_
+#define UTIL_ARGPARSE_H_
 
 #include <map>
 #include <string>
@@ -92,4 +92,4 @@ class ArgParse {
 
 }  // namespace mrna
 
-#endif  // ARGPARSE_H_
+#endif  // UTIL_ARGPARSE_H_

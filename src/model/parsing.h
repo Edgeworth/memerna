@@ -1,17 +1,17 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef PARSING_H_
-#define PARSING_H_
+#ifndef MODEL_PARSING_H_
+#define MODEL_PARSING_H_
 
 #include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "base.h"
-#include "energy/energy_model.h"
+#include "model/base.h"
+#include "common.h"
+#include "model/structure.h"
 
 namespace mrna {
-namespace parsing {
 
 primary_t StringToPrimary(const std::string& s);
 std::string PrimaryToString(const primary_t& r);
@@ -22,7 +22,6 @@ computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pair
 std::string ComputedToCtdString(const computed_t& computed);
 bool IsCtdString(const std::string& pairs_str);
 
-}  // namespace parsing
 }  // namespace mrna
 
-#endif  // PARSING_H_
+#endif  // MODEL_PARSING_H_

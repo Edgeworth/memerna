@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "parsing.h"
+#include "model/parsing.h"
 
 #include "gtest/gtest.h"
 

@@ -3,7 +3,7 @@
 #include "energy/energy_internal.h"
 #include "energy/load_model.h"
 #include "gtest/gtest.h"
-#include "parsing.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {
@@ -18,36 +18,32 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
                                                                return {{}, {}, {}};
                                                              },
     [](const EnergyModel&) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary("A", "."), {CTD_NA}, 0}, {}, {}};
+      return {{ParseDotBracketSecondary("A", "."), {CTD_NA}, 0}, {}, {}};
     },
     [](const EnergyModel&) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary("AG", ".."), {CTD_NA, CTD_NA}, 0}, {}, {}};
+      return {{ParseDotBracketSecondary("AG", ".."), {CTD_NA, CTD_NA}, 0}, {}, {}};
+    },
+    [](const EnergyModel&) -> ctd_test_t {
+      return {{ParseDotBracketSecondary("GUA", "..."), {CTD_NA, CTD_NA, CTD_NA}, 0}, {}, {}};
     },
     [](const EnergyModel&) -> ctd_test_t {
       return {
-          {parsing::ParseDotBracketSecondary("GUA", "..."), {CTD_NA, CTD_NA, CTD_NA}, 0}, {}, {}};
-    },
-    [](const EnergyModel&) -> ctd_test_t {
-      return {
-          {parsing::ParseDotBracketSecondary("GUAC", "...."), {CTD_NA, CTD_NA, CTD_NA, CTD_NA}, 0},
-          {}, {}};
+          {ParseDotBracketSecondary("GUAC", "...."), {CTD_NA, CTD_NA, CTD_NA, CTD_NA}, 0}, {}, {}};
     },
     // 3' dangle inside the branch.
     [](const EnergyModel& em) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary("GAAAC", "(...)"),
+      return {{ParseDotBracketSecondary("GAAAC", "(...)"),
                   {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, 0},
           {{CTD_3_DANGLE, em.dangle3[G][A][C]}}, {4}};
     },
     [](const EnergyModel&) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary(
-                   "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+      return {{ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
                   std::vector<Ctd>(26, CTD_NA), 0},
           {}, {}};
     },
     [](const EnergyModel& em) -> ctd_test_t {
       return {
-          {parsing::ParseDotBracketSecondary(
-               "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+          {ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
                   CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                   CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -58,8 +54,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     },
     [](const EnergyModel& em) -> ctd_test_t {
       return {
-          {parsing::ParseDotBracketSecondary(
-               "GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
+          {ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
                   CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                   CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -69,7 +64,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
           {18, 7, 13}};
     },
     [](const EnergyModel& em) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary("GGAAACGAAACC", "((...)(...))"),
+      return {{ParseDotBracketSecondary("GGAAACGAAACC", "((...)(...))"),
                   {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
                       CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
                   0},
@@ -78,8 +73,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
           {1, 6, 11}};
     },
     [](const EnergyModel& em) -> ctd_test_t {
-      return {{parsing::ParseDotBracketSecondary(
-                   "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"),
+      return {{ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"),
                   {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                       CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                       CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,

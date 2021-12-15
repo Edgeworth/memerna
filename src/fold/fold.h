@@ -2,10 +2,10 @@
 #ifndef FOLD_FOLD_H_
 #define FOLD_FOLD_H_
 
-#include "base.h"
 #include "common.h"
 #include "fold/fold_globals.h"
-#include "globals.h"
+#include "model/base.h"
+#include "model/globals.h"
 
 namespace mrna {
 namespace fold {

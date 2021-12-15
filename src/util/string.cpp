@@ -1,7 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#include "common.h"
+#include "util/string.h"
 
 #include <random>
+
+#include "common.h"
 
 namespace mrna {
 
@@ -21,19 +23,19 @@ std::string sgetline(FILE* fp) {
   return s;
 }
 
-std::string vsfmt(const char* fmt, va_list l) {
-  char buffer[BUF_SIZE];
-  const int res = vsnprintf(buffer, BUF_SIZE, fmt, l);
-  verify(res >= 0 && res < BUF_SIZE, "buffer too small");
-  return buffer;
-}
-
 std::string sfmt(const char* fmt, ...) {
   va_list l;
   va_start(l, fmt);
   std::string res = vsfmt(fmt, l);
   va_end(l);
   return res;
+}
+
+std::string vsfmt(const char* fmt, va_list l) {
+  char buffer[BUF_SIZE];
+  const int res = vsnprintf(buffer, BUF_SIZE, fmt, l);
+  verify(res >= 0 && res < BUF_SIZE, "buffer too small");
+  return buffer;
 }
 
 uint32_t Crc32(const std::string& data) {

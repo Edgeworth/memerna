@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "energy/energy_globals.h"
-#include "parsing.h"
+#include "model/parsing.h"
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
 namespace mrna {

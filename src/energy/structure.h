@@ -62,10 +62,7 @@ class InternalLoopStructure : public Structure {
   InternalLoopStructure(int ost_, int oen_, int ist_, int ien_)
       : ost(ost_), oen(oen_), ist(ist_), ien(ien_) {}
 
-  void AddBranch(std::unique_ptr<Structure> b) {
-    assert(branches.empty());
-    Structure::AddBranch(std::move(b));
-  }
+  void AddBranch(std::unique_ptr<Structure> b);
   std::string ShortDesc() const;
 
  private:
@@ -77,10 +74,7 @@ class MultiLoopStructure : public Structure {
   MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
   void AddCtd(Ctd ctd, energy_t ctd_energy) { branch_ctds.emplace_back(ctd, ctd_energy); }
-  std::string BranchDesc(int idx) const {
-    return sfmt("%s - %de - %s", branches[idx]->ShortDesc().c_str(), branch_ctds[idx].second,
-        CtdToName(branch_ctds[idx].first));
-  }
+  std::string BranchDesc(int idx) const;
   std::string ShortDesc() const;
 
  private:
@@ -92,10 +86,7 @@ class StackingStructure : public Structure {
  public:
   StackingStructure(int st_, int en_) : st(st_), en(en_) {}
 
-  void AddBranch(std::unique_ptr<Structure> b) {
-    assert(branches.empty());
-    Structure::AddBranch(std::move(b));
-  }
+  void AddBranch(std::unique_ptr<Structure> b);
   std::string ShortDesc() const;
 
  private:

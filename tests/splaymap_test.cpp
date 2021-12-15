@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "splaymap.h"
+#include "util/splaymap.h"
 
 #include <random>
 

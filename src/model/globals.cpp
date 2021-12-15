@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "globals.h"
+#include "model/globals.h"
 
 namespace mrna {
 

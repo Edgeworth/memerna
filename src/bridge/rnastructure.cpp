@@ -136,7 +136,7 @@ std::pair<partition::partition_t, partition::probabilities_t> RNAstructure::Part
 std::unique_ptr<structure> RNAstructure::LoadStructure(const primary_t& r) const {
   auto struc = std::make_unique<structure>();
   struc->SetThermodynamicDataTable(data.get());
-  struc->SetSequence(parsing::PrimaryToString(r));
+  struc->SetSequence(PrimaryToString(r));
   verify(struc->GetSequenceLength() == static_cast<int>(r.size()), "BUG: structure not loaded");
   return struc;
 }

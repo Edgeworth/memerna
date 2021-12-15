@@ -15,7 +15,9 @@
 #include "fold/brute_fold.h"
 #include "fold/fold_constants.h"
 #include "fold/fold_globals.h"
-#include "parsing.h"
+#include "model/gen.h"
+#include "model/parsing.h"
+#include "util/string.h"
 
 using mrna::opt_t;
 
@@ -30,7 +32,7 @@ using fold::internal::gdp;
 
 struct cfg_t {
   bool random_model = false;
-  bool rnastructure = false;
+  bool mfe_rnastructure = false;
   bool table_check = true;
   uint_fast32_t seed = 0;
 
@@ -67,40 +69,43 @@ struct cfg_t {
 
 const std::map<std::string, opt_t> CFG_OPTIONS = {
     {"random", opt_t("use random energy models (disables comparison to RNAstructure)")},
-    {"no-rnastructure", opt_t("disable rnastructure testing")},
-    {"no-subopt", opt_t("whether to test suboptimal folding")},
-    {"no-table-check", opt_t("whether to compare dp tables between memerna and rnastructure")},
+    {"table-check", opt_t("enable comparing dp tables between memerna and rnastructure")},
+    {"brute-cutoff", opt_t("maximum rna size to run brute force on").Arg()},
+    {"brute-subopt-max", opt_t("maximum number of substructures for brute force fuzz").Arg()},
+    {"mfe-rnastructure", opt_t("enable rnastructure testing")},
+    {"subopt", opt_t("enable fuzzing suboptimal folding")},
     {"subopt-rnastructure", opt_t("test rnastructure suboptimal folding")},
     {"subopt-max", opt_t("maximum number of substructures for subopt max-delta fuzz").Arg()},
     {"subopt-delta", opt_t("delta for subopt delta fuzz").Arg()},
-    {"brute-cutoff", opt_t("maximum rna size to run brute force on").Arg()},
-    {"brute-subopt-max", opt_t("maximum number of substructures for brute force fuzz").Arg()},
-    {"no-partition", opt_t("whether to test partition function")},
+    {"partition", opt_t("enable fuzzing partition function")},
     {"partition-rnastructure", opt_t("test rnastructure partition function")},
 };
 
 cfg_t CfgFromArgParse(const ArgParse& args) {
   cfg_t cfg;
   cfg.random_model = args.HasFlag("random");
-  cfg.rnastructure = !args.HasFlag("no-rnastructure");
-  cfg.table_check = !args.HasFlag("no-table-check");
-  cfg.subopt = !args.HasFlag("no-subopt");
-  cfg.subopt_rnastructure = args.HasFlag("subopt-rnastructure");
-  cfg.partition_rnastructure = args.HasFlag("partition-rnastructure");
-  if (args.HasFlag("subopt-max")) cfg.subopt_max = atoi(args.GetOption("subopt-max").c_str());
-  if (args.HasFlag("subopt-delta")) cfg.subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
+  cfg.table_check = args.HasFlag("table-check");
   if (args.HasFlag("brute-cutoff")) cfg.brute_cutoff = atoi(args.GetOption("brute-cutoff").c_str());
   if (args.HasFlag("brute-subopt-max"))
     cfg.brute_subopt_max = atoi(args.GetOption("brute-subopt-max").c_str());
-  cfg.partition = !args.HasFlag("no-partition");
+
+  cfg.mfe_rnastructure = args.HasFlag("mfe-rnastructure");
+
+  cfg.subopt = args.HasFlag("subopt");
+  cfg.subopt_rnastructure = args.HasFlag("subopt-rnastructure");
+  if (args.HasFlag("subopt-max")) cfg.subopt_max = atoi(args.GetOption("subopt-max").c_str());
+  if (args.HasFlag("subopt-delta")) cfg.subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
+
+  cfg.partition = args.HasFlag("partition");
+  cfg.partition_rnastructure = args.HasFlag("partition-rnastructure");
 
   verify(!cfg.subopt_rnastructure || cfg.subopt,
       "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
   verify(!(cfg.random_model && cfg.subopt_rnastructure),
       "cannot use a random energy model with rnastructure");
-  verify(cfg.rnastructure || (!cfg.subopt_rnastructure && !cfg.partition_rnastructure),
+  verify(cfg.mfe_rnastructure || (!cfg.subopt_rnastructure && !cfg.partition_rnastructure),
       "rnastructure must be enabled to use it for suboptimal or partition");
-  verify(!cfg.random_model || !cfg.rnastructure,
+  verify(!cfg.random_model || !cfg.mfe_rnastructure,
       "rnastructure testing does not support random models");
   return cfg;
 }
@@ -119,24 +124,24 @@ class Fuzzer {
 
   error_t Run() {
     error_t errors;
-    AppendErrors(errors, MaybePrependHeader(MemernaComputeAndCheckState(), "memerna:"));
-    if (cfg.rnastructure)
-      AppendErrors(errors, MaybePrependHeader(RnastructureComputeAndCheckState(), "rnastructure:"));
-    if (cfg.table_check) AppendErrors(errors, MaybePrependHeader(CheckDpTables(), "dp tables:"));
-    if (cfg.subopt) AppendErrors(errors, MaybePrependHeader(CheckSuboptimal(), "suboptimal:"));
+    AppendErrors(errors, MaybePrepend(MemernaComputeAndCheckState(), "memerna:"));
+    if (cfg.mfe_rnastructure)
+      AppendErrors(errors, MaybePrepend(RnastructureComputeAndCheckState(), "rnastructure:"));
+    if (cfg.table_check) AppendErrors(errors, MaybePrepend(CheckDpTables(), "dp tables:"));
+    if (cfg.subopt) AppendErrors(errors, MaybePrepend(CheckSuboptimal(), "suboptimal:"));
 
     if (static_cast<int>(r.size()) <= cfg.brute_cutoff)
-      AppendErrors(errors, MaybePrependHeader(CheckBruteForce(), "brute force:"));
+      AppendErrors(errors, MaybePrepend(CheckBruteForce(), "brute force:"));
 
-    if (cfg.partition) AppendErrors(errors, MaybePrependHeader(CheckPartition(), "partition:"));
+    if (cfg.partition) AppendErrors(errors, MaybePrepend(CheckPartition(), "partition:"));
 
     if (!errors.empty()) {
       if (cfg.random_model)
         errors.push_front(sfmt("Used random energy model with seed: %" PRIuFAST32 "\n", cfg.seed));
       else
         errors.push_front(sfmt("Used specified energy model"));
-      errors = MaybePrependHeader(errors,
-          sfmt("Difference on len %zu RNA %s:", r.size(), parsing::PrimaryToString(r).c_str()));
+      errors = MaybePrepend(
+          errors, sfmt("Difference on len %zu RNA %s:", r.size(), PrimaryToString(r).c_str()));
     }
 
     return errors;
@@ -154,7 +159,7 @@ class Fuzzer {
   std::vector<array3d_t<energy_t, DP_SIZE>> memerna_dps;
   dp_state_t rnastructure_dp;
 
-  error_t MaybePrependHeader(const error_t& main, const std::string& header) {
+  error_t MaybePrepend(const error_t& main, const std::string& header) {
     if (main.empty()) return main;
     error_t nmain;
     nmain.push_front(header);
@@ -201,8 +206,8 @@ class Fuzzer {
         }
 
         // Incidentally test ctd parsing.
-        auto parsed_computed = parsing::ParseCtdComputed(
-            parsing::PrimaryToString(structure.s.r), parsing::ComputedToCtdString(structure));
+        auto parsed_computed =
+            ParseCtdComputed(PrimaryToString(structure.s.r), ComputedToCtdString(structure));
         parsed_computed.energy = structure.energy;
         if (parsed_computed != structure) {
           errors.push_back(sfmt("structure %d: bug in parsing code", i));
@@ -243,21 +248,20 @@ class Fuzzer {
 
     for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_delta[i], true),
+          MaybePrepend(CheckSuboptimalResult(memerna_subopts_delta[i], true),
               sfmt("memerna delta suboptimal %d:", i)));
       AppendErrors(errors,
-          MaybePrependHeader(
+          MaybePrepend(
               CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
               sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
     }
 
     for (int i = 0; i < static_cast<int>(memerna_subopts_num.size()); ++i) {
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResult(memerna_subopts_num[i], true),
+          MaybePrepend(CheckSuboptimalResult(memerna_subopts_num[i], true),
               sfmt("memerna num suboptimal %d:", i)));
       AppendErrors(errors,
-          MaybePrependHeader(
-              CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
+          MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
               sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
     }
 
@@ -268,11 +272,10 @@ class Fuzzer {
       if (memerna_computeds[0].energy < -cfg.subopt_delta) {
         const auto rnastructure_subopt = rnastructure.SuboptimalIntoVector(r, cfg.subopt_delta);
         AppendErrors(errors,
-            MaybePrependHeader(
+            MaybePrepend(
                 CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
         AppendErrors(errors,
-            MaybePrependHeader(
-                CheckSuboptimalResultPair(memerna_subopts_delta[0], rnastructure_subopt),
+            MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_delta[0], rnastructure_subopt),
                 "memerna vs rnastructure suboptimal:"));
       }
     }
@@ -296,7 +299,7 @@ class Fuzzer {
               goto loopend;
             }
           }
-          if (cfg.rnastructure && (a == DP_P || a == DP_U)) {
+          if (cfg.mfe_rnastructure && (a == DP_P || a == DP_U)) {
             energy_t rnastructureval = a == DP_P ? rnastructure_dp.v.f(st + 1, en + 1)
                                                  : rnastructure_dp.w.f(st + 1, en + 1);
             if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
@@ -364,12 +367,12 @@ class Fuzzer {
       auto brute_subopt = SuboptimalBruteForce(r, *em, cfg.brute_subopt_max);
       auto memerna_subopt = ctx.SuboptimalIntoVector(true, -1, cfg.brute_subopt_max);
 
+      AppendErrors(
+          errors, MaybePrepend(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
+      AppendErrors(
+          errors, MaybePrepend(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
       AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
-      AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
-      AppendErrors(errors,
-          MaybePrependHeader(CheckSuboptimalResultPair(brute_subopt, memerna_subopt),
+          MaybePrepend(CheckSuboptimalResultPair(brute_subopt, memerna_subopt),
               "brute vs memerna suboptimal:"));
     }
 
@@ -484,7 +487,7 @@ int main(int argc, char* argv[]) {
 
   auto cfg = CfgFromArgParse(args);
   const bool afl_mode = args.HasFlag("afl");
-  verify(!cfg.rnastructure || !args.HasFlag("seed"),
+  verify(!cfg.mfe_rnastructure || !args.HasFlag("seed"),
       "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
@@ -497,7 +500,7 @@ int main(int argc, char* argv[]) {
       std::string data(buf, len);
       if (data.size() > 0) {
         cfg.seed = eng();
-        mrna::Fuzzer fuzzer(mrna::parsing::StringToPrimary(data), cfg, em, rnastructure);
+        mrna::Fuzzer fuzzer(mrna::StringToPrimary(data), cfg, em, rnastructure);
         const auto res = fuzzer.Run();
         if (!res.empty()) abort();
       }
@@ -527,7 +530,7 @@ int main(int argc, char* argv[]) {
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(eng);
-      auto r = mrna::GenerateRandomPrimary(len, eng);
+      auto r = mrna::GenerateRandomPrimary(len);
 
       cfg.seed = eng();
       mrna::Fuzzer fuzzer(r, cfg, em, rnastructure);

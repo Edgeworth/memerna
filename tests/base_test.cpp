@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "base.h"
+#include "model/base.h"
 
 #include "gtest/gtest.h"
 

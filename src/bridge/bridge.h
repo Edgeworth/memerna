@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "argparse.h"
 #include "common.h"
-#include "context.h"
+#include "model/context.h"
 #include "partition/partition.h"
+#include "util/argparse.h"
 
 namespace mrna {
 namespace bridge {

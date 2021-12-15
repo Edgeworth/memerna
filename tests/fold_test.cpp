@@ -2,8 +2,8 @@
 #include <cstdlib>
 
 #include "common_test.h"
-#include "context.h"
-#include "parsing.h"
+#include "model/context.h"
+#include "model/parsing.h"
 
 namespace mrna {
 namespace fold {
@@ -11,7 +11,7 @@ namespace fold {
 class FoldAlgTest : public testing::TestWithParam<context_opt_t::TableAlg> {
  public:
   energy_t FoldEnergy(const std::string& s) {
-    return Context(parsing::StringToPrimary(s), g_em, context_opt_t(GetParam())).Fold().energy;
+    return Context(StringToPrimary(s), g_em, context_opt_t(GetParam())).Fold().energy;
   }
 };
 

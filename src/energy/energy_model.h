@@ -9,9 +9,10 @@
 #include <string>
 #include <unordered_map>
 
-#include "argparse.h"
-#include "base.h"
 #include "common.h"
+#include "model/base.h"
+#include "model/structure.h"
+#include "util/argparse.h"
 
 namespace mrna {
 namespace energy {

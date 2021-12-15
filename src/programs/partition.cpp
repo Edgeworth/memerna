@@ -9,7 +9,7 @@
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
 #include "fold/brute_fold.h"
-#include "parsing.h"
+#include "model/parsing.h"
 #include "partition/partition_globals.h"
 
 void PrintProbabilities(const mrna::partition::probabilities_t& p) {
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
-  const auto primary = mrna::parsing::StringToPrimary(pos.front());
+  const auto primary = mrna::StringToPrimary(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
   const mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);
 

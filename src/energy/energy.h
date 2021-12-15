@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "argparse.h"
 #include "common.h"
 #include "energy/energy_model.h"
+#include "model/structure.h"
 
 namespace mrna {
 namespace energy {
