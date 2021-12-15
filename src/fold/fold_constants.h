@@ -5,9 +5,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 // DP arrays
 enum : int8_t {
@@ -51,8 +49,6 @@ enum : int8_t { CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SI
 
 const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 4;
 
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold::internal
 
 #endif  // FOLD_FOLD_CONSTANTS_H_

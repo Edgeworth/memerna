@@ -9,8 +9,7 @@
 #include "model/parsing.h"
 #include "util/string.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
@@ -315,5 +314,4 @@ bool EnergyModel::IsValid(std::string* reason) const {
   return true;
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy

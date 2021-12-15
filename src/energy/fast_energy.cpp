@@ -6,8 +6,7 @@
 #include "energy/energy_globals.h"
 #include "model/parsing.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 namespace {
 
@@ -19,6 +18,7 @@ energy_t MinEnergy(const energy_t* energy, std::size_t size) {
 }
 
 }  // namespace
+
 namespace internal {
 
 int MaxNumContiguous(const primary_t& r) {
@@ -143,5 +143,4 @@ energy_t FastHairpin(int st, int en) {
   return energy;
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy

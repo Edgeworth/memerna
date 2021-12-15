@@ -2,6 +2,8 @@
 #ifndef UTIL_STRING_H_
 #define UTIL_STRING_H_
 
+#include <string>
+
 #include "common.h"
 
 namespace mrna {

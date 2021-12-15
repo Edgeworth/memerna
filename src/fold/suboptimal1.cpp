@@ -7,9 +7,7 @@
 
 #include "energy/energy_globals.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 using energy::gem;
 using energy::gpc;
@@ -430,6 +428,4 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
   return exps;
 }
 
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold::internal

@@ -6,14 +6,12 @@
 #include "energy/energy_model.h"
 #include "energy/fast_energy.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 extern EnergyModel gem;
 extern precomp_t gpc;
 void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em);
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy
 
 #endif  // ENERGY_ENERGY_GLOBALS_H_

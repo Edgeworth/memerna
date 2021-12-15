@@ -10,9 +10,7 @@
 #include "fold/fold.h"
 #include "model/parsing.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 class Suboptimal0 {
  public:
@@ -96,8 +94,7 @@ class Suboptimal0 {
     curnode.base_ctds[ctd_idx1.idx] = CTD_NA;
   }
 };
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+
+}  // namespace mrna::fold::internal
 
 #endif  // FOLD_SUBOPTIMAL0_H_

@@ -4,9 +4,7 @@
 #include "energy/energy_globals.h"
 #include "fold/fold.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 using energy::gem;
 
@@ -432,6 +430,4 @@ void Traceback() {
   }
 }
 
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold::internal

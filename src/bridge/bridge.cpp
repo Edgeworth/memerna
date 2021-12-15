@@ -5,8 +5,7 @@
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
 
-namespace mrna {
-namespace bridge {
+namespace mrna::bridge {
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
   verify(args.HasFlag("r") + args.HasFlag("k") == 1, "require exactly one package flag\n%s",
@@ -20,5 +19,4 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
   }
 }
 
-}  // namespace bridge
-}  // namespace mrna
+}  // namespace mrna::bridge

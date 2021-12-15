@@ -12,8 +12,7 @@
 #include "energy/fast_energy.h"
 #include "util/array.h"
 
-namespace mrna {
-namespace partition {
+namespace mrna::partition {
 
 enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RCOAX, PT_SIZE };
 
@@ -109,7 +108,7 @@ inline int FastMod(int a, int m) {
 }
 
 }  // namespace internal
-}  // namespace partition
-}  // namespace mrna
+
+}  // namespace mrna::partition
 
 #endif  // PARTITION_PARTITION_H_

@@ -3,9 +3,8 @@
 #include "model/parsing.h"
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
-namespace mrna {
-namespace partition {
-namespace internal {
+
+namespace mrna::partition::internal {
 
 using energy::Boltzmann;
 using energy::gem;
@@ -121,6 +120,4 @@ void Exterior() {
   assert(fabs(gptext[N - 1][PTEXT_L] - gptext[0][PTEXT_R]) < EP);
 }
 
-}  // namespace internal
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition::internal

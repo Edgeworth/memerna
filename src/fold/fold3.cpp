@@ -3,9 +3,7 @@
 #include "energy/energy_model.h"
 #include "fold/fold.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 using energy::EnergyModel;
 using energy::FastHairpin;
@@ -322,6 +320,5 @@ void ComputeTables3() {
     }
   }
 }
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+
+}  // namespace mrna::fold::internal

@@ -3,8 +3,7 @@
 
 #include "partition/partition.h"
 
-namespace mrna {
-namespace partition {
+namespace mrna::partition {
 
 probabilities_t ComputeProbabilities(const partition_t& partition) {
   const int N = static_cast<int>(partition.p.Size());
@@ -15,5 +14,4 @@ probabilities_t ComputeProbabilities(const partition_t& partition) {
   return probabilities;
 }
 
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition

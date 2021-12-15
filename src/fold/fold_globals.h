@@ -10,8 +10,8 @@
 #include "fold/fold_constants.h"
 #include "util/array.h"
 
-namespace mrna {
-namespace fold {
+namespace mrna::fold {
+
 namespace internal {
 
 extern std::vector<int> gp;
@@ -25,7 +25,6 @@ extern array2d_t<energy_t, EXT_SIZE> gext;
 
 void SetFoldGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold
 
 #endif  // FOLD_FOLD_GLOBALS_H_

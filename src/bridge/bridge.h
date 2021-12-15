@@ -13,8 +13,7 @@
 #include "partition/partition.h"
 #include "util/argparse.h"
 
-namespace mrna {
-namespace bridge {
+namespace mrna::bridge {
 
 class RnaPackage {
  public:
@@ -34,7 +33,6 @@ const std::map<std::string, opt_t> BRIDGE_OPTIONS = {{"r", {"rnastructure"}}, {"
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args);
 
-}  // namespace bridge
-}  // namespace mrna
+}  // namespace mrna::bridge
 
 #endif  // BRIDGE_BRIDGE_H_

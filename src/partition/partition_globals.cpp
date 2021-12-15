@@ -4,8 +4,8 @@
 #include "energy/energy_globals.h"
 #include "model/globals.h"
 
-namespace mrna {
-namespace partition {
+namespace mrna::partition {
+
 namespace internal {
 
 array3d_t<penergy_t, PT_SIZE> gpt;
@@ -22,5 +22,4 @@ void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em) 
   internal::gppc = internal::PrecomputeData(r, em);
 }
 
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition

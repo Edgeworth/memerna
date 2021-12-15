@@ -5,8 +5,7 @@
 #include "model/context.h"
 #include "model/parsing.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 class EnergyTest : public testing::Test {
  public:
@@ -194,5 +193,4 @@ TEST_F(EnergyTest, Helpers) {
   EXPECT_EQ(5, internal::MaxNumContiguous(StringToPrimary("GGGAUUUUUCAAAA")));
 }
 
-}  // namespace energy
-}  // namespace mrna
+}  // namespace mrna::energy

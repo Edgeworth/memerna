@@ -10,9 +10,7 @@
 #include "fold/fold.h"
 #include "util/splaymap.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 struct expand_t {
   expand_t() = delete;
@@ -74,8 +72,6 @@ class Suboptimal1 {
   }
 };
 
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+}  // namespace mrna::fold::internal
 
 #endif  // FOLD_SUBOPTIMAL1_H_

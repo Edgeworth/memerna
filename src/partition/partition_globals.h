@@ -6,8 +6,8 @@
 #include "energy/energy_model.h"
 #include "partition/partition.h"
 
-namespace mrna {
-namespace partition {
+namespace mrna::partition {
+
 namespace internal {
 
 extern array3d_t<penergy_t, PT_SIZE> gpt;
@@ -18,7 +18,6 @@ extern precomp_t gppc;
 
 void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
 
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition
 
 #endif  // PARTITION_PARTITION_GLOBALS_H_

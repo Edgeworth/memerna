@@ -8,9 +8,7 @@
 #include "common.h"
 #include "energy/energy_model.h"
 
-namespace mrna {
-namespace energy {
-namespace internal {
+namespace mrna::energy::internal {
 
 typedef std::deque<std::pair<Ctd, energy_t>> branch_ctd_t;
 
@@ -38,8 +36,7 @@ void AddBranchCtdsToComputed(
 // writes it in list representation to |branch_ctds|.
 energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
     const std::deque<int>& branches, branch_ctd_t& branch_ctds);
-}  // namespace internal
-}  // namespace energy
-}  // namespace mrna
+
+}  // namespace mrna::energy::internal
 
 #endif  // ENERGY_ENERGY_INTERNAL_H_

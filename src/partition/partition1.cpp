@@ -5,9 +5,7 @@
 #include "partition/partition.h"
 #include "partition/partition_globals.h"
 
-namespace mrna {
-namespace partition {
-namespace internal {
+namespace mrna::partition::internal {
 
 void Partition1() {
   const int N = static_cast<int>(gr.size());
@@ -436,6 +434,4 @@ void Partition1() {
   }
 }
 
-}  // namespace internal
-}  // namespace partition
-}  // namespace mrna
+}  // namespace mrna::partition::internal

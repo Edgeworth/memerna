@@ -3,9 +3,7 @@
 #include "energy/fast_energy.h"
 #include "fold/fold.h"
 
-namespace mrna {
-namespace fold {
-namespace internal {
+namespace mrna::fold::internal {
 
 using energy::FastHairpin;
 using energy::FastTwoLoop;
@@ -269,6 +267,5 @@ void ComputeTables2() {
     }
   }
 }
-}  // namespace internal
-}  // namespace fold
-}  // namespace mrna
+
+}  // namespace mrna::fold::internal

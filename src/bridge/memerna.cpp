@@ -8,8 +8,7 @@
 
 #include "energy/structure.h"
 
-namespace mrna {
-namespace bridge {
+namespace mrna::bridge {
 
 energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
   computed_t computed;
@@ -46,5 +45,4 @@ std::pair<partition::partition_t, partition::probabilities_t> Memerna::Partition
   return {std::move(partition), std::move(probabilities)};
 }
 
-}  // namespace bridge
-}  // namespace mrna
+}  // namespace mrna::bridge
