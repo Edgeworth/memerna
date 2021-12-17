@@ -10,11 +10,11 @@
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
 #include "common.h"
-#include "energy/load_model.h"
-#include "energy/structure.h"
-#include "mfe/brute_fold.h"
-#include "mfe/fold_constants.h"
-#include "mfe/fold_globals.h"
+#include "compute/energy/load_model.h"
+#include "compute/energy/structure.h"
+#include "compute/mfe/brute.h"
+#include "compute/partition/brute.h"
+#include "compute/subopt/brute.h"
 #include "model/gen.h"
 #include "model/parsing.h"
 #include "util/string.h"
@@ -23,12 +23,9 @@ using mrna::opt_t;
 
 namespace mrna {
 
-using fold::PartitionBruteForce;
-using fold::SuboptimalBruteForce;
-using fold::internal::DP_P;
-using fold::internal::DP_SIZE;
-using fold::internal::DP_U;
-using fold::internal::gdp;
+using mfe::internal::gdp;
+using partition::PartitionBruteForce;
+using subopt::SuboptimalBruteForce;
 
 struct cfg_t {
   bool random_model = false;
@@ -407,7 +404,7 @@ class Fuzzer {
   error_t CheckPartition() {
     error_t errors;
     std::vector<partition::partition_t> memerna_partitions;
-    for (auto partition_alg : context_opt_t::PARTITION_ALGS) {
+    for (auto partition_alg : context_opt_t::COMPUTE_PARTITION_ALGS) {
       Context ctx(r, em,
           context_opt_t(
               context_opt_t::TableAlg::TWO, context_opt_t::SuboptimalAlg::ONE, partition_alg));
@@ -479,7 +476,7 @@ int main(int argc, char* argv[]) {
       {"afl", opt_t("reads one rna from stdin and fuzzes - useful for use with afl")},
   });
   args.AddOptions(mrna::CFG_OPTIONS);
-  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
   args.ParseOrExit(argc, argv);
 
   const mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);

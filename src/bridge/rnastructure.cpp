@@ -71,7 +71,7 @@ computed_t RNAstructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
 }
 
 int RNAstructure::Suboptimal(
-    fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
+    subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds) fn(computed);
   return static_cast<int>(computeds.size());

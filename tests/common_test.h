@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-#include "energy/energy_model.h"
+#include "compute/energy/model.h"
 #include "gtest/gtest.h"
 
 #define ONLY_FOR_THIS_MODEL(em_, hash_)                                                          \
@@ -26,6 +26,7 @@ extern energy::EnergyModelPtr g_em;
 
 std::ostream& operator<<(std::ostream& os, const secondary_t& s);
 std::ostream& operator<<(std::ostream& os, const computed_t& computed);
+
 }  // namespace mrna
 
 #endif  // TESTS_COMMON_TEST_H_

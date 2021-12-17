@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
-#include "energy/energy_globals.h"
+#include "compute/energy/globals.h"
 #include "gtest/gtest.h"
 #include "model/context.h"
 #include "model/parsing.h"

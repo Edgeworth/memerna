@@ -1,12 +1,12 @@
 // Copyright 2016 Eliot Courtney.
 #include <cstdio>
 
-#include "energy/load_model.h"
-#include "energy/structure.h"
+#include "compute/energy/load_model.h"
+#include "compute/energy/structure.h"
 #include "model/parsing.h"
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
   args.AddOptions({{"v", {"verbose"}}});
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();

@@ -75,36 +75,42 @@ enable_testing()
 # Source set definitions.
 set(MEMERNA_SOURCE
     src/common.cpp src/common.h
-    src/energy/energy_globals.cpp src/energy/energy_globals.h
-    src/energy/energy_internal.cpp src/energy/energy_internal.h
-    src/energy/energy_model.cpp src/energy/energy_model.h
-    src/energy/energy.cpp src/energy/energy.h
-    src/energy/fast_energy.cpp src/energy/fast_energy.h
-    src/energy/load_model.cpp src/energy/load_model.h
-    src/energy/structure.cpp src/energy/structure.h
-    src/mfe/brute_fold.cpp src/mfe/brute_fold.h
-    src/mfe/fold_globals.cpp src/mfe/fold_globals.h
-    src/mfe/fold.h
-    src/mfe/fold0.cpp
-    src/mfe/fold1.cpp
-    src/mfe/fold2.cpp
-    src/mfe/fold3.cpp src/mfe/fold_constants.h
-    src/mfe/suboptimal0.cpp src/mfe/suboptimal0.h
-    src/mfe/suboptimal1.cpp src/mfe/suboptimal1.h
-    src/mfe/traceback.cpp
+    src/compute/constants.h
+    src/compute/dp.h
+    src/compute/energy/energy.cpp src/compute/energy/energy.h
+    src/compute/energy/fast_energy.cpp src/compute/energy/fast_energy.h
+    src/compute/energy/globals.cpp src/compute/energy/globals.h
+    src/compute/energy/internal.cpp src/compute/energy/internal.h
+    src/compute/energy/load_model.cpp src/compute/energy/load_model.h
+    src/compute/energy/model.cpp src/compute/energy/model.h
+    src/compute/energy/structure.cpp src/compute/energy/structure.h
+    src/compute/mfe/globals.cpp src/compute/mfe/globals.h
+    src/compute/mfe/brute.cpp src/compute/mfe/brute.h
+    src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
+    src/compute/mfe/mfe0.cpp
+    src/compute/mfe/mfe1.cpp
+    src/compute/mfe/mfe2.cpp
+    src/compute/mfe/mfe3.cpp
+    src/compute/partition/exterior.cpp
+    src/compute/partition/globals.cpp src/compute/partition/globals.h
+    src/compute/partition/internal.cpp
+    src/compute/partition/brute.cpp src/compute/partition/brute.h
+    src/compute/partition/partition.h
+    src/compute/partition/partition0.cpp
+    src/compute/partition/partition1.cpp
+    src/compute/partition/probability.cpp
+    src/compute/subopt/brute.cpp src/compute/subopt/brute.h
+    src/compute/subopt/subopt.h
+    src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
+    src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
+    src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
+    src/compute/brute.cpp src/compute/brute.h
     src/model/base.cpp src/model/base.h
     src/model/context.cpp src/model/context.h
     src/model/gen.cpp src/model/gen.h
     src/model/globals.cpp src/model/globals.h
     src/model/parsing.cpp src/model/parsing.h
     src/model/structure.h
-    src/partition/exterior.cpp
-    src/partition/internal.cpp
-    src/partition/partition_globals.cpp src/partition/partition_globals.h
-    src/partition/partition.h
-    src/partition/partition0.cpp
-    src/partition/partition1.cpp
-    src/partition/probability.cpp
     src/util/argparse.cpp src/util/argparse.h
     src/util/array.h
     src/util/splaymap.h
@@ -122,7 +128,7 @@ set(TEST_SOURCE
     tests/common_test.h
     tests/ctds_test.cpp
     tests/energy_test.cpp
-    tests/fold_test.cpp
+    tests/mfe_test.cpp
     tests/parsing_test.cpp
     tests/splaymap_test.cpp
 )

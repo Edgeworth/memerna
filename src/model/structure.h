@@ -12,7 +12,7 @@ namespace mrna {
 typedef std::vector<base_t> primary_t;
 typedef int32_t energy_t;
 
-#ifdef PARTITION_MPFR
+#ifdef COMPUTE_PARTITION_MPFR
 typedef boost::multiprecision::mpfr_float_1000 penergy_t;
 const penergy_t EP{1e-30};
 #else

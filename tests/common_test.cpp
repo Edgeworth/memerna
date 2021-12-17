@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
 
-#include "energy/structure.h"
+#include "compute/energy/structure.h"
 #include "model/parsing.h"
 
 namespace mrna {
