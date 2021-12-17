@@ -220,6 +220,11 @@ class SplayMap {
   }
 };
 
+struct nothing_t {};
+
+template <typename Key>
+using SplaySet = SplayMap<Key, nothing_t>;
+
 }  // namespace mrna
 
 #endif  // UTIL_SPLAYMAP_H_

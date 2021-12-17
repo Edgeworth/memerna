@@ -7,10 +7,11 @@
 #include <vector>
 
 #include "common.h"
-#include "energy/energy.h"
-#include "mfe/fold.h"
+#include "compute/energy/energy.h"
+#include "compute/mfe/mfe.h"
+#include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 #include "model/structure.h"
-#include "partition/partition.h"
 #include "util/argparse.h"
 
 namespace mrna {
@@ -31,7 +32,7 @@ struct context_opt_t {
   static constexpr TableAlg TABLE_ALGS[] = {
       TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
   static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
-  static constexpr PartitionAlg PARTITION_ALGS[] = {PartitionAlg::ZERO, PartitionAlg::ONE};
+  static constexpr PartitionAlg COMPUTE_PARTITION_ALGS[] = {PartitionAlg::ZERO, PartitionAlg::ONE};
 
   context_opt_t(TableAlg table_alg_ = TableAlg::ZERO,
       SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
@@ -63,7 +64,7 @@ class Context {
   std::vector<computed_t> SuboptimalIntoVector(
       bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
   int Suboptimal(
-      fold::SuboptimalCallback fn, bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
+      subopt::SuboptimalCallback fn, bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
   partition::partition_t Partition();
 
  private:

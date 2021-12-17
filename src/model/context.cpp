@@ -4,16 +4,19 @@
 #include <utility>
 #include <vector>
 
-#include "mfe/brute_fold.h"
-#include "mfe/suboptimal0.h"
-#include "mfe/suboptimal1.h"
-#include "partition/partition_globals.h"
+#include "compute/mfe/brute.h"
+#include "compute/partition/brute.h"
+#include "compute/partition/globals.h"
+#include "compute/subopt/brute.h"
+#include "compute/subopt/subopt0.h"
+#include "compute/subopt/subopt1.h"
+#include "compute/traceback/traceback.h"
 
 namespace mrna {
 
 constexpr context_opt_t::TableAlg context_opt_t::TABLE_ALGS[];
 constexpr context_opt_t::SuboptimalAlg context_opt_t::SUBOPTIMAL_ALGS[];
-constexpr context_opt_t::PartitionAlg context_opt_t::PARTITION_ALGS[];
+constexpr context_opt_t::PartitionAlg context_opt_t::COMPUTE_PARTITION_ALGS[];
 
 context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
   context_opt_t options;
@@ -55,23 +58,23 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
 }
 
 void Context::ComputeTables() {
-  fold::SetFoldGlobalState(r, *em);
+  mfe::SetMfeGlobalState(r, *em);
   switch (options.table_alg) {
-  case context_opt_t::TableAlg::ZERO: fold::internal::ComputeTables0(); break;
-  case context_opt_t::TableAlg::ONE: fold::internal::ComputeTables1(); break;
-  case context_opt_t::TableAlg::TWO: fold::internal::ComputeTables2(); break;
-  case context_opt_t::TableAlg::THREE: fold::internal::ComputeTables3(); break;
+  case context_opt_t::TableAlg::ZERO: mfe::internal::ComputeTables0(); break;
+  case context_opt_t::TableAlg::ONE: mfe::internal::ComputeTables1(); break;
+  case context_opt_t::TableAlg::TWO: mfe::internal::ComputeTables2(); break;
+  case context_opt_t::TableAlg::THREE: mfe::internal::ComputeTables3(); break;
   default: verify(false, "bug");
   }
-  fold::internal::ComputeExterior();
+  mfe::internal::ComputeExterior();
 }
 
 computed_t Context::Fold() {
-  if (options.table_alg == context_opt_t::TableAlg::BRUTE) return fold::FoldBruteForce(r, *em);
+  if (options.table_alg == context_opt_t::TableAlg::BRUTE) return mfe::MfeBruteForce(r, *em);
 
   ComputeTables();
-  fold::internal::Traceback();
-  return {{gr, fold::internal::gp}, fold::internal::gctd, fold::internal::genergy};
+  traceback::Traceback();
+  return {{gr, mfe::internal::gp}, mfe::internal::gctd, mfe::internal::genergy};
 }
 
 std::vector<computed_t> Context::SuboptimalIntoVector(
@@ -85,9 +88,9 @@ std::vector<computed_t> Context::SuboptimalIntoVector(
 }
 
 int Context::Suboptimal(
-    fold::SuboptimalCallback fn, bool sorted, energy_t subopt_delta, int subopt_num) {
+    subopt::SuboptimalCallback fn, bool sorted, energy_t subopt_delta, int subopt_num) {
   if (options.suboptimal_alg == context_opt_t::SuboptimalAlg::BRUTE) {
-    auto computeds = fold::SuboptimalBruteForce(r, *em, subopt_num);
+    auto computeds = subopt::SuboptimalBruteForce(r, *em, subopt_num);
     for (const auto& computed : computeds) fn(computed);
     return static_cast<int>(computeds.size());
   }
@@ -95,9 +98,9 @@ int Context::Suboptimal(
   ComputeTables();
   switch (options.suboptimal_alg) {
   case context_opt_t::SuboptimalAlg::ZERO:
-    return fold::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
+    return subopt::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
   case context_opt_t::SuboptimalAlg::ONE:
-    return fold::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
+    return subopt::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
   default:
     verify(
         false, "bug - no such suboptimal algorithm %d", static_cast<int>(options.suboptimal_alg));
@@ -109,7 +112,7 @@ partition::partition_t Context::Partition() {
   switch (options.partition_alg) {
   case context_opt_t::PartitionAlg::ZERO: partition::internal::Partition0(); break;
   case context_opt_t::PartitionAlg::ONE: partition::internal::Partition1(); break;
-  case context_opt_t::PartitionAlg::BRUTE: return fold::PartitionBruteForce(r, *em).first;
+  case context_opt_t::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r, *em).first;
   }
   const auto& gpt = partition::internal::gpt;
   const int size = static_cast<int>(r.size());

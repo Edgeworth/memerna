@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "energy/structure.h"
+#include "compute/energy/structure.h"
 
 namespace mrna::bridge {
 
@@ -29,7 +29,7 @@ energy_t Memerna::Efn(const secondary_t& secondary, std::string* desc) const {
 computed_t Memerna::Fold(const primary_t& r) const { return Context(r, em, options).Fold(); }
 
 int Memerna::Suboptimal(
-    fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
+    subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
   return Context(r, em, options).Suboptimal(fn, true, energy_delta, -1);
 }
 

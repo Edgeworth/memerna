@@ -2,7 +2,7 @@
 #include <cstdio>
 
 #include "common.h"
-#include "energy/load_model.h"
+#include "compute/energy/load_model.h"
 #include "model/context.h"
 #include "model/parsing.h"
 
@@ -12,7 +12,7 @@ using mrna::energy_t;
 using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::ENERGY_OPTIONS);
+  mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
   args.AddOptions(mrna::CONTEXT_OPTIONS);
   args.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
       {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
   const bool ctd_data = args.HasFlag("ctd-output");
   verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
-  mrna::fold::SuboptimalCallback fn = [](const computed_t&) {};
+  mrna::subopt::SuboptimalCallback fn = [](const computed_t&) {};
   if (should_print) {
     if (ctd_data) {
       fn = [](const computed_t& c) {
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     } else {
       fn = [](const computed_t& c) {
         printf("%d ", c.energy);
-        puts(mrna::fold::internal::grep.c_str());  // meme
+        puts(mrna::mfe::internal::grep.c_str());  // meme
       };
     }
   }

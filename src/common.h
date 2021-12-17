@@ -12,7 +12,7 @@
 #include <tuple>
 #include <vector>
 
-#ifdef PARTITION_MPFR
+#ifdef COMPUTE_PARTITION_MPFR
 #include <boost/multiprecision/mpfr.hpp>
 namespace boost {
 

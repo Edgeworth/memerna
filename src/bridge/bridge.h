@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "common.h"
+#include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 #include "model/context.h"
-#include "partition/partition.h"
 #include "util/argparse.h"
 
 namespace mrna::bridge {
@@ -22,7 +23,7 @@ class RnaPackage {
   virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;
   virtual computed_t Fold(const primary_t& r) const = 0;
   virtual int Suboptimal(
-      fold::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const = 0;
+      subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const = 0;
   virtual std::vector<computed_t> SuboptimalIntoVector(
       const primary_t& r, energy_t energy_delta) const = 0;
   virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(

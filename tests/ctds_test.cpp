@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include "common_test.h"
-#include "energy/energy_internal.h"
-#include "energy/load_model.h"
+#include "compute/energy/internal.h"
+#include "compute/energy/load_model.h"
 #include "gtest/gtest.h"
 #include "model/parsing.h"
 

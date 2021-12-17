@@ -1,5 +1,5 @@
 // Copyright 2016 E.
-#include "partition/partition.h"
+#include "compute/partition/partition.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -7,10 +7,10 @@
 #include <iostream>
 
 #include "bridge/rnastructure.h"
-#include "energy/load_model.h"
-#include "mfe/brute_fold.h"
+#include "compute/energy/load_model.h"
+#include "compute/mfe/brute.h"
+#include "compute/partition/globals.h"
 #include "model/parsing.h"
-#include "partition/partition_globals.h"
 
 void PrintProbabilities(const mrna::partition::probabilities_t& p) {
   const int N = static_cast<int>(p.Size());
@@ -30,7 +30,7 @@ void PrintPartition(const mrna::partition::partition_t& p) {
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
-  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
   args.AddOptions(mrna::CONTEXT_OPTIONS);
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();

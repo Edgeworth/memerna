@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "bridge/bridge.h"
-#include "energy/load_model.h"
+#include "compute/energy/load_model.h"
 #include "model/parsing.h"
 
 using mrna::computed_t;
@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   });
   args.AddOptions(mrna::bridge::BRIDGE_OPTIONS);
   args.AddOptions(mrna::CONTEXT_OPTIONS);
-  args.AddOptions(mrna::energy::ENERGY_OPTIONS);
+  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
   args.ParseOrExit(argc, argv);
   verify(args.HasFlag("e") + args.HasFlag("f") == 1, "require exactly one program flag\n%s",
       args.Usage().c_str());
