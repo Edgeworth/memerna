@@ -4,9 +4,9 @@
 #include <utility>
 #include <vector>
 
-#include "fold/brute_fold.h"
-#include "fold/suboptimal0.h"
-#include "fold/suboptimal1.h"
+#include "mfe/brute_fold.h"
+#include "mfe/suboptimal0.h"
+#include "mfe/suboptimal1.h"
 #include "partition/partition_globals.h"
 
 namespace mrna {

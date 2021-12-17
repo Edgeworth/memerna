@@ -82,16 +82,16 @@ set(MEMERNA_SOURCE
     src/energy/fast_energy.cpp src/energy/fast_energy.h
     src/energy/load_model.cpp src/energy/load_model.h
     src/energy/structure.cpp src/energy/structure.h
-    src/fold/brute_fold.cpp src/fold/brute_fold.h
-    src/fold/fold_globals.cpp src/fold/fold_globals.h
-    src/fold/fold.h
-    src/fold/fold0.cpp
-    src/fold/fold1.cpp
-    src/fold/fold2.cpp
-    src/fold/fold3.cpp src/fold/fold_constants.h
-    src/fold/suboptimal0.cpp src/fold/suboptimal0.h
-    src/fold/suboptimal1.cpp src/fold/suboptimal1.h
-    src/fold/traceback.cpp
+    src/mfe/brute_fold.cpp src/mfe/brute_fold.h
+    src/mfe/fold_globals.cpp src/mfe/fold_globals.h
+    src/mfe/fold.h
+    src/mfe/fold0.cpp
+    src/mfe/fold1.cpp
+    src/mfe/fold2.cpp
+    src/mfe/fold3.cpp src/mfe/fold_constants.h
+    src/mfe/suboptimal0.cpp src/mfe/suboptimal0.h
+    src/mfe/suboptimal1.cpp src/mfe/suboptimal1.h
+    src/mfe/traceback.cpp
     src/model/base.cpp src/model/base.h
     src/model/context.cpp src/model/context.h
     src/model/gen.cpp src/model/gen.h

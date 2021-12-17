@@ -8,7 +8,7 @@
 
 #include "bridge/rnastructure.h"
 #include "energy/load_model.h"
-#include "fold/brute_fold.h"
+#include "mfe/brute_fold.h"
 #include "model/parsing.h"
 #include "partition/partition_globals.h"
 

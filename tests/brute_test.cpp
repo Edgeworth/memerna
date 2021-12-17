@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include "common_test.h"
-#include "fold/brute_fold.h"
 #include "gtest/gtest.h"
+#include "mfe/brute_fold.h"
 #include "model/parsing.h"
 
 namespace mrna {
