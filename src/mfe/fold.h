@@ -3,7 +3,7 @@
 #define FOLD_FOLD_H_
 
 #include "common.h"
-#include "fold/fold_globals.h"
+#include "mfe/fold_globals.h"
 #include "model/base.h"
 #include "model/globals.h"
 

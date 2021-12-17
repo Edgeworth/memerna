@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "common.h"
-#include "fold/fold.h"
+#include "mfe/fold.h"
 #include "util/splaymap.h"
 
 namespace mrna::fold::internal {

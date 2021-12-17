@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "fold/brute_fold.h"
+#include "mfe/brute_fold.h"
 
 #include <set>
 #include <stack>
@@ -8,8 +8,8 @@
 
 #include "energy/energy_globals.h"
 #include "energy/structure.h"
-#include "fold/fold.h"
-#include "fold/fold_globals.h"
+#include "mfe/fold.h"
+#include "mfe/fold_globals.h"
 #include "model/parsing.h"
 #include "util/splaymap.h"
 

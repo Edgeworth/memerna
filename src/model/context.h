@@ -8,7 +8,7 @@
 
 #include "common.h"
 #include "energy/energy.h"
-#include "fold/fold.h"
+#include "mfe/fold.h"
 #include "model/structure.h"
 #include "partition/partition.h"
 #include "util/argparse.h"

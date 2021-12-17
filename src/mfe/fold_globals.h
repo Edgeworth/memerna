@@ -7,7 +7,7 @@
 
 #include "common.h"
 #include "energy/energy_model.h"
-#include "fold/fold_constants.h"
+#include "mfe/fold_constants.h"
 #include "util/array.h"
 
 namespace mrna::fold {

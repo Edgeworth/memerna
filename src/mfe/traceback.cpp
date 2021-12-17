@@ -2,7 +2,7 @@
 #include <stack>
 
 #include "energy/energy_globals.h"
-#include "fold/fold.h"
+#include "mfe/fold.h"
 
 namespace mrna::fold::internal {
 
@@ -59,8 +59,6 @@ void ComputeExterior() {
     }
   }
 }
-
-#undef UPDATE_EXT
 
 void Traceback() {
   const int N = static_cast<int>(gr.size());

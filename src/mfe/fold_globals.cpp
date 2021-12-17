@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "fold/fold_globals.h"
+#include "mfe/fold_globals.h"
 
 #include "energy/energy_globals.h"
 #include "model/globals.h"

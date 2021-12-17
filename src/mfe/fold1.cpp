@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "energy/energy_globals.h"
 #include "energy/fast_energy.h"
-#include "fold/fold.h"
+#include "mfe/fold.h"
 
 namespace mrna::fold::internal {
 

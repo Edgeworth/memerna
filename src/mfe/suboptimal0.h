@@ -7,7 +7,7 @@
 
 #include "common.h"
 #include "energy/structure.h"
-#include "fold/fold.h"
+#include "mfe/fold.h"
 #include "model/parsing.h"
 
 namespace mrna::fold::internal {
