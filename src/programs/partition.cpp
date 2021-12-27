@@ -6,10 +6,10 @@
 #include <iomanip>
 #include <iostream>
 
-#include "bridge/rnastructure.h"
 #include "compute/energy/load_model.h"
 #include "compute/mfe/brute.h"
 #include "compute/partition/globals.h"
+#include "model/context.h"
 #include "model/parsing.h"
 
 void PrintProbabilities(const mrna::partition::probabilities_t& p) {
@@ -37,11 +37,7 @@ int main(int argc, char* argv[]) {
   verify(pos.size() == 1, "need primary sequence to fold");
   const auto primary = mrna::StringToPrimary(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
-  const mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);
 
   mrna::Context ctx(primary, em, ContextOptionsFromArgParse(args));
-  std::cout << "MEMERNA:\n";
   PrintProbabilities(mrna::partition::ComputeProbabilities(ctx.Partition()));
-  std::cout << "RNAstructure:\n";
-  PrintProbabilities(rnastructure.Partition(primary).second);
 }

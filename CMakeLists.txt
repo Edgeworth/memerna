@@ -1,15 +1,21 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(memerna VERSION 0.1 LANGUAGES CXX)
+# Also include C here since required for CheckCCompilerFlag.
+project(memerna VERSION 0.1 LANGUAGES C CXX)
 
 # Options
-option(PARTITION_MPFR "Use higher precision with MPFR for the partition function" OFF)
+option(USE_MPFR "Use MPFR for higher precision floats" OFF)
+option(FLOAT_BITS "Number of bits to use for floats.
+    Valid values are 32, 64, 80, or any value if MPFR is enabled." 64)
+option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 
 # Always have RNAstructure compiled as release.
-set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE Release)
-add_subdirectory("extern/miles_rnastructure")
-set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
+if (USE_RNASTRUCTURE)
+  set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+  set(CMAKE_BUILD_TYPE Release)
+  add_subdirectory("extern/miles_rnastructure")
+  set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
+endif ()
 
 # Flags for each build configuration.
 set(CMAKE_CXX_STANDARD 17)
@@ -38,16 +44,14 @@ if ("${SAVED_BUILD_TYPE}" STREQUAL "ubsan" AND NOT HAVE_UNDEFINED_BEHAVIOR_SANIT
 endif ()
 
 # Check for MPFR build.
-if (PARTITION_MPFR)
+if (USE_MPFR)
   if (NOT MPFR_FOUND)
     message(FATAL_ERROR "mpfr builds require mpfr")
   endif ()
   if (NOT Boost_FOUND)
     message(FATAL_ERROR "mpfr builds require boost")
   endif ()
-  include_directories(${Boost_INCLUDE_DIRS} ${MPFR_INCLUDE_DIRS})
-  add_definitions(-DPARTITION_MPFR)
-  message("Building using MPFR for the partition function.")
+  message("Building using MPFR for floats.")
 endif ()
 
 # Enable tests.
@@ -74,6 +78,9 @@ enable_testing()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
+    src/bridge/bridge.cpp src/bridge/bridge.h
+    src/bridge/memerna.cpp src/bridge/memerna.h
+    src/compute/brute.cpp src/compute/brute.h
     src/compute/constants.h
     src/compute/dp.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h
@@ -83,17 +90,17 @@ set(MEMERNA_SOURCE
     src/compute/energy/load_model.cpp src/compute/energy/load_model.h
     src/compute/energy/model.cpp src/compute/energy/model.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h
-    src/compute/mfe/globals.cpp src/compute/mfe/globals.h
     src/compute/mfe/brute.cpp src/compute/mfe/brute.h
+    src/compute/mfe/globals.cpp src/compute/mfe/globals.h
     src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
     src/compute/mfe/mfe0.cpp
     src/compute/mfe/mfe1.cpp
     src/compute/mfe/mfe2.cpp
     src/compute/mfe/mfe3.cpp
+    src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/exterior.cpp
     src/compute/partition/globals.cpp src/compute/partition/globals.h
     src/compute/partition/internal.cpp
-    src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/partition.h
     src/compute/partition/partition0.cpp
     src/compute/partition/partition1.cpp
@@ -103,7 +110,6 @@ set(MEMERNA_SOURCE
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
     src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
     src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
-    src/compute/brute.cpp src/compute/brute.h
     src/model/base.cpp src/model/base.h
     src/model/context.cpp src/model/context.h
     src/model/gen.cpp src/model/gen.h
@@ -114,11 +120,6 @@ set(MEMERNA_SOURCE
     src/util/array.h
     src/util/splaymap.h
     src/util/string.cpp src/util/string.h
-)
-set(BRIDGE_SOURCE
-    src/bridge/bridge.cpp src/bridge/bridge.h
-    src/bridge/memerna.cpp src/bridge/memerna.h
-    src/bridge/rnastructure.cpp src/bridge/rnastructure.h
 )
 set(TEST_SOURCE
     tests/base_test.cpp
@@ -132,18 +133,14 @@ set(TEST_SOURCE
     tests/splaymap_test.cpp
 )
 
-include_directories(src)
-# Suppress warnings.
-include_directories(SYSTEM extern)
-
-# Libraries.
-add_library(memerna ${MEMERNA_SOURCE})
-add_library(bridge ${BRIDGE_SOURCE})
-
-# Link MPFR if necessary
-if (PARTITION_MPFR)
-  target_link_libraries(memerna ${MPFR_LIBRARIES})
+# Use RNAstructure if necessary
+if (USE_RNASTRUCTURE)
+  set(MEMERNA_SOURCE ${MEMERNA_SOURCE}
+      src/bridge/rnastructure.cpp src/bridge/rnastructure.h
+  )
 endif ()
+
+add_library(memerna ${MEMERNA_SOURCE})
 
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
@@ -154,13 +151,28 @@ add_executable(partition src/programs/partition.cpp)
 add_executable(run_tests ${TEST_SOURCE} tests/programs/run_tests.cpp)
 add_executable(splay_explorer tests/programs/splay_explorer.cpp)
 
+target_include_directories(memerna PUBLIC src)
 target_include_directories(run_tests PRIVATE tests)
 
-target_link_libraries(efn memerna)
-target_link_libraries(fold memerna)
-target_link_libraries(subopt memerna)
-target_link_libraries(fuzz bridge memerna miles_rnastructure)
-target_link_libraries(harness bridge memerna miles_rnastructure)
-target_link_libraries(partition bridge memerna miles_rnastructure)
-target_link_libraries(run_tests memerna Threads::Threads gtest)
-target_link_libraries(splay_explorer memerna)
+target_link_libraries(efn PRIVATE memerna)
+target_link_libraries(fold PRIVATE memerna)
+target_link_libraries(subopt PRIVATE memerna)
+target_link_libraries(fuzz PRIVATE memerna)
+target_link_libraries(harness PRIVATE memerna)
+target_link_libraries(partition PRIVATE memerna)
+target_link_libraries(run_tests PRIVATE memerna Threads::Threads gtest)
+target_link_libraries(splay_explorer PRIVATE memerna)
+
+# Use MPFR if necessary
+if (USE_MPFR)
+  target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS} ${MPFR_INCLUDE_DIRS})
+  target_compile_definitions(memerna PUBLIC USE_MPFR)
+  target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
+endif ()
+
+# Use RNAstructure if necessary
+if (USE_RNASTRUCTURE)
+  target_include_directories(memerna SYSTEM PUBLIC extern) # Suppress warnings.
+  target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
+  target_link_libraries(memerna PUBLIC miles_rnastructure)
+endif ()
