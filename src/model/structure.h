@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "model/base.h"
+#include "util/float.h"
 #include "util/macros.h"
 
 namespace mrna {
@@ -12,29 +13,23 @@ namespace mrna {
 typedef std::vector<base_t> primary_t;
 typedef int32_t energy_t;
 
-#ifdef COMPUTE_PARTITION_MPFR
-typedef boost::multiprecision::mpfr_float_1000 penergy_t;
-const penergy_t EP{1e-30};
-#else
-typedef double penergy_t;
-const penergy_t EP{1e-3};
-#endif
+typedef flt penergy_t;
 
 // Don't change this value. Plays nice with memset.
-const energy_t MAX_E = 0x0F0F0F0F;
-const energy_t CAP_E = 0x07070707;
+inline constexpr energy_t MAX_E = 0x0F0F0F0F;
+inline constexpr energy_t CAP_E = 0x07070707;
 
 // -----------------------------------------------
 // Values affecting the energy model:
-const int HAIRPIN_MIN_SZ = 3;
+inline constexpr int HAIRPIN_MIN_SZ = 3;
 // N.B. This is for kcal/mol so it's not 8.315.
-const double R = 1.9872036e-3;
+inline constexpr double R = 1.9872036e-3;
 // This is 37 degrees Celsius. Changing this is not a good idea.
-const double T = 310.15;
+inline constexpr double T = 310.15;
 // Ninio maximum asymmetry.
-const energy_t NINIO_MAX_ASYM = 30;
+inline constexpr energy_t NINIO_MAX_ASYM = 30;
 // Maximum size of a twoloop.
-const int TWOLOOP_MAX_SZ = 30;
+inline constexpr int TWOLOOP_MAX_SZ = 30;
 
 enum Ctd : int8_t {
   CTD_NA,
