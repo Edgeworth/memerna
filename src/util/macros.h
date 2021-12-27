@@ -15,7 +15,7 @@
     }                                                 \
   } while (0)
 
-#define unimplemented() verify(false, "unimplemented")
+#define error(...) verify(false, __VA_ARGS__)
 
 #define bug() verify(false, "bug")
 

@@ -32,7 +32,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
   } else if (dp_alg == "brute") {
     options.table_alg = context_opt_t::TableAlg::BRUTE;
   } else {
-    verify(false, "unknown fold option");
+    error("unknown fold option");
   }
   const auto subopt_alg = args.GetOption("subopt-alg");
   if (subopt_alg == "0") {
@@ -42,7 +42,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
   } else if (subopt_alg == "brute") {
     options.suboptimal_alg = context_opt_t::SuboptimalAlg::BRUTE;
   } else {
-    verify(false, "unknown suboptimal option");
+    error("unknown suboptimal option");
   }
   const auto part_alg = args.GetOption("part-alg");
   if (part_alg == "0") {
@@ -52,7 +52,7 @@ context_opt_t ContextOptionsFromArgParse(const ArgParse& args) {
   } else if (part_alg == "brute") {
     options.partition_alg = context_opt_t::PartitionAlg::BRUTE;
   } else {
-    verify(false, "unknown partition option");
+    error("unknown partition option");
   }
   return options;
 }
@@ -64,7 +64,7 @@ void Context::ComputeTables() {
   case context_opt_t::TableAlg::ONE: mfe::internal::ComputeTables1(); break;
   case context_opt_t::TableAlg::TWO: mfe::internal::ComputeTables2(); break;
   case context_opt_t::TableAlg::THREE: mfe::internal::ComputeTables3(); break;
-  default: verify(false, "bug");
+  default: bug();
   }
   mfe::internal::ComputeExterior();
 }

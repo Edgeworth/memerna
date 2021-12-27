@@ -241,7 +241,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
     case CTD_FCOAX_WITH_NEXT:
       // All these cases will be handled in the next branch (PREV).
       continue;
-    default: verify(false, "bug");  // Should never happen
+    default: bug();  // Should never happen
     }
     branch_ctds.emplace_back(computed.base_ctds[branch], energy);
     total_energy += energy;
