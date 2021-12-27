@@ -82,7 +82,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
       break;
     case CTD_FCOAX_WITH_NEXT: s[i] = closing ? 'N' : 'n'; break;
     case CTD_FCOAX_WITH_PREV: s[i] = closing ? 'P' : 'p'; break;
-    default: verify(false, "bug");
+    default: bug();
     }
   }
   return s;
