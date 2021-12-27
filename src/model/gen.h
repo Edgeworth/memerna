@@ -2,7 +2,6 @@
 #ifndef MODEL_GEN_H_
 #define MODEL_GEN_H_
 
-#include "common.h"
 #include "model/structure.h"
 
 namespace mrna {

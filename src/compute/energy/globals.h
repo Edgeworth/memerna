@@ -2,7 +2,6 @@
 #ifndef COMPUTE_ENERGY_GLOBALS_H_
 #define COMPUTE_ENERGY_GLOBALS_H_
 
-#include "common.h"
 #include "compute/energy/fast_energy.h"
 #include "compute/energy/model.h"
 

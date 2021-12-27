@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "common.h"
 #include "compute/constants.h"
 #include "compute/dp.h"
 #include "compute/subopt/subopt.h"

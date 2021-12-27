@@ -2,6 +2,7 @@
 #include "compute/energy/model.h"
 
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <string>
 

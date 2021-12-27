@@ -7,8 +7,6 @@
 #include <memory>
 #include <random>
 
-#include "common.h"
-
 namespace mrna {
 
 typedef int8_t base_t;

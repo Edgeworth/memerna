@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "common.h"
 #include "compute/energy/model.h"
 #include "model/structure.h"
 

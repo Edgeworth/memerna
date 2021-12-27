@@ -4,6 +4,7 @@
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
 #include "compute/energy/load_model.h"
+#include "util/macros.h"
 
 namespace mrna::bridge {
 

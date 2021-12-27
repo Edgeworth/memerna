@@ -12,10 +12,7 @@ namespace mrna::mfe::internal {
 
 // TODO: get rid of these
 using energy::gem;
-using mfe::internal::gctd;
 using mfe::internal::gdp;
-using mfe::internal::genergy;
-using mfe::internal::gp;
 
 void ComputeExterior() {
   const int N = static_cast<int>(gr.size());

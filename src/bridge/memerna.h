@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "bridge/bridge.h"
-#include "common.h"
 #include "model/context.h"
 
 namespace mrna::bridge {

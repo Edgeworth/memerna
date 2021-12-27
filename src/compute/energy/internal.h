@@ -5,7 +5,6 @@
 #include <deque>
 #include <utility>
 
-#include "common.h"
 #include "compute/energy/model.h"
 
 namespace mrna::energy::internal {

@@ -2,7 +2,8 @@
 #ifndef COMPUTE_DP_H_
 #define COMPUTE_DP_H_
 
-#include "common.h"
+#include <cassert>
+
 #include "model/base.h"
 #include "model/globals.h"
 

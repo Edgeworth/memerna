@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "common.h"
 #include "compute/energy/model.h"
 #include "model/globals.h"
 #include "model/parsing.h"
+#include "util/macros.h"
 
 namespace mrna::energy {
 

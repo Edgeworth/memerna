@@ -2,6 +2,7 @@
 #ifndef COMPUTE_ENERGY_MODEL_H_
 #define COMPUTE_ENERGY_MODEL_H_
 
+#include <cassert>
 #include <cmath>
 #include <cstdarg>
 #include <cstring>
@@ -9,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "common.h"
 #include "model/base.h"
 #include "model/structure.h"
 #include "util/argparse.h"

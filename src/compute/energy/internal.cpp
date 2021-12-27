@@ -2,6 +2,7 @@
 #include "compute/energy/internal.h"
 
 #include <algorithm>
+#include <cassert>
 #include <tuple>
 #include <utility>
 #include <vector>

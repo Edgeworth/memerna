@@ -2,7 +2,6 @@
 #ifndef COMPUTE_PARTITION_GLOBALS_H_
 #define COMPUTE_PARTITION_GLOBALS_H_
 
-#include "common.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 

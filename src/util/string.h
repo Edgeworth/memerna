@@ -4,8 +4,6 @@
 
 #include <string>
 
-#include "common.h"
-
 namespace mrna {
 
 std::string sgetline(FILE* fp);

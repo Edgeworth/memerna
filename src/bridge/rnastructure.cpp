@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "util/macros.h"
+
 namespace mrna::bridge {
 
 namespace {

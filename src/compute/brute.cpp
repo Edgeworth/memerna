@@ -1,6 +1,8 @@
 // Copyright 2021 Eliot Courtney.
 #include "compute/brute.h"
 
+#include "util/macros.h"
+
 namespace mrna {
 
 namespace internal {

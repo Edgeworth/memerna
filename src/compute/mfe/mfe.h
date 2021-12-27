@@ -2,7 +2,6 @@
 #ifndef COMPUTE_MFE_MFE_H_
 #define COMPUTE_MFE_MFE_H_
 
-#include "common.h"
 #include "compute/mfe/globals.h"
 #include "model/base.h"
 #include "model/globals.h"

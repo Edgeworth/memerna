@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "common.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/internal.h"
+#include "util/macros.h"
 
 namespace mrna::energy {
 
@@ -49,7 +49,7 @@ class HairpinLoopStructure : public Structure {
  public:
   HairpinLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
-  void AddBranch(std::unique_ptr<Structure>) { assert(false); }
+  void AddBranch(std::unique_ptr<Structure>) { unimplemented(); }
   std::string ShortDesc() const;
 
  private:

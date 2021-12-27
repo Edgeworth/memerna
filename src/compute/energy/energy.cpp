@@ -2,6 +2,7 @@
 #include "compute/energy/energy.h"
 
 #include <algorithm>
+#include <cassert>
 
 #include "compute/energy/internal.h"
 #include "compute/energy/structure.h"

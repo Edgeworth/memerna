@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "common.h"
 #include "compute/constants.h"
 #include "compute/dp.h"
 #include "compute/energy/model.h"

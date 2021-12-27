@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "util/macros.h"
+
 namespace mrna {
 
 primary_t StringToPrimary(const std::string& s) {

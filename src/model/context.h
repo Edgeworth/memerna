@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "common.h"
 #include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
