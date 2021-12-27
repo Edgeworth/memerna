@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "common.h"
 #include "compute/energy/model.h"
 
 namespace mrna::energy {

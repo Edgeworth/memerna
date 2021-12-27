@@ -5,7 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "common.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 

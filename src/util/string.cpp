@@ -1,9 +1,10 @@
 // Copyright 2016 E.
 #include "util/string.h"
 
+#include <cstdarg>
 #include <random>
 
-#include "common.h"
+#include "util/macros.h"
 
 namespace mrna {
 

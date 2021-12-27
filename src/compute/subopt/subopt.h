@@ -2,7 +2,8 @@
 #ifndef COMPUTE_SUBOPT_SUBOPT_H_
 #define COMPUTE_SUBOPT_SUBOPT_H_
 
-#include "common.h"
+#include <functional>
+
 #include "model/base.h"
 #include "model/globals.h"
 

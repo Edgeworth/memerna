@@ -4,6 +4,7 @@
 #include <random>
 
 #include "gtest/gtest.h"
+#include "util/macros.h"
 
 namespace mrna {
 
@@ -105,7 +106,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       do { key = val_dist(eng); } while (s.count(key));
       EXPECT_FALSE(h.Delete(key));
       break;
-    default: verify(false, "bug");
+    default: bug();
     }
   }
 }

@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common.h"
 #include "compute/energy/fast_energy.h"
 #include "compute/energy/model.h"
 #include "util/array.h"

@@ -7,6 +7,7 @@
 
 #include "model/gen.h"
 #include "model/parsing.h"
+#include "util/macros.h"
 #include "util/string.h"
 
 namespace mrna::energy {

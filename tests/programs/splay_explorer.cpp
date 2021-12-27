@@ -3,7 +3,6 @@
 #include <set>
 #include <sstream>
 
-#include "common.h"
 #include "util/argparse.h"
 #include "util/splaymap.h"
 

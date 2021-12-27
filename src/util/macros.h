@@ -1,28 +1,8 @@
-// Copyright 2016 E.
-#ifndef COMMON_H_
-#define COMMON_H_
+// Copyright 2021 E.
+#ifndef UTIL_MACROS_H_
+#define UTIL_MACROS_H_
 
-#include <cassert>
-#include <cstdarg>
-#include <cstdint>
 #include <cstdio>
-#include <cstring>
-#include <functional>
-#include <string>
-#include <tuple>
-#include <vector>
-
-#ifdef COMPUTE_PARTITION_MPFR
-#include <boost/multiprecision/mpfr.hpp>
-namespace boost {
-
-inline void throw_exception(const std::exception& e) {
-  fprintf(stderr, "Boost exception: %s\n", e.what());
-  std::abort();
-}
-
-}  // namespace boost
-#endif
 
 // Like assert, but can't be disabled.
 #define verify(expr, ...)                             \
@@ -35,4 +15,8 @@ inline void throw_exception(const std::exception& e) {
     }                                                 \
   } while (0)
 
-#endif  // COMMON_H_
+#define unimplemented() verify(false, "unimplemented")
+
+#define bug() verify(false, "bug")
+
+#endif  // UTIL_MACROS_H_

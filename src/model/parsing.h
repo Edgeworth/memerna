@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "model/base.h"
-#include "common.h"
 #include "model/structure.h"
 
 namespace mrna {

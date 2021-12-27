@@ -74,7 +74,6 @@ enable_testing()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
-    src/common.cpp src/common.h
     src/compute/constants.h
     src/compute/dp.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h

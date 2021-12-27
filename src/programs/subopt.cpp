@@ -1,7 +1,6 @@
 // Copyright 2016 E.
 #include <cstdio>
 
-#include "common.h"
 #include "compute/energy/load_model.h"
 #include "model/context.h"
 #include "model/parsing.h"

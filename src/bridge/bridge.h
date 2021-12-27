@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "common.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/context.h"

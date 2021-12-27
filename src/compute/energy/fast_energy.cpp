@@ -2,9 +2,11 @@
 #include "compute/energy/fast_energy.h"
 
 #include <algorithm>
+#include <cassert>
 
 #include "compute/energy/globals.h"
 #include "model/parsing.h"
+#include "util/macros.h"
 
 namespace mrna::energy {
 

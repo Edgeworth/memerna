@@ -3,11 +3,11 @@
 #define UTIL_SPLAYMAP_H_
 
 #include <algorithm>
+#include <cassert>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "common.h"
 #include "util/string.h"
 
 namespace mrna {

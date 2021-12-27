@@ -4,8 +4,8 @@
 
 #include <vector>
 
-#include "common.h"
 #include "model/base.h"
+#include "util/macros.h"
 
 namespace mrna {
 
@@ -79,12 +79,12 @@ struct computed_t {
 
   explicit computed_t(const secondary_t& s_)
       : s(s_), base_ctds(s_.r.size(), CTD_NA), energy(MAX_E) {
-    assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
+    verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
   }
 
   computed_t(const secondary_t& s_, const std::vector<Ctd>& base_ctds_, energy_t energy_)
       : s(s_), base_ctds(base_ctds_), energy(energy_) {
-    assert(s.r.size() == s.p.size() && s.r.size() == base_ctds.size());
+    verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
   }
 
   bool operator==(const computed_t& o) const {

@@ -9,7 +9,6 @@
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
 #include "bridge/rnastructure.h"
-#include "common.h"
 #include "compute/energy/load_model.h"
 #include "compute/energy/structure.h"
 #include "compute/mfe/brute.h"
