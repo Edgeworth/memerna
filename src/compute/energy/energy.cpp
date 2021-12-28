@@ -140,7 +140,7 @@ Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, 
     energy += em.TwoLoop(r, st, en, loop_st, loop_en, s);
   }
 
-  if (s) (*s)->SetSelfEnergy(energy);
+  if (s) (*s)->set_self_energy(energy);
   // Add energy from children.
   for (auto i : branches) {
     if (s) {
@@ -151,7 +151,7 @@ Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, 
       energy += ComputeSubstructureEnergy(computed, compute_ctds, i, p[i], em, nullptr);
     }
   }
-  if (s) (*s)->SetTotalEnergy(energy);
+  if (s) (*s)->set_total_energy(energy);
 
   return energy;
 }
@@ -173,8 +173,8 @@ Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em, 
     energy += em.augu_penalty;
     if (s) {
       (*s)->AddNote("%de - top level AU/GU penalty", em.augu_penalty);
-      (*s)->SetSelfEnergy((*s)->GetSelfEnergy() + em.augu_penalty);  // Gross.
-      (*s)->SetTotalEnergy((*s)->GetTotalEnergy() + em.augu_penalty);  // Gross.
+      (*s)->set_self_energy((*s)->self_energy() + em.augu_penalty);  // Gross.
+      (*s)->set_total_energy((*s)->total_energy() + em.augu_penalty);  // Gross.
     }
   }
   computed_copy.energy = energy;

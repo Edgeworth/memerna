@@ -21,12 +21,11 @@ typedef std::deque<std::string> Error;
 
 class Fuzzer {
  public:
-  Fuzzer(Primary r_, const FuzzCfg& cfg_, const energy::EnergyModelPtr em_);
+  Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em);
 
   Error Run();
 
  private:
-  const int N;
   const Primary r_;
   const FuzzCfg cfg_;
   const energy::EnergyModelPtr em_;

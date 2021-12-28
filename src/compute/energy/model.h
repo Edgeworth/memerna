@@ -20,7 +20,7 @@ class Structure;
 
 class EnergyModel {
  public:
-  static const int INITIATION_CACHE_SZ = 31;
+  static constexpr int INITIATION_CACHE_SZ = 31;
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
   Energy stack[4][4][4][4];

@@ -23,21 +23,21 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   // Cull the ones not inside the window or when we have more than |max_structures|.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
-  q.insert({{{0, -1, EXT}}, {}, std::vector<int16_t>(gr.size(), -1),
+  q_.insert({{{0, -1, EXT}}, {}, std::vector<int16_t>(gr.size(), -1),
       std::vector<Ctd>(gr.size(), CTD_NA), gext[0][EXT]});
-  while (!q.empty()) {
-    auto node = *q.begin();
-    q.erase(q.begin());
+  while (!q_.empty()) {
+    auto node = *q_.begin();
+    q_.erase(q_.begin());
     // Finished state.
     if (node.not_yet_expanded.empty()) {
-      PruneInsert(finished, node);
+      PruneInsert(finished_, node);
       continue;
     }
 
     // If we found a non-finished node, but |finished| is full, and the worst in |finished| is as
     // good as our current node (which is the best in |q|), then we can exit.
-    if (static_cast<int>(finished.size()) >= max_structures &&
-        (--finished.end())->energy <= node.energy)
+    if (static_cast<int>(finished_.size()) >= max_structures &&
+        (--finished_.end())->energy <= node.energy)
       break;
 
     auto to_expand = node.not_yet_expanded.back();
@@ -46,7 +46,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     int st = to_expand.st, en = to_expand.en, a = to_expand.a;
 
     // Initialise - we only make small modifications to it.
-    curnode = node;
+    curnode_ = node;
     // Temporary variable to hold energy calculations.
     Energy energy = 0;
 
@@ -71,7 +71,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
         const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b);
         const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb);
         const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b);
-        curnode = node;
+        curnode_ = node;
 
         // (   )<.( * ). > Right coax backward
         if (a == EXT_RCOAX) {
@@ -145,8 +145,8 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
 
     // Normal stuff
     if (a == DP_P) {
-      curnode.p[st] = int16_t(en);
-      curnode.p[en] = int16_t(st);
+      curnode_.p[st] = int16_t(en);
+      curnode_.p[en] = int16_t(st);
 
       // Two loops.
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -317,11 +317,11 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
       }
     }
   }
-  for (const auto& struc : finished) {
+  for (const auto& struc : finished_) {
     assert(struc.not_yet_expanded.empty());
     fn({{gr, {struc.p.begin(), struc.p.end()}}, struc.base_ctds, struc.energy});
   }
-  return static_cast<int>(finished.size());
+  return static_cast<int>(finished_.size());
 }
 
 }  // namespace mrna::subopt::internal

@@ -34,18 +34,18 @@ std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
 
 }  // namespace
 
-RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso_)
-    : data(LoadDatatable(data_path)), use_lyngso(use_lyngso_) {
+RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
+    : data_(LoadDatatable(data_path)), use_lyngso_(use_lyngso) {
   verify(data_path.size() && data_path.back() == '/', "invalid data path");
-  verify(data->loadedTables, "BUG: data tables not loaded");
-  verify(data->loadedAlphabet, "BUG: alphabet not loaded");
+  verify(data_->loadedTables, "BUG: data tables not loaded");
+  verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
 Energy RNAstructure::Efn(const Secondary& secondary, std::string* desc) const {
   const auto structure = LoadStructure(secondary);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;
-  efn2(data.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
+  efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
   return Energy(structure->GetEnergy(1));
 }
@@ -66,8 +66,8 @@ Computed RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) co
   constexpr auto max_twoloop = TWOLOOP_MAX_SZ + 2;  // BUG: Add two to TWOLOOP_MAX_SZ.
   constexpr auto mfe_structure_only = true;
   constexpr auto disable_coax = false;
-  dynamic(structure.get(), data.get(), num_tracebacks, percent_sort, window, progress, energy_only,
-      save_file, max_twoloop, mfe_structure_only, !use_lyngso, disable_coax, dp_state);
+  dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
+      save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
       Energy(structure->GetEnergy(1))};
 }
@@ -84,7 +84,7 @@ std::vector<Computed> RNAstructure::SuboptimalIntoVector(
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
-  alltrace(structure.get(), data.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
+  alltrace(structure.get(), data_.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
   auto p_list = StructureToMultiplePairs(*structure);
   std::vector<Computed> computeds;
   for (int i = 0; i < static_cast<int>(p_list.size()); ++i)
@@ -107,7 +107,7 @@ std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partitio
   DynProgArray<PFPRECISION> wcoax(length);
   const auto w5 = std::make_unique<PFPRECISION[]>(std::size_t(length + 1));
   const auto w3 = std::make_unique<PFPRECISION[]>(std::size_t(length + 2));
-  const auto pfdata = std::make_unique<pfdatatable>(data.get(), scaling, T);
+  const auto pfdata = std::make_unique<pfdatatable>(data_.get(), scaling, T);
   const auto fce = std::make_unique<forceclass>(length);
   const auto lfce = std::make_unique<bool[]>(std::size_t(2 * length + 1));
   const auto mod = std::make_unique<bool[]>(std::size_t(2 * length + 1));
@@ -136,7 +136,7 @@ std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partitio
 
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {
   auto struc = std::make_unique<structure>();
-  struc->SetThermodynamicDataTable(data.get());
+  struc->SetThermodynamicDataTable(data_.get());
   struc->SetSequence(PrimaryToString(r));
   verify(struc->GetSequenceLength() == static_cast<int>(r.size()), "BUG: structure not loaded");
   return struc;

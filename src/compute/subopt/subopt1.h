@@ -38,8 +38,8 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta);
 
 class Suboptimal1 {
  public:
-  Suboptimal1(Energy delta_, int num)
-      : delta(delta_ == -1 ? CAP_E : delta_), max_structures(num == -1 ? MAX_STRUCTURES : num) {}
+  Suboptimal1(Energy delta, int num)
+      : delta_(delta == -1 ? CAP_E : delta), max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
 
   int Run(SuboptimalCallback fn, bool sorted);
 
@@ -51,25 +51,25 @@ class Suboptimal1 {
     bool should_unexpand;
   };
 
-  const Energy delta;
-  const int max_structures;
+  const Energy delta_;
+  const int max_structures_;
   // This node is where we build intermediate results to be pushed onto the queue.
-  SplayMap<Index, std::vector<Expand>> cache;
-  std::vector<DfsState> q;
-  std::vector<Index> unexpanded;
+  SplayMap<Index, std::vector<Expand>> cache_;
+  std::vector<DfsState> q_;
+  std::vector<Index> unexpanded_;
 
   std::pair<int, int> RunInternal(
       SuboptimalCallback fn, Energy cur_delta, bool exact_energy, int structure_limit);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
-    if (!cache.Find(to_expand)) {
+    if (!cache_.Find(to_expand)) {
       // Need to generate the full way to delta so we can properly set |next_seen|.
-      auto exps = GenerateExpansions(to_expand, delta);
+      auto exps = GenerateExpansions(to_expand, delta_);
       std::sort(exps.begin(), exps.end());
-      [[maybe_unused]] auto res = cache.Insert(to_expand, std::move(exps));
+      [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
       assert(res);
     }
-    return cache.Get();
+    return cache_.Get();
   }
 };
 

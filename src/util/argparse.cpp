@@ -26,19 +26,19 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     while (*arg == '-') ++arg;
 
     if (is_flag) {
-      if (possible_args.count(arg) == 0) return sfmt("unknown argument %s", argv[i]);
+      if (possible_args_.count(arg) == 0) return sfmt("unknown argument %s", argv[i]);
 
-      if (possible_args[arg].has_arg) {
+      if (possible_args_[arg].has_arg) {
         if (i + 1 == argc) return sfmt("missing argument for flag %s", arg);
         flags[arg] = argv[++i];
       } else {
         flags[arg] = arg;
       }
     } else {
-      positional.push_back(arg);
+      positional_.push_back(arg);
     }
   }
-  for (const auto& argpair : possible_args) {
+  for (const auto& argpair : possible_args_) {
     const auto& flag = argpair.first;
     const auto& arg = argpair.second;
     verify(!arg.has_default || arg.has_arg, "bad option somehow");
@@ -52,16 +52,17 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 
 std::string ArgParse::Usage() const {
   std::string usage = "Flags: \n";
-  for (const auto& arg : possible_args) {
+  for (const auto& arg : possible_args_) {
     usage += sfmt("  -%s: %s\n", arg.first.c_str(), arg.second.Desc().c_str());
   }
   return usage;
 }
 
-void ArgParse::AddOptions(const std::map<std::string, Opt>& possible_args_) {
-  for (const auto& argpair : possible_args_) {
-    verify(possible_args.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
-    possible_args.insert(argpair);
+void ArgParse::AddOptions(const std::map<std::string, Opt>& possible_args) {
+  for (const auto& argpair : possible_args) {
+    verify(
+        possible_args_.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
+    possible_args_.insert(argpair);
   }
 }
 

@@ -17,7 +17,7 @@ namespace mrna::bridge {
 
 class RNAstructure : public RnaPackage {
  public:
-  RNAstructure(const std::string& data_path, bool use_lyngso_);
+  RNAstructure(const std::string& data_path, bool use_lyngso);
   RNAstructure(RNAstructure&&) = default;
   RNAstructure& operator=(RNAstructure&&) = default;
 
@@ -35,8 +35,8 @@ class RNAstructure : public RnaPackage {
   Computed FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
  private:
-  std::unique_ptr<datatable> data;
-  bool use_lyngso;
+  std::unique_ptr<datatable> data_;
+  bool use_lyngso_;
 
   std::unique_ptr<structure> LoadStructure(const Primary& r) const;
   std::unique_ptr<structure> LoadStructure(const Secondary& s) const;

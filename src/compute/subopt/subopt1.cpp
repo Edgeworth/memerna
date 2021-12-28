@@ -21,21 +21,21 @@ using mfe::internal::grep;
 int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   memset(gp.data(), -1, gp.size());
   memset(gctd.data(), CTD_NA, gctd.size());
-  q.reserve(gr.size());  // Reasonable reservation.
-  cache.Reserve(gr.size());
+  q_.reserve(gr.size());  // Reasonable reservation.
+  cache_.Reserve(gr.size());
 
   // If require sorted output, or limited number of structures (requires sorting).
-  if (sorted || max_structures != MAX_STRUCTURES) {
+  if (sorted || max_structures_ != MAX_STRUCTURES) {
     int num_structures = 0;
     Energy cur_delta = 0;
-    while (num_structures < max_structures && cur_delta != MAX_E && cur_delta <= delta) {
-      auto res = RunInternal(fn, cur_delta, true, max_structures - num_structures);
+    while (num_structures < max_structures_ && cur_delta != MAX_E && cur_delta <= delta_) {
+      auto res = RunInternal(fn, cur_delta, true, max_structures_ - num_structures);
       num_structures += res.first;
       cur_delta = res.second;
     }
     return num_structures;
   }
-  return RunInternal(fn, delta, false, MAX_STRUCTURES).first;
+  return RunInternal(fn, delta_, false, MAX_STRUCTURES).first;
 }
 
 std::pair<int, int> Suboptimal1::RunInternal(
@@ -53,12 +53,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
   // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
   Energy energy = 0;
-  q.clear();
-  unexpanded.clear();
+  q_.clear();
+  unexpanded_.clear();
   grep.resize(gr.size(), '.');
-  q.push_back({0, {0, -1, EXT}, false});
-  while (!q.empty()) {
-    auto& s = q.back();
+  q_.push_back({0, {0, -1, EXT}, false});
+  while (!q_.empty()) {
+    auto& s = q_.back();
     assert(s.expand.st != -1);
 
     const auto& exps = GetExpansion(s.expand);
@@ -70,7 +70,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
       const auto& pexp = exps[s.idx - 1];
       if (pexp.ctd0.idx != -1) gctd[pexp.ctd0.idx] = CTD_NA;
       if (pexp.ctd1.idx != -1) gctd[pexp.ctd1.idx] = CTD_NA;
-      if (pexp.unexpanded.st != -1) unexpanded.pop_back();
+      if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
       energy -= pexp.energy;
     }
 
@@ -86,8 +86,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
         gp[s.expand.st] = gp[s.expand.en] = -1;
         grep[s.expand.st] = grep[s.expand.en] = '.';
       }
-      if (s.should_unexpand) unexpanded.push_back(s.expand);
-      q.pop_back();
+      if (s.should_unexpand) unexpanded_.push_back(s.expand);
+      q_.pop_back();
       continue;  // Done.
     }
 
@@ -99,7 +99,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
       assert(exp.unexpanded.st == -1);
       assert(exp.ctd0.idx == -1 && exp.ctd1.idx == -1);
       // Use an unexpanded now, if one exists.
-      if (unexpanded.empty()) {
+      if (unexpanded_.empty()) {
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
           Computed tmp_computed = {
@@ -116,8 +116,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
         }
         continue;  // Done
       } else {
-        ns.expand = unexpanded.back();
-        unexpanded.pop_back();
+        ns.expand = unexpanded_.back();
+        unexpanded_.pop_back();
         // This node should replace itself into |unexpanded| when its done.
         ns.should_unexpand = true;
       }
@@ -125,7 +125,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
       // Apply child's modifications to the global state.
       if (exp.ctd0.idx != -1) gctd[exp.ctd0.idx] = exp.ctd0.ctd;
       if (exp.ctd1.idx != -1) gctd[exp.ctd1.idx] = exp.ctd1.ctd;
-      if (exp.unexpanded.st != -1) unexpanded.push_back(exp.unexpanded);
+      if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
     }
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
       gp[ns.expand.st] = ns.expand.en;
@@ -133,9 +133,9 @@ std::pair<int, int> Suboptimal1::RunInternal(
       grep[ns.expand.st] = '(';
       grep[ns.expand.en] = ')';
     }
-    q.push_back(ns);
+    q_.push_back(ns);
   }
-  assert(unexpanded.empty() && energy == 0 && gp == std::vector<int>(gp.size(), -1) &&
+  assert(unexpanded_.empty() && energy == 0 && gp == std::vector<int>(gp.size(), -1) &&
       gctd == std::vector<Ctd>(gctd.size(), CTD_NA));
   return {num_structures, next_seen};
 }

@@ -63,7 +63,7 @@ class BruteForce {
   };
 
   Result res_;
-  SplaySet<SubstructureId> substructure_map;
+  SplaySet<SubstructureId> substructure_map_;
 
   void AddAllCombinations(int idx);
   void Dfs(int idx);
