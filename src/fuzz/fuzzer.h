@@ -36,11 +36,11 @@ class Fuzzer {
 
   // RNAstructure related:
 #ifdef USE_RNASTRUCTURE
-  std::optional<bridge::RNAstructure> rnastructure;
+  std::optional<bridge::RNAstructure> rnastructure_;
   dp_state_t rnastructure_dp;
 
   void set_rnastructure(bridge::RNAstructure&& rnastructure) {
-    rnastructure = std::move(rnastructure);
+    rnastructure_ = std::move(rnastructure);
   }
 #endif  // USE_RNASTRUCTURE
 

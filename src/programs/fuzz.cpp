@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <random>
 #include <set>
-#include <sstream>
 
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
