@@ -23,7 +23,7 @@ void ComputeTables2() {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+                 en1b = gr[en - 1], en2b = gr[en - 2];
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 

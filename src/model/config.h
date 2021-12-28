@@ -23,8 +23,7 @@ struct ModelCfg {
       TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
   inline static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {
       SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
-  inline static constexpr PartitionAlg PARTITION_ALGS[] = {
-      PartitionAlg::ZERO, PartitionAlg::ONE};
+  inline static constexpr PartitionAlg PARTITION_ALGS[] = {PartitionAlg::ZERO, PartitionAlg::ONE};
 
   ModelCfg(TableAlg table_alg_ = TableAlg::ZERO,
       SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
@@ -39,8 +38,7 @@ struct ModelCfg {
 inline const std::map<std::string, Opt> MODEL_OPTS = {
     {"dp-alg", Opt("which algorithm for mfe folding").Arg("2", {"0", "1", "2", "3", "brute"})},
     {"subopt-alg", Opt("which algorithm for suboptimal folding").Arg("1", {"0", "1", "brute"})},
-    {"part-alg",
-        Opt("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
+    {"part-alg", Opt("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
 
 ModelCfg ModelCfgFromArgParse(const ArgParse& args);
 

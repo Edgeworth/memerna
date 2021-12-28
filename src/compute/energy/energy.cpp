@@ -162,8 +162,8 @@ Computed ComputeEnergy(
   return ComputeEnergyWithCtds(computed, em, true, s);
 }
 
-Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em,
-    bool compute_ctds, std::unique_ptr<Structure>* s) {
+Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em, bool compute_ctds,
+    std::unique_ptr<Structure>* s) {
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;

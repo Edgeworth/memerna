@@ -24,8 +24,7 @@ class Memerna : public RnaPackage {
   Computed Fold(const Primary& r) const override;
   int Suboptimal(
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
-  std::vector<Computed> SuboptimalIntoVector(
-      const Primary& r, Energy energy_delta) const override;
+  std::vector<Computed> SuboptimalIntoVector(const Primary& r, Energy energy_delta) const override;
   std::pair<partition::Partition, partition::Probabilities> Partition(
       const Primary& r) const override;
 

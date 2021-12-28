@@ -193,7 +193,7 @@ Error Fuzzer::CheckDpTables() {
 #ifdef USE_RNASTRUCTURE
         if (cfg_.mfe_rnastructure && (a == DP_P || a == DP_U)) {
           Energy rnastructureval = a == DP_P ? rnastructure_dp_.v.f(st + 1, en + 1)
-                                               : rnastructure_dp_.w.f(st + 1, en + 1);
+                                             : rnastructure_dp_.w.f(st + 1, en + 1);
           if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
                   (memerna0 < CAP_E && memerna0 != rnastructureval))) {
             errors.push_back(sfmt("rnastructure at %d %d %d: %d != %d", st, en, a, rnastructureval,

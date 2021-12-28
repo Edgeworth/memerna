@@ -38,8 +38,8 @@ std::vector<Computed> Context::SuboptimalIntoVector(
     bool sorted, Energy subopt_delta, int subopt_num) {
   std::vector<Computed> computeds;
   [[maybe_unused]] int num_structures =
-      Suboptimal([&computeds](const Computed& c) { computeds.push_back(c); }, sorted,
-          subopt_delta, subopt_num);
+      Suboptimal([&computeds](const Computed& c) { computeds.push_back(c); }, sorted, subopt_delta,
+          subopt_num);
   assert(num_structures == static_cast<int>(computeds.size()));
   return computeds;
 }
@@ -59,8 +59,7 @@ int Context::Suboptimal(
   case ModelCfg::SuboptimalAlg::ONE:
     return subopt::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
   default:
-    verify(
-        false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg.suboptimal_alg));
+    verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg.suboptimal_alg));
   }
 }
 
