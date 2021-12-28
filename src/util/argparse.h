@@ -56,8 +56,8 @@ struct Opt {
 
 class ArgParse {
  public:
-  explicit ArgParse(const std::map<std::string, Opt>& possible_args_)
-      : possible_args(possible_args_) {}
+  explicit ArgParse(const std::map<std::string, Opt>& possible_args)
+      : possible_args_(possible_args) {}
 
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
@@ -68,26 +68,26 @@ class ArgParse {
   void ParseOrExit(int argc, char* argv[]);
   std::string Usage() const;
 
-  const std::vector<std::string>& GetPositional() const { return positional; }
+  const std::vector<std::string>& GetPositional() const { return positional_; }
 
   bool HasFlag(const std::string& flag) const {
-    if (possible_args.count(flag) && possible_args.find(flag)->second.has_default) return true;
+    if (possible_args_.count(flag) && possible_args_.find(flag)->second.has_default) return true;
     return flags.count(flag) > 0;
   }
 
   std::string GetOption(const std::string& flag) const {
     auto flagiter = flags.find(flag);
-    auto positer = possible_args.find(flag);
+    auto positer = possible_args_.find(flag);
     if (flagiter != flags.end()) return flagiter->second;
-    if (positer != possible_args.end()) return positer->second.default_arg;
+    if (positer != possible_args_.end()) return positer->second.default_arg;
     error("missing flag %s", flag.c_str());
     return "";
   }
 
  private:
-  std::map<std::string, Opt> possible_args;
+  std::map<std::string, Opt> possible_args_;
   std::unordered_map<std::string, std::string> flags;
-  std::vector<std::string> positional;
+  std::vector<std::string> positional_;
 };
 
 }  // namespace mrna

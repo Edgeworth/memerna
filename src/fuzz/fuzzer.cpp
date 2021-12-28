@@ -21,7 +21,7 @@ using subopt::SuboptimalBruteForce;
 inline bool equ(PEnergy a, PEnergy b) { return fabs(a - b) < EP; }
 
 Fuzzer::Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em)
-    : N(static_cast<int>(r.size())), r_(std::move(r)), cfg_(cfg),
+    : r_(std::move(r)), cfg_(cfg),
       em_(cfg_.random_model ? energy::LoadRandomEnergyModel(cfg_.seed) : em) {}
 
 Error Fuzzer::Run() {
@@ -175,8 +175,8 @@ Error Fuzzer::CheckSuboptimal() {
 
 Error Fuzzer::CheckDpTables() {
   Error errors;
-  for (int st = N - 1; st >= 0; --st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+  for (int st = static_cast<int>(r_.size()) - 1; st >= 0; --st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
       for (int a = 0; a < DP_SIZE; ++a) {
         const auto memerna0 = memerna_dps[0][st][en][a];
         for (int i = 0; i < static_cast<int>(memerna_dps.size()); ++i) {
@@ -283,8 +283,8 @@ Error Fuzzer::CheckBruteForce() {
       errors.push_back(sstream.str());
     }
 
-    for (int st = 0; st < N; ++st) {
-      for (int en = 0; en < N; ++en) {
+    for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
+      for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
         if (!equ(brute_partition.first.p[st][en][0], memerna_partition.p[st][en][0])) {
           std::stringstream sstream;
           sstream << "memerna " << st << " " << en << ": " << memerna_partition.p[st][en][0]
@@ -316,8 +316,8 @@ Error Fuzzer::CheckPartition() {
       errors.push_back(sstream.str());
     }
 
-    for (int st = 0; st < N; ++st) {
-      for (int en = 0; en < N; ++en) {
+    for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
+      for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
         if (!equ(memerna_partitions[i].p[st][en][0], memerna_partitions[0].p[st][en][0])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
@@ -342,8 +342,8 @@ Error Fuzzer::CheckPartition() {
       errors.push_back(sstream.str());
     }
 
-    for (int st = 0; st < N; ++st) {
-      for (int en = 0; en < N; ++en) {
+    for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
+      for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
         if (!equ(rnastructure_part.first.p[st][en][0], memerna_partitions[0].p[st][en][0])) {
           std::stringstream sstream;
           sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p[st][en][0]

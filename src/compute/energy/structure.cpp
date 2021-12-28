@@ -28,10 +28,10 @@ const char* CtdToName(Ctd ctd) {
 std::vector<std::string> Structure::Description(int nesting) const {
   std::vector<std::string> desc;
   desc.push_back(sfmt("%d - %s", nesting, ShortDesc().c_str()));
-  for (const auto& note : notes) desc.push_back(" | " + note);
-  for (int i = 0; i < static_cast<int>(branches.size()); ++i)
+  for (const auto& note : notes_) desc.push_back(" | " + note);
+  for (int i = 0; i < static_cast<int>(branches_.size()); ++i)
     desc.push_back(" |-- " + BranchDesc(i));
-  for (const auto& branch : branches) {
+  for (const auto& branch : branches_) {
     auto branch_desc = branch->Description(nesting + 1);
     desc.insert(desc.end(), branch_desc.begin(), branch_desc.end());
   }
@@ -41,39 +41,39 @@ std::vector<std::string> Structure::Description(int nesting) const {
 void Structure::AddNote(std::string note, ...) {
   va_list l;
   va_start(l, note);
-  notes.push_back(vsfmt(note.c_str(), l));
+  notes_.push_back(vsfmt(note.c_str(), l));
   va_end(l);
 }
 
 std::string HairpinLoopStructure::ShortDesc() const {
-  return sfmt("Hairpin(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("Hairpin(%d, %d) - %de:%de", st_, en_, total_energy(), self_energy());
 }
 
 std::string InternalLoopStructure::ShortDesc() const {
-  return sfmt("InternalLoop(%d, %d, %d, %d) - %de:%de", ost, oen, ist, ien, GetTotalEnergy(),
-      GetSelfEnergy());
+  return sfmt("InternalLoop(%d, %d, %d, %d) - %de:%de", ost_, oen_, ist_, ien_, total_energy(),
+      self_energy());
 }
 
 void InternalLoopStructure::AddBranch(std::unique_ptr<Structure> b) {
-  assert(branches.empty());
+  assert(branches_.empty());
   Structure::AddBranch(std::move(b));
 }
 
 std::string MultiLoopStructure::ShortDesc() const {
-  return sfmt("MultiLoop(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("MultiLoop(%d, %d) - %de:%de", st_, en_, total_energy(), self_energy());
 }
 
 std::string MultiLoopStructure::BranchDesc(int idx) const {
-  return sfmt("%s - %de - %s", branches[idx]->ShortDesc().c_str(), branch_ctds[idx].second,
-      CtdToName(branch_ctds[idx].first));
+  return sfmt("%s - %de - %s", branches_[idx]->ShortDesc().c_str(), branch_ctds_[idx].second,
+      CtdToName(branch_ctds_[idx].first));
 }
 
 std::string StackingStructure::ShortDesc() const {
-  return sfmt("Stacking(%d, %d) - %de:%de", st, en, GetTotalEnergy(), GetSelfEnergy());
+  return sfmt("Stacking(%d, %d) - %de:%de", st_, en_, total_energy(), self_energy());
 }
 
 void StackingStructure::AddBranch(std::unique_ptr<Structure> b) {
-  assert(branches.empty());
+  assert(branches_.empty());
   Structure::AddBranch(std::move(b));
 }
 

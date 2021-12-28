@@ -28,68 +28,68 @@ class Structure {
   std::vector<std::string> Description(int nesting = 0) const;
   virtual std::string ShortDesc() const = 0;
 
-  virtual void AddBranch(std::unique_ptr<Structure> b) { branches.push_back(std::move(b)); }
-  virtual std::string BranchDesc(int idx) const { return branches[idx]->ShortDesc(); }
+  virtual void AddBranch(std::unique_ptr<Structure> b) { branches_.push_back(std::move(b)); }
+  virtual std::string BranchDesc(int idx) const { return branches_[idx]->ShortDesc(); }
 
-  void SetSelfEnergy(Energy e) { self_energy = e; }
-  void SetTotalEnergy(Energy e) { total_energy = e; }
-  Energy GetSelfEnergy() const { return self_energy; }
-  Energy GetTotalEnergy() const { return total_energy; }
+  void set_self_energy(Energy e) { self_energy_ = e; }
+  void set_total_energy(Energy e) { total_energy_ = e; }
+  Energy self_energy() const { return self_energy_; }
+  Energy total_energy() const { return total_energy_; }
 
  protected:
-  std::vector<std::unique_ptr<Structure>> branches;
+  std::vector<std::unique_ptr<Structure>> branches_;
 
  private:
-  Energy self_energy;
-  Energy total_energy;
-  std::vector<std::string> notes;
+  Energy self_energy_;
+  Energy total_energy_;
+  std::vector<std::string> notes_;
 };
 
 class HairpinLoopStructure : public Structure {
  public:
-  HairpinLoopStructure(int st_, int en_) : st(st_), en(en_) {}
+  HairpinLoopStructure(int st, int en) : st_(st), en_(en) {}
 
   void AddBranch(std::unique_ptr<Structure>) { error("invalid operation"); }
   std::string ShortDesc() const;
 
  private:
-  int st, en;
+  int st_, en_;
 };
 
 class InternalLoopStructure : public Structure {
  public:
-  InternalLoopStructure(int ost_, int oen_, int ist_, int ien_)
-      : ost(ost_), oen(oen_), ist(ist_), ien(ien_) {}
+  InternalLoopStructure(int ost, int oen, int ist, int ien)
+      : ost_(ost), oen_(oen), ist_(ist), ien_(ien) {}
 
   void AddBranch(std::unique_ptr<Structure> b);
   std::string ShortDesc() const;
 
  private:
-  int ost, oen, ist, ien;
+  int ost_, oen_, ist_, ien_;
 };
 
 class MultiLoopStructure : public Structure {
  public:
-  MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
+  MultiLoopStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctds.emplace_back(ctd, ctd_energy); }
+  void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctds_.emplace_back(ctd, ctd_energy); }
   std::string BranchDesc(int idx) const;
   std::string ShortDesc() const;
 
  private:
-  int st, en;
-  internal::BranchCtd branch_ctds;
+  int st_, en_;
+  internal::BranchCtd branch_ctds_;
 };
 
 class StackingStructure : public Structure {
  public:
-  StackingStructure(int st_, int en_) : st(st_), en(en_) {}
+  StackingStructure(int st, int en) : st_(st), en_(en) {}
 
   void AddBranch(std::unique_ptr<Structure> b);
   std::string ShortDesc() const;
 
  private:
-  int st, en;
+  int st_, en_;
 };
 
 }  // namespace mrna::energy

@@ -85,18 +85,18 @@ void BruteForce::AddAllCombinations(int idx) {
         if (i < gp[i]) {
           const auto inside_structure = BuildInsideStructure(i, gp[i], N);
           const auto outside_structure = BuildOutsideStructure(i, gp[i], N);
-          const bool inside_new = !substructure_map.Find(inside_structure);
-          const bool outside_new = !substructure_map.Find(outside_structure);
+          const bool inside_new = !substructure_map_.Find(inside_structure);
+          const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
             Energy inside_energy = energy::ComputeSubstructureEnergy(
                 computed, false, i, gp[i], energy::gem);  // TODO optimisation?
             if (inside_new) {
               res_.partition.p[i][gp[i]][0] += energy::Boltzmann(inside_energy);
-              substructure_map.Insert(inside_structure, Nothing());
+              substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
               res_.partition.p[gp[i]][i][0] += energy::Boltzmann(computed.energy - inside_energy);
-              substructure_map.Insert(outside_structure, Nothing());
+              substructure_map_.Insert(outside_structure, Nothing());
             }
           }
           res_.probabilities[i][gp[i]][0] += boltzmann;
