@@ -4,7 +4,7 @@
 
 namespace mrna::fuzz {
 
-std::string cfg_t::Describe() {
+std::string Config::Describe() {
   std::string desc;
   if (random_model)
     desc += "random energy models";
@@ -23,8 +23,8 @@ std::string cfg_t::Describe() {
   return desc;
 }
 
-cfg_t CfgFromArgParse(const ArgParse& args) {
-  cfg_t cfg;
+Config ConfigFromArgParse(const ArgParse& args) {
+  Config cfg;
   cfg.random_model = args.HasFlag("random");
   cfg.table_check = args.HasFlag("table-check");
   if (args.HasFlag("brute-cutoff")) cfg.brute_cutoff = atoi(args.GetOption("brute-cutoff").c_str());

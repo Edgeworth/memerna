@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
-  auto cfg = mrna::fuzz::CfgFromArgParse(args);
+  auto cfg = mrna::fuzz::ConfigFromArgParse(args);
   const bool afl_mode = args.HasFlag("afl");
   verify(!cfg.mfe_rnastructure || !args.HasFlag("seed"),
       "seed option incompatible with rnastructure testing");

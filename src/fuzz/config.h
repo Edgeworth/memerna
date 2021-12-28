@@ -8,7 +8,7 @@
 
 namespace mrna::fuzz {
 
-struct cfg_t {
+struct Config {
   bool random_model = false;
   bool mfe_rnastructure = false;
   bool table_check = true;
@@ -42,7 +42,7 @@ inline const std::map<std::string, opt_t> OPTIONS = {
     {"partition-rnastructure", opt_t("test rnastructure partition function")},
 };
 
-cfg_t CfgFromArgParse(const ArgParse& args);
+Config ConfigFromArgParse(const ArgParse& args);
 
 }  // namespace mrna::fuzz
 

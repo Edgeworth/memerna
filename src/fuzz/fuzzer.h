@@ -21,14 +21,14 @@ typedef std::deque<std::string> error_t;
 
 class Fuzzer {
  public:
-  Fuzzer(primary_t r_, const cfg_t& cfg_, const energy::EnergyModelPtr em_);
+  Fuzzer(primary_t r_, const Config& cfg_, const energy::EnergyModelPtr em_);
 
   error_t Run();
 
  private:
   const int N;
   const primary_t r;
-  const cfg_t cfg;
+  const Config cfg;
   const energy::EnergyModelPtr em;
 
   std::vector<computed_t> memerna_computeds;
