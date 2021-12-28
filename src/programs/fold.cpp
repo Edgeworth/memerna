@@ -7,13 +7,13 @@
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
-  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.AddOptions(mrna::MODEL_OPTS);
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
   mrna::Context ctx(mrna::StringToPrimary(pos.front()),
-      mrna::energy::LoadEnergyModelFromArgParse(args), ContextOptionsFromArgParse(args));
+      mrna::energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args));
   const auto computed = ctx.Fold();
 
   printf("Energy: %d\n%s\n%s\n", computed.energy, mrna::PairsToDotBracket(computed.s.p).c_str(),

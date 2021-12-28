@@ -21,23 +21,23 @@ typedef std::deque<std::string> error_t;
 
 class Fuzzer {
  public:
-  Fuzzer(primary_t r_, const Config& cfg_, const energy::EnergyModelPtr em_);
+  Fuzzer(primary_t r_, const FuzzCfg& cfg_, const energy::EnergyModelPtr em_);
 
   error_t Run();
 
  private:
   const int N;
-  const primary_t r;
-  const Config cfg;
-  const energy::EnergyModelPtr em;
+  const primary_t r_;
+  const FuzzCfg cfg_;
+  const energy::EnergyModelPtr em_;
 
-  std::vector<computed_t> memerna_computeds;
+  std::vector<computed_t> memerna_computeds_;
   std::vector<array3d_t<energy_t, DP_SIZE>> memerna_dps;
 
   // RNAstructure related:
 #ifdef USE_RNASTRUCTURE
   std::optional<bridge::RNAstructure> rnastructure_;
-  dp_state_t rnastructure_dp;
+  dp_state_t rnastructure_dp_;
 
   void set_rnastructure(bridge::RNAstructure&& rnastructure) {
     rnastructure_ = std::move(rnastructure);
