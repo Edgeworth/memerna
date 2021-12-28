@@ -30,7 +30,7 @@ void PrintPartition(const mrna::partition::partition_t& p) {
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
-  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
+  args.AddOptions(mrna::energy::ENERGY_OPTS);
   args.AddOptions(mrna::MODEL_OPTS);
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();

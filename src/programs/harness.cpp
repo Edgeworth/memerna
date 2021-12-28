@@ -4,6 +4,7 @@
 
 #include "bridge/bridge.h"
 #include "compute/energy/load_model.h"
+#include "model/config.h"
 #include "model/parsing.h"
 
 using mrna::computed_t;
@@ -17,9 +18,9 @@ int main(int argc, char* argv[]) {
       {"f", {"run fold"}},
       {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
   });
-  args.AddOptions(mrna::bridge::BRIDGE_OPTIONS);
-  args.AddOptions(mrna::CONTEXT_OPTIONS);
-  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
+  args.AddOptions(mrna::bridge::BRIDGE_OPTS);
+  args.AddOptions(mrna::MODEL_OPTS);
+  args.AddOptions(mrna::energy::ENERGY_OPTS);
   args.ParseOrExit(argc, argv);
   verify(args.HasFlag("e") + args.HasFlag("f") == 1, "require exactly one program flag\n%s",
       args.Usage().c_str());

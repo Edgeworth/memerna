@@ -11,7 +11,7 @@ using mrna::ModelCfg;
 using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTS);
   args.AddOptions(mrna::MODEL_OPTS);
   args.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
       {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
