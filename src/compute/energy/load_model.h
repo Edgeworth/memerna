@@ -9,7 +9,7 @@
 
 namespace mrna::energy {
 
-inline const std::map<std::string, opt_t> COMPUTE_ENERGY_OPTIONS = {
+inline const std::map<std::string, opt_t> ENERGY_OPTS = {
     {"seed", opt_t("seed for random energy model for memerna").Arg()},
     {"rnastructure-data", opt_t("data path for RNAstructure").Arg()},
     {"memerna-data", opt_t("data path for given energy model for memerna").Arg()}};

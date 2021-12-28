@@ -6,7 +6,7 @@
 #include "model/parsing.h"
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
+  mrna::ArgParse args(mrna::energy::ENERGY_OPTS);
   args.AddOptions({{"v", {"verbose"}}});
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();

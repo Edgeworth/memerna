@@ -28,7 +28,7 @@ struct FuzzCfg {
   std::string Describe();
 };
 
-inline const std::map<std::string, opt_t> OPTIONS = {
+inline const std::map<std::string, opt_t> FUZZ_OPTS = {
     {"random", opt_t("use random energy models (disables comparison to RNAstructure)")},
     {"table-check", opt_t("enable comparing dp tables between memerna and rnastructure")},
     {"brute-cutoff", opt_t("maximum rna size to run brute force on").Arg()},

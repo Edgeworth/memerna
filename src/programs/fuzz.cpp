@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
       {"print-interval", opt_t("status update every n seconds").Arg("-1")},
       {"afl", opt_t("reads one rna from stdin and fuzzes - useful for use with afl")},
   });
-  args.AddOptions(mrna::fuzz::OPTIONS);
-  args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
+  args.AddOptions(mrna::fuzz::FUZZ_OPTS);
+  args.AddOptions(mrna::energy::ENERGY_OPTS);
   args.ParseOrExit(argc, argv);
 
   // TODO: Actually set this.

@@ -29,7 +29,7 @@ class RnaPackage {
       const primary_t& r) const = 0;
 };
 
-const std::map<std::string, opt_t> BRIDGE_OPTIONS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
+const std::map<std::string, opt_t> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args);
 
