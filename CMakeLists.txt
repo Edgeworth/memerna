@@ -113,6 +113,7 @@ set(MEMERNA_SOURCE
     src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
     src/fuzz/config.cpp src/fuzz/config.h
     src/model/base.cpp src/model/base.h
+    src/model/config.cpp src/model/config.h
     src/model/context.cpp src/model/context.h
     src/model/gen.cpp src/model/gen.h
     src/model/globals.cpp src/model/globals.h

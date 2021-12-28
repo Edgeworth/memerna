@@ -9,7 +9,6 @@
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
 #include "compute/subopt/brute.h"
-#include "fuzz/fuzzer.h"
 #include "model/context.h"
 #include "util/string.h"
 
@@ -21,7 +20,7 @@ using subopt::SuboptimalBruteForce;
 
 inline bool equ(penergy_t a, penergy_t b) { return fabs(a - b) < EP; }
 
-Fuzzer::Fuzzer(primary_t r_, const cfg_t& cfg_, const energy::EnergyModelPtr em_)
+Fuzzer::Fuzzer(primary_t r_, const Config& cfg_, const energy::EnergyModelPtr em_)
     : N(static_cast<int>(r_.size())), r(std::move(r_)), cfg(cfg_),
       em(cfg.random_model ? energy::LoadRandomEnergyModel(cfg.seed) : em_) {}
 
