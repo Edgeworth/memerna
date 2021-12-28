@@ -18,11 +18,11 @@ namespace mrna {
 
 class Context {
  public:
-  Context(const primary_t& r_, const energy::EnergyModelPtr em_) : r(r_), em(em_), options() {
+  Context(const primary_t& r, const energy::EnergyModelPtr em) : r(r), em(em), cfg() {
     verify(r.size() > 0u, "cannot process zero length RNA");
   }
-  Context(const primary_t& r_, const energy::EnergyModelPtr em_, context_opt_t options_)
-      : r(r_), em(em_), options(options_) {
+  Context(const primary_t& r, const energy::EnergyModelPtr em, ModelCfg cfg)
+      : r(r), em(em), cfg(cfg) {
     verify(r.size() > 0u, "cannot process zero length RNA");
   }
   Context(const Context& o) = default;
@@ -42,7 +42,7 @@ class Context {
  private:
   const primary_t r;
   const energy::EnergyModelPtr em;
-  const context_opt_t options;
+  const ModelCfg cfg;
 
   void ComputeTables();
 };

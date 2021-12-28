@@ -24,7 +24,7 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
 
   } else {
     return std::unique_ptr<RnaPackage>(
-        new Memerna(energy::LoadEnergyModelFromArgParse(args), ContextOptionsFromArgParse(args)));
+        new Memerna(energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args)));
   }
 }
 

@@ -6,13 +6,13 @@
 #include "model/parsing.h"
 
 using mrna::computed_t;
-using mrna::context_opt_t;
 using mrna::energy_t;
+using mrna::ModelCfg;
 using mrna::opt_t;
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::COMPUTE_ENERGY_OPTIONS);
-  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.AddOptions(mrna::MODEL_OPTS);
   args.AddOptions({{"delta", opt_t("maximum energy delta from minimum").Arg("-1")},
       {"num", opt_t("maximum number of reported structures").Arg("-1")}, {"q", opt_t("quiet")},
       {"sorted", opt_t("if the structures should be sorted")},
@@ -21,10 +21,10 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  auto opt = ContextOptionsFromArgParse(args);
-  opt.table_alg = context_opt_t::TableAlg::TWO;
+  auto cfg = ModelCfgFromArgParse(args);
+  cfg.table_alg = ModelCfg::TableAlg::TWO;
   mrna::Context ctx(
-      mrna::StringToPrimary(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), opt);
+      mrna::StringToPrimary(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
 
   const energy_t subopt_delta = atoi(args.GetOption("delta").c_str());
   const int subopt_num = atoi(args.GetOption("num").c_str());

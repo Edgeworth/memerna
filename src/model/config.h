@@ -6,7 +6,7 @@
 
 namespace mrna {
 
-struct context_opt_t {
+struct ModelCfg {
   enum class TableAlg {
     ZERO,
     ONE,
@@ -23,10 +23,10 @@ struct context_opt_t {
       TableAlg::ZERO, TableAlg::ONE, TableAlg::TWO, TableAlg::THREE};
   inline static constexpr SuboptimalAlg SUBOPTIMAL_ALGS[] = {
       SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
-  inline static constexpr PartitionAlg COMPUTE_PARTITION_ALGS[] = {
+  inline static constexpr PartitionAlg PARTITION_ALGS[] = {
       PartitionAlg::ZERO, PartitionAlg::ONE};
 
-  context_opt_t(TableAlg table_alg_ = TableAlg::ZERO,
+  ModelCfg(TableAlg table_alg_ = TableAlg::ZERO,
       SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
       PartitionAlg partition_alg_ = PartitionAlg::ZERO)
       : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_), partition_alg(partition_alg_) {}
@@ -36,13 +36,13 @@ struct context_opt_t {
   PartitionAlg partition_alg;
 };
 
-inline const std::map<std::string, opt_t> CONTEXT_OPTIONS = {
+inline const std::map<std::string, opt_t> MODEL_OPTS = {
     {"dp-alg", opt_t("which algorithm for mfe folding").Arg("2", {"0", "1", "2", "3", "brute"})},
     {"subopt-alg", opt_t("which algorithm for suboptimal folding").Arg("1", {"0", "1", "brute"})},
     {"part-alg",
         opt_t("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
 
-context_opt_t ContextOptionsFromArgParse(const ArgParse& args);
+ModelCfg ModelCfgFromArgParse(const ArgParse& args);
 
 }  // namespace mrna
 

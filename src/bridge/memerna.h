@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "bridge/bridge.h"
+#include "model/config.h"
 #include "model/context.h"
 
 namespace mrna::bridge {
@@ -14,7 +15,7 @@ namespace mrna::bridge {
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
  public:
-  Memerna(energy::EnergyModelPtr em_, context_opt_t options_) : em(em_), options(options_) {}
+  Memerna(energy::EnergyModelPtr em, ModelCfg cfg) : em(em), cfg(cfg) {}
 
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
@@ -30,7 +31,7 @@ class Memerna : public RnaPackage {
 
  private:
   const energy::EnergyModelPtr em;
-  const context_opt_t options;
+  const ModelCfg cfg;
 };
 
 }  // namespace mrna::bridge

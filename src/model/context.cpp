@@ -16,18 +16,18 @@ namespace mrna {
 
 void Context::ComputeTables() {
   mfe::SetMfeGlobalState(r, *em);
-  switch (options.table_alg) {
-  case context_opt_t::TableAlg::ZERO: mfe::internal::ComputeTables0(); break;
-  case context_opt_t::TableAlg::ONE: mfe::internal::ComputeTables1(); break;
-  case context_opt_t::TableAlg::TWO: mfe::internal::ComputeTables2(); break;
-  case context_opt_t::TableAlg::THREE: mfe::internal::ComputeTables3(); break;
+  switch (cfg.table_alg) {
+  case ModelCfg::TableAlg::ZERO: mfe::internal::ComputeTables0(); break;
+  case ModelCfg::TableAlg::ONE: mfe::internal::ComputeTables1(); break;
+  case ModelCfg::TableAlg::TWO: mfe::internal::ComputeTables2(); break;
+  case ModelCfg::TableAlg::THREE: mfe::internal::ComputeTables3(); break;
   default: bug();
   }
   mfe::internal::ComputeExterior();
 }
 
 computed_t Context::Fold() {
-  if (options.table_alg == context_opt_t::TableAlg::BRUTE) return mfe::MfeBruteForce(r, *em);
+  if (cfg.table_alg == ModelCfg::TableAlg::BRUTE) return mfe::MfeBruteForce(r, *em);
 
   ComputeTables();
   traceback::Traceback();
@@ -46,30 +46,30 @@ std::vector<computed_t> Context::SuboptimalIntoVector(
 
 int Context::Suboptimal(
     subopt::SuboptimalCallback fn, bool sorted, energy_t subopt_delta, int subopt_num) {
-  if (options.suboptimal_alg == context_opt_t::SuboptimalAlg::BRUTE) {
+  if (cfg.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
     auto computeds = subopt::SuboptimalBruteForce(r, *em, subopt_num);
     for (const auto& computed : computeds) fn(computed);
     return static_cast<int>(computeds.size());
   }
 
   ComputeTables();
-  switch (options.suboptimal_alg) {
-  case context_opt_t::SuboptimalAlg::ZERO:
+  switch (cfg.suboptimal_alg) {
+  case ModelCfg::SuboptimalAlg::ZERO:
     return subopt::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
-  case context_opt_t::SuboptimalAlg::ONE:
+  case ModelCfg::SuboptimalAlg::ONE:
     return subopt::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
   default:
     verify(
-        false, "bug - no such suboptimal algorithm %d", static_cast<int>(options.suboptimal_alg));
+        false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg.suboptimal_alg));
   }
 }
 
 partition::partition_t Context::Partition() {
   partition::SetPartitionGlobalState(r, *em);
-  switch (options.partition_alg) {
-  case context_opt_t::PartitionAlg::ZERO: partition::internal::Partition0(); break;
-  case context_opt_t::PartitionAlg::ONE: partition::internal::Partition1(); break;
-  case context_opt_t::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r, *em).first;
+  switch (cfg.partition_alg) {
+  case ModelCfg::PartitionAlg::ZERO: partition::internal::Partition0(); break;
+  case ModelCfg::PartitionAlg::ONE: partition::internal::Partition1(); break;
+  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r, *em).first;
   }
   const auto& gpt = partition::internal::gpt;
   const int size = static_cast<int>(r.size());

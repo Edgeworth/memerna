@@ -31,13 +31,13 @@ void PrintPartition(const mrna::partition::partition_t& p) {
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
   args.AddOptions(mrna::energy::COMPUTE_ENERGY_OPTIONS);
-  args.AddOptions(mrna::CONTEXT_OPTIONS);
+  args.AddOptions(mrna::MODEL_OPTS);
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
   const auto primary = mrna::StringToPrimary(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
-  mrna::Context ctx(primary, em, ContextOptionsFromArgParse(args));
+  mrna::Context ctx(primary, em, ModelCfgFromArgParse(args));
   PrintProbabilities(mrna::partition::ComputeProbabilities(ctx.Partition()));
 }
