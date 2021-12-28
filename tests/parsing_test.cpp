@@ -51,7 +51,7 @@ class ParsingTest : public testing::Test {
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT},
       MAX_E};
   const Computed kComputed8 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-                                     {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+                                   {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT},
       MAX_E};
@@ -66,7 +66,7 @@ class ParsingTest : public testing::Test {
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
       MAX_E};
   const Computed kComputed11 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-                                      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+                                    {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV},
       MAX_E};
@@ -83,7 +83,7 @@ class ParsingTest : public testing::Test {
   const Computed kComputed14 = {{StringToPrimary("AAAAAAA"), {-1, 5, -1, -1, -1, 1, -1}},
       {CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA}, MAX_E};
   const Computed kComputed15 = {{StringToPrimary("UACGUUGGUGCUAAAA"),
-                                      {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
+                                    {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
       {CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
           CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED},
       MAX_E};

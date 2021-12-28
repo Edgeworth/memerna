@@ -22,11 +22,10 @@ struct Expand {
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_) {}
   Expand(Energy energy_, const Index& to_expand_, const IndexCtd& ctd0_)
       : energy(energy_), to_expand(to_expand_), ctd0(ctd0_) {}
-  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_,
-      const IndexCtd& ctd0_)
+  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_, const IndexCtd& ctd0_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_) {}
-  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_,
-      const IndexCtd& ctd0_, const IndexCtd& ctd1_)
+  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_, const IndexCtd& ctd0_,
+      const IndexCtd& ctd1_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_), ctd1(ctd1_) {}
   Energy energy;
   Index to_expand, unexpanded;  // st is -1 if this does not exist

@@ -17,7 +17,7 @@ void Partition0() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+                 en1b = gr[en - 1], en2b = gr[en - 2];
 
       // if (CanPair(stb, enb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(st, en)) {
@@ -29,8 +29,7 @@ void Partition0() {
         // Hairpin loops.
         p += Boltzmann(gem.Hairpin(gr, st, en));
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const PEnergy base_branch_cost =
-            Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
+        const PEnergy base_branch_cost = Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
 
         // (<   ><   >)
         p += base_branch_cost * gpt[st + 1][en - 1][PT_U2];
@@ -163,9 +162,8 @@ void Partition0() {
       // rspace  en   st  lspace
       const int lspace = N - st - 1, rspace = en;
       const Base stb = gr[st], st1b = lspace ? gr[st + 1] : Base(-1),
-                   st2b = lspace > 1 ? gr[st + 2] : Base(-1), enb = gr[en],
-                   en1b = rspace ? gr[en - 1] : Base(-1),
-                   en2b = rspace > 1 ? gr[en - 2] : Base(-1);
+                 st2b = lspace > 1 ? gr[st + 2] : Base(-1), enb = gr[en],
+                 en1b = rspace ? gr[en - 1] : Base(-1), en2b = rspace > 1 ? gr[en - 2] : Base(-1);
 
       // if (CanPair(enb, stb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(en, st)) {
@@ -176,8 +174,7 @@ void Partition0() {
           for (int oen = en - 1; oen >= oen_min; --oen)
             p += Boltzmann(energy::FastTwoLoop(oen, ost, en, st)) * gpt[ost][oen][PT_P];
         }
-        const PEnergy base_branch_cost =
-            Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
+        const PEnergy base_branch_cost = Boltzmann(gpc.augubranch[stb][enb] + gem.multiloop_hack_a);
         const Energy outer_coax =
             lspace && rspace ? gem.MismatchCoaxial(stb, st1b, en1b, enb) : MAX_E;
         // Try being an exterior loop - coax cases handled in the loop after this.

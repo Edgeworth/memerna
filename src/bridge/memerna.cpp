@@ -33,8 +33,7 @@ int Memerna::Suboptimal(
   return Context(r, em, cfg).Suboptimal(fn, true, energy_delta, -1);
 }
 
-std::vector<Computed> Memerna::SuboptimalIntoVector(
-    const Primary& r, Energy energy_delta) const {
+std::vector<Computed> Memerna::SuboptimalIntoVector(const Primary& r, Energy energy_delta) const {
   return Context(r, em, cfg).SuboptimalIntoVector(true, energy_delta, -1);
 }
 

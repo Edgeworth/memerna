@@ -123,8 +123,7 @@ class EnergyModel {
     return coax;
   }
 
-  Energy Hairpin(
-      const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
+  Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,

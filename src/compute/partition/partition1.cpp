@@ -12,7 +12,7 @@ void Partition1() {
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
+                 en1b = gr[en - 1], en2b = gr[en - 2];
 
       // if (CanPair(stb, enb)) {  // <- This disables lonely pairs vs ViableFoldingPair
       if (energy::ViableFoldingPair(st, en)) {
@@ -156,9 +156,8 @@ void Partition1() {
       // rspace  en   st  lspace
       const int lspace = N - st - 1, rspace = en;
       const Base stb = gr[st], st1b = lspace ? gr[st + 1] : Base(-1),
-                   st2b = lspace > 1 ? gr[st + 2] : Base(-1), enb = gr[en],
-                   en1b = rspace ? gr[en - 1] : Base(-1),
-                   en2b = rspace > 1 ? gr[en - 2] : Base(-1);
+                 st2b = lspace > 1 ? gr[st + 2] : Base(-1), enb = gr[en],
+                 en1b = rspace ? gr[en - 1] : Base(-1), en2b = rspace > 1 ? gr[en - 2] : Base(-1);
 
       // if (CanPair(enb, stb)) {  // TODO lonely pairs?
       if (energy::ViableFoldingPair(en, st)) {

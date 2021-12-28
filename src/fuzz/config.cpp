@@ -1,5 +1,6 @@
 // Copyright 2021 E.
 #include "fuzz/config.h"
+
 #include "util/string.h"
 
 namespace mrna::fuzz {
