@@ -185,13 +185,13 @@ class SplayMap {
  private:
   constexpr static int NONE = 0, TMP = 1;
 
-  struct node_t {
+  struct Node {
     Key k;
     int l, r;
     Value v;
   };
 
-  std::vector<node_t> ns;
+  std::vector<Node> ns;
   int root;
   std::size_t size;
 
@@ -220,10 +220,10 @@ class SplayMap {
   }
 };
 
-struct nothing_t {};
+struct Nothing {};
 
 template <typename Key>
-using SplaySet = SplayMap<Key, nothing_t>;
+using SplaySet = SplayMap<Key, Nothing>;
 
 }  // namespace mrna
 

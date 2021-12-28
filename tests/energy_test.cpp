@@ -9,29 +9,29 @@ namespace mrna::energy {
 
 class EnergyTest : public testing::Test {
  public:
-  secondary_t kNNDBHairpin1 = ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
-  secondary_t kNNDBHairpin2 = ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
-  secondary_t kNNDBHairpin3 = ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");
-  secondary_t kNNDBHairpin4 = ParseDotBracketSecondary("CACACCCCCCUGUG", "((((......))))");
-  secondary_t kNNDBHairpin5 = ParseDotBracketSecondary("CGGGGGAAGUCCG", "((((.....))))");
-  secondary_t kNNDBBulge1 = ParseDotBracketSecondary("GCCCGAAACGGC", "(((.(...))))");
-  secondary_t kNNDBBulge2 = ParseDotBracketSecondary("GAACAGAAACUC", "((...(...)))");
-  secondary_t kNNDBInternal2x3 = ParseDotBracketSecondary("CAGACGAAACGGAGUG", "((..((...))...))");
-  secondary_t kNNDBInternal1x5 = ParseDotBracketSecondary("CAGCGAAACGGAAAGUG", "((.((...)).....))");
-  secondary_t kNNDBInternal2x2 = ParseDotBracketSecondary("CAGACGAAACGGAUG", "((..((...))..))");
-  secondary_t kFlushCoax = ParseDotBracketSecondary("GUGAAACACAAAAUGA", ".((...))((...)).");
+  Secondary kNNDBHairpin1 = ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
+  Secondary kNNDBHairpin2 = ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
+  Secondary kNNDBHairpin3 = ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");
+  Secondary kNNDBHairpin4 = ParseDotBracketSecondary("CACACCCCCCUGUG", "((((......))))");
+  Secondary kNNDBHairpin5 = ParseDotBracketSecondary("CGGGGGAAGUCCG", "((((.....))))");
+  Secondary kNNDBBulge1 = ParseDotBracketSecondary("GCCCGAAACGGC", "(((.(...))))");
+  Secondary kNNDBBulge2 = ParseDotBracketSecondary("GAACAGAAACUC", "((...(...)))");
+  Secondary kNNDBInternal2x3 = ParseDotBracketSecondary("CAGACGAAACGGAGUG", "((..((...))...))");
+  Secondary kNNDBInternal1x5 = ParseDotBracketSecondary("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+  Secondary kNNDBInternal2x2 = ParseDotBracketSecondary("CAGACGAAACGGAUG", "((..((...))..))");
+  Secondary kFlushCoax = ParseDotBracketSecondary("GUGAAACACAAAAUGA", ".((...))((...)).");
   // NNDB T99 Multiloop example
-  secondary_t kNNDBMultiloop =
+  Secondary kNNDBMultiloop =
       ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
 
-  secondary_t kBulge1 = ParseDotBracketSecondary("GCUCGAAACAGC", "(((.(...))))");
-  secondary_t kInternal1 = ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)");
+  Secondary kBulge1 = ParseDotBracketSecondary("GCUCGAAACAGC", "(((.(...))))");
+  Secondary kInternal1 = ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)");
 
-  energy_t GetEnergy(const std::string& r, const std::string& db) {
+  Energy GetEnergy(const std::string& r, const std::string& db) {
     return GetEnergy({StringToPrimary(r), DotBracketToPairs(db)});
   }
 
-  energy_t GetEnergy(const secondary_t& s) { return ComputeEnergy(s, *g_em).energy; }
+  Energy GetEnergy(const Secondary& s) { return ComputeEnergy(s, *g_em).energy; }
 };
 
 TEST_F(EnergyTest, MultiloopEnergy) {
@@ -84,7 +84,7 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   EXPECT_EQ(g_em->stack[G][C][G][C] + g_em->stack[C][C][G][G] + g_em->BulgeInitiation(1) +
           g_em->bulge_special_c + g_em->stack[C][G][C][G] + g_em->HairpinInitiation(3) -
-          energy_t(round(10.0 * R * T * log(3))),
+          Energy(round(10.0 * R * T * log(3))),
       GetEnergy(kNNDBBulge1));
 
   EXPECT_EQ(g_em->stack[G][A][U][C] + g_em->augu_penalty + g_em->BulgeInitiation(3) +
@@ -175,7 +175,7 @@ TEST_F(EnergyTest, Precomp) {
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);
 
-  energy_t augubranch[4][4] = {
+  Energy augubranch[4][4] = {
       {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));

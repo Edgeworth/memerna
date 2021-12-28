@@ -9,13 +9,13 @@ namespace mrna::partition {
 
 namespace internal {
 
-extern array3d_t<penergy_t, PT_SIZE> gpt;
-extern array2d_t<penergy_t, PTEXT_SIZE> gptext;
-extern precomp_t gppc;
+extern Array3D<PEnergy, PT_SIZE> gpt;
+extern Array2D<PEnergy, PTEXT_SIZE> gptext;
+extern Precomp gppc;
 
 }  // namespace internal
 
-void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em);
+void SetPartitionGlobalState(const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::partition
 

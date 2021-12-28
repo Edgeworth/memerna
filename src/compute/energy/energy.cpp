@@ -10,16 +10,16 @@
 namespace mrna::energy {
 
 using internal::AddBranchCtdsToComputed;
-using internal::branch_ctd_t;
+using internal::BranchCtd;
 using internal::ComputeOptimalCtd;
 using internal::GetBranchCtdsFromComputed;
 
-energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en,
+Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
     std::deque<int>& branches, const EnergyModel& em, std::unique_ptr<Structure>* ss) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   const bool exterior_loop = p[st] != en;
-  energy_t energy = 0;
+  Energy energy = 0;
 
   std::unique_ptr<MultiLoopStructure> s = nullptr;
   if (ss) {
@@ -42,8 +42,8 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
   if (s) s->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
-  branch_ctd_t branch_ctds;
-  energy_t ctd_energy = 0;
+  BranchCtd branch_ctds;
+  Energy ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (compute_ctds) {
@@ -57,13 +57,13 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
       if (s) s->AddNote("%de - closing AU/GU penalty at %d %d", em.augu_penalty, st, en);
       energy += em.augu_penalty;
     }
-    energy_t initiation = em.MultiloopInitiation(static_cast<int>(branches.size() + 1));
+    Energy initiation = em.MultiloopInitiation(static_cast<int>(branches.size() + 1));
     if (s) s->AddNote("%de - initiation", initiation);
     energy += initiation;
 
     if (compute_ctds) {
-      branch_ctd_t config_ctds[4] = {};
-      std::pair<energy_t, int> config_energies[4] = {};
+      BranchCtd config_ctds[4] = {};
+      std::pair<Energy, int> config_energies[4] = {};
       branches.push_front(en);
       config_energies[0] = {ComputeOptimalCtd(computed.s, em, branches, true, config_ctds[0]), 0};
       config_energies[1] = {ComputeOptimalCtd(computed.s, em, branches, false, config_ctds[1]), 1};
@@ -108,13 +108,13 @@ energy_t MultiloopEnergy(computed_t& computed, bool compute_ctds, int st, int en
   return energy;
 }
 
-energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds, int st, int en,
+Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, int en,
     const EnergyModel& em, std::unique_ptr<Structure>* s) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   const bool exterior_loop = p[st] != en;
   assert(en >= st);
-  energy_t energy = 0;
+  Energy energy = 0;
 
   // Look for branches inside.
   std::deque<int> branches;
@@ -156,18 +156,18 @@ energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds, int 
   return energy;
 }
 
-computed_t ComputeEnergy(
-    const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s) {
-  computed_t computed(secondary);
+Computed ComputeEnergy(
+    const Secondary& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s) {
+  Computed computed(secondary);
   return ComputeEnergyWithCtds(computed, em, true, s);
 }
 
-computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em,
+Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em,
     bool compute_ctds, std::unique_ptr<Structure>* s) {
   auto computed_copy = computed;
   const auto& r = computed_copy.s.r;
   const auto& p = computed_copy.s.p;
-  energy_t energy = ComputeSubstructureEnergy(
+  Energy energy = ComputeSubstructureEnergy(
       computed_copy, compute_ctds, 0, static_cast<int>(r.size()) - 1, em, s);
   if (p[0] == static_cast<int>(r.size() - 1) && IsAuGu(r[0], r[p[0]])) {
     energy += em.augu_penalty;

@@ -12,13 +12,13 @@
 
 namespace mrna {
 
-struct opt_t {
-  opt_t(const std::string& desc_ = "", const std::string& default_arg_ = "",
+struct Opt {
+  Opt(const std::string& desc_ = "", const std::string& default_arg_ = "",
       bool has_default_ = false, bool has_arg_ = false, bool required_ = false)
       : desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
         has_arg(has_arg_), required(required_) {}
 
-  opt_t& Arg(const std::string& default_, const std::unordered_set<std::string>& choices_) {
+  Opt& Arg(const std::string& default_, const std::unordered_set<std::string>& choices_) {
     default_arg = default_;
     choices = choices_;
     has_default = true;
@@ -26,20 +26,20 @@ struct opt_t {
     return *this;
   }
 
-  opt_t& Arg(const std::string& default_) { return Arg(default_, {}); }
+  Opt& Arg(const std::string& default_) { return Arg(default_, {}); }
 
-  opt_t& Arg(const std::unordered_set<std::string>& choices_) {
+  Opt& Arg(const std::unordered_set<std::string>& choices_) {
     choices = choices_;
     has_arg = true;
     return *this;
   }
 
-  opt_t& Arg() {
+  Opt& Arg() {
     has_arg = true;
     return *this;
   }
 
-  opt_t& Require() {
+  Opt& Require() {
     required = true;
     return *this;
   }
@@ -56,14 +56,14 @@ struct opt_t {
 
 class ArgParse {
  public:
-  explicit ArgParse(const std::map<std::string, opt_t>& possible_args_)
+  explicit ArgParse(const std::map<std::string, Opt>& possible_args_)
       : possible_args(possible_args_) {}
 
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
 
-  void AddOptions(const std::map<std::string, opt_t>& possible_args_);
+  void AddOptions(const std::map<std::string, Opt>& possible_args_);
   std::string Parse(int argc, char* argv[]);
   void ParseOrExit(int argc, char* argv[]);
   std::string Usage() const;
@@ -85,7 +85,7 @@ class ArgParse {
   }
 
  private:
-  std::map<std::string, opt_t> possible_args;
+  std::map<std::string, Opt> possible_args;
   std::unordered_map<std::string, std::string> flags;
   std::vector<std::string> positional;
 };

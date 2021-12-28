@@ -34,15 +34,15 @@ class BruteForce {
 
     // MFE and suboptimal folding:
     int max_structures;
-    std::multiset<computed_t, computed_energy_comparator_t> best_computeds;
+    std::multiset<Computed, ComputedEnergyCmp> best_computeds;
 
     // TODO: Switch to optional?
     bool compute_partition;
-    partition::partition_t partition;
-    partition::probabilities_t probabilities;
+    partition::Partition partition;
+    partition::Probabilities probabilities;
   };
 
-  Result Run(const primary_t& r, const energy::EnergyModel& em, int max_structures,
+  Result Run(const Primary& r, const energy::EnergyModel& em, int max_structures,
       bool compute_partition, bool allow_lonely_pairs);
 
  private:
@@ -52,25 +52,25 @@ class BruteForce {
   inline constexpr static int PT_MASK = (1 << PT_MAX_BITS) - 1;
   inline constexpr static int CTD_MASK = (1 << CTD_MAX_BITS) - 1;
 
-  struct substructure_id_t {
+  struct SubstructureId {
     inline constexpr static int BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
     inline constexpr static int BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
     uint16_t bits[BYTES / 2];
 
-    bool operator<(const substructure_id_t& o) const {
+    bool operator<(const SubstructureId& o) const {
       return memcmp(&bits, &o.bits, std::size_t(BYTES)) < 0;
     }
   };
 
   Result res_;
-  SplaySet<substructure_id_t> substructure_map;
+  SplaySet<SubstructureId> substructure_map;
 
   void AddAllCombinations(int idx);
   void Dfs(int idx);
 
-  static substructure_id_t WriteBits(int st, int en, int N, bool inside);
-  static substructure_id_t BuildInsideStructure(int st, int en, int N);
-  static substructure_id_t BuildOutsideStructure(int st, int en, int N);
+  static SubstructureId WriteBits(int st, int en, int N, bool inside);
+  static SubstructureId BuildInsideStructure(int st, int en, int N);
+  static SubstructureId BuildOutsideStructure(int st, int en, int N);
 };
 
 }  // namespace mrna

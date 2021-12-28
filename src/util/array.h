@@ -9,22 +9,22 @@
 namespace mrna {
 
 template <typename T, unsigned int K>
-struct array3d_t {
+struct Array3D {
   typedef T ArrayType[K];
 
  public:
-  array3d_t() : data(nullptr), size(0) {}
-  explicit array3d_t(std::size_t size_, const T init_val = MAX_E)
+  Array3D() : data(nullptr), size(0) {}
+  explicit Array3D(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * size_ * K]), size(size_) {
     std::fill(data, data + size * size * K, init_val);
   }
-  ~array3d_t() { delete[] data; }
+  ~Array3D() { delete[] data; }
 
-  array3d_t(const array3d_t&) = delete;
-  array3d_t& operator=(const array3d_t&) = delete;
-  array3d_t(array3d_t&& o) : data(nullptr), size(0) { *this = std::move(o); }
+  Array3D(const Array3D&) = delete;
+  Array3D& operator=(const Array3D&) = delete;
+  Array3D(Array3D&& o) : data(nullptr), size(0) { *this = std::move(o); }
 
-  array3d_t& operator=(array3d_t&& o) {
+  Array3D& operator=(Array3D&& o) {
     delete[] data;
     data = o.data;
     size = o.size;
@@ -49,21 +49,21 @@ struct array3d_t {
 };
 
 template <typename T, unsigned int K>
-struct array2d_t {
+struct Array2D {
  public:
-  array2d_t() : data(nullptr), size(0) {}
-  ~array2d_t() { delete[] data; }
+  Array2D() : data(nullptr), size(0) {}
+  ~Array2D() { delete[] data; }
 
-  explicit array2d_t(std::size_t size_, const T init_val = MAX_E)
+  explicit Array2D(std::size_t size_, const T init_val = MAX_E)
       : data(new T[size_ * K]), size(size_) {
     std::fill(data, data + size * K, init_val);
   }
 
-  array2d_t(const array2d_t&) = delete;
-  array2d_t& operator=(const array2d_t&) = delete;
-  array2d_t(array2d_t&& o) : data(nullptr), size(0) { *this = std::move(o); }
+  Array2D(const Array2D&) = delete;
+  Array2D& operator=(const Array2D&) = delete;
+  Array2D(Array2D&& o) : data(nullptr), size(0) { *this = std::move(o); }
 
-  array2d_t& operator=(array2d_t&& o) {
+  Array2D& operator=(Array2D&& o) {
     delete[] data;
     data = o.data;
     size = o.size;

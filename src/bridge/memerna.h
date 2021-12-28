@@ -20,14 +20,14 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
-  computed_t Fold(const primary_t& r) const override;
+  Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const override;
+  Computed Fold(const Primary& r) const override;
   int Suboptimal(
-      subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const override;
-  std::vector<computed_t> SuboptimalIntoVector(
-      const primary_t& r, energy_t energy_delta) const override;
-  std::pair<partition::partition_t, partition::probabilities_t> Partition(
-      const primary_t& r) const override;
+      subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
+  std::vector<Computed> SuboptimalIntoVector(
+      const Primary& r, Energy energy_delta) const override;
+  std::pair<partition::Partition, partition::Probabilities> Partition(
+      const Primary& r) const override;
 
  private:
   const energy::EnergyModelPtr em;

@@ -3,7 +3,7 @@
 
 namespace mrna {
 
-base_t CharToBase(char c) {
+Base CharToBase(char c) {
   switch (c) {
   case 'A': return A;
   case 'C': return C;
@@ -13,7 +13,7 @@ base_t CharToBase(char c) {
   }
 }
 
-char BaseToChar(base_t b) {
+char BaseToChar(Base b) {
   if (b < 0 || b > 4) return '?';
   return "ACGU"[b];
 }

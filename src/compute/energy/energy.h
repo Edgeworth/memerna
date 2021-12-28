@@ -16,11 +16,11 @@ namespace mrna::energy {
 class Structure;
 
 // If (st, en) is not paired, treated as an exterior loop.
-energy_t ComputeSubstructureEnergy(computed_t& computed, bool compute_ctds, int st, int en,
+Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, int en,
     const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
-computed_t ComputeEnergy(
-    const secondary_t& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
-computed_t ComputeEnergyWithCtds(const computed_t& computed, const EnergyModel& em,
+Computed ComputeEnergy(
+    const Secondary& secondary, const EnergyModel& em, std::unique_ptr<Structure>* s = nullptr);
+Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em,
     bool compute_ctds = false, std::unique_ptr<Structure>* s = nullptr);
 
 }  // namespace mrna::energy

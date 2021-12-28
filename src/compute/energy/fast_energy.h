@@ -14,7 +14,7 @@ namespace mrna::energy {
 
 namespace internal {
 
-int MaxNumContiguous(const primary_t& r);
+int MaxNumContiguous(const Primary& r);
 
 }
 
@@ -22,8 +22,8 @@ const int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
 // This is templated because the partition function wants to use it with a different type.
 template <typename T, int InitVal>
-struct hairpin_precomp_t {
-  hairpin_precomp_t() : num_c(0) {
+struct HairpinPrecomp {
+  HairpinPrecomp() : num_c(0) {
     std::fill(special, special + sizeof(special) / sizeof(special[0]), InitVal);
   }
 
@@ -31,17 +31,17 @@ struct hairpin_precomp_t {
   int num_c;
 };
 
-struct precomp_t {
-  energy_t augubranch[4][4];
-  energy_t min_mismatch_coax;
-  energy_t min_flush_coax;
-  energy_t min_twoloop_not_stack;
+struct Precomp {
+  Energy augubranch[4][4];
+  Energy min_mismatch_coax;
+  Energy min_flush_coax;
+  Energy min_twoloop_not_stack;
 
-  std::vector<hairpin_precomp_t<energy_t, MAX_E>> hairpin;
+  std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
 };
 
 template <typename HairpinPrecomp, typename EM>
-std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) {
+std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;
   pc.resize(r.size());
   std::string rna_str = PrimaryToString(r);
@@ -61,20 +61,20 @@ std::vector<HairpinPrecomp> PrecomputeHairpin(const primary_t& r, const EM& em) 
   return pc;
 }
 
-precomp_t PrecomputeData(const primary_t& r, const EnergyModel& em);
+Precomp PrecomputeData(const Primary& r, const EnergyModel& em);
 
 // Must have global state set.
-energy_t FastTwoLoop(int ost, int oen, int ist, int ien);
-energy_t FastHairpin(int st, int en);
+Energy FastTwoLoop(int ost, int oen, int ist, int ien);
+Energy FastHairpin(int st, int en);
 inline bool ViableFoldingPair(int st, int en) {
   return CanPair(gr[st], gr[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
       ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
           (st > 0 && en < static_cast<int>(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
 }
 
-inline penergy_t Boltzmann(energy_t energy) {
+inline PEnergy Boltzmann(Energy energy) {
   if (energy >= CAP_E) return 0;
-  return exp(penergy_t(energy) * (penergy_t(-1) / penergy_t(10.0 * R * T)));
+  return exp(PEnergy(energy) * (PEnergy(-1) / PEnergy(10.0 * R * T)));
 }
 
 }  // namespace mrna::energy

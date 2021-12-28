@@ -6,7 +6,7 @@
 
 namespace mrna {
 
-primary_t GenerateRandomPrimary(int length);
+Primary GenerateRandomPrimary(int length);
 
 }  // namespace mrna
 

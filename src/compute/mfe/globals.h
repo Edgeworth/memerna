@@ -17,13 +17,13 @@ namespace internal {
 extern std::vector<int> gp;
 extern std::vector<Ctd> gctd;
 extern std::string grep;
-extern energy_t genergy;
-extern array3d_t<energy_t, DP_SIZE> gdp;
-extern array2d_t<energy_t, EXT_SIZE> gext;
+extern Energy genergy;
+extern Array3D<Energy, DP_SIZE> gdp;
+extern Array2D<Energy, EXT_SIZE> gext;
 
 }  // namespace internal
 
-void SetMfeGlobalState(const primary_t& r, const energy::EnergyModel& em);
+void SetMfeGlobalState(const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::mfe
 

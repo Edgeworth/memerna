@@ -89,7 +89,7 @@ void DoInteractive(int r) {
 
 int main(int argc, char** argv) {
   mrna::ArgParse args({{"h", {"help"}}, {"afl", {"afl mode"}},
-      {"r", mrna::opt_t("load range from 1 until r").Arg("-1")}});
+      {"r", mrna::Opt("load range from 1 until r").Arg("-1")}});
   args.ParseOrExit(argc, argv);
   if (args.HasFlag("h")) {
     printf("Commands:\n Insert: i <val>\n Delete: d <val>\n "

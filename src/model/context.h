@@ -18,10 +18,10 @@ namespace mrna {
 
 class Context {
  public:
-  Context(const primary_t& r, const energy::EnergyModelPtr em) : r(r), em(em), cfg() {
+  Context(const Primary& r, const energy::EnergyModelPtr em) : r(r), em(em), cfg() {
     verify(r.size() > 0u, "cannot process zero length RNA");
   }
-  Context(const primary_t& r, const energy::EnergyModelPtr em, ModelCfg cfg)
+  Context(const Primary& r, const energy::EnergyModelPtr em, ModelCfg cfg)
       : r(r), em(em), cfg(cfg) {
     verify(r.size() > 0u, "cannot process zero length RNA");
   }
@@ -32,15 +32,15 @@ class Context {
   Context(Context&& o) = delete;
   Context& operator=(Context&&) = delete;
 
-  computed_t Fold();
-  std::vector<computed_t> SuboptimalIntoVector(
-      bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
+  Computed Fold();
+  std::vector<Computed> SuboptimalIntoVector(
+      bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
   int Suboptimal(
-      subopt::SuboptimalCallback fn, bool sorted, energy_t subopt_delta = -1, int subopt_num = -1);
-  partition::partition_t Partition();
+      subopt::SuboptimalCallback fn, bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
+  partition::Partition Partition();
 
  private:
-  const primary_t r;
+  const Primary r;
   const energy::EnergyModelPtr em;
   const ModelCfg cfg;
 

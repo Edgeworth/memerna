@@ -30,14 +30,14 @@ namespace mrna::energy::internal {
 // unpaired base will never have been consumed by a 5' dangle.
 #define UPDATE_CACHE(used, idx, cur_used, cur_idx, value, reason)                     \
   do {                                                                                \
-    energy_t macro_upd_value_ = (value);                                              \
+    Energy macro_upd_value_ = (value);                                                \
     if (cache[cur_used][cur_idx] + macro_upd_value_ < cache[used][idx]) {             \
       cache[used][idx] = cache[cur_used][cur_idx] + macro_upd_value_;                 \
       back[used][idx] = std::make_tuple(cur_used, cur_idx, macro_upd_value_, reason); \
     }                                                                                 \
   } while (0)
-energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
-    const std::deque<int>& branches, bool use_first_lu, branch_ctd_t& branch_ctds) {
+Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
+    const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds) {
   const auto& r = secondary.r;
   const auto& p = secondary.p;
   int N = static_cast<int>(branches.size());
@@ -49,10 +49,10 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
   // cache[used][i]
   std::vector<int> cache[2] = {
       std::vector<int>(size_t(N + 1), MAX_E), std::vector<int>(size_t(N + 1), MAX_E)};
-  std::vector<std::tuple<bool, int, energy_t, Ctd>> back[2] = {
-      std::vector<std::tuple<bool, int, energy_t, Ctd>>(
+  std::vector<std::tuple<bool, int, Energy, Ctd>> back[2] = {
+      std::vector<std::tuple<bool, int, Energy, Ctd>>(
           size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA)),
-      std::vector<std::tuple<bool, int, energy_t, Ctd>>(
+      std::vector<std::tuple<bool, int, Energy, Ctd>>(
           size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA))};
 
   cache[0][0] = cache[1][0] = 0;
@@ -79,14 +79,14 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
   }
 
   for (int i = 0; i < N; ++i) {
-    base_t lb = r[li[i]], rb = r[ri[i]], lub = -1, rub = -1;
+    Base lb = r[li[i]], rb = r[ri[i]], lub = -1, rub = -1;
     if (lu_exists[i]) lub = r[lui[i]];
     if (ru_exists[i]) rub = r[rui[i]];
 
     // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be
     // the last branch.
     if (!ru_exists[i] && i != N - 1) {
-      energy_t coax = em.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
+      Energy coax = em.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with
       // anything, so just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FCOAX_WITH_NEXT);
@@ -108,7 +108,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
       // Skip to the branch after next since the next branch can't be involved in any more
       // interactions anyway: its left pair is consumed, and its right pair can't dangle towards it.
       if (ru_shared[i] && i != N - 1) {
-        energy_t left_coax = em.MismatchCoaxial(rb, rub, lub, lb);
+        Energy left_coax = em.MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LCOAX_WITH_NEXT);
       }
     }
@@ -123,7 +123,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
       // Mismatch mediated coaxial stacking, right facing (uses the next branch).
       // Requires ru_exists, ru_shared. Consumes ru and rru.
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
-        energy_t right_coax = em.MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
+        Energy right_coax = em.MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RCOAX_WITH_NEXT);
         if (lu_exists[i]) {
@@ -144,7 +144,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
     UPDATE_CACHE(0, i + 1, 1, i, 0, CTD_UNUSED);
   }
 
-  std::tuple<bool, int, energy_t, Ctd> state{false, N, 0, CTD_NA};
+  std::tuple<bool, int, Energy, Ctd> state{false, N, 0, CTD_NA};
   if (cache[1][N] < cache[0][N]) state = std::make_tuple(true, N, 0, CTD_NA);
   // First state contains no real info, so go ahead one.
   state = back[std::get<0>(state)][std::get<1>(state)];
@@ -152,7 +152,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
   while (1) {
     bool used;
     int idx;
-    energy_t energy;
+    Energy energy;
     Ctd reason;
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
@@ -173,7 +173,7 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 #undef UPDATE_CACHE
 
 void AddBranchCtdsToComputed(
-    computed_t& computed, const std::deque<int>& branches, const branch_ctd_t& branch_ctds) {
+    Computed& computed, const std::deque<int>& branches, const BranchCtd& branch_ctds) {
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
     assert(static_cast<int>(computed.base_ctds.size()) > branches[i] &&
@@ -184,12 +184,12 @@ void AddBranchCtdsToComputed(
   }
 }
 
-energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
-    const std::deque<int>& branches, branch_ctd_t& branch_ctds) {
+Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em,
+    const std::deque<int>& branches, BranchCtd& branch_ctds) {
   const auto& r = computed.s.r;
   const auto& p = computed.s.p;
   assert(branch_ctds.empty());
-  energy_t total_energy = 0;
+  Energy total_energy = 0;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
   // last, to NEXT. In this case, we need to fix the branch_ctds so that the corresponding branch
   // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
@@ -198,7 +198,7 @@ energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
-    energy_t energy = 0;
+    Energy energy = 0;
     const auto stb = r[branch], enb = r[p[branch]];
     switch (computed.base_ctds[branch]) {
     case CTD_UNUSED: break;

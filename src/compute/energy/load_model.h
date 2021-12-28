@@ -9,10 +9,10 @@
 
 namespace mrna::energy {
 
-inline const std::map<std::string, opt_t> ENERGY_OPTS = {
-    {"seed", opt_t("seed for random energy model for memerna").Arg()},
-    {"rnastructure-data", opt_t("data path for RNAstructure").Arg()},
-    {"memerna-data", opt_t("data path for given energy model for memerna").Arg()}};
+inline const std::map<std::string, Opt> ENERGY_OPTS = {
+    {"seed", Opt("seed for random energy model for memerna").Arg()},
+    {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
+    {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
 
 EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
 EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);

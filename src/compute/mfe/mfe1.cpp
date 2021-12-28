@@ -16,12 +16,12 @@ void ComputeTables1() {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
+      const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
                    en1b = gr[en - 1], en2b = gr[en - 2];
 
       // Update paired - only if can actually pair.
       if (ViableFoldingPair(st, en)) {
-        energy_t p_min = MAX_E;
+        Energy p_min = MAX_E;
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
@@ -50,7 +50,7 @@ void ComputeTables1() {
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+          Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
           //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
@@ -85,7 +85,7 @@ void ComputeTables1() {
 
         gdp[st][en][DP_P] = p_min;
       }
-      energy_t u_min = MAX_E, u2_min = MAX_E, rcoax_min = MAX_E, wc_min = MAX_E, gu_min = MAX_E;
+      Energy u_min = MAX_E, u2_min = MAX_E, rcoax_min = MAX_E, wc_min = MAX_E, gu_min = MAX_E;
       // Update unpaired.
       // Choose |st| to be unpaired.
       if (st + 1 < en) {

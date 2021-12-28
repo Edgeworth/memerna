@@ -31,17 +31,17 @@ class Structure {
   virtual void AddBranch(std::unique_ptr<Structure> b) { branches.push_back(std::move(b)); }
   virtual std::string BranchDesc(int idx) const { return branches[idx]->ShortDesc(); }
 
-  void SetSelfEnergy(energy_t e) { self_energy = e; }
-  void SetTotalEnergy(energy_t e) { total_energy = e; }
-  energy_t GetSelfEnergy() const { return self_energy; }
-  energy_t GetTotalEnergy() const { return total_energy; }
+  void SetSelfEnergy(Energy e) { self_energy = e; }
+  void SetTotalEnergy(Energy e) { total_energy = e; }
+  Energy GetSelfEnergy() const { return self_energy; }
+  Energy GetTotalEnergy() const { return total_energy; }
 
  protected:
   std::vector<std::unique_ptr<Structure>> branches;
 
  private:
-  energy_t self_energy;
-  energy_t total_energy;
+  Energy self_energy;
+  Energy total_energy;
   std::vector<std::string> notes;
 };
 
@@ -72,13 +72,13 @@ class MultiLoopStructure : public Structure {
  public:
   MultiLoopStructure(int st_, int en_) : st(st_), en(en_) {}
 
-  void AddCtd(Ctd ctd, energy_t ctd_energy) { branch_ctds.emplace_back(ctd, ctd_energy); }
+  void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctds.emplace_back(ctd, ctd_energy); }
   std::string BranchDesc(int idx) const;
   std::string ShortDesc() const;
 
  private:
   int st, en;
-  internal::branch_ctd_t branch_ctds;
+  internal::BranchCtd branch_ctds;
 };
 
 class StackingStructure : public Structure {

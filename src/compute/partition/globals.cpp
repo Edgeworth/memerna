@@ -8,17 +8,17 @@ namespace mrna::partition {
 
 namespace internal {
 
-array3d_t<penergy_t, PT_SIZE> gpt;
-array2d_t<penergy_t, PTEXT_SIZE> gptext;
-precomp_t gppc;
+Array3D<PEnergy, PT_SIZE> gpt;
+Array2D<PEnergy, PTEXT_SIZE> gptext;
+Precomp gppc;
 
 }  // namespace internal
 
-void SetPartitionGlobalState(const primary_t& r, const energy::EnergyModel& em) {
+void SetPartitionGlobalState(const Primary& r, const energy::EnergyModel& em) {
   energy::SetEnergyGlobalState(r, em);
   // 0.0 is zero'd memory.
-  internal::gpt = array3d_t<penergy_t, PT_SIZE>(gr.size() + 1, 0);
-  internal::gptext = array2d_t<penergy_t, PTEXT_SIZE>(gr.size() + 1, 0);
+  internal::gpt = Array3D<PEnergy, PT_SIZE>(gr.size() + 1, 0);
+  internal::gptext = Array2D<PEnergy, PTEXT_SIZE>(gr.size() + 1, 0);
   internal::gppc = internal::PrecomputeData(r, em);
 }
 

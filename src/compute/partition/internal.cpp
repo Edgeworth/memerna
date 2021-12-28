@@ -15,16 +15,16 @@ constexpr auto Decay(T& a) {
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 
-void FillPenergyArray(penergy_t* output, const energy_t* input, int elements) {
+void FillPenergyArray(PEnergy* output, const Energy* input, int elements) {
   for (int i = 0; i < elements; ++i) output[i] = energy::Boltzmann(input[i]);
 }
 
 }  // namespace
 
-penergy_model_t::penergy_model_t(const energy::EnergyModel& em) {
+PEnergyModel::PEnergyModel(const energy::EnergyModel& em) {
 #define FILL_PENERGY(name)                                                                        \
   static_assert(sizeof(name) / sizeof(*Decay(name)) == sizeof(em.name) / sizeof(*Decay(em.name)), \
-      "penergy_model_t does not match EnergyModel");                                              \
+      "PEnergyModel does not match EnergyModel");                                                 \
   FillPenergyArray(Decay(name), Decay(em.name), sizeof(name) / sizeof(*Decay(name)));
 
   FILL_PENERGY(stack);
@@ -59,13 +59,13 @@ penergy_model_t::penergy_model_t(const energy::EnergyModel& em) {
 #undef FILL_PENERGY
 }
 
-penergy_t FastHairpin(int st, int en) {
+PEnergy FastHairpin(int st, int en) {
   int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= energy::MAX_SPECIAL_HAIRPIN_SZ && gppc.hairpin[st].special[length] > -1)
     return gppc.hairpin[st].special[length];
-  base_t stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
-  penergy_t energy =
+  Base stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
+  PEnergy energy =
       energy::Boltzmann(energy::gem.HairpinInitiation(length) + energy::gem.AuGuPenalty(stb, enb));
 
   bool all_c = gppc.hairpin[st + 1].num_c >= length;
@@ -87,7 +87,7 @@ penergy_t FastHairpin(int st, int en) {
   return energy;
 }
 
-penergy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
+PEnergy FastTwoLoop(int ost, int oen, int ist, int ien) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return gppc.em.stack[gr[ost]][gr[ist]][gr[ien]][gr[oen]];
   if (toplen == 0 || botlen == 0)
@@ -107,7 +107,7 @@ penergy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   static_assert(TWOLOOP_MAX_SZ <= energy::EnergyModel::INITIATION_CACHE_SZ,
       "initiation cache not large enough");
   assert(toplen + botlen < energy::EnergyModel::INITIATION_CACHE_SZ);
-  penergy_t energy = gppc.em.internal_init[toplen + botlen] *
+  PEnergy energy = gppc.em.internal_init[toplen + botlen] *
       energy::Boltzmann(
           std::min(std::abs(toplen - botlen) * energy::gem.internal_asym, NINIO_MAX_ASYM));
 
@@ -124,13 +124,13 @@ penergy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   return energy;
 }
 
-precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
-  precomp_t pc;
-  pc.em = penergy_model_t(em);
-  for (base_t i = 0; i < 4; ++i)
-    for (base_t j = 0; j < 4; ++j)
+Precomp PrecomputeData(const Primary& r, const energy::EnergyModel& em) {
+  Precomp pc;
+  pc.em = PEnergyModel(em);
+  for (Base i = 0; i < 4; ++i)
+    for (Base j = 0; j < 4; ++j)
       pc.augubranch[i][j] = pc.em.multiloop_hack_b * pc.em.AuGuPenalty(i, j);
-  pc.hairpin = energy::PrecomputeHairpin<energy::hairpin_precomp_t<penergy_t, -1>>(r, pc.em);
+  pc.hairpin = energy::PrecomputeHairpin<energy::HairpinPrecomp<PEnergy, -1>>(r, pc.em);
   return pc;
 }
 

@@ -21,7 +21,7 @@
 #include "bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
-using mrna::opt_t;
+using mrna::Opt;
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
@@ -31,8 +31,8 @@ __AFL_FUZZ_INIT();
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
   mrna::ArgParse args({
-      {"print-interval", opt_t("status update every n seconds").Arg("-1")},
-      {"afl", opt_t("reads one rna from stdin and fuzzes - useful for use with afl")},
+      {"print-interval", Opt("status update every n seconds").Arg("-1")},
+      {"afl", Opt("reads one rna from stdin and fuzzes - useful for use with afl")},
   });
   args.AddOptions(mrna::fuzz::FUZZ_OPTS);
   args.AddOptions(mrna::energy::ENERGY_OPTS);

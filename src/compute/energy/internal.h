@@ -9,10 +9,10 @@
 
 namespace mrna::energy::internal {
 
-typedef std::deque<std::pair<Ctd, energy_t>> branch_ctd_t;
+typedef std::deque<std::pair<Ctd, Energy>> BranchCtd;
 
-energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
-    const std::deque<int>& branches, bool use_first_lu, branch_ctd_t& branch_ctds);
+Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
+    const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds);
 
 // Per-base representation:
 // At the index of the right side of a branch, we store the CTD identifier
@@ -30,11 +30,11 @@ energy_t ComputeOptimalCtd(const secondary_t& secondary, const EnergyModel& em,
 // Takes the list representation of ctds in |branch_ctds| for |branches| branches and
 // writes it in per-base representation to |computed|.
 void AddBranchCtdsToComputed(
-    computed_t& computed, const std::deque<int>& branches, const branch_ctd_t& branch_ctds);
+    Computed& computed, const std::deque<int>& branches, const BranchCtd& branch_ctds);
 // Reads the per-base ctd representation from |computed| for |branches| branches and
 // writes it in list representation to |branch_ctds|.
-energy_t GetBranchCtdsFromComputed(const computed_t& computed, const EnergyModel& em,
-    const std::deque<int>& branches, branch_ctd_t& branch_ctds);
+Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em,
+    const std::deque<int>& branches, BranchCtd& branch_ctds);
 
 }  // namespace mrna::energy::internal
 

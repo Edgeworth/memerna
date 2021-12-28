@@ -27,7 +27,7 @@ int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   // If require sorted output, or limited number of structures (requires sorting).
   if (sorted || max_structures != MAX_STRUCTURES) {
     int num_structures = 0;
-    energy_t cur_delta = 0;
+    Energy cur_delta = 0;
     while (num_structures < max_structures && cur_delta != MAX_E && cur_delta <= delta) {
       auto res = RunInternal(fn, cur_delta, true, max_structures - num_structures);
       num_structures += res.first;
@@ -39,7 +39,7 @@ int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
 }
 
 std::pair<int, int> Suboptimal1::RunInternal(
-    SuboptimalCallback fn, energy_t cur_delta, bool exact_energy, int structure_limit) {
+    SuboptimalCallback fn, Energy cur_delta, bool exact_energy, int structure_limit) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -51,8 +51,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
   // Store the smallest energy above cur_delta we see. If we reach our |structure_limit| before
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.
-  energy_t next_seen = MAX_E;
-  energy_t energy = 0;
+  Energy next_seen = MAX_E;
+  Energy energy = 0;
   q.clear();
   unexpanded.clear();
   grep.resize(gr.size(), '.');
@@ -92,7 +92,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
     }
 
     const auto& exp = exps[s.idx++];
-    dfs_state_t ns = {0, exp.to_expand, false};
+    DfsState ns = {0, exp.to_expand, false};
     energy += exp.energy;
     if (exp.to_expand.st == -1) {
       // Can't have an unexpanded without a to_expand. Also can't set ctds or affect energy.
@@ -102,7 +102,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
       if (unexpanded.empty()) {
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
-          computed_t tmp_computed = {
+          Computed tmp_computed = {
               {std::move(gr), std::move(gp)}, std::move(gctd), energy + gext[0][EXT]};
           fn(tmp_computed);
           ++num_structures;
@@ -140,12 +140,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
   return {num_structures, next_seen};
 }
 
-std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta) {
+std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
   const int N = static_cast<int>(gr.size());
   int st = to_expand.st, en = to_expand.en, a = to_expand.a;
-  std::vector<expand_t> exps;
+  std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
-  energy_t energy = 0;
+  Energy energy = 0;
   // Exterior loop
   if (en == -1) {
     if (a == EXT) {
@@ -276,7 +276,7 @@ std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delt
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-      base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+      Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
 
       // (.(   )   .) Left outer coax - P
       auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);

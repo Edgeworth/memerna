@@ -28,8 +28,7 @@ namespace mrna::energy {
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
 //   model).
-energy_t EnergyModel::Hairpin(
-    const primary_t& r, int st, int en, std::unique_ptr<Structure>* s) const {
+Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s) const {
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
@@ -44,7 +43,7 @@ energy_t EnergyModel::Hairpin(
   // Subtract two for the initiating base pair.
   const int length = en - st - 1;
   if (length < 3) return MAX_E;  // Disallowed by T04.
-  energy_t energy = HairpinInitiation(length);
+  Energy energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsAuGu(r[st], r[en])) {
@@ -65,7 +64,7 @@ energy_t EnergyModel::Hairpin(
     }
     return energy;
   }
-  const base_t left = r[st + 1], right = r[en - 1];
+  const Base left = r[st + 1], right = r[en - 1];
   if (s) (*s)->AddNote("%de - terminal mismatch", terminal[r[st]][left][right][r[en]]);
   energy += terminal[r[st]][left][right][r[en]];
   if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
@@ -77,7 +76,7 @@ energy_t EnergyModel::Hairpin(
     energy += hairpin_gg_first_mismatch;
   }
   if (all_c) {
-    energy_t all_c_energy = hairpin_all_c_a * length + hairpin_all_c_b;
+    Energy all_c_energy = hairpin_all_c_a * length + hairpin_all_c_b;
     if (s) (*s)->AddNote("%de - all C penalty", all_c_energy);
     energy += all_c_energy;
   }
@@ -100,12 +99,12 @@ energy_t EnergyModel::Hairpin(
 //    bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
 //    bonus from that.
-energy_t EnergyModel::Bulge(
-    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+Energy EnergyModel::Bulge(
+    const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
-  energy_t energy = BulgeInitiation(length);
+  Energy energy = BulgeInitiation(length);
 
   if (s) {
     *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
@@ -140,7 +139,7 @@ energy_t EnergyModel::Bulge(
   int num_states = 0;
   for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
   for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
-  energy_t states_bonus = -energy_t(round(10.0 * R * T * log(num_states)));
+  Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
   if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
   energy += states_bonus;
 
@@ -157,8 +156,8 @@ energy_t EnergyModel::Bulge(
 // 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for
 // 2x3, and then
 //   rotate the rna by 180 degrees to look it up for 3x2.
-energy_t EnergyModel::InternalLoop(
-    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+Energy EnergyModel::InternalLoop(
+    const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
@@ -174,7 +173,7 @@ energy_t EnergyModel::InternalLoop(
     return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
                        [r[oen]];
 
-  energy_t energy = InternalLoopInitiation(toplen + botlen);
+  Energy energy = InternalLoopInitiation(toplen + botlen);
   if (s) (*s)->AddNote("%de - initiation", energy);
 
   // Special AU/GU penalties.
@@ -187,7 +186,7 @@ energy_t EnergyModel::InternalLoop(
     energy += internal_augu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
-  const energy_t asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
+  const Energy asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("%de - asymmetry", asym);
   energy += asym;
 
@@ -197,12 +196,12 @@ energy_t EnergyModel::InternalLoop(
   // side is
   // on the left / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
-    const energy_t mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+    const Energy mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
         internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
-    const energy_t mismatch = internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
+    const Energy mismatch = internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
         internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
     if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
     energy += mismatch;
@@ -211,8 +210,8 @@ energy_t EnergyModel::InternalLoop(
   return energy;
 }
 
-energy_t EnergyModel::TwoLoop(
-    const primary_t& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+Energy EnergyModel::TwoLoop(
+    const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
