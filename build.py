@@ -13,7 +13,7 @@ parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home()
 parser.add_argument(
   '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
   default='debug', required=False)
-parser.add_argument('-c', '--use-clang', action='store_true', default=False, required=False)
+parser.add_argument('--use-clang', action='store_true', default=False, required=False)
 parser.add_argument('--use-afl-fast', action='store_true', default=False, required=False)
 parser.add_argument('--use-afl-lto', action='store_true', default=False, required=False)
 parser.add_argument('--regenerate', action='store_true', default=False, required=False)

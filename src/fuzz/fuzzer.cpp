@@ -3,11 +3,13 @@
 
 #include <cinttypes>
 #include <set>
+#include <sstream>
 
 #include "compute/energy/load_model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
 #include "compute/subopt/brute.h"
+#include "fuzz/fuzzer.h"
 #include "model/context.h"
 #include "util/string.h"
 
@@ -158,7 +160,7 @@ error_t Fuzzer::CheckSuboptimal() {
     // strange things
     // when the energy for suboptimal structures is 0 or above.
     if (memerna_computeds[0].energy < -cfg.subopt_delta) {
-      const auto rnastructure_subopt = rnastructure->SuboptimalIntoVector(r, cfg.subopt_delta);
+      const auto rnastructure_subopt = rnastructure_->SuboptimalIntoVector(r, cfg.subopt_delta);
       AppendErrors(errors,
           MaybePrepend(
               CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
@@ -241,8 +243,8 @@ error_t Fuzzer::MemernaComputeAndCheckState() {
 error_t Fuzzer::RnastructureComputeAndCheckState() {
   error_t errors;
 #ifdef USE_RNASTRUCTURE
-  auto rnastructure_computed = rnastructure->FoldAndDpTable(r, &rnastructure_dp);
-  auto rnastructure_efn = rnastructure->Efn(rnastructure_computed.s);
+  auto rnastructure_computed = rnastructure_->FoldAndDpTable(r, &rnastructure_dp);
+  auto rnastructure_efn = rnastructure_->Efn(rnastructure_computed.s);
   if (memerna_computeds[0].energy != rnastructure_computed.energy ||
       memerna_computeds[0].energy != rnastructure_efn)
     errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d",
@@ -333,7 +335,7 @@ error_t Fuzzer::CheckPartition() {
 
 #ifdef USE_RNASTRUCTURE
   if (cfg.partition_rnastructure) {
-    auto rnastructure_part = rnastructure->Partition(r);
+    auto rnastructure_part = rnastructure_->Partition(r);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
     if (!equ(rnastructure_part.first.q, memerna_partitions[0].q)) {
       std::stringstream sstream;

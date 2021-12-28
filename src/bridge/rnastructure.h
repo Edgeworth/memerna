@@ -22,7 +22,7 @@ class RNAstructure : public RnaPackage {
   RNAstructure& operator=(RNAstructure&&) = default;
 
   RNAstructure(const RNAstructure&) = delete;
-  RNAstructure& operator=(RNAstructure&) = delete;
+  RNAstructure& operator=(const RNAstructure&) = delete;
 
   energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
   computed_t Fold(const primary_t& r) const override;
