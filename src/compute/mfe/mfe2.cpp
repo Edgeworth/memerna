@@ -16,15 +16,15 @@ void ComputeTables2() {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-  std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
+  std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(gr.size());
-  std::vector<cand_t> cand_st[CAND_SIZE];
+  std::vector<Cand> cand_st[CAND_SIZE];
   for (int st = N - 1; st >= 0; --st) {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
+      const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
                    en1b = gr[en - 1], en2b = gr[en - 2];
-      energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
+      Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
       // Update paired - only if can actually pair.
@@ -146,7 +146,7 @@ void ComputeTables2() {
       // need to consider (...)3' when computing a larger U. In some cases we use the minimum
       // possible energy if we don't know the energy exactly for a structure (e.g. RCOAX). These
       // orderings are useful to remember: U <= U_WC, U_GU, U2
-      energy_t cand_st_u = MAX_E;
+      Energy cand_st_u = MAX_E;
 
       // Unpaired cases. These store the best pairs u_cand that begin at st.
       // begin means that the whole interaction starts at st. e.g. .(   ). starts one before the

@@ -7,8 +7,8 @@
 
 namespace mrna {
 
-primary_t StringToPrimary(const std::string& s) {
-  primary_t r(s.size());
+Primary StringToPrimary(const std::string& s) {
+  Primary r(s.size());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     r[i] = CharToBase(s[i]);
     verify(r[i] != -1, "unexpected base %c", s[i]);
@@ -16,7 +16,7 @@ primary_t StringToPrimary(const std::string& s) {
   return r;
 }
 
-secondary_t ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str) {
+Secondary ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str) {
   verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
   return {StringToPrimary(prim_str), DotBracketToPairs(pairs_str)};
 }
@@ -49,7 +49,7 @@ std::string PairsToDotBracket(const std::vector<int>& pairs) {
   return s;
 }
 
-std::string ComputedToCtdString(const computed_t& computed) {
+std::string ComputedToCtdString(const Computed& computed) {
   const auto& p = computed.s.p;
   std::string s(p.size(), '.');
   for (int i = 0; i < static_cast<int>(p.size()); ++i) {
@@ -88,7 +88,7 @@ std::string ComputedToCtdString(const computed_t& computed) {
   return s;
 }
 
-std::string PrimaryToString(const primary_t& r) {
+std::string PrimaryToString(const Primary& r) {
   std::string s;
   s.resize(r.size());
   for (int i = 0; i < static_cast<int>(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
@@ -99,8 +99,8 @@ std::string PrimaryToString(const primary_t& r) {
 // >(   )>   )<<   )(   )>   )<   )
 // (m(   )m(   )m(   )m)
 
-computed_t ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str) {
-  computed_t computed(StringToPrimary(prim_str));
+Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str) {
+  Computed computed(StringToPrimary(prim_str));
   verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(prim_str.size());

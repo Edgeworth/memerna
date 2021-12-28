@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
   std::unique_ptr<mrna::energy::Structure> structure;
-  mrna::computed_t computed;
+  mrna::Computed computed;
   if (mrna::IsCtdString(pos.back())) {
     computed = mrna::ParseCtdComputed(pos.front(), pos.back());
     printf("Energy: %d\n",

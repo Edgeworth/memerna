@@ -17,22 +17,22 @@
 
 namespace mrna::fuzz {
 
-typedef std::deque<std::string> error_t;
+typedef std::deque<std::string> Error;
 
 class Fuzzer {
  public:
-  Fuzzer(primary_t r_, const FuzzCfg& cfg_, const energy::EnergyModelPtr em_);
+  Fuzzer(Primary r_, const FuzzCfg& cfg_, const energy::EnergyModelPtr em_);
 
-  error_t Run();
+  Error Run();
 
  private:
   const int N;
-  const primary_t r_;
+  const Primary r_;
   const FuzzCfg cfg_;
   const energy::EnergyModelPtr em_;
 
-  std::vector<computed_t> memerna_computeds_;
-  std::vector<array3d_t<energy_t, DP_SIZE>> memerna_dps;
+  std::vector<Computed> memerna_computeds_;
+  std::vector<Array3D<Energy, DP_SIZE>> memerna_dps;
 
   // RNAstructure related:
 #ifdef USE_RNASTRUCTURE
@@ -44,28 +44,27 @@ class Fuzzer {
   }
 #endif  // USE_RNASTRUCTURE
 
-  error_t MaybePrepend(const error_t& main, const std::string& header);
+  Error MaybePrepend(const Error& main, const std::string& header);
 
-  void AppendErrors(error_t& main, error_t&& extra);
+  void AppendErrors(Error& main, Error&& extra);
 
-  bool HasDuplicates(const std::vector<computed_t>& computeds);
+  bool HasDuplicates(const std::vector<Computed>& computeds);
 
-  error_t CheckSuboptimalResult(const std::vector<computed_t>& subopt, bool has_ctds);
+  Error CheckSuboptimalResult(const std::vector<Computed>& subopt, bool has_ctds);
 
-  error_t CheckSuboptimalResultPair(
-      const std::vector<computed_t>& a, const std::vector<computed_t>& b);
+  Error CheckSuboptimalResultPair(const std::vector<Computed>& a, const std::vector<Computed>& b);
 
-  error_t CheckSuboptimal();
+  Error CheckSuboptimal();
 
-  error_t CheckDpTables();
+  Error CheckDpTables();
 
-  error_t MemernaComputeAndCheckState();
+  Error MemernaComputeAndCheckState();
 
-  error_t RnastructureComputeAndCheckState();
+  Error RnastructureComputeAndCheckState();
 
-  error_t CheckBruteForce();
+  Error CheckBruteForce();
 
-  error_t CheckPartition();
+  Error CheckPartition();
 };
 
 }  // namespace mrna::fuzz

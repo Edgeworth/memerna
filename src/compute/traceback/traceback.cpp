@@ -33,7 +33,7 @@ void ComputeExterior() {
       const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b);
       const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb);
       const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b);
-      energy_t ext = MAX_E;
+      Energy ext = MAX_E;
 
       // (   )<   >
       auto val = base00 + gext[en + 1][EXT];
@@ -73,7 +73,7 @@ void ComputeExterior() {
 void Traceback() {
   const int N = static_cast<int>(gr.size());
   genergy = gext[0][EXT];
-  std::stack<index_t> q;
+  std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
     int st = q.top().st, en = q.top().en, a = q.top().a;
@@ -240,7 +240,7 @@ void Traceback() {
         }
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-          const base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+          const Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
 
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);

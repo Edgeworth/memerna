@@ -14,55 +14,55 @@
 
 namespace mrna::subopt::internal {
 
-struct expand_t {
-  expand_t() = delete;
-  explicit expand_t(energy_t energy_) : energy(energy_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_) : energy(energy_), to_expand(to_expand_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_)
+struct Expand {
+  Expand() = delete;
+  explicit Expand(Energy energy_) : energy(energy_) {}
+  Expand(Energy energy_, const Index& to_expand_) : energy(energy_), to_expand(to_expand_) {}
+  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_, const ctd_idx_t& ctd0_)
+  Expand(Energy energy_, const Index& to_expand_, const IndexCtd& ctd0_)
       : energy(energy_), to_expand(to_expand_), ctd0(ctd0_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_,
-      const ctd_idx_t& ctd0_)
+  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_,
+      const IndexCtd& ctd0_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_) {}
-  expand_t(energy_t energy_, const index_t& to_expand_, const index_t& unexpanded_,
-      const ctd_idx_t& ctd0_, const ctd_idx_t& ctd1_)
+  Expand(Energy energy_, const Index& to_expand_, const Index& unexpanded_,
+      const IndexCtd& ctd0_, const IndexCtd& ctd1_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_), ctd1(ctd1_) {}
-  energy_t energy;
-  index_t to_expand, unexpanded;  // st is -1 if this does not exist
-  ctd_idx_t ctd0, ctd1;
+  Energy energy;
+  Index to_expand, unexpanded;  // st is -1 if this does not exist
+  IndexCtd ctd0, ctd1;
 
-  bool operator<(const expand_t& o) const { return energy < o.energy; }
+  bool operator<(const Expand& o) const { return energy < o.energy; }
 };
 
-std::vector<expand_t> GenerateExpansions(const index_t& to_expand, energy_t delta);
+std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta);
 
 class Suboptimal1 {
  public:
-  Suboptimal1(energy_t delta_, int num)
+  Suboptimal1(Energy delta_, int num)
       : delta(delta_ == -1 ? CAP_E : delta_), max_structures(num == -1 ? MAX_STRUCTURES : num) {}
 
   int Run(SuboptimalCallback fn, bool sorted);
 
  private:
-  struct dfs_state_t {
+  struct DfsState {
     int idx;
-    index_t expand;
+    Index expand;
     // Stores whether this node's |expand| was from |unexpanded| and needs to be replaced.
     bool should_unexpand;
   };
 
-  const energy_t delta;
+  const Energy delta;
   const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
-  SplayMap<index_t, std::vector<expand_t>> cache;
-  std::vector<dfs_state_t> q;
-  std::vector<index_t> unexpanded;
+  SplayMap<Index, std::vector<Expand>> cache;
+  std::vector<DfsState> q;
+  std::vector<Index> unexpanded;
 
   std::pair<int, int> RunInternal(
-      SuboptimalCallback fn, energy_t cur_delta, bool exact_energy, int structure_limit);
+      SuboptimalCallback fn, Energy cur_delta, bool exact_energy, int structure_limit);
 
-  const std::vector<expand_t>& GetExpansion(const index_t& to_expand) {
+  const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache.Find(to_expand)) {
       // Need to generate the full way to delta so we can properly set |next_seen|.
       auto exps = GenerateExpansions(to_expand, delta);

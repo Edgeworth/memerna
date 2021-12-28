@@ -19,17 +19,17 @@ class RnaPackage {
  public:
   virtual ~RnaPackage() = default;
 
-  virtual energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const = 0;
-  virtual computed_t Fold(const primary_t& r) const = 0;
+  virtual Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const = 0;
+  virtual Computed Fold(const Primary& r) const = 0;
   virtual int Suboptimal(
-      subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const = 0;
-  virtual std::vector<computed_t> SuboptimalIntoVector(
-      const primary_t& r, energy_t energy_delta) const = 0;
-  virtual std::pair<partition::partition_t, partition::probabilities_t> Partition(
-      const primary_t& r) const = 0;
+      subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const = 0;
+  virtual std::vector<Computed> SuboptimalIntoVector(
+      const Primary& r, Energy energy_delta) const = 0;
+  virtual std::pair<partition::Partition, partition::Probabilities> Partition(
+      const Primary& r) const = 0;
 };
 
-const std::map<std::string, opt_t> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
+const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
 
 std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args);
 

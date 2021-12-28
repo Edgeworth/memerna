@@ -18,14 +18,14 @@ using mfe::internal::gdp;
 using partition::PartitionBruteForce;
 using subopt::SuboptimalBruteForce;
 
-inline bool equ(penergy_t a, penergy_t b) { return fabs(a - b) < EP; }
+inline bool equ(PEnergy a, PEnergy b) { return fabs(a - b) < EP; }
 
-Fuzzer::Fuzzer(primary_t r, const FuzzCfg& cfg, const energy::EnergyModelPtr em)
+Fuzzer::Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em)
     : N(static_cast<int>(r.size())), r_(std::move(r)), cfg_(cfg),
       em_(cfg_.random_model ? energy::LoadRandomEnergyModel(cfg_.seed) : em) {}
 
-error_t Fuzzer::Run() {
-  error_t errors;
+Error Fuzzer::Run() {
+  Error errors;
   AppendErrors(errors, MaybePrepend(MemernaComputeAndCheckState(), "memerna:"));
   if (cfg_.mfe_rnastructure)
     AppendErrors(errors, MaybePrepend(RnastructureComputeAndCheckState(), "rnastructure:"));
@@ -49,21 +49,21 @@ error_t Fuzzer::Run() {
   return errors;
 }
 
-error_t Fuzzer::MaybePrepend(const error_t& main, const std::string& header) {
+Error Fuzzer::MaybePrepend(const Error& main, const std::string& header) {
   if (main.empty()) return main;
-  error_t nmain;
+  Error nmain;
   nmain.push_front(header);
   for (auto& error : main) nmain.push_back("  " + error);  // mfw this inefficiency
   return nmain;
 }
 
-void Fuzzer::AppendErrors(error_t& main, error_t&& extra) {
+void Fuzzer::AppendErrors(Error& main, Error&& extra) {
   for (auto& s : extra) main.push_back(std::move(s));
 }
 
-bool Fuzzer::HasDuplicates(const std::vector<computed_t>& computeds) {
+bool Fuzzer::HasDuplicates(const std::vector<Computed>& computeds) {
   // If energies are different but everything else is the same, it is still a bug.
-  std::set<std::pair<secondary_t, std::vector<Ctd>>> suboptimal_set;
+  std::set<std::pair<Secondary, std::vector<Ctd>>> suboptimal_set;
   for (const auto& computed : computeds) {
     auto val = std::make_pair(computed.s, computed.base_ctds);
     if (suboptimal_set.count(val)) return true;
@@ -72,8 +72,8 @@ bool Fuzzer::HasDuplicates(const std::vector<computed_t>& computeds) {
   return false;
 }
 
-error_t Fuzzer::CheckSuboptimalResult(const std::vector<computed_t>& subopt, bool has_ctds) {
-  error_t errors;
+Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool has_ctds) {
+  Error errors;
   // Check at least one suboptimal structure.
   if (subopt.empty()) errors.push_back("no structures returned");
   // Check MFE.
@@ -108,9 +108,9 @@ error_t Fuzzer::CheckSuboptimalResult(const std::vector<computed_t>& subopt, boo
   return errors;
 }
 
-error_t Fuzzer::CheckSuboptimalResultPair(
-    const std::vector<computed_t>& a, const std::vector<computed_t>& b) {
-  error_t errors;
+Error Fuzzer::CheckSuboptimalResultPair(
+    const std::vector<Computed>& a, const std::vector<Computed>& b) {
+  Error errors;
   if (a.size() != b.size()) {
     errors.push_back(
         sfmt("first has %zu structures != second has %zu structures", a.size(), b.size()));
@@ -125,9 +125,9 @@ error_t Fuzzer::CheckSuboptimalResultPair(
   return errors;
 }
 
-error_t Fuzzer::CheckSuboptimal() {
-  error_t errors;
-  std::vector<std::vector<computed_t>> memerna_subopts_delta, memerna_subopts_num;
+Error Fuzzer::CheckSuboptimal() {
+  Error errors;
+  std::vector<std::vector<Computed>> memerna_subopts_delta, memerna_subopts_num;
   for (auto subopt_alg : ModelCfg::SUBOPTIMAL_ALGS) {
     ModelCfg cfg(ModelCfg::TableAlg::TWO, subopt_alg);
     Context ctx(r_, em_, cfg);
@@ -173,8 +173,8 @@ error_t Fuzzer::CheckSuboptimal() {
   return errors;
 }
 
-error_t Fuzzer::CheckDpTables() {
-  error_t errors;
+Error Fuzzer::CheckDpTables() {
+  Error errors;
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       for (int a = 0; a < DP_SIZE; ++a) {
@@ -192,7 +192,7 @@ error_t Fuzzer::CheckDpTables() {
 
 #ifdef USE_RNASTRUCTURE
         if (cfg_.mfe_rnastructure && (a == DP_P || a == DP_U)) {
-          energy_t rnastructureval = a == DP_P ? rnastructure_dp_.v.f(st + 1, en + 1)
+          Energy rnastructureval = a == DP_P ? rnastructure_dp_.v.f(st + 1, en + 1)
                                                : rnastructure_dp_.w.f(st + 1, en + 1);
           if (((memerna0 < CAP_E) != (rnastructureval < INFINITE_ENERGY - 1000) ||
                   (memerna0 < CAP_E && memerna0 != rnastructureval))) {
@@ -209,11 +209,11 @@ loopend:
   return errors;
 }
 
-error_t Fuzzer::MemernaComputeAndCheckState() {
-  error_t errors;
+Error Fuzzer::MemernaComputeAndCheckState() {
+  Error errors;
   // Memerna.
-  std::vector<energy_t> memerna_ctd_efns;
-  std::vector<energy_t> memerna_optimal_efns;
+  std::vector<Energy> memerna_ctd_efns;
+  std::vector<Energy> memerna_optimal_efns;
   for (auto table_alg : ModelCfg::TABLE_ALGS) {
     Context ctx(r_, em_, ModelCfg(table_alg));
     auto computed = ctx.Fold();
@@ -239,8 +239,8 @@ error_t Fuzzer::MemernaComputeAndCheckState() {
   return errors;
 }
 
-error_t Fuzzer::RnastructureComputeAndCheckState() {
-  error_t errors;
+Error Fuzzer::RnastructureComputeAndCheckState() {
+  Error errors;
 #ifdef USE_RNASTRUCTURE
   auto rnastructure_computed = rnastructure_->FoldAndDpTable(r_, &rnastructure_dp_);
   auto rnastructure_efn = rnastructure_->Efn(rnastructure_computed.s);
@@ -252,8 +252,8 @@ error_t Fuzzer::RnastructureComputeAndCheckState() {
   return errors;
 }
 
-error_t Fuzzer::CheckBruteForce() {
-  error_t errors;
+Error Fuzzer::CheckBruteForce() {
+  Error errors;
   ModelCfg cfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, ModelCfg::PartitionAlg::ZERO);
   Context ctx(r_, em_, cfg);
 
@@ -298,9 +298,9 @@ error_t Fuzzer::CheckBruteForce() {
   return errors;
 }
 
-error_t Fuzzer::CheckPartition() {
-  error_t errors;
-  std::vector<partition::partition_t> memerna_partitions;
+Error Fuzzer::CheckPartition() {
+  Error errors;
+  std::vector<partition::Partition> memerna_partitions;
   for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
     Context ctx(
         r_, em_, ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));

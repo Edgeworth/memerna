@@ -19,13 +19,13 @@ void Exterior() {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
       const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const penergy_t base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
-      const penergy_t base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
-      const penergy_t base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
-      const penergy_t base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
+      const PEnergy base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
+      const PEnergy base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
+      const PEnergy base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
+      const PEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
 
       // (   )<   >
-      penergy_t val = base00 * gptext[en + 1][PTEXT_R];
+      PEnergy val = base00 * gptext[en + 1][PTEXT_R];
       gptext[st][PTEXT_R] += val;
       if (IsGu(stb, enb))
         gptext[st][PTEXT_R_GU] += val;
@@ -67,14 +67,14 @@ void Exterior() {
     gptext[en][PTEXT_L] += gptext[en - 1][PTEXT_L];
     for (int st = 0; st < en - HAIRPIN_MIN_SZ; ++st) {
       const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const penergy_t base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
-      const penergy_t base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
-      const penergy_t base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
-      const penergy_t base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
-      penergy_t ptextl{1};
-      penergy_t ptextlgu{0};
-      penergy_t ptextlwc{0};
-      penergy_t ptextllcoaxx{0};
+      const PEnergy base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
+      const PEnergy base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
+      const PEnergy base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
+      const PEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
+      PEnergy ptextl{1};
+      PEnergy ptextlgu{0};
+      PEnergy ptextlwc{0};
+      PEnergy ptextllcoaxx{0};
 
       if (st) {
         ptextl = gptext[st - 1][PTEXT_L];
@@ -84,7 +84,7 @@ void Exterior() {
       }
 
       // <   >(   )
-      penergy_t val = base00 * ptextl;
+      PEnergy val = base00 * ptextl;
       gptext[en][PTEXT_L] += val;
       if (IsGu(stb, enb))
         gptext[en][PTEXT_L_GU] += val;

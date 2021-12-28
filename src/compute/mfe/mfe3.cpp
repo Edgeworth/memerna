@@ -17,16 +17,16 @@ void ComputeTables3() {
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   // See ComputeTables2 for comments - it is mostly the same.
-  std::vector<std::vector<cand_t>> p_cand_en[CAND_EN_SIZE];
+  std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(gr.size());
-  std::vector<cand_t> cand_st[CAND_SIZE];
-  array3d_t<energy_t, TWOLOOP_MAX_SZ + 1> lyngso(gr.size());
+  std::vector<Cand> cand_st[CAND_SIZE];
+  Array3D<Energy, TWOLOOP_MAX_SZ + 1> lyngso(gr.size());
   for (int st = N - 1; st >= 0; --st) {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
-                   en1b = gr[en - 1], en2b = gr[en - 2];
-      energy_t mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
+      const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
+                 en1b = gr[en - 1], en2b = gr[en - 2];
+      Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
 
@@ -211,7 +211,7 @@ void ComputeTables3() {
       gdp[st][en][DP_U_GU] = mins[DP_U_GU];
       gdp[st][en][DP_U_RCOAX] = mins[DP_U_RCOAX];
 
-      energy_t cand_st_mins[] = {
+      Energy cand_st_mins[] = {
           MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(
           sizeof(cand_st_mins) / sizeof(cand_st_mins[0]) == CAND_SIZE, "array wrong size");

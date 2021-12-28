@@ -48,13 +48,13 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     // Initialise - we only make small modifications to it.
     curnode = node;
     // Temporary variable to hold energy calculations.
-    energy_t energy = 0;
+    Energy energy = 0;
 
     // Exterior loop
     if (en == -1) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
-      energy_t base_energy = node.energy - gext[st][a];
+      Energy base_energy = node.energy - gext[st][a];
       if (a == EXT) {
         // Base case: do nothing.
         if (st == N)
@@ -138,7 +138,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     }
 
     // Subtract the minimum energy of the contribution at this node.
-    energy_t base_energy = node.energy - gdp[st][en][a];
+    Energy base_energy = node.energy - gdp[st][en][a];
     // Declare the usual base aliases.
     const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
                en2b = gr[en - 2];
@@ -177,7 +177,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
       Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
 
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-        base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+        Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
 
         // (.(   )   .) Left outer coax - P
         auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);

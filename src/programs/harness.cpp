@@ -7,16 +7,16 @@
 #include "model/config.h"
 #include "model/parsing.h"
 
-using mrna::computed_t;
-using mrna::energy_t;
-using mrna::opt_t;
+using mrna::Computed;
+using mrna::Energy;
+using mrna::Opt;
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args({
       {"v", {"be verbose (if possible)"}},
       {"e", {"run efn"}},
       {"f", {"run fold"}},
-      {"subopt-delta", opt_t("maximum energy delta from minimum").Arg("-1")},
+      {"subopt-delta", Opt("maximum energy delta from minimum").Arg("-1")},
   });
   args.AddOptions(mrna::bridge::BRIDGE_OPTS);
   args.AddOptions(mrna::MODEL_OPTS);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
       int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
-            [](const computed_t& c) {
+            [](const Computed& c) {
               printf("%d %s\n", c.energy, mrna::PairsToDotBracket(c.s.p).c_str());
             },
             r, subopt_delta);

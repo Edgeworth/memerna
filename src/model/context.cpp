@@ -26,7 +26,7 @@ void Context::ComputeTables() {
   mfe::internal::ComputeExterior();
 }
 
-computed_t Context::Fold() {
+Computed Context::Fold() {
   if (cfg.table_alg == ModelCfg::TableAlg::BRUTE) return mfe::MfeBruteForce(r, *em);
 
   ComputeTables();
@@ -34,18 +34,18 @@ computed_t Context::Fold() {
   return {{gr, mfe::internal::gp}, mfe::internal::gctd, mfe::internal::genergy};
 }
 
-std::vector<computed_t> Context::SuboptimalIntoVector(
-    bool sorted, energy_t subopt_delta, int subopt_num) {
-  std::vector<computed_t> computeds;
+std::vector<Computed> Context::SuboptimalIntoVector(
+    bool sorted, Energy subopt_delta, int subopt_num) {
+  std::vector<Computed> computeds;
   [[maybe_unused]] int num_structures =
-      Suboptimal([&computeds](const computed_t& c) { computeds.push_back(c); }, sorted,
+      Suboptimal([&computeds](const Computed& c) { computeds.push_back(c); }, sorted,
           subopt_delta, subopt_num);
   assert(num_structures == static_cast<int>(computeds.size()));
   return computeds;
 }
 
 int Context::Suboptimal(
-    subopt::SuboptimalCallback fn, bool sorted, energy_t subopt_delta, int subopt_num) {
+    subopt::SuboptimalCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
   if (cfg.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
     auto computeds = subopt::SuboptimalBruteForce(r, *em, subopt_num);
     for (const auto& computed : computeds) fn(computed);
@@ -64,7 +64,7 @@ int Context::Suboptimal(
   }
 }
 
-partition::partition_t Context::Partition() {
+partition::Partition Context::Partition() {
   partition::SetPartitionGlobalState(r, *em);
   switch (cfg.partition_alg) {
   case ModelCfg::PartitionAlg::ZERO: partition::internal::Partition0(); break;
@@ -73,7 +73,7 @@ partition::partition_t Context::Partition() {
   }
   const auto& gpt = partition::internal::gpt;
   const int size = static_cast<int>(r.size());
-  array3d_t<penergy_t, 1> p((std::size_t(size)));
+  Array3D<PEnergy, 1> p((std::size_t(size)));
   for (int i = 0; i < size; ++i)  // TODO optimise this?
     for (int j = 0; j < size; ++j) p[i][j][0] = gpt[i][j][partition::PT_P];
   return {std::move(p), partition::internal::gptext[0][partition::PTEXT_R]};

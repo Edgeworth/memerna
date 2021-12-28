@@ -51,17 +51,17 @@ enum : int8_t { CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SI
 
 // Index into the DP tables.
 // Use int16_t here to save memory.
-struct index_t {
+struct Index {
   int16_t st, en, a;
 
-  index_t() : st(-1), en(-1), a(-1) {}
-  index_t(int st_, int en_, int a_) : st(int16_t(st_)), en(int16_t(en_)), a(int16_t(a_)) {
+  Index() : st(-1), en(-1), a(-1) {}
+  Index(int st_, int en_, int a_) : st(int16_t(st_)), en(int16_t(en_)), a(int16_t(a_)) {
     assert(st_ == st && en_ == en && a == a_);
   }
 
-  bool operator==(const index_t& o) const { return st == o.st && en == o.en && a == o.a; }
-  bool operator!=(const index_t& o) const { return !(*this == o); }
-  bool operator<(const index_t& o) const {
+  bool operator==(const Index& o) const { return st == o.st && en == o.en && a == o.a; }
+  bool operator!=(const Index& o) const { return !(*this == o); }
+  bool operator<(const Index& o) const {
     if (st != o.st) return st < o.st;
     if (en != o.en) return en < o.en;
     return a < o.a;
@@ -69,9 +69,9 @@ struct index_t {
 };
 
 // Describes a CTD at a particular index.
-struct ctd_idx_t {
-  ctd_idx_t() : idx(-1), ctd(CTD_NA) {}
-  ctd_idx_t(int idx_, Ctd ctd_) : idx(int16_t(idx_)), ctd(ctd_) { assert(idx_ == idx); }
+struct IndexCtd {
+  IndexCtd() : idx(-1), ctd(CTD_NA) {}
+  IndexCtd(int idx, Ctd ctd) : idx(int16_t(idx)), ctd(ctd) { assert(idx == idx); }
 
   int16_t idx;
   Ctd ctd;

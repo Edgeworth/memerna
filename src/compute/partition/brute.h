@@ -10,8 +10,8 @@
 
 namespace mrna::partition {
 
-std::pair<partition::partition_t, partition::probabilities_t> PartitionBruteForce(
-    const primary_t& r, const energy::EnergyModel& em);
+std::pair<partition::Partition, partition::Probabilities> PartitionBruteForce(
+    const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::partition
 

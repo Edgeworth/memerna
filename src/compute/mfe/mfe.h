@@ -8,8 +8,8 @@
 
 namespace mrna::mfe::internal {
 
-struct cand_t {
-  energy_t energy;
+struct Cand {
+  Energy energy;
   int idx;
 };
 

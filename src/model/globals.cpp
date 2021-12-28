@@ -3,8 +3,8 @@
 
 namespace mrna {
 
-primary_t gr;
+Primary gr;
 
-void SetGlobalState(const primary_t& r) { gr = r; }
+void SetGlobalState(const Primary& r) { gr = r; }
 
 }  // namespace mrna

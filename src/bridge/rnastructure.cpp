@@ -41,21 +41,21 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso_)
   verify(data->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-energy_t RNAstructure::Efn(const secondary_t& secondary, std::string* desc) const {
+Energy RNAstructure::Efn(const Secondary& secondary, std::string* desc) const {
   const auto structure = LoadStructure(secondary);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;
   efn2(data.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
-  return energy_t(structure->GetEnergy(1));
+  return Energy(structure->GetEnergy(1));
 }
 
-computed_t RNAstructure::Fold(const primary_t& r) const {
+Computed RNAstructure::Fold(const Primary& r) const {
   dp_state_t state;
   return FoldAndDpTable(r, &state);
 }
 
-computed_t RNAstructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const {
+Computed RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;
@@ -69,32 +69,32 @@ computed_t RNAstructure::FoldAndDpTable(const primary_t& r, dp_state_t* dp_state
   dynamic(structure.get(), data.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso, disable_coax, dp_state);
   return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
-      energy_t(structure->GetEnergy(1))};
+      Energy(structure->GetEnergy(1))};
 }
 
 int RNAstructure::Suboptimal(
-    subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const {
+    subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds) fn(computed);
   return static_cast<int>(computeds.size());
 }
 
-std::vector<computed_t> RNAstructure::SuboptimalIntoVector(
-    const primary_t& r, energy_t energy_delta) const {
+std::vector<Computed> RNAstructure::SuboptimalIntoVector(
+    const Primary& r, Energy energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
   auto p_list = StructureToMultiplePairs(*structure);
-  std::vector<computed_t> computeds;
+  std::vector<Computed> computeds;
   for (int i = 0; i < static_cast<int>(p_list.size()); ++i)
-    computeds.emplace_back(secondary_t(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
-        energy_t(structure->GetEnergy(i + 1)));
+    computeds.emplace_back(Secondary(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
+        Energy(structure->GetEnergy(i + 1)));
   return computeds;
 }
 
-std::pair<partition::partition_t, partition::probabilities_t> RNAstructure::Partition(
-    const primary_t& r) const {
+std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partition(
+    const Primary& r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
@@ -115,26 +115,26 @@ std::pair<partition::partition_t, partition::probabilities_t> RNAstructure::Part
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  partition::partition_t partition = {array3d_t<penergy_t, 1>(std::size_t(length)), 0};
-  partition.q = penergy_t(w5[length]);
+  partition::Partition partition = {Array3D<PEnergy, 1>(std::size_t(length)), 0};
+  partition.q = PEnergy(w5[length]);
   for (int i = 1; i <= length; ++i) {
     for (int j = i; j < length + i; ++j) {
       int adjusted = j > length ? j - length - 1 : j - 1;
-      partition.p[i - 1][adjusted][0] = penergy_t(v.f(i, j));
+      partition.p[i - 1][adjusted][0] = PEnergy(v.f(i, j));
     }
   }
 
-  partition::probabilities_t probability(std::size_t(length), 0);
+  partition::Probabilities probability(std::size_t(length), 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
-      probability[i][j][0] = penergy_t(calculateprobability(i + 1, j + 1, &v, w5.get(),
+      probability[i][j][0] = PEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),
           structure.get(), pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }
   return {std::move(partition), std::move(probability)};
 }
 
-std::unique_ptr<structure> RNAstructure::LoadStructure(const primary_t& r) const {
+std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {
   auto struc = std::make_unique<structure>();
   struc->SetThermodynamicDataTable(data.get());
   struc->SetSequence(PrimaryToString(r));
@@ -142,7 +142,7 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const primary_t& r) const
   return struc;
 }
 
-std::unique_ptr<structure> RNAstructure::LoadStructure(const secondary_t& s) const {
+std::unique_ptr<structure> RNAstructure::LoadStructure(const Secondary& s) const {
   auto struc = LoadStructure(s.r);
   struc->AddStructure();
   for (int i = 0; i < static_cast<int>(s.p.size()); ++i) {

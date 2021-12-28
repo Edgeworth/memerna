@@ -44,10 +44,10 @@ std::vector<int> GetBranchCounts(const std::vector<int>& p) {
 using mfe::internal::gctd;
 using mfe::internal::gp;
 
-BruteForce::substructure_id_t BruteForce::WriteBits(int st, int en, int N, bool inside) {
+BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
   static_assert((-1 & PT_MASK) == PT_MASK, "mfw not a two's complement machine");
-  substructure_id_t struc = {};  // Zero initialise.
+  SubstructureId struc = {};  // Zero initialise.
   for (int i = 0, b = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
     if (inside && (i < st || i > en)) continue;
     if (!inside && i > st && i < en) continue;
@@ -63,12 +63,12 @@ BruteForce::substructure_id_t BruteForce::WriteBits(int st, int en, int N, bool 
   return struc;
 }
 
-BruteForce::substructure_id_t BruteForce::BuildInsideStructure(int st, int en, int N) {
+BruteForce::SubstructureId BruteForce::BuildInsideStructure(int st, int en, int N) {
   // Don't include the ctd value at st, since that's for the outside.
   return WriteBits(st + 1, en, N, true);
 }
 
-BruteForce::substructure_id_t BruteForce::BuildOutsideStructure(int st, int en, int N) {
+BruteForce::SubstructureId BruteForce::BuildOutsideStructure(int st, int en, int N) {
   // Don't include the ctd value at en, since that's for the inside.
   return WriteBits(st, en + 1, N, false);
 }
@@ -79,7 +79,7 @@ void BruteForce::AddAllCombinations(int idx) {
   if (idx == N) {
     auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, energy::gem);
     if (res_.compute_partition) {
-      penergy_t boltzmann = energy::Boltzmann(computed.energy);
+      PEnergy boltzmann = energy::Boltzmann(computed.energy);
       res_.partition.q += boltzmann;
       for (int i = 0; i < N; ++i) {
         if (i < gp[i]) {
@@ -88,15 +88,15 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map.Find(inside_structure);
           const bool outside_new = !substructure_map.Find(outside_structure);
           if (inside_new || outside_new) {
-            energy_t inside_energy = energy::ComputeSubstructureEnergy(
+            Energy inside_energy = energy::ComputeSubstructureEnergy(
                 computed, false, i, gp[i], energy::gem);  // TODO optimisation?
             if (inside_new) {
               res_.partition.p[i][gp[i]][0] += energy::Boltzmann(inside_energy);
-              substructure_map.Insert(inside_structure, nothing_t());
+              substructure_map.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
               res_.partition.p[gp[i]][i][0] += energy::Boltzmann(computed.energy - inside_energy);
-              substructure_map.Insert(outside_structure, nothing_t());
+              substructure_map.Insert(outside_structure, Nothing());
             }
           }
           res_.probabilities[i][gp[i]][0] += boltzmann;
@@ -233,7 +233,7 @@ void BruteForce::Dfs(int idx) {
   }
 }
 
-BruteForce::Result BruteForce::Run(const primary_t& r, const energy::EnergyModel& em,
+BruteForce::Result BruteForce::Run(const Primary& r, const energy::EnergyModel& em,
     int max_structures, bool compute_partition, bool allow_lonely_pairs) {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
@@ -247,8 +247,8 @@ BruteForce::Result BruteForce::Run(const primary_t& r, const energy::EnergyModel
     // Plus one to N, since -1 takes up a spot.
     verify(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.partition.q = 0;
-    res_.partition.p = array3d_t<penergy_t, 1>(r.size(), 0);
-    res_.probabilities = array3d_t<penergy_t, 1>(r.size(), 0);
+    res_.partition.p = Array3D<PEnergy, 1>(r.size(), 0);
+    res_.probabilities = Array3D<PEnergy, 1>(r.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r.size()); ++st) {

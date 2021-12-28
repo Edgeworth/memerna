@@ -36,11 +36,11 @@ struct ModelCfg {
   PartitionAlg partition_alg;
 };
 
-inline const std::map<std::string, opt_t> MODEL_OPTS = {
-    {"dp-alg", opt_t("which algorithm for mfe folding").Arg("2", {"0", "1", "2", "3", "brute"})},
-    {"subopt-alg", opt_t("which algorithm for suboptimal folding").Arg("1", {"0", "1", "brute"})},
+inline const std::map<std::string, Opt> MODEL_OPTS = {
+    {"dp-alg", Opt("which algorithm for mfe folding").Arg("2", {"0", "1", "2", "3", "brute"})},
+    {"subopt-alg", Opt("which algorithm for suboptimal folding").Arg("1", {"0", "1", "brute"})},
     {"part-alg",
-        opt_t("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
+        Opt("which algorithm for the partition function").Arg("1", {"0", "1", "brute"})}};
 
 ModelCfg ModelCfgFromArgParse(const ArgParse& args);
 

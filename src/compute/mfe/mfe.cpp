@@ -29,7 +29,7 @@ void ComputeExterior() {
       const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b);
       const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb);
       const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b);
-      energy_t ext = MAX_E;
+      Energy ext = MAX_E;
 
       // (   )<   >
       auto val = base00 + gext[en + 1][EXT];

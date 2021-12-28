@@ -12,9 +12,9 @@ namespace mrna::energy {
 
 namespace {
 
-energy_t MinEnergy(const energy_t* energy, std::size_t size) {
-  energy_t min = energy[0];
-  for (int i = 0; i < static_cast<int>(size / sizeof(energy_t)); ++i)
+Energy MinEnergy(const Energy* energy, std::size_t size) {
+  Energy min = energy[0];
+  for (int i = 0; i < static_cast<int>(size / sizeof(Energy)); ++i)
     min = std::min(min, energy[i]);
   return min;
 }
@@ -23,10 +23,10 @@ energy_t MinEnergy(const energy_t* energy, std::size_t size) {
 
 namespace internal {
 
-int MaxNumContiguous(const primary_t& r) {
-  energy_t num_contig = 0;
-  energy_t max_num_contig = 0;
-  base_t prev = -1;
+int MaxNumContiguous(const Primary& r) {
+  Energy num_contig = 0;
+  Energy max_num_contig = 0;
+  Base prev = -1;
   for (auto b : r) {
     if (b == prev)
       num_contig++;
@@ -40,12 +40,12 @@ int MaxNumContiguous(const primary_t& r) {
 
 }  // namespace internal
 
-precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
+Precomp PrecomputeData(const Primary& r, const energy::EnergyModel& em) {
   assert(!r.empty());
-  precomp_t pc;
+  Precomp pc;
   // Initialise fast AUGU branch table
-  for (base_t i = 0; i < 4; ++i)
-    for (base_t j = 0; j < 4; ++j) pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
+  for (Base i = 0; i < 4; ++i)
+    for (Base j = 0; j < 4; ++j) pc.augubranch[i][j] = em.multiloop_hack_b + em.AuGuPenalty(i, j);
 
   const auto min_stack = MinEnergy(&em.stack[0][0][0][0], sizeof(em.stack));
 
@@ -56,7 +56,7 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   // Minimum of all stacking params.
   pc.min_flush_coax = min_stack;
 
-  energy_t min_internal = MinEnergy(&em.internal_1x1[0][0][0][0][0][0], sizeof(em.internal_1x1));
+  Energy min_internal = MinEnergy(&em.internal_1x1[0][0][0][0][0][0], sizeof(em.internal_1x1));
   min_internal = std::min(
       min_internal, MinEnergy(&em.internal_1x2[0][0][0][0][0][0][0], sizeof(em.internal_1x2)));
   min_internal = std::min(
@@ -74,17 +74,17 @@ precomp_t PrecomputeData(const primary_t& r, const energy::EnergyModel& em) {
   const auto min_bulge_init =
       MinEnergy(&em.bulge_init[1], sizeof(em.bulge_init) - sizeof(em.bulge_init[0]));
 
-  energy_t states_bonus = -energy_t(round(10.0 * R * T * log(internal::MaxNumContiguous(r))));
-  energy_t min_bulge = min_bulge_init + std::min(2 * em.augu_penalty, 0) + min_stack +
+  Energy states_bonus = -Energy(round(10.0 * R * T * log(internal::MaxNumContiguous(r))));
+  Energy min_bulge = min_bulge_init + std::min(2 * em.augu_penalty, 0) + min_stack +
       std::min(em.bulge_special_c, 0) + states_bonus;
   pc.min_twoloop_not_stack = std::min(min_bulge, min_internal);
 
-  pc.hairpin = PrecomputeHairpin<hairpin_precomp_t<energy_t, MAX_E>>(r, em);
+  pc.hairpin = PrecomputeHairpin<HairpinPrecomp<Energy, MAX_E>>(r, em);
 
   return pc;
 }
 
-energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
+Energy FastTwoLoop(int ost, int oen, int ist, int ien) {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return gem.stack[gr[ost]][gr[ist]][gr[ien]][gr[oen]];
   if (toplen == 0 || botlen == 0) return gem.Bulge(gr, ost, oen, ist, ien);
@@ -103,7 +103,7 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   static_assert(
       TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
   assert(toplen + botlen < EnergyModel::INITIATION_CACHE_SZ);
-  energy_t energy = gem.internal_init[toplen + botlen] +
+  Energy energy = gem.internal_init[toplen + botlen] +
       std::min(std::abs(toplen - botlen) * gem.internal_asym, NINIO_MAX_ASYM);
 
   energy += gem.InternalLoopAuGuPenalty(gr[ost], gr[oen]);
@@ -119,13 +119,13 @@ energy_t FastTwoLoop(int ost, int oen, int ist, int ien) {
   return energy;
 }
 
-energy_t FastHairpin(int st, int en) {
+Energy FastHairpin(int st, int en) {
   int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && gpc.hairpin[st].special[length] != MAX_E)
     return gpc.hairpin[st].special[length];
-  base_t stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
-  energy_t energy = gem.HairpinInitiation(length) + gem.AuGuPenalty(stb, enb);
+  Base stb = gr[st], st1b = gr[st + 1], en1b = gr[en - 1], enb = gr[en];
+  Energy energy = gem.HairpinInitiation(length) + gem.AuGuPenalty(stb, enb);
 
   bool all_c = gpc.hairpin[st + 1].num_c >= length;
 

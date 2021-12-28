@@ -10,7 +10,7 @@ using energy::ViableFoldingPair;
 
 #define UPDATE_CACHE(a, value)                                           \
   do {                                                                   \
-    energy_t macro_upd_value_ = (value);                                 \
+    Energy macro_upd_value_ = (value);                                   \
     if (macro_upd_value_ < CAP_E && macro_upd_value_ < gdp[st][en][a]) { \
       gdp[st][en][a] = macro_upd_value_;                                 \
     }                                                                    \
@@ -22,7 +22,7 @@ void ComputeTables0() {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const base_t stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
+      const Base stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en],
                    en1b = gr[en - 1], en2b = gr[en - 2];
 
       // Update paired - only if can actually pair.
@@ -56,7 +56,7 @@ void ComputeTables0() {
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          base_t pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+          Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
           //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 

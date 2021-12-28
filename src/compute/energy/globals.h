@@ -8,8 +8,8 @@
 namespace mrna::energy {
 
 extern EnergyModel gem;
-extern precomp_t gpc;
-void SetEnergyGlobalState(const primary_t& r, const EnergyModel& em);
+extern Precomp gpc;
+void SetEnergyGlobalState(const Primary& r, const EnergyModel& em);
 
 }  // namespace mrna::energy
 

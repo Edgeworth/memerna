@@ -3,11 +3,11 @@
 
 namespace mrna {
 
-primary_t GenerateRandomPrimary(int length) {
+Primary GenerateRandomPrimary(int length) {
   static thread_local std::mt19937 eng;
   std::uniform_int_distribution<int> dist(0, 3);
-  primary_t r(std::size_t(length), 0);
-  for (int i = 0; i < length; ++i) r[i] = base_t(dist(eng));
+  Primary r(std::size_t(length), 0);
+  for (int i = 0; i < length; ++i) r[i] = Base(dist(eng));
   return r;
 }
 

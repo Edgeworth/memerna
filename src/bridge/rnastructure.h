@@ -24,23 +24,23 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  energy_t Efn(const secondary_t& secondary, std::string* desc = nullptr) const override;
-  computed_t Fold(const primary_t& r) const override;
+  Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const override;
+  Computed Fold(const Primary& r) const override;
   int Suboptimal(
-      subopt::SuboptimalCallback fn, const primary_t& r, energy_t energy_delta) const override;
-  std::vector<computed_t> SuboptimalIntoVector(
-      const primary_t& r, energy_t energy_delta) const override;
-  std::pair<partition::partition_t, partition::probabilities_t> Partition(
-      const primary_t& r) const override;
+      subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
+  std::vector<Computed> SuboptimalIntoVector(
+      const Primary& r, Energy energy_delta) const override;
+  std::pair<partition::Partition, partition::Probabilities> Partition(
+      const Primary& r) const override;
 
-  computed_t FoldAndDpTable(const primary_t& r, dp_state_t* dp_state) const;
+  Computed FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
  private:
   std::unique_ptr<datatable> data;
   bool use_lyngso;
 
-  std::unique_ptr<structure> LoadStructure(const primary_t& r) const;
-  std::unique_ptr<structure> LoadStructure(const secondary_t& s) const;
+  std::unique_ptr<structure> LoadStructure(const Primary& r) const;
+  std::unique_ptr<structure> LoadStructure(const Secondary& s) const;
 };
 
 }  // namespace mrna::bridge

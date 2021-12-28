@@ -8,40 +8,40 @@
 namespace mrna {
 namespace energy {
 
-struct ctd_test_t {
-  computed_t computed;
-  internal::branch_ctd_t branch_ctds;
+struct CtdTest {
+  Computed computed;
+  internal::BranchCtd branch_ctds;
   std::deque<int> branches;
 };
 
-std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&) -> ctd_test_t {
-                                                               return {{}, {}, {}};
-                                                             },
-    [](const EnergyModel&) -> ctd_test_t {
+std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&) -> CtdTest {
+                                                            return {{}, {}, {}};
+                                                          },
+    [](const EnergyModel&) -> CtdTest {
       return {{ParseDotBracketSecondary("A", "."), {CTD_NA}, 0}, {}, {}};
     },
-    [](const EnergyModel&) -> ctd_test_t {
+    [](const EnergyModel&) -> CtdTest {
       return {{ParseDotBracketSecondary("AG", ".."), {CTD_NA, CTD_NA}, 0}, {}, {}};
     },
-    [](const EnergyModel&) -> ctd_test_t {
+    [](const EnergyModel&) -> CtdTest {
       return {{ParseDotBracketSecondary("GUA", "..."), {CTD_NA, CTD_NA, CTD_NA}, 0}, {}, {}};
     },
-    [](const EnergyModel&) -> ctd_test_t {
+    [](const EnergyModel&) -> CtdTest {
       return {
           {ParseDotBracketSecondary("GUAC", "...."), {CTD_NA, CTD_NA, CTD_NA, CTD_NA}, 0}, {}, {}};
     },
     // 3' dangle inside the branch.
-    [](const EnergyModel& em) -> ctd_test_t {
+    [](const EnergyModel& em) -> CtdTest {
       return {{ParseDotBracketSecondary("GAAAC", "(...)"),
                   {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, 0},
           {{CTD_3_DANGLE, em.dangle3[G][A][C]}}, {4}};
     },
-    [](const EnergyModel&) -> ctd_test_t {
+    [](const EnergyModel&) -> CtdTest {
       return {{ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
                   std::vector<Ctd>(26, CTD_NA), 0},
           {}, {}};
     },
-    [](const EnergyModel& em) -> ctd_test_t {
+    [](const EnergyModel& em) -> CtdTest {
       return {
           {ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
@@ -52,7 +52,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
               {CTD_RCOAX_WITH_PREV, em.MismatchCoaxial(C, A, A, G)}},
           {0, 6, 20}};
     },
-    [](const EnergyModel& em) -> ctd_test_t {
+    [](const EnergyModel& em) -> CtdTest {
       return {
           {ParseDotBracketSecondary("GAAACAGAAAAUGGAAACCAGAAACA", "(...).((...).(...)).(...)."),
               {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
@@ -63,7 +63,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
               {CTD_5_DANGLE, em.dangle5[C][G][G]}},
           {18, 7, 13}};
     },
-    [](const EnergyModel& em) -> ctd_test_t {
+    [](const EnergyModel& em) -> CtdTest {
       return {{ParseDotBracketSecondary("GGAAACGAAACC", "((...)(...))"),
                   {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
                       CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
@@ -72,7 +72,7 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
               {CTD_FCOAX_WITH_PREV, em.stack[G][G][C][C]}},
           {1, 6, 11}};
     },
-    [](const EnergyModel& em) -> ctd_test_t {
+    [](const EnergyModel& em) -> CtdTest {
       return {{ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"),
                   {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
                       CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
@@ -87,16 +87,16 @@ std::function<ctd_test_t(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyMode
     }};
 
 class CtdsTest : public testing::TestWithParam<
-                     std::tuple<EnergyModelPtr, std::function<ctd_test_t(const EnergyModel&)>>> {};
+                     std::tuple<EnergyModelPtr, std::function<CtdTest(const EnergyModel&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
   const auto& em = *std::get<0>(GetParam());
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
-  internal::branch_ctd_t computed_branch_ctds;
+  internal::BranchCtd computed_branch_ctds;
   auto computed_energy = internal::GetBranchCtdsFromComputed(
       ctd_test.computed, em, ctd_test.branches, computed_branch_ctds);
-  energy_t test_energy = 0;
+  Energy test_energy = 0;
   for (const auto& branch_ctd : ctd_test.branch_ctds) {
     // Make sure each branch energy is only represented once.
     if (branch_ctd.first == CTD_FCOAX_WITH_NEXT || branch_ctd.first == CTD_LCOAX_WITH_NEXT ||

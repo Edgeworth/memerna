@@ -6,8 +6,8 @@
 
 namespace mrna {
 
-extern primary_t gr;
-void SetGlobalState(const primary_t& r);
+extern Primary gr;
+void SetGlobalState(const Primary& r);
 
 }  // namespace mrna
 

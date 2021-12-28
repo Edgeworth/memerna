@@ -8,11 +8,11 @@ namespace mrna {
 
 energy::EnergyModelPtr g_em;
 
-std::ostream& operator<<(std::ostream& os, const secondary_t& s) {
+std::ostream& operator<<(std::ostream& os, const Secondary& s) {
   return os << "(" << PrimaryToString(s.r) << ", " << PairsToDotBracket(s.p) << ")";
 }
 
-std::ostream& operator<<(std::ostream& os, const computed_t& computed) {
+std::ostream& operator<<(std::ostream& os, const Computed& computed) {
   os << computed.s;
   os << ", (";
   for (auto ctd : computed.base_ctds) os << energy::CtdToName(ctd) << ", ";

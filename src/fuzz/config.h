@@ -28,18 +28,18 @@ struct FuzzCfg {
   std::string Describe();
 };
 
-inline const std::map<std::string, opt_t> FUZZ_OPTS = {
-    {"random", opt_t("use random energy models (disables comparison to RNAstructure)")},
-    {"table-check", opt_t("enable comparing dp tables between memerna and rnastructure")},
-    {"brute-cutoff", opt_t("maximum rna size to run brute force on").Arg()},
-    {"brute-subopt-max", opt_t("maximum number of substructures for brute force fuzz").Arg()},
-    {"mfe-rnastructure", opt_t("enable rnastructure testing")},
-    {"subopt", opt_t("enable fuzzing suboptimal folding")},
-    {"subopt-rnastructure", opt_t("test rnastructure suboptimal folding")},
-    {"subopt-max", opt_t("maximum number of substructures for subopt max-delta fuzz").Arg()},
-    {"subopt-delta", opt_t("delta for subopt delta fuzz").Arg()},
-    {"partition", opt_t("enable fuzzing partition function")},
-    {"partition-rnastructure", opt_t("test rnastructure partition function")},
+inline const std::map<std::string, Opt> FUZZ_OPTS = {
+    {"random", Opt("use random energy models (disables comparison to RNAstructure)")},
+    {"table-check", Opt("enable comparing dp tables between memerna and rnastructure")},
+    {"brute-cutoff", Opt("maximum rna size to run brute force on").Arg()},
+    {"brute-subopt-max", Opt("maximum number of substructures for brute force fuzz").Arg()},
+    {"mfe-rnastructure", Opt("enable rnastructure testing")},
+    {"subopt", Opt("enable fuzzing suboptimal folding")},
+    {"subopt-rnastructure", Opt("test rnastructure suboptimal folding")},
+    {"subopt-max", Opt("maximum number of substructures for subopt max-delta fuzz").Arg()},
+    {"subopt-delta", Opt("delta for subopt delta fuzz").Arg()},
+    {"partition", Opt("enable fuzzing partition function")},
+    {"partition-rnastructure", Opt("test rnastructure partition function")},
 };
 
 FuzzCfg FuzzCfgFromArgParse(const ArgParse& args);

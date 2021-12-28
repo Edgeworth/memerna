@@ -12,7 +12,7 @@
 #include "model/context.h"
 #include "model/parsing.h"
 
-void PrintProbabilities(const mrna::partition::probabilities_t& p) {
+void PrintProbabilities(const mrna::partition::Probabilities& p) {
   const int N = static_cast<int>(p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << p[i][j][0] << ' '; }
@@ -20,7 +20,7 @@ void PrintProbabilities(const mrna::partition::probabilities_t& p) {
   }
 }
 
-void PrintPartition(const mrna::partition::partition_t& p) {
+void PrintPartition(const mrna::partition::Partition& p) {
   const int N = static_cast<int>(p.p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << p.p[i][j][0] << ' '; }
