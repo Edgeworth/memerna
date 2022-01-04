@@ -9,7 +9,7 @@
 #include "compute/constants.h"
 #include "compute/dp.h"
 #include "compute/subopt/subopt.h"
-#include "model/structure.h"
+#include "model/model.h"
 #include "util/splaymap.h"
 
 namespace mrna::subopt::internal {

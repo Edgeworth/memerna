@@ -36,6 +36,7 @@ namespace mrna::energy::internal {
       back[used][idx] = std::make_tuple(cur_used, cur_idx, macro_upd_value_, reason); \
     }                                                                                 \
   } while (0)
+
 Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds) {
   const auto& r = secondary.r;

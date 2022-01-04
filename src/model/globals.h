@@ -2,7 +2,8 @@
 #ifndef MODEL_GLOBALS_H_
 #define MODEL_GLOBALS_H_
 
-#include "model/structure.h"
+#include "model/model.h"
+#include "model/primary.h"
 
 namespace mrna {
 
