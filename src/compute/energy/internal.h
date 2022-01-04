@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "compute/energy/model.h"
+#include "model/ctd.h"
 
 namespace mrna::energy::internal {
 

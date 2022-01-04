@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "model/structure.h"
+#include "model/model.h"
 
 namespace mrna {
 

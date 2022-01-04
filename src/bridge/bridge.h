@@ -11,6 +11,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/context.h"
+#include "model/secondary.h"
 #include "util/argparse.h"
 
 namespace mrna::bridge {

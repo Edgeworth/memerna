@@ -8,7 +8,7 @@
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "fuzz/config.h"
-#include "model/structure.h"
+#include "model/model.h"
 #include "util/array.h"
 
 #ifdef USE_RNASTRUCTURE

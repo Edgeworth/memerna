@@ -11,7 +11,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/config.h"
-#include "model/structure.h"
+#include "model/model.h"
 #include "util/argparse.h"
 
 namespace mrna {

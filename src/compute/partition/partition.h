@@ -9,6 +9,7 @@
 
 #include "compute/energy/fast_energy.h"
 #include "compute/energy/model.h"
+#include "model/primary.h"
 #include "util/array.h"
 
 namespace mrna::partition {

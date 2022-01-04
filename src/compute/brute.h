@@ -13,8 +13,8 @@
 #include "compute/mfe/globals.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
+#include "model/model.h"
 #include "model/parsing.h"
-#include "model/structure.h"
 #include "util/splaymap.h"
 
 namespace mrna {

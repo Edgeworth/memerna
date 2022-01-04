@@ -8,6 +8,9 @@
 
 #include "compute/energy/model.h"
 #include "gtest/gtest.h"
+#include "model/ctd.h"
+#include "model/model.h"
+#include "model/secondary.h"
 
 #define ONLY_FOR_THIS_MODEL(em_, hash_)                                                          \
   do {                                                                                           \

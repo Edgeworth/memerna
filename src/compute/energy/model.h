@@ -11,7 +11,8 @@
 #include <unordered_map>
 
 #include "model/base.h"
-#include "model/structure.h"
+#include "model/model.h"
+#include "model/primary.h"
 #include "util/argparse.h"
 
 namespace mrna::energy {
