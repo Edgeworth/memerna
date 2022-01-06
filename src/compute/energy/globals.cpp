@@ -7,9 +7,8 @@ EnergyModel gem;
 Precomp gpc;
 
 void SetEnergyGlobalState(const Primary& r, const EnergyModel& em) {
-  SetGlobalState(r);
   gem = em;
-  gpc = PrecomputeData(gr, gem);
+  gpc = PrecomputeData(r, gem);
 }
 
 }  // namespace mrna::energy

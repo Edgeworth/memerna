@@ -4,7 +4,6 @@
 
 #include "compute/mfe/globals.h"
 #include "model/base.h"
-#include "model/globals.h"
 
 namespace mrna::mfe::internal {
 

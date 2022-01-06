@@ -74,10 +74,10 @@ BruteForce::SubstructureId BruteForce::BuildOutsideStructure(int st, int en, int
 }
 
 void BruteForce::AddAllCombinations(int idx) {
-  const int N = static_cast<int>(gr.size());
+  const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
-    auto computed = energy::ComputeEnergyWithCtds({{gr, gp}, gctd, 0}, energy::gem);
+    auto computed = energy::ComputeEnergyWithCtds({{r_, gp}, gctd, 0}, energy::gem);
     if (res_.compute_partition) {
       PEnergy boltzmann = energy::Boltzmann(computed.energy);
       res_.partition.q += boltzmann;
@@ -197,7 +197,7 @@ void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(res_.base_pairs.size())) {
     // Small optimisation for case when we're just getting one structure.
     if (res_.max_structures == 1 && !res_.compute_partition) {
-      auto computed = energy::ComputeEnergy({gr, gp}, energy::gem);
+      auto computed = energy::ComputeEnergy({r_, gp}, energy::gem);
       if (res_.best_computeds.empty() || computed.energy < res_.best_computeds.begin()->energy)
         res_.best_computeds.insert(std::move(computed));
       if (res_.best_computeds.size() == 2) res_.best_computeds.erase(--res_.best_computeds.end());
@@ -238,8 +238,9 @@ BruteForce::Result BruteForce::Run(const Primary& r, const energy::EnergyModel& 
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
+  r_ = r;
   mfe::SetMfeGlobalState(r, em);
-  int N = static_cast<int>(r.size());
+  const int N = static_cast<int>(r.size());
   // TODO: Cleanup here
   res_.max_structures = max_structures == -1 ? MAX_STRUCTURES : max_structures;
   res_.compute_partition = compute_partition;

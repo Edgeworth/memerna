@@ -1,7 +1,6 @@
 // Copyright 2016 E.
 #include "compute/partition/globals.h"
 #include "compute/partition/partition.h"
-#include "model/globals.h"
 
 namespace mrna::partition::internal {
 

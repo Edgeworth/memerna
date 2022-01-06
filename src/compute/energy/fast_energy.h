@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "compute/energy/model.h"
-#include "model/globals.h"
 #include "model/parsing.h"
 #include "model/primary.h"
 #include "util/macros.h"

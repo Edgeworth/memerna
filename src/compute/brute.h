@@ -62,6 +62,7 @@ class BruteForce {
     }
   };
 
+  Primary r_;
   Result res_;
   SplaySet<SubstructureId> substructure_map_;
 
