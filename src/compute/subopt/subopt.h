@@ -6,7 +6,6 @@
 
 #include "model/base.h"
 #include "model/ctd.h"
-#include "model/globals.h"
 
 namespace mrna::subopt {
 

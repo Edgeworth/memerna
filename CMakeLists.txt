@@ -119,7 +119,6 @@ set(MEMERNA_SOURCE
     src/model/config.cpp src/model/config.h
     src/model/context.cpp src/model/context.h
     src/model/gen.cpp src/model/gen.h
-    src/model/globals.cpp src/model/globals.h
     src/model/parsing.cpp src/model/parsing.h
     src/model/model.h
     src/util/argparse.cpp src/util/argparse.h
