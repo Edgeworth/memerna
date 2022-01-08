@@ -20,7 +20,6 @@ endif ()
 # Flags for each build configuration.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
@@ -75,6 +74,9 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
 include(GoogleTest)
 enable_testing()
+
+# Apply compile definitions here so they only apply to memerna code.
+add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
 # Source set definitions.
 set(MEMERNA_SOURCE

@@ -6,6 +6,9 @@ import sys
 import shutil
 from pathlib import Path
 
+# Ignore empty arguments.
+sys.argv = [i for i in sys.argv if i]
+
 parser = argparse.ArgumentParser()
 # Build environment options
 parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home(), "bin"),
