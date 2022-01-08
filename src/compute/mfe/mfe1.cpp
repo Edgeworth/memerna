@@ -21,7 +21,7 @@ void ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (gdp[ist][ien][DP_P] < CAP_E)
-              p_min = std::min(p_min, pc.FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P]);
+              p_min = std::min(p_min, pc.TwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P]);
           }
         }
         // Hairpin loops.

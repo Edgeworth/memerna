@@ -60,33 +60,33 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
   {
     const Precomp pc(kNNDBHairpin1.r, *g_em);
     EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][A][A][U] + g_em->HairpinInitiation(6),
-        pc.FastHairpin(3, 10));
+        pc.Hairpin(3, 10));
   }
 
   {
     const Precomp pc(kNNDBHairpin2.r, *g_em);
     EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][G][G][U] + g_em->hairpin_gg_first_mismatch +
             g_em->HairpinInitiation(5),
-        pc.FastHairpin(3, 9));
+        pc.Hairpin(3, 9));
   }
 
   {
     const Precomp pc(kNNDBHairpin3.r, *g_em);
-    EXPECT_EQ(g_em->hairpin["CCGAGG"], pc.FastHairpin(3, 8));
+    EXPECT_EQ(g_em->hairpin["CCGAGG"], pc.Hairpin(3, 8));
   }
 
   {
     const Precomp pc(kNNDBHairpin4.r, *g_em);
     EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][C][C][U] + g_em->HairpinInitiation(6) +
             g_em->hairpin_all_c_a * 6 + g_em->hairpin_all_c_b,
-        pc.FastHairpin(3, 10));
+        pc.Hairpin(3, 10));
   }
 
   {
     const Precomp pc(kNNDBHairpin5.r, *g_em);
     EXPECT_EQ(g_em->augu_penalty + g_em->terminal[G][G][G][U] + g_em->hairpin_gg_first_mismatch +
             g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
-        pc.FastHairpin(3, 9));
+        pc.Hairpin(3, 9));
   }
 }
 

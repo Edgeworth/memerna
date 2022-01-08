@@ -109,7 +109,7 @@ void ComputeTables3(const Primary& r, const energy::EnergyModel& em) {
                   base_internal_loop);
 
         // Hairpin loops.
-        mins[DP_P] = std::min(mins[DP_P], pc.FastHairpin(st, en));
+        mins[DP_P] = std::min(mins[DP_P], pc.Hairpin(st, en));
 
         const auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
         // (<   ><   >)

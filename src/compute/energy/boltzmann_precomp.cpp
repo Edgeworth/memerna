@@ -15,7 +15,7 @@ namespace mrna::energy {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzEnergyModel bem) : r_(r), bem_(BoltzEnergyModel(bem)) {}
 
-BoltzEnergy BoltzPrecomp::FastHairpin(int st, int en) const {
+BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] > -1)
@@ -41,7 +41,7 @@ BoltzEnergy BoltzPrecomp::FastHairpin(int st, int en) const {
   return energy;
 }
 
-BoltzEnergy BoltzPrecomp::FastTwoLoop(int ost, int oen, int ist, int ien) const {
+BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return bem_.stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return bem_.Bulge(r_, ost, oen, ist, ien);

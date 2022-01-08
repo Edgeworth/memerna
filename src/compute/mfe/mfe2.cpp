@@ -31,11 +31,11 @@ void ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (gdp[ist][ien][DP_P] < mins[DP_P] - pc.min_twoloop_not_stack)
               mins[DP_P] =
-                  std::min(mins[DP_P], pc.FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P]);
+                  std::min(mins[DP_P], pc.TwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P]);
           }
         }
         // Hairpin loops.
-        mins[DP_P] = std::min(mins[DP_P], pc.FastHairpin(st, en));
+        mins[DP_P] = std::min(mins[DP_P], pc.Hairpin(st, en));
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
