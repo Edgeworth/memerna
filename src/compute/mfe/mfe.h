@@ -12,12 +12,11 @@ struct Cand {
   int idx;
 };
 
-void ComputeTables0();
-void ComputeTables1();
-void ComputeTables2();
-void ComputeTables3();
-void ComputeExterior();
-void Traceback();
+void ComputeTables0(const Primary& r, const energy::EnergyModel& em);
+void ComputeTables1(const Primary& r, const energy::EnergyModel& em);
+void ComputeTables2(const Primary& r, const energy::EnergyModel& em);
+void ComputeTables3(const Primary& r, const energy::EnergyModel& em);
+void ComputeExterior(const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::mfe::internal
 

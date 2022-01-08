@@ -3,7 +3,6 @@
 
 #include "compute/constants.h"
 #include "compute/dp.h"
-#include "compute/energy/globals.h"
 
 namespace mrna::mfe {
 
@@ -18,8 +17,7 @@ Array2D<Energy, EXT_SIZE> gext;
 
 }  // namespace internal
 
-void SetMfeGlobalState(const Primary& r, const energy::EnergyModel& em) {
-  energy::SetEnergyGlobalState(r, em);
+void SetMfeGlobalState(const Primary& r) {
   internal::gp.resize(r.size());
   internal::gctd.resize(r.size());
   internal::genergy = MAX_E;

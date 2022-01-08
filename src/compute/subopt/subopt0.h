@@ -16,11 +16,8 @@ namespace mrna::subopt::internal {
 
 class Suboptimal0 {
  public:
-  Suboptimal0(Energy delta, int num)
-      : max_energy_(delta == -1 ? CAP_E : mfe::internal::gext[0][EXT] + delta),
-        max_structures(num == -1 ? MAX_STRUCTURES : num) {
-    verify(max_structures > 0, "must request at least one structure");
-  }
+  Suboptimal0(Primary r, energy::EnergyModel em, Energy delta, int num);
+
   int Run(SuboptimalCallback fn);
 
  private:
@@ -35,6 +32,9 @@ class Suboptimal0 {
 
     bool operator<(const Node& o) const { return energy < o.energy; }
   };
+
+  Primary r_;
+  energy::EnergyModel em_;
 
   const Energy max_energy_;
   const int max_structures;

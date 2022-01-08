@@ -1,6 +1,5 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
-#include "compute/energy/globals.h"
 #include "gtest/gtest.h"
 #include "model/context.h"
 #include "model/parsing.h"
@@ -58,27 +57,37 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
           g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
       GetEnergy(kNNDBHairpin5));
 
-  SetEnergyGlobalState(kNNDBHairpin1.r, *g_em);
-  EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][A][A][U] + g_em->HairpinInitiation(6),
-      FastHairpin(3, 10));
+  {
+    const Precomp pc(kNNDBHairpin1.r, *g_em);
+    EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][A][A][U] + g_em->HairpinInitiation(6),
+        pc.FastHairpin(3, 10));
+  }
 
-  SetEnergyGlobalState(kNNDBHairpin2.r, *g_em);
-  EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][G][G][U] + g_em->hairpin_gg_first_mismatch +
-          g_em->HairpinInitiation(5),
-      FastHairpin(3, 9));
+  {
+    const Precomp pc(kNNDBHairpin2.r, *g_em);
+    EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][G][G][U] + g_em->hairpin_gg_first_mismatch +
+            g_em->HairpinInitiation(5),
+        pc.FastHairpin(3, 9));
+  }
 
-  SetEnergyGlobalState(kNNDBHairpin3.r, *g_em);
-  EXPECT_EQ(g_em->hairpin["CCGAGG"], FastHairpin(3, 8));
+  {
+    const Precomp pc(kNNDBHairpin3.r, *g_em);
+    EXPECT_EQ(g_em->hairpin["CCGAGG"], pc.FastHairpin(3, 8));
+  }
 
-  SetEnergyGlobalState(kNNDBHairpin4.r, *g_em);
-  EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][C][C][U] + g_em->HairpinInitiation(6) +
-          g_em->hairpin_all_c_a * 6 + g_em->hairpin_all_c_b,
-      FastHairpin(3, 10));
+  {
+    const Precomp pc(kNNDBHairpin4.r, *g_em);
+    EXPECT_EQ(g_em->augu_penalty + g_em->terminal[A][C][C][U] + g_em->HairpinInitiation(6) +
+            g_em->hairpin_all_c_a * 6 + g_em->hairpin_all_c_b,
+        pc.FastHairpin(3, 10));
+  }
 
-  SetEnergyGlobalState(kNNDBHairpin5.r, *g_em);
-  EXPECT_EQ(g_em->augu_penalty + g_em->terminal[G][G][G][U] + g_em->hairpin_gg_first_mismatch +
-          g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
-      FastHairpin(3, 9));
+  {
+    const Precomp pc(kNNDBHairpin5.r, *g_em);
+    EXPECT_EQ(g_em->augu_penalty + g_em->terminal[G][G][G][U] + g_em->hairpin_gg_first_mismatch +
+            g_em->HairpinInitiation(5) + g_em->hairpin_special_gu_closure,
+        pc.FastHairpin(3, 9));
+  }
 }
 
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
@@ -170,7 +179,7 @@ TEST_F(EnergyTest, T04Tests) {
 TEST_F(EnergyTest, Precomp) {
   ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
-  auto pc = PrecomputeData(StringToPrimary("GGGGAAACCCC"), *g_em);
+  const Precomp pc(StringToPrimary("GGGGAAACCCC"), *g_em);
   EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);

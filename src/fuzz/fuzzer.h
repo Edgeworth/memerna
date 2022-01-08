@@ -26,9 +26,9 @@ class Fuzzer {
   Error Run();
 
  private:
-  const Primary r_;
+  Primary r_;
   const FuzzCfg cfg_;
-  const energy::EnergyModelPtr em_;
+  energy::EnergyModelPtr em_;
 
   std::vector<Computed> memerna_computeds_;
   std::vector<Array3D<Energy, DP_SIZE>> memerna_dps;

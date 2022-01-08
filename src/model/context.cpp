@@ -15,23 +15,23 @@
 namespace mrna {
 
 void Context::ComputeTables() {
-  mfe::SetMfeGlobalState(r, *em);
+  mfe::SetMfeGlobalState(r);
   switch (cfg.table_alg) {
-  case ModelCfg::TableAlg::ZERO: mfe::internal::ComputeTables0(); break;
-  case ModelCfg::TableAlg::ONE: mfe::internal::ComputeTables1(); break;
-  case ModelCfg::TableAlg::TWO: mfe::internal::ComputeTables2(); break;
-  case ModelCfg::TableAlg::THREE: mfe::internal::ComputeTables3(); break;
+  case ModelCfg::TableAlg::ZERO: mfe::internal::ComputeTables0(r, *em); break;
+  case ModelCfg::TableAlg::ONE: mfe::internal::ComputeTables1(r, *em); break;
+  case ModelCfg::TableAlg::TWO: mfe::internal::ComputeTables2(r, *em); break;
+  case ModelCfg::TableAlg::THREE: mfe::internal::ComputeTables3(r, *em); break;
   default: bug();
   }
-  mfe::internal::ComputeExterior();
+  mfe::internal::ComputeExterior(r, *em);
 }
 
 Computed Context::Fold() {
   if (cfg.table_alg == ModelCfg::TableAlg::BRUTE) return mfe::MfeBruteForce(r, *em);
 
   ComputeTables();
-  traceback::Traceback();
-  return {{gr, mfe::internal::gp}, mfe::internal::gctd, mfe::internal::genergy};
+  traceback::Traceback(r, *em);
+  return {{r, mfe::internal::gp}, mfe::internal::gctd, mfe::internal::genergy};
 }
 
 std::vector<Computed> Context::SuboptimalIntoVector(
@@ -55,24 +55,26 @@ int Context::Suboptimal(
   ComputeTables();
   switch (cfg.suboptimal_alg) {
   case ModelCfg::SuboptimalAlg::ZERO:
-    return subopt::internal::Suboptimal0(subopt_delta, subopt_num).Run(fn);
+    return subopt::internal::Suboptimal0(r, *em, subopt_delta, subopt_num).Run(fn);
   case ModelCfg::SuboptimalAlg::ONE:
-    return subopt::internal::Suboptimal1(subopt_delta, subopt_num).Run(fn, sorted);
+    return subopt::internal::Suboptimal1(r, *em, subopt_delta, subopt_num).Run(fn, sorted);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg.suboptimal_alg));
   }
 }
 
 partition::Partition Context::Partition() {
-  partition::SetPartitionGlobalState(r, *em);
+  partition::SetPartitionGlobalState(r);
   switch (cfg.partition_alg) {
-  case ModelCfg::PartitionAlg::ZERO: partition::internal::Partition0(); break;
-  case ModelCfg::PartitionAlg::ONE: partition::internal::Partition1(); break;
+  case ModelCfg::PartitionAlg::ZERO: partition::internal::Partition0(r, *em); break;
+  case ModelCfg::PartitionAlg::ONE:
+    partition::internal::Partition1(r, energy::BoltzEnergyModel(*em));
+    break;
   case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r, *em).first;
   }
   const auto& gpt = partition::internal::gpt;
   const int size = static_cast<int>(r.size());
-  Array3D<PEnergy, 1> p((std::size_t(size)));
+  Array3D<BoltzEnergy, 1> p((std::size_t(size)));
   for (int i = 0; i < size; ++i)  // TODO optimise this?
     for (int j = 0; j < size; ++j) p[i][j][0] = gpt[i][j][partition::PT_P];
   return {std::move(p), partition::internal::gptext[0][partition::PTEXT_R]};

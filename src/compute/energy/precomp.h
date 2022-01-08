@@ -1,14 +1,20 @@
-// Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_FAST_ENERGY_H_
-#define COMPUTE_ENERGY_FAST_ENERGY_H_
-
+// Copyright 2022 Eliot Courtney.
+#ifndef COMPUTE_ENERGY_PRECOMP_H_
+#define COMPUTE_ENERGY_PRECOMP_H_
+#include <cassert>
+#include <cmath>
+#include <cstdarg>
+#include <cstring>
+#include <memory>
 #include <string>
-#include <vector>
+#include <unordered_map>
 
 #include "compute/energy/model.h"
+#include "model/base.h"
+#include "model/model.h"
 #include "model/parsing.h"
 #include "model/primary.h"
-#include "util/macros.h"
+#include "util/argparse.h"
 
 namespace mrna::energy {
 
@@ -18,8 +24,9 @@ int MaxNumContiguous(const Primary& r);
 
 }
 
-const int MAX_SPECIAL_HAIRPIN_SZ = 6;
+inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
+// TODO: move this?
 // This is templated because the partition function wants to use it with a different type.
 template <typename T, int InitVal>
 struct HairpinPrecomp {
@@ -31,15 +38,7 @@ struct HairpinPrecomp {
   int num_c;
 };
 
-struct Precomp {
-  Energy augubranch[4][4];
-  Energy min_mismatch_coax;
-  Energy min_flush_coax;
-  Energy min_twoloop_not_stack;
-
-  std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
-};
-
+// TODO: move this?
 template <typename HairpinPrecomp, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;
@@ -61,22 +60,29 @@ std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
   return pc;
 }
 
-Precomp PrecomputeData(const Primary& r, const EnergyModel& em);
+class Precomp {
+ public:
+  Energy augubranch[4][4];
+  Energy min_mismatch_coax;
+  Energy min_flush_coax;
+  Energy min_twoloop_not_stack;
 
-// Must have global state set.
-Energy FastTwoLoop(int ost, int oen, int ist, int ien);
-Energy FastHairpin(int st, int en);
-inline bool ViableFoldingPair(int st, int en) {
-  return CanPair(gr[st], gr[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
-      ((en - st - 3 >= HAIRPIN_MIN_SZ && CanPair(gr[st + 1], gr[en - 1])) ||
-          (st > 0 && en < static_cast<int>(gr.size() - 1) && CanPair(gr[st - 1], gr[en + 1])));
-}
+  std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
 
-inline PEnergy Boltzmann(Energy energy) {
-  if (energy >= CAP_E) return 0;
-  return exp(PEnergy(energy) * (PEnergy(-1) / PEnergy(10.0 * R * T)));
-}
+  Precomp(Primary r, EnergyModel em);
+
+  const EnergyModel& em() const { return em_; }
+
+  Energy FastTwoLoop(int ost, int oen, int ist, int ien) const;
+  Energy FastHairpin(int st, int en) const;
+
+ private:
+  Primary r_;
+  EnergyModel em_;
+
+  void PrecomputeData();
+};
 
 }  // namespace mrna::energy
 
-#endif  // COMPUTE_ENERGY_FAST_ENERGY_H_
+#endif  // COMPUTE_ENERGY_PRECOMP_H_

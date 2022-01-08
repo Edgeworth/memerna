@@ -18,7 +18,7 @@ using mfe::internal::gdp;
 using partition::PartitionBruteForce;
 using subopt::SuboptimalBruteForce;
 
-inline bool equ(PEnergy a, PEnergy b) { return fabs(a - b) < EP; }
+inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
 Fuzzer::Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em)
     : r_(std::move(r)), cfg_(cfg),

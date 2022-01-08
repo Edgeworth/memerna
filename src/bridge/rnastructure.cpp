@@ -115,19 +115,19 @@ std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partitio
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  partition::Partition partition = {Array3D<PEnergy, 1>(std::size_t(length)), 0};
-  partition.q = PEnergy(w5[length]);
+  partition::Partition partition = {Array3D<BoltzEnergy, 1>(std::size_t(length)), 0};
+  partition.q = BoltzEnergy(w5[length]);
   for (int i = 1; i <= length; ++i) {
     for (int j = i; j < length + i; ++j) {
       int adjusted = j > length ? j - length - 1 : j - 1;
-      partition.p[i - 1][adjusted][0] = PEnergy(v.f(i, j));
+      partition.p[i - 1][adjusted][0] = BoltzEnergy(v.f(i, j));
     }
   }
 
   partition::Probabilities probability(std::size_t(length), 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
-      probability[i][j][0] = PEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),
+      probability[i][j][0] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),
           structure.get(), pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }

@@ -23,7 +23,7 @@ extern Array2D<Energy, EXT_SIZE> gext;
 
 }  // namespace internal
 
-void SetMfeGlobalState(const Primary& r, const energy::EnergyModel& em);
+void SetMfeGlobalState(const Primary& r);
 
 }  // namespace mrna::mfe
 

@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/globals.h"
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 #include "compute/mfe/globals.h"
@@ -63,6 +62,7 @@ class BruteForce {
   };
 
   Primary r_;
+  energy::EnergyModel em_;
   Result res_;
   SplaySet<SubstructureId> substructure_map_;
 
