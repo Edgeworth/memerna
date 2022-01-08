@@ -17,8 +17,8 @@ struct BoltzPrecomp {
 
   const BoltzEnergyModel& bem() const { return bem_; }
 
-  BoltzEnergy FastHairpin(int st, int en) const;
-  BoltzEnergy FastTwoLoop(int ost, int oen, int ist, int ien) const;
+  BoltzEnergy Hairpin(int st, int en) const;
+  BoltzEnergy TwoLoop(int ost, int oen, int ist, int ien) const;
 
  private:
   const Primary r_;

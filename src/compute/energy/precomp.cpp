@@ -43,7 +43,7 @@ int MaxNumContiguous(const Primary& r) {
 
 Precomp::Precomp(Primary r, EnergyModel em) : r_(r), em_(em) { PrecomputeData(); }
 
-Energy Precomp::FastTwoLoop(int ost, int oen, int ist, int ien) const {
+Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return em_.stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return em_.Bulge(r_, ost, oen, ist, ien);
@@ -78,7 +78,7 @@ Energy Precomp::FastTwoLoop(int ost, int oen, int ist, int ien) const {
   return energy;
 }
 
-Energy Precomp::FastHairpin(int st, int en) const {
+Energy Precomp::Hairpin(int st, int en) const {
   int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)

@@ -73,8 +73,8 @@ class Precomp {
 
   const EnergyModel& em() const { return em_; }
 
-  Energy FastTwoLoop(int ost, int oen, int ist, int ien) const;
-  Energy FastHairpin(int st, int en) const;
+  Energy TwoLoop(int ost, int oen, int ist, int ien) const;
+  Energy Hairpin(int st, int en) const;
 
  private:
   Primary r_;

@@ -253,13 +253,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
     for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
       for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-        energy = pc_.FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P] - gdp[st][en][a];
+        energy = pc_.TwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P] - gdp[st][en][a];
         if (energy <= delta) exps.push_back({energy, {ist, ien, DP_P}});
       }
     }
 
     // Hairpin loop
-    energy = pc_.FastHairpin(st, en) - gdp[st][en][a];
+    energy = pc_.Hairpin(st, en) - gdp[st][en][a];
     if (energy <= delta) exps.emplace_back(energy);
 
     auto base_and_branch = pc_.augubranch[stb][enb] + em_.multiloop_hack_a - gdp[st][en][a];

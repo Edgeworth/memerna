@@ -22,7 +22,7 @@ void Partition0(const Primary& r, const energy::EnergyModel& em) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)  // TODO lyngso's ?
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
-            p += Boltz(pc.FastTwoLoop(st, en, ist, ien)) * gpt[ist][ien][PT_P];
+            p += Boltz(pc.TwoLoop(st, en, ist, ien)) * gpt[ist][ien][PT_P];
         // Hairpin loops.
         p += Boltz(em.Hairpin(r, st, en));
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
@@ -169,7 +169,7 @@ void Partition0(const Primary& r, const energy::EnergyModel& em) {
         for (int ost = st + 1; ost < ost_max; ++ost) {
           const int oen_min = std::max(en - TWOLOOP_MAX_SZ - 1 + (ost - st - 1), 0);
           for (int oen = en - 1; oen >= oen_min; --oen)
-            p += Boltz(pc.FastTwoLoop(oen, ost, en, st)) * gpt[ost][oen][PT_P];
+            p += Boltz(pc.TwoLoop(oen, ost, en, st)) * gpt[ost][oen][PT_P];
         }
         const BoltzEnergy base_branch_cost = Boltz(pc.augubranch[stb][enb] + em.multiloop_hack_a);
         const Energy outer_coax =
