@@ -77,10 +77,10 @@ void BruteForce::AddAllCombinations(int idx) {
   const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
-    auto computed = energy::ComputeEnergyWithCtds({{r_, gp}, gctd, 0}, energy::gem);
+    auto computed = energy::ComputeEnergyWithCtds({{r_, gp}, gctd, 0}, em_);
     if (res_.compute_partition) {
-      PEnergy boltzmann = energy::Boltzmann(computed.energy);
-      res_.partition.q += boltzmann;
+      BoltzEnergy boltz = Boltz(computed.energy);
+      res_.partition.q += boltz;
       for (int i = 0; i < N; ++i) {
         if (i < gp[i]) {
           const auto inside_structure = BuildInsideStructure(i, gp[i], N);
@@ -89,17 +89,17 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
             Energy inside_energy = energy::ComputeSubstructureEnergy(
-                computed, false, i, gp[i], energy::gem);  // TODO optimisation?
+                computed, false, i, gp[i], em_);  // TODO optimisation?
             if (inside_new) {
-              res_.partition.p[i][gp[i]][0] += energy::Boltzmann(inside_energy);
+              res_.partition.p[i][gp[i]][0] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.partition.p[gp[i]][i][0] += energy::Boltzmann(computed.energy - inside_energy);
+              res_.partition.p[gp[i]][i][0] += Boltz(computed.energy - inside_energy);
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
-          res_.probabilities[i][gp[i]][0] += boltzmann;
+          res_.probabilities[i][gp[i]][0] += boltz;
         }
       }
     } else {
@@ -197,7 +197,7 @@ void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(res_.base_pairs.size())) {
     // Small optimisation for case when we're just getting one structure.
     if (res_.max_structures == 1 && !res_.compute_partition) {
-      auto computed = energy::ComputeEnergy({r_, gp}, energy::gem);
+      auto computed = energy::ComputeEnergy({r_, gp}, em_);
       if (res_.best_computeds.empty() || computed.energy < res_.best_computeds.begin()->energy)
         res_.best_computeds.insert(std::move(computed));
       if (res_.best_computeds.size() == 2) res_.best_computeds.erase(--res_.best_computeds.end());
@@ -239,7 +239,8 @@ BruteForce::Result BruteForce::Run(const Primary& r, const energy::EnergyModel& 
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
   r_ = r;
-  mfe::SetMfeGlobalState(r, em);
+  em_ = em;
+  mfe::SetMfeGlobalState(r);
   const int N = static_cast<int>(r.size());
   // TODO: Cleanup here
   res_.max_structures = max_structures == -1 ? MAX_STRUCTURES : max_structures;
@@ -248,13 +249,13 @@ BruteForce::Result BruteForce::Run(const Primary& r, const energy::EnergyModel& 
     // Plus one to N, since -1 takes up a spot.
     verify(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.partition.q = 0;
-    res_.partition.p = Array3D<PEnergy, 1>(r.size(), 0);
-    res_.probabilities = Array3D<PEnergy, 1>(r.size(), 0);
+    res_.partition.p = Array3D<BoltzEnergy, 1>(r.size(), 0);
+    res_.probabilities = Array3D<BoltzEnergy, 1>(r.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r.size()); ++en) {
-      bool allowed = allow_lonely_pairs ? CanPair(r[st], r[en]) : energy::ViableFoldingPair(st, en);
+      bool allowed = allow_lonely_pairs ? CanPair(r[st], r[en]) : ViableFoldingPair(r, st, en);
       if (allowed) res_.base_pairs.emplace_back(st, en);
     }
   }

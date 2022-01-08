@@ -5,24 +5,25 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/globals.h"
 #include "compute/mfe/globals.h"
 
 namespace mrna::subopt::internal {
 
-using energy::gem;
-using energy::gpc;
 using mfe::internal::gctd;
 using mfe::internal::gdp;
 using mfe::internal::gext;
 using mfe::internal::gp;
 using mfe::internal::grep;
 
+Suboptimal1::Suboptimal1(Primary r, energy::EnergyModel em, Energy delta, int num)
+    : r_(r), em_(em), pc_(r, em), delta_(delta == -1 ? CAP_E : delta),
+      max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
+
 int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   memset(gp.data(), -1, gp.size());
   memset(gctd.data(), CTD_NA, gctd.size());
-  q_.reserve(gr.size());  // Reasonable reservation.
-  cache_.Reserve(gr.size());
+  q_.reserve(r_.size());  // Reasonable reservation.
+  cache_.Reserve(r_.size());
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (sorted || max_structures_ != MAX_STRUCTURES) {
@@ -55,7 +56,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
   Energy energy = 0;
   q_.clear();
   unexpanded_.clear();
-  grep.resize(gr.size(), '.');
+  grep.resize(r_.size(), '.');
   q_.push_back({0, {0, -1, EXT}, false});
   while (!q_.empty()) {
     auto& s = q_.back();
@@ -103,11 +104,11 @@ std::pair<int, int> Suboptimal1::RunInternal(
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
           Computed tmp_computed = {
-              {std::move(gr), std::move(gp)}, std::move(gctd), energy + gext[0][EXT]};
+              {std::move(r_), std::move(gp)}, std::move(gctd), energy + gext[0][EXT]};
           fn(tmp_computed);
           ++num_structures;
           // Move everything back
-          gr = std::move(tmp_computed.s.r);
+          r_ = std::move(tmp_computed.s.r);
           gp = std::move(tmp_computed.s.p);
           gctd = std::move(tmp_computed.base_ctds);
 
@@ -140,8 +141,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
   return {num_structures, next_seen};
 }
 
-std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
-  const int N = static_cast<int>(gr.size());
+std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Energy delta) const {
+  const int N = static_cast<int>(r_.size());
   int st = to_expand.st, en = to_expand.en, a = to_expand.a;
   std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
@@ -159,15 +160,15 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
-      const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const auto base00 = gdp[st][en][DP_P] + gem.AuGuPenalty(stb, enb) - gext[st][a];
-      const auto base01 = gdp[st][en - 1][DP_P] + gem.AuGuPenalty(stb, en1b) - gext[st][a];
-      const auto base10 = gdp[st + 1][en][DP_P] + gem.AuGuPenalty(st1b, enb) - gext[st][a];
-      const auto base11 = gdp[st + 1][en - 1][DP_P] + gem.AuGuPenalty(st1b, en1b) - gext[st][a];
+      const auto stb = r_[st], st1b = r_[st + 1], enb = r_[en], en1b = r_[en - 1];
+      const auto base00 = gdp[st][en][DP_P] + em_.AuGuPenalty(stb, enb) - gext[st][a];
+      const auto base01 = gdp[st][en - 1][DP_P] + em_.AuGuPenalty(stb, en1b) - gext[st][a];
+      const auto base10 = gdp[st + 1][en][DP_P] + em_.AuGuPenalty(st1b, enb) - gext[st][a];
+      const auto base11 = gdp[st + 1][en - 1][DP_P] + em_.AuGuPenalty(st1b, en1b) - gext[st][a];
 
       // (   )<.( * ). > Right coax backward
       if (a == EXT_RCOAX) {
-        energy = base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b) + gext[en + 1][EXT];
+        energy = base11 + em_.MismatchCoaxial(en1b, enb, stb, st1b) + gext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta) exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}});
       }
@@ -190,23 +191,23 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
       if (a != EXT) continue;
 
       // (   )3<   > 3'
-      energy = base01 + gem.dangle3[en1b][enb][stb] + gext[en + 1][EXT];
+      energy = base01 + em_.dangle3[en1b][enb][stb] + gext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE}});
 
       // 5(   )<   > 5'
-      energy = base10 + gem.dangle5[enb][stb][st1b] + gext[en + 1][EXT];
+      energy = base10 + em_.dangle5[enb][stb][st1b] + gext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch
-      energy = base11 + gem.terminal[en1b][enb][stb][st1b] + gext[en + 1][EXT];
+      energy = base11 + em_.terminal[en1b][enb][stb][st1b] + gext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH}});
 
       if (en < N - 1) {
         // .(   ).<(   ) > Left coax
-        energy = base11 + gem.MismatchCoaxial(en1b, enb, stb, st1b);
+        energy = base11 + em_.MismatchCoaxial(en1b, enb, stb, st1b);
         if (energy + gext[en + 1][EXT_GU] <= delta)
           exps.push_back(
               {energy + gext[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
@@ -226,13 +227,13 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
       }
 
       // (   )(<   ) > Flush coax
-      energy = base01 + gem.stack[en1b][enb][enb ^ 3][stb] + gext[en][EXT_WC];
+      energy = base01 + em_.stack[en1b][enb][enb ^ 3][stb] + gext[en][EXT_WC];
       if (energy <= delta)
         exps.push_back({energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
             {st, CTD_FCOAX_WITH_NEXT}});
 
       if (enb == G || enb == U) {
-        energy = base01 + gem.stack[en1b][enb][enb ^ 1][stb] + gext[en][EXT_GU];
+        energy = base01 + em_.stack[en1b][enb][enb ^ 1][stb] + gext[en][EXT_GU];
         if (energy <= delta)
           exps.push_back({energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
               {st, CTD_FCOAX_WITH_NEXT}});
@@ -243,8 +244,8 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
   }
 
   // Declare the usual base aliases.
-  const auto stb = gr[st], st1b = gr[st + 1], st2b = gr[st + 2], enb = gr[en], en1b = gr[en - 1],
-             en2b = gr[en - 2];
+  const auto stb = r_[st], st1b = r_[st + 1], st2b = r_[st + 2], enb = r_[en], en1b = r_[en - 1],
+             en2b = r_[en - 2];
 
   // Normal stuff
   if (a == DP_P) {
@@ -252,71 +253,71 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
     int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
     for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
       for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-        energy = energy::FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P] - gdp[st][en][a];
+        energy = pc_.FastTwoLoop(st, en, ist, ien) + gdp[ist][ien][DP_P] - gdp[st][en][a];
         if (energy <= delta) exps.push_back({energy, {ist, ien, DP_P}});
       }
     }
 
     // Hairpin loop
-    energy = energy::FastHairpin(st, en) - gdp[st][en][a];
+    energy = pc_.FastHairpin(st, en) - gdp[st][en][a];
     if (energy <= delta) exps.emplace_back(energy);
 
-    auto base_and_branch = gpc.augubranch[stb][enb] + gem.multiloop_hack_a - gdp[st][en][a];
+    auto base_and_branch = pc_.augubranch[stb][enb] + em_.multiloop_hack_a - gdp[st][en][a];
     // (<   ><    >)
     energy = base_and_branch + gdp[st + 1][en - 1][DP_U2];
     if (energy <= delta) exps.push_back({energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED}});
     // (3<   ><   >) 3'
-    energy = base_and_branch + gdp[st + 2][en - 1][DP_U2] + gem.dangle3[stb][st1b][enb];
+    energy = base_and_branch + gdp[st + 2][en - 1][DP_U2] + em_.dangle3[stb][st1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 1, DP_U2}, {en, CTD_3_DANGLE}});
     // (<   ><   >5) 5'
-    energy = base_and_branch + gdp[st + 1][en - 2][DP_U2] + gem.dangle5[stb][en1b][enb];
+    energy = base_and_branch + gdp[st + 1][en - 2][DP_U2] + em_.dangle5[stb][en1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 1, en - 2, DP_U2}, {en, CTD_5_DANGLE}});
     // (.<   ><   >.) Terminal mismatch
-    energy = base_and_branch + gdp[st + 2][en - 2][DP_U2] + gem.terminal[stb][st1b][en1b][enb];
+    energy = base_and_branch + gdp[st + 2][en - 2][DP_U2] + em_.terminal[stb][st1b][en1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-      Base pl1b = gr[piv - 1], plb = gr[piv], prb = gr[piv + 1], pr1b = gr[piv + 2];
+      Base pl1b = r_[piv - 1], plb = r_[piv], prb = r_[piv + 1], pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      auto outer_coax = gem.MismatchCoaxial(stb, st1b, en1b, enb);
-      energy = base_and_branch + gdp[st + 2][piv][DP_P] + gpc.augubranch[st2b][plb] +
+      auto outer_coax = em_.MismatchCoaxial(stb, st1b, en1b, enb);
+      energy = base_and_branch + gdp[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
           gdp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},
             {st + 2, CTD_LCOAX_WITH_PREV}, {en, CTD_LCOAX_WITH_NEXT}});
 
       // (.   (   ).) Right outer coax
-      energy = base_and_branch + gdp[st + 2][piv][DP_U] + gpc.augubranch[prb][en2b] +
+      energy = base_and_branch + gdp[st + 2][piv][DP_U] + pc_.augubranch[prb][en2b] +
           gdp[piv + 1][en - 2][DP_P] + outer_coax;
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P},
             {piv + 1, CTD_RCOAX_WITH_NEXT}, {en, CTD_RCOAX_WITH_PREV}});
 
       // (.(   ).   ) Left right coax
-      energy = base_and_branch + gdp[st + 2][piv - 1][DP_P] + gpc.augubranch[st2b][pl1b] +
-          gdp[piv + 1][en - 1][DP_U] + gem.MismatchCoaxial(pl1b, plb, st1b, st2b);
+      energy = base_and_branch + gdp[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
+          gdp[piv + 1][en - 1][DP_U] + em_.MismatchCoaxial(pl1b, plb, st1b, st2b);
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT}});
 
       // (   .(   ).) Right left coax
-      energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[pr1b][en2b] +
-          gdp[piv + 2][en - 2][DP_P] + gem.MismatchCoaxial(en2b, en1b, prb, pr1b);
+      energy = base_and_branch + gdp[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
+          gdp[piv + 2][en - 2][DP_P] + em_.MismatchCoaxial(en2b, en1b, prb, pr1b);
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P},
             {piv + 2, CTD_LCOAX_WITH_NEXT}, {en, CTD_LCOAX_WITH_PREV}});
 
       // ((   )   ) Left flush coax
-      energy = base_and_branch + gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][plb] +
-          gdp[piv + 1][en - 1][DP_U] + gem.stack[stb][st1b][plb][enb];
+      energy = base_and_branch + gdp[st + 1][piv][DP_P] + pc_.augubranch[st1b][plb] +
+          gdp[piv + 1][en - 1][DP_U] + em_.stack[stb][st1b][plb][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 1, CTD_FCOAX_WITH_PREV}, {en, CTD_FCOAX_WITH_NEXT}});
 
       // (   (   )) Right flush coax
-      energy = base_and_branch + gdp[st + 1][piv][DP_U] + gpc.augubranch[prb][en1b] +
-          gdp[piv + 1][en - 1][DP_P] + gem.stack[stb][prb][en1b][enb];
+      energy = base_and_branch + gdp[st + 1][piv][DP_U] + pc_.augubranch[prb][en1b] +
+          gdp[piv + 1][en - 1][DP_P] + em_.stack[stb][prb][en1b][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 1, en - 1, DP_P},
             {piv + 1, CTD_FCOAX_WITH_NEXT}, {en, CTD_FCOAX_WITH_PREV}});
@@ -334,17 +335,17 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
   for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
     //   (   .   )<   (
     // stb pl1b pb   pr1b
-    auto pb = gr[piv], pl1b = gr[piv - 1];
+    auto pb = r_[piv], pl1b = r_[piv - 1];
     // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-    auto base00 = gdp[st][piv][DP_P] + gpc.augubranch[stb][pb] - gdp[st][en][a];
-    auto base01 = gdp[st][piv - 1][DP_P] + gpc.augubranch[stb][pl1b] - gdp[st][en][a];
-    auto base10 = gdp[st + 1][piv][DP_P] + gpc.augubranch[st1b][pb] - gdp[st][en][a];
-    auto base11 = gdp[st + 1][piv - 1][DP_P] + gpc.augubranch[st1b][pl1b] - gdp[st][en][a];
+    auto base00 = gdp[st][piv][DP_P] + pc_.augubranch[stb][pb] - gdp[st][en][a];
+    auto base01 = gdp[st][piv - 1][DP_P] + pc_.augubranch[stb][pl1b] - gdp[st][en][a];
+    auto base10 = gdp[st + 1][piv][DP_P] + pc_.augubranch[st1b][pb] - gdp[st][en][a];
+    auto base11 = gdp[st + 1][piv - 1][DP_P] + pc_.augubranch[st1b][pl1b] - gdp[st][en][a];
 
     // Check a == U_RCOAX:
     // (   )<.( ** ). > Right coax backward
     if (a == DP_U_RCOAX) {
-      energy = base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b);
+      energy = base11 + em_.MismatchCoaxial(pl1b, pb, stb, st1b);
       // Our ctds will have already been set by now.
       if (energy <= delta) exps.push_back({energy, {st + 1, piv - 1, DP_P}});
       if (energy + gdp[piv + 1][en][DP_U] <= delta)
@@ -378,7 +379,7 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
     assert(a == DP_U || a == DP_U2);
 
     // (   )3<   > 3' - U, U2
-    energy = base01 + gem.dangle3[pl1b][pb][stb];
+    energy = base01 + em_.dangle3[pl1b][pb][stb];
     // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE}});
@@ -387,7 +388,7 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
           {st, CTD_3_DANGLE}});
 
     // 5(   )<   > 5' - U, U2
-    energy = base10 + gem.dangle5[pb][stb][st1b];
+    energy = base10 + em_.dangle5[pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st + 1, piv, DP_P}, {st + 1, CTD_5_DANGLE}});
     if (energy + gdp[piv + 1][en][DP_U] <= delta)
@@ -395,7 +396,7 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
           {st + 1, CTD_5_DANGLE}});
 
     // .(   ).<   > Terminal mismatch - U, U2
-    energy = base11 + gem.terminal[pl1b][pb][stb][st1b];
+    energy = base11 + em_.terminal[pl1b][pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st + 1, piv - 1, DP_P}, {}, {st + 1, CTD_MISMATCH}});
     if (energy + gdp[piv + 1][en][DP_U] <= delta)
@@ -403,7 +404,7 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
           {st + 1, CTD_MISMATCH}});
 
     // .(   ).<(   ) > Left coax - U, U2
-    energy = base11 + gem.MismatchCoaxial(pl1b, pb, stb, st1b);
+    energy = base11 + em_.MismatchCoaxial(pl1b, pb, stb, st1b);
     if (energy + gdp[piv + 1][en][DP_U_WC] <= delta)
       exps.push_back({energy + gdp[piv + 1][en][DP_U_WC], {st + 1, piv - 1, DP_P},
           {piv + 1, en, DP_U_WC}, {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV}});
@@ -418,13 +419,13 @@ std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) {
           {piv + 2, CTD_RCOAX_WITH_PREV}});
 
     // (   )(<   ) > Flush coax - U, U2
-    energy = base01 + gem.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
+    energy = base01 + em_.stack[pl1b][pb][pb ^ 3][stb] + gdp[piv][en][DP_U_WC];
     if (energy <= delta)
       exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
           {piv, CTD_FCOAX_WITH_PREV}});
 
     if (pb == G || pb == U) {
-      energy = base01 + gem.stack[pl1b][pb][pb ^ 1][stb] + gdp[piv][en][DP_U_GU];
+      energy = base01 + em_.stack[pl1b][pb][pb ^ 1][stb] + gdp[piv][en][DP_U_GU];
       if (energy <= delta)
         exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
             {piv, CTD_FCOAX_WITH_PREV}});

@@ -1,16 +1,12 @@
 // Copyright 2016 E.
-#include "compute/energy/globals.h"
 #include "compute/partition/globals.h"
 #include "compute/partition/partition.h"
 #include "model/parsing.h"
 
 namespace mrna::partition::internal {
 
-using energy::Boltzmann;
-using energy::gem;
-
-void Exterior() {
-  const int N = static_cast<int>(gr.size());
+void Exterior(const Primary& r, const energy::EnergyModel& em) {
+  const int N = static_cast<int>(r.size());
   gptext[N][PTEXT_R] = 1;
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
@@ -18,14 +14,14 @@ void Exterior() {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
-      const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const PEnergy base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
-      const PEnergy base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
-      const PEnergy base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
-      const PEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
+      const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+      const BoltzEnergy base00 = gpt[st][en][PT_P] * Boltz(em.AuGuPenalty(stb, enb));
+      const BoltzEnergy base01 = gpt[st][en - 1][PT_P] * Boltz(em.AuGuPenalty(stb, en1b));
+      const BoltzEnergy base10 = gpt[st + 1][en][PT_P] * Boltz(em.AuGuPenalty(st1b, enb));
+      const BoltzEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltz(em.AuGuPenalty(st1b, en1b));
 
       // (   )<   >
-      PEnergy val = base00 * gptext[en + 1][PTEXT_R];
+      BoltzEnergy val = base00 * gptext[en + 1][PTEXT_R];
       gptext[st][PTEXT_R] += val;
       if (IsGu(stb, enb))
         gptext[st][PTEXT_R_GU] += val;
@@ -33,16 +29,14 @@ void Exterior() {
         gptext[st][PTEXT_R_WC] += val;
 
       // (   )3<   > 3'
-      gptext[st][PTEXT_R] +=
-          base01 * Boltzmann(gem.dangle3[en1b][enb][stb]) * gptext[en + 1][PTEXT_R];
+      gptext[st][PTEXT_R] += base01 * Boltz(em.dangle3[en1b][enb][stb]) * gptext[en + 1][PTEXT_R];
       // 5(   )<   > 5'
-      gptext[st][PTEXT_R] +=
-          base10 * Boltzmann(gem.dangle5[enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
+      gptext[st][PTEXT_R] += base10 * Boltz(em.dangle5[enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
       // .(   ).<   > Terminal mismatch
       gptext[st][PTEXT_R] +=
-          base11 * Boltzmann(gem.terminal[en1b][enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
+          base11 * Boltz(em.terminal[en1b][enb][stb][st1b]) * gptext[en + 1][PTEXT_R];
       // .(   ).<(   ) > Left coax
-      val = base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b));
+      val = base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b));
       gptext[st][PTEXT_R] += val * gptext[en + 1][PTEXT_R_GU];
       gptext[st][PTEXT_R] += val * gptext[en + 1][PTEXT_R_WC];
 
@@ -50,14 +44,14 @@ void Exterior() {
       gptext[st][PTEXT_R] += base00 * gptext[en + 1][PTEXT_R_RCOAX];
       // (   )<.( * ). > Right coax backward
       gptext[st][PTEXT_R_RCOAX] +=
-          base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * gptext[en + 1][PTEXT_R];
+          base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b)) * gptext[en + 1][PTEXT_R];
 
       // (   )(<   ) > Flush coax
       gptext[st][PTEXT_R] +=
-          base01 * Boltzmann(gem.stack[en1b][enb][enb ^ 3][stb]) * gptext[en][PTEXT_R_WC];
+          base01 * Boltz(em.stack[en1b][enb][enb ^ 3][stb]) * gptext[en][PTEXT_R_WC];
       if (enb == G || enb == U)
         gptext[st][PTEXT_R] +=
-            base01 * Boltzmann(gem.stack[en1b][enb][enb ^ 1][stb]) * gptext[en][PTEXT_R_GU];
+            base01 * Boltz(em.stack[en1b][enb][enb ^ 1][stb]) * gptext[en][PTEXT_R_GU];
     }
   }
 
@@ -66,15 +60,15 @@ void Exterior() {
     // Case: No pair ending here
     gptext[en][PTEXT_L] += gptext[en - 1][PTEXT_L];
     for (int st = 0; st < en - HAIRPIN_MIN_SZ; ++st) {
-      const auto stb = gr[st], st1b = gr[st + 1], enb = gr[en], en1b = gr[en - 1];
-      const PEnergy base00 = gpt[st][en][PT_P] * Boltzmann(gem.AuGuPenalty(stb, enb));
-      const PEnergy base01 = gpt[st][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(stb, en1b));
-      const PEnergy base10 = gpt[st + 1][en][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, enb));
-      const PEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltzmann(gem.AuGuPenalty(st1b, en1b));
-      PEnergy ptextl{1};
-      PEnergy ptextlgu{0};
-      PEnergy ptextlwc{0};
-      PEnergy ptextllcoaxx{0};
+      const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+      const BoltzEnergy base00 = gpt[st][en][PT_P] * Boltz(em.AuGuPenalty(stb, enb));
+      const BoltzEnergy base01 = gpt[st][en - 1][PT_P] * Boltz(em.AuGuPenalty(stb, en1b));
+      const BoltzEnergy base10 = gpt[st + 1][en][PT_P] * Boltz(em.AuGuPenalty(st1b, enb));
+      const BoltzEnergy base11 = gpt[st + 1][en - 1][PT_P] * Boltz(em.AuGuPenalty(st1b, en1b));
+      BoltzEnergy ptextl{1};
+      BoltzEnergy ptextlgu{0};
+      BoltzEnergy ptextlwc{0};
+      BoltzEnergy ptextllcoaxx{0};
 
       if (st) {
         ptextl = gptext[st - 1][PTEXT_L];
@@ -84,7 +78,7 @@ void Exterior() {
       }
 
       // <   >(   )
-      PEnergy val = base00 * ptextl;
+      BoltzEnergy val = base00 * ptextl;
       gptext[en][PTEXT_L] += val;
       if (IsGu(stb, enb))
         gptext[en][PTEXT_L_GU] += val;
@@ -92,13 +86,13 @@ void Exterior() {
         gptext[en][PTEXT_L_WC] += val;
 
       // <   >(   )3 3'
-      gptext[en][PTEXT_L] += base01 * Boltzmann(gem.dangle3[en1b][enb][stb]) * ptextl;
+      gptext[en][PTEXT_L] += base01 * Boltz(em.dangle3[en1b][enb][stb]) * ptextl;
       // <   >5(   ) 5'
-      gptext[en][PTEXT_L] += base10 * Boltzmann(gem.dangle5[enb][stb][st1b]) * ptextl;
+      gptext[en][PTEXT_L] += base10 * Boltz(em.dangle5[enb][stb][st1b]) * ptextl;
       // <   >.(   ). Terminal mismatch
-      gptext[en][PTEXT_L] += base11 * Boltzmann(gem.terminal[en1b][enb][stb][st1b]) * ptextl;
+      gptext[en][PTEXT_L] += base11 * Boltz(em.terminal[en1b][enb][stb][st1b]) * ptextl;
       // <  (   )>.(   ). Right coax
-      val = base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b));
+      val = base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b));
       gptext[en][PTEXT_L] += val * ptextlgu;
       gptext[en][PTEXT_L] += val * ptextlwc;
 
@@ -106,14 +100,14 @@ void Exterior() {
       gptext[en][PTEXT_L] += base00 * ptextllcoaxx;
       // <  .( * ).>(   ) Left coax backward
       gptext[en][PTEXT_L_LCOAX] +=
-          base11 * Boltzmann(gem.MismatchCoaxial(en1b, enb, stb, st1b)) * ptextl;
+          base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b)) * ptextl;
 
       // < (   >)(   ) Flush coax
       gptext[en][PTEXT_L] +=
-          base10 * Boltzmann(gem.stack[stb][st1b][enb][stb ^ 3]) * gptext[st][PTEXT_L_WC];
+          base10 * Boltz(em.stack[stb][st1b][enb][stb ^ 3]) * gptext[st][PTEXT_L_WC];
       if (stb == G || stb == U)
         gptext[en][PTEXT_L] +=
-            base10 * Boltzmann(gem.stack[stb][st1b][enb][stb ^ 1]) * gptext[st][PTEXT_L_GU];
+            base10 * Boltz(em.stack[stb][st1b][enb][stb ^ 1]) * gptext[st][PTEXT_L_GU];
     }
   }
 

@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/globals.h"
 #include "compute/energy/structure.h"
 #include "compute/mfe/globals.h"
 #include "compute/mfe/mfe.h"

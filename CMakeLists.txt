@@ -83,12 +83,13 @@ set(MEMERNA_SOURCE
     src/compute/brute.cpp src/compute/brute.h
     src/compute/constants.h
     src/compute/dp.h
+    src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
+    src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h
-    src/compute/energy/fast_energy.cpp src/compute/energy/fast_energy.h
-    src/compute/energy/globals.cpp src/compute/energy/globals.h
     src/compute/energy/internal.cpp src/compute/energy/internal.h
     src/compute/energy/load_model.cpp src/compute/energy/load_model.h
     src/compute/energy/model.cpp src/compute/energy/model.h
+    src/compute/energy/precomp.cpp src/compute/energy/precomp.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h
     src/compute/mfe/brute.cpp src/compute/mfe/brute.h
     src/compute/mfe/globals.cpp src/compute/mfe/globals.h
@@ -100,7 +101,6 @@ set(MEMERNA_SOURCE
     src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/exterior.cpp
     src/compute/partition/globals.cpp src/compute/partition/globals.h
-    src/compute/partition/internal.cpp
     src/compute/partition/partition.h
     src/compute/partition/partition0.cpp
     src/compute/partition/partition1.cpp
@@ -110,17 +110,17 @@ set(MEMERNA_SOURCE
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
     src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
     src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
-    src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
     src/fuzz/config.cpp src/fuzz/config.h
+    src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
     src/model/base.cpp src/model/base.h
-    src/model/primary.cpp src/model/primary.h
-    src/model/secondary.cpp src/model/secondary.h
-    src/model/ctd.cpp src/model/ctd.h
     src/model/config.cpp src/model/config.h
     src/model/context.cpp src/model/context.h
+    src/model/ctd.cpp src/model/ctd.h
     src/model/gen.cpp src/model/gen.h
-    src/model/parsing.cpp src/model/parsing.h
     src/model/model.h
+    src/model/parsing.cpp src/model/parsing.h
+    src/model/primary.cpp src/model/primary.h
+    src/model/secondary.cpp src/model/secondary.h
     src/util/argparse.cpp src/util/argparse.h
     src/util/array.h
     src/util/splaymap.h

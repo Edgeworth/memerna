@@ -8,6 +8,8 @@
 
 #include "compute/constants.h"
 #include "compute/dp.h"
+#include "compute/energy/model.h"
+#include "compute/energy/precomp.h"
 #include "compute/subopt/subopt.h"
 #include "model/model.h"
 #include "util/splaymap.h"
@@ -34,12 +36,9 @@ struct Expand {
   bool operator<(const Expand& o) const { return energy < o.energy; }
 };
 
-std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta);
-
 class Suboptimal1 {
  public:
-  Suboptimal1(Energy delta, int num)
-      : delta_(delta == -1 ? CAP_E : delta), max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
+  Suboptimal1(Primary r, energy::EnergyModel em, Energy delta, int num);
 
   int Run(SuboptimalCallback fn, bool sorted);
 
@@ -50,6 +49,10 @@ class Suboptimal1 {
     // Stores whether this node's |expand| was from |unexpanded| and needs to be replaced.
     bool should_unexpand;
   };
+
+  Primary r_;
+  energy::EnergyModel em_;
+  energy::Precomp pc_;
 
   const Energy delta_;
   const int max_structures_;
@@ -71,6 +74,8 @@ class Suboptimal1 {
     }
     return cache_.Get();
   }
+
+  std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
 };
 
 }  // namespace mrna::subopt::internal

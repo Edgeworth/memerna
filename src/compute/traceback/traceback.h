@@ -7,7 +7,7 @@
 
 namespace mrna::traceback {
 
-void Traceback();
+void Traceback(const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::traceback
 
