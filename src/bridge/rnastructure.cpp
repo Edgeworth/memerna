@@ -93,8 +93,7 @@ std::vector<Computed> RNAstructure::SuboptimalIntoVector(
   return computeds;
 }
 
-std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partition(
-    const Primary& r) const {
+std::pair<partition::Partition, Probabilities> RNAstructure::Partition(const Primary& r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
@@ -124,7 +123,7 @@ std::pair<partition::Partition, partition::Probabilities> RNAstructure::Partitio
     }
   }
 
-  partition::Probabilities probability(std::size_t(length), 0);
+  Probabilities probability(std::size_t(length), 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
       probability[i][j][0] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),

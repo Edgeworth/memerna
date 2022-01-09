@@ -9,7 +9,7 @@
 
 namespace mrna::subopt {
 
-typedef std::function<void(const Computed&)> SuboptimalCallback;
+using SuboptimalCallback = std::function<void(const Computed&)>;
 
 }  // namespace mrna::subopt
 

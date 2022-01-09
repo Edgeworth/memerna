@@ -85,6 +85,7 @@ set(MEMERNA_SOURCE
     src/compute/brute.cpp src/compute/brute.h
     src/compute/constants.h
     src/compute/dp.h
+    src/compute/boltz_dp.h
     src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
     src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h
@@ -94,7 +95,6 @@ set(MEMERNA_SOURCE
     src/compute/energy/precomp.cpp src/compute/energy/precomp.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h
     src/compute/mfe/brute.cpp src/compute/mfe/brute.h
-    src/compute/mfe/globals.cpp src/compute/mfe/globals.h
     src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
     src/compute/mfe/mfe0.cpp
     src/compute/mfe/mfe1.cpp
@@ -102,7 +102,6 @@ set(MEMERNA_SOURCE
     src/compute/mfe/mfe3.cpp
     src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/exterior.cpp
-    src/compute/partition/globals.cpp src/compute/partition/globals.h
     src/compute/partition/partition.h
     src/compute/partition/partition0.cpp
     src/compute/partition/partition1.cpp

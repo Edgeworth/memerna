@@ -17,7 +17,7 @@
 
 namespace mrna::fuzz {
 
-typedef std::deque<std::string> Error;
+using Error = std::deque<std::string>;
 
 class Fuzzer {
  public:

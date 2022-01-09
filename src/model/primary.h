@@ -5,7 +5,7 @@
 
 namespace mrna {
 
-typedef std::vector<Base> Primary;
+using Primary = std::vector<Base>;
 
 }  // namespace mrna
 

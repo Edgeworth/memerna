@@ -32,7 +32,7 @@ class Context {
   Context(Context&& o) = delete;
   Context& operator=(Context&&) = delete;
 
-  Computed Fold();
+  std::tuple<Computed, DpArray> Fold();
   std::vector<Computed> SuboptimalIntoVector(
       bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
   int Suboptimal(
@@ -44,7 +44,7 @@ class Context {
   energy::EnergyModel em_;
   ModelCfg cfg_;
 
-  void ComputeTables();
+  DpArray ComputeTables();
 };
 
 }  // namespace mrna

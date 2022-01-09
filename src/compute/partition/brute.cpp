@@ -8,7 +8,6 @@
 
 #include "compute/brute.h"
 #include "compute/energy/structure.h"
-#include "compute/mfe/globals.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "model/parsing.h"
@@ -16,7 +15,7 @@
 
 namespace mrna::partition {
 
-std::pair<partition::Partition, partition::Probabilities> PartitionBruteForce(
+std::pair<partition::Partition, Probabilities> PartitionBruteForce(
     const Primary& r, const energy::EnergyModel& em) {
   // Allow lonely pairs for the partition function. TODO?
   auto res = BruteForce().Run(r, em, 1, true, false);
