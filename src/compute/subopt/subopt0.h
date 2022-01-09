@@ -9,7 +9,6 @@
 #include "compute/dp.h"
 #include "compute/energy/structure.h"
 #include "compute/subopt/subopt.h"
-#include "model/parsing.h"
 
 namespace mrna::subopt {
 

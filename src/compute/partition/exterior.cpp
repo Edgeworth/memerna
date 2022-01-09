@@ -1,6 +1,5 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/partition/partition.h"
-#include "model/parsing.h"
 
 namespace mrna::partition {
 

@@ -9,7 +9,6 @@
 #include "compute/energy/load_model.h"
 #include "compute/mfe/brute.h"
 #include "model/context.h"
-#include "model/parsing.h"
 
 void PrintProbabilities(const mrna::Probabilities& p) {
   const int N = static_cast<int>(p.Size());

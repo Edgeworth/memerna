@@ -7,7 +7,6 @@
 #include <string>
 
 #include "compute/energy/structure.h"
-#include "model/parsing.h"
 #include "util/string.h"
 
 namespace mrna::energy {

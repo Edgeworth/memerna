@@ -30,6 +30,7 @@ parser.add_argument('-f', '--float-bits', type=int, default=64, required=False)
 
 # Misc options:
 parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
+parser.add_argument('--test', action='store_true', default=False, required=False)
 
 args = parser.parse_args()
 
@@ -94,4 +95,11 @@ if regenerate:
   def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
   run_command('cmake %s %s' % (def_str, proj_dir))
 run_command('%s make -j$(nproc) %s' % (' '.join(env), ' '.join(args.targets)))
+
+if args.test:
+  # Try to find data, default to current directory.
+  data = os.getenv('MRNA', '.')
+  print(data)
+  run_command(f'./run_tests -memerna-data {data}/data')
+
 os.chdir('../../')

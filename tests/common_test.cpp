@@ -2,7 +2,6 @@
 #include "common_test.h"
 
 #include "compute/energy/structure.h"
-#include "model/parsing.h"
 
 namespace mrna {
 

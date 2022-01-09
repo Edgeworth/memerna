@@ -54,6 +54,10 @@ struct ComputedEnergyCmp {
   bool operator()(const Computed& a, const Computed& b) const { return a.energy < b.energy; }
 };
 
+Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str);
+std::string ComputedToCtdString(const Computed& computed);
+bool IsCtdString(const std::string& pairs_str);
+
 }  // namespace mrna
 
 #endif  // MODEL_CTD_H_

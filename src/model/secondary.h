@@ -22,6 +22,10 @@ struct Secondary {
   std::vector<int> p;
 };
 
+Secondary ParseDotBracketSecondary(const std::string& prim_str, const std::string& pairs_str);
+std::vector<int> DotBracketToPairs(const std::string& pairs_str);
+std::string PairsToDotBracket(const std::vector<int>& pairs);
+
 }  // namespace mrna
 
 #endif  // MODEL_SECONDARY_H_

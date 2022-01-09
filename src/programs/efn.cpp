@@ -3,7 +3,6 @@
 
 #include "compute/energy/load_model.h"
 #include "compute/energy/structure.h"
-#include "model/parsing.h"
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::ENERGY_OPTS);

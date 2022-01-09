@@ -9,7 +9,6 @@
 #include "compute/energy/structure.h"
 #include "compute/mfe/mfe.h"
 #include "compute/subopt/brute.h"
-#include "model/parsing.h"
 #include "util/splaymap.h"
 
 namespace mrna::mfe {
