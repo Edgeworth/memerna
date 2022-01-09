@@ -1,10 +1,11 @@
 // Copyright 2016 E.
+#include "compute/subopt/subopt.h"
+
 #include <cstdio>
 
 #include "compute/energy/load_model.h"
 #include "model/context.h"
 
-using mrna::Computed;
 using mrna::Energy;
 using mrna::ModelCfg;
 using mrna::Opt;
@@ -32,17 +33,17 @@ int main(int argc, char* argv[]) {
   const bool ctd_data = args.HasFlag("ctd-output");
   verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
-  mrna::subopt::SuboptimalCallback fn = [](const Computed&) {};
+  mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
   if (should_print) {
     if (ctd_data) {
-      fn = [](const Computed& c) {
+      fn = [](const mrna::subopt::SuboptResult& c) {
         printf("%d ", c.energy);
-        puts(mrna::ComputedToCtdString(c).c_str());
+        puts(mrna::CtdString(c.tb.s, c.tb.ctd).c_str());
       };
     } else {
-      fn = [](const Computed& c) {
+      fn = [](const mrna::subopt::SuboptResult& c) {
         printf("%d ", c.energy);
-        puts(mrna::SecondaryToDotBracket(c.s).c_str());  // meme
+        puts(mrna::SecondaryToDotBracket(c.tb.s).c_str());
       };
     }
   }

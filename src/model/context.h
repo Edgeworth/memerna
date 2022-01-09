@@ -3,6 +3,7 @@
 #define MODEL_CONTEXT_H_
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -10,11 +11,17 @@
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
 #include "model/config.h"
 #include "model/model.h"
 #include "util/argparse.h"
 
 namespace mrna {
+
+struct FoldResult {
+  mfe::MfeResult mfe;
+  traceback::TracebackResult tb;
+};
 
 class Context {
  public:
@@ -32,12 +39,12 @@ class Context {
   Context(Context&& o) = delete;
   Context& operator=(Context&&) = delete;
 
-  std::tuple<Computed, DpArray> Fold();
-  std::vector<Computed> SuboptimalIntoVector(
+  FoldResult Fold();
+  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
   int Suboptimal(
-      subopt::SuboptimalCallback fn, bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
-  partition::Partition Partition();
+      subopt::SuboptCallback fn, bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
+  partition::PartitionResult Partition();
 
  private:
   Primary r_;

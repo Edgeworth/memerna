@@ -11,6 +11,7 @@
 #include "compute/energy/structure.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 #include "model/model.h"
 #include "model/secondary.h"
 #include "util/splaymap.h"
@@ -21,7 +22,15 @@ namespace internal {
 
 std::vector<int> GetBranchCounts(const Secondary& s);
 
-}
+struct SuboptCmp {
+  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+    // Kept in a multiset, so this is just used for ordering, not deduplication.
+    // There should be no duplicates added anyway. Single comparison to keep it fast.
+    return a.energy < b.energy;
+  }
+};
+
+}  // namespace internal
 
 class BruteForce {
  public:
@@ -32,7 +41,7 @@ class BruteForce {
 
     // MFE and suboptimal folding:
     int max_structures;
-    std::multiset<Computed, ComputedEnergyCmp> best_computeds;
+    std::multiset<subopt::SuboptResult, internal::SuboptCmp> subopts;
 
     // TODO: Switch to optional?
     bool compute_partition;

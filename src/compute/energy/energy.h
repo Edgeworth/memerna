@@ -5,6 +5,7 @@
 #include <cmath>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -14,16 +15,20 @@
 
 namespace mrna::energy {
 
+struct EnergyResult {
+  Energy energy = 0;
+  // TODO: tree, remove struc args
+  Ctds ctd;  // May be empty if CTDs were not computed.
+};
+
 class Structure;
 
 // If (st, en) is not paired, treated as an exterior loop.
-Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, int en,
+// If |ctd| is non-null, use the given ctds.
+EnergyResult ComputeSubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* struc = nullptr);
+EnergyResult ComputeEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
     const EnergyModel& em, std::unique_ptr<Structure>* struc = nullptr);
-Computed ComputeEnergy(const Primary& r, const Secondary& s, const EnergyModel& em,
-    std::unique_ptr<Structure>* struc = nullptr);
-Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em,
-    bool compute_ctds = false, std::unique_ptr<Structure>* struc = nullptr);
-
 }  // namespace mrna::energy
 
 #endif  // COMPUTE_ENERGY_ENERGY_H_

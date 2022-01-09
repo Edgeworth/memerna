@@ -15,7 +15,7 @@ namespace mrna::energy::internal {
 // themselves, and interactions between them and the bases next to them. N.B. interact is not
 // used in the chemistry sense here. The DP needs to be run with the outer branch at the start
 // and the end, and also with the unpaired base on the left of the first branch (if it exists)
-// not used and potentially used. Running with the outer branchat both the start and
+// not used and potentially used. Running with the outer branch at both the start and
 // the end allows coaxial stacking interactions between the outer branch and both adjacent branches.
 // Running with having the left unpaired base both not used lets the last branch potentially
 // consume it (wrapping around).
@@ -36,10 +36,10 @@ namespace mrna::energy::internal {
   } while (0)
 
 Energy ComputeOptimalCtd(const Primary& r, const Secondary& s, const EnergyModel& em,
-    const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds) {
+    const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctds) {
   int N = static_cast<int>(branches.size());
   int RSZ = static_cast<int>(r.size());
-  assert(branch_ctds.empty());
+  assert(branch_ctds->empty());
   // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return 0;
 
@@ -145,7 +145,7 @@ Energy ComputeOptimalCtd(const Primary& r, const Secondary& s, const EnergyModel
   if (cache[1][N] < cache[0][N]) state = std::make_tuple(true, N, 0, CTD_NA);
   // First state contains no real info, so go ahead one.
   state = back[std::get<0>(state)][std::get<1>(state)];
-  assert(branch_ctds.empty());
+  assert(branch_ctds->empty());
   while (1) {
     bool used;
     int idx;
@@ -158,11 +158,11 @@ Energy ComputeOptimalCtd(const Primary& r, const Secondary& s, const EnergyModel
     // To get the PREV versions, just add one.
     if (reason == CTD_LCOAX_WITH_NEXT || reason == CTD_RCOAX_WITH_NEXT ||
         reason == CTD_FCOAX_WITH_NEXT)
-      branch_ctds.emplace_back(Ctd(reason + 1), energy);
-    branch_ctds.emplace_back(reason, energy);
+      branch_ctds->emplace_back(Ctd(reason + 1), energy);
+    branch_ctds->emplace_back(reason, energy);
     state = back[used][idx];
   }
-  std::reverse(branch_ctds.begin(), branch_ctds.end());
+  std::reverse(branch_ctds->begin(), branch_ctds->end());
 
   return std::min(cache[0][N], cache[1][N]);
 }
@@ -170,22 +170,20 @@ Energy ComputeOptimalCtd(const Primary& r, const Secondary& s, const EnergyModel
 #undef UPDATE_CACHE
 
 void AddBranchCtdsToComputed(
-    Computed& computed, const std::deque<int>& branches, const BranchCtd& branch_ctds) {
+    const Secondary& s, const std::deque<int>& branches, const BranchCtd& branch_ctds, Ctds* ctd) {
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
-    assert(static_cast<int>(computed.base_ctds.size()) > branches[i] &&
-        static_cast<int>(computed.base_ctds.size()) > computed.s[branches[i]]);
+    assert(static_cast<int>(ctd->size()) > branches[i] &&
+        static_cast<int>(ctd->size()) > s[branches[i]]);
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
     // swap the indices in that case.
-    computed.base_ctds[branches[i]] = branch_ctds[i].first;
+    (*ctd)[branches[i]] = branch_ctds[i].first;
   }
 }
 
-Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em,
-    const std::deque<int>& branches, BranchCtd& branch_ctds) {
-  const auto& r = computed.r;
-  const auto& s = computed.s;
-  assert(branch_ctds.empty());
+Energy GetBranchCtdsFromComputed(const Primary& r, const Secondary& s, const Ctds& ctd,
+    const EnergyModel& em, const std::deque<int>& branches, BranchCtd* branch_ctds) {
+  assert(branch_ctds->empty());
   Energy total_energy = 0;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
   // last, to NEXT. In this case, we need to fix the branch_ctds so that the corresponding branch
@@ -197,7 +195,7 @@ Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     Energy energy = 0;
     const auto stb = r[branch], enb = r[s[branch]];
-    switch (computed.base_ctds[branch]) {
+    switch (ctd[branch]) {
     case CTD_UNUSED: break;
     case CTD_3_DANGLE:
       assert(s[branch] + 1 < static_cast<int>(r.size()));
@@ -216,7 +214,7 @@ Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em
       assert(s[prev_branch] + 1 < static_cast<int>(r.size()) && prev_branch - 1 >= 0);
       energy = em.MismatchCoaxial(
           r[s[prev_branch]], r[s[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
-      branch_ctds.emplace_back(CTD_LCOAX_WITH_NEXT, energy);
+      branch_ctds->emplace_back(CTD_LCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_RCOAX_WITH_PREV:
@@ -224,13 +222,13 @@ Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em
       // (   ).(   ). or (.(   ).   )
       energy = em.MismatchCoaxial(enb, r[s[branch] + 1], r[branch - 1], stb);
       // Need to do rotations
-      branch_ctds.emplace_back(CTD_RCOAX_WITH_NEXT, energy);
+      branch_ctds->emplace_back(CTD_RCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_FCOAX_WITH_PREV:
       // (   )(   ) or ((   )   ) or (   (   ))
       energy = em.stack[r[s[prev_branch]]][stb][enb][r[prev_branch]];
-      branch_ctds.emplace_back(CTD_FCOAX_WITH_NEXT, energy);
+      branch_ctds->emplace_back(CTD_FCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_LCOAX_WITH_NEXT:
@@ -240,12 +238,12 @@ Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em
       continue;
     default: bug();  // Should never happen
     }
-    branch_ctds.emplace_back(computed.base_ctds[branch], energy);
+    branch_ctds->emplace_back(ctd[branch], energy);
     total_energy += energy;
   }
   if (rot_left) {
-    branch_ctds.push_back(branch_ctds.front());
-    branch_ctds.pop_front();
+    branch_ctds->push_back(branch_ctds->front());
+    branch_ctds->pop_front();
   }
   return total_energy;
 }

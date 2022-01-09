@@ -7,11 +7,12 @@
 
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 
 namespace mrna::subopt {
 
-std::vector<Computed> SuboptimalBruteForce(
-    const Primary& r, const energy::EnergyModel& em, int max_structures_);
+std::vector<subopt::SuboptResult> SuboptimalBruteForce(
+    const Primary& r, const energy::EnergyModel& em, int max_structures);
 
 }  // namespace mrna::subopt
 

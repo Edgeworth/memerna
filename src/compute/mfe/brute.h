@@ -7,10 +7,11 @@
 
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 
 namespace mrna::mfe {
 
-Computed MfeBruteForce(const Primary& r, const energy::EnergyModel& em);
+subopt::SuboptResult MfeBruteForce(const Primary& r, const energy::EnergyModel& em);
 
 }  // namespace mrna::mfe
 

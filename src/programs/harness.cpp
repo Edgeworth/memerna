@@ -6,7 +6,6 @@
 #include "compute/energy/load_model.h"
 #include "model/config.h"
 
-using mrna::Computed;
 using mrna::Energy;
 using mrna::Opt;
 
@@ -48,7 +47,7 @@ int main(int argc, char* argv[]) {
       const auto [r, s] = mrna::ParsePrimaryDotBracket(seq, db);
       std::string desc;
       const auto res = package->Efn(r, s, args.HasFlag("v") ? &desc : nullptr);
-      printf("%d\n%s", res, desc.c_str());
+      printf("%d\n%s", res.energy, desc.c_str());
     }
   } else {
     while (1) {
@@ -65,14 +64,14 @@ int main(int argc, char* argv[]) {
       int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
-            [](const Computed& c) {
-              printf("%d %s\n", c.energy, mrna::SecondaryToDotBracket(c.s).c_str());
+            [](const mrna::subopt::SuboptResult& c) {
+              printf("%d %s\n", c.energy, mrna::SecondaryToDotBracket(c.tb.s).c_str());
             },
             r, subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.energy, mrna::SecondaryToDotBracket(res.s).c_str());
+        printf("%d\n%s\n", res.mfe.energy, mrna::SecondaryToDotBracket(res.tb.s).c_str());
       }
     }
   }

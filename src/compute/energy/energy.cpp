@@ -15,10 +15,9 @@ using internal::BranchCtd;
 using internal::ComputeOptimalCtd;
 using internal::GetBranchCtdsFromComputed;
 
-Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
-    std::deque<int>& branches, const EnergyModel& em, std::unique_ptr<Structure>* sstruc) {
-  const auto& r = computed.r;
-  const auto& s = computed.s;
+Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
+    std::deque<int>& branches, const EnergyModel& em, bool use_given_ctds, Ctds* ctd,
+    std::unique_ptr<Structure>* sstruc) {
   const bool exterior_loop = s[st] != en;
   Energy energy = 0;
 
@@ -47,11 +46,11 @@ Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
   Energy ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
-    if (compute_ctds) {
-      ctd_energy = ComputeOptimalCtd(computed.r, computed.s, em, branches, true, branch_ctds);
-      AddBranchCtdsToComputed(computed, branches, branch_ctds);
+    if (use_given_ctds) {
+      ctd_energy = GetBranchCtdsFromComputed(r, s, *ctd, em, branches, &branch_ctds);
     } else {
-      ctd_energy = GetBranchCtdsFromComputed(computed, em, branches, branch_ctds);
+      ctd_energy = ComputeOptimalCtd(r, s, em, branches, true, &branch_ctds);
+      AddBranchCtdsToComputed(s, branches, branch_ctds, ctd);
     }
   } else {
     if (IsAuGu(r[st], r[en])) {
@@ -62,23 +61,23 @@ Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
     if (struc) struc->AddNote("%de - initiation", initiation);
     energy += initiation;
 
-    if (compute_ctds) {
+    if (use_given_ctds) {
+      branches.push_front(en);
+      ctd_energy = GetBranchCtdsFromComputed(r, s, *ctd, em, branches, &branch_ctds);
+      branches.pop_front();
+    } else {
       BranchCtd config_ctds[4] = {};
       std::pair<Energy, int> config_energies[4] = {};
       branches.push_front(en);
-      config_energies[0] = {
-          ComputeOptimalCtd(computed.r, computed.s, em, branches, true, config_ctds[0]), 0};
-      config_energies[1] = {
-          ComputeOptimalCtd(computed.r, computed.s, em, branches, false, config_ctds[1]), 1};
+      config_energies[0] = {ComputeOptimalCtd(r, s, em, branches, true, &config_ctds[0]), 0};
+      config_energies[1] = {ComputeOptimalCtd(r, s, em, branches, false, &config_ctds[1]), 1};
       branches.pop_front();
       branches.push_back(en);
-      config_energies[2] = {
-          ComputeOptimalCtd(computed.r, computed.s, em, branches, true, config_ctds[2]), 2};
+      config_energies[2] = {ComputeOptimalCtd(r, s, em, branches, true, &config_ctds[2]), 2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
-      config_energies[3] = {
-          ComputeOptimalCtd(computed.r, computed.s, em, branches, false, config_ctds[3]), 3};
+      config_energies[3] = {ComputeOptimalCtd(r, s, em, branches, false, &config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
       branches.pop_back();
@@ -88,11 +87,7 @@ Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
 
       // Write the optimal ctds to computed.
       branches.push_front(en);
-      AddBranchCtdsToComputed(computed, branches, branch_ctds);
-      branches.pop_front();
-    } else {
-      branches.push_front(en);
-      ctd_energy = GetBranchCtdsFromComputed(computed, em, branches, branch_ctds);
+      AddBranchCtdsToComputed(s, branches, branch_ctds, ctd);
       branches.pop_front();
     }
   }
@@ -113,12 +108,10 @@ Energy MultiloopEnergy(Computed& computed, bool compute_ctds, int st, int en,
   return energy;
 }
 
-Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, int en,
-    const EnergyModel& em, std::unique_ptr<Structure>* struc) {
-  const auto& r = computed.r;
-  const auto& s = computed.s;
-  const bool exterior_loop = s[st] != en;
+Energy ComputeSubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
+    const EnergyModel& em, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) {
   assert(en >= st);
+  const bool exterior_loop = s[st] != en;
   Energy energy = 0;
 
   // Look for branches inside.
@@ -135,7 +128,7 @@ Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, 
 
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(computed, compute_ctds, st, en, branches, em, struc);
+    energy += MultiloopEnergy(r, s, st, en, branches, em, use_given_ctds, ctd, struc);
   } else if (branches.empty()) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
@@ -149,11 +142,11 @@ Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, 
   // Add energy from children.
   for (auto i : branches) {
     if (struc) {
-      std::unique_ptr<Structure> structure;
-      energy += ComputeSubstructureEnergy(computed, compute_ctds, i, s[i], em, &structure);
-      (*struc)->AddBranch(std::move(structure));
+      std::unique_ptr<Structure> sstruc;
+      energy += ComputeSubstructureEnergyInternal(r, s, i, s[i], em, use_given_ctds, ctd, &sstruc);
+      (*struc)->AddBranch(std::move(sstruc));
     } else {
-      energy += ComputeSubstructureEnergy(computed, compute_ctds, i, s[i], em, nullptr);
+      energy += ComputeSubstructureEnergyInternal(r, s, i, s[i], em, use_given_ctds, ctd, nullptr);
     }
   }
   if (struc) (*struc)->set_total_energy(energy);
@@ -161,29 +154,27 @@ Energy ComputeSubstructureEnergy(Computed& computed, bool compute_ctds, int st, 
   return energy;
 }
 
-Computed ComputeEnergy(const Primary& r, const Secondary& s, const EnergyModel& em,
-    std::unique_ptr<Structure>* struc) {
-  Computed computed(r, s);
-  return ComputeEnergyWithCtds(computed, em, true, struc);
+EnergyResult ComputeSubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+    int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* struc) {
+  const bool use_given_ctds = given_ctd;
+  auto ctd = use_given_ctds ? *given_ctd : Ctds(r.size(), CTD_NA);
+  auto energy = ComputeSubstructureEnergyInternal(r, s, st, en, em, use_given_ctds, &ctd, struc);
+  return EnergyResult{.energy = energy, .ctd = std::move(ctd)};
 }
 
-Computed ComputeEnergyWithCtds(const Computed& computed, const EnergyModel& em, bool compute_ctds,
-    std::unique_ptr<Structure>* struc) {
-  auto computed_copy = computed;
-  const auto& r = computed_copy.r;
-  const auto& s = computed_copy.s;
-  Energy energy = ComputeSubstructureEnergy(
-      computed_copy, compute_ctds, 0, static_cast<int>(r.size()) - 1, em, struc);
+EnergyResult ComputeEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+    const EnergyModel& em, std::unique_ptr<Structure>* struc) {
+  auto res =
+      ComputeSubstructureEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, em, struc);
   if (s[0] == static_cast<int>(r.size() - 1) && IsAuGu(r[0], r[s[0]])) {
-    energy += em.augu_penalty;
+    res.energy += em.augu_penalty;
     if (struc) {
       (*struc)->AddNote("%de - top level AU/GU penalty", em.augu_penalty);
       (*struc)->set_self_energy((*struc)->self_energy() + em.augu_penalty);  // Gross.
       (*struc)->set_total_energy((*struc)->total_energy() + em.augu_penalty);  // Gross.
     }
   }
-  computed_copy.energy = energy;
-  return computed_copy;
+  return res;
 }
 
 }  // namespace mrna::energy

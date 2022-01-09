@@ -7,6 +7,7 @@
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
+#include "compute/subopt/subopt.h"
 #include "fuzz/config.h"
 #include "model/model.h"
 #include "util/array.h"
@@ -30,7 +31,7 @@ class Fuzzer {
   FuzzCfg cfg_;
   energy::EnergyModel em_;
 
-  std::vector<Computed> memerna_computeds_;
+  std::vector<subopt::SuboptResult> memerna_subopts_;
   std::vector<Array3D<Energy, DP_SIZE>> memerna_dps;
 
   // RNAstructure related:
@@ -47,11 +48,12 @@ class Fuzzer {
 
   void AppendErrors(Error& main, Error&& extra);
 
-  bool HasDuplicates(const std::vector<Computed>& computeds);
+  bool HasDuplicates(const std::vector<subopt::SuboptResult>& computeds);
 
-  Error CheckSuboptimalResult(const std::vector<Computed>& subopt, bool has_ctds);
+  Error CheckSuboptimalResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
 
-  Error CheckSuboptimalResultPair(const std::vector<Computed>& a, const std::vector<Computed>& b);
+  Error CheckSuboptimalResultPair(
+      const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
 
   Error CheckSuboptimal();
 

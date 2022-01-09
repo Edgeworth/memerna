@@ -5,6 +5,9 @@
 #include <limits>
 #include <vector>
 
+#include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
+
 namespace mrna::subopt {
 
 Suboptimal0::Suboptimal0(
@@ -15,7 +18,7 @@ Suboptimal0::Suboptimal0(
   verify(max_structures > 0, "must request at least one structure");
 }
 
-int Suboptimal0::Run(SuboptimalCallback fn) {
+int Suboptimal0::Run(SuboptCallback fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
@@ -24,7 +27,10 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   // Cull the ones not inside the window or when we have more than |max_structures|.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
-  q_.insert({{{0, -1, EXT}}, {}, Secondary(N, -1), Ctds(N, CTD_NA), ext_[0][EXT]});
+  q_.insert(Node{.not_yet_expanded = {{0, -1, EXT}},
+      .res = SuboptResult{
+          .tb = traceback::TracebackResult{.s = Secondary(N, -1), .ctd = Ctds(N, CTD_NA)},
+          .energy = ext_[0][EXT]}});
   while (!q_.empty()) {
     auto node = *q_.begin();
     q_.erase(q_.begin());
@@ -34,10 +40,10 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
       continue;
     }
 
-    // If we found a non-finished node, but |finished| is full, and the worst in |finished| is as
-    // good as our current node (which is the best in |q|), then we can exit.
+    // If we found a non-finished node, but |finished| is full, and the worst in |finished| is
+    // as good as our current node (which is the best in |q|), then we can exit.
     if (static_cast<int>(finished_.size()) >= max_structures &&
-        (--finished_.end())->energy <= node.energy)
+        (--finished_.end())->res.energy <= node.res.energy)
       break;
 
     auto to_expand = node.not_yet_expanded.back();
@@ -54,7 +60,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     if (en == -1) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
-      Energy base_energy = node.energy - ext_[st][a];
+      Energy base_energy = node.res.energy - ext_[st][a];
       if (a == EXT) {
         // Base case: do nothing.
         if (st == N)
@@ -138,15 +144,15 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
     }
 
     // Subtract the minimum energy of the contribution at this node.
-    Energy base_energy = node.energy - dp_[st][en][a];
+    Energy base_energy = node.res.energy - dp_[st][en][a];
     // Declare the usual base aliases.
     const auto stb = r_[st], st1b = r_[st + 1], st2b = r_[st + 2], enb = r_[en], en1b = r_[en - 1],
                en2b = r_[en - 2];
 
     // Normal stuff
     if (a == DP_P) {
-      curnode_.s[st] = en;
-      curnode_.s[en] = st;
+      curnode_.res.tb.s[st] = en;
+      curnode_.res.tb.s[en] = st;
 
       // Two loops.
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -232,7 +238,8 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
         auto pb = r_[piv], pl1b = r_[piv - 1];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
+        // right.
         auto base00 = dp_[st][piv][DP_P] + em_.AuGuPenalty(stb, pb) + em_.multiloop_hack_b;
         auto base01 = dp_[st][piv - 1][DP_P] + em_.AuGuPenalty(stb, pl1b) + em_.multiloop_hack_b;
         auto base10 = dp_[st + 1][piv][DP_P] + em_.AuGuPenalty(st1b, pb) + em_.multiloop_hack_b;
@@ -317,9 +324,9 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
       }
     }
   }
-  for (const auto& struc : finished_) {
+  for (auto& struc : finished_) {
     assert(struc.not_yet_expanded.empty());
-    fn({r_, {struc.s.begin(), struc.s.end()}, struc.base_ctds, struc.energy});
+    fn(struc.res);
   }
   return static_cast<int>(finished_.size());
 }

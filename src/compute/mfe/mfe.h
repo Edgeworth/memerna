@@ -9,6 +9,13 @@
 
 namespace mrna::mfe {
 
+struct MfeResult {
+  DpArray dp;
+  ExtArray ext;
+  Energy energy = 0;
+};
+
+// TODO: Move this?
 struct Cand {
   Energy energy;
   int idx;

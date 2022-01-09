@@ -5,6 +5,9 @@
 #include <utility>
 #include <vector>
 
+#include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
+
 namespace mrna::subopt {
 
 Suboptimal1::Suboptimal1(
@@ -12,12 +15,10 @@ Suboptimal1::Suboptimal1(
     : r_(std::move(r)), em_(std::move(em)), pc_(r_, em_), dp_(std::move(dp)), ext_(std::move(ext)),
       delta_(delta == -1 ? CAP_E : delta), max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
 
-int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
-  // TODO: improve this - see similar code in brute force
-  s_.resize(r_.size());
-  std::fill(s_.begin(), s_.end(), -1);
-  ctd_.resize(r_.size());
-  std::fill(ctd_.begin(), ctd_.end(), CTD_NA);
+int Suboptimal1::Run(SuboptCallback fn, bool sorted) {
+  res_ = SuboptResult{.tb = traceback::TracebackResult{.s = Secondary(r_.size(), -1),
+                          .ctd = Ctds(r_.size(), CTD_NA)},
+      .energy = 0};
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
@@ -36,7 +37,7 @@ int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
 }
 
 std::pair<int, int> Suboptimal1::RunInternal(
-    SuboptimalCallback fn, Energy cur_delta, bool exact_energy, int structure_limit) {
+    SuboptCallback fn, Energy cur_delta, bool exact_energy, int structure_limit) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -64,8 +65,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
     // Also remove from unexpanded if the previous child added stuff to it.
     if (s.idx != 0) {
       const auto& pexp = exps[s.idx - 1];
-      if (pexp.ctd0.idx != -1) ctd_[pexp.ctd0.idx] = CTD_NA;
-      if (pexp.ctd1.idx != -1) ctd_[pexp.ctd1.idx] = CTD_NA;
+      if (pexp.ctd0.idx != -1) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
+      if (pexp.ctd1.idx != -1) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
       if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
       energy -= pexp.energy;
     }
@@ -78,7 +79,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
     // we are done with this node.
     if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
-      if (s.expand.en != -1 && s.expand.a == DP_P) s_[s.expand.st] = s_[s.expand.en] = -1;
+      if (s.expand.en != -1 && s.expand.a == DP_P)
+        res_.tb.s[s.expand.st] = res_.tb.s[s.expand.en] = -1;
       if (s.should_unexpand) unexpanded_.push_back(s.expand);
       q_.pop_back();
       continue;  // Done.
@@ -95,14 +97,9 @@ std::pair<int, int> Suboptimal1::RunInternal(
       if (unexpanded_.empty()) {
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
-          Computed tmp_computed = {
-              std::move(r_), std::move(s_), std::move(ctd_), energy + ext_[0][EXT]};
-          fn(tmp_computed);
+          res_.energy = energy + ext_[0][EXT];
+          fn(res_);
           ++num_structures;
-          // Move everything back
-          r_ = std::move(tmp_computed.r);
-          s_ = std::move(tmp_computed.s);
-          ctd_ = std::move(tmp_computed.base_ctds);
 
           // Hit structure limit.
           if (num_structures == structure_limit) return {num_structures, -1};
@@ -116,18 +113,18 @@ std::pair<int, int> Suboptimal1::RunInternal(
       }
     } else {
       // Apply child's modifications to the global state.
-      if (exp.ctd0.idx != -1) ctd_[exp.ctd0.idx] = exp.ctd0.ctd;
-      if (exp.ctd1.idx != -1) ctd_[exp.ctd1.idx] = exp.ctd1.ctd;
+      if (exp.ctd0.idx != -1) res_.tb.ctd[exp.ctd0.idx] = exp.ctd0.ctd;
+      if (exp.ctd1.idx != -1) res_.tb.ctd[exp.ctd1.idx] = exp.ctd1.ctd;
       if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
     }
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
-      s_[ns.expand.st] = ns.expand.en;
-      s_[ns.expand.en] = ns.expand.st;
+      res_.tb.s[ns.expand.st] = ns.expand.en;
+      res_.tb.s[ns.expand.en] = ns.expand.st;
     }
     q_.push_back(ns);
   }
-  assert(unexpanded_.empty() && energy == 0 && s_ == Secondary(s_.size(), -1) &&
-      ctd_ == Ctds(ctd_.size(), CTD_NA));
+  assert(unexpanded_.empty() && energy == 0 && res_.tb.s == Secondary(res_.tb.s.size(), -1) &&
+      res_.tb.ctd == Ctds(res_.tb.ctd.size(), CTD_NA));
   return {num_structures, next_seen};
 }
 

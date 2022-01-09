@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "compute/subopt/subopt.h"
 #include "util/macros.h"
 
 namespace mrna::bridge {
@@ -41,21 +42,23 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-Energy RNAstructure::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
+energy::EnergyResult RNAstructure::Efn(
+    const Primary& r, const Secondary& s, std::string* desc) const {
   const auto structure = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
-  return Energy(structure->GetEnergy(1));
+  // TODO: convert ctds?
+  return energy::EnergyResult{.energy = structure->GetEnergy(1)};
 }
 
-Computed RNAstructure::Fold(const Primary& r) const {
+FoldResult RNAstructure::Fold(const Primary& r) const {
   dp_state_t state;
   return FoldAndDpTable(r, &state);
 }
 
-Computed RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
+FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;
@@ -68,32 +71,35 @@ Computed RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) co
   constexpr auto disable_coax = false;
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
-  return {
-      r, StructureToSecondary(*structure), Ctds(r.size(), CTD_NA), Energy(structure->GetEnergy(1))};
+  // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
+  return FoldResult{.mfe = mfe::MfeResult{.energy = Energy(structure->GetEnergy(1))},
+      .tb = traceback::TracebackResult{.s = StructureToSecondary(*structure)}};
 }
 
 int RNAstructure::Suboptimal(
-    subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const {
+    subopt::SuboptCallback fn, const Primary& r, Energy energy_delta) const {
   auto computeds = SuboptimalIntoVector(r, energy_delta);
   for (const auto& computed : computeds) fn(computed);
   return static_cast<int>(computeds.size());
 }
 
-std::vector<Computed> RNAstructure::SuboptimalIntoVector(
+std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
     const Primary& r, Energy energy_delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data_.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
   auto s_list = StructureToSecondarys(*structure);
-  std::vector<Computed> computeds;
-  for (int i = 0; i < static_cast<int>(s_list.size()); ++i)
-    computeds.emplace_back(
-        r, std::move(s_list[i]), Ctds(r.size(), CTD_NA), Energy(structure->GetEnergy(i + 1)));
-  return computeds;
+  std::vector<subopt::SuboptResult> res;
+  for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
+    res.emplace_back(
+        subopt::SuboptResult{.tb = traceback::TracebackResult{.s = std::move(s_list[i])},
+            .energy = Energy(structure->GetEnergy(i + 1))});
+  }
+  return res;
 }
 
-std::pair<partition::Partition, Probabilities> RNAstructure::Partition(const Primary& r) const {
+partition::PartitionResult RNAstructure::Partition(const Primary& r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.

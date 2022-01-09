@@ -2,6 +2,7 @@
 #include "compute/brute.h"
 
 #include "compute/constants.h"
+#include "compute/subopt/subopt.h"
 #include "util/macros.h"
 
 namespace mrna {
@@ -75,9 +76,9 @@ void BruteForce::AddAllCombinations(int idx) {
   const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
-    auto computed = energy::ComputeEnergyWithCtds({r_, s_, ctd_, 0}, em_);
+    auto energy = energy::ComputeEnergy(r_, s_, &ctd_, em_).energy;
     if (res_.compute_partition) {
-      BoltzEnergy boltz = Boltz(computed.energy);
+      BoltzEnergy boltz = Boltz(energy);
       res_.partition.q += boltz;
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -86,14 +87,14 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = energy::ComputeSubstructureEnergy(
-                computed, false, i, s_[i], em_);  // TODO optimisation?
+            Energy inside_energy =
+                energy::ComputeSubstructureEnergy(r_, s_, &ctd_, i, s_[i], em_).energy;
             if (inside_new) {
               res_.partition.p[i][s_[i]][0] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.partition.p[s_[i]][i][0] += Boltz(computed.energy - inside_energy);
+              res_.partition.p[s_[i]][i][0] += Boltz(energy - inside_energy);
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
@@ -101,11 +102,12 @@ void BruteForce::AddAllCombinations(int idx) {
         }
       }
     } else {
-      if (static_cast<int>(res_.best_computeds.size()) < res_.max_structures ||
-          res_.best_computeds.rbegin()->energy > computed.energy)
-        res_.best_computeds.insert(std::move(computed));
-      if (static_cast<int>(res_.best_computeds.size()) > res_.max_structures)
-        res_.best_computeds.erase(--res_.best_computeds.end());
+      if (static_cast<int>(res_.subopts.size()) < res_.max_structures ||
+          res_.subopts.rbegin()->energy > energy)
+        res_.subopts.insert(subopt::SuboptResult{
+            .tb = traceback::TracebackResult{.s = s_, .ctd = ctd_}, .energy = energy});
+      if (static_cast<int>(res_.subopts.size()) > res_.max_structures)
+        res_.subopts.erase(--res_.subopts.end());
     }
     return;
   }
@@ -195,10 +197,12 @@ void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(res_.base_pairs.size())) {
     // Small optimisation for case when we're just getting one structure.
     if (res_.max_structures == 1 && !res_.compute_partition) {
-      auto computed = energy::ComputeEnergy(r_, s_, em_);
-      if (res_.best_computeds.empty() || computed.energy < res_.best_computeds.begin()->energy)
-        res_.best_computeds.insert(std::move(computed));
-      if (res_.best_computeds.size() == 2) res_.best_computeds.erase(--res_.best_computeds.end());
+      auto res = energy::ComputeEnergy(r_, s_, nullptr, em_);
+      if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
+        res_.subopts.insert(subopt::SuboptResult{
+            .tb = traceback::TracebackResult{.s = s_, .ctd = std::move(res.ctd)},
+            .energy = res.energy});
+      if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
     } else {
       // Precompute whether things are multiloops or not.
       res_.branch_count = internal::GetBranchCounts(s_);
