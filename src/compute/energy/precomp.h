@@ -12,7 +12,6 @@
 #include "compute/energy/model.h"
 #include "model/base.h"
 #include "model/model.h"
-#include "model/parsing.h"
 #include "model/primary.h"
 #include "util/argparse.h"
 

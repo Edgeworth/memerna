@@ -3,7 +3,6 @@
 
 #include "compute/energy/load_model.h"
 #include "model/context.h"
-#include "model/parsing.h"
 
 using mrna::Computed;
 using mrna::Energy;

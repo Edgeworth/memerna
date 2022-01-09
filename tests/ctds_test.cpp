@@ -3,7 +3,6 @@
 #include "compute/energy/internal.h"
 #include "compute/energy/load_model.h"
 #include "gtest/gtest.h"
-#include "model/parsing.h"
 
 namespace mrna {
 namespace energy {

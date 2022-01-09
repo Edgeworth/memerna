@@ -7,8 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "model/parsing.h"
-
 namespace mrna::energy::internal {
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).

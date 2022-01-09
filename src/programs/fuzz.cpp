@@ -13,8 +13,6 @@
 #include "compute/partition/brute.h"
 #include "compute/subopt/brute.h"
 #include "fuzz/fuzzer.h"
-#include "model/gen.h"
-#include "model/parsing.h"
 #include "util/string.h"
 
 #ifdef USE_RNASTRUCTURE

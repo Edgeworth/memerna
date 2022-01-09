@@ -5,7 +5,6 @@
 #include "bridge/bridge.h"
 #include "compute/energy/load_model.h"
 #include "model/config.h"
-#include "model/parsing.h"
 
 using mrna::Computed;
 using mrna::Energy;
