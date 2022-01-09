@@ -10,81 +10,74 @@ namespace mrna {
 namespace energy {
 
 struct CtdTest {
-  Computed computed;
+  Primary r;
+  Secondary s;
+  Ctds ctd;
   internal::BranchCtd branch_ctds;
   std::deque<int> branches;
 };
 
 std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&) -> CtdTest {
-                                                            return {{}, {}, {}};
+                                                            return {{}, {}, {}, {}, {}};
                                                           },
     [](const EnergyModel&) -> CtdTest {
-      return {{StringToPrimary("A"), DotBracketToSecondary("."), {CTD_NA}, 0}, {}, {}};
+      return {StringToPrimary("A"), DotBracketToSecondary("."), {CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {{StringToPrimary("AG"), DotBracketToSecondary(".."), {CTD_NA, CTD_NA}, 0}, {}, {}};
+      return {StringToPrimary("AG"), DotBracketToSecondary(".."), {CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {{StringToPrimary("GUA"), DotBracketToSecondary("..."), {CTD_NA, CTD_NA, CTD_NA}, 0},
-          {}, {}};
+      return {
+          StringToPrimary("GUA"), DotBracketToSecondary("..."), {CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {{StringToPrimary("GUAC"), DotBracketToSecondary("...."),
-                  {CTD_NA, CTD_NA, CTD_NA, CTD_NA}, 0},
-          {}, {}};
+      return {StringToPrimary("GUAC"), DotBracketToSecondary("...."),
+          {CTD_NA, CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     // 3' dangle inside the branch.
     [](const EnergyModel& em) -> CtdTest {
-      return {{StringToPrimary("GAAAC"), DotBracketToSecondary("(...)"),
-                  {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, 0},
-          {{CTD_3_DANGLE, em.dangle3[G][A][C]}}, {4}};
+      return {StringToPrimary("GAAAC"), DotBracketToSecondary("(...)"),
+          {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, {{CTD_3_DANGLE, em.dangle3[G][A][C]}},
+          {4}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {{StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
-                  DotBracketToSecondary("(...).((...).(...)).(...)."), Ctds(26, CTD_NA), 0},
-          {}, {}};
+      return {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
+          DotBracketToSecondary("(...).((...).(...)).(...)."), Ctds(26, CTD_NA), {}, {}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {
-          {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
-              DotBracketToSecondary("(...).((...).(...)).(...)."),
-              {CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
-                  CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                  CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
-              0},
+      return {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
+          DotBracketToSecondary("(...).((...).(...)).(...)."),
+          {CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA,
+              CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
           {{CTD_UNUSED, 0}, {CTD_RCOAX_WITH_NEXT, em.MismatchCoaxial(C, A, A, G)},
               {CTD_RCOAX_WITH_PREV, em.MismatchCoaxial(C, A, A, G)}},
           {0, 6, 20}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {
-          {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
-              DotBracketToSecondary("(...).((...).(...)).(...)."),
-              {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
-                  CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                  CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
-              0},
+      return {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
+          DotBracketToSecondary("(...).((...).(...)).(...)."),
+          {CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
+              CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
           {{CTD_FCOAX_WITH_NEXT, em.stack[G][A][U][C]}, {CTD_FCOAX_WITH_PREV, em.stack[G][A][U][C]},
               {CTD_5_DANGLE, em.dangle5[C][G][G]}},
           {18, 7, 13}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {{StringToPrimary("GGAAACGAAACC"), DotBracketToSecondary("((...)(...))"),
-                  {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
-                      CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
-                  0},
+      return {StringToPrimary("GGAAACGAAACC"), DotBracketToSecondary("((...)(...))"),
+          {CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA,
+              CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
           {{CTD_UNUSED, 0}, {CTD_FCOAX_WITH_NEXT, em.stack[G][G][C][C]},
               {CTD_FCOAX_WITH_PREV, em.stack[G][G][C][C]}},
           {1, 6, 11}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {{StringToPrimary("UUAGAAACGCAAAGAGGUCCAAAGA"),
-                  DotBracketToSecondary("(..(...).(...).....(...))"),
-                  {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-                      CTD_FCOAX_WITH_PREV},
-                  0},
+      return {StringToPrimary("UUAGAAACGCAAAGAGGUCCAAAGA"),
+          DotBracketToSecondary("(..(...).(...).....(...))"),
+          {CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
           {{CTD_FCOAX_WITH_PREV, em.stack[U][C][G][A]},
               {CTD_LCOAX_WITH_NEXT, em.MismatchCoaxial(C, G, A, G)},
               {CTD_LCOAX_WITH_PREV, em.MismatchCoaxial(C, G, A, G)},
@@ -101,7 +94,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   // Convert base representation to branch representation.
   internal::BranchCtd computed_branch_ctds;
   auto computed_energy = internal::GetBranchCtdsFromComputed(
-      ctd_test.computed, em, ctd_test.branches, computed_branch_ctds);
+      ctd_test.r, ctd_test.s, ctd_test.ctd, em, ctd_test.branches, &computed_branch_ctds);
   Energy test_energy = 0;
   for (const auto& branch_ctd : ctd_test.branch_ctds) {
     // Make sure each branch energy is only represented once.
@@ -113,16 +106,16 @@ TEST_P(CtdsTest, BaseBranchBase) {
   EXPECT_EQ(test_energy, computed_energy);
   EXPECT_EQ(ctd_test.branch_ctds, computed_branch_ctds);
   // Convert back again and make sure it's the same.
-  Ctds previous_base_ctds = std::move(ctd_test.computed.base_ctds);
-  ctd_test.computed.base_ctds.resize(previous_base_ctds.size(), CTD_NA);
-  internal::AddBranchCtdsToComputed(ctd_test.computed, ctd_test.branches, computed_branch_ctds);
-  EXPECT_EQ(previous_base_ctds, ctd_test.computed.base_ctds);
+  Ctds previous_base_ctds = std::move(ctd_test.ctd);
+  ctd_test.ctd.resize(previous_base_ctds.size(), CTD_NA);
+  internal::AddBranchCtdsToComputed(
+      ctd_test.s, ctd_test.branches, computed_branch_ctds, &ctd_test.ctd);
+  EXPECT_EQ(previous_base_ctds, ctd_test.ctd);
 }
 
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
     testing::Combine(testing::Values(LoadRandomEnergyModel(0), LoadRandomEnergyModel(1),
                          LoadRandomEnergyModel(2), LoadRandomEnergyModel(3)),
         testing::ValuesIn(CTD_TESTS)));
-
 }  // namespace energy
 }  // namespace mrna

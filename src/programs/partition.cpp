@@ -37,5 +37,5 @@ int main(int argc, char* argv[]) {
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
   mrna::Context ctx(primary, em, ModelCfgFromArgParse(args));
-  PrintProbabilities(mrna::partition::ComputeProbabilities(ctx.Partition()));
+  PrintProbabilities(ctx.Partition().prob);
 }

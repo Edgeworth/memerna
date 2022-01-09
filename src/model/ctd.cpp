@@ -7,8 +7,7 @@
 
 namespace mrna {
 
-std::string ComputedToCtdString(const Computed& computed) {
-  const auto& s = computed.s;
+std::string CtdString(const Secondary& s, const Ctds& ctd) {
   std::string str(s.size(), '.');
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     if (s[i] == -1) continue;
@@ -17,7 +16,7 @@ std::string ComputedToCtdString(const Computed& computed) {
       str[i] = ']';
     else
       str[i] = '[';
-    switch (computed.base_ctds[i]) {
+    switch (ctd[i]) {
     case CTD_NA:
     case CTD_UNUSED: break;
     case CTD_3_DANGLE: str[s[i] + 1] = '3'; break;
@@ -50,13 +49,14 @@ std::string ComputedToCtdString(const Computed& computed) {
 // >(   )>   )<<   )(   )>   )<   )
 // (m(   )m(   )m(   )m)
 
-Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_str) {
-  Computed computed(StringToPrimary(prim_str));
+std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
+    const std::string& prim_str, const std::string& pairs_str) {
+  auto r = StringToPrimary(prim_str);
   verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
-  const int N = static_cast<int>(prim_str.size());
+  const int N = static_cast<int>(r.size());
   std::stack<int> stk;
-  auto& s = computed.s;
+  Secondary s(N, -1);
   for (int i = 0; i < N; ++i) {
     char c = pairs_str[i];
     if (c == 'p' || c == 'n' || c == '[') {
@@ -72,6 +72,7 @@ Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_
 
   const std::string allowed_characters = "[]nNpP.mM35";
   const std::string branch_characters = "nNpP[]";
+  Ctds ctd(N, CTD_NA);
   for (int i = 0; i < N; ++i) {
     char c = pairs_str[i];
     // Coaxial stacking handling.
@@ -85,42 +86,40 @@ Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_
       }
       verify(prev >= 0 && s[prev] != -1 && (pairs_str[s[prev]] == 'n' || pairs_str[s[prev]] == 'N'),
           "invalid input");
-      verify(computed.base_ctds[i] == CTD_NA && computed.base_ctds[s[prev]] == CTD_NA,
-          "invalid input");
+      verify(ctd[i] == CTD_NA && ctd[s[prev]] == CTD_NA, "invalid input");
       bool left_mismatch = s[prev] - 1 >= 0 && pairs_str[s[prev] - 1] == 'm';
       bool right_mismatch = s[i] + 1 < N && pairs_str[s[i] + 1] == 'M';
       verify(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
       if (mismatch) {
         if (left_mismatch) {
-          computed.base_ctds[i] = CTD_LCOAX_WITH_PREV;
-          computed.base_ctds[s[prev]] = CTD_LCOAX_WITH_NEXT;
+          ctd[i] = CTD_LCOAX_WITH_PREV;
+          ctd[s[prev]] = CTD_LCOAX_WITH_NEXT;
         } else {
-          computed.base_ctds[i] = CTD_RCOAX_WITH_PREV;
-          computed.base_ctds[s[prev]] = CTD_RCOAX_WITH_NEXT;
+          ctd[i] = CTD_RCOAX_WITH_PREV;
+          ctd[s[prev]] = CTD_RCOAX_WITH_NEXT;
         }
       } else {
-        computed.base_ctds[i] = CTD_FCOAX_WITH_PREV;
-        computed.base_ctds[s[prev]] = CTD_FCOAX_WITH_NEXT;
+        ctd[i] = CTD_FCOAX_WITH_PREV;
+        ctd[s[prev]] = CTD_FCOAX_WITH_NEXT;
       }
     }
     if (c == '3') {
       // If we optimistically set an exterior loop to CTD_UNUSED, we might want to rewrite it here.
-      verify(i - 1 >= 0 && s[i - 1] != -1 &&
-              (computed.base_ctds[s[i - 1]] == CTD_NA ||
-                  computed.base_ctds[s[i - 1]] == CTD_UNUSED),
+      verify(
+          i - 1 >= 0 && s[i - 1] != -1 && (ctd[s[i - 1]] == CTD_NA || ctd[s[i - 1]] == CTD_UNUSED),
           "invalid input");
-      computed.base_ctds[s[i - 1]] = CTD_3_DANGLE;
+      ctd[s[i - 1]] = CTD_3_DANGLE;
     }
     if (c == '5') {
-      verify(i + 1 < N && computed.base_ctds[i + 1] == CTD_NA, "invalid input");
-      computed.base_ctds[i + 1] = CTD_5_DANGLE;
+      verify(i + 1 < N && ctd[i + 1] == CTD_NA, "invalid input");
+      ctd[i + 1] = CTD_5_DANGLE;
     }
     // Opening a branch.
     if (c == 'p' || c == 'n' || c == '[') {
       if (!stk.empty())
         ++stk.top();  // One more branch here.
-      else if (computed.base_ctds[i] == CTD_NA && c == '[')
-        computed.base_ctds[i] = CTD_UNUSED;
+      else if (ctd[i] == CTD_NA && c == '[')
+        ctd[i] = CTD_UNUSED;
       stk.push(0);  // Number of branches for this part.
     }
     // Closing a branch.
@@ -128,10 +127,10 @@ Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_
       // Set explicitly unused CTDs for any child branches if this is a multiloop.
       // Also this branch as an outer loop.
       if (stk.top() >= 2) {
-        if (computed.base_ctds[i] == CTD_NA) computed.base_ctds[i] = CTD_UNUSED;
+        if (ctd[i] == CTD_NA) ctd[i] = CTD_UNUSED;
         for (int j = s[i] + 1; j < i; ++j) {
           if (s[j] == -1) continue;
-          if (computed.base_ctds[j] == CTD_NA) computed.base_ctds[j] = CTD_UNUSED;
+          if (ctd[j] == CTD_NA) ctd[j] = CTD_UNUSED;
           j = s[j];
         }
       }
@@ -146,11 +145,11 @@ Computed ParseCtdComputed(const std::string& prim_str, const std::string& pairs_
     if (c == 'm') {
       bool right_branch_viable =
           i + 1 < N && s[i + 1] != -1 && s[i + 1] + 1 < N && pairs_str[s[i + 1] + 1] == 'M';
-      verify(right_branch_viable && computed.base_ctds[i + 1] != CTD_NA, "invalid input");
-      if (computed.base_ctds[i + 1] == CTD_UNUSED) computed.base_ctds[i + 1] = CTD_MISMATCH;
+      verify(right_branch_viable && ctd[i + 1] != CTD_NA, "invalid input");
+      if (ctd[i + 1] == CTD_UNUSED) ctd[i + 1] = CTD_MISMATCH;
     }
   }
-  return computed;
+  return {std::move(r), std::move(s), std::move(ctd)};
 }
 
 bool IsCtdString(const std::string& pairs_str) {

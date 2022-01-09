@@ -13,7 +13,7 @@
 
 namespace mrna::mfe {
 
-Computed MfeBruteForce(const Primary& r, const energy::EnergyModel& em) {
+subopt::SuboptResult MfeBruteForce(const Primary& r, const energy::EnergyModel& em) {
   return subopt::SuboptimalBruteForce(r, em, 1)[0];
 }
 

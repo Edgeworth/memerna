@@ -16,7 +16,7 @@ class Suboptimal0 {
  public:
   Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
 
-  int Run(SuboptimalCallback fn);
+  int Run(SuboptCallback fn);
 
  private:
   struct Node {
@@ -24,11 +24,9 @@ class Suboptimal0 {
     // what it has done so far, and what it can do from now.
     std::vector<Index> not_yet_expanded;
     std::vector<Index> history;
-    Secondary s;
-    Ctds base_ctds;
-    Energy energy;  // Stores the minimum energy this state could have.
+    SuboptResult res;  // Stores the minimum energy this state could have.
 
-    bool operator<(const Node& o) const { return energy < o.energy; }
+    bool operator<(const Node& o) const { return res.energy < o.res.energy; }
   };
 
   Primary r_;
@@ -44,8 +42,9 @@ class Suboptimal0 {
   std::multiset<Node> q_;
 
   void PruneInsert(std::multiset<Node>& prune, const Node& node) {
-    if (node.energy <= max_energy_) {
-      if (static_cast<int>(prune.size()) >= max_structures && (--prune.end())->energy > node.energy)
+    if (node.res.energy <= max_energy_) {
+      if (static_cast<int>(prune.size()) >= max_structures &&
+          (--prune.end())->res.energy > node.res.energy)
         prune.erase(--prune.end());
       if (static_cast<int>(prune.size()) < max_structures) prune.insert(node);
     }
@@ -54,46 +53,46 @@ class Suboptimal0 {
   // Creates and inserts a new node with energy |energy| that doesn't
   // need to expand any more ranges than it currently has.
   void Expand(Energy energy) {
-    curnode_.energy = energy;
+    curnode_.res.energy = energy;
     PruneInsert(q_, curnode_);
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
   void Expand(Energy energy, Index nye) {
     curnode_.not_yet_expanded.push_back(nye);
-    curnode_.energy = energy;
+    curnode_.res.energy = energy;
     PruneInsert(q_, curnode_);
     curnode_.not_yet_expanded.pop_back();
   }
 
   void Expand(Energy energy, Index nye, IndexCtd ctd_idx) {
-    curnode_.base_ctds[ctd_idx.idx] = ctd_idx.ctd;
+    curnode_.res.tb.ctd[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye);
-    curnode_.base_ctds[ctd_idx.idx] = CTD_NA;
+    curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
   void Expand(Energy energy, Index nye0, Index nye1) {
     curnode_.not_yet_expanded.push_back(nye0);
     curnode_.not_yet_expanded.push_back(nye1);
-    curnode_.energy = energy;
+    curnode_.res.energy = energy;
     PruneInsert(q_, curnode_);
     curnode_.not_yet_expanded.pop_back();
     curnode_.not_yet_expanded.pop_back();
   }
 
   void Expand(Energy energy, Index nye0, Index nye1, IndexCtd ctd_idx) {
-    curnode_.base_ctds[ctd_idx.idx] = ctd_idx.ctd;
+    curnode_.res.tb.ctd[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye0, nye1);
-    curnode_.base_ctds[ctd_idx.idx] = CTD_NA;
+    curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
   void Expand(Energy energy, Index nye0, Index nye1, IndexCtd ctd_idx0, IndexCtd ctd_idx1) {
-    curnode_.base_ctds[ctd_idx0.idx] = ctd_idx0.ctd;
-    curnode_.base_ctds[ctd_idx1.idx] = ctd_idx1.ctd;
+    curnode_.res.tb.ctd[ctd_idx0.idx] = ctd_idx0.ctd;
+    curnode_.res.tb.ctd[ctd_idx1.idx] = ctd_idx1.ctd;
     Expand(energy, nye0, nye1);
-    curnode_.base_ctds[ctd_idx0.idx] = CTD_NA;
-    curnode_.base_ctds[ctd_idx1.idx] = CTD_NA;
+    curnode_.res.tb.ctd[ctd_idx0.idx] = CTD_NA;
+    curnode_.res.tb.ctd[ctd_idx1.idx] = CTD_NA;
   }
 };
 

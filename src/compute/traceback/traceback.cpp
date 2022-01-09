@@ -9,12 +9,10 @@
 
 namespace mrna::traceback {
 
-std::tuple<Secondary, Ctds> Traceback(
+TracebackResult Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
   const int N = static_cast<int>(r.size());
-  Secondary s(N, -1);
-  Ctds ctd(N, CTD_NA);
-
+  TracebackResult res{.s = Secondary(N, -1), .ctd = Ctds(N, CTD_NA)};
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
@@ -53,7 +51,7 @@ std::tuple<Secondary, Ctds> Traceback(
         if (val == ext[st][a] && (a != EXT_WC || IsWatsonCrick(stb, enb)) &&
             (a != EXT_GU || IsGu(stb, enb))) {
           // EXT_WC and EXT_GU will have already had their ctds set.
-          if (a == EXT) ctd[st] = CTD_UNUSED;
+          if (a == EXT) res.ctd[st] = CTD_UNUSED;
           q.emplace(st, en, DP_P);
           q.emplace(en + 1, -1, EXT);
           goto loopend;
@@ -64,21 +62,21 @@ std::tuple<Secondary, Ctds> Traceback(
 
         // (   )3<   > 3'
         if (base01 + em.dangle3[en1b][enb][stb] + ext[en + 1][EXT] == ext[st][EXT]) {
-          ctd[st] = CTD_3_DANGLE;
+          res.ctd[st] = CTD_3_DANGLE;
           q.emplace(st, en - 1, DP_P);
           q.emplace(en + 1, -1, EXT);
           goto loopend;
         }
         // 5(   )<   > 5'
         if (base10 + em.dangle5[enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
-          ctd[st + 1] = CTD_5_DANGLE;
+          res.ctd[st + 1] = CTD_5_DANGLE;
           q.emplace(st + 1, en, DP_P);
           q.emplace(en + 1, -1, EXT);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch
         if (base11 + em.terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
-          ctd[st + 1] = CTD_MISMATCH;
+          res.ctd[st + 1] = CTD_MISMATCH;
           q.emplace(st + 1, en - 1, DP_P);
           q.emplace(en + 1, -1, EXT);
           goto loopend;
@@ -88,15 +86,15 @@ std::tuple<Secondary, Ctds> Traceback(
           // .(   ).<(   ) > Left coax  x
           val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
           if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
-            ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-            ctd[en + 1] = CTD_LCOAX_WITH_PREV;
+            res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+            res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 1, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT_WC);
             goto loopend;
           }
           if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
-            ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-            ctd[en + 1] = CTD_LCOAX_WITH_PREV;
+            res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+            res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 1, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT_GU);
             goto loopend;
@@ -104,8 +102,8 @@ std::tuple<Secondary, Ctds> Traceback(
 
           // (   )<.(   ). > Right coax forward
           if (base00 + ext[en + 1][EXT_RCOAX] == ext[st][EXT]) {
-            ctd[st] = CTD_RCOAX_WITH_NEXT;
-            ctd[en + 2] = CTD_RCOAX_WITH_PREV;
+            res.ctd[st] = CTD_RCOAX_WITH_NEXT;
+            res.ctd[en + 2] = CTD_RCOAX_WITH_PREV;
             q.emplace(st, en, DP_P);
             q.emplace(en + 1, -1, EXT_RCOAX);
             goto loopend;
@@ -113,16 +111,16 @@ std::tuple<Secondary, Ctds> Traceback(
 
           // (   )(<   ) > Flush coax
           if (base01 + em.stack[en1b][enb][enb ^ 3][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
-            ctd[st] = CTD_FCOAX_WITH_NEXT;
-            ctd[en] = CTD_FCOAX_WITH_PREV;
+            res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en - 1, DP_P);
             q.emplace(en, -1, EXT_WC);
             goto loopend;
           }
           if ((enb == G || enb == U) &&
               base01 + em.stack[en1b][enb][enb ^ 1][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
-            ctd[st] = CTD_FCOAX_WITH_NEXT;
-            ctd[en] = CTD_FCOAX_WITH_PREV;
+            res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en - 1, DP_P);
             q.emplace(en, -1, EXT_GU);
             goto loopend;
@@ -134,8 +132,8 @@ std::tuple<Secondary, Ctds> Traceback(
                  en2b = r[en - 2];
       if (a == DP_P) {
         // It's paired, so add it to the folding.
-        s[st] = en;
-        s[en] = st;
+        res.s[st] = en;
+        res.s[en] = st;
 
         // Following largely matches the above DP so look up there for comments.
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -155,28 +153,28 @@ std::tuple<Secondary, Ctds> Traceback(
             em.AuGuPenalty(stb, enb) + em.multiloop_hack_a + em.multiloop_hack_b;
         // (<   ><    >)
         if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == dp[st][en][DP_P]) {
-          ctd[en] = CTD_UNUSED;
+          res.ctd[en] = CTD_UNUSED;
           q.emplace(st + 1, en - 1, DP_U2);
           goto loopend;
         }
         // (3<   ><   >) 3'
         if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] ==
             dp[st][en][DP_P]) {
-          ctd[en] = CTD_3_DANGLE;
+          res.ctd[en] = CTD_3_DANGLE;
           q.emplace(st + 2, en - 1, DP_U2);
           goto loopend;
         }
         // (<   ><   >5) 5'
         if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] ==
             dp[st][en][DP_P]) {
-          ctd[en] = CTD_5_DANGLE;
+          res.ctd[en] = CTD_5_DANGLE;
           q.emplace(st + 1, en - 2, DP_U2);
           goto loopend;
         }
         // (.<   ><   >.) Terminal mismatch
         if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] ==
             dp[st][en][DP_P]) {
-          ctd[en] = CTD_MISMATCH;
+          res.ctd[en] = CTD_MISMATCH;
           q.emplace(st + 2, en - 2, DP_U2);
           goto loopend;
         }
@@ -189,8 +187,8 @@ std::tuple<Secondary, Ctds> Traceback(
           if (base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
                   em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_LCOAX_WITH_NEXT;
-            ctd[st + 2] = CTD_LCOAX_WITH_PREV;
+            res.ctd[en] = CTD_LCOAX_WITH_NEXT;
+            res.ctd[st + 2] = CTD_LCOAX_WITH_PREV;
             q.emplace(st + 2, piv, DP_P);
             q.emplace(piv + 1, en - 2, DP_U);
             goto loopend;
@@ -199,8 +197,8 @@ std::tuple<Secondary, Ctds> Traceback(
           if (base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
                   em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_RCOAX_WITH_PREV;
-            ctd[piv + 1] = CTD_RCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_RCOAX_WITH_PREV;
+            res.ctd[piv + 1] = CTD_RCOAX_WITH_NEXT;
             q.emplace(st + 2, piv, DP_U);
             q.emplace(piv + 1, en - 2, DP_P);
             goto loopend;
@@ -211,8 +209,8 @@ std::tuple<Secondary, Ctds> Traceback(
                   em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                   em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_RCOAX_WITH_NEXT;
-            ctd[st + 2] = CTD_RCOAX_WITH_PREV;
+            res.ctd[en] = CTD_RCOAX_WITH_NEXT;
+            res.ctd[st + 2] = CTD_RCOAX_WITH_PREV;
             q.emplace(st + 2, piv - 1, DP_P);
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
@@ -222,8 +220,8 @@ std::tuple<Secondary, Ctds> Traceback(
                   em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                   em.MismatchCoaxial(en2b, en1b, prb, pr1b) ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_LCOAX_WITH_PREV;
-            ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_LCOAX_WITH_PREV;
+            res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
             q.emplace(st + 1, piv, DP_U);
             q.emplace(piv + 2, en - 2, DP_P);
             goto loopend;
@@ -234,8 +232,8 @@ std::tuple<Secondary, Ctds> Traceback(
                   em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
                   em.stack[stb][st1b][plb][enb] ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_FCOAX_WITH_NEXT;
-            ctd[st + 1] = CTD_FCOAX_WITH_PREV;
+            res.ctd[en] = CTD_FCOAX_WITH_NEXT;
+            res.ctd[st + 1] = CTD_FCOAX_WITH_PREV;
             q.emplace(st + 1, piv, DP_P);
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
@@ -245,8 +243,8 @@ std::tuple<Secondary, Ctds> Traceback(
                   em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
                   em.stack[stb][prb][en1b][enb] ==
               dp[st][en][DP_P]) {
-            ctd[en] = CTD_FCOAX_WITH_PREV;
-            ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_FCOAX_WITH_PREV;
+            res.ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
             q.emplace(st + 1, piv, DP_U);
             q.emplace(piv + 1, en - 1, DP_P);
             goto loopend;
@@ -299,7 +297,7 @@ std::tuple<Secondary, Ctds> Traceback(
             (a != DP_U_GU || IsGu(stb, pb))) {
           // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were
           // already set.
-          if (a != DP_U_WC && a != DP_U_GU) ctd[st] = CTD_UNUSED;
+          if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
           q.emplace(st, piv, DP_P);
           if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
           goto loopend;
@@ -310,21 +308,21 @@ std::tuple<Secondary, Ctds> Traceback(
 
         // (   )3<   > 3' - U, U2
         if (base01 + em.dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
-          ctd[st] = CTD_3_DANGLE;
+          res.ctd[st] = CTD_3_DANGLE;
           q.emplace(st, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // 5(   )<   > 5' - U, U2
         if (base10 + em.dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
-          ctd[st + 1] = CTD_5_DANGLE;
+          res.ctd[st + 1] = CTD_5_DANGLE;
           q.emplace(st + 1, piv, DP_P);
           if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch - U, U2
         if (base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
-          ctd[st + 1] = CTD_MISMATCH;
+          res.ctd[st + 1] = CTD_MISMATCH;
           q.emplace(st + 1, piv - 1, DP_P);
           if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
           goto loopend;
@@ -332,15 +330,15 @@ std::tuple<Secondary, Ctds> Traceback(
         // .(   ).<(   ) > Left coax - U, U2
         auto val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b);
         if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
-          ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-          ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
+          res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_WC);
           goto loopend;
         }
         if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
-          ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-          ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
+          res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
           q.emplace(st + 1, piv - 1, DP_P);
           q.emplace(piv + 1, en, DP_U_GU);
           goto loopend;
@@ -348,8 +346,8 @@ std::tuple<Secondary, Ctds> Traceback(
 
         // (   )<.(   ). > Right coax forward - U, U2
         if (base00 + dp[piv + 1][en][DP_U_RCOAX] == dp[st][en][a]) {
-          ctd[st] = CTD_RCOAX_WITH_NEXT;
-          ctd[piv + 2] = CTD_RCOAX_WITH_PREV;
+          res.ctd[st] = CTD_RCOAX_WITH_NEXT;
+          res.ctd[piv + 2] = CTD_RCOAX_WITH_PREV;
           q.emplace(st, piv, DP_P);
           q.emplace(piv + 1, en, DP_U_RCOAX);
           goto loopend;
@@ -357,16 +355,16 @@ std::tuple<Secondary, Ctds> Traceback(
 
         // (   )(<   ) > Flush coax - U, U2
         if (base01 + em.stack[pl1b][pb][pb ^ 3][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
-          ctd[st] = CTD_FCOAX_WITH_NEXT;
-          ctd[piv] = CTD_FCOAX_WITH_PREV;
+          res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+          res.ctd[piv] = CTD_FCOAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);
           q.emplace(piv, en, DP_U_WC);
           goto loopend;
         }
         if ((pb == G || pb == U) &&
             base01 + em.stack[pl1b][pb][pb ^ 1][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
-          ctd[st] = CTD_FCOAX_WITH_NEXT;
-          ctd[piv] = CTD_FCOAX_WITH_PREV;
+          res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+          res.ctd[piv] = CTD_FCOAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);
           q.emplace(piv, en, DP_U_GU);
           goto loopend;
@@ -377,7 +375,7 @@ std::tuple<Secondary, Ctds> Traceback(
   loopend : {};
   }
 
-  return {std::move(s), std::move(ctd)};
+  return res;
 }
 
 }  // namespace mrna::traceback

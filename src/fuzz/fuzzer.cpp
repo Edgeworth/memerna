@@ -9,6 +9,7 @@
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
 #include "compute/subopt/brute.h"
+#include "compute/subopt/subopt.h"
 #include "model/context.h"
 #include "util/string.h"
 
@@ -60,25 +61,32 @@ void Fuzzer::AppendErrors(Error& main, Error&& extra) {
   for (auto& s : extra) main.push_back(std::move(s));
 }
 
-bool Fuzzer::HasDuplicates(const std::vector<Computed>& computeds) {
+bool Fuzzer::HasDuplicates(const std::vector<subopt::SuboptResult>& subopts) {
+  struct SuboptCmp {
+    bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+      return std::tie(a.energy, a.tb.s, a.tb.ctd) < std::tie(b.energy, b.tb.s, b.tb.ctd);
+    }
+  };
+
   // If energies are different but everything else is the same, it is still a bug.
-  std::set<std::tuple<Primary, Secondary, Ctds>> suboptimal_set;
-  for (const auto& computed : computeds) {
-    auto val = std::make_tuple(computed.r, computed.s, computed.base_ctds);
-    if (suboptimal_set.count(val)) return true;
-    suboptimal_set.insert(val);
+  // TODO: Sort and avoid copy?
+  std::set<subopt::SuboptResult, SuboptCmp> subopt_set;
+  for (const auto& subopt : subopts) {
+    if (subopt_set.count(subopt)) return true;
+    subopt_set.insert(subopt);
   }
   return false;
 }
 
-Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool has_ctds) {
+Error Fuzzer::CheckSuboptimalResult(
+    const std::vector<subopt::SuboptResult>& subopt, bool has_ctds) {
   Error errors;
   // Check at least one suboptimal structure.
   if (subopt.empty()) errors.push_back("no structures returned");
   // Check MFE.
-  if (!subopt.empty() && memerna_computeds_[0].energy != subopt[0].energy)
-    errors.push_back(sfmt(
-        "lowest structure energy %d != mfe %d", subopt[0].energy, memerna_computeds_[0].energy));
+  if (!subopt.empty() && memerna_subopts_[0].energy != subopt[0].energy)
+    errors.push_back(
+        sfmt("lowest structure energy %d != mfe %d", subopt[0].energy, memerna_subopts_[0].energy));
 
   // Only ones with CTDs set can do these tests.
   if (has_ctds) {
@@ -86,19 +94,18 @@ Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool ha
     if (HasDuplicates(subopt)) errors.push_back("has duplicates");
 
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
-      const auto& structure = subopt[i];
-      auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, em_);
-      if (suboptimal_efn.energy != structure.energy) {
+      const auto& sub = subopt[i];
+      auto suboptimal_efn = energy::ComputeEnergy(r_, sub.tb.s, &sub.tb.ctd, em_);
+      if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
-            sfmt("structure %d: energy %d != efn %d", i, structure.energy, suboptimal_efn.energy));
+            sfmt("structure %d: energy %d != efn %d", i, sub.energy, suboptimal_efn.energy));
         break;
       }
 
       // Incidentally test ctd parsing.
-      auto parsed_computed =
-          ParseCtdComputed(PrimaryToString(structure.r), ComputedToCtdString(structure));
-      parsed_computed.energy = structure.energy;
-      if (parsed_computed != structure) {
+      auto parsed = ParsePrimaryCtdString(PrimaryToString(r_), CtdString(sub.tb.s, sub.tb.ctd));
+      if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
+          std::get<Ctds>(parsed) != sub.tb.ctd) {
         errors.push_back(sfmt("structure %d: bug in parsing code", i));
         break;
       }
@@ -108,7 +115,7 @@ Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool ha
 }
 
 Error Fuzzer::CheckSuboptimalResultPair(
-    const std::vector<Computed>& a, const std::vector<Computed>& b) {
+    const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b) {
   Error errors;
   if (a.size() != b.size()) {
     errors.push_back(
@@ -126,7 +133,7 @@ Error Fuzzer::CheckSuboptimalResultPair(
 
 Error Fuzzer::CheckSuboptimal() {
   Error errors;
-  std::vector<std::vector<Computed>> memerna_subopts_delta, memerna_subopts_num;
+  std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_num;
   for (auto subopt_alg : ModelCfg::SUBOPTIMAL_ALGS) {
     ModelCfg cfg(ModelCfg::TableAlg::TWO, subopt_alg);
     Context ctx(r_, em_, cfg);
@@ -157,7 +164,7 @@ Error Fuzzer::CheckSuboptimal() {
     // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
     // strange things
     // when the energy for suboptimal structures is 0 or above.
-    if (memerna_computeds_[0].energy < -cfg_.subopt_delta) {
+    if (memerna_subopts_[0].energy < -cfg_.subopt_delta) {
       const auto rnastructure_subopt = rnastructure_->SuboptimalIntoVector(r_, cfg_.subopt_delta);
       AppendErrors(errors,
           MaybePrepend(
@@ -215,24 +222,25 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   std::vector<Energy> memerna_optimal_efns;
   for (auto table_alg : ModelCfg::TABLE_ALGS) {
     Context ctx(r_, em_, ModelCfg(table_alg));
-    auto [computed, dp] = ctx.Fold();
-    memerna_dps.emplace_back(std::move(dp));
+    auto res = ctx.Fold();
+    memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
-    memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, em_).energy);
+    memerna_ctd_efns.push_back(energy::ComputeEnergy(r_, res.tb.s, &res.tb.ctd, em_).energy);
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.r, computed.s, em_).energy);
-    memerna_computeds_.push_back(std::move(computed));
+    memerna_optimal_efns.push_back(energy::ComputeEnergy(r_, res.tb.s, nullptr, em_).energy);
+    memerna_subopts_.push_back(
+        subopt::SuboptResult{.tb = std::move(res.tb), .energy = res.mfe.energy});
   }
 
   // Check memerna energies.
   for (int i = 0; i < static_cast<int>(memerna_dps.size()); ++i) {
-    if (memerna_computeds_[0].energy != memerna_computeds_[i].energy ||
-        memerna_computeds_[0].energy != memerna_ctd_efns[i] ||
-        memerna_computeds_[0].energy != memerna_optimal_efns[i])
-      errors.push_back(sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d", i,
-          memerna_computeds_[i].energy, memerna_ctd_efns[i], memerna_optimal_efns[i],
-          memerna_computeds_[0].energy));
+    if (memerna_subopts_[0].energy != memerna_subopts_[i].energy ||
+        memerna_subopts_[0].energy != memerna_ctd_efns[i] ||
+        memerna_subopts_[0].energy != memerna_optimal_efns[i])
+      errors.push_back(
+          sfmt("memerna %d: %d (dp) %d (ctd efn) %d (efn) != mfe %d", i, memerna_subopts_[i].energy,
+              memerna_ctd_efns[i], memerna_optimal_efns[i], memerna_subopts_[0].energy));
   }
 
   return errors;
@@ -241,12 +249,13 @@ Error Fuzzer::MemernaComputeAndCheckState() {
 Error Fuzzer::RnastructureComputeAndCheckState() {
   Error errors;
 #ifdef USE_RNASTRUCTURE
-  auto rnastructure_computed = rnastructure_->FoldAndDpTable(r_, &rnastructure_dp_);
-  auto rnastructure_efn = rnastructure_->Efn(rnastructure_computed.r, rnastructure_computed.s);
-  if (memerna_computeds_[0].energy != rnastructure_computed.energy ||
-      memerna_computeds_[0].energy != rnastructure_efn)
-    errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d",
-        rnastructure_computed.energy, rnastructure_efn, memerna_computeds_[0].energy));
+  // TODO: remove rnastructure_dp_ and use Fold here
+  auto fold = rnastructure_->FoldAndDpTable(r_, &rnastructure_dp_);
+  auto efn = rnastructure_->Efn(r_, fold.tb.s);
+  // TODO: Test CTDs here as well?
+  if (memerna_subopts_[0].energy != fold.mfe.energy || memerna_subopts_[0].energy != efn.energy)
+    errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d", fold.mfe.energy,
+        efn.energy, memerna_subopts_[0].energy));
 #endif  // USE_RNASTRUCTURE
   return errors;
 }
@@ -274,21 +283,21 @@ Error Fuzzer::CheckBruteForce() {
 
     auto brute_partition = PartitionBruteForce(r_, em_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
-    if (!equ(brute_partition.first.q, memerna_partition.q)) {
+    if (!equ(brute_partition.p.q, memerna_partition.p.q)) {
       std::stringstream sstream;
-      sstream << "q: brute partition " << brute_partition.first.q << " != memerna "
-              << memerna_partition.q
-              << "; difference: " << brute_partition.first.q - memerna_partition.q;
+      sstream << "q: brute partition " << brute_partition.p.q << " != memerna "
+              << memerna_partition.p.q
+              << "; difference: " << brute_partition.p.q - memerna_partition.p.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(brute_partition.first.p[st][en][0], memerna_partition.p[st][en][0])) {
+        if (!equ(brute_partition.p.p[st][en][0], memerna_partition.p.p[st][en][0])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partition.p[st][en][0]
-                  << " != brute force " << brute_partition.first.p[st][en][0] << "; difference: "
-                  << brute_partition.first.p[st][en][0] - memerna_partition.p[st][en][0];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partition.p.p[st][en][0]
+                  << " != brute force " << brute_partition.p.p[st][en][0] << "; difference: "
+                  << brute_partition.p.p[st][en][0] - memerna_partition.p.p[st][en][0];
           errors.push_back(sstream.str());
         }
       }
@@ -299,7 +308,7 @@ Error Fuzzer::CheckBruteForce() {
 
 Error Fuzzer::CheckPartition() {
   Error errors;
-  std::vector<partition::Partition> memerna_partitions;
+  std::vector<partition::PartitionResult> memerna_partitions;
   for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
     Context ctx(
         r_, em_, ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
@@ -307,47 +316,49 @@ Error Fuzzer::CheckPartition() {
   }
 
   for (int i = 0; i < static_cast<int>(memerna_partitions.size()); ++i) {
-    if (!equ(memerna_partitions[i].q, memerna_partitions[0].q)) {
+    if (!equ(memerna_partitions[i].p.q, memerna_partitions[0].p.q)) {
       std::stringstream sstream;
-      sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].q
-              << " != " << memerna_partitions[0].q
-              << "; difference: " << memerna_partitions[i].q - memerna_partitions[0].q;
+      sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].p.q
+              << " != " << memerna_partitions[0].p.q
+              << "; difference: " << memerna_partitions[i].p.q - memerna_partitions[0].p.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(memerna_partitions[i].p[st][en][0], memerna_partitions[0].p[st][en][0])) {
+        if (!equ(memerna_partitions[i].p.p[st][en][0], memerna_partitions[0].p.p[st][en][0])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
-                  << memerna_partitions[i].p[st][en][0]
-                  << " != " << memerna_partitions[0].p[st][en][0] << "; difference: "
-                  << memerna_partitions[i].p[st][en][0] - memerna_partitions[0].p[st][en][0];
+                  << memerna_partitions[i].p.p[st][en][0]
+                  << " != " << memerna_partitions[0].p.p[st][en][0] << "; difference: "
+                  << memerna_partitions[i].p.p[st][en][0] - memerna_partitions[0].p.p[st][en][0];
           errors.push_back(sstream.str());
         }
       }
     }
+
+    // TODO: Check probability tables
   }
 
 #ifdef USE_RNASTRUCTURE
   if (cfg_.partition_rnastructure) {
     auto rnastructure_part = rnastructure_->Partition(r_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
-    if (!equ(rnastructure_part.first.q, memerna_partitions[0].q)) {
+    if (!equ(rnastructure_part.p.q, memerna_partitions[0].p.q)) {
       std::stringstream sstream;
-      sstream << "q: rnastructure partition " << rnastructure_part.first.q << " != memerna "
-              << memerna_partitions[0].q
-              << "; difference: " << rnastructure_part.first.q - memerna_partitions[0].q;
+      sstream << "q: rnastructure partition " << rnastructure_part.p.q << " != memerna "
+              << memerna_partitions[0].p.q
+              << "; difference: " << rnastructure_part.p.q - memerna_partitions[0].p.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(rnastructure_part.first.p[st][en][0], memerna_partitions[0].p[st][en][0])) {
+        if (!equ(rnastructure_part.p.p[st][en][0], memerna_partitions[0].p.p[st][en][0])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p[st][en][0]
-                  << " != rnastructure " << rnastructure_part.first.p[st][en][0] << "; difference: "
-                  << rnastructure_part.first.p[st][en][0] - memerna_partitions[0].p[st][en][0];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p.p[st][en][0]
+                  << " != rnastructure " << rnastructure_part.p.p[st][en][0] << "; difference: "
+                  << rnastructure_part.p.p[st][en][0] - memerna_partitions[0].p.p[st][en][0];
           errors.push_back(sstream.str());
         }
       }

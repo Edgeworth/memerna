@@ -24,14 +24,16 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  Energy Efn(const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  Computed Fold(const Primary& r) const override;
-  int Suboptimal(
-      subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
-  std::vector<Computed> SuboptimalIntoVector(const Primary& r, Energy energy_delta) const override;
-  std::pair<partition::Partition, Probabilities> Partition(const Primary& r) const override;
+  energy::EnergyResult Efn(
+      const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
+  FoldResult Fold(const Primary& r) const override;
+  int Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy energy_delta) const override;
+  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+      const Primary& r, Energy energy_delta) const override;
+  partition::PartitionResult Partition(const Primary& r) const override;
 
-  Computed FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
+  // TODO: Can be replaced by Fold now?
+  FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
  private:
   std::unique_ptr<datatable> data_;

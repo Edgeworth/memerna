@@ -21,6 +21,11 @@ struct Partition {
   BoltzEnergy q;
 };
 
+struct PartitionResult {
+  Partition p;
+  Probabilities prob;
+};
+
 Probabilities ComputeProbabilities(const Partition& partition);
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
@@ -30,6 +35,7 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
 
 // Only works with [0, 2N).
 inline int FastMod(int a, int m) {
+  assert(a < 2 * m);
   if (a >= m) return a - m;
   return a;
 }

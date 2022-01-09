@@ -43,7 +43,7 @@ class EnergyTest : public testing::Test {
   }
 
   Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
-    return ComputeEnergy(std::get<Primary>(s), std::get<Secondary>(s), g_em).energy;
+    return ComputeEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr, g_em).energy;
   }
 };
 

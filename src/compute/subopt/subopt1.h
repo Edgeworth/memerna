@@ -42,7 +42,7 @@ class Suboptimal1 {
  public:
   Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
 
-  int Run(SuboptimalCallback fn, bool sorted);
+  int Run(SuboptCallback fn, bool sorted);
 
  private:
   struct DfsState {
@@ -55,8 +55,7 @@ class Suboptimal1 {
   Primary r_;
   energy::EnergyModel em_;
   energy::Precomp pc_;
-  Secondary s_;
-  Ctds ctd_;
+  SuboptResult res_;
   DpArray dp_;
   ExtArray ext_;
 
@@ -67,7 +66,7 @@ class Suboptimal1 {
   std::vector<Index> unexpanded_;
 
   std::pair<int, int> RunInternal(
-      SuboptimalCallback fn, Energy cur_delta, bool exact_energy, int structure_limit);
+      SuboptCallback fn, Energy cur_delta, bool exact_energy, int structure_limit);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {
