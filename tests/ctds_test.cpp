@@ -87,10 +87,10 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
     }};
 
 class CtdsTest : public testing::TestWithParam<
-                     std::tuple<EnergyModelPtr, std::function<CtdTest(const EnergyModel&)>>> {};
+                     std::tuple<EnergyModel, std::function<CtdTest(const EnergyModel&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
-  const auto& em = *std::get<0>(GetParam());
+  const auto& em = std::get<0>(GetParam());
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
   internal::BranchCtd computed_branch_ctds;

@@ -11,8 +11,8 @@ struct Secondary {
   Secondary(Secondary&&) = default;
   Secondary& operator=(Secondary&&) = default;
 
-  explicit Secondary(const Primary& r) : r(r), p(r.size(), -1) {}
-  Secondary(const Primary& r, const std::vector<int>& p) : r(r), p(p) {}
+  explicit Secondary(Primary r_) : r(std::move(r_)), p(r.size(), -1) {}
+  Secondary(Primary r_, std::vector<int> p_) : r(std::move(r_)), p(std::move(p_)) {}
 
   bool operator==(const Secondary& o) const { return r == o.r && p == o.p; }
   bool operator!=(const Secondary& o) const { return !(*this == o); }

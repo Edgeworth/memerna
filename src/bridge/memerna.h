@@ -15,7 +15,7 @@ namespace mrna::bridge {
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
  public:
-  Memerna(energy::EnergyModelPtr em, ModelCfg cfg) : em(em), cfg(cfg) {}
+  Memerna(energy::EnergyModel em, ModelCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
 
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
@@ -29,8 +29,8 @@ class Memerna : public RnaPackage {
       const Primary& r) const override;
 
  private:
-  const energy::EnergyModelPtr em;
-  const ModelCfg cfg;
+  energy::EnergyModel em_;
+  ModelCfg cfg_;
 };
 
 }  // namespace mrna::bridge

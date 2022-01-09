@@ -20,8 +20,8 @@ using subopt::SuboptimalBruteForce;
 
 inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
-Fuzzer::Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em)
-    : r_(std::move(r)), cfg_(cfg),
+Fuzzer::Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em)
+    : r_(std::move(r)), cfg_(std::move(cfg)),
       em_(cfg_.random_model ? energy::LoadRandomEnergyModel(cfg_.seed) : em) {}
 
 Error Fuzzer::Run() {
@@ -88,7 +88,7 @@ Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool ha
 
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& structure = subopt[i];
-      auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, *em_);
+      auto suboptimal_efn = energy::ComputeEnergyWithCtds(structure, em_);
       if (suboptimal_efn.energy != structure.energy) {
         errors.push_back(
             sfmt("structure %d: energy %d != efn %d", i, structure.energy, suboptimal_efn.energy));
@@ -219,10 +219,10 @@ Error Fuzzer::MemernaComputeAndCheckState() {
     auto computed = ctx.Fold();
     memerna_dps.emplace_back(std::move(gdp));
     // First compute with the CTDs that fold returned to check the energy.
-    memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, *em_).energy);
+    memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, em_).energy);
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, *em_).energy);
+    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, em_).energy);
     memerna_computeds_.push_back(std::move(computed));
   }
 
@@ -258,7 +258,7 @@ Error Fuzzer::CheckBruteForce() {
   Context ctx(r_, em_, cfg);
 
   if (cfg_.subopt) {
-    auto brute_subopt = SuboptimalBruteForce(r_, *em_, cfg_.brute_subopt_max);
+    auto brute_subopt = SuboptimalBruteForce(r_, em_, cfg_.brute_subopt_max);
     auto memerna_subopt = ctx.SuboptimalIntoVector(true, -1, cfg_.brute_subopt_max);
 
     AppendErrors(
@@ -273,7 +273,7 @@ Error Fuzzer::CheckBruteForce() {
   if (cfg_.partition) {
     auto memerna_partition = ctx.Partition();
 
-    auto brute_partition = PartitionBruteForce(r_, *em_);
+    auto brute_partition = PartitionBruteForce(r_, em_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
     if (!equ(brute_partition.first.q, memerna_partition.q)) {
       std::stringstream sstream;

@@ -30,8 +30,10 @@ struct Expand {
       const IndexCtd& ctd1_)
       : energy(energy_), to_expand(to_expand_), unexpanded(unexpanded_), ctd0(ctd0_), ctd1(ctd1_) {}
   Energy energy;
-  Index to_expand, unexpanded;  // st is -1 if this does not exist
-  IndexCtd ctd0, ctd1;
+  Index to_expand;  // st is -1 if this does not exist
+  Index unexpanded;
+  IndexCtd ctd0;
+  IndexCtd ctd1;
 
   bool operator<(const Expand& o) const { return energy < o.energy; }
 };

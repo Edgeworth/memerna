@@ -18,12 +18,12 @@ namespace mrna {
 
 class Context {
  public:
-  Context(const Primary& r, const energy::EnergyModelPtr em) : r(r), em(em), cfg() {
-    verify(r.size() > 0u, "cannot process zero length RNA");
+  Context(Primary r, energy::EnergyModel em) : r_(std::move(r)), em_(std::move(em)), cfg_() {
+    verify(r_.size() > 0u, "cannot process zero length RNA");
   }
-  Context(const Primary& r, const energy::EnergyModelPtr em, ModelCfg cfg)
-      : r(r), em(em), cfg(cfg) {
-    verify(r.size() > 0u, "cannot process zero length RNA");
+  Context(Primary r, energy::EnergyModel em, ModelCfg cfg)
+      : r_(std::move(r)), em_(std::move(em)), cfg_(std::move(cfg)) {
+    verify(r_.size() > 0u, "cannot process zero length RNA");
   }
   Context(const Context& o) = default;
 
@@ -40,9 +40,9 @@ class Context {
   partition::Partition Partition();
 
  private:
-  const Primary r;
-  const energy::EnergyModelPtr em;
-  const ModelCfg cfg;
+  Primary r_;
+  energy::EnergyModel em_;
+  ModelCfg cfg_;
 
   void ComputeTables();
 };

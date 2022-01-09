@@ -18,10 +18,10 @@ int main(int argc, char* argv[]) {
   if (mrna::IsCtdString(pos.back())) {
     computed = mrna::ParseCtdComputed(pos.front(), pos.back());
     printf("Energy: %d\n",
-        mrna::energy::ComputeEnergyWithCtds(computed, *em, false, &structure).energy);
+        mrna::energy::ComputeEnergyWithCtds(computed, em, false, &structure).energy);
   } else {
     const auto secondary = mrna::ParseDotBracketSecondary(pos.front(), pos.back());
-    computed = mrna::energy::ComputeEnergy(secondary, *em, &structure);
+    computed = mrna::energy::ComputeEnergy(secondary, em, &structure);
     printf("Energy: %d\n", computed.energy);
   }
 

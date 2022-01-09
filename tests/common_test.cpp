@@ -6,7 +6,7 @@
 
 namespace mrna {
 
-energy::EnergyModelPtr g_em;
+energy::EnergyModel g_em;
 
 std::ostream& operator<<(std::ostream& os, const Secondary& s) {
   return os << "(" << PrimaryToString(s.r) << ", " << PairsToDotBracket(s.p) << ")";

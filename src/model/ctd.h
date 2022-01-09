@@ -29,14 +29,14 @@ struct Computed {
   Computed(Computed&&) = default;
   Computed& operator=(Computed&&) = default;
 
-  explicit Computed(const Primary& r) : s(r), base_ctds(r.size(), CTD_NA), energy(MAX_E) {}
+  explicit Computed(Primary r_) : s(std::move(r_)), base_ctds(s.r.size(), CTD_NA), energy(MAX_E) {}
 
-  explicit Computed(const Secondary& s) : s(s), base_ctds(s.r.size(), CTD_NA), energy(MAX_E) {
+  explicit Computed(Secondary s_) : s(std::move(s_)), base_ctds(s.r.size(), CTD_NA), energy(MAX_E) {
     verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
   }
 
-  Computed(const Secondary& s, const std::vector<Ctd>& base_ctds, Energy energy)
-      : s(s), base_ctds(base_ctds), energy(energy) {
+  Computed(Secondary s_, std::vector<Ctd> base_ctds_, Energy energy_)
+      : s(std::move(s_)), base_ctds(std::move(base_ctds_)), energy(energy_) {
     verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
   }
 

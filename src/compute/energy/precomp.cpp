@@ -41,7 +41,9 @@ int MaxNumContiguous(const Primary& r) {
 
 }  // namespace internal
 
-Precomp::Precomp(Primary r, EnergyModel em) : r_(r), em_(em) { PrecomputeData(); }
+Precomp::Precomp(Primary r, EnergyModel em) : r_(std::move(r)), em_(std::move(em)) {
+  PrecomputeData();
+}
 
 Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   int toplen = ist - ost - 1, botlen = oen - ien - 1;

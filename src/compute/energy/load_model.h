@@ -14,9 +14,9 @@ inline const std::map<std::string, Opt> ENERGY_OPTS = {
     {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
     {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
 
-EnergyModelPtr LoadEnergyModelFromDataDir(const std::string& data_dir);
-EnergyModelPtr LoadRandomEnergyModel(uint_fast32_t seed);
-EnergyModelPtr LoadEnergyModelFromArgParse(const ArgParse& args);
+EnergyModel LoadEnergyModelFromDataDir(const std::string& data_dir);
+EnergyModel LoadRandomEnergyModel(uint_fast32_t seed);
+EnergyModel LoadEnergyModelFromArgParse(const ArgParse& args);
 
 }  // namespace mrna::energy
 
