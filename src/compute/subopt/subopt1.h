@@ -14,7 +14,7 @@
 #include "model/model.h"
 #include "util/splaymap.h"
 
-namespace mrna::subopt::internal {
+namespace mrna::subopt {
 
 struct Expand {
   Expand() = delete;
@@ -40,7 +40,7 @@ struct Expand {
 
 class Suboptimal1 {
  public:
-  Suboptimal1(Primary r, energy::EnergyModel em, Energy delta, int num);
+  Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
 
   int Run(SuboptimalCallback fn, bool sorted);
 
@@ -55,10 +55,13 @@ class Suboptimal1 {
   Primary r_;
   energy::EnergyModel em_;
   energy::Precomp pc_;
+  std::vector<int> p_;
+  std::vector<Ctd> ctd_;
+  DpArray dp_;
+  ExtArray ext_;
 
   const Energy delta_;
   const int max_structures_;
-  // This node is where we build intermediate results to be pushed onto the queue.
   SplayMap<Index, std::vector<Expand>> cache_;
   std::vector<DfsState> q_;
   std::vector<Index> unexpanded_;
@@ -80,6 +83,6 @@ class Suboptimal1 {
   std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
 };
 
-}  // namespace mrna::subopt::internal
+}  // namespace mrna::subopt
 
 #endif  // COMPUTE_SUBOPT_SUBOPT1_H_

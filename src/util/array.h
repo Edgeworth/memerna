@@ -10,7 +10,7 @@ namespace mrna {
 
 template <typename T, unsigned int K>
 struct Array3D {
-  typedef T ArrayType[K];
+  using ArrayType = T[K];
 
  public:
   Array3D() : data_(nullptr), size_(0) {}

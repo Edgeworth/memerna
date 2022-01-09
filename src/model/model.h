@@ -8,8 +8,8 @@
 
 namespace mrna {
 
-typedef int32_t Energy;
-typedef flt BoltzEnergy;
+using Energy = int32_t;
+using BoltzEnergy = flt;
 
 // Don't change this value. Plays nice with memset.
 inline constexpr Energy MAX_E = 0x0F0F0F0F;

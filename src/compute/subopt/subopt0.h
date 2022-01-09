@@ -8,15 +8,14 @@
 #include "compute/constants.h"
 #include "compute/dp.h"
 #include "compute/energy/structure.h"
-#include "compute/mfe/globals.h"
 #include "compute/subopt/subopt.h"
 #include "model/parsing.h"
 
-namespace mrna::subopt::internal {
+namespace mrna::subopt {
 
 class Suboptimal0 {
  public:
-  Suboptimal0(Primary r, energy::EnergyModel em, Energy delta, int num);
+  Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
 
   int Run(SuboptimalCallback fn);
 
@@ -26,7 +25,7 @@ class Suboptimal0 {
     // what it has done so far, and what it can do from now.
     std::vector<Index> not_yet_expanded;
     std::vector<Index> history;
-    std::vector<int16_t> p;
+    std::vector<int> p;
     std::vector<Ctd> base_ctds;
     Energy energy;  // Stores the minimum energy this state could have.
 
@@ -35,6 +34,8 @@ class Suboptimal0 {
 
   Primary r_;
   energy::EnergyModel em_;
+  DpArray dp_;
+  ExtArray ext_;
 
   const Energy max_energy_;
   const int max_structures;
@@ -97,6 +98,6 @@ class Suboptimal0 {
   }
 };
 
-}  // namespace mrna::subopt::internal
+}  // namespace mrna::subopt
 
 #endif  // COMPUTE_SUBOPT_SUBOPT0_H_

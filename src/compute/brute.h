@@ -9,7 +9,6 @@
 
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
-#include "compute/mfe/globals.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "model/model.h"
@@ -38,7 +37,7 @@ class BruteForce {
     // TODO: Switch to optional?
     bool compute_partition;
     partition::Partition partition;
-    partition::Probabilities probabilities;
+    Probabilities probabilities;
   };
 
   Result Run(const Primary& r, const energy::EnergyModel& em, int max_structures,
@@ -62,6 +61,8 @@ class BruteForce {
   };
 
   Primary r_;
+  std::vector<int> p_;
+  std::vector<Ctd> ctd_;
   energy::EnergyModel em_;
   Result res_;
   SplaySet<SubstructureId> substructure_map_;
@@ -69,9 +70,9 @@ class BruteForce {
   void AddAllCombinations(int idx);
   void Dfs(int idx);
 
-  static SubstructureId WriteBits(int st, int en, int N, bool inside);
-  static SubstructureId BuildInsideStructure(int st, int en, int N);
-  static SubstructureId BuildOutsideStructure(int st, int en, int N);
+  SubstructureId WriteBits(int st, int en, int N, bool inside);
+  SubstructureId BuildInsideStructure(int st, int en, int N);
+  SubstructureId BuildOutsideStructure(int st, int en, int N);
 };
 
 }  // namespace mrna

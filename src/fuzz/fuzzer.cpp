@@ -14,7 +14,6 @@
 
 namespace mrna::fuzz {
 
-using mfe::internal::gdp;
 using partition::PartitionBruteForce;
 using subopt::SuboptimalBruteForce;
 
@@ -216,8 +215,8 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   std::vector<Energy> memerna_optimal_efns;
   for (auto table_alg : ModelCfg::TABLE_ALGS) {
     Context ctx(r_, em_, ModelCfg(table_alg));
-    auto computed = ctx.Fold();
-    memerna_dps.emplace_back(std::move(gdp));
+    auto [computed, dp] = ctx.Fold();
+    memerna_dps.emplace_back(std::move(dp));
     // First compute with the CTDs that fold returned to check the energy.
     memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, em_).energy);
     // Also check that the optimal CTD configuration has the same energy.

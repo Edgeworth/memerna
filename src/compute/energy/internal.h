@@ -10,7 +10,7 @@
 
 namespace mrna::energy::internal {
 
-typedef std::deque<std::pair<Ctd, Energy>> BranchCtd;
+using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 
 Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds);

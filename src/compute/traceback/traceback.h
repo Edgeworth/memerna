@@ -2,12 +2,14 @@
 #ifndef COMPUTE_TRACEBACK_TRACEBACK_H_
 #define COMPUTE_TRACEBACK_TRACEBACK_H_
 
-#include "compute/mfe/globals.h"
+#include "compute/dp.h"
+#include "compute/energy/model.h"
 #include "model/base.h"
 
 namespace mrna::traceback {
 
-void Traceback(const Primary& r, const energy::EnergyModel& em);
+std::tuple<std::vector<int>, std::vector<Ctd>> Traceback(
+    const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::traceback
 

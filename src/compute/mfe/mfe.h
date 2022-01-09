@@ -2,22 +2,24 @@
 #ifndef COMPUTE_MFE_MFE_H_
 #define COMPUTE_MFE_MFE_H_
 
-#include "compute/mfe/globals.h"
+#include "compute/dp.h"
+#include "compute/energy/model.h"
 #include "model/base.h"
+#include "model/model.h"
 
-namespace mrna::mfe::internal {
+namespace mrna::mfe {
 
 struct Cand {
   Energy energy;
   int idx;
 };
 
-void ComputeTables0(const Primary& r, const energy::EnergyModel& em);
-void ComputeTables1(const Primary& r, const energy::EnergyModel& em);
-void ComputeTables2(const Primary& r, const energy::EnergyModel& em);
-void ComputeTables3(const Primary& r, const energy::EnergyModel& em);
-void ComputeExterior(const Primary& r, const energy::EnergyModel& em);
+DpArray ComputeTables0(const Primary& r, const energy::EnergyModel& em);
+DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em);
+DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em);
+DpArray ComputeTables3(const Primary& r, const energy::EnergyModel& em);
+ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const DpArray& dp);
 
-}  // namespace mrna::mfe::internal
+}  // namespace mrna::mfe
 
 #endif  // COMPUTE_MFE_MFE_H_

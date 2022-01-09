@@ -9,7 +9,7 @@
 
 namespace mrna {
 
-typedef int8_t Base;
+using Base = int8_t;
 
 // Don't ever change these values.
 const Base A = 0, C = 1, G = 2, U = 3;

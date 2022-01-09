@@ -8,11 +8,10 @@
 
 #include "compute/energy/load_model.h"
 #include "compute/mfe/brute.h"
-#include "compute/partition/globals.h"
 #include "model/context.h"
 #include "model/parsing.h"
 
-void PrintProbabilities(const mrna::partition::Probabilities& p) {
+void PrintProbabilities(const mrna::Probabilities& p) {
   const int N = static_cast<int>(p.Size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << p[i][j][0] << ' '; }

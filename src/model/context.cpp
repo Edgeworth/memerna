@@ -4,9 +4,9 @@
 #include <utility>
 #include <vector>
 
+#include "compute/dp.h"
 #include "compute/mfe/brute.h"
 #include "compute/partition/brute.h"
-#include "compute/partition/globals.h"
 #include "compute/subopt/brute.h"
 #include "compute/subopt/subopt0.h"
 #include "compute/subopt/subopt1.h"
@@ -14,24 +14,24 @@
 
 namespace mrna {
 
-void Context::ComputeTables() {
-  mfe::SetMfeGlobalState(r_);
+DpArray Context::ComputeTables() {
   switch (cfg_.table_alg) {
-  case ModelCfg::TableAlg::ZERO: mfe::internal::ComputeTables0(r_, em_); break;
-  case ModelCfg::TableAlg::ONE: mfe::internal::ComputeTables1(r_, em_); break;
-  case ModelCfg::TableAlg::TWO: mfe::internal::ComputeTables2(r_, em_); break;
-  case ModelCfg::TableAlg::THREE: mfe::internal::ComputeTables3(r_, em_); break;
+  case ModelCfg::TableAlg::ZERO: return mfe::ComputeTables0(r_, em_);
+  case ModelCfg::TableAlg::ONE: return mfe::ComputeTables1(r_, em_);
+  case ModelCfg::TableAlg::TWO: return mfe::ComputeTables2(r_, em_);
+  case ModelCfg::TableAlg::THREE: return mfe::ComputeTables3(r_, em_);
   default: bug();
   }
-  mfe::internal::ComputeExterior(r_, em_);
 }
 
-Computed Context::Fold() {
-  if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) return mfe::MfeBruteForce(r_, em_);
+// TODO: Come up with better types than this tuple.
+std::tuple<Computed, DpArray> Context::Fold() {
+  if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) return {mfe::MfeBruteForce(r_, em_), DpArray()};
 
-  ComputeTables();
-  traceback::Traceback(r_, em_);
-  return {{r_, mfe::internal::gp}, mfe::internal::gctd, mfe::internal::genergy};
+  auto dp = ComputeTables();
+  auto ext = mfe::ComputeExterior(r_, em_, dp);
+  auto [p, ctd] = traceback::Traceback(r_, em_, dp, ext);
+  return {Computed{{r_, std::move(p)}, std::move(ctd), ext[0][EXT]}, std::move(dp)};
 }
 
 std::vector<Computed> Context::SuboptimalIntoVector(
@@ -52,32 +52,35 @@ int Context::Suboptimal(
     return static_cast<int>(computeds.size());
   }
 
-  ComputeTables();
+  auto dp = ComputeTables();
+  auto ext = mfe::ComputeExterior(r_, em_, dp);
   switch (cfg_.suboptimal_alg) {
   case ModelCfg::SuboptimalAlg::ZERO:
-    return subopt::internal::Suboptimal0(r_, em_, subopt_delta, subopt_num).Run(fn);
+    return subopt::Suboptimal0(r_, em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+        .Run(fn);
   case ModelCfg::SuboptimalAlg::ONE:
-    return subopt::internal::Suboptimal1(r_, em_, subopt_delta, subopt_num).Run(fn, sorted);
+    return subopt::Suboptimal1(r_, em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+        .Run(fn, sorted);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.suboptimal_alg));
   }
 }
 
 partition::Partition Context::Partition() {
-  partition::SetPartitionGlobalState(r_);
+  std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.partition_alg) {
-  case ModelCfg::PartitionAlg::ZERO: partition::internal::Partition0(r_, em_); break;
+  case ModelCfg::PartitionAlg::ZERO: res = partition::Partition0(r_, em_); break;
   case ModelCfg::PartitionAlg::ONE:
-    partition::internal::Partition1(r_, energy::BoltzEnergyModel(em_));
+    res = partition::Partition1(r_, energy::BoltzEnergyModel(em_));
     break;
   case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r_, em_).first;
   }
-  const auto& gpt = partition::internal::gpt;
-  const int size = static_cast<int>(r_.size());
-  Array3D<BoltzEnergy, 1> p((std::size_t(size)));
-  for (int i = 0; i < size; ++i)  // TODO optimise this?
-    for (int j = 0; j < size; ++j) p[i][j][0] = gpt[i][j][partition::PT_P];
-  return {std::move(p), partition::internal::gptext[0][partition::PTEXT_R]};
+  const int N = static_cast<int>(r_.size());
+  auto [dp, ext] = std::move(res);
+  Array3D<BoltzEnergy, 1> p(N);
+  for (int i = 0; i < N; ++i)  // TODO optimise this?
+    for (int j = 0; j < N; ++j) p[i][j][0] = dp[i][j][PT_P];
+  return {std::move(p), ext[0][PTEXT_R]};
 }
 
 }  // namespace mrna

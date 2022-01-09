@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "compute/boltz_dp.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/context.h"
@@ -26,8 +27,7 @@ class RnaPackage {
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const = 0;
   virtual std::vector<Computed> SuboptimalIntoVector(
       const Primary& r, Energy energy_delta) const = 0;
-  virtual std::pair<partition::Partition, partition::Probabilities> Partition(
-      const Primary& r) const = 0;
+  virtual std::pair<partition::Partition, Probabilities> Partition(const Primary& r) const = 0;
 };
 
 const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};

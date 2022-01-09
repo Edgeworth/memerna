@@ -21,14 +21,14 @@ namespace mrna {
 #endif
 
 #ifdef USE_MPFR
-typedef boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_BITS>> flt;
+using flt = boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_BITS>>;
 #else
 #if FLOAT_BITS == 32
-typedef float flt;
+using flt = float;
 #elif FLOAT_BITS == 64
-typedef double flt;
+using flt = double;
 #elif FLOAT_BITS == 80
-typedef long double flt;
+using flt = long double;
 #else
 static_assert(false, "unknown float bits")
 #endif

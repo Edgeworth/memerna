@@ -8,7 +8,6 @@
 
 #include "compute/brute.h"
 #include "compute/energy/structure.h"
-#include "compute/mfe/globals.h"
 #include "model/parsing.h"
 #include "util/splaymap.h"
 

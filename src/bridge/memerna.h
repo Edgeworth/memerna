@@ -25,8 +25,7 @@ class Memerna : public RnaPackage {
   int Suboptimal(
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
   std::vector<Computed> SuboptimalIntoVector(const Primary& r, Energy energy_delta) const override;
-  std::pair<partition::Partition, partition::Probabilities> Partition(
-      const Primary& r) const override;
+  std::pair<partition::Partition, Probabilities> Partition(const Primary& r) const override;
 
  private:
   energy::EnergyModel em_;

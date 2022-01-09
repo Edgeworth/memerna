@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "compute/energy/structure.h"
-#include "compute/mfe/globals.h"
 #include "compute/mfe/mfe.h"
 #include "compute/subopt/brute.h"
 #include "model/parsing.h"

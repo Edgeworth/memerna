@@ -26,7 +26,9 @@ Energy Memerna::Efn(const Secondary& secondary, std::string* desc) const {
   return computed.energy;
 }
 
-Computed Memerna::Fold(const Primary& r) const { return Context(r, em_, cfg_).Fold(); }
+Computed Memerna::Fold(const Primary& r) const {
+  return std::get<Computed>(Context(r, em_, cfg_).Fold());
+}
 
 int Memerna::Suboptimal(
     subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const {
@@ -37,8 +39,7 @@ std::vector<Computed> Memerna::SuboptimalIntoVector(const Primary& r, Energy ene
   return Context(r, em_, cfg_).SuboptimalIntoVector(true, energy_delta, -1);
 }
 
-std::pair<partition::Partition, partition::Probabilities> Memerna::Partition(
-    const Primary& r) const {
+std::pair<partition::Partition, Probabilities> Memerna::Partition(const Primary& r) const {
   auto partition = Context(r, em_, cfg_).Partition();
   auto probabilities = partition::ComputeProbabilities(partition);
   return {std::move(partition), std::move(probabilities)};
