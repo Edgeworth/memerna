@@ -13,7 +13,8 @@ using mfe::internal::gdp;
 using mfe::internal::gext;
 
 Suboptimal0::Suboptimal0(Primary r, energy::EnergyModel em, Energy delta, int num)
-    : r_(r), em_(em), max_energy_(delta == -1 ? CAP_E : mfe::internal::gext[0][EXT] + delta),
+    : r_(std::move(r)), em_(std::move(em)),
+      max_energy_(delta == -1 ? CAP_E : mfe::internal::gext[0][EXT] + delta),
       max_structures(num == -1 ? MAX_STRUCTURES : num) {
   verify(max_structures > 0, "must request at least one structure");
 }

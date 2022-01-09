@@ -130,8 +130,6 @@ class EnergyModel {
   uint32_t Checksum() const;
 };
 
-typedef std::shared_ptr<EnergyModel> EnergyModelPtr;
-
 }  // namespace mrna::energy
 
 #endif  // COMPUTE_ENERGY_MODEL_H_

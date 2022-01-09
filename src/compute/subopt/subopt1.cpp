@@ -16,7 +16,7 @@ using mfe::internal::gp;
 using mfe::internal::grep;
 
 Suboptimal1::Suboptimal1(Primary r, energy::EnergyModel em, Energy delta, int num)
-    : r_(r), em_(em), pc_(r, em), delta_(delta == -1 ? CAP_E : delta),
+    : r_(std::move(r)), em_(std::move(em)), pc_(r_, em_), delta_(delta == -1 ? CAP_E : delta),
       max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
 
 int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {

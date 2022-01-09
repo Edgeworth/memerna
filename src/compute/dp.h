@@ -55,9 +55,8 @@ struct Index {
   int16_t st, en, a;
 
   Index() : st(-1), en(-1), a(-1) {}
-  Index(int st_int, int en_int, int a_int)
-      : st(int16_t(st_int)), en(int16_t(en_int)), a(int16_t(a_int)) {
-    assert(st_int == st && en_int == en && a == a_int);
+  Index(int st_, int en_, int a_) : st(int16_t(st_)), en(int16_t(en_)), a(int16_t(a_)) {
+    assert(st_ == st && en_ == en && a == a_);
   }
 
   bool operator==(const Index& o) const { return st == o.st && en == o.en && a == o.a; }
@@ -72,7 +71,7 @@ struct Index {
 // Describes a CTD at a particular index.
 struct IndexCtd {
   IndexCtd() : idx(-1), ctd(CTD_NA) {}
-  IndexCtd(int idx_int, Ctd ctd) : idx(int16_t(idx_int)), ctd(ctd) { assert(idx_int == idx); }
+  IndexCtd(int idx_, Ctd ctd_) : idx(int16_t(idx_)), ctd(ctd_) { assert(idx_ == idx); }
 
   int16_t idx;
   Ctd ctd;

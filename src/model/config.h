@@ -25,9 +25,10 @@ struct ModelCfg {
       SuboptimalAlg::ZERO, SuboptimalAlg::ONE};
   inline static constexpr PartitionAlg PARTITION_ALGS[] = {PartitionAlg::ZERO, PartitionAlg::ONE};
 
-  ModelCfg(TableAlg table_alg = TableAlg::ZERO, SuboptimalAlg suboptimal_alg = SuboptimalAlg::ZERO,
-      PartitionAlg partition_alg = PartitionAlg::ZERO)
-      : table_alg(table_alg), suboptimal_alg(suboptimal_alg), partition_alg(partition_alg) {}
+  ModelCfg(TableAlg table_alg_ = TableAlg::ZERO,
+      SuboptimalAlg suboptimal_alg_ = SuboptimalAlg::ZERO,
+      PartitionAlg partition_alg_ = PartitionAlg::ZERO)
+      : table_alg(table_alg_), suboptimal_alg(suboptimal_alg_), partition_alg(partition_alg_) {}
 
   TableAlg table_alg;
   SuboptimalAlg suboptimal_alg;

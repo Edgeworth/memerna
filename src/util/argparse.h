@@ -13,23 +13,23 @@
 namespace mrna {
 
 struct Opt {
-  Opt(const std::string& desc_ = "", const std::string& default_arg_ = "",
-      bool has_default_ = false, bool has_arg_ = false, bool required_ = false)
-      : desc(desc_), default_arg(default_arg_), choices(), has_default(has_default_),
-        has_arg(has_arg_), required(required_) {}
+  Opt(std::string desc_ = "", std::string default_arg_ = "", bool has_default_ = false,
+      bool has_arg_ = false, bool required_ = false)
+      : desc(std::move(desc_)), default_arg(std::move(default_arg_)), choices(),
+        has_default(has_default_), has_arg(has_arg_), required(required_) {}
 
-  Opt& Arg(const std::string& default_, const std::unordered_set<std::string>& choices_) {
-    default_arg = default_;
-    choices = choices_;
+  Opt& Arg(std::string default_arg_, std::unordered_set<std::string> choices_) {
+    default_arg = std::move(default_arg_);
+    choices = std::move(choices_);
     has_default = true;
     has_arg = true;
     return *this;
   }
 
-  Opt& Arg(const std::string& default_) { return Arg(default_, {}); }
+  Opt& Arg(std::string default_arg_) { return Arg(std::move(default_arg_), {}); }
 
-  Opt& Arg(const std::unordered_set<std::string>& choices_) {
-    choices = choices_;
+  Opt& Arg(std::unordered_set<std::string> choices_) {
+    choices = std::move(choices_);
     has_arg = true;
     return *this;
   }
@@ -56,8 +56,8 @@ struct Opt {
 
 class ArgParse {
  public:
-  explicit ArgParse(const std::map<std::string, Opt>& possible_args)
-      : possible_args_(possible_args) {}
+  explicit ArgParse(std::map<std::string, Opt> possible_args)
+      : possible_args_(std::move(possible_args)) {}
 
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;

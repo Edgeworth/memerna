@@ -21,14 +21,14 @@ typedef std::deque<std::string> Error;
 
 class Fuzzer {
  public:
-  Fuzzer(Primary r, const FuzzCfg& cfg, const energy::EnergyModelPtr em);
+  Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em);
 
   Error Run();
 
  private:
   Primary r_;
-  const FuzzCfg cfg_;
-  energy::EnergyModelPtr em_;
+  FuzzCfg cfg_;
+  energy::EnergyModel em_;
 
   std::vector<Computed> memerna_computeds_;
   std::vector<Array3D<Energy, DP_SIZE>> memerna_dps;
