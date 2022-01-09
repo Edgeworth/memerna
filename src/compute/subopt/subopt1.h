@@ -55,8 +55,8 @@ class Suboptimal1 {
   Primary r_;
   energy::EnergyModel em_;
   energy::Precomp pc_;
-  std::vector<int> p_;
-  std::vector<Ctd> ctd_;
+  Secondary s_;
+  Ctds ctd_;
   DpArray dp_;
   ExtArray ext_;
 

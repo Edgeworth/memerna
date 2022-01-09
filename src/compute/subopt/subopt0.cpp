@@ -24,8 +24,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   // Cull the ones not inside the window or when we have more than |max_structures|.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
-  q_.insert(
-      {{{0, -1, EXT}}, {}, std::vector<int>(N, -1), std::vector<Ctd>(N, CTD_NA), ext_[0][EXT]});
+  q_.insert({{{0, -1, EXT}}, {}, Secondary(N, -1), Ctds(N, CTD_NA), ext_[0][EXT]});
   while (!q_.empty()) {
     auto node = *q_.begin();
     q_.erase(q_.begin());
@@ -146,8 +145,8 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
 
     // Normal stuff
     if (a == DP_P) {
-      curnode_.p[st] = en;
-      curnode_.p[en] = st;
+      curnode_.s[st] = en;
+      curnode_.s[en] = st;
 
       // Two loops.
       int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -320,7 +319,7 @@ int Suboptimal0::Run(SuboptimalCallback fn) {
   }
   for (const auto& struc : finished_) {
     assert(struc.not_yet_expanded.empty());
-    fn({{r_, {struc.p.begin(), struc.p.end()}}, struc.base_ctds, struc.energy});
+    fn({r_, {struc.s.begin(), struc.s.end()}, struc.base_ctds, struc.energy});
   }
   return static_cast<int>(finished_.size());
 }

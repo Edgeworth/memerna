@@ -7,16 +7,17 @@
 namespace mrna {
 
 TEST(BruteFold, GetBranchCounts) {
-  EXPECT_EQ((std::vector<int>{2, 0}), internal::GetBranchCounts(DotBracketToPairs("()")));
-  EXPECT_EQ((std::vector<int>{}), internal::GetBranchCounts(DotBracketToPairs("")));
-  EXPECT_EQ((std::vector<int>{0}), internal::GetBranchCounts(DotBracketToPairs(".")));
+  EXPECT_EQ((std::vector<int>{2, 0}), internal::GetBranchCounts(DotBracketToSecondary("()")));
+  EXPECT_EQ((std::vector<int>{}), internal::GetBranchCounts(DotBracketToSecondary("")));
+  EXPECT_EQ((std::vector<int>{0}), internal::GetBranchCounts(DotBracketToSecondary(".")));
+  EXPECT_EQ((std::vector<int>{2, 0, 2, 0, 2, 0}),
+      internal::GetBranchCounts(DotBracketToSecondary("()()()")));
   EXPECT_EQ(
-      (std::vector<int>{2, 0, 2, 0, 2, 0}), internal::GetBranchCounts(DotBracketToPairs("()()()")));
-  EXPECT_EQ((std::vector<int>{2, 1, 0, 1}), internal::GetBranchCounts(DotBracketToPairs("(())")));
+      (std::vector<int>{2, 1, 0, 1}), internal::GetBranchCounts(DotBracketToSecondary("(())")));
   EXPECT_EQ((std::vector<int>{2, 3, 0, 3, 0, 3, 0, 3}),
-      internal::GetBranchCounts(DotBracketToPairs("(()()())")));
+      internal::GetBranchCounts(DotBracketToSecondary("(()()())")));
   EXPECT_EQ((std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}),
-      internal::GetBranchCounts(DotBracketToPairs("((()()))")));
+      internal::GetBranchCounts(DotBracketToSecondary("((()()))")));
 }
 
 }  // namespace mrna

@@ -62,9 +62,9 @@ void Fuzzer::AppendErrors(Error& main, Error&& extra) {
 
 bool Fuzzer::HasDuplicates(const std::vector<Computed>& computeds) {
   // If energies are different but everything else is the same, it is still a bug.
-  std::set<std::pair<Secondary, std::vector<Ctd>>> suboptimal_set;
+  std::set<std::tuple<Primary, Secondary, Ctds>> suboptimal_set;
   for (const auto& computed : computeds) {
-    auto val = std::make_pair(computed.s, computed.base_ctds);
+    auto val = std::make_tuple(computed.r, computed.s, computed.base_ctds);
     if (suboptimal_set.count(val)) return true;
     suboptimal_set.insert(val);
   }
@@ -96,7 +96,7 @@ Error Fuzzer::CheckSuboptimalResult(const std::vector<Computed>& subopt, bool ha
 
       // Incidentally test ctd parsing.
       auto parsed_computed =
-          ParseCtdComputed(PrimaryToString(structure.s.r), ComputedToCtdString(structure));
+          ParseCtdComputed(PrimaryToString(structure.r), ComputedToCtdString(structure));
       parsed_computed.energy = structure.energy;
       if (parsed_computed != structure) {
         errors.push_back(sfmt("structure %d: bug in parsing code", i));
@@ -221,7 +221,7 @@ Error Fuzzer::MemernaComputeAndCheckState() {
     memerna_ctd_efns.push_back(energy::ComputeEnergyWithCtds(computed, em_).energy);
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.s, em_).energy);
+    memerna_optimal_efns.push_back(energy::ComputeEnergy(computed.r, computed.s, em_).energy);
     memerna_computeds_.push_back(std::move(computed));
   }
 
@@ -242,7 +242,7 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
   Error errors;
 #ifdef USE_RNASTRUCTURE
   auto rnastructure_computed = rnastructure_->FoldAndDpTable(r_, &rnastructure_dp_);
-  auto rnastructure_efn = rnastructure_->Efn(rnastructure_computed.s);
+  auto rnastructure_efn = rnastructure_->Efn(rnastructure_computed.r, rnastructure_computed.s);
   if (memerna_computeds_[0].energy != rnastructure_computed.energy ||
       memerna_computeds_[0].energy != rnastructure_efn)
     errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d",

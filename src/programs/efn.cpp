@@ -19,8 +19,8 @@ int main(int argc, char* argv[]) {
     printf("Energy: %d\n",
         mrna::energy::ComputeEnergyWithCtds(computed, em, false, &structure).energy);
   } else {
-    const auto secondary = mrna::ParseDotBracketSecondary(pos.front(), pos.back());
-    computed = mrna::energy::ComputeEnergy(secondary, em, &structure);
+    const auto [r, s] = mrna::ParsePrimaryDotBracket(pos.front(), pos.back());
+    computed = mrna::energy::ComputeEnergy(r, s, em, &structure);
     printf("Energy: %d\n", computed.energy);
   }
 

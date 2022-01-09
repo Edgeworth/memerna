@@ -35,10 +35,8 @@ namespace mrna::energy::internal {
     }                                                                                 \
   } while (0)
 
-Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
+Energy ComputeOptimalCtd(const Primary& r, const Secondary& s, const EnergyModel& em,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd& branch_ctds) {
-  const auto& r = secondary.r;
-  const auto& p = secondary.p;
   int N = static_cast<int>(branches.size());
   int RSZ = static_cast<int>(r.size());
   assert(branch_ctds.empty());
@@ -55,7 +53,7 @@ Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
           size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA))};
 
   cache[0][0] = cache[1][0] = 0;
-  int first_lui = branches[0] - 1, last_rui = p[branches[N - 1]] + 1;
+  int first_lui = branches[0] - 1, last_rui = s[branches[N - 1]] + 1;
 
   // Precompute data about the unpaired bases.
   std::vector<int> li((size_t(N))), ri((size_t(N))), lui((size_t(N))), rui((size_t(N)));
@@ -63,18 +61,18 @@ Energy ComputeOptimalCtd(const Secondary& secondary, const EnergyModel& em,
       ru_usable((size_t(N))), ru_shared((size_t(N)));
   for (int i = 0; i < N; ++i) {
     li[i] = branches[i];
-    ri[i] = p[branches[i]];
+    ri[i] = s[branches[i]];
     assert(ri[i] != -1);
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
     // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right
     // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
     // dangle, right facing coaxial stack, etc). This is because the loop is cyclic.
-    lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && p[lui[i]] == -1;
+    lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && s[lui[i]] == -1;
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);
-    ru_exists[i] = rui[i] >= 0 && rui[i] < RSZ && p[rui[i]] == -1;
+    ru_exists[i] = rui[i] >= 0 && rui[i] < RSZ && s[rui[i]] == -1;
     ru_usable[i] = ru_exists[i] && (rui[i] != first_lui || !use_first_lu);
-    ru_shared[i] = ru_exists[i] && rui[i] < RSZ - 1 && p[rui[i] + 1] != -1;
+    ru_shared[i] = ru_exists[i] && rui[i] < RSZ - 1 && s[rui[i] + 1] != -1;
   }
 
   for (int i = 0; i < N; ++i) {
@@ -176,7 +174,7 @@ void AddBranchCtdsToComputed(
   assert(branches.size() == branch_ctds.size());
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
     assert(static_cast<int>(computed.base_ctds.size()) > branches[i] &&
-        static_cast<int>(computed.base_ctds.size()) > computed.s.p[branches[i]]);
+        static_cast<int>(computed.base_ctds.size()) > computed.s[branches[i]]);
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
     // swap the indices in that case.
     computed.base_ctds[branches[i]] = branch_ctds[i].first;
@@ -185,8 +183,8 @@ void AddBranchCtdsToComputed(
 
 Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em,
     const std::deque<int>& branches, BranchCtd& branch_ctds) {
-  const auto& r = computed.s.r;
-  const auto& p = computed.s.p;
+  const auto& r = computed.r;
+  const auto& s = computed.s;
   assert(branch_ctds.empty());
   Energy total_energy = 0;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
@@ -198,40 +196,40 @@ Energy GetBranchCtdsFromComputed(const Computed& computed, const EnergyModel& em
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     Energy energy = 0;
-    const auto stb = r[branch], enb = r[p[branch]];
+    const auto stb = r[branch], enb = r[s[branch]];
     switch (computed.base_ctds[branch]) {
     case CTD_UNUSED: break;
     case CTD_3_DANGLE:
-      assert(p[branch] + 1 < static_cast<int>(r.size()));
-      energy = em.dangle3[enb][r[p[branch] + 1]][stb];
+      assert(s[branch] + 1 < static_cast<int>(r.size()));
+      energy = em.dangle3[enb][r[s[branch] + 1]][stb];
       break;
     case CTD_5_DANGLE:
       assert(branch > 0);
       energy = em.dangle5[enb][r[branch - 1]][stb];
       break;
     case CTD_MISMATCH:
-      assert(p[branch] + 1 < static_cast<int>(r.size()) && branch > 0);
-      energy = em.terminal[enb][r[p[branch] + 1]][r[branch - 1]][stb];
+      assert(s[branch] + 1 < static_cast<int>(r.size()) && branch > 0);
+      energy = em.terminal[enb][r[s[branch] + 1]][r[branch - 1]][stb];
       break;
     case CTD_LCOAX_WITH_PREV:
       // .(   ).(   )
-      assert(p[prev_branch] + 1 < static_cast<int>(r.size()) && prev_branch - 1 >= 0);
+      assert(s[prev_branch] + 1 < static_cast<int>(r.size()) && prev_branch - 1 >= 0);
       energy = em.MismatchCoaxial(
-          r[p[prev_branch]], r[p[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
+          r[s[prev_branch]], r[s[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
       branch_ctds.emplace_back(CTD_LCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_RCOAX_WITH_PREV:
-      assert(branch > 0 && p[branch] + 1 < static_cast<int>(r.size()));
+      assert(branch > 0 && s[branch] + 1 < static_cast<int>(r.size()));
       // (   ).(   ). or (.(   ).   )
-      energy = em.MismatchCoaxial(enb, r[p[branch] + 1], r[branch - 1], stb);
+      energy = em.MismatchCoaxial(enb, r[s[branch] + 1], r[branch - 1], stb);
       // Need to do rotations
       branch_ctds.emplace_back(CTD_RCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_FCOAX_WITH_PREV:
       // (   )(   ) or ((   )   ) or (   (   ))
-      energy = em.stack[r[p[prev_branch]]][stb][enb][r[prev_branch]];
+      energy = em.stack[r[s[prev_branch]]][stb][enb][r[prev_branch]];
       branch_ctds.emplace_back(CTD_FCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;

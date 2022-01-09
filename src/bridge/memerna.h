@@ -20,7 +20,7 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const override;
+  Energy Efn(const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
   Computed Fold(const Primary& r) const override;
   int Suboptimal(
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;

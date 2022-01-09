@@ -24,7 +24,7 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const override;
+  Energy Efn(const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
   Computed Fold(const Primary& r) const override;
   int Suboptimal(
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const override;
@@ -38,7 +38,7 @@ class RNAstructure : public RnaPackage {
   bool use_lyngso_;
 
   std::unique_ptr<structure> LoadStructure(const Primary& r) const;
-  std::unique_ptr<structure> LoadStructure(const Secondary& s) const;
+  std::unique_ptr<structure> LoadStructure(const Primary& r, const Secondary& s) const;
 };
 
 }  // namespace mrna::bridge

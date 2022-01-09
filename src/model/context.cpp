@@ -30,8 +30,8 @@ std::tuple<Computed, DpArray> Context::Fold() {
 
   auto dp = ComputeTables();
   auto ext = mfe::ComputeExterior(r_, em_, dp);
-  auto [p, ctd] = traceback::Traceback(r_, em_, dp, ext);
-  return {Computed{{r_, std::move(p)}, std::move(ctd), ext[0][EXT]}, std::move(dp)};
+  auto [s, ctd] = traceback::Traceback(r_, em_, dp, ext);
+  return {Computed{r_, std::move(s), std::move(ctd), ext[0][EXT]}, std::move(dp)};
 }
 
 std::vector<Computed> Context::SuboptimalIntoVector(

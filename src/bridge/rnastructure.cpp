@@ -19,17 +19,17 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   return dt;
 }
 
-std::vector<int> StructureToPairs(structure& struc, int struc_num = 1) {
-  std::vector<int> p(struc.GetSequenceLength(), -1);
-  for (int i = 0; i < static_cast<int>(p.size()); ++i) p[i] = struc.GetPair(i + 1, struc_num) - 1;
-  return p;
+Secondary StructureToSecondary(structure& struc, int struc_num = 1) {
+  Secondary s(struc.GetSequenceLength(), -1);
+  for (int i = 0; i < static_cast<int>(s.size()); ++i) s[i] = struc.GetPair(i + 1, struc_num) - 1;
+  return s;
 }
 
-std::vector<std::vector<int>> StructureToMultiplePairs(structure& struc) {
-  std::vector<std::vector<int>> ps;
+std::vector<Secondary> StructureToSecondarys(structure& struc) {
+  std::vector<Secondary> s;
   for (int i = 0; i < struc.GetNumberofStructures(); ++i)
-    ps.push_back(StructureToPairs(struc, i + 1));
-  return ps;
+    s.push_back(StructureToSecondary(struc, i + 1));
+  return s;
 }
 
 }  // namespace
@@ -41,8 +41,8 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-Energy RNAstructure::Efn(const Secondary& secondary, std::string* desc) const {
-  const auto structure = LoadStructure(secondary);
+Energy RNAstructure::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
+  const auto structure = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
@@ -68,8 +68,8 @@ Computed RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) co
   constexpr auto disable_coax = false;
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
-  return {{r, StructureToPairs(*structure)}, std::vector<Ctd>(r.size(), CTD_NA),
-      Energy(structure->GetEnergy(1))};
+  return {
+      r, StructureToSecondary(*structure), Ctds(r.size(), CTD_NA), Energy(structure->GetEnergy(1))};
 }
 
 int RNAstructure::Suboptimal(
@@ -85,11 +85,11 @@ std::vector<Computed> RNAstructure::SuboptimalIntoVector(
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
   alltrace(structure.get(), data_.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
-  auto p_list = StructureToMultiplePairs(*structure);
+  auto s_list = StructureToSecondarys(*structure);
   std::vector<Computed> computeds;
-  for (int i = 0; i < static_cast<int>(p_list.size()); ++i)
-    computeds.emplace_back(Secondary(r, std::move(p_list[i])), std::vector<Ctd>(r.size(), CTD_NA),
-        Energy(structure->GetEnergy(i + 1)));
+  for (int i = 0; i < static_cast<int>(s_list.size()); ++i)
+    computeds.emplace_back(
+        r, std::move(s_list[i]), Ctds(r.size(), CTD_NA), Energy(structure->GetEnergy(i + 1)));
   return computeds;
 }
 
@@ -141,11 +141,11 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {
   return struc;
 }
 
-std::unique_ptr<structure> RNAstructure::LoadStructure(const Secondary& s) const {
-  auto struc = LoadStructure(s.r);
+std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r, const Secondary& s) const {
+  auto struc = LoadStructure(r);
   struc->AddStructure();
-  for (int i = 0; i < static_cast<int>(s.p.size()); ++i) {
-    if (i < s.p[i]) struc->SetPair(i + 1, s.p[i] + 1);
+  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
+    if (i < s[i]) struc->SetPair(i + 1, s[i] + 1);
   }
   return struc;
 }
