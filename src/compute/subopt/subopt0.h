@@ -24,8 +24,8 @@ class Suboptimal0 {
     // what it has done so far, and what it can do from now.
     std::vector<Index> not_yet_expanded;
     std::vector<Index> history;
-    std::vector<int> p;
-    std::vector<Ctd> base_ctds;
+    Secondary s;
+    Ctds base_ctds;
     Energy energy;  // Stores the minimum energy this state could have.
 
     bool operator<(const Node& o) const { return energy < o.energy; }

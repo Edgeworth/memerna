@@ -9,11 +9,11 @@
 
 namespace mrna::traceback {
 
-std::tuple<std::vector<int>, std::vector<Ctd>> Traceback(
+std::tuple<Secondary, Ctds> Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
   const int N = static_cast<int>(r.size());
-  std::vector<int> p(N, -1);
-  std::vector<Ctd> ctd(N, CTD_NA);
+  Secondary s(N, -1);
+  Ctds ctd(N, CTD_NA);
 
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
@@ -134,8 +134,8 @@ std::tuple<std::vector<int>, std::vector<Ctd>> Traceback(
                  en2b = r[en - 2];
       if (a == DP_P) {
         // It's paired, so add it to the folding.
-        p[st] = en;
-        p[en] = st;
+        s[st] = en;
+        s[en] = st;
 
         // Following largely matches the above DP so look up there for comments.
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
@@ -377,7 +377,7 @@ std::tuple<std::vector<int>, std::vector<Ctd>> Traceback(
   loopend : {};
   }
 
-  return {std::move(p), std::move(ctd)};
+  return {std::move(s), std::move(ctd)};
 }
 
 }  // namespace mrna::traceback

@@ -2,34 +2,49 @@
 #include "common_test.h"
 #include "gtest/gtest.h"
 #include "model/context.h"
+#include "model/secondary.h"
 
 namespace mrna::energy {
 
 class EnergyTest : public testing::Test {
  public:
-  Secondary kNNDBHairpin1 = ParseDotBracketSecondary("CACAAAAAAAUGUG", "((((......))))");
-  Secondary kNNDBHairpin2 = ParseDotBracketSecondary("CACAGGAAGUGUG", "((((.....))))");
-  Secondary kNNDBHairpin3 = ParseDotBracketSecondary("CACCCGAGGGUG", "((((....))))");
-  Secondary kNNDBHairpin4 = ParseDotBracketSecondary("CACACCCCCCUGUG", "((((......))))");
-  Secondary kNNDBHairpin5 = ParseDotBracketSecondary("CGGGGGAAGUCCG", "((((.....))))");
-  Secondary kNNDBBulge1 = ParseDotBracketSecondary("GCCCGAAACGGC", "(((.(...))))");
-  Secondary kNNDBBulge2 = ParseDotBracketSecondary("GAACAGAAACUC", "((...(...)))");
-  Secondary kNNDBInternal2x3 = ParseDotBracketSecondary("CAGACGAAACGGAGUG", "((..((...))...))");
-  Secondary kNNDBInternal1x5 = ParseDotBracketSecondary("CAGCGAAACGGAAAGUG", "((.((...)).....))");
-  Secondary kNNDBInternal2x2 = ParseDotBracketSecondary("CAGACGAAACGGAUG", "((..((...))..))");
-  Secondary kFlushCoax = ParseDotBracketSecondary("GUGAAACACAAAAUGA", ".((...))((...)).");
+  std::tuple<Primary, Secondary> kNNDBHairpin1 =
+      ParsePrimaryDotBracket("CACAAAAAAAUGUG", "((((......))))");
+  std::tuple<Primary, Secondary> kNNDBHairpin2 =
+      ParsePrimaryDotBracket("CACAGGAAGUGUG", "((((.....))))");
+  std::tuple<Primary, Secondary> kNNDBHairpin3 =
+      ParsePrimaryDotBracket("CACCCGAGGGUG", "((((....))))");
+  std::tuple<Primary, Secondary> kNNDBHairpin4 =
+      ParsePrimaryDotBracket("CACACCCCCCUGUG", "((((......))))");
+  std::tuple<Primary, Secondary> kNNDBHairpin5 =
+      ParsePrimaryDotBracket("CGGGGGAAGUCCG", "((((.....))))");
+  std::tuple<Primary, Secondary> kNNDBBulge1 =
+      ParsePrimaryDotBracket("GCCCGAAACGGC", "(((.(...))))");
+  std::tuple<Primary, Secondary> kNNDBBulge2 =
+      ParsePrimaryDotBracket("GAACAGAAACUC", "((...(...)))");
+  std::tuple<Primary, Secondary> kNNDBInternal2x3 =
+      ParsePrimaryDotBracket("CAGACGAAACGGAGUG", "((..((...))...))");
+  std::tuple<Primary, Secondary> kNNDBInternal1x5 =
+      ParsePrimaryDotBracket("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+  std::tuple<Primary, Secondary> kNNDBInternal2x2 =
+      ParsePrimaryDotBracket("CAGACGAAACGGAUG", "((..((...))..))");
+  std::tuple<Primary, Secondary> kFlushCoax =
+      ParsePrimaryDotBracket("GUGAAACACAAAAUGA", ".((...))((...)).");
   // NNDB T99 Multiloop example
-  Secondary kNNDBMultiloop =
-      ParseDotBracketSecondary("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+  std::tuple<Primary, Secondary> kNNDBMultiloop =
+      ParsePrimaryDotBracket("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
 
-  Secondary kBulge1 = ParseDotBracketSecondary("GCUCGAAACAGC", "(((.(...))))");
-  Secondary kInternal1 = ParseDotBracketSecondary("AGAGAAACAAAU", "(..(...)...)");
+  std::tuple<Primary, Secondary> kBulge1 = ParsePrimaryDotBracket("GCUCGAAACAGC", "(((.(...))))");
+  std::tuple<Primary, Secondary> kInternal1 =
+      ParsePrimaryDotBracket("AGAGAAACAAAU", "(..(...)...)");
 
   Energy GetEnergy(const std::string& r, const std::string& db) {
-    return GetEnergy({StringToPrimary(r), DotBracketToPairs(db)});
+    return GetEnergy({StringToPrimary(r), DotBracketToSecondary(db)});
   }
 
-  Energy GetEnergy(const Secondary& s) { return ComputeEnergy(s, g_em).energy; }
+  Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
+    return ComputeEnergy(std::get<Primary>(s), std::get<Secondary>(s), g_em).energy;
+  }
 };
 
 TEST_F(EnergyTest, MultiloopEnergy) {
@@ -57,32 +72,32 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
       GetEnergy(kNNDBHairpin5));
 
   {
-    const Precomp pc(kNNDBHairpin1.r, g_em);
+    const Precomp pc(std::get<Primary>(kNNDBHairpin1), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][A][A][U] + g_em.HairpinInitiation(6),
         pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(kNNDBHairpin2.r, g_em);
+    const Precomp pc(std::get<Primary>(kNNDBHairpin2), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][G][G][U] + g_em.hairpin_gg_first_mismatch +
             g_em.HairpinInitiation(5),
         pc.Hairpin(3, 9));
   }
 
   {
-    const Precomp pc(kNNDBHairpin3.r, g_em);
+    const Precomp pc(std::get<Primary>(kNNDBHairpin3), g_em);
     EXPECT_EQ(g_em.hairpin["CCGAGG"], pc.Hairpin(3, 8));
   }
 
   {
-    const Precomp pc(kNNDBHairpin4.r, g_em);
+    const Precomp pc(std::get<Primary>(kNNDBHairpin4), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][C][C][U] + g_em.HairpinInitiation(6) +
             g_em.hairpin_all_c_a * 6 + g_em.hairpin_all_c_b,
         pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(kNNDBHairpin5.r, g_em);
+    const Precomp pc(std::get<Primary>(kNNDBHairpin5), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[G][G][G][U] + g_em.hairpin_gg_first_mismatch +
             g_em.HairpinInitiation(5) + g_em.hairpin_special_gu_closure,
         pc.Hairpin(3, 9));
@@ -126,15 +141,15 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
 
 TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(g_em.augu_penalty + g_em.stack[G][A][U][C] + g_em.hairpin_init[3],
-      GetEnergy(ParseDotBracketSecondary("GAAAAUC", "((...))")));
+      GetEnergy(ParsePrimaryDotBracket("GAAAAUC", "((...))")));
   EXPECT_EQ(g_em.augu_penalty * 2 + g_em.stack[G][A][U][U] + g_em.hairpin_init[3],
-      GetEnergy(ParseDotBracketSecondary("GAAAAUU", "((...))")));
+      GetEnergy(ParsePrimaryDotBracket("GAAAAUU", "((...))")));
   EXPECT_EQ(g_em.augu_penalty * 2 + g_em.HairpinInitiation(3) +
           std::min(
               g_em.terminal[U][A][A][A], std::min(g_em.dangle3[U][A][A], g_em.dangle5[U][A][A])),
-      GetEnergy(ParseDotBracketSecondary("AAAAAUA", ".(...).")));
+      GetEnergy(ParsePrimaryDotBracket("AAAAAUA", ".(...).")));
   EXPECT_EQ(g_em.augu_penalty * 2 + g_em.HairpinInitiation(3),
-      GetEnergy(ParseDotBracketSecondary("AAAAU", "(...)")));
+      GetEnergy(ParsePrimaryDotBracket("AAAAU", "(...)")));
   EXPECT_EQ(g_em.stack[G][C][G][C] + g_em.stack[C][U][A][G] + g_em.BulgeInitiation(1) +
           g_em.stack[U][G][C][A] + g_em.HairpinInitiation(3),
       GetEnergy(kBulge1));

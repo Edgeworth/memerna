@@ -12,13 +12,14 @@
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "model/model.h"
+#include "model/secondary.h"
 #include "util/splaymap.h"
 
 namespace mrna {
 
 namespace internal {
 
-std::vector<int> GetBranchCounts(const std::vector<int>& p);
+std::vector<int> GetBranchCounts(const Secondary& s);
 
 }
 
@@ -60,8 +61,8 @@ class BruteForce {
   };
 
   Primary r_;
-  std::vector<int> p_;
-  std::vector<Ctd> ctd_;
+  Secondary s_;
+  Ctds ctd_;
   energy::EnergyModel em_;
   Result res_;
   SplaySet<SubstructureId> substructure_map_;

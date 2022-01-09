@@ -27,7 +27,6 @@ namespace mrna {
 const uint32_t T04_MODEL_HASH = 0x9eabeccf;
 extern energy::EnergyModel g_em;
 
-std::ostream& operator<<(std::ostream& os, const Secondary& s);
 std::ostream& operator<<(std::ostream& os, const Computed& computed);
 
 }  // namespace mrna

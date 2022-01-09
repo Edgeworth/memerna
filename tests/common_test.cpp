@@ -7,15 +7,11 @@ namespace mrna {
 
 energy::EnergyModel g_em;
 
-std::ostream& operator<<(std::ostream& os, const Secondary& s) {
-  return os << "(" << PrimaryToString(s.r) << ", " << PairsToDotBracket(s.p) << ")";
-}
-
-std::ostream& operator<<(std::ostream& os, const Computed& computed) {
-  os << computed.s;
+std::ostream& operator<<(std::ostream& os, const Computed& c) {
+  os << "(" << PrimaryToString(c.r) << ", " << SecondaryToDotBracket(c.s) << ")";
   os << ", (";
-  for (auto ctd : computed.base_ctds) os << energy::CtdToName(ctd) << ", ";
-  os << "), " << computed.energy;
+  for (auto ctd : c.base_ctds) os << energy::CtdToName(ctd) << ", ";
+  os << "), " << c.energy;
   return os;
 }
 

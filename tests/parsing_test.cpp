@@ -22,67 +22,67 @@ class ParsingTest : public testing::Test {
   const std::string kCtd14 = "m[...]M";
   const std::string kCtd15 = "[m[...]Mm[...]M]";
 
-  const Computed kComputed1 = {{{}, {}}, {}, MAX_E};
-  const Computed kComputed2 = {{{A}, {-1}}, {CTD_NA}, MAX_E};
-  const Computed kComputed3 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0}},
+  const Computed kComputed1 = {{}, {}, {}, MAX_E};
+  const Computed kComputed2 = {StringToPrimary("A"), {-1}, {CTD_NA}, MAX_E};
+  const Computed kComputed3 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0},
       {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED},
       MAX_E};
-  const Computed kComputed4 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1}},
+  const Computed kComputed4 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1},
       {CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
       MAX_E};
-  const Computed kComputed5 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1}},
+  const Computed kComputed5 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1},
       {CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA},
       MAX_E};
-  const Computed kComputed6 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1}},
+  const Computed kComputed6 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1},
       {CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
       MAX_E};
-  const Computed kComputed7 = {
-      {StringToPrimary("UACGUUGGUGCUU"), {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0}},
+  const Computed kComputed7 = {StringToPrimary("UACGUUGGUGCUU"),
+      {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0},
       {CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT},
       MAX_E};
-  const Computed kComputed8 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-                                   {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+  const Computed kComputed8 = {StringToPrimary("UACGUUGGUGCUUAA"),
+      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0},
       {CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT},
       MAX_E};
-  const Computed kComputed9 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0}},
+  const Computed kComputed9 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0},
       {CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT},
       MAX_E};
-  const Computed kComputed10 = {
-      {StringToPrimary("UACGUUGGUGCUU"), {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0}},
+  const Computed kComputed10 = {StringToPrimary("UACGUUGGUGCUU"),
+      {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0},
       {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
       MAX_E};
-  const Computed kComputed11 = {{StringToPrimary("UACGUUGGUGCUUAA"),
-                                    {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0}},
+  const Computed kComputed11 = {StringToPrimary("UACGUUGGUGCUUAA"),
+      {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0},
       {CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV},
       MAX_E};
-  const Computed kComputed12 = {
-      {StringToPrimary("UACGUUGGUGCUUA"), {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0}},
+  const Computed kComputed12 = {StringToPrimary("UACGUUGGUGCUUA"),
+      {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0},
       {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_PREV},
       MAX_E};
-  const Computed kComputed13 = {
-      {StringToPrimary("UACGUUGGUGCU"), {11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0}},
+  const Computed kComputed13 = {StringToPrimary("UACGUUGGUGCU"),
+      {11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0},
       {CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
           CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED},
       MAX_E};
-  const Computed kComputed14 = {{StringToPrimary("AAAAAAA"), {-1, 5, -1, -1, -1, 1, -1}},
+  const Computed kComputed14 = {StringToPrimary("AAAAAAA"), {-1, 5, -1, -1, -1, 1, -1},
       {CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA}, MAX_E};
-  const Computed kComputed15 = {{StringToPrimary("UACGUUGGUGCUAAAA"),
-                                    {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0}},
+  const Computed kComputed15 = {StringToPrimary("UACGUUGGUGCUAAAA"),
+      {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0},
       {CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
           CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED},
       MAX_E};
@@ -107,21 +107,21 @@ TEST_F(ParsingTest, ComputedToCtdString) {
 }
 
 TEST_F(ParsingTest, ParseCtdComputed) {
-  EXPECT_EQ(kComputed1, ParseCtdComputed(PrimaryToString(kComputed1.s.r), kCtd1));
-  EXPECT_EQ(kComputed2, ParseCtdComputed(PrimaryToString(kComputed2.s.r), kCtd2));
-  EXPECT_EQ(kComputed3, ParseCtdComputed(PrimaryToString(kComputed3.s.r), kCtd3));
-  EXPECT_EQ(kComputed4, ParseCtdComputed(PrimaryToString(kComputed4.s.r), kCtd4));
-  EXPECT_EQ(kComputed5, ParseCtdComputed(PrimaryToString(kComputed5.s.r), kCtd5));
-  EXPECT_EQ(kComputed6, ParseCtdComputed(PrimaryToString(kComputed6.s.r), kCtd6));
-  EXPECT_EQ(kComputed7, ParseCtdComputed(PrimaryToString(kComputed7.s.r), kCtd7));
-  EXPECT_EQ(kComputed8, ParseCtdComputed(PrimaryToString(kComputed8.s.r), kCtd8));
-  EXPECT_EQ(kComputed9, ParseCtdComputed(PrimaryToString(kComputed9.s.r), kCtd9));
-  EXPECT_EQ(kComputed10, ParseCtdComputed(PrimaryToString(kComputed10.s.r), kCtd10));
-  EXPECT_EQ(kComputed11, ParseCtdComputed(PrimaryToString(kComputed11.s.r), kCtd11));
-  EXPECT_EQ(kComputed12, ParseCtdComputed(PrimaryToString(kComputed12.s.r), kCtd12));
-  EXPECT_EQ(kComputed13, ParseCtdComputed(PrimaryToString(kComputed13.s.r), kCtd13));
-  EXPECT_EQ(kComputed14, ParseCtdComputed(PrimaryToString(kComputed14.s.r), kCtd14));
-  EXPECT_EQ(kComputed15, ParseCtdComputed(PrimaryToString(kComputed15.s.r), kCtd15));
+  EXPECT_EQ(kComputed1, ParseCtdComputed(PrimaryToString(kComputed1.r), kCtd1));
+  EXPECT_EQ(kComputed2, ParseCtdComputed(PrimaryToString(kComputed2.r), kCtd2));
+  EXPECT_EQ(kComputed3, ParseCtdComputed(PrimaryToString(kComputed3.r), kCtd3));
+  EXPECT_EQ(kComputed4, ParseCtdComputed(PrimaryToString(kComputed4.r), kCtd4));
+  EXPECT_EQ(kComputed5, ParseCtdComputed(PrimaryToString(kComputed5.r), kCtd5));
+  EXPECT_EQ(kComputed6, ParseCtdComputed(PrimaryToString(kComputed6.r), kCtd6));
+  EXPECT_EQ(kComputed7, ParseCtdComputed(PrimaryToString(kComputed7.r), kCtd7));
+  EXPECT_EQ(kComputed8, ParseCtdComputed(PrimaryToString(kComputed8.r), kCtd8));
+  EXPECT_EQ(kComputed9, ParseCtdComputed(PrimaryToString(kComputed9.r), kCtd9));
+  EXPECT_EQ(kComputed10, ParseCtdComputed(PrimaryToString(kComputed10.r), kCtd10));
+  EXPECT_EQ(kComputed11, ParseCtdComputed(PrimaryToString(kComputed11.r), kCtd11));
+  EXPECT_EQ(kComputed12, ParseCtdComputed(PrimaryToString(kComputed12.r), kCtd12));
+  EXPECT_EQ(kComputed13, ParseCtdComputed(PrimaryToString(kComputed13.r), kCtd13));
+  EXPECT_EQ(kComputed14, ParseCtdComputed(PrimaryToString(kComputed14.r), kCtd14));
+  EXPECT_EQ(kComputed15, ParseCtdComputed(PrimaryToString(kComputed15.r), kCtd15));
 }
 
 TEST_F(ParsingTest, IsCtdString) {

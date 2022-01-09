@@ -14,8 +14,8 @@ Suboptimal1::Suboptimal1(
 
 int Suboptimal1::Run(SuboptimalCallback fn, bool sorted) {
   // TODO: improve this - see similar code in brute force
-  p_.resize(r_.size());
-  std::fill(p_.begin(), p_.end(), -1);
+  s_.resize(r_.size());
+  std::fill(s_.begin(), s_.end(), -1);
   ctd_.resize(r_.size());
   std::fill(ctd_.begin(), ctd_.end(), CTD_NA);
   q_.reserve(r_.size());  // Reasonable reservation.
@@ -78,7 +78,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
     // we are done with this node.
     if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
-      if (s.expand.en != -1 && s.expand.a == DP_P) p_[s.expand.st] = p_[s.expand.en] = -1;
+      if (s.expand.en != -1 && s.expand.a == DP_P) s_[s.expand.st] = s_[s.expand.en] = -1;
       if (s.should_unexpand) unexpanded_.push_back(s.expand);
       q_.pop_back();
       continue;  // Done.
@@ -96,12 +96,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
         // At a terminal state.
         if (!exact_energy || energy == cur_delta) {
           Computed tmp_computed = {
-              {std::move(r_), std::move(p_)}, std::move(ctd_), energy + ext_[0][EXT]};
+              std::move(r_), std::move(s_), std::move(ctd_), energy + ext_[0][EXT]};
           fn(tmp_computed);
           ++num_structures;
           // Move everything back
-          r_ = std::move(tmp_computed.s.r);
-          p_ = std::move(tmp_computed.s.p);
+          r_ = std::move(tmp_computed.r);
+          s_ = std::move(tmp_computed.s);
           ctd_ = std::move(tmp_computed.base_ctds);
 
           // Hit structure limit.
@@ -121,13 +121,13 @@ std::pair<int, int> Suboptimal1::RunInternal(
       if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
     }
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
-      p_[ns.expand.st] = ns.expand.en;
-      p_[ns.expand.en] = ns.expand.st;
+      s_[ns.expand.st] = ns.expand.en;
+      s_[ns.expand.en] = ns.expand.st;
     }
     q_.push_back(ns);
   }
-  assert(unexpanded_.empty() && energy == 0 && p_ == std::vector<int>(p_.size(), -1) &&
-      ctd_ == std::vector<Ctd>(ctd_.size(), CTD_NA));
+  assert(unexpanded_.empty() && energy == 0 && s_ == Secondary(s_.size(), -1) &&
+      ctd_ == Ctds(ctd_.size(), CTD_NA));
   return {num_structures, next_seen};
 }
 

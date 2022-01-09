@@ -22,6 +22,9 @@ enum Ctd : int8_t {
   CTD_SIZE
 };
 
+using Ctds = std::vector<Ctd>;
+
+// TODO: Change
 // Secondary structure with MFE information and CTDs.
 struct Computed {
   Computed() = default;
@@ -29,24 +32,27 @@ struct Computed {
   Computed(Computed&&) = default;
   Computed& operator=(Computed&&) = default;
 
-  explicit Computed(Primary r_) : s(std::move(r_)), base_ctds(s.r.size(), CTD_NA), energy(MAX_E) {}
+  explicit Computed(Primary r_)
+      : r(std::move(r_)), s(r.size(), -1), base_ctds(r.size(), CTD_NA), energy(MAX_E) {}
 
-  explicit Computed(Secondary s_) : s(std::move(s_)), base_ctds(s.r.size(), CTD_NA), energy(MAX_E) {
-    verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
+  explicit Computed(Primary r_, Secondary s_)
+      : r(std::move(r_)), s(std::move(s_)), base_ctds(r.size(), CTD_NA), energy(MAX_E) {
+    verify(r.size() == s.size() && r.size() == base_ctds.size(), "bug");
   }
 
-  Computed(Secondary s_, std::vector<Ctd> base_ctds_, Energy energy_)
-      : s(std::move(s_)), base_ctds(std::move(base_ctds_)), energy(energy_) {
-    verify(s.r.size() == s.p.size() && s.r.size() == base_ctds.size(), "bug");
+  Computed(Primary r_, Secondary s_, Ctds base_ctds_, Energy energy_)
+      : r(std::move(r_)), s(std::move(s_)), base_ctds(std::move(base_ctds_)), energy(energy_) {
+    verify(r.size() == s.size() && r.size() == base_ctds.size(), "bug");
   }
 
   bool operator==(const Computed& o) const {
-    return s == o.s && base_ctds == o.base_ctds && energy == o.energy;
+    return r == o.r && s == o.s && base_ctds == o.base_ctds && energy == o.energy;
   }
   bool operator!=(const Computed& o) const { return !(*this == o); }
 
+  Primary r;
   Secondary s;
-  std::vector<Ctd> base_ctds;
+  Ctds base_ctds;
   Energy energy;
 };
 

@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     } else {
       fn = [](const Computed& c) {
         printf("%d ", c.energy);
-        puts(mrna::PairsToDotBracket(c.s.p).c_str());  // meme
+        puts(mrna::SecondaryToDotBracket(c.s).c_str());  // meme
       };
     }
   }

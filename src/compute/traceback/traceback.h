@@ -8,7 +8,7 @@
 
 namespace mrna::traceback {
 
-std::tuple<std::vector<int>, std::vector<Ctd>> Traceback(
+std::tuple<Secondary, Ctds> Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::traceback

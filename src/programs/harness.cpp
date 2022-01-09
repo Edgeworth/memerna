@@ -45,9 +45,9 @@ int main(int argc, char* argv[]) {
         db = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      const auto secondary = mrna::ParseDotBracketSecondary(seq, db);
+      const auto [r, s] = mrna::ParsePrimaryDotBracket(seq, db);
       std::string desc;
-      const auto res = package->Efn(secondary, args.HasFlag("v") ? &desc : nullptr);
+      const auto res = package->Efn(r, s, args.HasFlag("v") ? &desc : nullptr);
       printf("%d\n%s", res, desc.c_str());
     }
   } else {
@@ -66,13 +66,13 @@ int main(int argc, char* argv[]) {
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const Computed& c) {
-              printf("%d %s\n", c.energy, mrna::PairsToDotBracket(c.s.p).c_str());
+              printf("%d %s\n", c.energy, mrna::SecondaryToDotBracket(c.s).c_str());
             },
             r, subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.energy, mrna::PairsToDotBracket(res.s.p).c_str());
+        printf("%d\n%s\n", res.energy, mrna::SecondaryToDotBracket(res.s).c_str());
       }
     }
   }

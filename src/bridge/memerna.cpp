@@ -10,17 +10,17 @@
 
 namespace mrna::bridge {
 
-Energy Memerna::Efn(const Secondary& secondary, std::string* desc) const {
+Energy Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
   Computed computed;
   if (desc) {
     std::unique_ptr<energy::Structure> structure;
-    computed = energy::ComputeEnergy(secondary, em_, &structure);
+    computed = energy::ComputeEnergy(r, s, em_, &structure);
     for (const auto& s : structure->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    computed = energy::ComputeEnergy(secondary, em_);
+    computed = energy::ComputeEnergy(r, s, em_);
   }
 
   return computed.energy;

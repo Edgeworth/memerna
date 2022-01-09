@@ -21,7 +21,7 @@ class RnaPackage {
  public:
   virtual ~RnaPackage() = default;
 
-  virtual Energy Efn(const Secondary& secondary, std::string* desc = nullptr) const = 0;
+  virtual Energy Efn(const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
   virtual Computed Fold(const Primary& r) const = 0;
   virtual int Suboptimal(
       subopt::SuboptimalCallback fn, const Primary& r, Energy energy_delta) const = 0;
