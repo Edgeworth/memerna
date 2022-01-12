@@ -28,7 +28,7 @@ DpArray Context::ComputeTables() {
 
 FoldResult Context::Fold() {
   if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) {
-    auto subopt = mfe::MfeBruteForce(r_, em_);
+    auto subopt = mfe::MfeBruteForce(Primary(r_), em_);
     return {.mfe = mfe::MfeResult{.energy = subopt.energy}, .tb = subopt.tb};
   }
 
@@ -54,7 +54,7 @@ std::vector<subopt::SuboptResult> Context::SuboptimalIntoVector(
 int Context::Suboptimal(
     subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
   if (cfg_.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
-    auto subopts = subopt::SuboptimalBruteForce(r_, em_, subopt_num);
+    auto subopts = subopt::SuboptimalBruteForce(Primary(r_), em_, subopt_num);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
@@ -63,10 +63,12 @@ int Context::Suboptimal(
   auto ext = mfe::ComputeExterior(r_, em_, dp);
   switch (cfg_.suboptimal_alg) {
   case ModelCfg::SuboptimalAlg::ZERO:
-    return subopt::Suboptimal0(r_, em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+    return subopt::Suboptimal0(
+        Primary(r_), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn);
   case ModelCfg::SuboptimalAlg::ONE:
-    return subopt::Suboptimal1(r_, em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+    return subopt::Suboptimal1(
+        Primary(r_), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn, sorted);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.suboptimal_alg));
@@ -80,7 +82,7 @@ partition::PartitionResult Context::Partition() {
   case ModelCfg::PartitionAlg::ONE:
     res = partition::Partition1(r_, energy::BoltzEnergyModel(em_));
     break;
-  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(r_, em_);
+  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(Primary(r_), em_);
   }
   const int N = static_cast<int>(r_.size());
   auto [dp, ext] = std::move(res);

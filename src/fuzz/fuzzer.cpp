@@ -136,7 +136,7 @@ Error Fuzzer::CheckSuboptimal() {
   std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_num;
   for (auto subopt_alg : ModelCfg::SUBOPTIMAL_ALGS) {
     ModelCfg cfg(ModelCfg::TableAlg::TWO, subopt_alg);
-    Context ctx(r_, em_, cfg);
+    Context ctx(Primary(r_), em_, cfg);
     memerna_subopts_delta.push_back(ctx.SuboptimalIntoVector(true, cfg_.subopt_delta, -1));
     memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(true, -1, cfg_.subopt_max));
   }
@@ -165,7 +165,8 @@ Error Fuzzer::CheckSuboptimal() {
     // strange things
     // when the energy for suboptimal structures is 0 or above.
     if (memerna_subopts_[0].energy < -cfg_.subopt_delta) {
-      const auto rnastructure_subopt = rnastructure_->SuboptimalIntoVector(r_, cfg_.subopt_delta);
+      const auto rnastructure_subopt =
+          rnastructure_->SuboptimalIntoVector(Primary(r_), cfg_.subopt_delta);
       AppendErrors(errors,
           MaybePrepend(
               CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
@@ -221,7 +222,7 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   std::vector<Energy> memerna_ctd_efns;
   std::vector<Energy> memerna_optimal_efns;
   for (auto table_alg : ModelCfg::TABLE_ALGS) {
-    Context ctx(r_, em_, ModelCfg(table_alg));
+    Context ctx(Primary(r_), em_, ModelCfg(table_alg));
     auto res = ctx.Fold();
     memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
@@ -250,8 +251,8 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
   Error errors;
 #ifdef USE_RNASTRUCTURE
   // TODO: remove rnastructure_dp_ and use Fold here
-  auto fold = rnastructure_->FoldAndDpTable(r_, &rnastructure_dp_);
-  auto efn = rnastructure_->Efn(r_, fold.tb.s);
+  auto fold = rnastructure_->FoldAndDpTable(Primary(r_), &rnastructure_dp_);
+  auto efn = rnastructure_->Efn(Primary(r_), fold.tb.s);
   // TODO: Test CTDs here as well?
   if (memerna_subopts_[0].energy != fold.mfe.energy || memerna_subopts_[0].energy != efn.energy)
     errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d", fold.mfe.energy,
@@ -263,10 +264,10 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 Error Fuzzer::CheckBruteForce() {
   Error errors;
   ModelCfg cfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, ModelCfg::PartitionAlg::ZERO);
-  Context ctx(r_, em_, cfg);
+  Context ctx(Primary(r_), em_, cfg);
 
   if (cfg_.subopt) {
-    auto brute_subopt = SuboptimalBruteForce(r_, em_, cfg_.brute_subopt_max);
+    auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.brute_subopt_max);
     auto memerna_subopt = ctx.SuboptimalIntoVector(true, -1, cfg_.brute_subopt_max);
 
     AppendErrors(
@@ -281,7 +282,7 @@ Error Fuzzer::CheckBruteForce() {
   if (cfg_.partition) {
     auto memerna_partition = ctx.Partition();
 
-    auto brute_partition = PartitionBruteForce(r_, em_);
+    auto brute_partition = PartitionBruteForce(Primary(r_), em_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
     if (!equ(brute_partition.p.q, memerna_partition.p.q)) {
       std::stringstream sstream;
@@ -310,8 +311,8 @@ Error Fuzzer::CheckPartition() {
   Error errors;
   std::vector<partition::PartitionResult> memerna_partitions;
   for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
-    Context ctx(
-        r_, em_, ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
+    Context ctx(Primary(r_), em_,
+        ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
     memerna_partitions.emplace_back(ctx.Partition());
   }
 
@@ -342,7 +343,7 @@ Error Fuzzer::CheckPartition() {
 
 #ifdef USE_RNASTRUCTURE
   if (cfg_.partition_rnastructure) {
-    auto rnastructure_part = rnastructure_->Partition(r_);
+    auto rnastructure_part = rnastructure_->Partition(Primary(r_));
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
     if (!equ(rnastructure_part.p.q, memerna_partitions[0].p.q)) {
       std::stringstream sstream;

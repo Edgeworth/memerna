@@ -10,7 +10,7 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModel& em) {
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::Precomp pc(r, em);
+  const energy::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1);
 
   // See ComputeTables2 for comments - it is mostly the same.

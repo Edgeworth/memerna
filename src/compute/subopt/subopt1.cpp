@@ -12,8 +12,9 @@ namespace mrna::subopt {
 
 Suboptimal1::Suboptimal1(
     Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num)
-    : r_(std::move(r)), em_(std::move(em)), pc_(r_, em_), dp_(std::move(dp)), ext_(std::move(ext)),
-      delta_(delta == -1 ? CAP_E : delta), max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
+    : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
+      ext_(std::move(ext)), delta_(delta == -1 ? CAP_E : delta),
+      max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
 
 int Suboptimal1::Run(SuboptCallback fn, bool sorted) {
   res_ = SuboptResult{.tb = traceback::TracebackResult{.s = Secondary(r_.size(), -1),

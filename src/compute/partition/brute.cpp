@@ -14,9 +14,9 @@
 
 namespace mrna::partition {
 
-PartitionResult PartitionBruteForce(const Primary& r, const energy::EnergyModel& em) {
+PartitionResult PartitionBruteForce(Primary r, const energy::EnergyModel& em) {
   // Allow lonely pairs for the partition function. TODO?
-  auto res = BruteForce().Run(r, em, 1, true, false);
+  auto res = BruteForce().Run(std::move(r), em, 1, true, false);
   return PartitionResult{.p = std::move(res.partition), .prob = std::move(res.probabilities)};
 }
 
