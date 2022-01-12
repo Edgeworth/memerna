@@ -94,7 +94,7 @@ class ParsingTest : public testing::Test {
   const std::string kCtdString15 = "[m[...]Mm[...]M]";
 };
 
-TEST_F(ParsingTest, ComputedToCtdString) {
+TEST_F(ParsingTest, SecondaryCtdToCtdString) {
   EXPECT_EQ(kCtdString1, CtdString(kSecondary1, kCtd1));
   EXPECT_EQ(kCtdString2, CtdString(kSecondary2, kCtd2));
   EXPECT_EQ(kCtdString3, CtdString(kSecondary3, kCtd3));
@@ -112,7 +112,7 @@ TEST_F(ParsingTest, ComputedToCtdString) {
   EXPECT_EQ(kCtdString15, CtdString(kSecondary15, kCtd15));
 }
 
-TEST_F(ParsingTest, ParseCtdComputed) {
+TEST_F(ParsingTest, ParseCtd) {
   EXPECT_EQ(std::make_tuple(kPrimary1, kSecondary1, kCtd1),
       ParsePrimaryCtdString(PrimaryToString(kPrimary1), kCtdString1));
   EXPECT_EQ(std::make_tuple(kPrimary2, kSecondary2, kCtd2),

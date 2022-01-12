@@ -10,10 +10,10 @@
 
 namespace mrna::energy {
 
-using internal::AddBranchCtdsToComputed;
+using internal::AddBranchCtdsToBaseCtds;
 using internal::BranchCtd;
-using internal::ComputeOptimalCtd;
-using internal::GetBranchCtdsFromComputed;
+using internal::ComputeOptimalCtds;
+using internal::AddBaseCtdsToBranchCtds;
 
 Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
     std::deque<int>& branches, const EnergyModel& em, bool use_given_ctds, Ctds* ctd,
@@ -42,15 +42,15 @@ Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
   if (struc) struc->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
 
-  BranchCtd branch_ctds;
+  BranchCtd branch_ctd;
   Energy ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (use_given_ctds) {
-      ctd_energy = GetBranchCtdsFromComputed(r, s, *ctd, em, branches, &branch_ctds);
+      ctd_energy = AddBaseCtdsToBranchCtds(r, s, *ctd, em, branches, &branch_ctd);
     } else {
-      ctd_energy = ComputeOptimalCtd(r, s, em, branches, true, &branch_ctds);
-      AddBranchCtdsToComputed(s, branches, branch_ctds, ctd);
+      ctd_energy = ComputeOptimalCtds(r, s, em, branches, true, &branch_ctd);
+      AddBranchCtdsToBaseCtds(s, branches, branch_ctd, ctd);
     }
   } else {
     if (IsAuGu(r[st], r[en])) {
@@ -63,31 +63,31 @@ Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
 
     if (use_given_ctds) {
       branches.push_front(en);
-      ctd_energy = GetBranchCtdsFromComputed(r, s, *ctd, em, branches, &branch_ctds);
+      ctd_energy = AddBaseCtdsToBranchCtds(r, s, *ctd, em, branches, &branch_ctd);
       branches.pop_front();
     } else {
       BranchCtd config_ctds[4] = {};
       std::pair<Energy, int> config_energies[4] = {};
       branches.push_front(en);
-      config_energies[0] = {ComputeOptimalCtd(r, s, em, branches, true, &config_ctds[0]), 0};
-      config_energies[1] = {ComputeOptimalCtd(r, s, em, branches, false, &config_ctds[1]), 1};
+      config_energies[0] = {ComputeOptimalCtds(r, s, em, branches, true, &config_ctds[0]), 0};
+      config_energies[1] = {ComputeOptimalCtds(r, s, em, branches, false, &config_ctds[1]), 1};
       branches.pop_front();
       branches.push_back(en);
-      config_energies[2] = {ComputeOptimalCtd(r, s, em, branches, true, &config_ctds[2]), 2};
+      config_energies[2] = {ComputeOptimalCtds(r, s, em, branches, true, &config_ctds[2]), 2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
-      config_energies[3] = {ComputeOptimalCtd(r, s, em, branches, false, &config_ctds[3]), 3};
+      config_energies[3] = {ComputeOptimalCtds(r, s, em, branches, false, &config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
       branches.pop_back();
       std::sort(config_energies, config_energies + 4);
-      branch_ctds = config_ctds[config_energies[0].second];
+      branch_ctd = config_ctds[config_energies[0].second];
       ctd_energy = config_energies[0].first;
 
-      // Write the optimal ctds to computed.
+      // Write the optimal ctds to |ctd|.
       branches.push_front(en);
-      AddBranchCtdsToComputed(s, branches, branch_ctds, ctd);
+      AddBranchCtdsToBaseCtds(s, branches, branch_ctd, ctd);
       branches.pop_front();
     }
   }
@@ -96,11 +96,11 @@ Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
   if (struc) {
     struc->AddNote("%de - ctd", ctd_energy);
     if (!exterior_loop) {
-      struc->AddNote("%de - outer loop stacking - %s", branch_ctds[0].second,
-          energy::CtdToName(branch_ctds[0].first));
-      branch_ctds.pop_front();
+      struc->AddNote("%de - outer loop stacking - %s", branch_ctd[0].second,
+          energy::CtdToName(branch_ctd[0].first));
+      branch_ctd.pop_front();
     }
-    for (const auto& ctd : branch_ctds) struc->AddCtd(ctd.first, ctd.second);
+    for (const auto& ctd : branch_ctd) struc->AddCtd(ctd.first, ctd.second);
     // Give the pointer back.
     *sstruc = std::move(struc);
   }

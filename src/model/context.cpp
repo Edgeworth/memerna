@@ -54,9 +54,9 @@ std::vector<subopt::SuboptResult> Context::SuboptimalIntoVector(
 int Context::Suboptimal(
     subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
   if (cfg_.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
-    auto computeds = subopt::SuboptimalBruteForce(r_, em_, subopt_num);
-    for (const auto& computed : computeds) fn(computed);
-    return static_cast<int>(computeds.size());
+    auto subopts = subopt::SuboptimalBruteForce(r_, em_, subopt_num);
+    for (const auto& subopt : subopts) fn(subopt);
+    return static_cast<int>(subopts.size());
   }
 
   auto dp = ComputeTables();

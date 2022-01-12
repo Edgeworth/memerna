@@ -13,7 +13,7 @@ struct CtdTest {
   Primary r;
   Secondary s;
   Ctds ctd;
-  internal::BranchCtd branch_ctds;
+  internal::BranchCtd branch_ctd;
   std::deque<int> branches;
 };
 
@@ -92,11 +92,11 @@ TEST_P(CtdsTest, BaseBranchBase) {
   const auto& em = std::get<0>(GetParam());
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
-  internal::BranchCtd computed_branch_ctds;
-  auto computed_energy = internal::GetBranchCtdsFromComputed(
-      ctd_test.r, ctd_test.s, ctd_test.ctd, em, ctd_test.branches, &computed_branch_ctds);
+  internal::BranchCtd computed_branch_ctd;
+  auto computed_energy = internal::AddBaseCtdsToBranchCtds(
+      ctd_test.r, ctd_test.s, ctd_test.ctd, em, ctd_test.branches, &computed_branch_ctd);
   Energy test_energy = 0;
-  for (const auto& branch_ctd : ctd_test.branch_ctds) {
+  for (const auto& branch_ctd : ctd_test.branch_ctd) {
     // Make sure each branch energy is only represented once.
     if (branch_ctd.first == CTD_FCOAX_WITH_NEXT || branch_ctd.first == CTD_LCOAX_WITH_NEXT ||
         branch_ctd.first == CTD_RCOAX_WITH_NEXT)
@@ -104,13 +104,13 @@ TEST_P(CtdsTest, BaseBranchBase) {
     test_energy += branch_ctd.second;
   }
   EXPECT_EQ(test_energy, computed_energy);
-  EXPECT_EQ(ctd_test.branch_ctds, computed_branch_ctds);
+  EXPECT_EQ(ctd_test.branch_ctd, computed_branch_ctd);
   // Convert back again and make sure it's the same.
-  Ctds previous_base_ctds = std::move(ctd_test.ctd);
-  ctd_test.ctd.resize(previous_base_ctds.size(), CTD_NA);
-  internal::AddBranchCtdsToComputed(
-      ctd_test.s, ctd_test.branches, computed_branch_ctds, &ctd_test.ctd);
-  EXPECT_EQ(previous_base_ctds, ctd_test.ctd);
+  Ctds prev_ctd = std::move(ctd_test.ctd);
+  ctd_test.ctd.resize(prev_ctd.size(), CTD_NA);
+  internal::AddBranchCtdsToBaseCtds(
+      ctd_test.s, ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
+  EXPECT_EQ(prev_ctd, ctd_test.ctd);
 }
 
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
