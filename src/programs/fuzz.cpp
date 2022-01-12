@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
       auto r = mrna::GenerateRandomPrimary(len);
 
       cfg.seed = eng();
-      mrna::fuzz::Fuzzer fuzzer(r, cfg, em);
+      mrna::fuzz::Fuzzer fuzzer(std::move(r), cfg, em);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());

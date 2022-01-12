@@ -235,12 +235,12 @@ void BruteForce::Dfs(int idx) {
   }
 }
 
-BruteForce::Result BruteForce::Run(const Primary& r, const energy::EnergyModel& em,
-    int max_structures, bool compute_partition, bool allow_lonely_pairs) {
+BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int max_structures,
+    bool compute_partition, bool allow_lonely_pairs) {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
-  r_ = r;
+  r_ = std::move(r);
   const int N = static_cast<int>(r.size());
 
   em_ = em;

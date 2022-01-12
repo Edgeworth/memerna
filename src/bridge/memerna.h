@@ -20,13 +20,12 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  energy::EnergyResult Efn(
-      const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  FoldResult Fold(const Primary& r) const override;
-  int Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy energy_delta) const override;
+  energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const override;
+  FoldResult Fold(Primary r) const override;
+  int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const override;
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      const Primary& r, Energy energy_delta) const override;
-  partition::PartitionResult Partition(const Primary& r) const override;
+      Primary r, Energy energy_delta) const override;
+  partition::PartitionResult Partition(Primary r) const override;
 
  private:
   energy::EnergyModel em_;

@@ -72,32 +72,32 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
       GetEnergy(kNNDBHairpin5));
 
   {
-    const Precomp pc(std::get<Primary>(kNNDBHairpin1), g_em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin1)), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][A][A][U] + g_em.HairpinInitiation(6),
         pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(std::get<Primary>(kNNDBHairpin2), g_em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin2)), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][G][G][U] + g_em.hairpin_gg_first_mismatch +
             g_em.HairpinInitiation(5),
         pc.Hairpin(3, 9));
   }
 
   {
-    const Precomp pc(std::get<Primary>(kNNDBHairpin3), g_em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin3)), g_em);
     EXPECT_EQ(g_em.hairpin["CCGAGG"], pc.Hairpin(3, 8));
   }
 
   {
-    const Precomp pc(std::get<Primary>(kNNDBHairpin4), g_em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin4)), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[A][C][C][U] + g_em.HairpinInitiation(6) +
             g_em.hairpin_all_c_a * 6 + g_em.hairpin_all_c_b,
         pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(std::get<Primary>(kNNDBHairpin5), g_em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin5)), g_em);
     EXPECT_EQ(g_em.augu_penalty + g_em.terminal[G][G][G][U] + g_em.hairpin_gg_first_mismatch +
             g_em.HairpinInitiation(5) + g_em.hairpin_special_gu_closure,
         pc.Hairpin(3, 9));

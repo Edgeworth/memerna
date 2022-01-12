@@ -49,8 +49,8 @@ class BruteForce {
     Probabilities probabilities;
   };
 
-  Result Run(const Primary& r, const energy::EnergyModel& em, int max_structures,
-      bool compute_partition, bool allow_lonely_pairs);
+  Result Run(Primary r, const energy::EnergyModel& em, int max_structures, bool compute_partition,
+      bool allow_lonely_pairs);
 
  private:
   // Partition function:

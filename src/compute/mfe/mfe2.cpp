@@ -9,7 +9,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::Precomp pc(r, em);
+  const energy::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1);
 
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];

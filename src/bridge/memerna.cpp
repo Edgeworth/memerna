@@ -10,7 +10,7 @@
 
 namespace mrna::bridge {
 
-energy::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
+energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) const {
   energy::EnergyResult res;
   if (desc) {
     std::unique_ptr<energy::Structure> structure;
@@ -26,19 +26,19 @@ energy::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::str
   return res;
 }
 
-FoldResult Memerna::Fold(const Primary& r) const { return Context(r, em_, cfg_).Fold(); }
+FoldResult Memerna::Fold(Primary r) const { return Context(std::move(r), em_, cfg_).Fold(); }
 
-int Memerna::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy energy_delta) const {
-  return Context(r, em_, cfg_).Suboptimal(fn, true, energy_delta, -1);
+int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const {
+  return Context(std::move(r), em_, cfg_).Suboptimal(fn, true, energy_delta, -1);
 }
 
 std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(
-    const Primary& r, Energy energy_delta) const {
-  return Context(r, em_, cfg_).SuboptimalIntoVector(true, energy_delta, -1);
+    Primary r, Energy energy_delta) const {
+  return Context(std::move(r), em_, cfg_).SuboptimalIntoVector(true, energy_delta, -1);
 }
 
-partition::PartitionResult Memerna::Partition(const Primary& r) const {
-  return Context(r, em_, cfg_).Partition();
+partition::PartitionResult Memerna::Partition(Primary r) const {
+  return Context(std::move(r), em_, cfg_).Partition();
 }
 
 }  // namespace mrna::bridge

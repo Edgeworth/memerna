@@ -9,7 +9,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::Precomp pc(r, em);
+  const energy::Precomp pc(Primary(r), em);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {

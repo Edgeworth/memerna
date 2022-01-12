@@ -21,14 +21,12 @@ class RnaPackage {
  public:
   virtual ~RnaPackage() = default;
 
-  virtual energy::EnergyResult Efn(
-      const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
-  virtual FoldResult Fold(const Primary& r) const = 0;
-  virtual int Suboptimal(
-      subopt::SuboptCallback fn, const Primary& r, Energy energy_delta) const = 0;
+  virtual energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const = 0;
+  virtual FoldResult Fold(Primary r) const = 0;
+  virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const = 0;
   virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      const Primary& r, Energy energy_delta) const = 0;
-  virtual partition::PartitionResult Partition(const Primary& r) const = 0;
+      Primary r, Energy energy_delta) const = 0;
+  virtual partition::PartitionResult Partition(Primary r) const = 0;
 };
 
 const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};

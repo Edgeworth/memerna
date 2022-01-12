@@ -33,9 +33,9 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
-  const auto primary = mrna::StringToPrimary(pos.front());
+  auto r = mrna::StringToPrimary(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
-  mrna::Context ctx(primary, em, ModelCfgFromArgParse(args));
+  mrna::Context ctx(std::move(r), em, ModelCfgFromArgParse(args));
   PrintProbabilities(ctx.Partition().prob);
 }
