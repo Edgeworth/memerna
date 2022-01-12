@@ -48,7 +48,7 @@ class Fuzzer {
 
   void AppendErrors(Error& main, Error&& extra);
 
-  bool HasDuplicates(const std::vector<subopt::SuboptResult>& computeds);
+  bool HasDuplicates(const std::vector<subopt::SuboptResult>& subopts);
 
   Error CheckSuboptimalResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
 

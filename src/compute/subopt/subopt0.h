@@ -20,7 +20,7 @@ class Suboptimal0 {
 
  private:
   struct Node {
-    // State should be fully defined by |not_yet_expanded|, |history|, and |base_ctds| which denote
+    // State should be fully defined by |not_yet_expanded|, |history|, and |ctd| which denote
     // what it has done so far, and what it can do from now.
     std::vector<Index> not_yet_expanded;
     std::vector<Index> history;

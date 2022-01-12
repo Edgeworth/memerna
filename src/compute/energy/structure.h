@@ -72,13 +72,13 @@ class MultiLoopStructure : public Structure {
  public:
   MultiLoopStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctds_.emplace_back(ctd, ctd_energy); }
+  void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctd_.emplace_back(ctd, ctd_energy); }
   std::string BranchDesc(int idx) const;
   std::string ShortDesc() const;
 
  private:
   int st_, en_;
-  internal::BranchCtd branch_ctds_;
+  internal::BranchCtd branch_ctd_;
 };
 
 class StackingStructure : public Structure {

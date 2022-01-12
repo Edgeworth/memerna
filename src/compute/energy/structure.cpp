@@ -64,8 +64,8 @@ std::string MultiLoopStructure::ShortDesc() const {
 }
 
 std::string MultiLoopStructure::BranchDesc(int idx) const {
-  return sfmt("%s - %de - %s", branches_[idx]->ShortDesc().c_str(), branch_ctds_[idx].second,
-      CtdToName(branch_ctds_[idx].first));
+  return sfmt("%s - %de - %s", branches_[idx]->ShortDesc().c_str(), branch_ctd_[idx].second,
+      CtdToName(branch_ctd_[idx].first));
 }
 
 std::string StackingStructure::ShortDesc() const {
