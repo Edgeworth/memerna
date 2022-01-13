@@ -36,7 +36,7 @@ Energy ComputeOptimalCtds(const Primary& r, const Secondary& s, const EnergyMode
 // Takes the branch representation of ctds in |branch_ctd| for |branches| branches and
 // writes it in per-base representation to |ctds|.
 void AddBranchCtdsToBaseCtds(
-    const Secondary& s, const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd);
+    const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd);
 
 // Reads the per-base ctd representation from |ctd| for |branches| branches and
 // writes it in branch representation to |branch_ctd|.

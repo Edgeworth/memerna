@@ -108,8 +108,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   // Convert back again and make sure it's the same.
   Ctds prev_ctd = std::move(ctd_test.ctd);
   ctd_test.ctd.resize(prev_ctd.size(), CTD_NA);
-  internal::AddBranchCtdsToBaseCtds(
-      ctd_test.s, ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
+  internal::AddBranchCtdsToBaseCtds(ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
   EXPECT_EQ(prev_ctd, ctd_test.ctd);
 }
 
