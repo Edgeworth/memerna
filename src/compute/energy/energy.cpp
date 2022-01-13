@@ -10,10 +10,10 @@
 
 namespace mrna::energy {
 
+using internal::AddBaseCtdsToBranchCtds;
 using internal::AddBranchCtdsToBaseCtds;
 using internal::BranchCtd;
 using internal::ComputeOptimalCtds;
-using internal::AddBaseCtdsToBranchCtds;
 
 Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
     std::deque<int>& branches, const EnergyModel& em, bool use_given_ctds, Ctds* ctd,
@@ -50,7 +50,7 @@ Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
       ctd_energy = AddBaseCtdsToBranchCtds(r, s, *ctd, em, branches, &branch_ctd);
     } else {
       ctd_energy = ComputeOptimalCtds(r, s, em, branches, true, &branch_ctd);
-      AddBranchCtdsToBaseCtds(s, branches, branch_ctd, ctd);
+      AddBranchCtdsToBaseCtds(branches, branch_ctd, ctd);
     }
   } else {
     if (IsAuGu(r[st], r[en])) {
@@ -87,7 +87,7 @@ Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
 
       // Write the optimal ctds to |ctd|.
       branches.push_front(en);
-      AddBranchCtdsToBaseCtds(s, branches, branch_ctd, ctd);
+      AddBranchCtdsToBaseCtds(branches, branch_ctd, ctd);
       branches.pop_front();
     }
   }

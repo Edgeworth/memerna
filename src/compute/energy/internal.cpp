@@ -170,11 +170,9 @@ Energy ComputeOptimalCtds(const Primary& r, const Secondary& s, const EnergyMode
 #undef UPDATE_CACHE
 
 void AddBranchCtdsToBaseCtds(
-    const Secondary& s, const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd) {
+    const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd) {
   assert(branches.size() == branch_ctd.size());
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
-    assert(static_cast<int>(ctd->size()) > branches[i] &&
-        static_cast<int>(ctd->size()) > s[branches[i]]);
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
     // swap the indices in that case.
     (*ctd)[branches[i]] = branch_ctd[i].first;
