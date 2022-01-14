@@ -14,7 +14,7 @@ std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
 }
 
 Secondary DotBracketToSecondary(const std::string& pairs_str) {
-  Secondary s(pairs_str.size(), -1);
+  Secondary s(pairs_str.size());
   std::stack<int> stk;
   for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
     if (pairs_str[i] == '(') {

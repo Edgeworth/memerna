@@ -29,15 +29,15 @@ DpArray Context::ComputeTables() {
 FoldResult Context::Fold() {
   if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) {
     auto subopt = mfe::MfeBruteForce(Primary(r_), em_);
-    return {.mfe = mfe::MfeResult{.energy = subopt.energy}, .tb = subopt.tb};
+    return {.mfe = mfe::MfeResult{.energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
   auto dp = ComputeTables();
   auto ext = mfe::ComputeExterior(r_, em_, dp);
-  auto tb = traceback::Traceback(r_, em_, dp, ext);
+  auto tb = tb::Traceback(r_, em_, dp, ext);
   return FoldResult{
       .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = ext[0][EXT]},
-      .tb = tb,
+      .tb = std::move(tb),
   };
 }
 

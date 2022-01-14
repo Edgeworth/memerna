@@ -21,7 +21,7 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
 }
 
 Secondary StructureToSecondary(structure& struc, int struc_num = 1) {
-  Secondary s(struc.GetSequenceLength(), -1);
+  Secondary s(struc.GetSequenceLength());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) s[i] = struc.GetPair(i + 1, struc_num) - 1;
   return s;
 }
@@ -72,7 +72,7 @@ FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
   return FoldResult{.mfe = mfe::MfeResult{.energy = Energy(structure->GetEnergy(1))},
-      .tb = traceback::TracebackResult{.s = StructureToSecondary(*structure)}};
+      .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
 int RNAstructure::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const {
@@ -90,9 +90,9 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
   auto s_list = StructureToSecondarys(*structure);
   std::vector<subopt::SuboptResult> res;
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
-    res.emplace_back(
-        subopt::SuboptResult{.tb = traceback::TracebackResult{.s = std::move(s_list[i])},
-            .energy = Energy(structure->GetEnergy(i + 1))});
+    // TODO: Convert CTDs?
+    res.emplace_back(subopt::SuboptResult(
+        tb::TracebackResult(std::move(s_list[i]), Ctds()), Energy(structure->GetEnergy(i + 1))));
   }
   return res;
 }

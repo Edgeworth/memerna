@@ -28,11 +28,9 @@ int Suboptimal0::Run(SuboptCallback fn) {
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert(Node{.not_yet_expanded = {{0, -1, EXT}},
-      .res = SuboptResult{
-          .tb = traceback::TracebackResult{.s = Secondary(N, -1), .ctd = Ctds(N, CTD_NA)},
-          .energy = ext_[0][EXT]}});
+      .res = SuboptResult(tb::TracebackResult(Secondary(N), Ctds(N, CTD_NA)), ext_[0][EXT])});
   while (!q_.empty()) {
-    auto node = *q_.begin();
+    auto node = std::move(*q_.begin());
     q_.erase(q_.begin());
     // Finished state.
     if (node.not_yet_expanded.empty()) {

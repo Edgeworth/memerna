@@ -7,12 +7,12 @@
 #include "compute/dp.h"
 #include "compute/mfe/mfe.h"
 
-namespace mrna::traceback {
+namespace mrna::tb {
 
 TracebackResult Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
   const int N = static_cast<int>(r.size());
-  TracebackResult res{.s = Secondary(N, -1), .ctd = Ctds(N, CTD_NA)};
+  TracebackResult res(Secondary(N), Ctds(N, CTD_NA));
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
@@ -378,4 +378,4 @@ TracebackResult Traceback(
   return res;
 }
 
-}  // namespace mrna::traceback
+}  // namespace mrna::tb

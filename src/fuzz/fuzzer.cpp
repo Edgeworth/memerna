@@ -230,8 +230,7 @@ Error Fuzzer::MemernaComputeAndCheckState() {
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
     memerna_optimal_efns.push_back(energy::ComputeEnergy(r_, res.tb.s, nullptr, em_).energy);
-    memerna_subopts_.push_back(
-        subopt::SuboptResult{.tb = std::move(res.tb), .energy = res.mfe.energy});
+    memerna_subopts_.push_back(subopt::SuboptResult(std::move(res.tb), res.mfe.energy));
   }
 
   // Check memerna energies.
@@ -252,7 +251,7 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 #ifdef USE_RNASTRUCTURE
   // TODO: remove rnastructure_dp_ and use Fold here
   auto fold = rnastructure_->FoldAndDpTable(Primary(r_), &rnastructure_dp_);
-  auto efn = rnastructure_->Efn(Primary(r_), fold.tb.s);
+  auto efn = rnastructure_->Efn(Primary(r_), Secondary(fold.tb.s));
   // TODO: Test CTDs here as well?
   if (memerna_subopts_[0].energy != fold.mfe.energy || memerna_subopts_[0].energy != efn.energy)
     errors.push_back(sfmt("mfe: rnastructure %d (dp), %d (efn) != mfe %d", fold.mfe.energy,

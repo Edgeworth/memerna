@@ -11,7 +11,17 @@
 namespace mrna::subopt {
 
 struct SuboptResult {
-  traceback::TracebackResult tb;
+  SuboptResult() = default;
+  SuboptResult(tb::TracebackResult tb, Energy energy) : tb(std::move(tb)), energy(energy) {}
+
+  SuboptResult(SuboptResult&&) = default;
+  SuboptResult& operator=(SuboptResult&&) = default;
+
+  // Allow copies explicitly using the constructor.
+  explicit SuboptResult(const SuboptResult&) = default;
+  SuboptResult& operator=(const SuboptResult&) = delete;
+
+  tb::TracebackResult tb;
   Energy energy;
 };
 
