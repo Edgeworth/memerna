@@ -14,7 +14,7 @@
 namespace mrna::mfe {
 
 subopt::SuboptResult MfeBruteForce(Primary r, const energy::EnergyModel& em) {
-  return subopt::SuboptimalBruteForce(std::move(r), em, 1)[0];
+  return std::move(subopt::SuboptimalBruteForce(std::move(r), em, 1)[0]);
 }
 
 }  // namespace mrna::mfe

@@ -56,7 +56,7 @@ std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(r.size());
   std::stack<int> stk;
-  Secondary s(N, -1);
+  Secondary s(N);
   for (int i = 0; i < N; ++i) {
     char c = pairs_str[i];
     if (c == 'p' || c == 'n' || c == '[') {

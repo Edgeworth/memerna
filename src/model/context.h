@@ -20,7 +20,7 @@ namespace mrna {
 
 struct FoldResult {
   mfe::MfeResult mfe;
-  traceback::TracebackResult tb;
+  tb::TracebackResult tb;
 };
 
 class Context {
