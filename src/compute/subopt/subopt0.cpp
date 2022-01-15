@@ -28,10 +28,10 @@ int Suboptimal0::Run(SuboptCallback fn) {
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert(Node{.not_yet_expanded = {{0, -1, EXT}},
-      .res = SuboptResult(tb::TracebackResult(Secondary(N), Ctds(N, CTD_NA)), ext_[0][EXT])});
+      .res = SuboptResult(tb::TracebackResult(Secondary(N), Ctds(N)), ext_[0][EXT])});
+  Node node;
   while (!q_.empty()) {
-    auto node = std::move(*q_.begin());
-    q_.erase(q_.begin());
+    node = std::move(q_.extract(q_.begin()).value());
     // Finished state.
     if (node.not_yet_expanded.empty()) {
       PruneInsert(finished_, node);
@@ -50,7 +50,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
     int st = to_expand.st, en = to_expand.en, a = to_expand.a;
 
     // Initialise - we only make small modifications to it.
-    curnode_ = node;
+    curnode_ = node.copy();
     // Temporary variable to hold energy calculations.
     Energy energy = 0;
 
@@ -75,7 +75,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
         const auto base01 = dp_[st][en - 1][DP_P] + em_.AuGuPenalty(stb, en1b);
         const auto base10 = dp_[st + 1][en][DP_P] + em_.AuGuPenalty(st1b, enb);
         const auto base11 = dp_[st + 1][en - 1][DP_P] + em_.AuGuPenalty(st1b, en1b);
-        curnode_ = node;
+        curnode_ = node.copy();
 
         // (   )<.( * ). > Right coax backward
         if (a == EXT_RCOAX) {

@@ -72,7 +72,7 @@ std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
 
   const std::string allowed_characters = "[]nNpP.mM35";
   const std::string branch_characters = "nNpP[]";
-  Ctds ctd(N, CTD_NA);
+  Ctds ctd(N);
   for (int i = 0; i < N; ++i) {
     char c = pairs_str[i];
     // Coaxial stacking handling.

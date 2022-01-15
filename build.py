@@ -94,7 +94,7 @@ if regenerate:
   print('Regenerating cmake files.')
   def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
   run_command('cmake %s %s' % (def_str, proj_dir))
-run_command('%s make -j$(nproc) %s' % (' '.join(env), ' '.join(args.targets)))
+run_command('%s make -j$(($(nproc)-1)) %s' % (' '.join(env), ' '.join(args.targets)))
 
 if args.test:
   # Try to find data, default to current directory.
