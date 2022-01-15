@@ -66,13 +66,13 @@ int main(int argc, char* argv[]) {
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              printf("%d %s\n", c.energy, mrna::SecondaryToDotBracket(c.tb.s).c_str());
+              printf("%d %s\n", c.energy, c.tb.s.ToDotBracket().c_str());
             },
             std::move(r), subopt_delta);
         printf("%d suboptimal structures:\n", num_structures);
       } else {
         const auto res = package->Fold(std::move(r));
-        printf("%d\n%s\n", res.mfe.energy, mrna::SecondaryToDotBracket(res.tb.s).c_str());
+        printf("%d\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str());
       }
     }
   }

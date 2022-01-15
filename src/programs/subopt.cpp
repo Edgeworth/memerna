@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
         printf("%d ", c.energy);
-        puts(mrna::SecondaryToDotBracket(c.tb.s).c_str());
+        puts(c.tb.s.ToDotBracket().c_str());
       };
     }
   }

@@ -39,7 +39,7 @@ class EnergyTest : public testing::Test {
       ParsePrimaryDotBracket("AGAGAAACAAAU", "(..(...)...)");
 
   Energy GetEnergy(const std::string& r, const std::string& db) {
-    return GetEnergy({Primary::FromString(r), DotBracketToSecondary(db)});
+    return GetEnergy({Primary::FromString(r), Secondary::FromDotBracket(db)});
   }
 
   Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {

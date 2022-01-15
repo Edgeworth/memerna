@@ -15,6 +15,6 @@ int main(int argc, char* argv[]) {
       mrna::energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args));
   const auto res = ctx.Fold();
 
-  printf("Energy: %d\n%s\n%s\n", res.mfe.energy, mrna::SecondaryToDotBracket(res.tb.s).c_str(),
+  printf("Energy: %d\n%s\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str(),
       mrna::CtdString(res.tb.s, res.tb.ctd).c_str());
 }

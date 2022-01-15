@@ -36,14 +36,15 @@ class Secondary {
     std::fill(data_.begin(), data_.end(), -1);
   }
 
+  static Secondary FromDotBracket(const std::string& pairs_str);
+  std::string ToDotBracket() const;
+
  private:
   std::vector<int> data_;
 };
 
 std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
     const std::string& prim_str, const std::string& pairs_str);
-Secondary DotBracketToSecondary(const std::string& pairs_str);
-std::string SecondaryToDotBracket(const Secondary& s);
 
 }  // namespace mrna
 
