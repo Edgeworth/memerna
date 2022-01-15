@@ -12,7 +12,7 @@ namespace mrna::tb {
 TracebackResult Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
   const int N = static_cast<int>(r.size());
-  TracebackResult res(Secondary(N), Ctds(N, CTD_NA));
+  TracebackResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {

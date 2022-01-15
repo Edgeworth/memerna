@@ -17,7 +17,7 @@ Suboptimal1::Suboptimal1(
       max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
 
 int Suboptimal1::Run(SuboptCallback fn, bool sorted) {
-  res_ = SuboptResult(tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size(), CTD_NA)), 0);
+  res_ = SuboptResult(tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())), 0);
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
@@ -123,7 +123,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
     q_.push_back(ns);
   }
   assert(unexpanded_.empty() && energy == 0 && res_.tb.s == Secondary(res_.tb.s.size()) &&
-      res_.tb.ctd == Ctds(res_.tb.ctd.size(), CTD_NA));
+      res_.tb.ctd == Ctds(res_.tb.ctd.size()));
   return {num_structures, next_seen};
 }
 

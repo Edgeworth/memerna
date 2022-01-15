@@ -157,7 +157,7 @@ Energy ComputeSubstructureEnergyInternal(const Primary& r, const Secondary& s, i
 EnergyResult ComputeSubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
     int st, int en, const EnergyModel& em, std::unique_ptr<Structure>* struc) {
   const bool use_given_ctds = given_ctd;
-  auto ctd = use_given_ctds ? *given_ctd : Ctds(r.size(), CTD_NA);
+  auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
   auto energy = ComputeSubstructureEnergyInternal(r, s, st, en, em, use_given_ctds, &ctd, struc);
   return EnergyResult{.energy = energy, .ctd = std::move(ctd)};
 }

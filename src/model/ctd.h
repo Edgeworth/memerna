@@ -22,7 +22,40 @@ enum Ctd : int8_t {
   CTD_SIZE
 };
 
-using Ctds = std::vector<Ctd>;
+class Ctds {
+ public:
+  Ctds() = default;
+  Ctds(std::initializer_list<Ctd> init) : data_(init) {}
+  explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
+
+  Ctds(Ctds&&) = default;
+  Ctds& operator=(Ctds&&) = default;
+
+  // Allow copies explicitly using the constructor.
+  explicit Ctds(const Ctds&) = default;
+  Ctds& operator=(const Ctds&) = delete;
+
+  auto operator<=>(const Ctds&) const = default;
+
+  Ctd& operator[](std::size_t pos) { return data_[pos]; }
+  const Ctd& operator[](std::size_t pos) const { return data_[pos]; }
+
+  auto begin() const noexcept { return data_.begin(); }
+  auto end() const noexcept { return data_.end(); }
+
+  auto cbegin() const noexcept { return data_.cbegin(); }
+  auto cend() const noexcept { return data_.cend(); }
+
+  std::size_t size() const { return data_.size(); }
+
+  void reset(std::size_t size) {
+    data_.resize(size);
+    std::fill(data_.begin(), data_.end(), CTD_NA);
+  }
+
+ private:
+  std::vector<Ctd> data_;
+};
 
 std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
     const std::string& prim_str, const std::string& pairs_str);

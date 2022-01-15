@@ -42,7 +42,7 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
     },
     [](const EnergyModel&) -> CtdTest {
       return {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
-          DotBracketToSecondary("(...).((...).(...)).(...)."), Ctds(26, CTD_NA), {}, {}};
+          DotBracketToSecondary("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
     },
     [](const EnergyModel& em) -> CtdTest {
       return {StringToPrimary("GAAACAGAAAAUGGAAACCAGAAACA"),
@@ -107,7 +107,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   EXPECT_EQ(ctd_test.branch_ctd, computed_branch_ctd);
   // Convert back again and make sure it's the same.
   Ctds prev_ctd = std::move(ctd_test.ctd);
-  ctd_test.ctd.resize(prev_ctd.size(), CTD_NA);
+  ctd_test.ctd.reset(prev_ctd.size());
   internal::AddBranchCtdsToBaseCtds(ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
   EXPECT_EQ(prev_ctd, ctd_test.ctd);
 }

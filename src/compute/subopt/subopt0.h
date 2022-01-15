@@ -26,13 +26,7 @@ class Suboptimal0 {
     std::vector<Index> history;
     SuboptResult res;  // Stores the minimum energy this state could have.
 
-    // Allow copies of SuboptResult explicitly.
-    Node& operator=(const Node& o) {
-      not_yet_expanded = o.not_yet_expanded;
-      history = o.history;
-      res = SuboptResult(o.res);
-      return *this;
-    }
+    Node copy() const { return Node{not_yet_expanded, history, SuboptResult(res)}; }
 
     bool operator<(const Node& o) const { return res.energy < o.res.energy; }
   };
@@ -54,7 +48,7 @@ class Suboptimal0 {
       if (static_cast<int>(prune.size()) >= max_structures &&
           (--prune.end())->res.energy > node.res.energy)
         prune.erase(--prune.end());
-      if (static_cast<int>(prune.size()) < max_structures) prune.insert(node);
+      if (static_cast<int>(prune.size()) < max_structures) prune.insert(node.copy());
     }
   }
 

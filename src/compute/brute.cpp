@@ -104,7 +104,8 @@ void BruteForce::AddAllCombinations(int idx) {
     } else {
       if (static_cast<int>(res_.subopts.size()) < res_.max_structures ||
           res_.subopts.rbegin()->energy > energy)
-        res_.subopts.insert(subopt::SuboptResult(tb::TracebackResult(Secondary(s_), ctd_), energy));
+        res_.subopts.insert(
+            subopt::SuboptResult(tb::TracebackResult(Secondary(s_), Ctds(ctd_)), energy));
       if (static_cast<int>(res_.subopts.size()) > res_.max_structures)
         res_.subopts.erase(--res_.subopts.end());
     }
@@ -198,8 +199,8 @@ void BruteForce::Dfs(int idx) {
     if (res_.max_structures == 1 && !res_.compute_partition) {
       auto res = energy::ComputeEnergy(r_, s_, nullptr, em_);
       if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
-        res_.subopts.insert(subopt::SuboptResult(tb::TracebackResult(Secondary(s_), std::move(res.ctd)),
-            res.energy));
+        res_.subopts.insert(subopt::SuboptResult(
+            tb::TracebackResult(Secondary(s_), std::move(res.ctd)), res.energy));
       if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
     } else {
       // Precompute whether things are multiloops or not.
@@ -242,10 +243,8 @@ BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int
   const int N = static_cast<int>(r.size());
 
   em_ = em;
-  // TODO: improve this - see similar code in  subopt1
   s_.reset(N);
-  ctd_.resize(N);
-  std::fill(ctd_.begin(), ctd_.end(), CTD_NA);
+  ctd_.reset(N);
 
   // TODO: Cleanup here
   res_.max_structures = max_structures == -1 ? MAX_STRUCTURES : max_structures;
