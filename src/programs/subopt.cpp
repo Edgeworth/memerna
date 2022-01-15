@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     if (ctd_data) {
       fn = [](const mrna::subopt::SuboptResult& c) {
         printf("%d ", c.energy);
-        puts(mrna::CtdString(c.tb.s, c.tb.ctd).c_str());
+        puts(c.tb.ctd.ToString(c.tb.s).c_str());
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {

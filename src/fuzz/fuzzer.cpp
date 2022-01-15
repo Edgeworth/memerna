@@ -103,7 +103,7 @@ Error Fuzzer::CheckSuboptimalResult(
       }
 
       // Incidentally test ctd parsing.
-      auto parsed = ParsePrimaryCtdString(r_.ToString(), CtdString(sub.tb.s, sub.tb.ctd));
+      auto parsed = ParsePrimaryCtdString(r_.ToString(), sub.tb.ctd.ToString(sub.tb.s));
       if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
           std::get<Ctds>(parsed) != sub.tb.ctd) {
         errors.push_back(sfmt("structure %d: bug in parsing code", i));
