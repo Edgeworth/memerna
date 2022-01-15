@@ -42,7 +42,7 @@ template <typename HairpinPrecomp, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;
   pc.resize(r.size());
-  std::string rna_str = PrimaryToString(r);
+  std::string rna_str = r.ToString();
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
     verify(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");

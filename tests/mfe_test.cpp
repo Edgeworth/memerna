@@ -9,7 +9,7 @@ namespace mrna::mfe {
 class MfeAlgTest : public testing::TestWithParam<ModelCfg::TableAlg> {
  public:
   Energy Mfe(const std::string& s) {
-    return Context(StringToPrimary(s), g_em, ModelCfg(GetParam())).Fold().mfe.energy;
+    return Context(Primary::FromString(s), g_em, ModelCfg(GetParam())).Fold().mfe.energy;
   }
 };
 

@@ -30,13 +30,14 @@ class Primary {
 
   std::size_t size() const { return data_.size(); }
 
+  std::string ToString() const;
+
+  static Primary Random(int length);
+  static Primary FromString(const std::string& s);
+
  private:
   std::vector<Base> data_;
 };
-
-Primary GenerateRandomPrimary(int length);
-Primary StringToPrimary(const std::string& s);
-std::string PrimaryToString(const Primary& r);
 
 }  // namespace mrna
 

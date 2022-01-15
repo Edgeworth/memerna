@@ -51,7 +51,7 @@ std::string CtdString(const Secondary& s, const Ctds& ctd) {
 
 std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
     const std::string& prim_str, const std::string& pairs_str) {
-  auto r = StringToPrimary(prim_str);
+  auto r = Primary::FromString(prim_str);
   verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(r.size());

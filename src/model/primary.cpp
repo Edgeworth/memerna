@@ -5,7 +5,7 @@
 
 namespace mrna {
 
-Primary GenerateRandomPrimary(int length) {
+Primary Primary::Random(int length) {
   static thread_local std::mt19937 eng;
   std::uniform_int_distribution<int> dist(0, 3);
   Primary r((std::size_t(length)));
@@ -13,7 +13,7 @@ Primary GenerateRandomPrimary(int length) {
   return r;
 }
 
-Primary StringToPrimary(const std::string& s) {
+Primary Primary::FromString(const std::string& s) {
   Primary r(s.size());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     r[i] = CharToBase(s[i]);
@@ -22,10 +22,10 @@ Primary StringToPrimary(const std::string& s) {
   return r;
 }
 
-std::string PrimaryToString(const Primary& r) {
+std::string Primary::ToString() const {
   std::string s;
-  s.resize(r.size());
-  for (int i = 0; i < static_cast<int>(r.size()); ++i) { s[i] = BaseToChar(r[i]); }
+  s.resize(size());
+  for (int i = 0; i < static_cast<int>(size()); ++i) s[i] = BaseToChar(data_[i]);
   return s;
 }
 

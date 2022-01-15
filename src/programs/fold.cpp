@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  mrna::Context ctx(mrna::StringToPrimary(pos.front()),
+  mrna::Context ctx(mrna::Primary::FromString(pos.front()),
       mrna::energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args));
   const auto res = ctx.Fold();
 

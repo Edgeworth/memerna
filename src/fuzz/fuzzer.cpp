@@ -43,7 +43,7 @@ Error Fuzzer::Run() {
     else
       errors.push_front(sfmt("Used specified energy model"));
     errors = MaybePrepend(
-        errors, sfmt("Difference on len %zu RNA %s:", r_.size(), PrimaryToString(r_).c_str()));
+        errors, sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToString().c_str()));
   }
 
   return errors;
@@ -103,7 +103,7 @@ Error Fuzzer::CheckSuboptimalResult(
       }
 
       // Incidentally test ctd parsing.
-      auto parsed = ParsePrimaryCtdString(PrimaryToString(r_), CtdString(sub.tb.s, sub.tb.ctd));
+      auto parsed = ParsePrimaryCtdString(r_.ToString(), CtdString(sub.tb.s, sub.tb.ctd));
       if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
           std::get<Ctds>(parsed) != sub.tb.ctd) {
         errors.push_back(sfmt("structure %d: bug in parsing code", i));

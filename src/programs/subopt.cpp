@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
   auto cfg = ModelCfgFromArgParse(args);
   cfg.table_alg = ModelCfg::TableAlg::TWO;
   mrna::Context ctx(
-      mrna::StringToPrimary(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
+      mrna::Primary::FromString(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
 
   const Energy subopt_delta = atoi(args.GetOption("delta").c_str());
   const int subopt_num = atoi(args.GetOption("num").c_str());
