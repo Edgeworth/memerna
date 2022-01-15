@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         seq = rnaqueue.front();
         rnaqueue.pop_front();
       }
-      auto r = mrna::StringToPrimary(seq);
+      auto r = mrna::Primary::FromString(seq);
       int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(

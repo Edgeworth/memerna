@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(eng);
-      auto r = mrna::GenerateRandomPrimary(len);
+      auto r = mrna::Primary::Random(len);
 
       cfg.seed = eng();
       mrna::fuzz::Fuzzer fuzzer(std::move(r), cfg, em);

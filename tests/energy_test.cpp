@@ -39,7 +39,7 @@ class EnergyTest : public testing::Test {
       ParsePrimaryDotBracket("AGAGAAACAAAU", "(..(...)...)");
 
   Energy GetEnergy(const std::string& r, const std::string& db) {
-    return GetEnergy({StringToPrimary(r), DotBracketToSecondary(db)});
+    return GetEnergy({Primary::FromString(r), DotBracketToSecondary(db)});
   }
 
   Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
@@ -192,7 +192,7 @@ TEST_F(EnergyTest, T04Tests) {
 TEST_F(EnergyTest, Precomp) {
   ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
 
-  const Precomp pc(StringToPrimary("GGGGAAACCCC"), g_em);
+  const Precomp pc(Primary::FromString("GGGGAAACCCC"), g_em);
   EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);
@@ -204,15 +204,15 @@ TEST_F(EnergyTest, Precomp) {
 }
 
 TEST_F(EnergyTest, Helpers) {
-  EXPECT_EQ(0, internal::MaxNumContiguous(StringToPrimary("")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(StringToPrimary("A")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(StringToPrimary("AA")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(StringToPrimary("GUAAC")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(StringToPrimary("GUACA")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(StringToPrimary("GAUCCC")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(StringToPrimary("GGGAUC")));
-  EXPECT_EQ(4, internal::MaxNumContiguous(StringToPrimary("GGGAUCAAAA")));
-  EXPECT_EQ(5, internal::MaxNumContiguous(StringToPrimary("GGGAUUUUUCAAAA")));
+  EXPECT_EQ(0, internal::MaxNumContiguous(Primary::FromString("")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromString("A")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromString("AA")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromString("GUAAC")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromString("GUACA")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromString("GAUCCC")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromString("GGGAUC")));
+  EXPECT_EQ(4, internal::MaxNumContiguous(Primary::FromString("GGGAUCAAAA")));
+  EXPECT_EQ(5, internal::MaxNumContiguous(Primary::FromString("GGGAUUUUUCAAAA")));
 }
 
 }  // namespace mrna::energy

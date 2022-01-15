@@ -10,7 +10,7 @@ namespace mrna {
 std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
     const std::string& prim_str, const std::string& pairs_str) {
   verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  return {StringToPrimary(prim_str), DotBracketToSecondary(pairs_str)};
+  return {Primary::FromString(prim_str), DotBracketToSecondary(pairs_str)};
 }
 
 Secondary DotBracketToSecondary(const std::string& pairs_str) {

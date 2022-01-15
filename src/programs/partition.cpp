@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
-  auto r = mrna::StringToPrimary(pos.front());
+  auto r = mrna::Primary::FromString(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
   mrna::Context ctx(std::move(r), em, ModelCfgFromArgParse(args));
