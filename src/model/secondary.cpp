@@ -7,13 +7,7 @@
 
 namespace mrna {
 
-std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
-    const std::string& prim_str, const std::string& pairs_str) {
-  verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  return {Primary::FromString(prim_str), DotBracketToSecondary(pairs_str)};
-}
-
-Secondary DotBracketToSecondary(const std::string& pairs_str) {
+Secondary Secondary::FromDotBracket(const std::string& pairs_str) {
   Secondary s(pairs_str.size());
   std::stack<int> stk;
   for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
@@ -29,16 +23,22 @@ Secondary DotBracketToSecondary(const std::string& pairs_str) {
   return s;
 }
 
-std::string SecondaryToDotBracket(const Secondary& s) {
-  std::string db(s.size(), '.');
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
-    if (s[i] == -1) continue;
-    if (s[i] < i)
+std::string Secondary::ToDotBracket() const {
+  std::string db(size(), '.');
+  for (int i = 0; i < static_cast<int>(size()); ++i) {
+    if (data_[i] == -1) continue;
+    if (data_[i] < i)
       db[i] = ')';
     else
       db[i] = '(';
   }
   return db;
+}
+
+std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
+    const std::string& prim_str, const std::string& pairs_str) {
+  verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
+  return {Primary::FromString(prim_str), Secondary::FromDotBracket(pairs_str)};
 }
 
 }  // namespace mrna
