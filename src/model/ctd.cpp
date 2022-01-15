@@ -7,7 +7,7 @@
 
 namespace mrna {
 
-std::string CtdString(const Secondary& s, const Ctds& ctd) {
+std::string Ctds::ToString(const Secondary& s) const {
   std::string str(s.size(), '.');
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     if (s[i] == -1) continue;
@@ -16,7 +16,7 @@ std::string CtdString(const Secondary& s, const Ctds& ctd) {
       str[i] = ']';
     else
       str[i] = '[';
-    switch (ctd[i]) {
+    switch (data_[i]) {
     case CTD_NA:
     case CTD_UNUSED: break;
     case CTD_3_DANGLE: str[s[i] + 1] = '3'; break;
@@ -43,6 +43,12 @@ std::string CtdString(const Secondary& s, const Ctds& ctd) {
     }
   }
   return str;
+}
+
+bool Ctds::IsCtdString(const std::string& ctd_str) {
+  for (auto c : ctd_str)
+    if (c == '(') return false;
+  return true;
 }
 
 // Breaking ambiguous case for the old format:
@@ -150,12 +156,6 @@ std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
     }
   }
   return {std::move(r), std::move(s), std::move(ctd)};
-}
-
-bool IsCtdString(const std::string& pairs_str) {
-  for (auto c : pairs_str)
-    if (c == '(') return false;
-  return true;
 }
 
 }  // namespace mrna

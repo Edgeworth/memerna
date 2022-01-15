@@ -53,14 +53,15 @@ class Ctds {
     std::fill(data_.begin(), data_.end(), CTD_NA);
   }
 
+  std::string ToString(const Secondary& s) const;
+  static bool IsCtdString(const std::string& ctd_str);
+
  private:
   std::vector<Ctd> data_;
 };
 
 std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
-    const std::string& prim_str, const std::string& pairs_str);
-std::string CtdString(const Secondary& s, const Ctds& ctd);
-bool IsCtdString(const std::string& pairs_str);
+    const std::string& prim_str, const std::string& ctd_str);
 
 }  // namespace mrna
 

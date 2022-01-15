@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<mrna::energy::Structure> struc;
   mrna::energy::EnergyResult res;
   mrna::Secondary s;
-  if (mrna::IsCtdString(pos.back())) {
+  if (mrna::Ctds::IsCtdString(pos.back())) {
     const auto [r, s, ctd] = mrna::ParsePrimaryCtdString(pos.front(), pos.back());
     res = mrna::energy::ComputeEnergy(r, s, &ctd, em, &struc);
   } else {
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
   printf("Energy: %d\n", res.energy);
 
   if (args.HasFlag("v")) {
-    printf("%s\n", mrna::CtdString(s, res.ctd).c_str());
+    printf("%s\n", res.ctd.ToString(s).c_str());
     const auto descs = struc->Description();
     for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
   }

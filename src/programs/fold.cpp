@@ -16,5 +16,5 @@ int main(int argc, char* argv[]) {
   const auto res = ctx.Fold();
 
   printf("Energy: %d\n%s\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str(),
-      mrna::CtdString(res.tb.s, res.tb.ctd).c_str());
+      res.tb.ctd.ToString(res.tb.s).c_str());
 }

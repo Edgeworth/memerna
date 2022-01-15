@@ -95,21 +95,21 @@ class ParsingTest : public testing::Test {
 };
 
 TEST_F(ParsingTest, SecondaryCtdToCtdString) {
-  EXPECT_EQ(kCtdString1, CtdString(kSecondary1, kCtd1));
-  EXPECT_EQ(kCtdString2, CtdString(kSecondary2, kCtd2));
-  EXPECT_EQ(kCtdString3, CtdString(kSecondary3, kCtd3));
-  EXPECT_EQ(kCtdString4, CtdString(kSecondary4, kCtd4));
-  EXPECT_EQ(kCtdString5, CtdString(kSecondary5, kCtd5));
-  EXPECT_EQ(kCtdString6, CtdString(kSecondary6, kCtd6));
-  EXPECT_EQ(kCtdString7, CtdString(kSecondary7, kCtd7));
-  EXPECT_EQ(kCtdString8, CtdString(kSecondary8, kCtd8));
-  EXPECT_EQ(kCtdString9, CtdString(kSecondary9, kCtd9));
-  EXPECT_EQ(kCtdString10, CtdString(kSecondary10, kCtd10));
-  EXPECT_EQ(kCtdString11, CtdString(kSecondary11, kCtd11));
-  EXPECT_EQ(kCtdString12, CtdString(kSecondary12, kCtd12));
-  EXPECT_EQ(kCtdString13, CtdString(kSecondary13, kCtd13));
-  EXPECT_EQ(kCtdString14, CtdString(kSecondary14, kCtd14));
-  EXPECT_EQ(kCtdString15, CtdString(kSecondary15, kCtd15));
+  EXPECT_EQ(kCtdString1, kCtd1.ToString(kSecondary1));
+  EXPECT_EQ(kCtdString2, kCtd2.ToString(kSecondary2));
+  EXPECT_EQ(kCtdString3, kCtd3.ToString(kSecondary3));
+  EXPECT_EQ(kCtdString4, kCtd4.ToString(kSecondary4));
+  EXPECT_EQ(kCtdString5, kCtd5.ToString(kSecondary5));
+  EXPECT_EQ(kCtdString6, kCtd6.ToString(kSecondary6));
+  EXPECT_EQ(kCtdString7, kCtd7.ToString(kSecondary7));
+  EXPECT_EQ(kCtdString8, kCtd8.ToString(kSecondary8));
+  EXPECT_EQ(kCtdString9, kCtd9.ToString(kSecondary9));
+  EXPECT_EQ(kCtdString10, kCtd10.ToString(kSecondary10));
+  EXPECT_EQ(kCtdString11, kCtd11.ToString(kSecondary11));
+  EXPECT_EQ(kCtdString12, kCtd12.ToString(kSecondary12));
+  EXPECT_EQ(kCtdString13, kCtd13.ToString(kSecondary13));
+  EXPECT_EQ(kCtdString14, kCtd14.ToString(kSecondary14));
+  EXPECT_EQ(kCtdString15, kCtd15.ToString(kSecondary15));
 }
 
 TEST_F(ParsingTest, ParseCtd) {
@@ -146,23 +146,23 @@ TEST_F(ParsingTest, ParseCtd) {
 }
 
 TEST_F(ParsingTest, IsCtdString) {
-  EXPECT_TRUE(IsCtdString(kCtdString1));
-  EXPECT_TRUE(IsCtdString(kCtdString2));
-  EXPECT_TRUE(IsCtdString(kCtdString3));
-  EXPECT_TRUE(IsCtdString(kCtdString4));
-  EXPECT_TRUE(IsCtdString(kCtdString5));
-  EXPECT_TRUE(IsCtdString(kCtdString6));
-  EXPECT_TRUE(IsCtdString(kCtdString7));
-  EXPECT_TRUE(IsCtdString(kCtdString8));
-  EXPECT_TRUE(IsCtdString(kCtdString9));
-  EXPECT_TRUE(IsCtdString(kCtdString10));
-  EXPECT_TRUE(IsCtdString(kCtdString11));
-  EXPECT_TRUE(IsCtdString(kCtdString12));
-  EXPECT_TRUE(IsCtdString(kCtdString13));
-  EXPECT_TRUE(IsCtdString(kCtdString14));
-  EXPECT_TRUE(IsCtdString(kCtdString15));
-  EXPECT_FALSE(IsCtdString("(...)"));
-  EXPECT_FALSE(IsCtdString("((...))"));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString1));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString2));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString3));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString4));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString5));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString6));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString7));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString8));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString9));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString10));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString11));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString12));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString13));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString14));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString15));
+  EXPECT_FALSE(Ctds::IsCtdString("(...)"));
+  EXPECT_FALSE(Ctds::IsCtdString("((...))"));
 }
 
 }  // namespace mrna
