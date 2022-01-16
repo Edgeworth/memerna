@@ -36,6 +36,6 @@ int main(int argc, char* argv[]) {
   auto r = mrna::Primary::FromString(pos.front());
   const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
 
-  mrna::Context ctx(std::move(r), em, ModelCfgFromArgParse(args));
-  PrintProbabilities(ctx.Partition().prob);
+  mrna::Context ctx(em, ModelCfgFromArgParse(args));
+  PrintProbabilities(ctx.Partition(std::move(r)).prob);
 }

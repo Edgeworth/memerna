@@ -16,25 +16,25 @@
 
 namespace mrna {
 
-DpArray Context::ComputeTables() {
+DpArray Context::ComputeTables(const Primary& r) {
   switch (cfg_.table_alg) {
-  case ModelCfg::TableAlg::ZERO: return mfe::ComputeTables0(r_, em_);
-  case ModelCfg::TableAlg::ONE: return mfe::ComputeTables1(r_, em_);
-  case ModelCfg::TableAlg::TWO: return mfe::ComputeTables2(r_, em_);
-  case ModelCfg::TableAlg::THREE: return mfe::ComputeTables3(r_, em_);
+  case ModelCfg::TableAlg::ZERO: return mfe::ComputeTables0(r, em_);
+  case ModelCfg::TableAlg::ONE: return mfe::ComputeTables1(r, em_);
+  case ModelCfg::TableAlg::TWO: return mfe::ComputeTables2(r, em_);
+  case ModelCfg::TableAlg::THREE: return mfe::ComputeTables3(r, em_);
   default: bug();
   }
 }
 
-FoldResult Context::Fold() {
+FoldResult Context::Fold(Primary r) {
   if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) {
-    auto subopt = mfe::MfeBruteForce(Primary(r_), em_);
+    auto subopt = mfe::MfeBruteForce(std::move(r), em_);
     return {.mfe = mfe::MfeResult{.energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
-  auto dp = ComputeTables();
-  auto ext = mfe::ComputeExterior(r_, em_, dp);
-  auto tb = tb::Traceback(r_, em_, dp, ext);
+  auto dp = ComputeTables(r);
+  auto ext = mfe::ComputeExterior(r, em_, dp);
+  auto tb = tb::Traceback(r, em_, dp, ext);
   return FoldResult{
       .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = ext[0][EXT]},
       .tb = std::move(tb),
@@ -42,49 +42,49 @@ FoldResult Context::Fold() {
 }
 
 std::vector<subopt::SuboptResult> Context::SuboptimalIntoVector(
-    bool sorted, Energy subopt_delta, int subopt_num) {
+    Primary r, bool sorted, Energy subopt_delta, int subopt_num) {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] int num_structures =
-      Suboptimal([&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
-          sorted, subopt_delta, subopt_num);
+  [[maybe_unused]] int num_structures = Suboptimal(
+      std::move(r), [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
+      sorted, subopt_delta, subopt_num);
   assert(num_structures == static_cast<int>(subopts.size()));
   return subopts;
 }
 
 int Context::Suboptimal(
-    subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
+    Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
   if (cfg_.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
-    auto subopts = subopt::SuboptimalBruteForce(Primary(r_), em_, subopt_num);
+    auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, subopt_num);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
 
-  auto dp = ComputeTables();
-  auto ext = mfe::ComputeExterior(r_, em_, dp);
+  auto dp = ComputeTables(r);
+  auto ext = mfe::ComputeExterior(r, em_, dp);
   switch (cfg_.suboptimal_alg) {
   case ModelCfg::SuboptimalAlg::ZERO:
     return subopt::Suboptimal0(
-        Primary(r_), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+        std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn);
   case ModelCfg::SuboptimalAlg::ONE:
     return subopt::Suboptimal1(
-        Primary(r_), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
+        std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn, sorted);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.suboptimal_alg));
   }
 }
 
-partition::PartitionResult Context::Partition() {
+partition::PartitionResult Context::Partition(Primary r) {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.partition_alg) {
-  case ModelCfg::PartitionAlg::ZERO: res = partition::Partition0(r_, em_); break;
+  case ModelCfg::PartitionAlg::ZERO: res = partition::Partition0(r, em_); break;
   case ModelCfg::PartitionAlg::ONE:
-    res = partition::Partition1(r_, energy::BoltzEnergyModel(em_));
+    res = partition::Partition1(r, energy::BoltzEnergyModel(em_));
     break;
-  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(Primary(r_), em_);
+  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
   }
-  const int N = static_cast<int>(r_.size());
+  const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
   Array3D<BoltzEnergy, 1> p(N);
   for (int i = 0; i < N; ++i)  // TODO optimise this?

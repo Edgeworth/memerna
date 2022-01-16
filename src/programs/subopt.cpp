@@ -23,8 +23,7 @@ int main(int argc, char* argv[]) {
 
   auto cfg = ModelCfgFromArgParse(args);
   cfg.table_alg = ModelCfg::TableAlg::TWO;
-  mrna::Context ctx(
-      mrna::Primary::FromString(pos.front()), mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
+  mrna::Context ctx(mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
 
   const Energy subopt_delta = atoi(args.GetOption("delta").c_str());
   const int subopt_num = atoi(args.GetOption("num").c_str());
@@ -47,6 +46,7 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int num_structures = ctx.Suboptimal(fn, sorted, subopt_delta, subopt_num);
+  int num_structures =
+      ctx.Suboptimal(mrna::Primary::FromString(pos.front()), fn, sorted, subopt_delta, subopt_num);
   printf("%d suboptimal structures\n", num_structures);
 }

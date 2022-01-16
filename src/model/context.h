@@ -25,33 +25,27 @@ struct FoldResult {
 
 class Context {
  public:
-  Context(Primary r, energy::EnergyModel em) : r_(std::move(r)), em_(std::move(em)), cfg_() {
-    verify(r_.size() > 0u, "cannot process zero length RNA");
-  }
-  Context(Primary r, energy::EnergyModel em, ModelCfg cfg)
-      : r_(std::move(r)), em_(std::move(em)), cfg_(std::move(cfg)) {
-    verify(r_.size() > 0u, "cannot process zero length RNA");
-  }
-  Context(const Context& o) = default;
+  Context(energy::EnergyModel em) : em_(std::move(em)), cfg_() {}
+  Context(energy::EnergyModel em, ModelCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
 
   Context() = delete;
+  Context(const Context& o) = delete;
   Context& operator=(const Context&) = delete;
   Context(Context&& o) = delete;
   Context& operator=(Context&&) = delete;
 
-  FoldResult Fold();
+  FoldResult Fold(Primary r);
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
-  int Suboptimal(
-      subopt::SuboptCallback fn, bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
-  partition::PartitionResult Partition();
+      Primary r, bool sorted, Energy subopt_delta = -1, int subopt_num = -1);
+  int Suboptimal(Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta = -1,
+      int subopt_num = -1);
+  partition::PartitionResult Partition(Primary r);
 
  private:
-  Primary r_;
   energy::EnergyModel em_;
   ModelCfg cfg_;
 
-  DpArray ComputeTables();
+  DpArray ComputeTables(const Primary& r);
 };
 
 }  // namespace mrna
