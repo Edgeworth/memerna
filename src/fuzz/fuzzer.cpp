@@ -136,9 +136,10 @@ Error Fuzzer::CheckSuboptimal() {
   std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_num;
   for (auto subopt_alg : ModelCfg::SUBOPTIMAL_ALGS) {
     ModelCfg cfg(ModelCfg::TableAlg::TWO, subopt_alg);
-    Context ctx(Primary(r_), em_, cfg);
-    memerna_subopts_delta.push_back(ctx.SuboptimalIntoVector(true, cfg_.subopt_delta, -1));
-    memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(true, -1, cfg_.subopt_max));
+    Context ctx(em_, cfg);
+    memerna_subopts_delta.push_back(
+        ctx.SuboptimalIntoVector(Primary(r_), true, cfg_.subopt_delta, -1));
+    memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(Primary(r_), true, -1, cfg_.subopt_max));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
@@ -222,8 +223,8 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   std::vector<Energy> memerna_ctd_efns;
   std::vector<Energy> memerna_optimal_efns;
   for (auto table_alg : ModelCfg::TABLE_ALGS) {
-    Context ctx(Primary(r_), em_, ModelCfg(table_alg));
-    auto res = ctx.Fold();
+    Context ctx(em_, ModelCfg(table_alg));
+    auto res = ctx.Fold(Primary(r_));
     memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
     memerna_ctd_efns.push_back(energy::ComputeEnergy(r_, res.tb.s, &res.tb.ctd, em_).energy);
@@ -263,11 +264,11 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 Error Fuzzer::CheckBruteForce() {
   Error errors;
   ModelCfg cfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, ModelCfg::PartitionAlg::ZERO);
-  Context ctx(Primary(r_), em_, cfg);
+  Context ctx(em_, cfg);
 
   if (cfg_.subopt) {
     auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.brute_subopt_max);
-    auto memerna_subopt = ctx.SuboptimalIntoVector(true, -1, cfg_.brute_subopt_max);
+    auto memerna_subopt = ctx.SuboptimalIntoVector(Primary(r_), true, -1, cfg_.brute_subopt_max);
 
     AppendErrors(
         errors, MaybePrepend(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
@@ -279,7 +280,7 @@ Error Fuzzer::CheckBruteForce() {
   }
 
   if (cfg_.partition) {
-    auto memerna_partition = ctx.Partition();
+    auto memerna_partition = ctx.Partition(Primary(r_));
 
     auto brute_partition = PartitionBruteForce(Primary(r_), em_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
@@ -310,9 +311,9 @@ Error Fuzzer::CheckPartition() {
   Error errors;
   std::vector<partition::PartitionResult> memerna_partitions;
   for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
-    Context ctx(Primary(r_), em_,
-        ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
-    memerna_partitions.emplace_back(ctx.Partition());
+    Context ctx(
+        em_, ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
+    memerna_partitions.emplace_back(ctx.Partition(Primary(r_)));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_partitions.size()); ++i) {
