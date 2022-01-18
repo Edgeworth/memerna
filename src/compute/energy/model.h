@@ -24,36 +24,41 @@ class EnergyModel {
   static constexpr int INITIATION_CACHE_SZ = 31;
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
-  Energy stack[4][4][4][4];
+  Energy stack[4][4][4][4] = {};
   // Terminal mismatch:
-  Energy terminal[4][4][4][4];
+  Energy terminal[4][4][4][4] = {};
   // Internal loop related:
-  Energy internal_init[INITIATION_CACHE_SZ];
-  Energy internal_1x1[4][4][4][4][4][4];
-  Energy internal_1x2[4][4][4][4][4][4][4];
-  Energy internal_2x2[4][4][4][4][4][4][4][4];
-  Energy internal_2x3_mismatch[4][4][4][4];
-  Energy internal_other_mismatch[4][4][4][4];
-  Energy internal_asym;
-  Energy internal_augu_penalty;
+  Energy internal_init[INITIATION_CACHE_SZ] = {};
+  Energy internal_1x1[4][4][4][4][4][4] = {};
+  Energy internal_1x2[4][4][4][4][4][4][4] = {};
+  Energy internal_2x2[4][4][4][4][4][4][4][4] = {};
+  Energy internal_2x3_mismatch[4][4][4][4] = {};
+  Energy internal_other_mismatch[4][4][4][4] = {};
+  Energy internal_asym = {};
+  Energy internal_augu_penalty = {};
   // Bulge loop related:
-  Energy bulge_init[INITIATION_CACHE_SZ];
-  Energy bulge_special_c;
+  Energy bulge_init[INITIATION_CACHE_SZ] = {};
+  Energy bulge_special_c = {};
   // Hairpin loop related:
-  Energy hairpin_init[INITIATION_CACHE_SZ];
-  Energy hairpin_uu_ga_first_mismatch, hairpin_gg_first_mismatch, hairpin_special_gu_closure,
-      hairpin_c3_loop, hairpin_all_c_a, hairpin_all_c_b;
-  std::unordered_map<std::string, Energy> hairpin;
+  Energy hairpin_init[INITIATION_CACHE_SZ] = {};
+  Energy hairpin_uu_ga_first_mismatch = {};
+  Energy hairpin_gg_first_mismatch = {};
+  Energy hairpin_special_gu_closure = {};
+  Energy hairpin_c3_loop = {};
+  Energy hairpin_all_c_a = {};
+  Energy hairpin_all_c_b = {};
+  std::unordered_map<std::string, Energy> hairpin = {};
   // Multiloop hack model:
-  Energy multiloop_hack_a, multiloop_hack_b;
+  Energy multiloop_hack_a = {};
+  Energy multiloop_hack_b = {};
   // Dangles:
-  Energy dangle5[4][4][4];
-  Energy dangle3[4][4][4];
+  Energy dangle5[4][4][4] = {};
+  Energy dangle3[4][4][4] = {};
   // Coaxial stacking:
-  Energy coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
-  Energy augu_penalty;
-
-  EnergyModel();
+  Energy coax_mismatch_non_contiguous = {};
+  Energy coax_mismatch_wc_bonus = {};
+  Energy coax_mismatch_gu_bonus = {};
+  Energy augu_penalty = {};
 
   Energy HairpinInitiation(int n) const {
     assert(n >= 3);
