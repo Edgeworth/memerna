@@ -11,15 +11,6 @@
 
 namespace mrna::energy {
 
-EnergyModel::EnergyModel()
-    : stack(), terminal(), internal_init(), internal_1x1(), internal_1x2(), internal_2x2(),
-      internal_2x3_mismatch(), internal_other_mismatch(), internal_asym(), internal_augu_penalty(),
-      bulge_init(), bulge_special_c(), hairpin_init(), hairpin_uu_ga_first_mismatch(),
-      hairpin_gg_first_mismatch(), hairpin_special_gu_closure(), hairpin_c3_loop(),
-      hairpin_all_c_a(), hairpin_all_c_b(), hairpin(), multiloop_hack_a(), multiloop_hack_b(),
-      dangle5(), dangle3(), coax_mismatch_non_contiguous(), coax_mismatch_wc_bonus(),
-      coax_mismatch_gu_bonus(), augu_penalty() {}
-
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:
