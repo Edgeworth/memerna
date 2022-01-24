@@ -31,7 +31,7 @@ class RnaPackage {
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };
 
-const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
+const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"m", {"memerna"}}};
 
 }  // namespace mrna::bridge
 

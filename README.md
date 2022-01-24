@@ -68,7 +68,7 @@ Runs benchmarking for various packages.
 
 ./scripts/run.py
 Supports EFN or folding through -e and -f respectively. Benchmarking through -b.
-Can also specify memevault RNA via -kv <memevault name>.
+Can also specify memevault RNA via -mv <memevault name>.
 
 ./scripts/parse_data.py
 Parses the original data files from orig_data and outputs them in memerna format in data/.

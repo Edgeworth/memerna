@@ -64,13 +64,7 @@ struct Index {
     assert(st_ == st && en_ == en && a == a_);
   }
 
-  bool operator==(const Index& o) const { return st == o.st && en == o.en && a == o.a; }
-  bool operator!=(const Index& o) const { return !(*this == o); }
-  bool operator<(const Index& o) const {
-    if (st != o.st) return st < o.st;
-    if (en != o.en) return en < o.en;
-    return a < o.a;
-  }
+  auto operator<=>(const Index&) const = default;
 };
 
 // Describes a CTD at a particular index.
