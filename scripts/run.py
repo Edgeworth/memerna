@@ -584,7 +584,7 @@ def parse_rna_from_args(parser, args):
 def process_command(*extra_args):
   parser = argparse.ArgumentParser()
   parser.add_argument('-p', '--path', type=str)
-  parser.add_argument('-kv', '--memevault', type=str)
+  parser.add_argument('-mv', '--memevault', type=str)
   parser.add_argument('cmd', type=str, nargs='*')
 
   parser.add_argument('--rnastructure-loc')
@@ -606,8 +606,8 @@ def process_command(*extra_args):
   parser.add_argument('-sjsmpi', '--sjsviennampi', action='store_true')
   parser.add_argument('-sjsmpis', '--sjsviennampi-sorted', action='store_true')
   parser.add_argument('-u', '--unafold', action='store_true')
-  parser.add_argument('-k', '--memerna', action='store_true')
-  parser.add_argument('-ks', '--memerna-sorted', action='store_true')
+  parser.add_argument('-m', '--memerna', action='store_true')
+  parser.add_argument('-ms', '--memerna-sorted', action='store_true')
   parser.add_argument('-smf', '--sparsemfefold', action='store_true')
 
   parser.add_argument('-f', '--fold', action='store_true')

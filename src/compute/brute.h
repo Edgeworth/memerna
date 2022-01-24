@@ -60,9 +60,7 @@ class BruteForce {
     inline constexpr static int BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
     uint16_t bits[BYTES / 2];
 
-    bool operator<(const SubstructureId& o) const {
-      return memcmp(&bits, &o.bits, std::size_t(BYTES)) < 0;
-    }
+    auto operator<=>(const SubstructureId&) const = default;
   };
 
   Primary r_;
