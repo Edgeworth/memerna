@@ -13,7 +13,9 @@
 namespace mrna::energy {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzEnergyModel bem)
-    : r_(std::move(r)), bem_(BoltzEnergyModel(std::move(bem))) {}
+    : r_(std::move(r)), bem_(BoltzEnergyModel(std::move(bem))) {
+  PrecomputeData();
+}
 
 BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   int length = en - st - 1;
