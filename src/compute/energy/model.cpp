@@ -131,15 +131,15 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em)
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
 
-#define READ_DATA(var)                                                 \
-  do {                                                                 \
-    while (1) {                                                        \
-      std::string line = sgetline(fp);                                 \
-      verify(line.size() > 0, "unexpected EOF or error");              \
-      if (line[0] == '/' || line[0] == '\n') continue;                 \
-      verify(sscanf(line.c_str(), "%d", &(var)) == 1, "expected int"); \
-      break;                                                           \
-    }                                                                  \
+#define READ_DATA(var)                                                  \
+  do {                                                                  \
+    while (1) {                                                         \
+      auto line = sgetline(fp);                                         \
+      verify(line.has_value(), "unexpected EOF or error");              \
+      if ((*line)[0] == '/' || (*line)[0] == '\n') continue;            \
+      verify(sscanf(line->c_str(), "%d", &(var)) == 1, "expected int"); \
+      break;                                                            \
+    }                                                                   \
   } while (0)
 
   // Bulge loops.

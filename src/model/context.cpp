@@ -29,7 +29,8 @@ DpArray Context::ComputeTables(const Primary& r) {
 FoldResult Context::Fold(Primary r) {
   if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) {
     auto subopt = mfe::MfeBruteForce(std::move(r), em_);
-    return {.mfe = mfe::MfeResult{.energy = subopt.energy}, .tb = std::move(subopt.tb)};
+    return {
+        .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
   auto dp = ComputeTables(r);

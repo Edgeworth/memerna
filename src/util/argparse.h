@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "util/macros.h"
+#include "util/error.h"
 
 namespace mrna {
 

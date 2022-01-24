@@ -26,8 +26,10 @@ void FillPenergyArray(BoltzEnergy* output, const Energy* input, int elements) {
 
 BoltzEnergyModel::BoltzEnergyModel(EnergyModel em) {
 #define FILL_PENERGY(name)                                                                        \
+  /* NOLINTNEXTLINE */                                                                            \
   static_assert(sizeof(name) / sizeof(*Decay(name)) == sizeof(em.name) / sizeof(*Decay(em.name)), \
       "BoltzEnergyModel does not match EnergyModel");                                             \
+  /* NOLINTNEXTLINE */                                                                            \
   FillPenergyArray(Decay(name), Decay(em.name), sizeof(name) / sizeof(*Decay(name)));
 
   FILL_PENERGY(stack);

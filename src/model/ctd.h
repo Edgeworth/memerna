@@ -4,7 +4,8 @@
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "util/macros.h"
+#include "util/error.h"
+
 namespace mrna {
 
 enum Ctd : int8_t {
