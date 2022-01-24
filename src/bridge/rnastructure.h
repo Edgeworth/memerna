@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "bridge/bridge.h"
+#include "compute/energy/energy.h"
 #include "miles_rnastructure/include/algorithm.h"
 #include "miles_rnastructure/include/alltrace.h"
 #include "miles_rnastructure/include/pfunction.h"

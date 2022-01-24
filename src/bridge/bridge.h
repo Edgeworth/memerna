@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "compute/boltz_dp.h"
+#include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/context.h"

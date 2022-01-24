@@ -6,21 +6,22 @@
 #include <iomanip>
 #include <iostream>
 
+#include "compute/energy/energy.h"
 #include "compute/mfe/brute.h"
 #include "model/context.h"
 
 void PrintProbabilities(const mrna::Probabilities& p) {
-  const int N = static_cast<int>(p.Size());
+  const int N = static_cast<int>(p.size());
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) { std::cout << std::setprecision(20) << p[i][j][0] << ' '; }
+    for (int j = 0; j < N; ++j) std::cout << std::setprecision(20) << p[i][j][0] << ' ';
     std::cout << '\n';
   }
 }
 
 void PrintPartition(const mrna::partition::Partition& p) {
-  const int N = static_cast<int>(p.p.Size());
+  const int N = static_cast<int>(p.p.size());
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) { std::cout << p.p[i][j][0] << ' '; }
+    for (int j = 0; j < N; ++j) std::cout << p.p[i][j][0] << ' ';
     std::cout << '\n';
   }
 }

@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "compute/energy/energy.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/model.h"
@@ -20,18 +21,6 @@
 namespace mrna::energy {
 
 class Structure;
-
-// TODO: this rnastructure specific option should go somewhere else?
-inline const std::map<std::string, Opt> ENERGY_OPTS = {
-    {"seed", Opt("seed for random energy model for memerna").Arg()},
-    {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
-    {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
-
-struct EnergyResult {
-  Energy energy = 0;
-  // TODO: tree, remove struc args
-  Ctds ctd;  // May be empty if CTDs were not computed.
-};
 
 class EnergyModel {
  public:
@@ -150,9 +139,9 @@ class EnergyModel {
   // If (st, en) is not paired, treated as an exterior loop.
   // If |ctd| is non-null, use the given ctds.
   EnergyResult SubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      int st, int en, std::unique_ptr<Structure>* struc = nullptr) const;
+      int st, int en, bool build_structure = false) const;
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      std::unique_ptr<Structure>* struc = nullptr) const;
+      bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const;
   uint32_t Checksum() const;

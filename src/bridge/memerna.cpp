@@ -13,14 +13,13 @@ namespace mrna::bridge {
 energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) const {
   energy::EnergyResult res;
   if (desc) {
-    std::unique_ptr<energy::Structure> structure;
-    res = em_.TotalEnergy(r, s, nullptr, &structure);
-    for (const auto& s : structure->Description()) {
+    res = em_.TotalEnergy(r, s, nullptr, true);
+    for (const auto& s : res.struc->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    res = em_.TotalEnergy(r, s, nullptr);
+    res = em_.TotalEnergy(r, s, nullptr, false);
   }
 
   return res;

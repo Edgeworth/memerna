@@ -41,7 +41,7 @@ struct Array3D {
     return reinterpret_cast<const ArrayType*>(&data_[idx * size_ * K]);
   }
 
-  std::size_t Size() const { return size_; }
+  std::size_t size() const { return size_; }
 
  private:
   T* data_;
@@ -73,8 +73,9 @@ struct Array2D {
   }
 
   T* operator[](std::size_t idx) { return &data_[idx * K]; }
-
   const T* operator[](std::size_t idx) const { return &data_[idx * K]; }
+
+  std::size_t size() const { return size_; }
 
  private:
   T* data_;

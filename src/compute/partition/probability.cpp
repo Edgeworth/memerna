@@ -5,7 +5,7 @@
 namespace mrna::partition {
 
 Probabilities ComputeProbabilities(const Partition& partition) {
-  const int N = static_cast<int>(partition.p.Size());
+  const int N = static_cast<int>(partition.p.size());
   Probabilities probabilities(std::size_t(N), 0);
   for (int i = 0; i < N; ++i)
     for (int j = i; j < N; ++j)

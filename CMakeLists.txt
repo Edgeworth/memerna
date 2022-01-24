@@ -89,6 +89,7 @@ set(MEMERNA_SOURCE
     src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
     src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
     src/compute/energy/branch.cpp src/compute/energy/branch.h
+    src/compute/energy/energy.cpp src/compute/energy/energy.h
     src/compute/energy/model.cpp src/compute/energy/model.h
     src/compute/energy/precomp.cpp src/compute/energy/precomp.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h
