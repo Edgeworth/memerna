@@ -1,7 +1,6 @@
 // Copyright 2016 E.
 #include <cstdio>
 
-#include "compute/energy/load_model.h"
 #include "model/context.h"
 
 int main(int argc, char* argv[]) {
@@ -11,7 +10,8 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  mrna::Context ctx(mrna::energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args));
+  mrna::Context ctx(
+      mrna::energy::EnergyModel::FromArgParse(args), mrna::ModelCfg::FromArgParse(args));
   const auto res = ctx.Fold(mrna::Primary::FromString(pos.front()));
 
   printf("Energy: %d\n%s\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str(),

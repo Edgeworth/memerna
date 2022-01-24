@@ -3,7 +3,6 @@
 
 #include <cstdio>
 
-#include "compute/energy/load_model.h"
 #include "model/context.h"
 
 using mrna::Energy;
@@ -21,9 +20,9 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  auto cfg = ModelCfgFromArgParse(args);
+  auto cfg = ModelCfg::FromArgParse(args);
   cfg.table_alg = ModelCfg::TableAlg::TWO;
-  mrna::Context ctx(mrna::energy::LoadEnergyModelFromArgParse(args), cfg);
+  mrna::Context ctx(mrna::energy::EnergyModel::FromArgParse(args), cfg);
 
   const Energy subopt_delta = atoi(args.GetOption("delta").c_str());
   const int subopt_num = atoi(args.GetOption("num").c_str());

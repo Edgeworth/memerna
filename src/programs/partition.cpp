@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include "compute/energy/load_model.h"
 #include "compute/mfe/brute.h"
 #include "model/context.h"
 
@@ -34,8 +33,8 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromString(pos.front());
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
+  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
 
-  mrna::Context ctx(em, ModelCfgFromArgParse(args));
+  mrna::Context ctx(em, mrna::ModelCfg::FromArgParse(args));
   PrintProbabilities(ctx.Partition(std::move(r)).prob);
 }

@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "bridge/bridge.h"
-#include "compute/energy/load_model.h"
 #include "model/config.h"
 
 using mrna::Energy;
@@ -25,7 +24,7 @@ int main(int argc, char* argv[]) {
   verify(args.HasFlag("seed") + args.HasFlag("memerna-data") == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
 
-  const auto package = mrna::bridge::RnaPackageFromArgParse(args);
+  const auto package = mrna::bridge::RnaPackage::FromArgParse(args);
   const auto& pos = args.GetPositional();
   const bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());

@@ -7,7 +7,6 @@
 
 #include "bridge/bridge.h"
 #include "bridge/memerna.h"
-#include "compute/energy/load_model.h"
 #include "compute/energy/structure.h"
 #include "compute/mfe/brute.h"
 #include "compute/partition/brute.h"
@@ -41,9 +40,9 @@ int main(int argc, char* argv[]) {
   mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);
 #endif  // USE_RNASTRUCTURE
 
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
+  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
 
-  auto cfg = mrna::fuzz::FuzzCfgFromArgParse(args);
+  auto cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
   const bool afl_mode = args.HasFlag("afl");
   verify(!cfg.mfe_rnastructure || !args.HasFlag("seed"),
       "seed option incompatible with rnastructure testing");

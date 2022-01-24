@@ -2,7 +2,6 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "compute/energy/load_model.h"
 #include "util/macros.h"
 
 #ifdef USE_RNASTRUCTURE
@@ -11,7 +10,7 @@
 
 namespace mrna::bridge {
 
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
+std::unique_ptr<RnaPackage> RnaPackage::FromArgParse(const ArgParse& args) {
   verify(args.HasFlag("r") + args.HasFlag("k") == 1, "require exactly one package flag\n%s",
       args.Usage().c_str());
   if (args.HasFlag("r")) {
@@ -24,7 +23,7 @@ std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args) {
 
   } else {
     return std::unique_ptr<RnaPackage>(
-        new Memerna(energy::LoadEnergyModelFromArgParse(args), ModelCfgFromArgParse(args)));
+        new Memerna(energy::EnergyModel::FromArgParse(args), ModelCfg::FromArgParse(args)));
   }
 }
 

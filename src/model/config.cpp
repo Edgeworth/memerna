@@ -4,7 +4,7 @@
 
 namespace mrna {
 
-ModelCfg ModelCfgFromArgParse(const ArgParse& args) {
+ModelCfg ModelCfg::FromArgParse(const ArgParse& args) {
   ModelCfg cfg;
   const auto dp_alg = args.GetOption("dp-alg");
   if (dp_alg == "0") {

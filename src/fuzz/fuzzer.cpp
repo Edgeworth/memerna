@@ -5,7 +5,6 @@
 #include <set>
 #include <sstream>
 
-#include "compute/energy/load_model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
 #include "compute/subopt/brute.h"
@@ -22,7 +21,7 @@ inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
 Fuzzer::Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em)
     : r_(std::move(r)), cfg_(std::move(cfg)),
-      em_(cfg_.random_model ? energy::LoadRandomEnergyModel(cfg_.seed) : em) {}
+      em_(cfg_.random_model ? energy::EnergyModel::Random(cfg_.seed) : em) {}
 
 Error Fuzzer::Run() {
   Error errors;

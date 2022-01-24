@@ -24,7 +24,7 @@ std::string FuzzCfg::Describe() {
   return desc;
 }
 
-FuzzCfg FuzzCfgFromArgParse(const ArgParse& args) {
+FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
   cfg.random_model = args.HasFlag("random");
   cfg.table_check = args.HasFlag("table-check");
