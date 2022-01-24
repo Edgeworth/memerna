@@ -18,30 +18,26 @@
 
 namespace mrna {
 
-namespace internal {
-
-std::vector<int> GetBranchCounts(const Secondary& s);
-
-struct SuboptCmp {
-  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
-    // Kept in a multiset, so this is just used for ordering, not deduplication.
-    // There should be no duplicates added anyway. Single comparison to keep it fast.
-    return a.energy < b.energy;
-  }
-};
-
-}  // namespace internal
-
 class BruteForce {
  public:
   struct Result {
+   private:
+    struct SuboptCmp {
+      bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+        // Kept in a multiset, so this is just used for ordering, not deduplication.
+        // There should be no duplicates added anyway. Single comparison to keep it fast.
+        return a.energy < b.energy;
+      }
+    };
+
+   public:
     // Common:
     std::vector<std::pair<int, int>> base_pairs;
     std::vector<int> branch_count;
 
     // MFE and suboptimal folding:
     int max_structures;
-    std::multiset<subopt::SuboptResult, internal::SuboptCmp> subopts;
+    std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
 
     // TODO: Switch to optional?
     bool compute_partition;

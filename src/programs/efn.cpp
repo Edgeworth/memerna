@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include <cstdio>
 
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 
 int main(int argc, char* argv[]) {
@@ -17,10 +17,10 @@ int main(int argc, char* argv[]) {
   mrna::Secondary s;
   if (mrna::Ctds::IsCtdString(pos.back())) {
     const auto [r, s, ctd] = mrna::ParsePrimaryCtdString(pos.front(), pos.back());
-    res = mrna::energy::ComputeEnergy(r, s, &ctd, em, &struc);
+    res = em.TotalEnergy(r, s, &ctd, &struc);
   } else {
     const auto [r, s] = mrna::ParsePrimaryDotBracket(pos.front(), pos.back());
-    res = mrna::energy::ComputeEnergy(r, s, nullptr, em, &struc);
+    res = em.TotalEnergy(r, s, nullptr, &struc);
   }
   printf("Energy: %d\n", res.energy);
 

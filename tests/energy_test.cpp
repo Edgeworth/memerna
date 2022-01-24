@@ -1,5 +1,6 @@
 // Copyright 2016 E.
 #include "common_test.h"
+#include "compute/energy/branch.h"
 #include "gtest/gtest.h"
 #include "model/context.h"
 #include "model/secondary.h"
@@ -43,7 +44,7 @@ class EnergyTest : public testing::Test {
   }
 
   Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
-    return ComputeEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr, g_em).energy;
+    return g_em.TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr).energy;
   }
 };
 
@@ -213,6 +214,19 @@ TEST_F(EnergyTest, Helpers) {
   EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromString("GGGAUC")));
   EXPECT_EQ(4, internal::MaxNumContiguous(Primary::FromString("GGGAUCAAAA")));
   EXPECT_EQ(5, internal::MaxNumContiguous(Primary::FromString("GGGAUUUUUCAAAA")));
+}
+
+TEST_F(EnergyTest, GetBranchCounts) {
+  EXPECT_EQ((std::vector<int>{2, 0}), GetBranchCounts(Secondary::FromDotBracket("()")));
+  EXPECT_EQ((std::vector<int>{}), GetBranchCounts(Secondary::FromDotBracket("")));
+  EXPECT_EQ((std::vector<int>{0}), GetBranchCounts(Secondary::FromDotBracket(".")));
+  EXPECT_EQ(
+      (std::vector<int>{2, 0, 2, 0, 2, 0}), GetBranchCounts(Secondary::FromDotBracket("()()()")));
+  EXPECT_EQ((std::vector<int>{2, 1, 0, 1}), GetBranchCounts(Secondary::FromDotBracket("(())")));
+  EXPECT_EQ((std::vector<int>{2, 3, 0, 3, 0, 3, 0, 3}),
+      GetBranchCounts(Secondary::FromDotBracket("(()()())")));
+  EXPECT_EQ((std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}),
+      GetBranchCounts(Secondary::FromDotBracket("((()()))")));
 }
 
 }  // namespace mrna::energy

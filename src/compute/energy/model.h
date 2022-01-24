@@ -6,11 +6,13 @@
 #include <cmath>
 #include <cstdarg>
 #include <cstring>
+#include <deque>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "model/base.h"
+#include "model/ctd.h"
 #include "model/model.h"
 #include "model/primary.h"
 #include "util/argparse.h"
@@ -24,6 +26,12 @@ inline const std::map<std::string, Opt> ENERGY_OPTS = {
     {"seed", Opt("seed for random energy model for memerna").Arg()},
     {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
     {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
+
+struct EnergyResult {
+  Energy energy = 0;
+  // TODO: tree, remove struc args
+  Ctds ctd;  // May be empty if CTDs were not computed.
+};
 
 class EnergyModel {
  public:
@@ -135,6 +143,16 @@ class EnergyModel {
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const;
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
+      std::deque<int>& branches, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* sstruc = nullptr) const;
+
+  // If (st, en) is not paired, treated as an exterior loop.
+  // If |ctd| is non-null, use the given ctds.
+  EnergyResult SubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+      int st, int en, std::unique_ptr<Structure>* struc = nullptr) const;
+  EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+      std::unique_ptr<Structure>* struc = nullptr) const;
 
   bool IsValid(std::string* reason = nullptr) const;
   uint32_t Checksum() const;
@@ -142,6 +160,10 @@ class EnergyModel {
   static EnergyModel FromDataDir(const std::string& data_dir);
   static EnergyModel Random(uint_fast32_t seed);
   static EnergyModel FromArgParse(const ArgParse& args);
+
+ private:
+  Energy SubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
+      bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
 }  // namespace mrna::energy
