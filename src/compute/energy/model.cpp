@@ -270,7 +270,7 @@ Energy EnergyModel::Bulge(
   Energy energy = BulgeInitiation(length);
 
   if (s) {
-    *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
+    *s = std::make_unique<TwoLoopStructure>(ost, oen, ist, ien);
     (*s)->AddNote("Bulge loop len %d", length);
     (*s)->AddNote("%de - initiation", energy);
   }
@@ -323,7 +323,7 @@ Energy EnergyModel::InternalLoop(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1, botlen = oen - ien - 1;
   if (s) {
-    *s = std::make_unique<InternalLoopStructure>(ost, oen, ist, ien);
+    *s = std::make_unique<TwoLoopStructure>(ost, oen, ist, ien);
     (*s)->AddNote("%dx%d internal loop", toplen, botlen);
   }
   if (toplen == 1 && botlen == 1)
@@ -524,22 +524,26 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
 }
 
 EnergyResult EnergyModel::SubstructureEnergy(const Primary& r, const Secondary& s,
-    const Ctds* given_ctd, int st, int en, std::unique_ptr<Structure>* struc) const {
+    const Ctds* given_ctd, int st, int en, bool build_structure) const {
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
-  auto energy = SubstructureEnergyInternal(r, s, st, en, use_given_ctds, &ctd, struc);
-  return EnergyResult{.energy = energy, .ctd = std::move(ctd)};
+
+  std::unique_ptr<Structure> struc;
+  auto energy = SubstructureEnergyInternal(
+      r, s, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
+  return EnergyResult(energy, std::move(ctd), std::move(struc));
 }
 
-EnergyResult EnergyModel::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-    std::unique_ptr<Structure>* struc) const {
-  auto res = SubstructureEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, struc);
+EnergyResult EnergyModel::TotalEnergy(
+    const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
+  auto res =
+      SubstructureEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
   if (s[0] == static_cast<int>(r.size() - 1) && IsAuGu(r[0], r[s[0]])) {
     res.energy += augu_penalty;
-    if (struc) {
-      (*struc)->AddNote("%de - top level AU/GU penalty", augu_penalty);
-      (*struc)->set_self_energy((*struc)->self_energy() + augu_penalty);  // Gross.
-      (*struc)->set_total_energy((*struc)->total_energy() + augu_penalty);  // Gross.
+    if (res.struc) {
+      res.struc->AddNote("%de - top level AU/GU penalty", augu_penalty);
+      res.struc->set_self_energy(res.struc->self_energy() + augu_penalty);  // Gross.
+      res.struc->set_total_energy(res.struc->total_energy() + augu_penalty);  // Gross.
     }
   }
   return res;
@@ -643,11 +647,11 @@ EnergyModel EnergyModel::Random(uint_fast32_t seed) {
   std::mt19937 eng(seed);
   std::uniform_int_distribution<Energy> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   std::uniform_int_distribution<Energy> nonneg_energy_dist(0, RAND_MAX_ENERGY);
-#define RANDOMISE_DATA(d)                                                                    \
-  do {                                                                                       \
-    auto dp = reinterpret_cast<Energy*>(&(d));                                               \
-    /* NOLINTNEXTLINE */                                                                     \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) { dp[i] = energy_dist(eng); } \
+#define RANDOMISE_DATA(d)                                                                \
+  do {                                                                                   \
+    auto dp = reinterpret_cast<Energy*>(&(d));                                           \
+    /* NOLINTNEXTLINE */                                                                 \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) dp[i] = energy_dist(eng); \
   } while (0)
 
   RANDOMISE_DATA(em.stack);

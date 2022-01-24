@@ -12,21 +12,20 @@ int main(int argc, char* argv[]) {
   verify(pos.size() == 2, "requires primary sequence and dot bracket");
 
   const auto em = mrna::energy::EnergyModel::FromArgParse(args);
-  std::unique_ptr<mrna::energy::Structure> struc;
   mrna::energy::EnergyResult res;
   mrna::Secondary s;
   if (mrna::Ctds::IsCtdString(pos.back())) {
     const auto [r, s, ctd] = mrna::ParsePrimaryCtdString(pos.front(), pos.back());
-    res = em.TotalEnergy(r, s, &ctd, &struc);
+    res = em.TotalEnergy(r, s, &ctd, true);
   } else {
     const auto [r, s] = mrna::ParsePrimaryDotBracket(pos.front(), pos.back());
-    res = em.TotalEnergy(r, s, nullptr, &struc);
+    res = em.TotalEnergy(r, s, nullptr, true);
   }
   printf("Energy: %d\n", res.energy);
 
   if (args.HasFlag("v")) {
     printf("%s\n", res.ctd.ToString(s).c_str());
-    const auto descs = struc->Description();
-    for (const auto& desc : descs) { printf("%s\n", desc.c_str()); }
+    const auto descs = res.struc->Description();
+    for (const auto& desc : descs) printf("%s\n", desc.c_str());
   }
 }

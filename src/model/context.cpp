@@ -36,8 +36,9 @@ FoldResult Context::Fold(Primary r) {
   auto dp = ComputeTables(r);
   auto ext = mfe::ComputeExterior(r, em_, dp);
   auto tb = tb::Traceback(r, em_, dp, ext);
+  auto energy = ext[0][EXT];
   return FoldResult{
-      .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = ext[0][EXT]},
+      .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
       .tb = std::move(tb),
   };
 }

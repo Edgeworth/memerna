@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "compute/energy/structure.h"
 #include "compute/subopt/subopt.h"
 #include "util/error.h"
 
@@ -48,8 +49,8 @@ energy::EnergyResult RNAstructure::Efn(Primary r, Secondary s, std::string* desc
   std::stringstream sstr;
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
-  // TODO: convert ctds?
-  return energy::EnergyResult{.energy = structure->GetEnergy(1), .ctd{}};
+  // TODO: convert ctds and structure?
+  return energy::EnergyResult(structure->GetEnergy(1), Ctds(), nullptr);
 }
 
 FoldResult RNAstructure::Fold(Primary r) const {

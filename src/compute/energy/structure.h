@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "compute/energy/branch.h"
-#include "compute/energy/model.h"
 #include "util/error.h"
 
 namespace mrna::energy {
@@ -56,9 +55,9 @@ class HairpinLoopStructure : public Structure {
   int st_, en_;
 };
 
-class InternalLoopStructure : public Structure {
+class TwoLoopStructure : public Structure {
  public:
-  InternalLoopStructure(int ost, int oen, int ist, int ien)
+  TwoLoopStructure(int ost, int oen, int ist, int ien)
       : ost_(ost), oen_(oen), ist_(ist), ien_(ien) {}
 
   void AddBranch(std::unique_ptr<Structure> b);

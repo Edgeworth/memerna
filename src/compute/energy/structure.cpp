@@ -49,12 +49,12 @@ std::string HairpinLoopStructure::ShortDesc() const {
   return sfmt("Hairpin(%d, %d) - %de:%de", st_, en_, total_energy(), self_energy());
 }
 
-std::string InternalLoopStructure::ShortDesc() const {
-  return sfmt("InternalLoop(%d, %d, %d, %d) - %de:%de", ost_, oen_, ist_, ien_, total_energy(),
-      self_energy());
+std::string TwoLoopStructure::ShortDesc() const {
+  return sfmt(
+      "TwoLoop(%d, %d, %d, %d) - %de:%de", ost_, oen_, ist_, ien_, total_energy(), self_energy());
 }
 
-void InternalLoopStructure::AddBranch(std::unique_ptr<Structure> b) {
+void TwoLoopStructure::AddBranch(std::unique_ptr<Structure> b) {
   assert(branches_.empty());
   Structure::AddBranch(std::move(b));
 }
