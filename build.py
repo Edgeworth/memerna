@@ -1,105 +1,148 @@
 #!/usr/bin/env python3
 # Copyright 2016 E.
-import argparse
+import click
 import os
 import sys
 import shutil
 from pathlib import Path
 
-# Ignore empty arguments.
-sys.argv = [i for i in sys.argv if i]
-
-parser = argparse.ArgumentParser()
-# Build environment options
-parser.add_argument('-p', '--prefix', type=str, default=os.path.join(Path.home(), "bin"),
-  required=False, help='Where to place build directory')
-parser.add_argument(
-  '-t', '--type', choices=['debug', 'asan', 'ubsan', 'release', 'relwithdebinfo'],
-  default='debug', required=False)
-parser.add_argument('--use-clang', action='store_true', default=False, required=False)
-parser.add_argument('--use-afl-fast', action='store_true', default=False, required=False)
-parser.add_argument('--use-afl-lto', action='store_true', default=False, required=False)
-parser.add_argument('--regenerate', action='store_true', default=False, required=False)
-parser.add_argument('--compilers', type=str, nargs=2, required=False)
-parser.add_argument('targets', nargs='*', type=str)
-
-# Memerna configuration options:
-parser.add_argument('-r', '--use-rnastructure', action='store_true', default=False, required=False)
-parser.add_argument('-m', '--use-mpfr', action='store_true', default=False, required=False)
-parser.add_argument('-f', '--float-bits', type=int, default=64, required=False)
-
-# Misc options:
-parser.add_argument('-d', '--dry', action='store_true', default=False, required=False)
-parser.add_argument('--test', action='store_true', default=False, required=False)
-
-args = parser.parse_args()
 
 def run_command(cmd):
-  if args.dry:
-    print(cmd)
-  else:
-    res = os.system(cmd)
-    if res != 0:
-      sys.exit(1)
+    if os.system(cmd) != 0:
+        sys.exit(1)
 
-if bool(args.use_clang) + bool(args.use_afl_lto) + \
-    bool(args.use_afl_fast) + bool(args.compilers) > 1:
-  parser.error('At most one compiler related flag allowed simultaneously')
 
-compilers = ('cc', 'c++')
-env = [
-  # Add stack protector etc to catch non-crashing memory bugs.
-  'AFL_HARDEN=1',
-]
+def get_compilers(compiler):
+    if compiler == "default":
+        return ("cc", "c++")
+    elif compiler == "gcc":
+        return ("gcc", "g++")
+    elif compiler == "clang":
+        return ("clang", "clang++")
+    elif compiler == "afl-lto":
+        return ("afl-clang-lto", "afl-clang-lto++")
+    elif compiler == "afl-fast":
+        return ("afl-clang-fast", "afl-clang-fast++")
+    else:
+        raise f"Unknown compiler {compiler}"
 
-if args.use_clang:
-  compilers = ('clang', 'clang++')
-elif args.use_afl_lto:
-  compilers = ('afl-clang-lto', 'afl-clang-lto++')
-elif args.use_afl_fast:
-  compilers = ('afl-clang-fast', 'afl-clang-fast++')
-elif args.compilers:
-  compilers = args.compilers
 
-defs = {
-  'CMAKE_C_COMPILER': compilers[0],
-  'CMAKE_CXX_COMPILER': compilers[1],
-  'CMAKE_BUILD_TYPE': args.type,
-  'USE_RNASTRUCTURE': 'ON' if args.use_rnastructure else 'OFF',
-  'USE_MPFR': 'ON' if args.use_mpfr else 'OFF',
-  'FLOAT_BITS': str(args.float_bits),
-}
+def get_sanitizers(sanitizer):
+    if sanitizer == "none":
+        return {}
+    elif sanitizer == "asan":
+        return {"SANITIZE_ADDRESS": "ON"}
+    elif sanitizer == "msan":
+        return {"SANITIZE_MEMORY": "ON"}
+    elif sanitizer == "tsan":
+        return {"SANITIZE_THREAD": "ON"}
+    elif sanitizer == "ubsan":
+        return {"SANITIZE_UNDEFINED": "ON"}
+    else:
+        raise f"Unknown sanitizer {sanitizer}"
 
-build_dir = os.path.join(args.prefix, 'memerna', defs['CMAKE_CXX_COMPILER'] + '-' + defs['CMAKE_BUILD_TYPE'])
-if args.use_rnastructure:
-  build_dir += '-rnastructure'
-if args.use_mpfr:
-  build_dir += '-mpfr'
-build_dir += f'-{args.float_bits}'
 
-regenerate = args.regenerate
+@click.command()
+# Build environment options
+@click.option(
+    "--prefix",
+    type=Path,
+    default=os.path.join(Path.home(), "bin"),
+    help="Where to place build directory",
+)
+@click.option(
+    "--mrna",
+    type=click.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
+    envvar="MRNA",
+    required=True,
+    help="Path to memerna source directory",
+)
+@click.option(
+    "--type",
+    type=click.Choice(["debug", "release", "relwithdebinfo"]),
+    default="debug",
+)
+@click.option(
+    "--compiler",
+    type=click.Choice(["default", "gcc", "clang", "afl-fast", "afl-lto"]),
+    default="default",
+)
+@click.option(
+    "--sanitizer",
+    type=click.Choice(["none", "asan", "msan", "tsan", "ubsan"]),
+    default="none",
+)
+@click.option("--regenerate/--no-regenerate", default=False)
+@click.argument("targets", nargs=-1)
+# Memerna configuration options:
+@click.option("--rnastructure/--no-rnastructure", default=True)
+@click.option("--mpfr/--no-mpfr", default=False)
+@click.option("--float-bits", type=int, default=64)
+# Misc options:
+@click.option("--test/--no-test", default=False)
+def build(
+    prefix,
+    mrna,
+    type,
+    compiler,
+    sanitizer,
+    regenerate,
+    targets,
+    rnastructure,
+    mpfr,
+    float_bits,
+    test,
+):
+    env = [
+        # Add stack protector etc to catch non-crashing memory bugs.
+        "AFL_HARDEN=1",
+    ]
+    compilers = get_compilers(compiler)
 
-if regenerate and os.path.exists(build_dir):
-  shutil.rmtree(build_dir)
+    defs = {
+        "CMAKE_C_COMPILER": compilers[0],
+        "CMAKE_CXX_COMPILER": compilers[1],
+        "CMAKE_BUILD_TYPE": type,
+        "USE_RNASTRUCTURE": "ON" if rnastructure else "OFF",
+        "USE_MPFR": "ON" if mpfr else "OFF",
+        "FLOAT_BITS": f"{float_bits}",
+    }
+    defs.update(get_sanitizers(sanitizer))
 
-print(build_dir)
-if not os.path.exists(build_dir):
-  os.makedirs(build_dir)
-  regenerate = True
+    build_dir = os.path.join(
+        prefix,
+        "memerna",
+        defs["CMAKE_CXX_COMPILER"] + "-" + defs["CMAKE_BUILD_TYPE"],
+    )
+    if rnastructure:
+        build_dir += "-rnastructure"
+    if mpfr:
+        build_dir += "-mpfr"
+    build_dir += f"-{float_bits}"
 
-proj_dir = os.getcwd()
+    if sanitizer != "none":
+        build_dir += f"-{sanitizer}"
 
-os.chdir(build_dir)
-if regenerate:
-  print('Regenerating cmake files.')
-  def_str = ' '.join('-D %s=\'%s\'' % (i, k) for i, k in defs.items())
-  run_command('cmake %s %s' % (def_str, proj_dir))
-run_command('%s make -j$(($(nproc)-1)) %s' % (' '.join(env), ' '.join(args.targets)))
+    if regenerate and os.path.exists(build_dir):
+        shutil.rmtree(build_dir)
 
-if args.test:
-  # Try to find data, default to current directory.
-  data = os.getenv('MRNA', '.')
-  print(data)
-  run_command(f'./run_tests -memerna-data {data}/data')
+    click.echo(build_dir)
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+        regenerate = True
 
-os.chdir('../../')
+    os.chdir(build_dir)
+    if regenerate:
+        click.echo("Regenerating cmake files.")
+        def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())
+        run_command(f"cmake {def_str} {mrna}")
+    run_command(f"{' '.join(env)} make -j$(($(nproc)-1)) {' '.join(targets)}")
+
+    if test:
+        run_command(f"./run_tests -memerna-data {mrna}/data")
+
+    os.chdir(mrna)
+
+
+if __name__ == "__main__":
+    build()

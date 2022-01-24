@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-# Also include C here since required for CheckCCompilerFlag.
-project(memerna VERSION 0.1 LANGUAGES C CXX)
+project(memerna VERSION 0.1 LANGUAGES CXX)
 
 # Options
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
@@ -20,25 +19,28 @@ endif ()
 # Flags for each build configuration.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_ASAN} -march=native -O3")
-set(CMAKE_CXX_FLAGS_UBSAN "${CMAKE_CXX_FLAGS_UBSAN} -march=native -O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 
 # Include things to find libraries.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(UBSan)
-find_package(ASan)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/extern/sanitizers-cmake/cmake)
+find_package(Sanitizers)
 find_package(Threads)
 find_package(MPFR)
 find_package(Boost)
 
 # Fail loudly.
-string(TOLOWER "${CMAKE_BUILD_TYPE}" SAVED_BUILD_TYPE)
-if ("${SAVED_BUILD_TYPE}" STREQUAL "asan" AND NOT HAVE_ADDRESS_SANITIZER)
+if (SANITIZE_ADDRESS AND NOT ASan_FLAG_DETECTED)
   message(FATAL_ERROR "requested asan build but not available on current compiler")
 endif ()
-if ("${SAVED_BUILD_TYPE}" STREQUAL "ubsan" AND NOT HAVE_UNDEFINED_BEHAVIOR_SANITIZER)
+if (SANITIZE_MEMORY AND NOT MSan_FLAG_DETECTED)
+  message(FATAL_ERROR "requested msan build but not available on current compiler")
+endif ()
+if (SANITIZE_THREAD AND NOT TSan_FLAG_DETECTED)
+  message(FATAL_ERROR "requested tsan build but not available on current compiler")
+endif ()
+if (SANITIZE_UNDEFINED AND NOT UBSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested ubsan build but not available on current compiler")
 endif ()
 
@@ -147,24 +149,24 @@ add_library(memerna ${MEMERNA_SOURCE})
 
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
-add_executable(subopt src/programs/subopt.cpp)
 add_executable(fuzz src/programs/fuzz.cpp)
 add_executable(harness src/programs/harness.cpp)
 add_executable(partition src/programs/partition.cpp)
 add_executable(run_tests ${TEST_SOURCE} tests/programs/run_tests.cpp)
 add_executable(splay_explorer tests/programs/splay_explorer.cpp)
+add_executable(subopt src/programs/subopt.cpp)
 
 target_include_directories(memerna PUBLIC src)
 target_include_directories(run_tests PRIVATE tests)
 
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
-target_link_libraries(subopt PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)
 target_link_libraries(harness PRIVATE memerna)
 target_link_libraries(partition PRIVATE memerna)
 target_link_libraries(run_tests PRIVATE memerna Threads::Threads gtest)
 target_link_libraries(splay_explorer PRIVATE memerna)
+target_link_libraries(subopt PRIVATE memerna)
 
 # Use MPFR if necessary
 if (USE_MPFR)
@@ -179,3 +181,13 @@ if (USE_RNASTRUCTURE)
   target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
   target_link_libraries(memerna PUBLIC miles_rnastructure)
 endif ()
+
+# Add sanitizers
+add_sanitizers(efn)
+add_sanitizers(fold)
+add_sanitizers(fuzz)
+add_sanitizers(harness)
+add_sanitizers(partition)
+add_sanitizers(run_tests)
+add_sanitizers(splay_explorer)
+add_sanitizers(subopt)
