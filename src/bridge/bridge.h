@@ -27,11 +27,11 @@ class RnaPackage {
   virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       Primary r, Energy energy_delta) const = 0;
   virtual partition::PartitionResult Partition(Primary r) const = 0;
+
+  static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };
 
 const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"k", {"memerna"}}};
-
-std::unique_ptr<RnaPackage> RnaPackageFromArgParse(const ArgParse& args);
 
 }  // namespace mrna::bridge
 

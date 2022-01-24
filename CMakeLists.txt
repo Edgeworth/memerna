@@ -90,7 +90,6 @@ set(MEMERNA_SOURCE
     src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h
     src/compute/energy/internal.cpp src/compute/energy/internal.h
-    src/compute/energy/load_model.cpp src/compute/energy/load_model.h
     src/compute/energy/model.cpp src/compute/energy/model.h
     src/compute/energy/precomp.cpp src/compute/energy/precomp.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h

@@ -8,6 +8,20 @@
 
 namespace mrna::fuzz {
 
+inline const std::map<std::string, Opt> FUZZ_OPTS = {
+    {"random", Opt("use random energy models (disables comparison to RNAstructure)")},
+    {"table-check", Opt("enable comparing dp tables between memerna and rnastructure")},
+    {"brute-cutoff", Opt("maximum rna size to run brute force on").Arg()},
+    {"brute-subopt-max", Opt("maximum number of substructures for brute force fuzz").Arg()},
+    {"mfe-rnastructure", Opt("enable rnastructure testing")},
+    {"subopt", Opt("enable fuzzing suboptimal folding")},
+    {"subopt-rnastructure", Opt("test rnastructure suboptimal folding")},
+    {"subopt-max", Opt("maximum number of substructures for subopt max-delta fuzz").Arg()},
+    {"subopt-delta", Opt("delta for subopt delta fuzz").Arg()},
+    {"partition", Opt("enable fuzzing partition function")},
+    {"partition-rnastructure", Opt("test rnastructure partition function")},
+};
+
 struct FuzzCfg {
   bool random_model = false;
   bool mfe_rnastructure = false;
@@ -26,23 +40,9 @@ struct FuzzCfg {
   bool partition_rnastructure = false;
 
   std::string Describe();
-};
 
-inline const std::map<std::string, Opt> FUZZ_OPTS = {
-    {"random", Opt("use random energy models (disables comparison to RNAstructure)")},
-    {"table-check", Opt("enable comparing dp tables between memerna and rnastructure")},
-    {"brute-cutoff", Opt("maximum rna size to run brute force on").Arg()},
-    {"brute-subopt-max", Opt("maximum number of substructures for brute force fuzz").Arg()},
-    {"mfe-rnastructure", Opt("enable rnastructure testing")},
-    {"subopt", Opt("enable fuzzing suboptimal folding")},
-    {"subopt-rnastructure", Opt("test rnastructure suboptimal folding")},
-    {"subopt-max", Opt("maximum number of substructures for subopt max-delta fuzz").Arg()},
-    {"subopt-delta", Opt("delta for subopt delta fuzz").Arg()},
-    {"partition", Opt("enable fuzzing partition function")},
-    {"partition-rnastructure", Opt("test rnastructure partition function")},
+  static FuzzCfg FromArgParse(const ArgParse& args);
 };
-
-FuzzCfg FuzzCfgFromArgParse(const ArgParse& args);
 
 }  // namespace mrna::fuzz
 

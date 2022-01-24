@@ -2,7 +2,6 @@
 #include <cstdio>
 
 #include "compute/energy/energy.h"
-#include "compute/energy/load_model.h"
 #include "compute/energy/structure.h"
 
 int main(int argc, char* argv[]) {
@@ -12,7 +11,7 @@ int main(int argc, char* argv[]) {
   const auto& pos = args.GetPositional();
   verify(pos.size() == 2, "requires primary sequence and dot bracket");
 
-  const auto em = mrna::energy::LoadEnergyModelFromArgParse(args);
+  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
   std::unique_ptr<mrna::energy::Structure> struc;
   mrna::energy::EnergyResult res;
   mrna::Secondary s;

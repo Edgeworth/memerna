@@ -1,7 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
 #include "compute/energy/internal.h"
-#include "compute/energy/load_model.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -113,8 +112,8 @@ TEST_P(CtdsTest, BaseBranchBase) {
 }
 
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
-    testing::Combine(testing::Values(LoadRandomEnergyModel(0), LoadRandomEnergyModel(1),
-                         LoadRandomEnergyModel(2), LoadRandomEnergyModel(3)),
+    testing::Combine(testing::Values(EnergyModel::Random(0), EnergyModel::Random(1),
+                         EnergyModel::Random(2), EnergyModel::Random(3)),
         testing::ValuesIn(CTD_TESTS)));
 }  // namespace energy
 }  // namespace mrna

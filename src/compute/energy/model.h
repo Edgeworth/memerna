@@ -19,6 +19,12 @@ namespace mrna::energy {
 
 class Structure;
 
+// TODO: this rnastructure specific option should go somewhere else?
+inline const std::map<std::string, Opt> ENERGY_OPTS = {
+    {"seed", Opt("seed for random energy model for memerna").Arg()},
+    {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
+    {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
+
 class EnergyModel {
  public:
   static constexpr int INITIATION_CACHE_SZ = 31;
@@ -132,6 +138,10 @@ class EnergyModel {
 
   bool IsValid(std::string* reason = nullptr) const;
   uint32_t Checksum() const;
+
+  static EnergyModel FromDataDir(const std::string& data_dir);
+  static EnergyModel Random(uint_fast32_t seed);
+  static EnergyModel FromArgParse(const ArgParse& args);
 };
 
 }  // namespace mrna::energy
