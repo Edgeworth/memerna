@@ -1,13 +1,46 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/energy/internal.h"
+#include "compute/energy/branch.h"
 
 #include <algorithm>
 #include <cassert>
+#include <stack>
 #include <tuple>
 #include <utility>
 #include <vector>
 
-namespace mrna::energy::internal {
+namespace mrna::energy {
+
+std::vector<int> GetBranchCounts(const Secondary& s) {
+  std::vector<int> branch_count(s.size(), 0);
+  std::stack<int> q;
+  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
+    if (s[i] == -1) continue;
+    if (s[i] > i) {
+      // Exterior loop counts a multiloop for CTDs.
+      if (q.empty()) branch_count[i] = 2;
+      q.push(i);
+
+      // Look at all the children.
+      int count = 0;
+      for (int j = i + 1; j < s[i]; ++j) {
+        if (s[j] != -1) {
+          j = s[j];
+          count++;
+        }
+      }
+      for (int j = i + 1; j < s[i]; ++j) {
+        if (s[j] != -1) {
+          branch_count[j] = count;
+          j = s[j];
+        }
+      }
+      branch_count[s[i]] = count;
+    } else {
+      q.pop();
+    }
+  }
+  return branch_count;
+}
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
 // This DP needs to be run four times. The series of branches is actually cyclic, and there are two
@@ -35,7 +68,7 @@ namespace mrna::energy::internal {
     }                                                                                 \
   } while (0)
 
-Energy ComputeOptimalCtds(const Primary& r, const Secondary& s, const EnergyModel& em,
+Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
   int N = static_cast<int>(branches.size());
   int RSZ = static_cast<int>(r.size());
@@ -179,8 +212,8 @@ void AddBranchCtdsToBaseCtds(
   }
 }
 
-Energy AddBaseCtdsToBranchCtds(const Primary& r, const Secondary& s, const Ctds& ctd,
-    const EnergyModel& em, const std::deque<int>& branches, BranchCtd* branch_ctd) {
+Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Secondary& s,
+    const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = 0;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
@@ -246,4 +279,4 @@ Energy AddBaseCtdsToBranchCtds(const Primary& r, const Secondary& s, const Ctds&
   return total_energy;
 }
 
-}  // namespace mrna::energy::internal
+}  // namespace mrna::energy

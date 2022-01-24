@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_INTERNAL_H_
-#define COMPUTE_ENERGY_INTERNAL_H_
+#ifndef COMPUTE_ENERGY_BRANCH_H_
+#define COMPUTE_ENERGY_BRANCH_H_
 
 #include <deque>
 #include <utility>
@@ -8,11 +8,15 @@
 #include "compute/energy/model.h"
 #include "model/ctd.h"
 
-namespace mrna::energy::internal {
+namespace mrna::energy {
+
+// TODO: Better place for these?
 
 using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 
-Energy ComputeOptimalCtds(const Primary& r, const Secondary& s, const EnergyModel& em,
+std::vector<int> GetBranchCounts(const Secondary& s);
+
+Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd);
 
 // Per-base representation of CTDs:
@@ -40,9 +44,9 @@ void AddBranchCtdsToBaseCtds(
 
 // Reads the per-base ctd representation from |ctd| for |branches| branches and
 // writes it in branch representation to |branch_ctd|.
-Energy AddBaseCtdsToBranchCtds(const Primary& r, const Secondary& s, const Ctds& ctd,
-    const EnergyModel& em, const std::deque<int>& branches, BranchCtd* branch_ctd);
+Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Secondary& s,
+    const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd);
 
-}  // namespace mrna::energy::internal
+}  // namespace mrna::energy
 
-#endif  // COMPUTE_ENERGY_INTERNAL_H_
+#endif  // COMPUTE_ENERGY_BRANCH_H_

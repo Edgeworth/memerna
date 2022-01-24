@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "common_test.h"
-#include "compute/energy/internal.h"
+#include "compute/energy/branch.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -12,7 +12,7 @@ struct CtdTest {
   Primary r;
   Secondary s;
   Ctds ctd;
-  internal::BranchCtd branch_ctd;
+  BranchCtd branch_ctd;
   std::deque<int> branches;
 };
 
@@ -91,9 +91,9 @@ TEST_P(CtdsTest, BaseBranchBase) {
   const auto& em = std::get<0>(GetParam());
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
-  internal::BranchCtd computed_branch_ctd;
-  auto computed_energy = internal::AddBaseCtdsToBranchCtds(
-      ctd_test.r, ctd_test.s, ctd_test.ctd, em, ctd_test.branches, &computed_branch_ctd);
+  BranchCtd computed_branch_ctd;
+  auto computed_energy = AddBaseCtdsToBranchCtds(
+      em, ctd_test.r, ctd_test.s, ctd_test.ctd, ctd_test.branches, &computed_branch_ctd);
   Energy test_energy = 0;
   for (const auto& branch_ctd : ctd_test.branch_ctd) {
     // Make sure each branch energy is only represented once.
@@ -107,7 +107,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   // Convert back again and make sure it's the same.
   Ctds prev_ctd = std::move(ctd_test.ctd);
   ctd_test.ctd.reset(prev_ctd.size());
-  internal::AddBranchCtdsToBaseCtds(ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
+  AddBranchCtdsToBaseCtds(ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
   EXPECT_EQ(prev_ctd, ctd_test.ctd);
 }
 

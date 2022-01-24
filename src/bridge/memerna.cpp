@@ -14,13 +14,13 @@ energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) con
   energy::EnergyResult res;
   if (desc) {
     std::unique_ptr<energy::Structure> structure;
-    res = energy::ComputeEnergy(r, s, nullptr, em_, &structure);
+    res = em_.TotalEnergy(r, s, nullptr, &structure);
     for (const auto& s : structure->Description()) {
       *desc += s;
       *desc += "\n";
     }
   } else {
-    res = energy::ComputeEnergy(r, s, nullptr, em_);
+    res = em_.TotalEnergy(r, s, nullptr);
   }
 
   return res;

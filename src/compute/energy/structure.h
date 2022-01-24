@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/energy.h"
-#include "compute/energy/internal.h"
+#include "compute/energy/branch.h"
+#include "compute/energy/model.h"
 #include "util/macros.h"
 
 namespace mrna::energy {
@@ -78,7 +78,7 @@ class MultiLoopStructure : public Structure {
 
  private:
   int st_, en_;
-  internal::BranchCtd branch_ctd_;
+  BranchCtd branch_ctd_;
 };
 
 class StackingStructure : public Structure {
