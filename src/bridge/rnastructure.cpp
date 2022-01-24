@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "compute/subopt/subopt.h"
-#include "util/macros.h"
+#include "util/error.h"
 
 namespace mrna::bridge {
 
@@ -49,7 +49,7 @@ energy::EnergyResult RNAstructure::Efn(Primary r, Secondary s, std::string* desc
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
   // TODO: convert ctds?
-  return energy::EnergyResult{.energy = structure->GetEnergy(1)};
+  return energy::EnergyResult{.energy = structure->GetEnergy(1), .ctd{}};
 }
 
 FoldResult RNAstructure::Fold(Primary r) const {
@@ -71,7 +71,7 @@ FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
-  return FoldResult{.mfe = mfe::MfeResult{.energy = Energy(structure->GetEnergy(1))},
+  return FoldResult{.mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 

@@ -3,7 +3,7 @@
 
 #include "compute/constants.h"
 #include "compute/subopt/subopt.h"
-#include "util/macros.h"
+#include "util/error.h"
 
 namespace mrna {
 

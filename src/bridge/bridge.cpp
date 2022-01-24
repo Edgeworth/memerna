@@ -2,7 +2,7 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "util/macros.h"
+#include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE
 #include "bridge/rnastructure.h"

@@ -4,7 +4,7 @@
 #include <random>
 
 #include "gtest/gtest.h"
-#include "util/macros.h"
+#include "util/error.h"
 
 namespace mrna {
 

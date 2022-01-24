@@ -2,28 +2,43 @@
 #include "util/string.h"
 
 #include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <memory>
 #include <random>
+#include <stdexcept>
 
-#include "util/macros.h"
+#include "util/error.h"
 
 namespace mrna {
 
 namespace {
 
-const int BUF_SIZE = 1024;
-const uint32_t CRC_MAGIC = 0xEDB88320;
+constexpr int START_BUF_SIZE = 1024;
+constexpr int MAX_BUF_SIZE = 1024 * 1024;
+constexpr uint32_t CRC_MAGIC = 0xEDB88320;
 
 }  // namespace
 
-std::string sgetline(FILE* fp) {
-  char buffer[BUF_SIZE];
-  if (fgets(buffer, BUF_SIZE, fp) == nullptr) return "";
-  const std::string s(buffer);
-  // Minus one for null character.
-  verify(s.size() < BUF_SIZE - 1, "buffer too small");
+std::optional<std::string> sgetline(FILE* fp) {
+  auto size = START_BUF_SIZE;
+  std::string s;
+  while (1) {
+    auto buf = std::make_unique<char[]>(size);
+    bool done = fgets(buf.get(), size, fp) == nullptr;
+    if (done && ferror(fp)) throw std::runtime_error("failed to read file");
+
+    std::string append(buf.get());
+    s += append;
+
+    // Minus one for null character.
+    if (done || static_cast<int>(append.size()) < size - 1) break;
+    if (size < MAX_BUF_SIZE) size *= 2;
+  }
   return s;
 }
 
+// This is called by error handling code, so don't use verify etc in this.
 std::string sfmt(const char* fmt, ...) {
   va_list l;
   va_start(l, fmt);
@@ -32,11 +47,17 @@ std::string sfmt(const char* fmt, ...) {
   return res;
 }
 
+// This is called by error handling code, so don't use verify etc in this.
 std::string vsfmt(const char* fmt, va_list l) {
-  char buffer[BUF_SIZE];
-  const int res = vsnprintf(buffer, BUF_SIZE, fmt, l);
-  verify(res >= 0 && res < BUF_SIZE, "buffer too small");
-  return buffer;
+  auto size = START_BUF_SIZE;
+  do {
+    auto buf = std::make_unique<char[]>(size);
+    const int res = vsnprintf(buf.get(), size, fmt, l);
+    if (res < 0) throw std::runtime_error("failed to vsnprintf");
+    if (res < size) return std::string(buf.get());
+    size *= 2;
+  } while (size < MAX_BUF_SIZE);
+  throw std::length_error("output of vsfmt would be too large");
 }
 
 uint32_t Crc32(const std::string& data) {

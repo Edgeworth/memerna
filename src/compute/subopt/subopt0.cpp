@@ -28,6 +28,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above max_delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert(Node{.not_yet_expanded = {{0, -1, EXT}},
+      .history{},
       .res = SuboptResult(tb::TracebackResult(Secondary(N), Ctds(N)), ext_[0][EXT])});
   Node node;
   while (!q_.empty()) {
