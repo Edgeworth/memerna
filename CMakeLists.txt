@@ -22,6 +22,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 
+# Use include-what-you-use if it exists.
+find_program(IWYU NAMES include-what-you-use iwyu)
+
+
 # Include things to find libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/sanitizers-cmake/cmake)
@@ -191,3 +195,16 @@ add_sanitizers(partition)
 add_sanitizers(run_tests)
 add_sanitizers(splay_explorer)
 add_sanitizers(subopt)
+
+# Add iwyu to targets if it is available
+if (IWYU)
+  set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(harness PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+endif ()
