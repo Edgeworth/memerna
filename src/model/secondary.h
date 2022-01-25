@@ -1,3 +1,4 @@
+// Copyright 2022 E.
 #ifndef MODEL_SECONDARY_H_
 #define MODEL_SECONDARY_H_
 

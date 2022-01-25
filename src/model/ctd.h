@@ -1,3 +1,4 @@
+// Copyright 2022 E.
 #ifndef MODEL_CTD_H_
 #define MODEL_CTD_H_
 

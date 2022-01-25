@@ -3,7 +3,6 @@
 
 #include <cinttypes>
 #include <cmath>
-#include <compare>
 #include <memory>
 #include <set>
 #include <sstream>

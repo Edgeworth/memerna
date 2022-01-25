@@ -1,3 +1,4 @@
+// Copyright 2022 E.
 #ifndef MODEL_MODEL_H_
 #define MODEL_MODEL_H_
 
