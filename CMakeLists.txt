@@ -85,6 +85,13 @@ enable_testing()
 # Apply compile definitions here so they only apply to memerna code.
 add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
+# Enable stacktraces if we have boost.
+find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
+if (LIBBACKTRACE)
+  message(STATUS "Using Boost stacktrace with libbacktrace - ${LIBBACKTRACE}")
+  add_compile_definitions(BOOST_STACKTRACE_USE_BACKTRACE)
+endif ()
+
 # Source set definitions.
 set(MEMERNA_SOURCE
     src/bridge/bridge.cpp src/bridge/bridge.h
@@ -173,9 +180,20 @@ target_link_libraries(run_tests PRIVATE memerna Threads::Threads gtest)
 target_link_libraries(splay_explorer PRIVATE memerna)
 target_link_libraries(subopt PRIVATE memerna)
 
+# Use Boost if available
+if (Boost_FOUND)
+  target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
+  target_compile_definitions(memerna PUBLIC USE_BOOST)
+  target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS})  # For Boost stacktrace
+
+  if (LIBBACKTRACE)
+    target_link_libraries(memerna PUBLIC ${LIBBACKTRACE})
+  endif ()
+endif ()
+
 # Use MPFR if necessary
 if (USE_MPFR)
-  target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS} ${MPFR_INCLUDE_DIRS})
+  target_include_directories(memerna PUBLIC ${MPFR_INCLUDE_DIRS})
   target_compile_definitions(memerna PUBLIC USE_MPFR)
   target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
 endif ()
