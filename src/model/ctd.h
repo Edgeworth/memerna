@@ -1,10 +1,15 @@
 #ifndef MODEL_CTD_H_
 #define MODEL_CTD_H_
 
-#include "model/model.h"
-#include "model/primary.h"
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "model/secondary.h"
-#include "util/error.h"
 
 namespace mrna {
 

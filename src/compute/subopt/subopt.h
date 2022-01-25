@@ -3,10 +3,10 @@
 #define COMPUTE_SUBOPT_SUBOPT_H_
 
 #include <functional>
+#include <utility>
 
 #include "compute/traceback/traceback.h"
-#include "model/base.h"
-#include "model/ctd.h"
+#include "model/model.h"
 
 namespace mrna::subopt {
 

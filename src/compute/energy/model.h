@@ -4,8 +4,7 @@
 
 #include <cassert>
 #include <cmath>
-#include <cstdarg>
-#include <cstring>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <string>
@@ -13,10 +12,8 @@
 
 #include "compute/energy/energy.h"
 #include "model/base.h"
-#include "model/ctd.h"
 #include "model/model.h"
-#include "model/primary.h"
-#include "util/argparse.h"
+#include "model/secondary.h"
 
 namespace mrna::energy {
 

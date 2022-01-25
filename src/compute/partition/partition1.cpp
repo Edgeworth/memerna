@@ -1,6 +1,16 @@
 // Copyright 2016 E.
+#include <algorithm>
+#include <tuple>
+#include <utility>
+
+#include "compute/boltz_dp.h"
+#include "compute/energy/boltzmann_model.h"
 #include "compute/energy/boltzmann_precomp.h"
 #include "compute/partition/partition.h"
+#include "model/base.h"
+#include "model/model.h"
+#include "model/primary.h"
+#include "util/array.h"
 
 namespace mrna::partition {
 

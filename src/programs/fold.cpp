@@ -1,7 +1,19 @@
 // Copyright 2016 E.
 #include <cstdio>
+#include <string>
+#include <vector>
 
+#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
+#include "compute/mfe/mfe.h"
+#include "compute/traceback/traceback.h"
+#include "model/config.h"
 #include "model/context.h"
+#include "model/ctd.h"
+#include "model/primary.h"
+#include "model/secondary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::ENERGY_OPTS);

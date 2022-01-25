@@ -7,8 +7,14 @@
 #include <vector>
 
 #include "bridge/bridge.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
+#include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 #include "model/config.h"
 #include "model/context.h"
+#include "model/model.h"
+#include "model/secondary.h"
 
 namespace mrna::bridge {
 

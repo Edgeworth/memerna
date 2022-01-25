@@ -3,13 +3,15 @@
 #define FUZZ_FUZZER_H_
 
 #include <deque>
-#include <optional>
+#include <string>
+#include <vector>
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/subopt/subopt.h"
 #include "fuzz/config.h"
 #include "model/model.h"
+#include "model/primary.h"
 #include "util/array.h"
 
 #ifdef USE_RNASTRUCTURE

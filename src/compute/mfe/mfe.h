@@ -4,7 +4,6 @@
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
-#include "model/base.h"
 #include "model/model.h"
 
 namespace mrna::mfe {

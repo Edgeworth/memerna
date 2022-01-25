@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "compute/energy/structure.h"
+#include "model/primary.h"
 
 namespace mrna::bridge {
 

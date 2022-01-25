@@ -3,14 +3,8 @@
 #define TESTS_COMMON_TEST_H_
 
 #include <cstdint>
-#include <iostream>
-#include <vector>
 
 #include "compute/energy/model.h"
-#include "gtest/gtest.h"
-#include "model/ctd.h"
-#include "model/model.h"
-#include "model/secondary.h"
 
 #define ONLY_FOR_THIS_MODEL(em_, hash_)                                                          \
   do {                                                                                           \

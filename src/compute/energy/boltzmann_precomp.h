@@ -2,10 +2,12 @@
 #ifndef COMPUTE_ENERGY_BOLTZMANN_PRECOMP_H_
 #define COMPUTE_ENERGY_BOLTZMANN_PRECOMP_H_
 
+#include <vector>
+
 #include "compute/energy/boltzmann_model.h"
-#include "compute/energy/model.h"
 #include "compute/energy/precomp.h"
 #include "model/model.h"
+#include "model/primary.h"
 
 namespace mrna::energy {
 

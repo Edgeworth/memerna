@@ -2,17 +2,22 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <deque>
+#include <memory>
 #include <random>
-#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "bridge/bridge.h"
-#include "bridge/memerna.h"
-#include "compute/energy/structure.h"
-#include "compute/mfe/brute.h"
-#include "compute/partition/brute.h"
-#include "compute/subopt/brute.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
+#include "fuzz/config.h"
 #include "fuzz/fuzzer.h"
-#include "util/string.h"
+#include "model/primary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE
 #include "bridge/rnastructure.h"
@@ -22,6 +27,7 @@ using mrna::Opt;
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
+
 __AFL_FUZZ_INIT();
 #endif
 

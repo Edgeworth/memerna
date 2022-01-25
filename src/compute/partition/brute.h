@@ -2,10 +2,6 @@
 #ifndef COMPUTE_PARTITION_BRUTE_H_
 #define COMPUTE_PARTITION_BRUTE_H_
 
-#include <utility>
-#include <vector>
-
-#include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 
 namespace mrna::partition {

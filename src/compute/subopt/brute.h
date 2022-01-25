@@ -2,12 +2,11 @@
 #ifndef COMPUTE_SUBOPT_BRUTE_H_
 #define COMPUTE_SUBOPT_BRUTE_H_
 
-#include <utility>
 #include <vector>
 
 #include "compute/energy/model.h"
-#include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
+#include "model/primary.h"
 
 namespace mrna::subopt {
 

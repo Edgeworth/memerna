@@ -70,10 +70,11 @@ def get_sanitizers(sanitizer):
     type=click.Choice(["none", "asan", "tsan", "ubsan"]),
     default="none",
 )
+@click.option("--iwyu/--no-iwyu", default=False, help="Whether to build with include-what-you-use")
 @click.option("--regenerate/--no-regenerate", default=False)
 @click.argument("targets", nargs=-1)
 # Memerna configuration options:
-@click.option("--rnastructure/--no-rnastructure", default=True)
+@click.option("--rnastructure/--no-rnastructure", default=False)
 @click.option("--mpfr/--no-mpfr", default=False)
 @click.option("--float-bits", type=int, default=64)
 # Misc options:
@@ -84,6 +85,7 @@ def build(
     type,
     compiler,
     sanitizer,
+    iwyu,
     regenerate,
     targets,
     rnastructure,
@@ -103,6 +105,7 @@ def build(
         "CMAKE_BUILD_TYPE": type,
         "USE_RNASTRUCTURE": "ON" if rnastructure else "OFF",
         "USE_MPFR": "ON" if mpfr else "OFF",
+        "USE_IWYU": "ON" if iwyu else "OFF",
         "FLOAT_BITS": f"{float_bits}",
     }
     defs.update(get_sanitizers(sanitizer))
@@ -117,6 +120,8 @@ def build(
     if mpfr:
         build_dir += "-mpfr"
     build_dir += f"-{float_bits}"
+    if iwyu:
+        build_dir += "-iwyu"
 
     if sanitizer != "none":
         build_dir += f"-{sanitizer}"

@@ -1,6 +1,8 @@
 // Copyright 2016 E.
 #include "structure.h"
 
+#include <cassert>
+#include <cstdarg>
 #include <string>
 #include <vector>
 

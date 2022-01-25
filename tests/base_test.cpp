@@ -1,6 +1,8 @@
 // Copyright 2016 E.
 #include "model/base.h"
 
+#include <memory>
+
 #include "gtest/gtest.h"
 
 namespace mrna {

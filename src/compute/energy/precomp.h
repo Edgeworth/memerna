@@ -1,19 +1,16 @@
 // Copyright 2022 E.
 #ifndef COMPUTE_ENERGY_PRECOMP_H_
 #define COMPUTE_ENERGY_PRECOMP_H_
-#include <cassert>
-#include <cmath>
-#include <cstdarg>
-#include <cstring>
-#include <memory>
+#include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "compute/energy/model.h"
 #include "model/base.h"
 #include "model/model.h"
 #include "model/primary.h"
-#include "util/argparse.h"
+#include "util/error.h"
 
 namespace mrna::energy {
 

@@ -5,14 +5,14 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "compute/boltz_dp.h"
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/context.h"
+#include "model/model.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 

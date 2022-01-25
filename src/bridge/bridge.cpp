@@ -2,6 +2,8 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
+#include "compute/energy/model.h"
+#include "model/config.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE

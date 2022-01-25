@@ -1,16 +1,11 @@
 // Copyright 2021 E.
 #include "compute/partition/brute.h"
 
-#include <set>
-#include <stack>
 #include <utility>
-#include <vector>
 
 #include "compute/brute.h"
-#include "compute/energy/structure.h"
-#include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
-#include "util/splaymap.h"
+#include "model/primary.h"
 
 namespace mrna::partition {
 

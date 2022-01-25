@@ -2,11 +2,10 @@
 #ifndef MODEL_CONTEXT_H_
 #define MODEL_CONTEXT_H_
 
-#include <map>
-#include <optional>
-#include <string>
+#include <utility>
 #include <vector>
 
+#include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
@@ -14,7 +13,6 @@
 #include "compute/traceback/traceback.h"
 #include "model/config.h"
 #include "model/model.h"
-#include "util/argparse.h"
 
 namespace mrna {
 

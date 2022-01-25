@@ -5,10 +5,13 @@
 #include <set>
 #include <vector>
 
-#include "compute/constants.h"
 #include "compute/dp.h"
-#include "compute/energy/structure.h"
+#include "compute/energy/model.h"
 #include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
+#include "model/ctd.h"
+#include "model/model.h"
+#include "model/primary.h"
 
 namespace mrna::subopt {
 

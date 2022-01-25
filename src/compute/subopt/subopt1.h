@@ -3,15 +3,16 @@
 #define COMPUTE_SUBOPT_SUBOPT1_H_
 
 #include <algorithm>
+#include <cassert>
 #include <utility>
 #include <vector>
 
-#include "compute/constants.h"
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/energy/precomp.h"
 #include "compute/subopt/subopt.h"
 #include "model/model.h"
+#include "model/primary.h"
 #include "util/splaymap.h"
 
 namespace mrna::subopt {

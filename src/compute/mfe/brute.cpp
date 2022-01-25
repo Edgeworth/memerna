@@ -1,15 +1,11 @@
 // Copyright 2016 E.
 #include "compute/mfe/brute.h"
 
-#include <set>
-#include <stack>
 #include <utility>
 #include <vector>
 
-#include "compute/energy/structure.h"
-#include "compute/mfe/mfe.h"
 #include "compute/subopt/brute.h"
-#include "util/splaymap.h"
+#include "model/primary.h"
 
 namespace mrna::mfe {
 

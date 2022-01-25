@@ -1,6 +1,13 @@
 #ifndef MODEL_SECONDARY_H_
 #define MODEL_SECONDARY_H_
 
+#include <algorithm>
+#include <cstddef>
+#include <initializer_list>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "model/primary.h"
 
 namespace mrna {

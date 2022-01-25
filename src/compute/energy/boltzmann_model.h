@@ -3,8 +3,12 @@
 #define COMPUTE_ENERGY_BOLTZMANN_MODEL_H_
 
 #include <cassert>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include "compute/energy/model.h"
+#include "model/base.h"
 #include "model/model.h"
 
 namespace mrna::energy {

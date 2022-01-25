@@ -6,7 +6,8 @@ project(memerna VERSION 0.1 LANGUAGES CXX)
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(FLOAT_BITS "Number of bits to use for floats.
     Valid values are 32, 64, 80, or any value if MPFR is enabled." 64)
-option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
+option(USE_RNASTRUCTURE "Whether to build in RNAstructure" OFF)
+option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 
 # Always have RNAstructure compiled as release.
 if (USE_RNASTRUCTURE)
@@ -23,8 +24,9 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=nat
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 
 # Use include-what-you-use if it exists.
-find_program(IWYU NAMES include-what-you-use iwyu)
-
+if (USE_IWYU)
+  find_program(IWYU NAMES include-what-you-use iwyu REQUIRED)
+endif ()
 
 # Include things to find libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -196,8 +198,8 @@ add_sanitizers(run_tests)
 add_sanitizers(splay_explorer)
 add_sanitizers(subopt)
 
-# Add iwyu to targets if it is available
-if (IWYU)
+# Add iwyu to targets if requested.
+if (USE_IWYU)
   set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
   set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
   set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})

@@ -2,17 +2,17 @@
 #ifndef COMPUTE_BRUTE_H_
 #define COMPUTE_BRUTE_H_
 
+#include <cstdint>
 #include <set>
-#include <stack>
 #include <utility>
 #include <vector>
 
+#include "compute/boltz_dp.h"
 #include "compute/energy/model.h"
-#include "compute/energy/structure.h"
-#include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "model/model.h"
+#include "model/ctd.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 #include "util/splaymap.h"
 

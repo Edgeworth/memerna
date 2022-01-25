@@ -2,10 +2,15 @@
 #include "compute/traceback/traceback.h"
 
 #include <algorithm>
+#include <memory>
 #include <stack>
 
 #include "compute/dp.h"
-#include "compute/mfe/mfe.h"
+#include "compute/energy/model.h"
+#include "model/base.h"
+#include "model/model.h"
+#include "model/primary.h"
+#include "util/array.h"
 
 namespace mrna::tb {
 

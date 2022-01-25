@@ -9,10 +9,15 @@
 
 #include "bridge/bridge.h"
 #include "compute/energy/energy.h"
+#include "compute/partition/partition.h"
+#include "compute/subopt/subopt.h"
 #include "miles_rnastructure/include/algorithm.h"
 #include "miles_rnastructure/include/alltrace.h"
 #include "miles_rnastructure/include/pfunction.h"
 #include "miles_rnastructure/include/rna_library.h"
+#include "model/context.h"
+#include "model/model.h"
+#include "model/secondary.h"
 
 namespace mrna::bridge {
 

@@ -3,6 +3,8 @@
 #define FUZZ_CONFIG_H_
 
 #include <cstdint>
+#include <map>
+#include <string>
 
 #include "util/argparse.h"
 
