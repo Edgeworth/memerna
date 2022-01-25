@@ -1,10 +1,16 @@
 // Copyright 2016 Eliot Courtney.
 #include "model/context.h"
 
+#include <algorithm>
+#include <cassert>
+#include <functional>
+#include <tuple>
 #include <utility>
 #include <vector>
 
+#include "compute/boltz_dp.h"
 #include "compute/dp.h"
+#include "compute/energy/boltzmann_model.h"
 #include "compute/mfe/brute.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
@@ -13,6 +19,9 @@
 #include "compute/subopt/subopt0.h"
 #include "compute/subopt/subopt1.h"
 #include "compute/traceback/traceback.h"
+#include "model/primary.h"
+#include "util/array.h"
+#include "util/error.h"
 
 namespace mrna {
 

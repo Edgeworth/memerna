@@ -2,6 +2,8 @@
 // Copyright 2021 Eliot Courtney.
 #include "model/config.h"
 
+#include "util/error.h"
+
 namespace mrna {
 
 ModelCfg ModelCfg::FromArgParse(const ArgParse& args) {

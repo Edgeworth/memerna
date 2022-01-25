@@ -1,13 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/energy/boltzmann_model.h"
 
-#include <algorithm>
-#include <cassert>
-#include <memory>
 #include <string>
-
-#include "compute/energy/structure.h"
-#include "util/string.h"
+#include <type_traits>
+#include <utility>
 
 namespace mrna::energy {
 

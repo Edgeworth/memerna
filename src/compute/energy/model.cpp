@@ -3,10 +3,20 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
+#include <optional>
+#include <random>
 #include <string>
+#include <utility>
 
+#include "compute/energy/branch.h"
 #include "compute/energy/structure.h"
+#include "model/ctd.h"
+#include "model/primary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 #include "util/string.h"
 
 namespace mrna::energy {

@@ -8,13 +8,20 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 The rest of this document uses $MRNA to locate the memerna directory.
 
 Run git submodule init and git submodule update to pull in external dependencies.
-Memerna requires a modern C++ compiler that supports C++14.
+Memerna requires a modern C++ compiler that supports C++20.
 
-./build.py -t [debug, asan, ubsan, release, relwithdebinfo] -c
+./build.py
 
-Will use clang with -c. The flag -t specifies the build type. Then run from $PREFIX/memerna.
+Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
 
-No guarantees this runs or even builds on Windows.
+### Running include-what-you-use
+./build.py --iwyu
+
+Then from the cmake build directory:
+make -j$(nproc) 2> /tmp/iwyu.out
+
+Then:
+iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 
 ### Directories
 

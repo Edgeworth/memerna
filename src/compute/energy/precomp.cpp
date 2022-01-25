@@ -3,11 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <memory>
-#include <string>
-
-#include "compute/energy/structure.h"
-#include "util/string.h"
+#include <utility>
 
 namespace mrna::energy {
 

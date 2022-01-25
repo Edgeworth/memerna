@@ -2,7 +2,9 @@
 #include "model/ctd.h"
 
 #include <stack>
+#include <utility>
 
+#include "model/primary.h"
 #include "util/error.h"
 
 namespace mrna {

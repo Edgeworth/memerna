@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/primary.h"
 
+#include <random>
+
 #include "util/error.h"
 
 namespace mrna {

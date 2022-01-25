@@ -1,12 +1,20 @@
 // Copyright 2016 Eliot Courtney.
-#include "common_test.h"
+#include <deque>
+#include <functional>
+#include <memory>
+#include <tuple>
+#include <utility>
+
 #include "compute/energy/branch.h"
+#include "compute/energy/model.h"
 #include "gtest/gtest.h"
+#include "model/base.h"
+#include "model/ctd.h"
+#include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 
-namespace mrna {
-namespace energy {
+namespace mrna::energy {
 
 struct CtdTest {
   Primary r;
@@ -115,5 +123,5 @@ INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
     testing::Combine(testing::Values(EnergyModel::Random(0), EnergyModel::Random(1),
                          EnergyModel::Random(2), EnergyModel::Random(3)),
         testing::ValuesIn(CTD_TESTS)));
-}  // namespace energy
-}  // namespace mrna
+
+}  // namespace mrna::energy

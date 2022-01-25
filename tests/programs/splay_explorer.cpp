@@ -1,9 +1,14 @@
 // Copyright 2016 Eliot Courtney.
-#include <iomanip>
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
 #include <set>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "util/argparse.h"
+#include "util/error.h"
 #include "util/splaymap.h"
 
 enum class OpResult { INVALID, FAILURE, SUCCESS };

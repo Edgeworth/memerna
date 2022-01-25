@@ -1,6 +1,11 @@
 // Copyright 2016 Eliot Courtney.
+#include <string>
+#include <tuple>
+
 #include "gtest/gtest.h"
 #include "model/ctd.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna {
 

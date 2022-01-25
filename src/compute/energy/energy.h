@@ -2,6 +2,10 @@
 #ifndef COMPUTE_ENERGY_ENERGY_H_
 #define COMPUTE_ENERGY_ENERGY_H_
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "model/ctd.h"
 #include "model/model.h"
 #include "util/argparse.h"

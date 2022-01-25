@@ -1,8 +1,16 @@
 // Copyright 2016 Eliot Courtney.
 #include <cstdio>
+#include <memory>
+#include <string>
+#include <vector>
 
+#include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
+#include "model/ctd.h"
+#include "model/secondary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args(mrna::energy::ENERGY_OPTS);

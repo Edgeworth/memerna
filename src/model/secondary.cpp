@@ -3,6 +3,7 @@
 
 #include <stack>
 
+#include "model/primary.h"
 #include "util/error.h"
 
 namespace mrna {

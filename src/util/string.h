@@ -2,6 +2,8 @@
 #ifndef UTIL_STRING_H_
 #define UTIL_STRING_H_
 
+#include <cstdint>
+#include <cstdio>
 #include <optional>
 #include <string>
 

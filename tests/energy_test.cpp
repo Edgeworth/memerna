@@ -1,8 +1,22 @@
 // Copyright 2016 Eliot Courtney.
+#include "compute/energy/energy.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
 #include "common_test.h"
 #include "compute/energy/branch.h"
+#include "compute/energy/model.h"
+#include "compute/energy/precomp.h"
 #include "gtest/gtest.h"
-#include "model/context.h"
+#include "model/base.h"
+#include "model/model.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 
 namespace mrna::energy {

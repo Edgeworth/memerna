@@ -2,13 +2,12 @@
 #include "compute/subopt/brute.h"
 
 #include <set>
-#include <stack>
 #include <utility>
 #include <vector>
 
 #include "compute/brute.h"
-#include "compute/energy/structure.h"
-#include "util/splaymap.h"
+#include "compute/subopt/subopt.h"
+#include "model/primary.h"
 
 namespace mrna::subopt {
 

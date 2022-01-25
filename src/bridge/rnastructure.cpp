@@ -1,6 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "bridge/rnastructure.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <utility>

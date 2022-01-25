@@ -1,7 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/splaymap.h"
 
+#include <cstdint>
+#include <limits>
 #include <random>
+#include <set>
 
 #include "gtest/gtest.h"
 #include "util/error.h"

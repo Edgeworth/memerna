@@ -1,8 +1,15 @@
 // Copyright 2016 Eliot Courtney.
-#include <cstdlib>
+#include "compute/mfe/mfe.h"
+
+#include <string>
 
 #include "common_test.h"
+#include "compute/energy/model.h"
+#include "gtest/gtest.h"
+#include "model/config.h"
 #include "model/context.h"
+#include "model/model.h"
+#include "model/primary.h"
 
 namespace mrna::mfe {
 

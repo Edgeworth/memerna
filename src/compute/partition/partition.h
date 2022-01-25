@@ -2,15 +2,12 @@
 #ifndef COMPUTE_PARTITION_PARTITION_H_
 #define COMPUTE_PARTITION_PARTITION_H_
 
-#include <cmath>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include <cassert>
+#include <tuple>
 
 #include "compute/boltz_dp.h"
 #include "compute/energy/boltzmann_model.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "model/model.h"
 #include "model/primary.h"
 #include "util/array.h"
 

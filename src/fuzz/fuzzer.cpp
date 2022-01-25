@@ -2,14 +2,26 @@
 #include "fuzz/fuzzer.h"
 
 #include <cinttypes>
+#include <cmath>
+#include <compare>
+#include <memory>
 #include <set>
 #include <sstream>
+#include <tuple>
+#include <utility>
 
+#include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
+#include "compute/partition/partition.h"
 #include "compute/subopt/brute.h"
 #include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
+#include "model/config.h"
 #include "model/context.h"
+#include "model/ctd.h"
+#include "model/secondary.h"
+#include "util/float.h"
 #include "util/string.h"
 
 namespace mrna::fuzz {

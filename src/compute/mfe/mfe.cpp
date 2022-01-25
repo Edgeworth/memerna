@@ -2,10 +2,12 @@
 #include "compute/mfe/mfe.h"
 
 #include <algorithm>
-#include <stack>
 
 #include "compute/dp.h"
-#include "compute/traceback/traceback.h"
+#include "compute/energy/model.h"
+#include "model/base.h"
+#include "model/primary.h"
+#include "util/array.h"
 
 namespace mrna::mfe {
 

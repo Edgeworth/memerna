@@ -2,11 +2,13 @@
 #ifndef COMPUTE_TRACEBACK_TRACEBACK_H_
 #define COMPUTE_TRACEBACK_TRACEBACK_H_
 
-#include <optional>
+#include <utility>
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
-#include "model/base.h"
+#include "model/ctd.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna::tb {
 

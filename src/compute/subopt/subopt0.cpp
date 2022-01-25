@@ -2,11 +2,20 @@
 #include "compute/subopt/subopt0.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <functional>
 #include <limits>
+#include <utility>
 #include <vector>
 
+#include "compute/constants.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
+#include "model/base.h"
+#include "model/secondary.h"
+#include "util/array.h"
+#include "util/error.h"
 
 namespace mrna::subopt {
 

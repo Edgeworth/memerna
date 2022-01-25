@@ -1,9 +1,25 @@
 // Copyright 2016 Eliot Courtney.
+#include <cstdio>
+#include <cstdlib>
+#include <deque>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "bridge/bridge.h"
+#include "compute/energy/energy.h"
+#include "compute/mfe/mfe.h"
+#include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
 #include "model/config.h"
+#include "model/context.h"
+#include "model/model.h"
+#include "model/primary.h"
+#include "model/secondary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 using mrna::Energy;
 using mrna::Opt;

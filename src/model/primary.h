@@ -1,6 +1,10 @@
 #ifndef MODEL_PRIMARY_H_
 #define MODEL_PRIMARY_H_
 
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "model/base.h"
 
 namespace mrna {

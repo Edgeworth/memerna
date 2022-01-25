@@ -1,5 +1,13 @@
 // Copyright 2016 Eliot Courtney.
+#include <algorithm>
+
+#include "compute/dp.h"
+#include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
+#include "model/base.h"
+#include "model/model.h"
+#include "model/primary.h"
+#include "util/array.h"
 
 namespace mrna::mfe {
 

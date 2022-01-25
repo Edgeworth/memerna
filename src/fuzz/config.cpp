@@ -1,6 +1,9 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/config.h"
 
+#include <cstdlib>
+
+#include "util/error.h"
 #include "util/string.h"
 
 namespace mrna::fuzz {

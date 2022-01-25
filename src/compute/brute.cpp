@@ -1,8 +1,17 @@
 // Copyright 2021 Eliot Courtney.
 #include "compute/brute.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "compute/constants.h"
+#include "compute/energy/branch.h"
+#include "compute/energy/energy.h"
 #include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
+#include "model/base.h"
+#include "model/model.h"
+#include "util/array.h"
 #include "util/error.h"
 
 namespace mrna {

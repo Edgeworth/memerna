@@ -1,14 +1,18 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/partition/partition.h"
 
-#include <algorithm>
-#include <cstdio>
 #include <iomanip>
 #include <iostream>
+#include <utility>
+#include <vector>
 
 #include "compute/energy/energy.h"
-#include "compute/mfe/brute.h"
+#include "compute/energy/model.h"
+#include "model/config.h"
 #include "model/context.h"
+#include "model/primary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 void PrintProbabilities(const mrna::Probabilities& p) {
   const int N = static_cast<int>(p.size());

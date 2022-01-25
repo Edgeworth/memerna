@@ -3,10 +3,16 @@
 
 #include <algorithm>
 #include <cassert>
+#include <memory>
 #include <stack>
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "compute/energy/model.h"
+#include "model/base.h"
+#include "model/primary.h"
+#include "util/error.h"
 
 namespace mrna::energy {
 
@@ -77,21 +83,18 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
   if (N < 1) return 0;
 
   // cache[used][i]
-  std::vector<int> cache[2] = {
-      std::vector<int>(size_t(N + 1), MAX_E), std::vector<int>(size_t(N + 1), MAX_E)};
+  std::vector<int> cache[2] = {std::vector<int>(N + 1, MAX_E), std::vector<int>(N + 1, MAX_E)};
   std::vector<std::tuple<bool, int, Energy, Ctd>> back[2] = {
+      std::vector<std::tuple<bool, int, Energy, Ctd>>(N + 1, std::make_tuple(false, -1, 0, CTD_NA)),
       std::vector<std::tuple<bool, int, Energy, Ctd>>(
-          size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA)),
-      std::vector<std::tuple<bool, int, Energy, Ctd>>(
-          size_t(N + 1), std::make_tuple(false, -1, 0, CTD_NA))};
+          N + 1, std::make_tuple(false, -1, 0, CTD_NA))};
 
   cache[0][0] = cache[1][0] = 0;
   int first_lui = branches[0] - 1, last_rui = s[branches[N - 1]] + 1;
 
   // Precompute data about the unpaired bases.
-  std::vector<int> li((size_t(N))), ri((size_t(N))), lui((size_t(N))), rui((size_t(N)));
-  std::vector<bool> lu_exists((size_t(N))), lu_usable((size_t(N))), ru_exists((size_t(N))),
-      ru_usable((size_t(N))), ru_shared((size_t(N)));
+  std::vector<int> li(N), ri(N), lui(N), rui(N);
+  std::vector<bool> lu_exists(N), lu_usable(N), ru_exists(N), ru_usable(N), ru_shared(N);
   for (int i = 0; i < N; ++i) {
     li[i] = branches[i];
     ri[i] = s[branches[i]];
