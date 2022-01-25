@@ -31,11 +31,10 @@ find_package(MPFR)
 find_package(Boost)
 
 # Fail loudly.
+# Note we don't support msan because it requires an instrumented libc++.
+# See https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo
 if (SANITIZE_ADDRESS AND NOT ASan_FLAG_DETECTED)
   message(FATAL_ERROR "requested asan build but not available on current compiler")
-endif ()
-if (SANITIZE_MEMORY AND NOT MSan_FLAG_DETECTED)
-  message(FATAL_ERROR "requested msan build but not available on current compiler")
 endif ()
 if (SANITIZE_THREAD AND NOT TSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested tsan build but not available on current compiler")
@@ -52,7 +51,7 @@ if (USE_MPFR)
   if (NOT Boost_FOUND)
     message(FATAL_ERROR "mpfr builds require boost")
   endif ()
-  message("Building using MPFR for floats.")
+  message(STATUS "Building using MPFR for floats.")
 endif ()
 
 # Enable tests.
@@ -183,6 +182,7 @@ if (USE_RNASTRUCTURE)
 endif ()
 
 # Add sanitizers
+add_sanitizers(memerna)
 add_sanitizers(efn)
 add_sanitizers(fold)
 add_sanitizers(fuzz)
