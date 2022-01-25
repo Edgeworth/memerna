@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef COMPUTE_BOLTZ_DP_H_
 #define COMPUTE_BOLTZ_DP_H_
 

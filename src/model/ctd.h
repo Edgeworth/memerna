@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef MODEL_CTD_H_
 #define MODEL_CTD_H_
 

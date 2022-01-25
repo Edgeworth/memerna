@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef MODEL_SECONDARY_H_
 #define MODEL_SECONDARY_H_
 

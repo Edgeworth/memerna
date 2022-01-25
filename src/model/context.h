@@ -23,7 +23,7 @@ struct FoldResult {
 
 class Context {
  public:
-  Context(energy::EnergyModel em) : em_(std::move(em)), cfg_() {}
+  explicit Context(energy::EnergyModel em) : em_(std::move(em)), cfg_() {}
   Context(energy::EnergyModel em, ModelCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
 
   Context() = delete;

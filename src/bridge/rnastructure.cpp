@@ -113,17 +113,17 @@ partition::PartitionResult RNAstructure::Partition(Primary r) const {
   DynProgArray<PFPRECISION> wlc(length);
   DynProgArray<PFPRECISION> wmbl(length);
   DynProgArray<PFPRECISION> wcoax(length);
-  const auto w5 = std::make_unique<PFPRECISION[]>(std::size_t(length + 1));
-  const auto w3 = std::make_unique<PFPRECISION[]>(std::size_t(length + 2));
+  const auto w5 = std::make_unique<PFPRECISION[]>(length + 1);
+  const auto w3 = std::make_unique<PFPRECISION[]>(length + 2);
   const auto pfdata = std::make_unique<pfdatatable>(data_.get(), scaling, T);
   const auto fce = std::make_unique<forceclass>(length);
-  const auto lfce = std::make_unique<bool[]>(std::size_t(2 * length + 1));
-  const auto mod = std::make_unique<bool[]>(std::size_t(2 * length + 1));
+  const auto lfce = std::make_unique<bool[]>(2 * length + 1);
+  const auto mod = std::make_unique<bool[]>(2 * length + 1);
 
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  partition::Partition partition = {Array3D<BoltzEnergy, 1>(std::size_t(length)), 0};
+  partition::Partition partition = {Array3D<BoltzEnergy, 1>(length), 0};
   partition.q = BoltzEnergy(w5[length]);
   for (int i = 1; i <= length; ++i) {
     for (int j = i; j < length + i; ++j) {
@@ -132,7 +132,7 @@ partition::PartitionResult RNAstructure::Partition(Primary r) const {
     }
   }
 
-  Probabilities probability(std::size_t(length), 0);
+  Probabilities probability(length, 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
       probability[i][j][0] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),
