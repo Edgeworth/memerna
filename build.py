@@ -32,8 +32,6 @@ def get_sanitizers(sanitizer):
         return {}
     elif sanitizer == "asan":
         return {"SANITIZE_ADDRESS": "ON"}
-    elif sanitizer == "msan":
-        return {"SANITIZE_MEMORY": "ON"}
     elif sanitizer == "tsan":
         return {"SANITIZE_THREAD": "ON"}
     elif sanitizer == "ubsan":
@@ -69,7 +67,7 @@ def get_sanitizers(sanitizer):
 )
 @click.option(
     "--sanitizer",
-    type=click.Choice(["none", "asan", "msan", "tsan", "ubsan"]),
+    type=click.Choice(["none", "asan", "tsan", "ubsan"]),
     default="none",
 )
 @click.option("--regenerate/--no-regenerate", default=False)
