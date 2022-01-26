@@ -18,7 +18,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
 
   const int N = static_cast<int>(r.size());
   const energy::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1);
+  auto dp = DpArray(r.size() + 1, MAX_E);
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {

@@ -62,15 +62,15 @@ void BruteForce::AddAllCombinations(int idx) {
           if (inside_new || outside_new) {
             Energy inside_energy = em_.SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
-              res_.partition.p[i][s_[i]][0] += Boltz(inside_energy);
+              res_.partition.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.partition.p[s_[i]][i][0] += Boltz(energy - inside_energy);
+              res_.partition.p[s_[i]][i] += Boltz(energy - inside_energy);
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
-          res_.probabilities[i][s_[i]][0] += boltz;
+          res_.probabilities[i][s_[i]] += boltz;
         }
       }
     } else {
@@ -225,8 +225,8 @@ BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int
     // Plus one to N, since -1 takes up a spot.
     verify(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.partition.q = 0;
-    res_.partition.p = Array3D<BoltzEnergy, 1>(r.size(), 0);
-    res_.probabilities = Array3D<BoltzEnergy, 1>(r.size(), 0);
+    res_.partition.p = BoltzSums(r.size(), 0);
+    res_.probabilities = BoltzProbs(r.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < N; ++st) {
@@ -240,7 +240,7 @@ BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int
   if (res_.compute_partition) {
     // Fill probabilities from partition function.
     for (int i = 0; i < N; ++i)
-      for (int j = i; j < N; ++j) res_.probabilities[i][j][0] /= res_.partition.q;
+      for (int j = i; j < N; ++j) res_.probabilities[i][j] /= res_.partition.q;
   }
 
   return std::move(res_);

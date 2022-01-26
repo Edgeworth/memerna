@@ -20,13 +20,13 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModel& em) {
 
   const int N = static_cast<int>(r.size());
   const energy::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1);
+  auto dp = DpArray(r.size() + 1, MAX_E);
 
   // See ComputeTables2 for comments - it is mostly the same.
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());
   std::vector<Cand> cand_st[CAND_SIZE];
-  Array3D<Energy, TWOLOOP_MAX_SZ + 1> lyngso(r.size());
+  Array2D1S<Energy, TWOLOOP_MAX_SZ + 1> lyngso(r.size(), MAX_E);
   for (int st = N - 1; st >= 0; --st) {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {

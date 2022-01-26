@@ -115,10 +115,9 @@ set(MEMERNA_SOURCE
     src/compute/mfe/mfe3.cpp
     src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/exterior.cpp
-    src/compute/partition/partition.h
+    src/compute/partition/partition.cpp src/compute/partition/partition.h
     src/compute/partition/partition0.cpp
     src/compute/partition/partition1.cpp
-    src/compute/partition/probability.cpp
     src/compute/subopt/brute.cpp src/compute/subopt/brute.h
     src/compute/subopt/subopt.h
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h

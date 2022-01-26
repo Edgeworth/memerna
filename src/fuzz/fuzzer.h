@@ -35,7 +35,7 @@ class Fuzzer {
   energy::EnergyModel em_;
 
   std::vector<subopt::SuboptResult> memerna_subopts_;
-  std::vector<Array3D<Energy, DP_SIZE>> memerna_dps;
+  std::vector<Array2D1S<Energy, DP_SIZE>> memerna_dps;
 
   // RNAstructure related:
 #ifdef USE_RNASTRUCTURE
