@@ -319,6 +319,7 @@ Error Fuzzer::CheckBruteForce() {
 
 Error Fuzzer::CheckPartition() {
   Error errors;
+  // TODO: Check DP and ext tables?
   std::vector<partition::PartitionResult> memerna_partitions;
   for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
     Context ctx(
