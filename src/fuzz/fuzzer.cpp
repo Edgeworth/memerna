@@ -304,11 +304,11 @@ Error Fuzzer::CheckBruteForce() {
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(brute_partition.p.p[st][en][0], memerna_partition.p.p[st][en][0])) {
+        if (!equ(brute_partition.p.p[st][en], memerna_partition.p.p[st][en])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partition.p.p[st][en][0]
-                  << " != brute force " << brute_partition.p.p[st][en][0] << "; difference: "
-                  << brute_partition.p.p[st][en][0] - memerna_partition.p.p[st][en][0];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partition.p.p[st][en]
+                  << " != brute force " << brute_partition.p.p[st][en] << "; difference: "
+                  << brute_partition.p.p[st][en] - memerna_partition.p.p[st][en];
           errors.push_back(sstream.str());
         }
       }
@@ -337,12 +337,12 @@ Error Fuzzer::CheckPartition() {
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(memerna_partitions[i].p.p[st][en][0], memerna_partitions[0].p.p[st][en][0])) {
+        if (!equ(memerna_partitions[i].p.p[st][en], memerna_partitions[0].p.p[st][en])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
-                  << memerna_partitions[i].p.p[st][en][0]
-                  << " != " << memerna_partitions[0].p.p[st][en][0] << "; difference: "
-                  << memerna_partitions[i].p.p[st][en][0] - memerna_partitions[0].p.p[st][en][0];
+                  << memerna_partitions[i].p.p[st][en]
+                  << " != " << memerna_partitions[0].p.p[st][en] << "; difference: "
+                  << memerna_partitions[i].p.p[st][en] - memerna_partitions[0].p.p[st][en];
           errors.push_back(sstream.str());
         }
       }
@@ -365,11 +365,11 @@ Error Fuzzer::CheckPartition() {
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(rnastructure_part.p.p[st][en][0], memerna_partitions[0].p.p[st][en][0])) {
+        if (!equ(rnastructure_part.p.p[st][en], memerna_partitions[0].p.p[st][en])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p.p[st][en][0]
-                  << " != rnastructure " << rnastructure_part.p.p[st][en][0] << "; difference: "
-                  << rnastructure_part.p.p[st][en][0] - memerna_partitions[0].p.p[st][en][0];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p.p[st][en]
+                  << " != rnastructure " << rnastructure_part.p.p[st][en] << "; difference: "
+                  << rnastructure_part.p.p[st][en] - memerna_partitions[0].p.p[st][en];
           errors.push_back(sstream.str());
         }
       }

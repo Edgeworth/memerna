@@ -20,7 +20,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
 
   const int N = static_cast<int>(r.size());
   const energy::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1);
+  auto dp = DpArray(r.size() + 1, MAX_E);
 
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());

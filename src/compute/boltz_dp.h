@@ -11,7 +11,7 @@ namespace mrna {
 // DP arrays
 enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RCOAX, PT_SIZE };
 
-using BoltzDpArray = Array3D<BoltzEnergy, PT_SIZE>;
+using BoltzDpArray = Array2D1S<BoltzEnergy, PT_SIZE>;
 
 enum : int8_t {
   PTEXT_R,
@@ -25,9 +25,12 @@ enum : int8_t {
   PTEXT_SIZE
 };
 
-using BoltzExtArray = Array2D<BoltzEnergy, PTEXT_SIZE>;
+using BoltzExtArray = Array1D1S<BoltzEnergy, PTEXT_SIZE>;
 
-using Probabilities = Array3D<BoltzEnergy, 1>;
+// Holds the Boltzmann sums used in the partition function.ss
+using BoltzSums = Array2D<BoltzEnergy>;
+
+using BoltzProbs = Array2D<BoltzEnergy>;
 
 }  // namespace mrna
 

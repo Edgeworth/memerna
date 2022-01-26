@@ -14,10 +14,10 @@
 #include "util/argparse.h"
 #include "util/error.h"
 
-void PrintProbabilities(const mrna::Probabilities& p) {
+void PrintBoltzProbs(const mrna::BoltzProbs& p) {
   const int N = static_cast<int>(p.size());
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) std::cout << std::setprecision(20) << p[i][j][0] << ' ';
+    for (int j = 0; j < N; ++j) std::cout << std::setprecision(20) << p[i][j] << ' ';
     std::cout << '\n';
   }
 }
@@ -25,7 +25,7 @@ void PrintProbabilities(const mrna::Probabilities& p) {
 void PrintPartition(const mrna::partition::Partition& p) {
   const int N = static_cast<int>(p.p.size());
   for (int i = 0; i < N; ++i) {
-    for (int j = 0; j < N; ++j) std::cout << p.p[i][j][0] << ' ';
+    for (int j = 0; j < N; ++j) std::cout << p.p[i][j] << ' ';
     std::cout << '\n';
   }
 }
@@ -41,5 +41,5 @@ int main(int argc, char* argv[]) {
   const auto em = mrna::energy::EnergyModel::FromArgParse(args);
 
   mrna::Context ctx(em, mrna::ModelCfg::FromArgParse(args));
-  PrintProbabilities(ctx.Partition(std::move(r)).prob);
+  PrintBoltzProbs(ctx.Partition(std::move(r)).prob);
 }

@@ -21,7 +21,7 @@ enum : int8_t {
   DP_SIZE
 };
 
-using DpArray = Array3D<Energy, DP_SIZE>;
+using DpArray = Array2D1S<Energy, DP_SIZE>;
 
 enum : int8_t {
   EXT,
@@ -31,7 +31,7 @@ enum : int8_t {
   EXT_SIZE
 };
 
-using ExtArray = Array2D<Energy, EXT_SIZE>;
+using ExtArray = Array1D1S<Energy, EXT_SIZE>;
 
 // Split candidates up into several lists.
 // In general, for each array we need a new candidate list (except for U and U2 which mirror each

@@ -42,7 +42,7 @@ class BruteForce {
     // TODO: Switch to optional?
     bool compute_partition;
     partition::Partition partition;
-    Probabilities probabilities;
+    BoltzProbs probabilities;
   };
 
   Result Run(Primary r, const energy::EnergyModel& em, int max_structures, bool compute_partition,

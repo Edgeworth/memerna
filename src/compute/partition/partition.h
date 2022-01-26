@@ -14,16 +14,16 @@
 namespace mrna::partition {
 
 struct Partition {
-  Array3D<BoltzEnergy, 1> p;
+  BoltzSums p;
   BoltzEnergy q;
 };
 
 struct PartitionResult {
   Partition p;
-  Probabilities prob;
+  BoltzProbs prob;
 };
 
-Probabilities ComputeProbabilities(const Partition& partition);
+BoltzProbs ComputeBoltzProbs(const Partition& partition);
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
     const Primary& r, const energy::BoltzEnergyModel& bem);

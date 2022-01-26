@@ -13,7 +13,7 @@ namespace mrna::mfe {
 
 ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const DpArray& dp) {
   const int N = static_cast<int>(r.size());
-  auto ext = ExtArray(r.size() + 1);
+  auto ext = ExtArray(r.size() + 1, 0);
 
   // Exterior loop calculation. There can be no paired base on ext[en].
   ext[N][EXT] = 0;

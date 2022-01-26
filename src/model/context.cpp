@@ -97,12 +97,12 @@ partition::PartitionResult Context::Partition(Primary r) {
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
-  Array3D<BoltzEnergy, 1> p(N);
+  BoltzSums p(N, 0);
   for (int i = 0; i < N; ++i)  // TODO optimise this?
-    for (int j = 0; j < N; ++j) p[i][j][0] = dp[i][j][PT_P];
+    for (int j = 0; j < N; ++j) p[i][j] = dp[i][j][PT_P];
 
   partition::Partition part{std::move(p), ext[0][PTEXT_R]};
-  auto prob = partition::ComputeProbabilities(part);
+  auto prob = partition::ComputeBoltzProbs(part);
   return partition::PartitionResult{.p = std::move(part), .prob = std::move(prob)};
 }
 
