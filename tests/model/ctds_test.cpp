@@ -13,6 +13,7 @@
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "common_test.h"
 
 namespace mrna::energy {
 
@@ -121,7 +122,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
 
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
     testing::Combine(testing::Values(EnergyModel::Random(0), EnergyModel::Random(1),
-                         EnergyModel::Random(2), EnergyModel::Random(3)),
+                         EnergyModel::Random(2), EnergyModel::Random(3), g_em),
         testing::ValuesIn(CTD_TESTS)));
 
 }  // namespace mrna::energy

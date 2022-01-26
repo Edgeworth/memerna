@@ -139,15 +139,14 @@ set(MEMERNA_SOURCE
     src/util/string.cpp src/util/string.h
 )
 set(TEST_SOURCE
-    tests/base_test.cpp
-    tests/brute_test.cpp
-    tests/common_test.cpp
     tests/common_test.h
-    tests/ctds_test.cpp
-    tests/energy_test.cpp
-    tests/mfe_test.cpp
-    tests/parsing_test.cpp
-    tests/splaymap_test.cpp
+    tests/compute/brute_test.cpp
+    tests/compute/energy/energy_test.cpp
+    tests/compute/mfe/mfe_test.cpp
+    tests/model/base_test.cpp
+    tests/model/ctds_test.cpp
+    tests/model/parsing_test.cpp
+    tests/util/splaymap_test.cpp
 )
 
 # Use RNAstructure if necessary
