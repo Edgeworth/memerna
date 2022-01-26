@@ -13,7 +13,7 @@
 namespace mrna::bridge {
 
 std::unique_ptr<RnaPackage> RnaPackage::FromArgParse(const ArgParse& args) {
-  verify(args.HasFlag("r") + args.HasFlag("k") == 1, "require exactly one package flag\n%s",
+  verify(args.HasFlag("r") + args.HasFlag("m") == 1, "require exactly one package flag\n%s",
       args.Usage().c_str());
   if (args.HasFlag("r")) {
 #ifdef USE_RNASTRUCTURE
