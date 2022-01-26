@@ -18,8 +18,8 @@
 
 namespace mrna {
 
-const uint32_t T04_MODEL_HASH = 0x9eabeccf;
-extern energy::EnergyModel g_em;
+inline constexpr uint32_t T04_MODEL_HASH = 0x9eabeccf;
+inline energy::EnergyModel g_em;
 
 }  // namespace mrna
 
