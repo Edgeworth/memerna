@@ -19,6 +19,8 @@ struct Partition {
 };
 
 struct PartitionResult {
+  BoltzDpArray dp;
+  BoltzExtArray ext;
   Partition p;
   BoltzProbs prob;
 };

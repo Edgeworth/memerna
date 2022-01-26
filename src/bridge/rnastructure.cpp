@@ -139,7 +139,9 @@ partition::PartitionResult RNAstructure::Partition(Primary r) const {
           structure.get(), pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }
-  return {std::move(partition), std::move(probability)};
+  // TODO: Convert tables?
+  return partition::PartitionResult{
+      .dp{}, .ext{}, .p = std::move(partition), .prob = std::move(probability)};
 }
 
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {

@@ -103,7 +103,8 @@ partition::PartitionResult Context::Partition(Primary r) {
 
   partition::Partition part{std::move(p), ext[0][PTEXT_R]};
   auto prob = partition::ComputeBoltzProbs(part);
-  return partition::PartitionResult{.p = std::move(part), .prob = std::move(prob)};
+  return partition::PartitionResult{
+      .dp = std::move(dp), .ext = std::move(ext), .p = std::move(part), .prob = std::move(prob)};
 }
 
 }  // namespace mrna
