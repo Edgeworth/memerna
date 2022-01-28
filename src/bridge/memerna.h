@@ -11,8 +11,8 @@
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "model/config.h"
-#include "model/context.h"
+#include "context/config.h"
+#include "context/ctx.h"
 #include "model/model.h"
 #include "model/secondary.h"
 
@@ -21,7 +21,10 @@ namespace mrna::bridge {
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
  public:
-  Memerna(energy::EnergyModel em, ModelCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
+  explicit Memerna(Ctx ctx) : ctx_(std::move(ctx)) {}
+
+  Memerna(Memerna&& o) = default;
+  Memerna& operator=(Memerna&&) = default;
 
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
@@ -33,9 +36,10 @@ class Memerna : public RnaPackage {
       Primary r, Energy energy_delta) const override;
   partition::PartitionResult Partition(Primary r) const override;
 
+  static Memerna FromArgParse(const ArgParse& args);
+
  private:
-  energy::EnergyModel em_;
-  ModelCfg cfg_;
+  Ctx ctx_;
 };
 
 }  // namespace mrna::bridge

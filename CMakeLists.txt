@@ -123,11 +123,11 @@ set(MEMERNA_SOURCE
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
     src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
     src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
+    src/context/config.cpp src/context/config.h
+    src/context/ctx.cpp src/context/ctx.h
     src/fuzz/config.cpp src/fuzz/config.h
     src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
     src/model/base.cpp src/model/base.h
-    src/model/config.cpp src/model/config.h
-    src/model/context.cpp src/model/context.h
     src/model/ctd.cpp src/model/ctd.h
     src/model/model.h
     src/model/primary.cpp src/model/primary.h

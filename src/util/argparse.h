@@ -3,9 +3,8 @@
 #define UTIL_ARGPARSE_H_
 
 #include <map>
+#include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -14,80 +13,97 @@
 namespace mrna {
 
 struct Opt {
-  Opt(std::string desc_ = "", std::string default_arg_ = "", bool has_default_ = false,
-      bool has_arg_ = false, bool required_ = false)
-      : desc(std::move(desc_)), default_arg(std::move(default_arg_)), choices(),
-        has_default(has_default_), has_arg(has_arg_), required(required_) {}
-
-  Opt& Arg(std::string default_arg_, std::unordered_set<std::string> choices_) {
-    default_arg = std::move(default_arg_);
-    choices = std::move(choices_);
-    has_default = true;
-    has_arg = true;
+ public:
+  Opt& LongName(std::string n) {
+    longname_ = std::move(n);
     return *this;
   }
 
-  Opt& Arg(std::string default_arg_) { return Arg(std::move(default_arg_), {}); }
-
-  Opt& Arg(std::unordered_set<std::string> choices_) {
-    choices = std::move(choices_);
-    has_arg = true;
+  Opt& ShortName(std::string n) {
+    shortname_ = std::move(n);
     return *this;
   }
 
   Opt& Arg() {
-    has_arg = true;
+    has_arg_ = true;
     return *this;
   }
 
-  Opt& Require() {
-    required = true;
+  Opt& Choice(std::set<std::string> c) {
+    choices_ = std::move(c);
+    has_arg_ = true;
+    return *this;
+  }
+
+  Opt& Default(std::string d) {
+    has_arg_ = true;
+    has_default_ = true;
+    default_arg_ = std::move(d);
+    return *this;
+  }
+
+  constexpr Opt& Required() {
+    required_ = true;
+    return *this;
+  }
+
+  Opt& Help(std::string h) {
+    help_ = std::move(h);
     return *this;
   }
 
   std::string Desc() const;
 
-  std::string desc;
-  std::string default_arg;
-  std::unordered_set<std::string> choices;
-  bool has_default;
-  bool has_arg;
-  bool required;
+  auto operator<=>(const Opt&) const = default;
+
+  const std::string& longname() const { return longname_; }
+  const std::string& shortname() const { return shortname_; }
+  const std::string& help() const { return help_; }
+  const std::string& default_arg() const { return default_arg_; }
+  const std::set<std::string>& choices() const { return choices_; }
+  bool has_default() const { return has_default_; }
+  bool has_arg() const { return has_arg_; }
+  bool required() const { return required_; }
+
+ private:
+  std::string longname_;
+  std::string shortname_;
+  std::string help_;
+  std::string default_arg_;
+  std::set<std::string> choices_;
+  bool has_default_;
+  bool has_arg_;
+  bool required_;
 };
+
+// Some common options
+inline const Opt OPT_VERBOSE = Opt().LongName("verbose").ShortName("v").Help("verbose output");
+inline const Opt OPT_QUIET = Opt().LongName("quiet").ShortName("q").Help("quiet output");
+inline const Opt OPT_AFL = mrna::Opt().LongName("afl").Default("-1").Help("run in afl-fuzz mode");
 
 class ArgParse {
  public:
-  explicit ArgParse(std::map<std::string, Opt> possible_args)
-      : possible_args_(std::move(possible_args)) {}
-
   ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
 
-  void AddOptions(const std::map<std::string, Opt>& possible_args_);
-  std::string Parse(int argc, char* argv[]);
-  void ParseOrExit(int argc, char* argv[]);
+  void RegisterOpt(const Opt& opt);
   std::string Usage() const;
 
-  const std::vector<std::string>& GetPositional() const { return positional_; }
+  std::string Parse(int argc, char* argv[]);
+  void ParseOrExit(int argc, char* argv[]);
 
-  bool HasFlag(const std::string& flag) const {
-    if (possible_args_.count(flag) && possible_args_.find(flag)->second.has_default) return true;
-    return flags.count(flag) > 0;
-  }
+  const Opt& Lookup(const std::string& name) const;
+  bool Has(const Opt& opt) const;
+  std::string Get(const Opt& opt) const;
 
-  std::string GetOption(const std::string& flag) const {
-    auto flagiter = flags.find(flag);
-    auto positer = possible_args_.find(flag);
-    if (flagiter != flags.end()) return flagiter->second;
-    if (positer != possible_args_.end()) return positer->second.default_arg;
-    error("missing flag %s", flag.c_str());
-    return "";
-  }
+  const std::vector<std::string>& positional() const { return positional_; }
 
  private:
-  std::map<std::string, Opt> possible_args_;
-  std::unordered_map<std::string, std::string> flags;
+  std::map<std::string, Opt> longname_;
+  std::map<std::string, Opt> shortname_;
+  std::set<Opt> opts_;
+  std::map<Opt, std::string> values_;
   std::vector<std::string> positional_;
 };
 

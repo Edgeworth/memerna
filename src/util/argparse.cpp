@@ -6,69 +6,106 @@
 namespace mrna {
 
 std::string Opt::Desc() const {
-  auto res = desc;
-  if (has_default) res += sfmt(" [%s]", default_arg.c_str());
-  if (!choices.empty()) {
-    res += " (";
-    for (auto iter = choices.begin(); iter != choices.end(); ++iter) {
-      if (iter != choices.begin()) res += ", ";
-      res += *iter;
-    }
-    res += ")";
+  std::string desc;
+  if (!shortname_.empty() && !longname_.empty()) {
+    desc += "-" + shortname_ + ", --" + longname_;
+  } else if (!shortname_.empty()) {
+    desc += "-" + shortname_;
+  } else if (!longname_.empty()) {
+    desc += "--" + longname_;
   }
-  return res;
+  if (has_default_) desc += sfmt(" [%s]", default_arg_.c_str());
+  if (!choices_.empty()) {
+    desc += " (";
+    for (auto iter = choices_.begin(); iter != choices_.end(); ++iter) {
+      if (iter != choices_.begin()) desc += ", ";
+      desc += *iter;
+    }
+    desc += ")";
+  }
+  if (!has_default_ && !choices_.empty()) desc += " <arg>";
+  if (!help_.empty()) desc += ": " + help_;
+  return desc;
+}
+
+void ArgParse::RegisterOpt(const Opt& opt) {
+  // Check if this conflicts with existing arguments.
+  if (auto iter = longname_.find(opt.longname()); iter != longname_.end())
+    verify(opt == iter->second, "conflicting option registered with longname %s",
+        opt.longname().c_str());
+  if (auto iter = shortname_.find(opt.shortname()); iter != shortname_.end())
+    verify(opt == iter->second, "conflicting option registered with shortname %s",
+        opt.shortname().c_str());
+
+  verify(!opt.longname().empty() || !opt.shortname().empty(),
+      "option must have either a shortname or a longname");
+
+  if (!opt.longname().empty()) longname_.emplace(opt.longname(), opt);
+  if (!opt.shortname().empty()) shortname_.emplace(opt.shortname(), opt);
+  opts_.insert(opt);
+  // Add default argument if necessary.
+  if (auto iter = values_.find(opt); opt.has_default() && iter == values_.end())
+    values_.emplace(opt, opt.default_arg());
+}
+
+std::string ArgParse::Usage() const {
+  std::string usage = "Usage: \n";
+  for (const auto& arg : opts_) usage += sfmt("  %s\n", arg.Desc().c_str());
+  return usage;
 }
 
 std::string ArgParse::Parse(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    const bool is_flag = arg[0] == '-';
+    bool is_opt = arg[0] == '-';
     while (*arg == '-') ++arg;
+    bool is_short = arg - argv[i] == 1;
 
-    if (is_flag) {
-      if (possible_args_.count(arg) == 0) return sfmt("unknown argument %s", argv[i]);
-
-      if (possible_args_[arg].has_arg) {
-        if (i + 1 == argc) return sfmt("missing argument for flag %s", arg);
-        flags[arg] = argv[++i];
-      } else {
-        flags[arg] = arg;
-      }
-    } else {
+    if (!is_opt) {
       positional_.push_back(arg);
+    } else {
+      auto& map = is_short ? shortname_ : longname_;
+      auto iter = map.find(arg);
+      if (iter == map.end()) return sfmt("unknown option %s", argv[i]);
+
+      const auto& opt = iter->second;
+      if (opt.has_arg()) {
+        if (i + 1 == argc) return sfmt("missing argument for option %s", opt.Desc().c_str());
+        values_[opt] = argv[++i];
+      } else {
+        values_[opt] = arg;
+      }
     }
   }
-  for (const auto& argpair : possible_args_) {
-    const auto& flag = argpair.first;
-    const auto& arg = argpair.second;
-    verify(!arg.has_default || arg.has_arg, "bad option somehow");
-    if (arg.has_arg && flags.count(flag) == 0 && !arg.has_default && arg.required)
-      return sfmt("missing argument for flag %s", flag.c_str());
-    if (!arg.choices.empty() && arg.choices.count(GetOption(flag)) == 0)
-      return sfmt("unrecognised argument for flag %s", flag.c_str());
+  for (const auto& opt : opts_) {
+    bool has = Has(opt);
+    if (opt.required() && !has) return sfmt("missing required option %s", opt.Desc().c_str());
+    if (has && !opt.choices().empty() && !opt.choices().contains(Get(opt)))
+      return sfmt("unrecognised argument for option %s", opt.Desc().c_str());
   }
   return "";
 }
 
-std::string ArgParse::Usage() const {
-  std::string usage = "Flags: \n";
-  for (const auto& arg : possible_args_) {
-    usage += sfmt("  -%s: %s\n", arg.first.c_str(), arg.second.Desc().c_str());
-  }
-  return usage;
-}
-
-void ArgParse::AddOptions(const std::map<std::string, Opt>& possible_args) {
-  for (const auto& argpair : possible_args) {
-    verify(
-        possible_args_.count(argpair.first) == 0, "duplicate argument %s", argpair.first.c_str());
-    possible_args_.insert(argpair);
-  }
-}
-
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
-  verify(ret.size() == 0, "%s\n%s\n", ret.c_str(), Usage().c_str());
+  if (!ret.empty()) {
+    fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str());
+    exit(1);
+  }
+}
+
+const Opt& ArgParse::Lookup(const std::string& name) const {
+  if (auto iter = longname_.find(name); iter != longname_.end()) return iter->second;  // NOLINT
+  if (auto iter = shortname_.find(name); iter != shortname_.end()) return iter->second;  // NOLINT
+  error("unregistered argument %s", name.c_str());
+}
+
+bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }
+
+std::string ArgParse::Get(const Opt& opt) const {
+  if (auto iter = values_.find(opt); iter != values_.end()) return iter->second;  // NOLINT
+  error("missing option %s", opt.Desc().c_str());
+  return "";
 }
 
 }  // namespace mrna

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "compute/energy/branch.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/structure.h"
 #include "model/ctd.h"
 #include "model/primary.h"
@@ -768,10 +769,10 @@ EnergyModel EnergyModel::FromDataDir(const std::string& data_dir) {
 }
 
 EnergyModel EnergyModel::FromArgParse(const ArgParse& args) {
-  if (args.HasFlag("seed")) {
-    return Random(uint_fast32_t(atoi(args.GetOption("seed").c_str())));
+  if (args.Has(OPT_SEED)) {
+    return Random(uint_fast32_t(atoi(args.Get(OPT_SEED).c_str())));
   } else {
-    return FromDataDir(args.GetOption("memerna-data"));
+    return FromDataDir(args.Get(OPT_MEMERNA_DATA));
   }
 }
 

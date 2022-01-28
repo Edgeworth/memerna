@@ -8,8 +8,8 @@
 
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
-#include "model/config.h"
-#include "model/context.h"
+#include "context/config.h"
+#include "context/ctx.h"
 #include "model/primary.h"
 #include "util/argparse.h"
 #include "util/error.h"
@@ -32,14 +32,13 @@ void PrintPartition(const mrna::partition::Partition& p) {
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
-  args.AddOptions(mrna::energy::ENERGY_OPTS);
-  args.AddOptions(mrna::MODEL_OPTS);
+  mrna::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
-  const auto& pos = args.GetPositional();
+
+  const auto& pos = args.positional();
   verify(pos.size() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromString(pos.front());
-  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
 
-  mrna::Context ctx(em, mrna::ModelCfg::FromArgParse(args));
+  auto ctx = mrna::Ctx::FromArgParse(args);
   PrintBoltzProbs(ctx.Partition(std::move(r)).prob);
 }

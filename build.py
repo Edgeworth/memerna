@@ -142,7 +142,7 @@ def build(
     run_command(f"{' '.join(env)} make -j$(($(nproc)-1)) {' '.join(targets)}")
 
     if test:
-        run_command(f"./run_tests -memerna-data {mrna}/data")
+        run_command(f"./run_tests --memerna-data {mrna}/data")
 
     os.chdir(mrna)
 

@@ -13,38 +13,38 @@
 #include "compute/mfe/mfe.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
-#include "model/config.h"
-#include "model/context.h"
+#include "context/config.h"
+#include "context/ctx.h"
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
 
-using mrna::Energy;
-using mrna::Opt;
+inline const auto OPT_EFN = mrna::Opt().ShortName("e").Help("run efn");
+inline const auto OPT_FOLD = mrna::Opt().ShortName("f").Help("run fold");
+inline const auto OPT_SUBOPT_DELTA =
+    mrna::Opt().LongName("subopt-delta").Default("-1").Help("maximum energy delta from minimum");
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args({
-      {"v", {"be verbose (if possible)"}},
-      {"e", {"run efn"}},
-      {"f", {"run fold"}},
-      {"subopt-delta", Opt("maximum energy delta from minimum").Arg("-1")},
-  });
-  args.AddOptions(mrna::bridge::BRIDGE_OPTS);
-  args.AddOptions(mrna::MODEL_OPTS);
-  args.AddOptions(mrna::energy::ENERGY_OPTS);
+  mrna::ArgParse args;
+  mrna::bridge::RegisterOpts(&args);
+  args.RegisterOpt(mrna::OPT_VERBOSE);
+  args.RegisterOpt(OPT_EFN);
+  args.RegisterOpt(OPT_FOLD);
+  args.RegisterOpt(OPT_SUBOPT_DELTA);
   args.ParseOrExit(argc, argv);
-  verify(args.HasFlag("e") + args.HasFlag("f") == 1, "require exactly one program flag\n%s",
+
+  verify(args.Has(OPT_EFN) + args.Has(OPT_FOLD) == 1, "require exactly one program flag\n%s",
       args.Usage().c_str());
-  verify(args.HasFlag("seed") + args.HasFlag("memerna-data") == 1,
+  verify(args.Has(mrna::energy::OPT_SEED) + args.Has(mrna::energy::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
 
   const auto package = mrna::bridge::RnaPackage::FromArgParse(args);
-  const auto& pos = args.GetPositional();
+  const auto& pos = args.positional();
   const bool read_stdin = pos.empty();
   std::deque<std::string> rnaqueue(pos.begin(), pos.end());
-  if (args.HasFlag("e")) {
+  if (args.Has(OPT_EFN)) {
     while (1) {
       std::string seq, db;
       if (read_stdin) {
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
       auto [r, s] = mrna::ParsePrimaryDotBracket(seq, db);
       std::string desc;
       const auto res =
-          package->Efn(std::move(r), std::move(s), args.HasFlag("v") ? &desc : nullptr);
+          package->Efn(std::move(r), std::move(s), args.Has(mrna::OPT_VERBOSE) ? &desc : nullptr);
       printf("%d\n%s", res.energy, desc.c_str());
     }
   } else {
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
         rnaqueue.pop_front();
       }
       auto r = mrna::Primary::FromString(seq);
-      int subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
+      int subopt_delta = atoi(args.Get(OPT_SUBOPT_DELTA).c_str());
       if (subopt_delta >= 0) {
         int num_structures = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {

@@ -5,18 +5,18 @@
 
 #include "common_test.h"
 #include "compute/energy/model.h"
+#include "context/config.h"
+#include "context/ctx.h"
 #include "gtest/gtest.h"
-#include "model/config.h"
-#include "model/context.h"
 #include "model/model.h"
 #include "model/primary.h"
 
 namespace mrna::mfe {
 
-class MfeAlgTest : public testing::TestWithParam<ModelCfg::TableAlg> {
+class MfeAlgTest : public testing::TestWithParam<CtxCfg::TableAlg> {
  public:
   Energy Mfe(const std::string& s) {
-    return Context(g_em, ModelCfg(GetParam())).Fold(Primary::FromString(s)).mfe.energy;
+    return Ctx(g_em, CtxCfg(GetParam())).Fold(Primary::FromString(s)).mfe.energy;
   }
 };
 
@@ -58,6 +58,6 @@ TEST_P(MfeAlgTest, T04) {
   EXPECT_EQ(-208, Mfe("UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 }
 
-INSTANTIATE_TEST_SUITE_P(FoldAlgTest, MfeAlgTest, testing::ValuesIn(ModelCfg::TABLE_ALGS));
+INSTANTIATE_TEST_SUITE_P(FoldAlgTest, MfeAlgTest, testing::ValuesIn(CtxCfg::TABLE_ALGS));
 
 }  // namespace mrna::mfe

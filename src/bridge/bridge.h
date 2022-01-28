@@ -10,13 +10,20 @@
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "model/context.h"
+#include "context/ctx.h"
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 
 namespace mrna::bridge {
+
+inline const Opt OPT_USE_RNASTRUCTURE = Opt().LongName("rnastructure").ShortName("r");
+inline const Opt OPT_RNASTRUCTURE_DATA =
+    Opt().LongName("rnastructure-data").ShortName("rd").Arg().Help("data path for RNAstructure");
+inline const Opt OPT_USE_MEMERNA = Opt().LongName("memerna").ShortName("m");
+
+void RegisterOpts(ArgParse* args);
 
 class RnaPackage {
  public:
@@ -31,8 +38,6 @@ class RnaPackage {
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };
-
-const std::map<std::string, Opt> BRIDGE_OPTS = {{"r", {"rnastructure"}}, {"m", {"memerna"}}};
 
 }  // namespace mrna::bridge
 

@@ -8,38 +8,44 @@
 
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
-#include "model/config.h"
-#include "model/context.h"
+#include "context/config.h"
+#include "context/ctx.h"
+#include "fuzz/config.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
 
-using mrna::Energy;
-using mrna::ModelCfg;
-using mrna::Opt;
+inline const auto OPT_DELTA =
+    mrna::Opt().LongName("delta").Default("-1").Help("maximum energy delta from minimum");
+inline const auto OPT_NUM =
+    mrna::Opt().LongName("num").Default("-1").Help("maximum number of reported structures");
+inline const auto OPT_SORTED =
+    mrna::Opt().LongName("sorted").Help("if the structures should be sorted");
+inline const auto OPT_CTD_OUTPUT =
+    mrna::Opt().LongName("ctd-output").Help("if we should output CTD data");
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::ENERGY_OPTS);
-  args.AddOptions(mrna::MODEL_OPTS);
-  args.AddOptions({{"delta", Opt("maximum energy delta from minimum").Arg("-1")},
-      {"num", Opt("maximum number of reported structures").Arg("-1")}, {"q", Opt("quiet")},
-      {"sorted", Opt("if the structures should be sorted")},
-      {"ctd-output", Opt("if we should output CTD data")}});
+  mrna::ArgParse args;
+  mrna::fuzz::RegisterOpts(&args);
+  args.RegisterOpt(mrna::OPT_QUIET);
+  args.RegisterOpt(OPT_DELTA);
+  args.RegisterOpt(OPT_NUM);
+  args.RegisterOpt(OPT_SORTED);
+  args.RegisterOpt(OPT_CTD_OUTPUT);
   args.ParseOrExit(argc, argv);
-  const auto& pos = args.GetPositional();
+
+  const auto& pos = args.positional();
   verify(pos.size() == 1, "need primary sequence to fold");
 
-  auto cfg = ModelCfg::FromArgParse(args);
-  cfg.table_alg = ModelCfg::TableAlg::TWO;
-  mrna::Context ctx(mrna::energy::EnergyModel::FromArgParse(args), cfg);
+  auto ctx = mrna::Ctx::FromArgParse(args);
 
-  const Energy subopt_delta = atoi(args.GetOption("delta").c_str());
-  const int subopt_num = atoi(args.GetOption("num").c_str());
-  const bool should_print = !args.HasFlag("q");
-  const bool sorted = args.HasFlag("sorted");
-  const bool ctd_data = args.HasFlag("ctd-output");
+  const mrna::Energy subopt_delta = atoi(args.Get(OPT_DELTA).c_str());
+  const int subopt_num = atoi(args.Get(OPT_NUM).c_str());
+  const bool should_print = !args.Has(mrna::OPT_QUIET);
+  const bool sorted = args.Has(OPT_SORTED);
+  const bool ctd_data = args.Has(OPT_CTD_OUTPUT);
   verify(subopt_delta >= 0 || subopt_num > 0, "nothing to do");
 
   mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};

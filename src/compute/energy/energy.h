@@ -12,11 +12,15 @@
 
 namespace mrna::energy {
 
-// TODO: this rnastructure specific option should go somewhere else?
-inline const std::map<std::string, Opt> ENERGY_OPTS = {
-    {"seed", Opt("seed for random energy model for memerna").Arg()},
-    {"rnastructure-data", Opt("data path for RNAstructure").Arg()},
-    {"memerna-data", Opt("data path for given energy model for memerna").Arg()}};
+inline const Opt OPT_SEED =
+    Opt().LongName("seed").Arg().Help("seed for random energy model for memerna");
+inline const Opt OPT_MEMERNA_DATA = Opt()
+                                        .LongName("memerna-data")
+                                        .ShortName("md")
+                                        .Arg()
+                                        .Help("data path for given energy model for memerna");
+
+void RegisterOpts(ArgParse* args);
 
 class Structure;
 

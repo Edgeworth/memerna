@@ -16,8 +16,8 @@
 #include "compute/subopt/brute.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
-#include "model/config.h"
-#include "model/context.h"
+#include "context/config.h"
+#include "context/ctx.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/float.h"
@@ -144,9 +144,9 @@ Error Fuzzer::CheckSuboptimalResultPair(
 Error Fuzzer::CheckSuboptimal() {
   Error errors;
   std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_num;
-  for (auto subopt_alg : ModelCfg::SUBOPTIMAL_ALGS) {
-    ModelCfg cfg(ModelCfg::TableAlg::TWO, subopt_alg);
-    Context ctx(em_, cfg);
+  for (auto subopt_alg : CtxCfg::SUBOPTIMAL_ALGS) {
+    CtxCfg cfg(CtxCfg::TableAlg::TWO, subopt_alg);
+    Ctx ctx(em_, cfg);
     memerna_subopts_delta.push_back(
         ctx.SuboptimalIntoVector(Primary(r_), true, cfg_.subopt_delta, -1));
     memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(Primary(r_), true, -1, cfg_.subopt_max));
@@ -232,8 +232,8 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   // Memerna.
   std::vector<Energy> memerna_ctd_efns;
   std::vector<Energy> memerna_optimal_efns;
-  for (auto table_alg : ModelCfg::TABLE_ALGS) {
-    Context ctx(em_, ModelCfg(table_alg));
+  for (auto table_alg : CtxCfg::TABLE_ALGS) {
+    Ctx ctx(em_, CtxCfg(table_alg));
     auto res = ctx.Fold(Primary(r_));
     memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
@@ -273,8 +273,8 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 
 Error Fuzzer::CheckBruteForce() {
   Error errors;
-  ModelCfg cfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, ModelCfg::PartitionAlg::ZERO);
-  Context ctx(em_, cfg);
+  CtxCfg cfg(CtxCfg::TableAlg::TWO, CtxCfg::SuboptimalAlg::ONE, CtxCfg::PartitionAlg::ZERO);
+  Ctx ctx(em_, cfg);
 
   if (cfg_.subopt) {
     auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.brute_subopt_max);
@@ -321,9 +321,8 @@ Error Fuzzer::CheckPartition() {
   Error errors;
   // TODO: Check DP and ext tables?
   std::vector<partition::PartitionResult> memerna_partitions;
-  for (auto partition_alg : ModelCfg::PARTITION_ALGS) {
-    Context ctx(
-        em_, ModelCfg(ModelCfg::TableAlg::TWO, ModelCfg::SuboptimalAlg::ONE, partition_alg));
+  for (auto partition_alg : CtxCfg::PARTITION_ALGS) {
+    Ctx ctx(em_, CtxCfg(CtxCfg::TableAlg::TWO, CtxCfg::SuboptimalAlg::ONE, partition_alg));
     memerna_partitions.emplace_back(ctx.Partition(Primary(r_)));
   }
 
