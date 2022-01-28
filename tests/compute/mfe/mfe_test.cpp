@@ -16,13 +16,11 @@ namespace mrna::mfe {
 class MfeAlgTest : public testing::TestWithParam<CtxCfg::TableAlg> {
  public:
   Energy Mfe(const std::string& s) {
-    return Ctx(g_em, CtxCfg(GetParam())).Fold(Primary::FromString(s)).mfe.energy;
+    return Ctx(t04, CtxCfg(GetParam())).Fold(Primary::FromString(s)).mfe.energy;
   }
 };
 
 TEST_P(MfeAlgTest, T04) {
-  ONLY_FOR_THIS_MODEL(g_em, T04_MODEL_HASH);
-
   EXPECT_EQ(-45, Mfe("GGGGAAACCCC"));
   EXPECT_EQ(-51, Mfe("UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   EXPECT_EQ(-133, Mfe("AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
