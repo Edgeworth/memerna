@@ -15,7 +15,10 @@
 namespace mrna {
 
 enum Ctd : int8_t {
+  // Used if CTDs are not relevant (e.g. unspecified), or if the corresponding base cannot be in a
+  // CTD.
   CTD_NA,
+  // Used if the corresponding base is explicitly not in a CTD, but could potentially be.
   CTD_UNUSED,
   CTD_3_DANGLE,
   CTD_5_DANGLE,

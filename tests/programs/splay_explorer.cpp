@@ -92,18 +92,18 @@ void DoInteractive(int r) {
   }
 }
 
+inline const mrna::Opt OPT_RANGE =
+    mrna::Opt().ShortName("r").Default("-1").Help("load range from 1 until r");
+
 int main(int argc, char** argv) {
-  mrna::ArgParse args({{"h", {"help"}}, {"afl", {"afl mode"}},
-      {"r", mrna::Opt("load range from 1 until r").Arg("-1")}});
+  mrna::ArgParse args;
+  args.RegisterOpt(mrna::OPT_AFL);
+  args.RegisterOpt(OPT_RANGE);
   args.ParseOrExit(argc, argv);
-  if (args.HasFlag("h")) {
-    printf("Commands:\n Insert: i <val>\n Delete: d <val>\n "
-           "Search: s <val>\n Range: a <min> <max>\n");
-    printf("%s\n", args.Usage().c_str());
-    return 0;
-  }
-  const bool afl = args.HasFlag("afl");
-  const int r = atoi(args.GetOption("r").c_str());
+
+  printf("Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n");
+  const bool afl = args.Has(mrna::OPT_AFL);
+  const int r = atoi(args.Get(OPT_RANGE).c_str());
   verify(!(afl && (r != -1)), "incompatible options");
 
   if (afl)

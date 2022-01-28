@@ -5,6 +5,7 @@
 #include <tuple>
 #include <utility>
 
+#include "common_test.h"
 #include "compute/energy/branch.h"
 #include "compute/energy/model.h"
 #include "gtest/gtest.h"
@@ -13,7 +14,6 @@
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "common_test.h"
 
 namespace mrna::energy {
 

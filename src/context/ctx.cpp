@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "model/context.h"
+#include "context/ctx.h"
 
 #include <algorithm>
 #include <cassert>
@@ -25,18 +25,18 @@
 
 namespace mrna {
 
-DpArray Context::ComputeTables(const Primary& r) {
+DpArray Ctx::ComputeTables(const Primary& r) const {
   switch (cfg_.table_alg) {
-  case ModelCfg::TableAlg::ZERO: return mfe::ComputeTables0(r, em_);
-  case ModelCfg::TableAlg::ONE: return mfe::ComputeTables1(r, em_);
-  case ModelCfg::TableAlg::TWO: return mfe::ComputeTables2(r, em_);
-  case ModelCfg::TableAlg::THREE: return mfe::ComputeTables3(r, em_);
+  case CtxCfg::TableAlg::ZERO: return mfe::ComputeTables0(r, em_);
+  case CtxCfg::TableAlg::ONE: return mfe::ComputeTables1(r, em_);
+  case CtxCfg::TableAlg::TWO: return mfe::ComputeTables2(r, em_);
+  case CtxCfg::TableAlg::THREE: return mfe::ComputeTables3(r, em_);
   default: bug();
   }
 }
 
-FoldResult Context::Fold(Primary r) {
-  if (cfg_.table_alg == ModelCfg::TableAlg::BRUTE) {
+FoldResult Ctx::Fold(Primary r) const {
+  if (cfg_.table_alg == CtxCfg::TableAlg::BRUTE) {
     auto subopt = mfe::MfeBruteForce(std::move(r), em_);
     return {
         .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
@@ -52,8 +52,8 @@ FoldResult Context::Fold(Primary r) {
   };
 }
 
-std::vector<subopt::SuboptResult> Context::SuboptimalIntoVector(
-    Primary r, bool sorted, Energy subopt_delta, int subopt_num) {
+std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
+    Primary r, bool sorted, Energy subopt_delta, int subopt_num) const {
   std::vector<subopt::SuboptResult> subopts;
   [[maybe_unused]] int num_structures = Suboptimal(
       std::move(r), [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
@@ -62,9 +62,9 @@ std::vector<subopt::SuboptResult> Context::SuboptimalIntoVector(
   return subopts;
 }
 
-int Context::Suboptimal(
-    Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) {
-  if (cfg_.suboptimal_alg == ModelCfg::SuboptimalAlg::BRUTE) {
+int Ctx::Suboptimal(
+    Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) const {
+  if (cfg_.suboptimal_alg == CtxCfg::SuboptimalAlg::BRUTE) {
     auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, subopt_num);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
@@ -73,11 +73,11 @@ int Context::Suboptimal(
   auto dp = ComputeTables(r);
   auto ext = mfe::ComputeExterior(r, em_, dp);
   switch (cfg_.suboptimal_alg) {
-  case ModelCfg::SuboptimalAlg::ZERO:
+  case CtxCfg::SuboptimalAlg::ZERO:
     return subopt::Suboptimal0(
         std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn);
-  case ModelCfg::SuboptimalAlg::ONE:
+  case CtxCfg::SuboptimalAlg::ONE:
     return subopt::Suboptimal1(
         std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
         .Run(fn, sorted);
@@ -86,14 +86,14 @@ int Context::Suboptimal(
   }
 }
 
-partition::PartitionResult Context::Partition(Primary r) {
+partition::PartitionResult Ctx::Partition(Primary r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.partition_alg) {
-  case ModelCfg::PartitionAlg::ZERO: res = partition::Partition0(r, em_); break;
-  case ModelCfg::PartitionAlg::ONE:
+  case CtxCfg::PartitionAlg::ZERO: res = partition::Partition0(r, em_); break;
+  case CtxCfg::PartitionAlg::ONE:
     res = partition::Partition1(r, energy::BoltzEnergyModel(em_));
     break;
-  case ModelCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
+  case CtxCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
@@ -105,6 +105,10 @@ partition::PartitionResult Context::Partition(Primary r) {
   auto prob = partition::ComputeBoltzProbs(part);
   return partition::PartitionResult{
       .dp = std::move(dp), .ext = std::move(ext), .p = std::move(part), .prob = std::move(prob)};
+}
+
+Ctx Ctx::FromArgParse(const ArgParse& args) {
+  return Ctx(energy::EnergyModel::FromArgParse(args), CtxCfg::FromArgParse(args));
 }
 
 }  // namespace mrna

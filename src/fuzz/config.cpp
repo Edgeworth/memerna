@@ -3,10 +3,26 @@
 
 #include <cstdlib>
 
+#include "compute/energy/energy.h"
 #include "util/error.h"
 #include "util/string.h"
 
 namespace mrna::fuzz {
+
+void RegisterOpts(ArgParse* args) {
+  energy::RegisterOpts(args);
+  args->RegisterOpt(OPT_RANDOM);
+  args->RegisterOpt(OPT_TABLE_CHECK);
+  args->RegisterOpt(OPT_BRUTE_CUTOFF);
+  args->RegisterOpt(OPT_BRUTE_SUBOPT_MAX);
+  args->RegisterOpt(OPT_MFE_RNASTRUCTURE);
+  args->RegisterOpt(OPT_SUBOPT);
+  args->RegisterOpt(OPT_SUBOPT_RNASTRUCTURE);
+  args->RegisterOpt(OPT_SUBOPT_MAX);
+  args->RegisterOpt(OPT_SUBOPT_DELTA);
+  args->RegisterOpt(OPT_PARTITION);
+  args->RegisterOpt(OPT_PARTITION_RNASTRUCTURE);
+}
 
 std::string FuzzCfg::Describe() {
   std::string desc;
@@ -29,21 +45,21 @@ std::string FuzzCfg::Describe() {
 
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
-  cfg.random_model = args.HasFlag("random");
-  cfg.table_check = args.HasFlag("table-check");
-  if (args.HasFlag("brute-cutoff")) cfg.brute_cutoff = atoi(args.GetOption("brute-cutoff").c_str());
-  if (args.HasFlag("brute-subopt-max"))
-    cfg.brute_subopt_max = atoi(args.GetOption("brute-subopt-max").c_str());
+  cfg.random_model = args.Has(OPT_RANDOM);
+  cfg.table_check = args.Has(OPT_TABLE_CHECK);
+  if (args.Has(OPT_BRUTE_CUTOFF)) cfg.brute_cutoff = atoi(args.Get(OPT_BRUTE_CUTOFF).c_str());
+  if (args.Has(OPT_BRUTE_SUBOPT_MAX))
+    cfg.brute_subopt_max = atoi(args.Get(OPT_BRUTE_SUBOPT_MAX).c_str());
 
-  cfg.mfe_rnastructure = args.HasFlag("mfe-rnastructure");
+  cfg.mfe_rnastructure = args.Has(OPT_MFE_RNASTRUCTURE);
 
-  cfg.subopt = args.HasFlag("subopt");
-  cfg.subopt_rnastructure = args.HasFlag("subopt-rnastructure");
-  if (args.HasFlag("subopt-max")) cfg.subopt_max = atoi(args.GetOption("subopt-max").c_str());
-  if (args.HasFlag("subopt-delta")) cfg.subopt_delta = atoi(args.GetOption("subopt-delta").c_str());
+  cfg.subopt = args.Has(OPT_SUBOPT);
+  cfg.subopt_rnastructure = args.Has(OPT_SUBOPT_RNASTRUCTURE);
+  if (args.Has(OPT_SUBOPT_MAX)) cfg.subopt_max = atoi(args.Get(OPT_SUBOPT_MAX).c_str());
+  if (args.Has(OPT_SUBOPT_DELTA)) cfg.subopt_delta = atoi(args.Get(OPT_SUBOPT_DELTA).c_str());
 
-  cfg.partition = args.HasFlag("partition");
-  cfg.partition_rnastructure = args.HasFlag("partition-rnastructure");
+  cfg.partition = args.Has(OPT_PARTITION);
+  cfg.partition_rnastructure = args.Has(OPT_PARTITION_RNASTRUCTURE);
 
   verify(!cfg.subopt_rnastructure || cfg.subopt,
       "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");

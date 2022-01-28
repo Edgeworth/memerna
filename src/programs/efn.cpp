@@ -13,10 +13,11 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
-  mrna::ArgParse args(mrna::energy::ENERGY_OPTS);
-  args.AddOptions({{"v", {"verbose"}}});
+  mrna::ArgParse args;
+  mrna::energy::RegisterOpts(&args);
+  args.RegisterOpt(mrna::OPT_VERBOSE);
   args.ParseOrExit(argc, argv);
-  const auto& pos = args.GetPositional();
+  const auto& pos = args.positional();
   verify(pos.size() == 2, "requires primary sequence and dot bracket");
 
   const auto em = mrna::energy::EnergyModel::FromArgParse(args);
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
   }
   printf("Energy: %d\n", res.energy);
 
-  if (args.HasFlag("v")) {
+  if (args.Has(mrna::OPT_VERBOSE)) {
     printf("%s\n", res.ctd.ToString(s).c_str());
     const auto descs = res.struc->Description();
     for (const auto& desc : descs) printf("%s\n", desc.c_str());

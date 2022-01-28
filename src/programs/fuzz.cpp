@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "bridge/bridge.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "fuzz/config.h"
@@ -23,34 +24,32 @@
 #include "bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
-using mrna::Opt;
-
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
-
 __AFL_FUZZ_INIT();
 #endif
 
+inline const auto OPT_PRINT_INTERVAL =
+    mrna::Opt().LongName("print-interval").Default("-1").Help("status update every n seconds");
+
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
-  mrna::ArgParse args({
-      {"print-interval", Opt("status update every n seconds").Arg("-1")},
-      {"afl", Opt("reads one rna from stdin and fuzzes - useful for use with afl")},
-  });
-  args.AddOptions(mrna::fuzz::FUZZ_OPTS);
-  args.AddOptions(mrna::energy::ENERGY_OPTS);
+  mrna::ArgParse args;
+  mrna::fuzz::RegisterOpts(&args);
+  args.RegisterOpt(OPT_PRINT_INTERVAL);
+  args.RegisterOpt(mrna::OPT_AFL);
   args.ParseOrExit(argc, argv);
 
   // TODO: Actually set this.
 #ifdef USE_RNASTRUCTURE
-  mrna::bridge::RNAstructure rnastructure(args.GetOption("rnastructure-data"), false);
+  mrna::bridge::RNAstructure rnastructure(args.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
 #endif  // USE_RNASTRUCTURE
 
   const auto em = mrna::energy::EnergyModel::FromArgParse(args);
 
   auto cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
-  const bool afl_mode = args.HasFlag("afl");
-  verify(!cfg.mfe_rnastructure || !args.HasFlag("seed"),
+  const bool afl_mode = args.Has(mrna::OPT_AFL);
+  verify(!cfg.mfe_rnastructure || !args.Has(mrna::energy::OPT_SEED),
       "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
@@ -70,11 +69,11 @@ int main(int argc, char* argv[]) {
     }
 #endif
   } else {
-    auto pos = args.GetPositional();
+    auto pos = args.positional();
     verify(pos.size() == 2, "require min and max length");
     const int min_len = atoi(pos[0].c_str());
     const int max_len = atoi(pos[1].c_str());
-    const auto interval = atoi(args.GetOption("print-interval").c_str());
+    const auto interval = atoi(args.Get(OPT_PRINT_INTERVAL).c_str());
 
     verify(min_len > 0, "invalid min length");
     verify(max_len >= min_len, "invalid max len");
