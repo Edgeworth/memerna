@@ -14,50 +14,50 @@ constexpr auto Decay(T& a) {
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 
-void FillPenergyArray(BoltzEnergy* output, const Energy* input, int elements) {
+void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
   for (int i = 0; i < elements; ++i) output[i] = Boltz(input[i]);
 }
 
 }  // namespace
 
-BoltzEnergyModel::BoltzEnergyModel(EnergyModel em) {
-#define FILL_PENERGY(name)                                                                        \
+BoltzEnergyModel::BoltzEnergyModel(EnergyModel em) : em_(em) {
+#define FILL_BOLTZ(name)                                                                          \
   /* NOLINTNEXTLINE */                                                                            \
   static_assert(sizeof(name) / sizeof(*Decay(name)) == sizeof(em.name) / sizeof(*Decay(em.name)), \
       "BoltzEnergyModel does not match EnergyModel");                                             \
   /* NOLINTNEXTLINE */                                                                            \
-  FillPenergyArray(Decay(name), Decay(em.name), sizeof(name) / sizeof(*Decay(name)));
+  FillBoltzArray(Decay(name), Decay(em.name), sizeof(name) / sizeof(*Decay(name)));
 
-  FILL_PENERGY(stack);
-  FILL_PENERGY(terminal);
-  FILL_PENERGY(internal_init);
-  FILL_PENERGY(internal_1x1);
-  FILL_PENERGY(internal_1x2);
-  FILL_PENERGY(internal_2x2);
-  FILL_PENERGY(internal_2x3_mismatch);
-  FILL_PENERGY(internal_other_mismatch);
-  FILL_PENERGY(internal_asym);
-  FILL_PENERGY(internal_augu_penalty);
-  FILL_PENERGY(bulge_init);
-  FILL_PENERGY(bulge_special_c);
-  FILL_PENERGY(hairpin_init);
-  FILL_PENERGY(hairpin_uu_ga_first_mismatch);
-  FILL_PENERGY(hairpin_gg_first_mismatch);
-  FILL_PENERGY(hairpin_special_gu_closure);
-  FILL_PENERGY(hairpin_c3_loop);
-  FILL_PENERGY(hairpin_all_c_a);
-  FILL_PENERGY(hairpin_all_c_b);
-  FILL_PENERGY(multiloop_hack_a);
-  FILL_PENERGY(multiloop_hack_b);
-  FILL_PENERGY(dangle5);
-  FILL_PENERGY(dangle3);
-  FILL_PENERGY(coax_mismatch_non_contiguous);
-  FILL_PENERGY(coax_mismatch_wc_bonus);
-  FILL_PENERGY(coax_mismatch_gu_bonus);
-  FILL_PENERGY(augu_penalty);
+  FILL_BOLTZ(stack);
+  FILL_BOLTZ(terminal);
+  FILL_BOLTZ(internal_init);
+  FILL_BOLTZ(internal_1x1);
+  FILL_BOLTZ(internal_1x2);
+  FILL_BOLTZ(internal_2x2);
+  FILL_BOLTZ(internal_2x3_mismatch);
+  FILL_BOLTZ(internal_other_mismatch);
+  FILL_BOLTZ(internal_asym);
+  FILL_BOLTZ(internal_augu_penalty);
+  FILL_BOLTZ(bulge_init);
+  FILL_BOLTZ(bulge_special_c);
+  FILL_BOLTZ(hairpin_init);
+  FILL_BOLTZ(hairpin_uu_ga_first_mismatch);
+  FILL_BOLTZ(hairpin_gg_first_mismatch);
+  FILL_BOLTZ(hairpin_special_gu_closure);
+  FILL_BOLTZ(hairpin_c3_loop);
+  FILL_BOLTZ(hairpin_all_c_a);
+  FILL_BOLTZ(hairpin_all_c_b);
+  FILL_BOLTZ(multiloop_hack_a);
+  FILL_BOLTZ(multiloop_hack_b);
+  FILL_BOLTZ(dangle5);
+  FILL_BOLTZ(dangle3);
+  FILL_BOLTZ(coax_mismatch_non_contiguous);
+  FILL_BOLTZ(coax_mismatch_wc_bonus);
+  FILL_BOLTZ(coax_mismatch_gu_bonus);
+  FILL_BOLTZ(augu_penalty);
 
   for (const auto& kv : em.hairpin) hairpin[kv.first] = Boltz(kv.second);
-#undef FILL_PENERGY
+#undef FILL_BOLTZ
 }
 
 }  // namespace mrna::energy

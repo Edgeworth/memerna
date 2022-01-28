@@ -40,5 +40,10 @@ int main(int argc, char* argv[]) {
   auto r = mrna::Primary::FromString(pos.front());
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  PrintBoltzProbs(ctx.Partition(std::move(r)).prob);
+  auto res = ctx.Partition(std::move(r));
+  std::cout << "q: " << res.p.q << '\n';
+  std::cout << "p:\n";
+  PrintPartition(res.p);
+  std::cout << "\nprobabilities:\n";
+  PrintBoltzProbs(res.prob);
 }
