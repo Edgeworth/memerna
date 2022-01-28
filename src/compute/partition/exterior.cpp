@@ -114,7 +114,6 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
         ext[en][PTEXT_L] += base10 * Boltz(em.stack[stb][st1b][enb][stb ^ 1]) * ext[st][PTEXT_L_GU];
     }
   }
-  assert(fabs(ext[N - 1][PTEXT_L] - ext[0][PTEXT_R]) < EP);
 
   return ext;
 }
