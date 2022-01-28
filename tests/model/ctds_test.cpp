@@ -93,11 +93,11 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
           {24, 3, 9, 19}};
     }};
 
-class CtdsTest : public testing::TestWithParam<
-                     std::tuple<EnergyModel, std::function<CtdTest(const EnergyModel&)>>> {};
+class CtdsTest
+    : public testing::TestWithParam<std::tuple<int, std::function<CtdTest(const EnergyModel&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
-  const auto& em = std::get<0>(GetParam());
+  const auto& em = g_em[std::get<0>(GetParam())];
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
   BranchCtd computed_branch_ctd;
@@ -121,8 +121,6 @@ TEST_P(CtdsTest, BaseBranchBase) {
 }
 
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
-    testing::Combine(testing::Values(EnergyModel::Random(0), EnergyModel::Random(1),
-                         EnergyModel::Random(2), EnergyModel::Random(3), g_em),
-        testing::ValuesIn(CTD_TESTS)));
+    testing::Combine(testing::Range(0, NUM_TEST_MODELS), testing::ValuesIn(CTD_TESTS)));
 
 }  // namespace mrna::energy
