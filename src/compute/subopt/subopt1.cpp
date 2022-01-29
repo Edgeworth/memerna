@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "compute/constants.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/base.h"
@@ -17,33 +16,31 @@
 
 namespace mrna::subopt {
 
-Suboptimal1::Suboptimal1(
-    Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num)
+Suboptimal1::Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
-      ext_(std::move(ext)), delta_(delta == -1 ? CAP_E : delta),
-      max_structures_(num == -1 ? MAX_STRUCTURES : num) {}
+      ext_(std::move(ext)), cfg_(cfg) {}
 
-int Suboptimal1::Run(SuboptCallback fn, bool sorted) {
+int Suboptimal1::Run(SuboptCallback fn) {
   res_ = SuboptResult(tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())), 0);
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
   // If require sorted output, or limited number of structures (requires sorting).
-  if (sorted || max_structures_ != MAX_STRUCTURES) {
-    int num_structures = 0;
-    Energy cur_delta = 0;
-    while (num_structures < max_structures_ && cur_delta != MAX_E && cur_delta <= delta_) {
-      auto res = RunInternal(fn, cur_delta, true, max_structures_ - num_structures);
-      num_structures += res.first;
-      cur_delta = res.second;
+  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES) {
+    int count = 0;
+    Energy delta = 0;
+    while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
+      auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
+      count += res.first;
+      delta = res.second;
     }
-    return num_structures;
+    return count;
   }
-  return RunInternal(fn, delta_, false, MAX_STRUCTURES).first;
+  return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
 std::pair<int, int> Suboptimal1::RunInternal(
-    SuboptCallback fn, Energy cur_delta, bool exact_energy, int structure_limit) {
+    SuboptCallback fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -51,8 +48,8 @@ std::pair<int, int> Suboptimal1::RunInternal(
   // the CTDs or energy of the current state - that is rolled into the modification when that
   // unexpanded is originally generated.
 
-  int num_structures = 0;
-  // Store the smallest energy above cur_delta we see. If we reach our |structure_limit| before
+  int count = 0;
+  // Store the smallest energy above delta we see. If we reach our |structure_limit| before
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
@@ -78,12 +75,14 @@ std::pair<int, int> Suboptimal1::RunInternal(
     }
 
     // Update the next best seen variable
-    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].energy + energy > cur_delta)
+    if (s.idx != static_cast<int>(exps.size()) &&
+        (delta == -1 || exps[s.idx].energy + energy > delta))
       next_seen = std::min(next_seen, exps[s.idx].energy + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > cur_delta) {
+    if (s.idx == static_cast<int>(exps.size()) ||
+        (delta == -1 || exps[s.idx].energy + energy > delta)) {
       // Finished looking at this node, so undo this node's modifications to the global state.
       if (s.expand.en != -1 && s.expand.a == DP_P)
         res_.tb.s[s.expand.st] = res_.tb.s[s.expand.en] = -1;
@@ -102,13 +101,13 @@ std::pair<int, int> Suboptimal1::RunInternal(
       // Use an unexpanded now, if one exists.
       if (unexpanded_.empty()) {
         // At a terminal state.
-        if (!exact_energy || energy == cur_delta) {
+        if (!exact_energy || energy == delta) {
           res_.energy = energy + ext_[0][EXT];
           fn(res_);
-          ++num_structures;
+          ++count;
 
           // Hit structure limit.
-          if (num_structures == structure_limit) return {num_structures, -1};
+          if (count == max) return {count, -1};
         }
         continue;  // Done
       } else {
@@ -131,7 +130,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
   }
   assert(unexpanded_.empty() && energy == 0 && res_.tb.s == Secondary(res_.tb.s.size()) &&
       res_.tb.ctd == Ctds(res_.tb.ctd.size()));
-  return {num_structures, next_seen};
+  return {count, next_seen};
 }
 
 std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Energy delta) const {

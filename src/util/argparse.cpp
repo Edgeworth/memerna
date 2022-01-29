@@ -62,7 +62,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     bool is_short = arg - argv[i] == 1;
 
     if (!is_opt) {
-      positional_.push_back(arg);
+      pos_.push_back(arg);
     } else {
       auto& map = is_short ? shortname_ : longname_;
       auto iter = map.find(arg);
@@ -89,8 +89,8 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str());
-    exit(1);
+    std::fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str());
+    std::exit(1);
   }
 }
 
@@ -101,11 +101,5 @@ const Opt& ArgParse::Lookup(const std::string& name) const {
 }
 
 bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }
-
-std::string ArgParse::Get(const Opt& opt) const {
-  if (auto iter = values_.find(opt); iter != values_.end()) return iter->second;  // NOLINT
-  error("missing option %s", opt.Desc().c_str());
-  return "";
-}
 
 }  // namespace mrna

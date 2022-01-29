@@ -2,7 +2,6 @@
 #ifndef CONTEXT_CONFIG_H_
 #define CONTEXT_CONFIG_H_
 
-#include <map>
 #include <string>
 
 #include "util/argparse.h"

@@ -2,17 +2,14 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
-#include <cstdlib>
 #include <ctime>
 #include <deque>
-#include <memory>
 #include <random>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "bridge/bridge.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/config.h"
 #include "compute/energy/model.h"
 #include "fuzz/config.h"
 #include "fuzz/fuzzer.h"
@@ -26,18 +23,27 @@
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
+
 __AFL_FUZZ_INIT();
 #endif
 
 inline const auto OPT_PRINT_INTERVAL =
     mrna::Opt().LongName("print-interval").Default("-1").Help("status update every n seconds");
 
+// Energy model options:
+// TODO: Get this to work for RNAstructure.
+inline const auto OPT_RANDOM = mrna::Opt().LongName("random").Help("use random energy models");
+
 int main(int argc, char* argv[]) {
   std::mt19937 eng(uint_fast32_t(time(nullptr)));
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
-  args.RegisterOpt(OPT_PRINT_INTERVAL);
   args.RegisterOpt(mrna::OPT_AFL);
+  args.RegisterOpt(OPT_PRINT_INTERVAL);
+  args.RegisterOpt(OPT_RANDOM);
+  args.RegisterOpt(mrna::energy::OPT_MEMERNA_DATA);
+  args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
+
   args.ParseOrExit(argc, argv);
 
   // TODO: Actually set this.
@@ -49,8 +55,6 @@ int main(int argc, char* argv[]) {
 
   auto cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
   const bool afl_mode = args.Has(mrna::OPT_AFL);
-  verify(!cfg.mfe_rnastructure || !args.Has(mrna::energy::OPT_SEED),
-      "seed option incompatible with rnastructure testing");
 
   if (afl_mode) {
 #ifdef __AFL_FUZZ_TESTCASE_LEN
@@ -69,17 +73,16 @@ int main(int argc, char* argv[]) {
     }
 #endif
   } else {
-    auto pos = args.positional();
-    verify(pos.size() == 2, "require min and max length");
-    const int min_len = atoi(pos[0].c_str());
-    const int max_len = atoi(pos[1].c_str());
-    const auto interval = atoi(args.Get(OPT_PRINT_INTERVAL).c_str());
+    verify(args.PosSize() == 2, "require min and max length");
+    const int min_len = args.Pos<int>(0);
+    const int max_len = args.Pos<int>(1);
+    const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
 
     verify(min_len > 0, "invalid min length");
     verify(max_len >= min_len, "invalid max len");
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
 
-    printf("Fuzzing [%d, %d] len RNAs - %s\n", min_len, max_len, cfg.Describe().c_str());
+    printf("Fuzzing [%d, %d] len RNAs - %s\n", min_len, max_len, cfg.Desc().c_str());
 
     // Normal mode.
     auto start_time = std::chrono::steady_clock::now();
@@ -94,7 +97,7 @@ int main(int argc, char* argv[]) {
       int len = len_dist(eng);
       auto r = mrna::Primary::Random(len);
 
-      cfg.seed = eng();
+      // TODO: respect OPT_RANDOM
       mrna::fuzz::Fuzzer fuzzer(std::move(r), cfg, em);
       const auto res = fuzzer.Run();
       if (!res.empty()) {

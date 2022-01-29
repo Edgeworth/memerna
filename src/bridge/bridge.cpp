@@ -2,8 +2,6 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "compute/energy/energy.h"
-#include "compute/energy/model.h"
 #include "context/config.h"
 #include "util/error.h"
 

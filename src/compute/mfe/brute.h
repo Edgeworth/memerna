@@ -4,6 +4,7 @@
 
 #include "compute/energy/model.h"
 #include "compute/subopt/subopt.h"
+#include "model/primary.h"
 
 namespace mrna::mfe {
 

@@ -79,6 +79,7 @@ def get_sanitizers(sanitizer):
 @click.option("--float-bits", type=int, default=64)
 # Misc options:
 @click.option("--test/--no-test", default=False)
+@click.option("--build/--no-build", default=True)
 def build(
     prefix,
     mrna,
@@ -92,6 +93,7 @@ def build(
     mpfr,
     float_bits,
     test,
+    build,
 ):
     env = [
         # Add stack protector etc to catch non-crashing memory bugs.
@@ -139,7 +141,9 @@ def build(
         click.echo("Regenerating cmake files.")
         def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())
         run_command(f"cmake {def_str} {mrna}")
-    run_command(f"{' '.join(env)} make -j$(($(nproc)-1)) {' '.join(targets)}")
+
+    if build:
+        run_command(f"{' '.join(env)} make -j$(($(nproc)-1)) {' '.join(targets)}")
 
     if test:
         run_command(f"./run_tests --memerna-data {mrna}/data")

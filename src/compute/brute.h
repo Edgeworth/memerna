@@ -2,6 +2,7 @@
 #ifndef COMPUTE_BRUTE_H_
 #define COMPUTE_BRUTE_H_
 
+#include <compare>
 #include <cstdint>
 #include <set>
 #include <utility>
@@ -36,7 +37,7 @@ class BruteForce {
     std::vector<int> branch_count;
 
     // MFE and suboptimal folding:
-    int max_structures;
+    int strucs;
     std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
 
     // TODO: Switch to optional?
@@ -45,7 +46,7 @@ class BruteForce {
     BoltzProbs probabilities;
   };
 
-  Result Run(Primary r, const energy::EnergyModel& em, int max_structures, bool compute_partition,
+  Result Run(Primary r, const energy::EnergyModel& em, int strucs, bool compute_partition,
       bool allow_lonely_pairs);
 
  private:

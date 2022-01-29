@@ -5,6 +5,7 @@
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "model/model.h"
+#include "model/primary.h"
 
 namespace mrna::mfe {
 

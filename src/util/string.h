@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <optional>
+#include <sstream>
 #include <string>
 
 namespace mrna {
@@ -19,6 +20,14 @@ std::optional<std::string> sgetline(FILE* fp);
 std::string sfmt(const char* fmt, ...);
 
 std::string vsfmt(const char* fmt, va_list l);
+
+template <typename T>
+T convert(std::string s) {
+  T t;
+  std::stringstream ss(s);
+  ss >> t;
+  return t;
+}
 
 uint32_t Crc32(const std::string& data);
 

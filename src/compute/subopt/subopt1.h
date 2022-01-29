@@ -10,6 +10,7 @@
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/energy/precomp.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "model/model.h"
 #include "model/primary.h"
@@ -41,9 +42,9 @@ struct Expand {
 
 class Suboptimal1 {
  public:
-  Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
+  Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
-  int Run(SuboptCallback fn, bool sorted);
+  int Run(SuboptCallback fn);
 
  private:
   struct DfsState {
@@ -59,9 +60,8 @@ class Suboptimal1 {
   SuboptResult res_;
   DpArray dp_;
   ExtArray ext_;
+  SuboptCfg cfg_;
 
-  const Energy delta_;
-  const int max_structures_;
   SplayMap<Index, std::vector<Expand>> cache_;
   std::vector<DfsState> q_;
   std::vector<Index> unexpanded_;
@@ -72,7 +72,7 @@ class Suboptimal1 {
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {
       // Need to generate the full way to delta so we can properly set |next_seen|.
-      auto exps = GenerateExpansions(to_expand, delta_);
+      auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
       [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
       assert(res);

@@ -80,18 +80,18 @@ FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const {
-  auto computeds = SuboptimalIntoVector(std::move(r), energy_delta);
+int RNAstructure::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
+  auto computeds = SuboptimalIntoVector(std::move(r), delta);
   for (const auto& computed : computeds) fn(computed);
   return static_cast<int>(computeds.size());
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
-    Primary r, Energy energy_delta) const {
+    Primary r, Energy delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  verify(int16_t(energy_delta) == energy_delta, "energy_delta too big");
-  alltrace(structure.get(), data_.get(), 100, int16_t(energy_delta), nullptr, nullptr, false);
+  verify(int16_t(delta) == delta, "delta too big");
+  alltrace(structure.get(), data_.get(), 100, int16_t(delta), nullptr, nullptr, false);
   auto s_list = StructureToSecondarys(*structure);
   std::vector<subopt::SuboptResult> res;
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {

@@ -1,13 +1,15 @@
 // Copyright 2021 E.
 #include "context/config.h"
 
-#include "compute/energy/energy.h"
+#include "compute/energy/config.h"
+#include "compute/subopt/config.h"
 #include "util/error.h"
 
 namespace mrna {
 
 void RegisterOpts(ArgParse* args) {
   energy::RegisterOpts(args);
+  subopt::RegisterOpts(args);
   args->RegisterOpt(OPT_DP_ALG);
   args->RegisterOpt(OPT_SUBOPT_ALG);
   args->RegisterOpt(OPT_PART_ALG);

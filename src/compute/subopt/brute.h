@@ -11,7 +11,7 @@
 namespace mrna::subopt {
 
 std::vector<subopt::SuboptResult> SuboptimalBruteForce(
-    Primary r, const energy::EnergyModel& em, int max_structures);
+    Primary r, const energy::EnergyModel& em, int strucs);
 
 }  // namespace mrna::subopt
 

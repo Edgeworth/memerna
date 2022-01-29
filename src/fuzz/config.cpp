@@ -1,74 +1,67 @@
 // Copyright 2021 E.
 #include "fuzz/config.h"
 
-#include <cstdlib>
-
-#include "compute/energy/energy.h"
-#include "util/error.h"
 #include "util/string.h"
 
 namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
-  energy::RegisterOpts(args);
-  args->RegisterOpt(OPT_RANDOM);
-  args->RegisterOpt(OPT_TABLE_CHECK);
-  args->RegisterOpt(OPT_BRUTE_CUTOFF);
-  args->RegisterOpt(OPT_BRUTE_SUBOPT_MAX);
-  args->RegisterOpt(OPT_MFE_RNASTRUCTURE);
-  args->RegisterOpt(OPT_SUBOPT);
-  args->RegisterOpt(OPT_SUBOPT_RNASTRUCTURE);
-  args->RegisterOpt(OPT_SUBOPT_MAX);
-  args->RegisterOpt(OPT_SUBOPT_DELTA);
-  args->RegisterOpt(OPT_PARTITION);
-  args->RegisterOpt(OPT_PARTITION_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
+  args->RegisterOpt(OPT_FUZZ_MFE);
+  args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_MFE_BRUTE);
+  args->RegisterOpt(OPT_FUZZ_MFE_TABLE);
+  args->RegisterOpt(OPT_FUZZ_SUBOPT);
+  args->RegisterOpt(OPT_FUZZ_SUBOPT_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_SUBOPT_BRUTE);
+  args->RegisterOpt(OPT_FUZZ_SUBOPT_MAX);
+  args->RegisterOpt(OPT_FUZZ_SUBOPT_DELTA);
+  args->RegisterOpt(OPT_FUZZ_PARTITION);
+  args->RegisterOpt(OPT_FUZZ_PARTITION_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_PARTITION_BRUTE);
 }
 
-std::string FuzzCfg::Describe() {
+std::string FuzzCfg::Desc() {
   std::string desc;
-  if (random_model)
-    desc += "random energy models";
-  else
-    desc += "specified energy model";
-  if (subopt) {
-    desc += " - testing suboptimal";
-    if (subopt_rnastructure) desc += " (including rnastructure)";
-    desc += sfmt(" max: %d delta: %d", subopt_max, subopt_delta);
-  }
-  desc += sfmt(" - brute cutoff: %d subopt-max: %d", brute_cutoff, brute_subopt_max);
-  if (partition) {
-    desc += " - testing partition";
-    if (partition_rnastructure) desc += " (including rnastructure)";
-  }
+  desc += sfmt("brute_max: %d\n", brute_max);
+  desc += sfmt("mfe: %d\n", mfe);
+  desc += sfmt("mfe_rnastructure: %d\n", mfe_rnastructure);
+  desc += sfmt("mfe_brute: %d\n", mfe_brute);
+  desc += sfmt("mfe_table: %d\n", mfe_table);
+  desc += sfmt("subopt: %d\n", subopt);
+  desc += sfmt("subopt_rnastructure: %d\n", subopt_rnastructure);
+  desc += sfmt("subopt_brute: %d\n", subopt_brute);
+  desc += sfmt("subopt_max: %d\n", subopt_max);
+  desc += sfmt("subopt_delta: %d\n", subopt_delta);
+  desc += sfmt("part: %d\n", part);
+  desc += sfmt("part_rnastructure: %d\n", part_rnastructure);
+  desc += sfmt("part_brute: %d\n", part_brute);
   return desc;
 }
 
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
-  cfg.random_model = args.Has(OPT_RANDOM);
-  cfg.table_check = args.Has(OPT_TABLE_CHECK);
-  if (args.Has(OPT_BRUTE_CUTOFF)) cfg.brute_cutoff = atoi(args.Get(OPT_BRUTE_CUTOFF).c_str());
-  if (args.Has(OPT_BRUTE_SUBOPT_MAX))
-    cfg.brute_subopt_max = atoi(args.Get(OPT_BRUTE_SUBOPT_MAX).c_str());
+  cfg.brute_max = args.Get<int>(OPT_FUZZ_BRUTE_MAX);
 
-  cfg.mfe_rnastructure = args.Has(OPT_MFE_RNASTRUCTURE);
+  cfg.mfe = args.Has(OPT_FUZZ_MFE);
+  cfg.mfe_rnastructure = args.Has(OPT_FUZZ_MFE_RNASTRUCTURE);
+  cfg.mfe_brute = args.Has(OPT_FUZZ_MFE_BRUTE);
+  cfg.mfe_table = args.Has(OPT_FUZZ_MFE_TABLE);
 
-  cfg.subopt = args.Has(OPT_SUBOPT);
-  cfg.subopt_rnastructure = args.Has(OPT_SUBOPT_RNASTRUCTURE);
-  if (args.Has(OPT_SUBOPT_MAX)) cfg.subopt_max = atoi(args.Get(OPT_SUBOPT_MAX).c_str());
-  if (args.Has(OPT_SUBOPT_DELTA)) cfg.subopt_delta = atoi(args.Get(OPT_SUBOPT_DELTA).c_str());
+  cfg.subopt = args.Has(OPT_FUZZ_SUBOPT);
+  cfg.subopt_rnastructure = args.Has(OPT_FUZZ_SUBOPT_RNASTRUCTURE);
+  cfg.subopt_brute = args.Has(OPT_FUZZ_SUBOPT_BRUTE);
+  cfg.subopt_max = args.Get<int>(OPT_FUZZ_SUBOPT_MAX);
+  cfg.subopt_delta = args.Get<int>(OPT_FUZZ_SUBOPT_DELTA);
 
-  cfg.partition = args.Has(OPT_PARTITION);
-  cfg.partition_rnastructure = args.Has(OPT_PARTITION_RNASTRUCTURE);
+  cfg.part = args.Has(OPT_FUZZ_PARTITION);
+  cfg.part_rnastructure = args.Has(OPT_FUZZ_PARTITION_RNASTRUCTURE);
+  cfg.part_brute = args.Has(OPT_FUZZ_SUBOPT);
 
-  verify(!cfg.subopt_rnastructure || cfg.subopt,
-      "suboptimal folding testing must be enabled to test rnastructure suboptimal folding");
-  verify(!(cfg.random_model && cfg.subopt_rnastructure),
-      "cannot use a random energy model with rnastructure");
-  verify(cfg.mfe_rnastructure || (!cfg.subopt_rnastructure && !cfg.partition_rnastructure),
-      "rnastructure must be enabled to use it for suboptimal or partition");
-  verify(!cfg.random_model || !cfg.mfe_rnastructure,
-      "rnastructure testing does not support random models");
+  cfg.mfe = cfg.mfe || cfg.mfe_rnastructure || cfg.mfe_brute;
+  cfg.subopt = cfg.subopt || cfg.subopt_rnastructure || cfg.subopt_brute;
+  cfg.part = cfg.part || cfg.part_rnastructure || cfg.part_brute;
+
   return cfg;
 }
 

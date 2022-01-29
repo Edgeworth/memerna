@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "compute/energy/structure.h"
+#include "compute/subopt/config.h"
 #include "model/primary.h"
+#include "compute/energy/model.h"
 
 namespace mrna::bridge {
 
@@ -28,13 +30,12 @@ energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) con
 
 FoldResult Memerna::Fold(Primary r) const { return ctx_.Fold(std::move(r)); }
 
-int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const {
-  return ctx_.Suboptimal(std::move(r), fn, true, energy_delta, -1);
+int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
+  return ctx_.Suboptimal(std::move(r), fn, subopt::SuboptCfg{.delta = delta, .sorted = true});
 }
 
-std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(
-    Primary r, Energy energy_delta) const {
-  return ctx_.SuboptimalIntoVector(std::move(r), true, energy_delta, -1);
+std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(Primary r, Energy delta) const {
+  return ctx_.SuboptimalIntoVector(std::move(r), subopt::SuboptCfg{.delta = delta, .sorted = true});
 }
 
 partition::PartitionResult Memerna::Partition(Primary r) const {

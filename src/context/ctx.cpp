@@ -1,7 +1,6 @@
 // Copyright 2016 E.
 #include "context/ctx.h"
 
-#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <tuple>
@@ -53,19 +52,19 @@ FoldResult Ctx::Fold(Primary r) const {
 }
 
 std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
-    Primary r, bool sorted, Energy subopt_delta, int subopt_num) const {
+    Primary r, subopt::SuboptCfg cfg) const {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] int num_structures = Suboptimal(
+  [[maybe_unused]] int strucs = Suboptimal(
       std::move(r), [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
-      sorted, subopt_delta, subopt_num);
-  assert(num_structures == static_cast<int>(subopts.size()));
+      cfg);
+  assert(strucs == static_cast<int>(subopts.size()));
   return subopts;
 }
 
-int Ctx::Suboptimal(
-    Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta, int subopt_num) const {
+int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
   if (cfg_.suboptimal_alg == CtxCfg::SuboptimalAlg::BRUTE) {
-    auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, subopt_num);
+    // TODO: handle cases other than max structures.
+    auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, cfg.strucs);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
@@ -74,13 +73,9 @@ int Ctx::Suboptimal(
   auto ext = mfe::ComputeExterior(r, em_, dp);
   switch (cfg_.suboptimal_alg) {
   case CtxCfg::SuboptimalAlg::ZERO:
-    return subopt::Suboptimal0(
-        std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
-        .Run(fn);
+    return subopt::Suboptimal0(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   case CtxCfg::SuboptimalAlg::ONE:
-    return subopt::Suboptimal1(
-        std::move(r), em_, std::move(dp), std::move(ext), subopt_delta, subopt_num)
-        .Run(fn, sorted);
+    return subopt::Suboptimal1(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.suboptimal_alg));
   }

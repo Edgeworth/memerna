@@ -26,6 +26,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 # Use include-what-you-use if it exists.
 if (USE_IWYU)
   find_program(IWYU NAMES include-what-you-use iwyu REQUIRED)
+  set(IWYU ${IWYU}
+    -Xiwyu --max_line_length=100
+    -Xiwyu --no_fwd_decls
+    -Xiwyu --cxx17ns)
 endif ()
 
 # Include things to find libraries.
@@ -98,11 +102,11 @@ set(MEMERNA_SOURCE
     src/bridge/memerna.cpp src/bridge/memerna.h
     src/compute/boltz_dp.h
     src/compute/brute.cpp src/compute/brute.h
-    src/compute/constants.h
     src/compute/dp.h
     src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
     src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
     src/compute/energy/branch.cpp src/compute/energy/branch.h
+    src/compute/energy/config.cpp src/compute/energy/config.h
     src/compute/energy/energy.cpp src/compute/energy/energy.h
     src/compute/energy/model.cpp src/compute/energy/model.h
     src/compute/energy/precomp.cpp src/compute/energy/precomp.h
@@ -121,6 +125,7 @@ set(MEMERNA_SOURCE
     src/compute/subopt/brute.cpp src/compute/subopt/brute.h
     src/compute/subopt/subopt.h
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
+    src/compute/subopt/config.cpp src/compute/subopt/config.h
     src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
     src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
     src/context/config.cpp src/context/config.h
@@ -216,13 +221,13 @@ add_sanitizers(subopt)
 
 # Add iwyu to targets if requested.
 if (USE_IWYU)
-  set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(harness PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
-  set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
+  set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(harness PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
 endif ()

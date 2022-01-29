@@ -9,10 +9,12 @@
 #include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "context/config.h"
-#include "model/model.h"
+#include "model/primary.h"
+#include "util/argparse.h"
 
 namespace mrna {
 
@@ -33,10 +35,8 @@ class Ctx {
   Ctx& operator=(const Ctx&) = delete;
 
   FoldResult Fold(Primary r) const;
-  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      Primary r, bool sorted, Energy subopt_delta = -1, int subopt_num = -1) const;
-  int Suboptimal(Primary r, subopt::SuboptCallback fn, bool sorted, Energy subopt_delta = -1,
-      int subopt_num = -1) const;
+  std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, subopt::SuboptCfg cfg) const;
+  int Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const;
   partition::PartitionResult Partition(Primary r) const;
 
   const energy::EnergyModel& em() const { return em_; }

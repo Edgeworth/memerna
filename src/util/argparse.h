@@ -2,6 +2,8 @@
 #ifndef UTIL_ARGPARSE_H_
 #define UTIL_ARGPARSE_H_
 
+#include <compare>
+#include <cstddef>
 #include <map>
 #include <set>
 #include <string>
@@ -9,6 +11,7 @@
 #include <vector>
 
 #include "util/error.h"
+#include "util/string.h"
 
 namespace mrna {
 
@@ -95,16 +98,30 @@ class ArgParse {
 
   const Opt& Lookup(const std::string& name) const;
   bool Has(const Opt& opt) const;
-  std::string Get(const Opt& opt) const;
+  const std::vector<std::string>& Pos() const { return pos_; }
 
-  const std::vector<std::string>& positional() const { return positional_; }
+  template <typename T = std::string>
+  T Get(const Opt& opt) const {
+    if (auto iter = values_.find(opt); iter != values_.end())
+      return convert<T>(iter->second);  // NOLINT
+    error("missing option %s", opt.Desc().c_str());
+    return {};
+  }
+
+  template <typename T = std::string>
+  T Pos(std::size_t index) const {
+    verify(index < pos_.size(), "index out of bounds");
+    return convert<T>(pos_[index]);
+  }
+
+  std::size_t PosSize() const { return pos_.size(); }
 
  private:
   std::map<std::string, Opt> longname_;
   std::map<std::string, Opt> shortname_;
   std::set<Opt> opts_;
   std::map<Opt, std::string> values_;
-  std::vector<std::string> positional_;
+  std::vector<std::string> pos_;
 };
 
 }  // namespace mrna

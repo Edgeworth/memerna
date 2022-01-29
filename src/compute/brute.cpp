@@ -1,17 +1,14 @@
 // Copyright 2021 E.
 #include "compute/brute.h"
 
-#include <algorithm>
 #include <iterator>
 
-#include "compute/constants.h"
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/base.h"
 #include "model/model.h"
-#include "util/array.h"
 #include "util/error.h"
 
 namespace mrna {
@@ -74,11 +71,12 @@ void BruteForce::AddAllCombinations(int idx) {
         }
       }
     } else {
-      if (static_cast<int>(res_.subopts.size()) < res_.max_structures ||
+      // TODO: check here
+      if (static_cast<int>(res_.subopts.size()) < res_.strucs ||
           res_.subopts.rbegin()->energy > energy)
         res_.subopts.insert(
             subopt::SuboptResult(tb::TracebackResult(Secondary(s_), Ctds(ctd_)), energy));
-      if (static_cast<int>(res_.subopts.size()) > res_.max_structures)
+      if (static_cast<int>(res_.subopts.size()) > res_.strucs)
         res_.subopts.erase(--res_.subopts.end());
     }
     return;
@@ -168,7 +166,7 @@ void BruteForce::AddAllCombinations(int idx) {
 void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(res_.base_pairs.size())) {
     // Small optimisation for case when we're just getting one structure.
-    if (res_.max_structures == 1 && !res_.compute_partition) {
+    if (res_.strucs == 1 && !res_.compute_partition) {
       auto res = em_.TotalEnergy(r_, s_, nullptr);
       if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
         res_.subopts.insert(subopt::SuboptResult(
@@ -206,7 +204,7 @@ void BruteForce::Dfs(int idx) {
   }
 }
 
-BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int max_structures,
+BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int strucs,
     bool compute_partition, bool allow_lonely_pairs) {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
@@ -219,7 +217,7 @@ BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int
   ctd_.reset(N);
 
   // TODO: Cleanup here
-  res_.max_structures = max_structures == -1 ? MAX_STRUCTURES : max_structures;
+  res_.strucs = strucs;
   res_.compute_partition = compute_partition;
   if (res_.compute_partition) {
     // Plus one to N, since -1 takes up a spot.

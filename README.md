@@ -15,7 +15,7 @@ Memerna requires a modern C++ compiler that supports C++20.
 Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
 
 ### Running include-what-you-use
-./build.py --iwyu
+./build.py --iwyu --no-build
 
 Then from the cmake build directory:
 make -j$(nproc) 2> /tmp/iwyu.out
