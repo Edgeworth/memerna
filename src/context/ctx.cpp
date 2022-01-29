@@ -24,6 +24,11 @@
 
 namespace mrna {
 
+energy::EnergyResult Ctx::Efn(
+    Primary r, Secondary s, const Ctds* given_ctd, bool build_structure) const {
+  return em_.TotalEnergy(r, s, given_ctd, build_structure);
+}
+
 DpArray Ctx::ComputeTables(const Primary& r) const {
   switch (cfg_.table_alg) {
   case CtxCfg::TableAlg::ZERO: return mfe::ComputeTables0(r, em_);
