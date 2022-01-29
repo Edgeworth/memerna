@@ -3,13 +3,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "util/argparse.h"
 #include "util/error.h"
 #include "util/splaymap.h"
+
+#ifdef __AFL_FUZZ_TESTCASE_LEN
+#include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
+
+__AFL_FUZZ_INIT();
+#endif
 
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 
@@ -42,23 +47,21 @@ OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>& h, std::set<int
 }
 
 void DoAfl() {
-#ifdef __AFL_HAVE_MANUAL_CONTROL
+#ifdef __AFL_FUZZ_TESTCASE_LEN
   __AFL_INIT();
+  // This must be after __AFL_INIT and before __AFL_LOOP.
+  auto buf = reinterpret_cast<const char*>(__AFL_FUZZ_TESTCASE_BUF);
   while (__AFL_LOOP(100000)) {
-#endif
+    int len = __AFL_FUZZ_TESTCASE_LEN;
+    std::string data(buf, len);
+
     mrna::SplayMap<int, int> h;
     std::set<int> s;
-
-    std::string data;
-    std::size_t len;
-    char buf[4096];
-    while ((len = fread(buf, 1, sizeof(buf), stdin)) > 0) data += std::string(buf, len);
     std::stringstream ss(data);
     char op = 0;
     int val = 0;
     while (ss >> std::ws >> op >> std::ws >> val) DoOperation(op, val, h, s);
     printf("%s\n", h.Describe().c_str());
-#ifdef __AFL_HAVE_MANUAL_CONTROL
   }
 #endif
 }
@@ -103,7 +106,7 @@ int main(int argc, char** argv) {
 
   printf("Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n");
   const bool afl = args.Has(mrna::OPT_AFL);
-  const int r = atoi(args.Get(OPT_RANGE).c_str());
+  const int r = args.Get<int>(OPT_RANGE);
   verify(!(afl && (r != -1)), "incompatible options");
 
   if (afl)

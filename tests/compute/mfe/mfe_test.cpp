@@ -4,7 +4,6 @@
 #include <string>
 
 #include "common_test.h"
-#include "compute/energy/model.h"
 #include "context/config.h"
 #include "context/ctx.h"
 #include "gtest/gtest.h"

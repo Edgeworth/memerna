@@ -4,10 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <utility>
-#include <vector>
 
-#include "compute/energy/energy.h"
-#include "compute/energy/model.h"
 #include "context/config.h"
 #include "context/ctx.h"
 #include "model/primary.h"
@@ -35,9 +32,8 @@ int main(int argc, char* argv[]) {
   mrna::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
 
-  const auto& pos = args.positional();
-  verify(pos.size() == 1, "need primary sequence to fold");
-  auto r = mrna::Primary::FromString(pos.front());
+  verify(args.PosSize() == 1, "need primary sequence to fold");
+  auto r = mrna::Primary::FromString(args.Pos(0));
 
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto res = ctx.Partition(std::move(r));

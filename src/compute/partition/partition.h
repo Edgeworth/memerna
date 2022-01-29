@@ -9,7 +9,7 @@
 #include "compute/energy/boltzmann_model.h"
 #include "model/model.h"
 #include "model/primary.h"
-#include "util/array.h"
+#include "compute/energy/model.h"
 
 namespace mrna::partition {
 

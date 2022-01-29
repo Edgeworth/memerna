@@ -4,18 +4,17 @@
 
 #include <deque>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/subopt/subopt.h"
 #include "fuzz/config.h"
-#include "model/model.h"
 #include "model/primary.h"
-#include "util/array.h"
 
 #ifdef USE_RNASTRUCTURE
+#include <utility>
+
 #include "bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
@@ -35,7 +34,7 @@ class Fuzzer {
   energy::EnergyModel em_;
 
   std::vector<subopt::SuboptResult> memerna_subopts_;
-  std::vector<Array2D1S<Energy, DP_SIZE>> memerna_dps;
+  std::vector<DpArray> memerna_dps;
 
   // RNAstructure related:
 #ifdef USE_RNASTRUCTURE

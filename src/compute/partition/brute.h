@@ -3,6 +3,8 @@
 #define COMPUTE_PARTITION_BRUTE_H_
 
 #include "compute/partition/partition.h"
+#include "compute/energy/model.h"
+#include "model/primary.h"
 
 namespace mrna::partition {
 

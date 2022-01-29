@@ -1,7 +1,4 @@
 // Copyright 2016 Eliot Courtney.
-#include <cassert>
-#include <cmath>
-
 #include "compute/boltz_dp.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
@@ -9,7 +6,6 @@
 #include "model/model.h"
 #include "model/primary.h"
 #include "util/array.h"
-#include "util/float.h"
 
 namespace mrna::partition {
 

@@ -7,6 +7,7 @@
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/ctd.h"
@@ -17,7 +18,7 @@ namespace mrna::subopt {
 
 class Suboptimal0 {
  public:
-  Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num);
+  Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(SuboptCallback fn);
 
@@ -38,20 +39,19 @@ class Suboptimal0 {
   energy::EnergyModel em_;
   DpArray dp_;
   ExtArray ext_;
+  SuboptCfg cfg_;
 
-  const Energy max_energy_;
-  const int max_structures;
   // This node is where we build intermediate results to be pushed onto the queue.
   Node curnode_;
   std::multiset<Node> finished_;
   std::multiset<Node> q_;
 
   void PruneInsert(std::multiset<Node>& prune, const Node& node) {
-    if (node.res.energy <= max_energy_) {
-      if (static_cast<int>(prune.size()) >= max_structures &&
+    if (node.res.energy <= ext_[0][EXT] + cfg_.delta) {
+      if (static_cast<int>(prune.size()) >= cfg_.strucs &&
           (--prune.end())->res.energy > node.res.energy)
         prune.erase(--prune.end());
-      if (static_cast<int>(prune.size()) < max_structures) prune.insert(node.copy());
+      if (static_cast<int>(prune.size()) < cfg_.strucs) prune.insert(node.copy());
     }
   }
 

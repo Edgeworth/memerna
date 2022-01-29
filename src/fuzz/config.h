@@ -2,64 +2,69 @@
 #ifndef FUZZ_CONFIG_H_
 #define FUZZ_CONFIG_H_
 
-#include <cstdint>
-#include <map>
 #include <string>
 
 #include "util/argparse.h"
 
 namespace mrna::fuzz {
 
-inline const Opt OPT_RANDOM =
-    Opt().LongName("random").Help("use random energy models (disables comparison to RNAstructure)");
-inline const Opt OPT_TABLE_CHECK =
-    Opt()
-        .LongName("table-check")
-        .Help("enable comparing dp tables between memerna and rnastructure");
-inline const Opt OPT_BRUTE_CUTOFF =
-    Opt().LongName("brute-cutoff").Arg().Help("maximum rna size to run brute force on");
-inline const Opt OPT_BRUTE_SUBOPT_MAX =
-    Opt()
-        .LongName("brute-subopt-max")
-        .Arg()
-        .Help("maximum number of substructures for brute force fuzz");
-inline const Opt OPT_MFE_RNASTRUCTURE =
-    Opt().LongName("mfe-rnastructure").Help("enable rnastructure testing");
-inline const Opt OPT_SUBOPT = Opt().LongName("subopt").Help("enable fuzzing suboptimal folding");
-inline const Opt OPT_SUBOPT_RNASTRUCTURE =
-    Opt().LongName("subopt-rnastructure").Help("test rnastructure suboptimal folding");
-inline const Opt OPT_SUBOPT_MAX =
+// Note that fuzz doesn't use flags from anything else - it has all custom flags.
+
+// Brute force specific options:
+// Allows brute force fuzzing to be given a maximum RNA size
+inline const Opt OPT_FUZZ_BRUTE_MAX =
+    Opt().LongName("brute-max").Arg().Help("maximum RNA size to run brute force on");
+
+// MFE fuzzing options:
+inline const Opt OPT_FUZZ_MFE = Opt().LongName("mfe").Help("fuzz mfe");
+inline const Opt OPT_FUZZ_MFE_RNASTRUCTURE =
+    Opt().LongName("mfe-rnastructure").Help("fuzz RNAstructure mfe");
+inline const Opt OPT_FUZZ_MFE_BRUTE = Opt().LongName("mfe-brute").Help("fuzz brute mfe");
+inline const Opt OPT_FUZZ_MFE_TABLE =
+    Opt().LongName("mfe-table").Help("enable checking mfe dp tables");
+
+// Subopt fuzzing:
+inline const Opt OPT_FUZZ_SUBOPT = Opt().LongName("subopt").Help("fuzz suboptimal folding");
+inline const Opt OPT_FUZZ_SUBOPT_RNASTRUCTURE =
+    Opt().LongName("subopt-rnastructure").Help("fuzz RNAstructure suboptimal folding");
+inline const Opt OPT_FUZZ_SUBOPT_BRUTE =
+    Opt().LongName("subopt-brute").Help("fuzz brute suboptimal folding");
+inline const Opt OPT_FUZZ_SUBOPT_MAX =
     Opt()
         .LongName("subopt-max")
-        .Arg()
+        .Default("5000")
         .Help("maximum number of substructures for subopt max-delta fuzz");
-inline const Opt OPT_SUBOPT_DELTA =
-    Opt().LongName("subopt-delta").Arg().Help("delta for subopt delta fuzz");
-inline const Opt OPT_PARTITION =
-    Opt().LongName("partition").Help("enable fuzzing partition function");
-inline const Opt OPT_PARTITION_RNASTRUCTURE =
-    Opt().LongName("partition-rnastructure").Help("test rnastructure partition function");
+inline const Opt OPT_FUZZ_SUBOPT_DELTA =
+    Opt().LongName("subopt-delta").Default("6").Help("max energy delta for subopt delta fuzz");
+
+// Partition fuzzing:
+inline const Opt OPT_FUZZ_PARTITION = Opt().LongName("partition").Help("fuzz partition function");
+inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
+    Opt().LongName("partition-rnastructure").Help("fuzz RNAstructure partition function");
+inline const Opt OPT_FUZZ_PARTITION_BRUTE =
+    Opt().LongName("partition-brute").Help("fuzz brute partition function");
 
 void RegisterOpts(ArgParse* args);
 
 struct FuzzCfg {
-  bool random_model = false;
-  bool mfe_rnastructure = false;
-  bool table_check = true;
-  uint_fast32_t seed = 0;
+  int brute_max;
 
-  bool subopt = true;
-  bool subopt_rnastructure = false;
-  int subopt_max = 5000;
-  int subopt_delta = 6;  // Same as RNAstructure default.
+  bool mfe;
+  bool mfe_rnastructure;
+  bool mfe_brute;
+  bool mfe_table;
 
-  int brute_cutoff = 30;
-  int brute_subopt_max = 100000;
+  bool subopt;
+  bool subopt_rnastructure;
+  bool subopt_brute;
+  int subopt_max;
+  int subopt_delta;
 
-  bool partition = true;
-  bool partition_rnastructure = false;
+  bool part;
+  bool part_rnastructure;
+  bool part_brute;
 
-  std::string Describe();
+  std::string Desc();
 
   static FuzzCfg FromArgParse(const ArgParse& args);
 };

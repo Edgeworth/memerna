@@ -2,25 +2,12 @@
 #ifndef COMPUTE_ENERGY_ENERGY_H_
 #define COMPUTE_ENERGY_ENERGY_H_
 
-#include <map>
 #include <memory>
-#include <string>
 
 #include "model/ctd.h"
 #include "model/model.h"
-#include "util/argparse.h"
 
 namespace mrna::energy {
-
-inline const Opt OPT_SEED =
-    Opt().LongName("seed").Arg().Help("seed for random energy model for memerna");
-inline const Opt OPT_MEMERNA_DATA = Opt()
-                                        .LongName("memerna-data")
-                                        .ShortName("md")
-                                        .Arg()
-                                        .Help("data path for given energy model for memerna");
-
-void RegisterOpts(ArgParse* args);
 
 class Structure;
 

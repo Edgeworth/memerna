@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "model/secondary.h"
+#include "model/primary.h"
 
 namespace mrna {
 

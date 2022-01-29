@@ -32,9 +32,8 @@ class RNAstructure : public RnaPackage {
 
   energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const override;
   FoldResult Fold(Primary r) const override;
-  int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const override;
-  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      Primary r, Energy energy_delta) const override;
+  int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const override;
+  std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const override;
   partition::PartitionResult Partition(Primary r) const override;
 
   // TODO: Can be replaced by Fold now?

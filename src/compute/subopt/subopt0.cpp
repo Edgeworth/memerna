@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "compute/constants.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/base.h"
@@ -19,13 +18,8 @@
 
 namespace mrna::subopt {
 
-Suboptimal0::Suboptimal0(
-    Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, Energy delta, int num)
-    : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)),
-      max_energy_(delta == -1 ? CAP_E : ext_[0][EXT] + delta),
-      max_structures(num == -1 ? MAX_STRUCTURES : num) {
-  verify(max_structures > 0, "must request at least one structure");
-}
+Suboptimal0::Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg)
+    : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)), cfg_(cfg) {}
 
 int Suboptimal0::Run(SuboptCallback fn) {
   const int N = static_cast<int>(r_.size());
@@ -50,7 +44,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
 
     // If we found a non-finished node, but |finished| is full, and the worst in |finished| is
     // as good as our current node (which is the best in |q|), then we can exit.
-    if (static_cast<int>(finished_.size()) >= max_structures &&
+    if (static_cast<int>(finished_.size()) >= cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;
 

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
+#include <type_traits>
 
 #include "compute/boltz_dp.h"
 #include "compute/energy/boltzmann_model.h"

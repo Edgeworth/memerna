@@ -7,11 +7,6 @@
 
 namespace mrna::energy {
 
-void RegisterOpts(ArgParse* args) {
-  args->RegisterOpt(OPT_SEED);
-  args->RegisterOpt(OPT_MEMERNA_DATA);
-}
-
 EnergyResult::EnergyResult(Energy energy, Ctds ctd, std::unique_ptr<Structure> struc)
     : energy(std::move(energy)), ctd(std::move(ctd)), struc(std::move(struc)) {}
 

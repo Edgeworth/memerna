@@ -2,7 +2,6 @@
 #ifndef BRIDGE_BRIDGE_H_
 #define BRIDGE_BRIDGE_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,9 +30,8 @@ class RnaPackage {
 
   virtual energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const = 0;
   virtual FoldResult Fold(Primary r) const = 0;
-  virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy energy_delta) const = 0;
-  virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(
-      Primary r, Energy energy_delta) const = 0;
+  virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const = 0;
+  virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const = 0;
   virtual partition::PartitionResult Partition(Primary r) const = 0;
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);

@@ -1,7 +1,6 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/fuzzer.h"
 
-#include <cinttypes>
 #include <cmath>
 #include <memory>
 #include <set>
@@ -9,17 +8,21 @@
 #include <tuple>
 #include <utility>
 
+#include "compute/boltz_dp.h"
 #include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/brute.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/brute.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "context/config.h"
 #include "context/ctx.h"
 #include "model/ctd.h"
+#include "model/model.h"
 #include "model/secondary.h"
+#include "util/array.h"
 #include "util/float.h"
 #include "util/string.h"
 
@@ -31,27 +34,22 @@ using subopt::SuboptimalBruteForce;
 inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
 Fuzzer::Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em)
-    : r_(std::move(r)), cfg_(std::move(cfg)),
-      em_(cfg_.random_model ? energy::EnergyModel::Random(cfg_.seed) : em) {}
+    : r_(std::move(r)), cfg_(std::move(cfg)), em_(em) {}
 
 Error Fuzzer::Run() {
   Error errors;
   AppendErrors(errors, MaybePrepend(MemernaComputeAndCheckState(), "memerna:"));
   if (cfg_.mfe_rnastructure)
     AppendErrors(errors, MaybePrepend(RnastructureComputeAndCheckState(), "rnastructure:"));
-  if (cfg_.table_check) AppendErrors(errors, MaybePrepend(CheckDpTables(), "dp tables:"));
+  if (cfg_.mfe_table) AppendErrors(errors, MaybePrepend(CheckDpTables(), "dp tables:"));
   if (cfg_.subopt) AppendErrors(errors, MaybePrepend(CheckSuboptimal(), "suboptimal:"));
 
-  if (static_cast<int>(r_.size()) <= cfg_.brute_cutoff)
+  if (static_cast<int>(r_.size()) <= cfg_.brute_max)
     AppendErrors(errors, MaybePrepend(CheckBruteForce(), "brute force:"));
 
-  if (cfg_.partition) AppendErrors(errors, MaybePrepend(CheckPartition(), "partition:"));
+  if (cfg_.part) AppendErrors(errors, MaybePrepend(CheckPartition(), "partition:"));
 
   if (!errors.empty()) {
-    if (cfg_.random_model)
-      errors.push_front(sfmt("Used random energy model with seed: %" PRIuFAST32 "\n", cfg_.seed));
-    else
-      errors.push_front(sfmt("Used specified energy model"));
     errors = MaybePrepend(
         errors, sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToString().c_str()));
   }
@@ -143,13 +141,14 @@ Error Fuzzer::CheckSuboptimalResultPair(
 
 Error Fuzzer::CheckSuboptimal() {
   Error errors;
-  std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_num;
+  std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_max;
   for (auto subopt_alg : CtxCfg::SUBOPTIMAL_ALGS) {
     CtxCfg cfg(CtxCfg::TableAlg::TWO, subopt_alg);
     Ctx ctx(em_, cfg);
-    memerna_subopts_delta.push_back(
-        ctx.SuboptimalIntoVector(Primary(r_), true, cfg_.subopt_delta, -1));
-    memerna_subopts_num.push_back(ctx.SuboptimalIntoVector(Primary(r_), true, -1, cfg_.subopt_max));
+    memerna_subopts_delta.push_back(ctx.SuboptimalIntoVector(
+        Primary(r_), subopt::SuboptCfg{.delta = cfg_.subopt_delta, .sorted = true}));
+    memerna_subopts_max.push_back(ctx.SuboptimalIntoVector(
+        Primary(r_), subopt::SuboptCfg{.strucs = cfg_.subopt_max, .sorted = true}));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
@@ -161,12 +160,12 @@ Error Fuzzer::CheckSuboptimal() {
             sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
   }
 
-  for (int i = 0; i < static_cast<int>(memerna_subopts_num.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(memerna_subopts_max.size()); ++i) {
     AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResult(memerna_subopts_num[i], true),
+        MaybePrepend(CheckSuboptimalResult(memerna_subopts_max[i], true),
             sfmt("memerna num suboptimal %d:", i)));
     AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_num[0], memerna_subopts_num[i]),
+        MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_max[0], memerna_subopts_max[i]),
             sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
   }
 
@@ -277,8 +276,10 @@ Error Fuzzer::CheckBruteForce() {
   Ctx ctx(em_, cfg);
 
   if (cfg_.subopt) {
-    auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.brute_subopt_max);
-    auto memerna_subopt = ctx.SuboptimalIntoVector(Primary(r_), true, -1, cfg_.brute_subopt_max);
+    // TODO: move stuff in this function to mfe,subopt,partition.
+    auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.subopt_max);
+    auto memerna_subopt = ctx.SuboptimalIntoVector(
+        Primary(r_), subopt::SuboptCfg{.strucs = cfg_.subopt_max, .sorted = true});
 
     AppendErrors(
         errors, MaybePrepend(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
@@ -289,7 +290,7 @@ Error Fuzzer::CheckBruteForce() {
             "brute vs memerna suboptimal:"));
   }
 
-  if (cfg_.partition) {
+  if (cfg_.part) {
     auto memerna_partition = ctx.Partition(Primary(r_));
 
     auto brute_partition = PartitionBruteForce(Primary(r_), em_);
@@ -352,7 +353,7 @@ Error Fuzzer::CheckPartition() {
   }
 
 #ifdef USE_RNASTRUCTURE
-  if (cfg_.partition_rnastructure) {
+  if (cfg_.part_rnastructure) {
     auto rnastructure_part = rnastructure_->Partition(Primary(r_));
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
     if (!equ(rnastructure_part.p.q, memerna_partitions[0].p.q)) {
