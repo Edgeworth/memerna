@@ -34,6 +34,8 @@ class Ctx {
   Ctx(const Ctx& o) = delete;
   Ctx& operator=(const Ctx&) = delete;
 
+  energy::EnergyResult Efn(
+      Primary r, Secondary s, const Ctds* given_ctd = nullptr, bool build_structure = false) const;
   FoldResult Fold(Primary r) const;
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, subopt::SuboptCfg cfg) const;
   int Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const;

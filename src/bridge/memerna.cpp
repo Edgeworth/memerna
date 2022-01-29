@@ -6,23 +6,20 @@
 #include <utility>
 #include <vector>
 
+#include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 #include "compute/subopt/config.h"
 #include "model/primary.h"
-#include "compute/energy/model.h"
 
 namespace mrna::bridge {
 
 energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) const {
-  energy::EnergyResult res;
+  auto res = ctx_.Efn(std::move(r), std::move(s), nullptr, desc != nullptr);
   if (desc) {
-    res = ctx_.em().TotalEnergy(r, s, nullptr, true);
     for (const auto& s : res.struc->Description()) {
       *desc += s;
       *desc += "\n";
     }
-  } else {
-    res = ctx_.em().TotalEnergy(r, s, nullptr, false);
   }
 
   return res;
