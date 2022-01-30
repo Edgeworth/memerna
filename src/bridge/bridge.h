@@ -9,7 +9,7 @@
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "context/ctx.h"
+#include "ctx/ctx.h"
 #include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -29,7 +29,7 @@ class RnaPackage {
   virtual ~RnaPackage() = default;
 
   virtual energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const = 0;
-  virtual FoldResult Fold(Primary r) const = 0;
+  virtual ctx::FoldResult Fold(Primary r) const = 0;
   virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const = 0;
   virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const = 0;
   virtual partition::PartitionResult Partition(Primary r) const = 0;

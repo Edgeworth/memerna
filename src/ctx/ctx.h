@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef CONTEXT_CTX_H_
-#define CONTEXT_CTX_H_
+#ifndef CTX_CTX_H_
+#define CTX_CTX_H_
 
 #include <utility>
 #include <vector>
@@ -12,11 +12,11 @@
 #include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
-#include "context/config.h"
+#include "ctx/config.h"
 #include "model/primary.h"
 #include "util/argparse.h"
 
-namespace mrna {
+namespace mrna::ctx {
 
 struct FoldResult {
   mfe::MfeResult mfe;
@@ -52,6 +52,6 @@ class Ctx {
   DpArray ComputeTables(const Primary& r) const;
 };
 
-}  // namespace mrna
+}  // namespace mrna::ctx
 
-#endif  // CONTEXT_CTX_H_
+#endif  // CTX_CTX_H_

@@ -12,14 +12,13 @@
 
 #include "compute/energy/energy.h"
 #include "model/base.h"
-#include "model/model.h"
-#include "model/secondary.h"
 #include "model/ctd.h"
+#include "model/model.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 #include "util/argparse.h"
 
 namespace mrna::energy {
-
 
 class EnergyModel {
  public:

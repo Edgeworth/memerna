@@ -11,7 +11,7 @@
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "context/ctx.h"
+#include "ctx/ctx.h"
 #include "miles_rnastructure/include/algorithm.h"
 #include "miles_rnastructure/include/alltrace.h"
 #include "miles_rnastructure/include/pfunction.h"
@@ -31,13 +31,13 @@ class RNAstructure : public RnaPackage {
   RNAstructure& operator=(const RNAstructure&) = delete;
 
   energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const override;
-  FoldResult Fold(Primary r) const override;
+  ctx::FoldResult Fold(Primary r) const override;
   int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const override;
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const override;
   partition::PartitionResult Partition(Primary r) const override;
 
   // TODO: Can be replaced by Fold now?
-  FoldResult FoldAndDpTable(Primary r, dp_state_t* dp_state) const;
+  ctx::FoldResult FoldAndDpTable(Primary r, dp_state_t* dp_state) const;
 
  private:
   std::unique_ptr<datatable> data_;

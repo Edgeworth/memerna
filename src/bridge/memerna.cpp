@@ -25,7 +25,7 @@ energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) con
   return res;
 }
 
-FoldResult Memerna::Fold(Primary r) const { return ctx_.Fold(std::move(r)); }
+ctx::FoldResult Memerna::Fold(Primary r) const { return ctx_.Fold(std::move(r)); }
 
 int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
   return ctx_.Suboptimal(std::move(r), fn, subopt::SuboptCfg{.delta = delta, .sorted = true});
@@ -39,6 +39,8 @@ partition::PartitionResult Memerna::Partition(Primary r) const {
   return ctx_.Partition(std::move(r));
 }
 
-Memerna Memerna::FromArgParse(const ArgParse& args) { return Memerna(Ctx::FromArgParse(args)); }
+Memerna Memerna::FromArgParse(const ArgParse& args) {
+  return Memerna(ctx::Ctx::FromArgParse(args));
+}
 
 }  // namespace mrna::bridge

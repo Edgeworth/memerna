@@ -1,6 +1,6 @@
 // Copyright 2016 E.
-#ifndef COMPUTE_BRUTE_H_
-#define COMPUTE_BRUTE_H_
+#ifndef COMPUTE_BRUTE_BRUTE_H_
+#define COMPUTE_BRUTE_BRUTE_H_
 
 #include <compare>
 #include <cstdint>
@@ -17,7 +17,7 @@
 #include "model/secondary.h"
 #include "util/splaymap.h"
 
-namespace mrna {
+namespace mrna::brute {
 
 class BruteForce {
  public:
@@ -79,6 +79,6 @@ class BruteForce {
   SubstructureId BuildOutsideStructure(int st, int en, int N);
 };
 
-}  // namespace mrna
+}  // namespace mrna::brute
 
-#endif  // COMPUTE_BRUTE_H_
+#endif  // COMPUTE_BRUTE_BRUTE_H_

@@ -9,16 +9,16 @@
 
 #include "bridge/bridge.h"
 #include "compute/energy/config.h"
+#include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
-#include "context/ctx.h"
+#include "ctx/ctx.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "compute/energy/energy.h"
-#include "compute/subopt/config.h"
 
 inline const auto OPT_EFN = mrna::Opt().ShortName("e").Help("run efn");
 inline const auto OPT_FOLD = mrna::Opt().ShortName("f").Help("run fold");

@@ -1,8 +1,8 @@
 // Copyright 2016 E.
 #include <algorithm>
 #include <tuple>
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 #include "compute/boltz_dp.h"
 #include "compute/energy/boltzmann_model.h"

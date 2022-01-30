@@ -9,8 +9,8 @@
 #include "compute/energy/model.h"
 #include "model/ctd.h"
 #include "model/model.h"
-#include "model/secondary.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna::energy {
 
