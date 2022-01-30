@@ -114,7 +114,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
         u2_min = std::min(u2_min, base00 + dp[piv + 1][en][DP_U]);
         auto val = base00 + right_unpaired;
         u_min = std::min(u_min, val);
-        if (IsGu(stb, pb))
+        if (IsGuPair(stb, pb))
           gu_min = std::min(gu_min, val);
         else
           wc_min = std::min(wc_min, val);
@@ -143,11 +143,11 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
             std::min(rcoax_min, base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
         // (   )(<   ) > Flush coax - U
-        val = base01 + em.stack[pl1b][pb][pb ^ 3][stb] + dp[piv][en][DP_U_WC];
+        val = base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
-        if (pb == G || pb == U) {
-          val = base01 + em.stack[pl1b][pb][pb ^ 1][stb] + dp[piv][en][DP_U_GU];
+        if (IsGu(pb)) {
+          val = base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
           u_min = std::min(u_min, val);
           u2_min = std::min(u2_min, val);
         }

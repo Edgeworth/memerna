@@ -124,7 +124,7 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModel& em) {
         UPDATE_CACHE(DP_U2, base00 + dp[piv + 1][en][DP_U]);
         auto val = base00 + right_unpaired;
         UPDATE_CACHE(DP_U, val);
-        if (IsGu(stb, pb))
+        if (IsGuPair(stb, pb))
           UPDATE_CACHE(DP_U_GU, val);
         else
           UPDATE_CACHE(DP_U_WC, val);
@@ -151,11 +151,11 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModel& em) {
         UPDATE_CACHE(DP_U_RCOAX, base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
         // (   )(<   ) > Flush coax - U
-        val = base01 + em.stack[pl1b][pb][pb ^ 3][stb] + dp[piv][en][DP_U_WC];
+        val = base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
-        if (pb == G || pb == U) {
-          val = base01 + em.stack[pl1b][pb][pb ^ 1][stb] + dp[piv][en][DP_U_GU];
+        if (IsGu(pb)) {
+          val = base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
           UPDATE_CACHE(DP_U, val);
           UPDATE_CACHE(DP_U2, val);
         }

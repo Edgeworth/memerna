@@ -53,8 +53,8 @@ TracebackResult Traceback(
 
         // (   )<   >
         auto val = base00 + ext[en + 1][EXT];
-        if (val == ext[st][a] && (a != EXT_WC || IsWatsonCrick(stb, enb)) &&
-            (a != EXT_GU || IsGu(stb, enb))) {
+        if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
+            (a != EXT_GU || IsGuPair(stb, enb))) {
           // EXT_WC and EXT_GU will have already had their ctds set.
           if (a == EXT) res.ctd[st] = CTD_UNUSED;
           q.emplace(st, en, DP_P);
@@ -115,15 +115,15 @@ TracebackResult Traceback(
           }
 
           // (   )(<   ) > Flush coax
-          if (base01 + em.stack[en1b][enb][enb ^ 3][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
+          if (base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en - 1, DP_P);
             q.emplace(en, -1, EXT_WC);
             goto loopend;
           }
-          if ((enb == G || enb == U) &&
-              base01 + em.stack[en1b][enb][enb ^ 1][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
+          if (IsGu(enb) &&
+              base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace(st, en - 1, DP_P);
@@ -298,8 +298,8 @@ TracebackResult Traceback(
         }
 
         // (   )<   > - U, U2, U_WC?, U_GU?
-        if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWatsonCrick(stb, pb)) &&
-            (a != DP_U_GU || IsGu(stb, pb))) {
+        if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
+            (a != DP_U_GU || IsGuPair(stb, pb))) {
           // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were
           // already set.
           if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
@@ -359,15 +359,15 @@ TracebackResult Traceback(
         }
 
         // (   )(<   ) > Flush coax - U, U2
-        if (base01 + em.stack[pl1b][pb][pb ^ 3][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
+        if (base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
           res.ctd[st] = CTD_FCOAX_WITH_NEXT;
           res.ctd[piv] = CTD_FCOAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);
           q.emplace(piv, en, DP_U_WC);
           goto loopend;
         }
-        if ((pb == G || pb == U) &&
-            base01 + em.stack[pl1b][pb][pb ^ 1][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
+        if ((IsGu(pb)) &&
+            base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
           res.ctd[st] = CTD_FCOAX_WITH_NEXT;
           res.ctd[piv] = CTD_FCOAX_WITH_PREV;
           q.emplace(st, piv - 1, DP_P);

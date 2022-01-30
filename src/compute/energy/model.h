@@ -67,11 +67,11 @@ class EnergyModel {
   inline bool CanPair(const Primary& r, int st, int en) const {
     // TODO: check the correctness of this.
     if (cfg.lonely_pairs) {
-      return BasePair(r[st], r[en]);
+      return IsPair(r[st], r[en]);
     } else {
-      return BasePair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
-          ((en - st - 3 >= HAIRPIN_MIN_SZ && BasePair(r[st + 1], r[en - 1])) ||
-              (st > 0 && en < static_cast<int>(r.size() - 1) && BasePair(r[st - 1], r[en + 1])));
+      return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
+          ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
+              (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));
     }
   }
 
@@ -106,12 +106,12 @@ class EnergyModel {
 
   Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGu(stb, enb) ? augu_penalty : 0;
+    return IsAuGuPair(stb, enb) ? augu_penalty : 0;
   }
 
   Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGu(stb, enb) ? internal_augu_penalty : 0;
+    return IsAuGuPair(stb, enb) ? internal_augu_penalty : 0;
   }
 
   // We use the normal terminal mismatch parameters for the mismatch that is on the continuous part
@@ -130,9 +130,9 @@ class EnergyModel {
     assert(IsBase(five_top) && IsBase(mismatch_top) && IsBase(mismatch_bot) && IsBase(three_bot));
     Energy coax =
         terminal[five_top][mismatch_top][mismatch_bot][three_bot] + coax_mismatch_non_contiguous;
-    if (IsWatsonCrick(mismatch_top, mismatch_bot))
+    if (IsWcPair(mismatch_top, mismatch_bot))
       coax += coax_mismatch_wc_bonus;
-    else if (IsGu(mismatch_top, mismatch_bot))
+    else if (IsGuPair(mismatch_top, mismatch_bot))
       coax += coax_mismatch_gu_bonus;
     return coax;
   }

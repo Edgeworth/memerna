@@ -29,7 +29,7 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
       // (   )<   >
       BoltzEnergy val = base00 * ext[en + 1][PTEXT_R];
       ext[st][PTEXT_R] += val;
-      if (IsGu(stb, enb))
+      if (IsGuPair(stb, enb))
         ext[st][PTEXT_R_GU] += val;
       else
         ext[st][PTEXT_R_WC] += val;
@@ -52,9 +52,11 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
           base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b)) * ext[en + 1][PTEXT_R];
 
       // (   )(<   ) > Flush coax
-      ext[st][PTEXT_R] += base01 * Boltz(em.stack[en1b][enb][enb ^ 3][stb]) * ext[en][PTEXT_R_WC];
-      if (enb == G || enb == U)
-        ext[st][PTEXT_R] += base01 * Boltz(em.stack[en1b][enb][enb ^ 1][stb]) * ext[en][PTEXT_R_GU];
+      ext[st][PTEXT_R] +=
+          base01 * Boltz(em.stack[en1b][enb][WcPair(enb)][stb]) * ext[en][PTEXT_R_WC];
+      if (IsGu(enb))
+        ext[st][PTEXT_R] +=
+            base01 * Boltz(em.stack[en1b][enb][GuPair(enb)][stb]) * ext[en][PTEXT_R_GU];
     }
   }
 
@@ -83,7 +85,7 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
       // <   >(   )
       BoltzEnergy val = base00 * ptextl;
       ext[en][PTEXT_L] += val;
-      if (IsGu(stb, enb))
+      if (IsGuPair(stb, enb))
         ext[en][PTEXT_L_GU] += val;
       else
         ext[en][PTEXT_L_WC] += val;
@@ -105,9 +107,11 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
       ext[en][PTEXT_L_LCOAX] += base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b)) * ptextl;
 
       // < (   >)(   ) Flush coax
-      ext[en][PTEXT_L] += base10 * Boltz(em.stack[stb][st1b][enb][stb ^ 3]) * ext[st][PTEXT_L_WC];
-      if (stb == G || stb == U)
-        ext[en][PTEXT_L] += base10 * Boltz(em.stack[stb][st1b][enb][stb ^ 1]) * ext[st][PTEXT_L_GU];
+      ext[en][PTEXT_L] +=
+          base10 * Boltz(em.stack[stb][st1b][enb][WcPair(stb)]) * ext[st][PTEXT_L_WC];
+      if (IsGu(stb))
+        ext[en][PTEXT_L] +=
+            base10 * Boltz(em.stack[stb][st1b][enb][GuPair(stb)]) * ext[st][PTEXT_L_GU];
     }
   }
 

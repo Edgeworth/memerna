@@ -220,7 +220,7 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
   Energy energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
-  if (IsAuGu(r[st], r[en])) {
+  if (IsAuGuPair(r[st], r[en])) {
     if (s) (*s)->AddNote("%de - AU/GU penalty", augu_penalty);
     energy += augu_penalty;
   }
@@ -288,11 +288,11 @@ Energy EnergyModel::Bulge(
 
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
-    if (IsAuGu(r[ost], r[oen])) {
+    if (IsAuGuPair(r[ost], r[oen])) {
       if (s) (*s)->AddNote("%de - outer AU/GU penalty", augu_penalty);
       energy += augu_penalty;
     }
-    if (IsAuGu(r[ist], r[ien])) {
+    if (IsAuGuPair(r[ist], r[ien])) {
       if (s) (*s)->AddNote("%de - inner AU/GU penalty", augu_penalty);
       energy += augu_penalty;
     }
@@ -351,11 +351,11 @@ Energy EnergyModel::InternalLoop(
   if (s) (*s)->AddNote("%de - initiation", energy);
 
   // Special AU/GU penalties.
-  if (IsAuGu(r[ost], r[oen])) {
+  if (IsAuGuPair(r[ost], r[oen])) {
     if (s) (*s)->AddNote("%de - outer AU/GU penalty", internal_augu_penalty);
     energy += internal_augu_penalty;
   }
-  if (IsAuGu(r[ist], r[ien])) {
+  if (IsAuGuPair(r[ist], r[ien])) {
     if (s) (*s)->AddNote("%de - inner AU/GU penalty", internal_augu_penalty);
     energy += internal_augu_penalty;
   }
@@ -412,7 +412,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
   for (auto branch_st : branches) {
     num_unpaired += s[branch_st] - branch_st + 1;
 
-    if (IsAuGu(r[branch_st], r[s[branch_st]])) {
+    if (IsAuGuPair(r[branch_st], r[s[branch_st]])) {
       if (struc)
         struc->AddNote(
             "%de - opening AU/GU penalty at %d %d", augu_penalty, branch_st, s[branch_st]);
@@ -433,7 +433,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
       AddBranchCtdsToBaseCtds(branches, branch_ctd, ctd);
     }
   } else {
-    if (IsAuGu(r[st], r[en])) {
+    if (IsAuGuPair(r[st], r[en])) {
       if (struc) struc->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
       energy += augu_penalty;
     }
@@ -549,7 +549,7 @@ EnergyResult EnergyModel::TotalEnergy(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
   auto res =
       SubstructureEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
-  if (s[0] == static_cast<int>(r.size() - 1) && IsAuGu(r[0], r[s[0]])) {
+  if (s[0] == static_cast<int>(r.size() - 1) && IsAuGuPair(r[0], r[s[0]])) {
     res.energy += augu_penalty;
     if (res.struc) {
       res.struc->AddNote("%de - top level AU/GU penalty", augu_penalty);

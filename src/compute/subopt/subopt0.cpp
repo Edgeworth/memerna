@@ -98,7 +98,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
         // coaxial stack.
-        if ((a == EXT_WC && IsWatsonCrick(stb, enb)) || (a == EXT_GU && IsGu(stb, enb)))
+        if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P});
 
         // Everything after this is only for EXT.
@@ -117,11 +117,11 @@ int Suboptimal0::Run(SuboptCallback fn) {
         Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
 
         // (   )(<   ) > Flush coax
-        energy = base_energy + base01 + em_.stack[en1b][enb][enb ^ 3][stb] + ext_[en][EXT_WC];
+        energy = base_energy + base01 + em_.stack[en1b][enb][WcPair(enb)][stb] + ext_[en][EXT_WC];
         Expand(energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
             {st, CTD_FCOAX_WITH_NEXT});
-        if (enb == G || enb == U) {
-          energy = base_energy + base01 + em_.stack[en1b][enb][enb ^ 1][stb] + ext_[en][EXT_GU];
+        if (IsGu(enb)) {
+          energy = base_energy + base01 + em_.stack[en1b][enb][GuPair(enb)][stb] + ext_[en][EXT_GU];
           Expand(energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
               {st, CTD_FCOAX_WITH_NEXT});
         }
@@ -271,7 +271,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
               {st, CTD_UNUSED});
         if (a == DP_U_WC || a == DP_U_GU) {
           // Make sure we don't form any branches that are not the right type of pair.
-          if ((a == DP_U_WC && IsWatsonCrick(stb, pb)) || (a == DP_U_GU && IsGu(stb, pb))) {
+          if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
             Expand(energy, {st, piv, DP_P});
             Expand(energy + dp_[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U});
           }
@@ -307,12 +307,14 @@ int Suboptimal0::Run(SuboptCallback fn) {
             {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV});
 
         // (   )(<   ) > Flush coax - U, U2
-        energy = base_energy + base01 + em_.stack[pl1b][pb][pb ^ 3][stb] + dp_[piv][en][DP_U_WC];
+        energy =
+            base_energy + base01 + em_.stack[pl1b][pb][WcPair(pb)][stb] + dp_[piv][en][DP_U_WC];
         Expand(energy, {st, piv - 1, DP_P}, {piv, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
             {piv, CTD_FCOAX_WITH_PREV});
 
-        if (pb == G || pb == U) {
-          energy = base_energy + base01 + em_.stack[pl1b][pb][pb ^ 1][stb] + dp_[piv][en][DP_U_GU];
+        if (IsGu(pb)) {
+          energy =
+              base_energy + base01 + em_.stack[pl1b][pb][GuPair(pb)][stb] + dp_[piv][en][DP_U_GU];
           Expand(energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
               {piv, CTD_FCOAX_WITH_PREV});
         }

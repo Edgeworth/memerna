@@ -175,7 +175,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
         // coaxial stack.
-        if ((a == EXT_WC && IsWatsonCrick(stb, enb)) || (a == EXT_GU && IsGu(stb, enb)))
+        if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           exps.push_back({energy, {en + 1, -1, EXT}, {st, en, DP_P}});
       }
 
@@ -219,13 +219,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
       }
 
       // (   )(<   ) > Flush coax
-      energy = base01 + em_.stack[en1b][enb][enb ^ 3][stb] + ext_[en][EXT_WC];
+      energy = base01 + em_.stack[en1b][enb][WcPair(enb)][stb] + ext_[en][EXT_WC];
       if (energy <= delta)
         exps.push_back({energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
             {st, CTD_FCOAX_WITH_NEXT}});
 
-      if (enb == G || enb == U) {
-        energy = base01 + em_.stack[en1b][enb][enb ^ 1][stb] + ext_[en][EXT_GU];
+      if (IsGu(enb)) {
+        energy = base01 + em_.stack[en1b][enb][GuPair(enb)][stb] + ext_[en][EXT_GU];
         if (energy <= delta)
           exps.push_back({energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
               {st, CTD_FCOAX_WITH_NEXT}});
@@ -360,7 +360,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {st, CTD_UNUSED}});
     if (a == DP_U_WC || a == DP_U_GU) {
       // Make sure we don't form any branches that are not the right type of pair.
-      if ((a == DP_U_WC && IsWatsonCrick(stb, pb)) || (a == DP_U_GU && IsGu(stb, pb))) {
+      if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
         if (energy <= delta) exps.push_back({energy, {st, piv, DP_P}});
         if (energy + dp_[piv + 1][en][DP_U] <= delta)
           exps.push_back({energy + dp_[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U}});
@@ -411,13 +411,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {piv + 2, CTD_RCOAX_WITH_PREV}});
 
     // (   )(<   ) > Flush coax - U, U2
-    energy = base01 + em_.stack[pl1b][pb][pb ^ 3][stb] + dp_[piv][en][DP_U_WC];
+    energy = base01 + em_.stack[pl1b][pb][WcPair(pb)][stb] + dp_[piv][en][DP_U_WC];
     if (energy <= delta)
       exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
           {piv, CTD_FCOAX_WITH_PREV}});
 
-    if (pb == G || pb == U) {
-      energy = base01 + em_.stack[pl1b][pb][pb ^ 1][stb] + dp_[piv][en][DP_U_GU];
+    if (IsGu(pb)) {
+      energy = base01 + em_.stack[pl1b][pb][GuPair(pb)][stb] + dp_[piv][en][DP_U_GU];
       if (energy <= delta)
         exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
             {piv, CTD_FCOAX_WITH_PREV}});
