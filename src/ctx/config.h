@@ -54,6 +54,10 @@ struct CtxCfg {
   static CtxCfg FromArgParse(const ArgParse& args);
 };
 
+std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o);
+std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o);
+std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o);
+
 }  // namespace mrna::ctx
 
 #endif  // CTX_CONFIG_H_

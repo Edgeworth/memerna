@@ -17,41 +17,59 @@ void RegisterOpts(ArgParse* args) {
 
 CtxCfg CtxCfg::FromArgParse(const ArgParse& args) {
   CtxCfg cfg;
-  const auto dp_alg = args.Get(OPT_DP_ALG);
-  if (dp_alg == "0") {
-    cfg.dp_alg = CtxCfg::DpAlg::ZERO;
-  } else if (dp_alg == "1") {
-    cfg.dp_alg = CtxCfg::DpAlg::ONE;
-  } else if (dp_alg == "2") {
-    cfg.dp_alg = CtxCfg::DpAlg::TWO;
-  } else if (dp_alg == "3") {
-    cfg.dp_alg = CtxCfg::DpAlg::THREE;
-  } else if (dp_alg == "brute") {
-    cfg.dp_alg = CtxCfg::DpAlg::BRUTE;
-  } else {
-    error("unknown fold option");
-  }
-  const auto subopt_alg = args.Get(OPT_SUBOPT_ALG);
-  if (subopt_alg == "0") {
-    cfg.subopt_alg = CtxCfg::SuboptAlg::ZERO;
-  } else if (subopt_alg == "1") {
-    cfg.subopt_alg = CtxCfg::SuboptAlg::ONE;
-  } else if (subopt_alg == "brute") {
-    cfg.subopt_alg = CtxCfg::SuboptAlg::BRUTE;
-  } else {
-    error("unknown suboptimal option");
-  }
-  const auto part_alg = args.Get(OPT_PART_ALG);
-  if (part_alg == "0") {
-    cfg.part_alg = CtxCfg::PartAlg::ZERO;
-  } else if (part_alg == "1") {
-    cfg.part_alg = CtxCfg::PartAlg::ONE;
-  } else if (part_alg == "brute") {
-    cfg.part_alg = CtxCfg::PartAlg::BRUTE;
-  } else {
-    error("unknown partition option");
-  }
+  cfg.dp_alg = args.Get<DpAlg>(OPT_DP_ALG);
+  cfg.subopt_alg = args.Get<SuboptAlg>(OPT_SUBOPT_ALG);
+  cfg.part_alg = args.Get<PartAlg>(OPT_PART_ALG);
   return cfg;
+}
+
+std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o) {
+  std::string s;
+  str >> s;
+  if (s == "0") {
+    o = CtxCfg::DpAlg::ZERO;
+  } else if (s == "1") {
+    o = CtxCfg::DpAlg::ONE;
+  } else if (s == "2") {
+    o = CtxCfg::DpAlg::TWO;
+  } else if (s == "3") {
+    o = CtxCfg::DpAlg::THREE;
+  } else if (s == "brute") {
+    o = CtxCfg::DpAlg::BRUTE;
+  } else {
+    error("unknown fold option %s", s.c_str());
+  }
+  return str;
+}
+
+std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
+  std::string s;
+  str >> s;
+  if (s == "0") {
+    o = CtxCfg::SuboptAlg::ZERO;
+  } else if (s == "1") {
+    o = CtxCfg::SuboptAlg::ONE;
+  } else if (s == "brute") {
+    o = CtxCfg::SuboptAlg::BRUTE;
+  } else {
+    error("unknown suboptimal option %s", s.c_str());
+  }
+  return str;
+}
+
+std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o) {
+  std::string s;
+  str >> s;
+  if (s == "0") {
+    o = CtxCfg::PartAlg::ZERO;
+  } else if (s == "1") {
+    o = CtxCfg::PartAlg::ONE;
+  } else if (s == "brute") {
+    o = CtxCfg::PartAlg::BRUTE;
+  } else {
+    error("unknown partition option %s", s.c_str());
+  }
+  return str;
 }
 
 }  // namespace mrna::ctx

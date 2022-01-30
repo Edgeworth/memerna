@@ -9,9 +9,9 @@ namespace mrna::brute {
 void RegisterOpts(ArgParse* args);
 
 struct BruteCfg {
-  bool mfe;
-  bool subopt;
-  bool part;
+  bool mfe;  // Whether to compute the mfe.
+  bool subopt;  // Whether to compute suboptimal structures.
+  bool part;  // Whether to compute the partition function.
 
   static BruteCfg FromArgParse(const ArgParse& args);
 };
