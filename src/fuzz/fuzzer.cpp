@@ -9,11 +9,10 @@
 #include <utility>
 
 #include "compute/boltz_dp.h"
+#include "compute/brute/alg.h"
 #include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
-#include "compute/partition/brute.h"
 #include "compute/partition/partition.h"
-#include "compute/subopt/brute.h"
 #include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
@@ -27,9 +26,6 @@
 #include "util/string.h"
 
 namespace mrna::fuzz {
-
-using partition::PartitionBruteForce;
-using subopt::SuboptimalBruteForce;
 
 inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
@@ -145,10 +141,10 @@ Error Fuzzer::CheckSuboptimal() {
   for (auto subopt_alg : ctx::CtxCfg::SUBOPT_ALGS) {
     ctx::CtxCfg cfg(ctx::CtxCfg::DpAlg::TWO, subopt_alg);
     ctx::Ctx ctx(em_, cfg);
-    memerna_subopts_delta.push_back(ctx.SuboptimalIntoVector(
-        Primary(r_), subopt::SuboptCfg{.delta = cfg_.subopt_delta, .sorted = true}));
-    memerna_subopts_max.push_back(ctx.SuboptimalIntoVector(
-        Primary(r_), subopt::SuboptCfg{.strucs = cfg_.subopt_max, .sorted = true}));
+    memerna_subopts_delta.push_back(
+        ctx.SuboptimalIntoVector(Primary(r_), {.delta = cfg_.subopt_delta, .sorted = true}));
+    memerna_subopts_max.push_back(
+        ctx.SuboptimalIntoVector(Primary(r_), {.strucs = cfg_.subopt_max, .sorted = true}));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
@@ -272,15 +268,14 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 
 Error Fuzzer::CheckBruteForce() {
   Error errors;
-  ctx::CtxCfg cfg(
-      ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, ctx::CtxCfg::PartAlg::ZERO);
+  ctx::CtxCfg cfg(ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, ctx::CtxCfg::PartAlg::ZERO);
   ctx::Ctx ctx(em_, cfg);
 
   if (cfg_.subopt) {
     // TODO: move stuff in this function to mfe,subopt,partition.
-    auto brute_subopt = SuboptimalBruteForce(Primary(r_), em_, cfg_.subopt_max);
-    auto memerna_subopt = ctx.SuboptimalIntoVector(
-        Primary(r_), subopt::SuboptCfg{.strucs = cfg_.subopt_max, .sorted = true});
+    auto cfg = subopt::SuboptCfg{.strucs = cfg_.subopt_max, .sorted = true};
+    auto brute_subopt = brute::SuboptimalBruteForce(Primary(r_), em_, cfg);
+    auto memerna_subopt = ctx.SuboptimalIntoVector(Primary(r_), cfg);
 
     AppendErrors(
         errors, MaybePrepend(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
@@ -294,23 +289,23 @@ Error Fuzzer::CheckBruteForce() {
   if (cfg_.part) {
     auto memerna_partition = ctx.Partition(Primary(r_));
 
-    auto brute_partition = PartitionBruteForce(Primary(r_), em_);
+    auto brute_partition = brute::PartitionBruteForce(Primary(r_), em_);
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
-    if (!equ(brute_partition.p.q, memerna_partition.p.q)) {
+    if (!equ(brute_partition.part.q, memerna_partition.part.q)) {
       std::stringstream sstream;
-      sstream << "q: brute partition " << brute_partition.p.q << " != memerna "
-              << memerna_partition.p.q
-              << "; difference: " << brute_partition.p.q - memerna_partition.p.q;
+      sstream << "q: brute partition " << brute_partition.part.q << " != memerna "
+              << memerna_partition.part.q
+              << "; difference: " << brute_partition.part.q - memerna_partition.part.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(brute_partition.p.p[st][en], memerna_partition.p.p[st][en])) {
+        if (!equ(brute_partition.part.p[st][en], memerna_partition.part.p[st][en])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partition.p.p[st][en]
-                  << " != brute force " << brute_partition.p.p[st][en] << "; difference: "
-                  << brute_partition.p.p[st][en] - memerna_partition.p.p[st][en];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partition.part.p[st][en]
+                  << " != brute force " << brute_partition.part.p[st][en] << "; difference: "
+                  << brute_partition.part.p[st][en] - memerna_partition.part.p[st][en];
           errors.push_back(sstream.str());
         }
       }
@@ -322,30 +317,30 @@ Error Fuzzer::CheckBruteForce() {
 Error Fuzzer::CheckPartition() {
   Error errors;
   // TODO: Check DP and ext tables?
-  std::vector<partition::PartitionResult> memerna_partitions;
+  std::vector<part::PartResult> memerna_partitions;
   for (auto partition_alg : ctx::CtxCfg::PART_ALGS) {
-    ctx::Ctx ctx(em_,
-        ctx::CtxCfg(ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, partition_alg));
+    ctx::Ctx ctx(
+        em_, ctx::CtxCfg(ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, partition_alg));
     memerna_partitions.emplace_back(ctx.Partition(Primary(r_)));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_partitions.size()); ++i) {
-    if (!equ(memerna_partitions[i].p.q, memerna_partitions[0].p.q)) {
+    if (!equ(memerna_partitions[i].part.q, memerna_partitions[0].part.q)) {
       std::stringstream sstream;
-      sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].p.q
-              << " != " << memerna_partitions[0].p.q
-              << "; difference: " << memerna_partitions[i].p.q - memerna_partitions[0].p.q;
+      sstream << "q: memerna partition " << i << ": " << memerna_partitions[i].part.q
+              << " != " << memerna_partitions[0].part.q
+              << "; difference: " << memerna_partitions[i].part.q - memerna_partitions[0].part.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(memerna_partitions[i].p.p[st][en], memerna_partitions[0].p.p[st][en])) {
+        if (!equ(memerna_partitions[i].part.p[st][en], memerna_partitions[0].part.p[st][en])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
-                  << memerna_partitions[i].p.p[st][en]
-                  << " != " << memerna_partitions[0].p.p[st][en] << "; difference: "
-                  << memerna_partitions[i].p.p[st][en] - memerna_partitions[0].p.p[st][en];
+                  << memerna_partitions[i].part.p[st][en]
+                  << " != " << memerna_partitions[0].part.p[st][en] << "; difference: "
+                  << memerna_partitions[i].part.p[st][en] - memerna_partitions[0].part.p[st][en];
           errors.push_back(sstream.str());
         }
       }
@@ -358,21 +353,21 @@ Error Fuzzer::CheckPartition() {
   if (cfg_.part_rnastructure) {
     auto rnastructure_part = rnastructure_->Partition(Primary(r_));
     // Types for the partition function are meant to be a bit configurable, so use sstream here.
-    if (!equ(rnastructure_part.p.q, memerna_partitions[0].p.q)) {
+    if (!equ(rnastructure_part.part.q, memerna_partitions[0].part.q)) {
       std::stringstream sstream;
-      sstream << "q: rnastructure partition " << rnastructure_part.p.q << " != memerna "
-              << memerna_partitions[0].p.q
-              << "; difference: " << rnastructure_part.p.q - memerna_partitions[0].p.q;
+      sstream << "q: rnastructure partition " << rnastructure_part.part.q << " != memerna "
+              << memerna_partitions[0].part.q
+              << "; difference: " << rnastructure_part.part.q - memerna_partitions[0].part.q;
       errors.push_back(sstream.str());
     }
 
     for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
       for (int en = 0; en < static_cast<int>(r_.size()); ++en) {
-        if (!equ(rnastructure_part.p.p[st][en], memerna_partitions[0].p.p[st][en])) {
+        if (!equ(rnastructure_part.part.p[st][en], memerna_partitions[0].part.p[st][en])) {
           std::stringstream sstream;
-          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].p.p[st][en]
-                  << " != rnastructure " << rnastructure_part.p.p[st][en] << "; difference: "
-                  << rnastructure_part.p.p[st][en] - memerna_partitions[0].p.p[st][en];
+          sstream << "memerna " << st << " " << en << ": " << memerna_partitions[0].part.p[st][en]
+                  << " != rnastructure " << rnastructure_part.part.p[st][en] << "; difference: "
+                  << rnastructure_part.part.p[st][en] - memerna_partitions[0].part.p[st][en];
           errors.push_back(sstream.str());
         }
       }

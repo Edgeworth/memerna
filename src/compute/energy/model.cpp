@@ -769,11 +769,14 @@ EnergyModel EnergyModel::FromDataDir(const std::string& data_dir) {
 }
 
 EnergyModel EnergyModel::FromArgParse(const ArgParse& args) {
+  EnergyModel em;
   if (args.Has(OPT_SEED)) {
-    return Random(args.Get<uint_fast32_t>(OPT_SEED));
+    em = Random(args.Get<uint_fast32_t>(OPT_SEED));
   } else {
-    return FromDataDir(args.Get(OPT_MEMERNA_DATA));
+    em = FromDataDir(args.Get(OPT_MEMERNA_DATA));
   }
+  em.cfg = EnergyCfg::FromArgParse(args);
+  return em;
 }
 
 }  // namespace mrna::energy

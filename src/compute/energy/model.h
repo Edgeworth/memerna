@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "compute/energy/config.h"
 #include "compute/energy/energy.h"
 #include "model/base.h"
 #include "model/ctd.h"
@@ -22,7 +23,7 @@ namespace mrna::energy {
 
 class EnergyModel {
  public:
-  static constexpr int INITIATION_CACHE_SZ = 31;
+  inline constexpr static int INITIATION_CACHE_SZ = 31;
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
   Energy stack[4][4][4][4] = {};
@@ -60,6 +61,19 @@ class EnergyModel {
   Energy coax_mismatch_wc_bonus = {};
   Energy coax_mismatch_gu_bonus = {};
   Energy augu_penalty = {};
+
+  EnergyCfg cfg;
+
+  inline bool CanPair(const Primary& r, int st, int en) const {
+    // TODO: check the correctness of this.
+    if (cfg.lonely_pairs) {
+      return BasePair(r[st], r[en]);
+    } else {
+      return BasePair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
+          ((en - st - 3 >= HAIRPIN_MIN_SZ && BasePair(r[st + 1], r[en - 1])) ||
+              (st > 0 && en < static_cast<int>(r.size() - 1) && BasePair(r[st - 1], r[en + 1])));
+    }
+  }
 
   Energy HairpinInitiation(int n) const {
     assert(n >= 3);

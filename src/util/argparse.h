@@ -79,11 +79,6 @@ struct Opt {
   bool required_;
 };
 
-// Some common options
-inline const Opt OPT_VERBOSE = Opt().LongName("verbose").ShortName("v").Help("verbose output");
-inline const Opt OPT_QUIET = Opt().LongName("quiet").ShortName("q").Help("quiet output");
-inline const Opt OPT_AFL = mrna::Opt().LongName("afl").Default("-1").Help("run in afl-fuzz mode");
-
 class ArgParse {
  public:
   ArgParse() = default;

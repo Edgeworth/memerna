@@ -10,6 +10,7 @@
 #include "compute/energy/structure.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
+#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
 

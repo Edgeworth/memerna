@@ -7,7 +7,7 @@
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::partition {
+namespace mrna::part {
 
 BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const BoltzDpArray& dp) {
   const int N = static_cast<int>(r.size());
@@ -114,4 +114,4 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
   return ext;
 }
 
-}  // namespace mrna::partition
+}  // namespace mrna::part

@@ -76,8 +76,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) co
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
-  return ctx::FoldResult{
-      .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
+  return {.mfe = {.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
@@ -103,7 +102,7 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
   return res;
 }
 
-partition::PartitionResult RNAstructure::Partition(Primary r) const {
+part::PartResult RNAstructure::Partition(Primary r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
@@ -124,7 +123,7 @@ partition::PartitionResult RNAstructure::Partition(Primary r) const {
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  partition::Partition partition = {BoltzSums(length, 0), 0};
+  part::Part partition = {BoltzSums(length, 0), 0};
   partition.q = BoltzEnergy(w5[length]);
   for (int i = 1; i <= length; ++i) {
     for (int j = i; j < length + i; ++j) {
@@ -133,16 +132,15 @@ partition::PartitionResult RNAstructure::Partition(Primary r) const {
     }
   }
 
-  BoltzProbs probability(length, 0);
+  BoltzProbs prob(length, 0);
   for (int i = 0; i < length; ++i) {
     for (int j = i; j < length; ++j) {
-      probability[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(),
-          structure.get(), pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
+      prob[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(), structure.get(),
+          pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }
   // TODO: Convert tables?
-  return partition::PartitionResult{
-      .dp{}, .ext{}, .p = std::move(partition), .prob = std::move(probability)};
+  return {.dp{}, .ext{}, .part = std::move(partition), .prob = std::move(prob)};
 }
 
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {

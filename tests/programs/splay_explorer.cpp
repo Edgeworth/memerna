@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
 #include "util/splaymap.h"

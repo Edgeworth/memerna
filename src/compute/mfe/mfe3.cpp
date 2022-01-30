@@ -54,8 +54,8 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModel& em) {
                 dp[st + 1][en - l - 1][DP_P]);
       }
 
-      // Update paired - only if can actually pair.
-      if (ViableFoldingPair(r, st, en)) {
+      // TODO: check lonely pairs
+      if (em.CanPair(r, st, en)) {
         // Stacking
         mins[DP_P] =
             std::min(mins[DP_P], em.stack[stb][st1b][en1b][enb] + dp[st + 1][en - 1][DP_P]);

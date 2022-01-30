@@ -25,8 +25,8 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
       const Base stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
                  en2b = r[en - 2];
 
-      // Update paired - only if can actually pair.
-      if (ViableFoldingPair(r, st, en)) {
+      // TODO: check lonely pairs
+      if (em.CanPair(r, st, en)) {
         Energy p_min = MAX_E;
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {

@@ -20,8 +20,19 @@ There are two conceptual APIs:
   basic building block data structures and shouldn't take high level API types.
 
 If a submodule needs some configuration, it should declare a *Cfg struct, e.g.
-CtxCfg, EnergyCfg, etc and also Opt options and a FromArgParse static method
-on the config struct, in a config.h and config.cpp file.
+CtxCfg, EnergyCfg, etc. If it wants to be used from the command line it should
+also declare Opt options and a FromArgParse static method on the config struct,
+in a config.h and config.cpp file.
+
+In general, Cfg structs should not include other Cfg structs. If code needs
+multiple Cfg structs, take them separately. This prevents
+structs from being included multiple times and potentially conflicting. Maybe
+an exception if it's a leaf Cfg struct that won't be included in anything else.
+
+config.h should declare a RegisterOpts method which registers options for
+that Cfg struct. It should also call RegisterOpts on any other modules it
+would need, if it wanted to be invoked on the command line. e.g. Subopt
+should call RegisterOpts for energy and model.
 
 Some notes on the code structure:
 

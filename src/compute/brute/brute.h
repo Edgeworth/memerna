@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "compute/boltz_dp.h"
+#include "compute/brute/config.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
@@ -19,35 +20,29 @@
 
 namespace mrna::brute {
 
+struct SuboptCmp {
+  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+    // Kept in a multiset, so this is just used for ordering, not deduplication.
+    // There should be no duplicates added anyway. Single comparison to keep it fast.
+    return a.energy < b.energy;
+  }
+};
+
+struct BruteResult {
+  // Suboptimal structures:
+  // TODO: use splayset here?
+  std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
+
+  // Partition function:
+  part::Part part;
+  BoltzProbs prob;
+};
+
 class BruteForce {
  public:
-  struct Result {
-   private:
-    struct SuboptCmp {
-      bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
-        // Kept in a multiset, so this is just used for ordering, not deduplication.
-        // There should be no duplicates added anyway. Single comparison to keep it fast.
-        return a.energy < b.energy;
-      }
-    };
+  BruteForce(Primary r, const energy::EnergyModel& em, BruteCfg cfg);
 
-   public:
-    // Common:
-    std::vector<std::pair<int, int>> base_pairs;
-    std::vector<int> branch_count;
-
-    // MFE and suboptimal folding:
-    int strucs;
-    std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
-
-    // TODO: Switch to optional?
-    bool compute_partition;
-    partition::Partition partition;
-    BoltzProbs probabilities;
-  };
-
-  Result Run(Primary r, const energy::EnergyModel& em, int strucs, bool compute_partition,
-      bool allow_lonely_pairs);
+  BruteResult Run();
 
  private:
   // Partition function:
@@ -65,14 +60,19 @@ class BruteForce {
   };
 
   Primary r_;
+  energy::EnergyModel em_;
+  BruteCfg cfg_;
+
   Secondary s_;
   Ctds ctd_;
-  energy::EnergyModel em_;
-  Result res_;
+  BruteResult res_;
+  std::vector<std::pair<int, int>> pairs_;  // Holds all possible base pairs to try.
+  std::vector<int> branch_count_;  // Number of sibling branches.
+
   SplaySet<SubstructureId> substructure_map_;
 
-  void AddAllCombinations(int idx);
   void Dfs(int idx);
+  void AddAllCombinations(int idx);
 
   SubstructureId WriteBits(int st, int en, int N, bool inside);
   SubstructureId BuildInsideStructure(int st, int en, int N);

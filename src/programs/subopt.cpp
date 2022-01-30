@@ -9,8 +9,10 @@
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "compute/subopt/config.h"
 
 // TODO: can replace this with modelcfg ctd stuff
 inline const auto OPT_CTD_OUTPUT =

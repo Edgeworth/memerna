@@ -34,7 +34,7 @@ class RNAstructure : public RnaPackage {
   ctx::FoldResult Fold(Primary r) const override;
   int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const override;
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const override;
-  partition::PartitionResult Partition(Primary r) const override;
+  part::PartResult Partition(Primary r) const override;
 
   // TODO: Can be replaced by Fold now?
   ctx::FoldResult FoldAndDpTable(Primary r, dp_state_t* dp_state) const;

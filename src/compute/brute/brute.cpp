@@ -5,41 +5,80 @@
 
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
+#include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
-#include "model/base.h"
 #include "model/model.h"
 #include "util/error.h"
+#include "compute/subopt/config.h"
 
 namespace mrna::brute {
 
-BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
-  static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
-  static_assert((-1 & PT_MASK) == PT_MASK, "mfw not a two's complement machine");
-  SubstructureId struc = {};  // Zero initialise.
-  for (int i = 0, b = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
-    if (inside && (i < st || i > en)) continue;
-    if (!inside && i > st && i < en) continue;
-    uint16_t pack = uint16_t((s_[i] & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
+BruteForce::BruteForce(Primary r, const energy::EnergyModel& em, BruteCfg cfg)
+    : r_(std::move(r)), em_(em), cfg_(std::move(cfg)), s_(r_.size()), ctd_(r_.size()) {}
 
-    int byte = b / 16;
-    int bit = b & 15;
-    struc.bits[byte] = uint16_t(struc.bits[byte] | (pack << bit));
-    int space = 16 - bit;
-    if (space < CTD_MAX_BITS + PT_MAX_BITS)
-      struc.bits[byte + 1] = uint16_t(struc.bits[byte + 1] | (pack >> space));
+BruteResult BruteForce::Run() {
+  // Preconditions:
+  static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
+
+  if (cfg_.part) {
+    // Plus one to N, since -1 takes up a spot.
+    verify(r_.size() + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
+    res_.part.q = 0;
+    res_.part.p = BoltzSums(r_.size(), 0);
   }
-  return struc;
+  // Add base pairs in order of increasing st, then en.
+  for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
+      if (em_.CanPair(r_, st, en)) pairs_.emplace_back(st, en);
+    }
+  }
+  Dfs(0);
+
+  if (cfg_.part) res_.prob = res_.part.Prob();
+
+  return std::move(res_);
 }
 
-BruteForce::SubstructureId BruteForce::BuildInsideStructure(int st, int en, int N) {
-  // Don't include the ctd value at st, since that's for the outside.
-  return WriteBits(st + 1, en, N, true);
-}
+void BruteForce::Dfs(int idx) {
+  if (idx == static_cast<int>(pairs_.size())) {
+    // Small optimisation for case when we're just getting one structure.
+    if (cfg_.subopt_cfg.strucs == 1 && !cfg_.part) {
+      auto res = em_.TotalEnergy(r_, s_, nullptr);
+      if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
+        res_.subopts.insert(subopt::SuboptResult(
+            tb::TracebackResult(Secondary(s_), std::move(res.ctd)), res.energy));
+      if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
+    } else {
+      // Precompute whether things are multiloops or not.
+      branch_count_ = energy::GetBranchCounts(s_);
+      AddAllCombinations(0);
+    }
 
-BruteForce::SubstructureId BruteForce::BuildOutsideStructure(int st, int en, int N) {
-  // Don't include the ctd value at en, since that's for the inside.
-  return WriteBits(st, en + 1, N, false);
+    return;
+  }
+  // Don't take this base pair.
+  Dfs(idx + 1);
+
+  // Take this base pair.
+  bool can_take = true;
+  const auto& p = pairs_[idx];
+  // Only need to check in the range of this base pair. Since we ordered by
+  // increasing st, anything at or after this will either be the start of something starting at st,
+  // or something ending, both of which conflict with this base pair.
+  for (int i = p.first; i <= p.second; ++i) {
+    if (s_[i] != -1) {
+      can_take = false;
+      break;
+    }
+  }
+  if (can_take) {
+    s_[p.first] = p.second;
+    s_[p.second] = p.first;
+    Dfs(idx + 1);
+    s_[p.first] = -1;
+    s_[p.second] = -1;
+  }
 }
 
 void BruteForce::AddAllCombinations(int idx) {
@@ -47,9 +86,9 @@ void BruteForce::AddAllCombinations(int idx) {
   // Base case
   if (idx == N) {
     auto energy = em_.TotalEnergy(r_, s_, &ctd_).energy;
-    if (res_.compute_partition) {
+    if (cfg_.part) {
       BoltzEnergy boltz = Boltz(energy);
-      res_.partition.q += boltz;
+      res_.part.q += boltz;
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
           const auto inside_structure = BuildInsideStructure(i, s_[i], N);
@@ -59,24 +98,24 @@ void BruteForce::AddAllCombinations(int idx) {
           if (inside_new || outside_new) {
             Energy inside_energy = em_.SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
-              res_.partition.p[i][s_[i]] += Boltz(inside_energy);
+              res_.part.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.partition.p[s_[i]][i] += Boltz(energy - inside_energy);
+              res_.part.p[s_[i]][i] += Boltz(energy - inside_energy);
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
-          res_.probabilities[i][s_[i]] += boltz;
+          res_.prob[i][s_[i]] += boltz;
         }
       }
     } else {
       // TODO: check here
-      if (static_cast<int>(res_.subopts.size()) < res_.strucs ||
+      if (static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs ||
           res_.subopts.rbegin()->energy > energy)
         res_.subopts.insert(
             subopt::SuboptResult(tb::TracebackResult(Secondary(s_), Ctds(ctd_)), energy));
-      if (static_cast<int>(res_.subopts.size()) > res_.strucs)
+      if (static_cast<int>(res_.subopts.size()) > cfg_.subopt_cfg.strucs)
         res_.subopts.erase(--res_.subopts.end());
     }
     return;
@@ -84,7 +123,7 @@ void BruteForce::AddAllCombinations(int idx) {
 
   // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set
   // ctds so continue.
-  if (ctd_[idx] != CTD_NA || s_[idx] == -1 || res_.branch_count[idx] < 2) {
+  if (ctd_[idx] != CTD_NA || s_[idx] == -1 || branch_count_[idx] < 2) {
     AddAllCombinations(idx + 1);
     return;
   }
@@ -163,85 +202,33 @@ void BruteForce::AddAllCombinations(int idx) {
   ctd_[idx] = CTD_NA;
 }
 
-void BruteForce::Dfs(int idx) {
-  if (idx == static_cast<int>(res_.base_pairs.size())) {
-    // Small optimisation for case when we're just getting one structure.
-    if (res_.strucs == 1 && !res_.compute_partition) {
-      auto res = em_.TotalEnergy(r_, s_, nullptr);
-      if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
-        res_.subopts.insert(subopt::SuboptResult(
-            tb::TracebackResult(Secondary(s_), std::move(res.ctd)), res.energy));
-      if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
-    } else {
-      // Precompute whether things are multiloops or not.
-      res_.branch_count = energy::GetBranchCounts(s_);
-      AddAllCombinations(0);
-    }
+BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
+  static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
+  static_assert((-1 & PT_MASK) == PT_MASK, "mfw not a two's complement machine");
+  SubstructureId struc = {};  // Zero initialise.
+  for (int i = 0, b = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
+    if (inside && (i < st || i > en)) continue;
+    if (!inside && i > st && i < en) continue;
+    uint16_t pack = uint16_t((s_[i] & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
 
-    return;
+    int byte = b / 16;
+    int bit = b & 15;
+    struc.bits[byte] = uint16_t(struc.bits[byte] | (pack << bit));
+    int space = 16 - bit;
+    if (space < CTD_MAX_BITS + PT_MAX_BITS)
+      struc.bits[byte + 1] = uint16_t(struc.bits[byte + 1] | (pack >> space));
   }
-  // Don't take this base pair.
-  Dfs(idx + 1);
-
-  // Take this base pair.
-  bool can_take = true;
-  const auto& pair = res_.base_pairs[idx];
-  // Only need to check in the range of this base pair. Since we ordered by
-  // increasing st, anything at or after this will either be the start of something starting at st,
-  // or something ending, both of which conflict with this base pair.
-  for (int i = pair.first; i <= pair.second; ++i) {
-    if (s_[i] != -1) {
-      can_take = false;
-      break;
-    }
-  }
-  if (can_take) {
-    s_[pair.first] = pair.second;
-    s_[pair.second] = pair.first;
-    Dfs(idx + 1);
-    s_[pair.first] = -1;
-    s_[pair.second] = -1;
-  }
+  return struc;
 }
 
-BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int strucs,
-    bool compute_partition, bool allow_lonely_pairs) {
-  // Preconditions:
-  static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
+BruteForce::SubstructureId BruteForce::BuildInsideStructure(int st, int en, int N) {
+  // Don't include the ctd value at st, since that's for the outside.
+  return WriteBits(st + 1, en, N, true);
+}
 
-  r_ = std::move(r);
-  const int N = static_cast<int>(r.size());
-
-  em_ = em;
-  s_.reset(N);
-  ctd_.reset(N);
-
-  // TODO: Cleanup here
-  res_.strucs = strucs;
-  res_.compute_partition = compute_partition;
-  if (res_.compute_partition) {
-    // Plus one to N, since -1 takes up a spot.
-    verify(N + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
-    res_.partition.q = 0;
-    res_.partition.p = BoltzSums(r.size(), 0);
-    res_.probabilities = BoltzProbs(r.size(), 0);
-  }
-  // Add base pairs in order of increasing st, then en.
-  for (int st = 0; st < N; ++st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      bool allowed = allow_lonely_pairs ? CanPair(r[st], r[en]) : ViableFoldingPair(r, st, en);
-      if (allowed) res_.base_pairs.emplace_back(st, en);
-    }
-  }
-  Dfs(0);
-
-  if (res_.compute_partition) {
-    // Fill probabilities from partition function.
-    for (int i = 0; i < N; ++i)
-      for (int j = i; j < N; ++j) res_.probabilities[i][j] /= res_.partition.q;
-  }
-
-  return std::move(res_);
+BruteForce::SubstructureId BruteForce::BuildOutsideStructure(int st, int en, int N) {
+  // Don't include the ctd value at en, since that's for the inside.
+  return WriteBits(st, en + 1, N, false);
 }
 
 }  // namespace mrna::brute
