@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <string>
 
-#include "compute/subopt/config.h"
-#include "context/ctx.h"
+#include "ctx/config.h"
+#include "ctx/ctx.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -18,14 +18,14 @@ inline const auto OPT_CTD_OUTPUT =
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
-  mrna::subopt::RegisterOpts(&args);
+  mrna::ctx::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_QUIET);
   args.RegisterOpt(OPT_CTD_OUTPUT);
   args.ParseOrExit(argc, argv);
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
-  auto ctx = mrna::Ctx::FromArgParse(args);
+  auto ctx = mrna::ctx::Ctx::FromArgParse(args);
   const bool should_print = !args.Has(mrna::OPT_QUIET);
   const bool ctd_data = args.Has(OPT_CTD_OUTPUT);
   const auto cfg = mrna::subopt::SuboptCfg::FromArgParse(args);

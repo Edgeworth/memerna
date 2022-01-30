@@ -2,7 +2,7 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "context/config.h"
+#include "ctx/config.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE
@@ -12,7 +12,7 @@
 namespace mrna::bridge {
 
 void RegisterOpts(ArgParse* args) {
-  ::mrna::RegisterOpts(args);
+  ctx::RegisterOpts(args);
   args->RegisterOpt(OPT_USE_RNASTRUCTURE);
   args->RegisterOpt(OPT_RNASTRUCTURE_DATA);
   args->RegisterOpt(OPT_USE_MEMERNA);

@@ -10,8 +10,8 @@
 #include <tuple>
 #include <vector>
 
-#include "model/secondary.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna {
 

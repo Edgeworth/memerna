@@ -5,13 +5,13 @@
 #include <vector>
 
 #include "compute/energy/config.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "compute/energy/energy.h"
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;

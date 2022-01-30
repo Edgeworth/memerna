@@ -1,5 +1,5 @@
 // Copyright 2021 Eliot Courtney.
-#include "compute/brute.h"
+#include "compute/brute/brute.h"
 
 #include <iterator>
 
@@ -11,7 +11,7 @@
 #include "model/model.h"
 #include "util/error.h"
 
-namespace mrna {
+namespace mrna::brute {
 
 BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
@@ -244,4 +244,4 @@ BruteForce::Result BruteForce::Run(Primary r, const energy::EnergyModel& em, int
   return std::move(res_);
 }
 
-}  // namespace mrna
+}  // namespace mrna::brute

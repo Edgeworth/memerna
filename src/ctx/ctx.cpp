@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "context/ctx.h"
+#include "ctx/ctx.h"
 
 #include <cassert>
 #include <functional>
@@ -22,7 +22,7 @@
 #include "util/array.h"
 #include "util/error.h"
 
-namespace mrna {
+namespace mrna::ctx {
 
 energy::EnergyResult Ctx::Efn(
     Primary r, Secondary s, const Ctds* given_ctd, bool build_structure) const {
@@ -30,17 +30,17 @@ energy::EnergyResult Ctx::Efn(
 }
 
 DpArray Ctx::ComputeTables(const Primary& r) const {
-  switch (cfg_.table_alg) {
-  case CtxCfg::TableAlg::ZERO: return mfe::ComputeTables0(r, em_);
-  case CtxCfg::TableAlg::ONE: return mfe::ComputeTables1(r, em_);
-  case CtxCfg::TableAlg::TWO: return mfe::ComputeTables2(r, em_);
-  case CtxCfg::TableAlg::THREE: return mfe::ComputeTables3(r, em_);
+  switch (cfg_.dp_alg) {
+  case CtxCfg::DpAlg::ZERO: return mfe::ComputeTables0(r, em_);
+  case CtxCfg::DpAlg::ONE: return mfe::ComputeTables1(r, em_);
+  case CtxCfg::DpAlg::TWO: return mfe::ComputeTables2(r, em_);
+  case CtxCfg::DpAlg::THREE: return mfe::ComputeTables3(r, em_);
   default: bug();
   }
 }
 
-FoldResult Ctx::Fold(Primary r) const {
-  if (cfg_.table_alg == CtxCfg::TableAlg::BRUTE) {
+ctx::FoldResult Ctx::Fold(Primary r) const {
+  if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
     auto subopt = mfe::MfeBruteForce(std::move(r), em_);
     return {
         .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
@@ -50,7 +50,7 @@ FoldResult Ctx::Fold(Primary r) const {
   auto ext = mfe::ComputeExterior(r, em_, dp);
   auto tb = tb::Traceback(r, em_, dp, ext);
   auto energy = ext[0][EXT];
-  return FoldResult{
+  return ctx::FoldResult{
       .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
       .tb = std::move(tb),
   };
@@ -67,7 +67,7 @@ std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
 }
 
 int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
-  if (cfg_.suboptimal_alg == CtxCfg::SuboptimalAlg::BRUTE) {
+  if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO: handle cases other than max structures.
     auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, cfg.strucs);
     for (const auto& subopt : subopts) fn(subopt);
@@ -76,24 +76,24 @@ int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg)
 
   auto dp = ComputeTables(r);
   auto ext = mfe::ComputeExterior(r, em_, dp);
-  switch (cfg_.suboptimal_alg) {
-  case CtxCfg::SuboptimalAlg::ZERO:
+  switch (cfg_.subopt_alg) {
+  case CtxCfg::SuboptAlg::ZERO:
     return subopt::Suboptimal0(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
-  case CtxCfg::SuboptimalAlg::ONE:
+  case CtxCfg::SuboptAlg::ONE:
     return subopt::Suboptimal1(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   default:
-    verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.suboptimal_alg));
+    verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.subopt_alg));
   }
 }
 
 partition::PartitionResult Ctx::Partition(Primary r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
-  switch (cfg_.partition_alg) {
-  case CtxCfg::PartitionAlg::ZERO: res = partition::Partition0(r, em_); break;
-  case CtxCfg::PartitionAlg::ONE:
+  switch (cfg_.part_alg) {
+  case CtxCfg::PartAlg::ZERO: res = partition::Partition0(r, em_); break;
+  case CtxCfg::PartAlg::ONE:
     res = partition::Partition1(r, energy::BoltzEnergyModel(em_));
     break;
-  case CtxCfg::PartitionAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
+  case CtxCfg::PartAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
@@ -111,4 +111,4 @@ Ctx Ctx::FromArgParse(const ArgParse& args) {
   return Ctx(energy::EnergyModel::FromArgParse(args), CtxCfg::FromArgParse(args));
 }
 
-}  // namespace mrna
+}  // namespace mrna::ctx

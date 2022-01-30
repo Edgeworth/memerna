@@ -57,12 +57,12 @@ energy::EnergyResult RNAstructure::Efn(Primary r, Secondary s, std::string* desc
   return energy::EnergyResult(structure->GetEnergy(1), Ctds(), nullptr);
 }
 
-FoldResult RNAstructure::Fold(Primary r) const {
+ctx::FoldResult RNAstructure::Fold(Primary r) const {
   dp_state_t state;
   return FoldAndDpTable(std::move(r), &state);
 }
 
-FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
+ctx::FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;
@@ -76,7 +76,8 @@ FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
-  return FoldResult{.mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
+  return ctx::FoldResult{
+      .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
