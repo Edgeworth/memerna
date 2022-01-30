@@ -120,7 +120,6 @@ int main(int argc, char* argv[]) {
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_AFL);
-  args.RegisterOpt(mrna::energy::OPT_MEMERNA_DATA);
   args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
   args.RegisterOpt(OPT_PRINT_INTERVAL);
   args.RegisterOpt(OPT_RANDOM);

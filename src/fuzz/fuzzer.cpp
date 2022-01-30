@@ -33,36 +33,25 @@ Fuzzer::Fuzzer(Primary r, energy::EnergyModel em, FuzzCfg cfg)
     : r_(std::move(r)), em_(em), cfg_(std::move(cfg)) {}
 
 Error Fuzzer::Run() {
-  Error errors;
-  AppendErrors(errors, MaybePrepend(MemernaComputeAndCheckState(), "memerna:"));
-  if (cfg_.mfe_rnastructure)
-    AppendErrors(errors, MaybePrepend(RnastructureComputeAndCheckState(), "rnastructure:"));
-  if (cfg_.mfe_table) AppendErrors(errors, MaybePrepend(CheckDpTables(), "dp tables:"));
-  if (cfg_.subopt) AppendErrors(errors, MaybePrepend(CheckSuboptimal(), "suboptimal:"));
+  Register("memerna:", MemernaComputeAndCheckState());
+  if (cfg_.mfe_rnastructure) Register("rnastructure:", RnastructureComputeAndCheckState());
+  if (cfg_.mfe_table) Register("dp tables:", CheckDpTables());
+  if (cfg_.subopt) Register("suboptimal:", CheckSuboptimal());
 
-  if (static_cast<int>(r_.size()) <= cfg_.brute_max)
-    AppendErrors(errors, MaybePrepend(CheckBruteForce(), "brute force:"));
+  if (static_cast<int>(r_.size()) <= cfg_.brute_max) Register("brute force:", CheckBruteForce());
 
-  if (cfg_.part) AppendErrors(errors, MaybePrepend(CheckPartition(), "partition:"));
+  if (cfg_.part) Register("partition:", CheckPartition());
 
-  if (!errors.empty()) {
-    errors = MaybePrepend(
-        errors, sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToString().c_str()));
-  }
+  Register(
+      sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToString().c_str()), std::move(errors_));
 
-  return errors;
+  return std::move(errors_);
 }
 
-Error Fuzzer::MaybePrepend(const Error& main, const std::string& header) {
-  if (main.empty()) return main;
-  Error nmain;
-  nmain.push_front(header);
-  for (auto& error : main) nmain.push_back("  " + error);  // mfw this inefficiency
-  return nmain;
-}
-
-void Fuzzer::AppendErrors(Error& main, Error&& extra) {
-  for (auto& s : extra) main.push_back(std::move(s));
+void Fuzzer::Register(const std::string& header, Error&& local) {
+  if (local.empty()) return;
+  local.push_front(header);
+  for (auto& error : local) errors_.push_back("  " + error);
 }
 
 bool Fuzzer::HasDuplicates(const std::vector<subopt::SuboptResult>& subopts) {
@@ -148,21 +137,17 @@ Error Fuzzer::CheckSuboptimal() {
   }
 
   for (int i = 0; i < static_cast<int>(memerna_subopts_delta.size()); ++i) {
-    AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResult(memerna_subopts_delta[i], true),
-            sfmt("memerna delta suboptimal %d:", i)));
-    AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]),
-            sfmt("memerna 0 vs memerna %d delta suboptimal:", i)));
+    Register(sfmt("memerna delta suboptimal %d:", i),
+        CheckSuboptimalResult(memerna_subopts_delta[i], true));
+    Register(sfmt("memerna 0 vs memerna %d delta suboptimal:", i),
+        CheckSuboptimalResultPair(memerna_subopts_delta[0], memerna_subopts_delta[i]));
   }
 
   for (int i = 0; i < static_cast<int>(memerna_subopts_max.size()); ++i) {
-    AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResult(memerna_subopts_max[i], true),
-            sfmt("memerna num suboptimal %d:", i)));
-    AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_max[0], memerna_subopts_max[i]),
-            sfmt("memerna 0 vs memerna %d num suboptimal:", i)));
+    Register(
+        sfmt("memerna num suboptimal %d:", i), CheckSuboptimalResult(memerna_subopts_max[i], true));
+    Register(sfmt("memerna 0 vs memerna %d num suboptimal:", i),
+        CheckSuboptimalResultPair(memerna_subopts_max[0], memerna_subopts_max[i]));
   }
 
 #ifdef USE_RNASTRUCTURE
@@ -173,12 +158,9 @@ Error Fuzzer::CheckSuboptimal() {
     if (memerna_subopts_[0].energy < -cfg_.subopt_delta) {
       const auto rnastructure_subopt =
           rnastructure_->SuboptimalIntoVector(Primary(r_), cfg_.subopt_delta);
-      AppendErrors(errors,
-          MaybePrepend(
-              CheckSuboptimalResult(rnastructure_subopt, false), "rnastructure suboptimal:"));
-      AppendErrors(errors,
-          MaybePrepend(CheckSuboptimalResultPair(memerna_subopts_delta[0], rnastructure_subopt),
-              "memerna vs rnastructure suboptimal:"));
+      Register("rnastructure suboptimal:", CheckSuboptimalResult(rnastructure_subopt, false));
+      Register("memerna vs rnastructure suboptimal:",
+          CheckSuboptimalResultPair(memerna_subopts_delta[0], rnastructure_subopt));
     }
   }
 #endif  // USE_RNASTRUCTURE
@@ -277,13 +259,10 @@ Error Fuzzer::CheckBruteForce() {
     auto brute_subopt = brute::SuboptimalBruteForce(Primary(r_), em_, cfg);
     auto memerna_subopt = ctx.SuboptimalIntoVector(Primary(r_), cfg);
 
-    AppendErrors(
-        errors, MaybePrepend(CheckSuboptimalResult(brute_subopt, true), "brute suboptimal:"));
-    AppendErrors(
-        errors, MaybePrepend(CheckSuboptimalResult(memerna_subopt, true), "memerna suboptimal:"));
-    AppendErrors(errors,
-        MaybePrepend(CheckSuboptimalResultPair(brute_subopt, memerna_subopt),
-            "brute vs memerna suboptimal:"));
+    Register("brute suboptimal:", CheckSuboptimalResult(brute_subopt, true));
+    Register("memerna suboptimal:", CheckSuboptimalResult(memerna_subopt, true));
+    Register(
+        "brute vs memerna suboptimal:", CheckSuboptimalResultPair(brute_subopt, memerna_subopt));
   }
 
   if (cfg_.part) {

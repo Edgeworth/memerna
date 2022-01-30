@@ -32,10 +32,10 @@ inline const Opt OPT_FUZZ_SUBOPT_BRUTE =
 inline const Opt OPT_FUZZ_SUBOPT_MAX =
     Opt()
         .LongName("subopt-max")
-        .Default("5000")
+        .Arg()
         .Help("maximum number of substructures for subopt max-delta fuzz");
 inline const Opt OPT_FUZZ_SUBOPT_DELTA =
-    Opt().LongName("subopt-delta").Default("6").Help("max energy delta for subopt delta fuzz");
+    Opt().LongName("subopt-delta").Arg().Help("max energy delta for subopt delta fuzz");
 
 // Partition fuzzing:
 inline const Opt OPT_FUZZ_PARTITION = Opt().LongName("partition").Help("fuzz partition function");
@@ -47,22 +47,22 @@ inline const Opt OPT_FUZZ_PARTITION_BRUTE =
 void RegisterOpts(ArgParse* args);
 
 struct FuzzCfg {
-  int brute_max;
+  int brute_max = 30;
 
-  bool mfe;
-  bool mfe_rnastructure;
-  bool mfe_brute;
-  bool mfe_table;
+  bool mfe = true;
+  bool mfe_rnastructure = false;
+  bool mfe_brute = true;
+  bool mfe_table = true;
 
-  bool subopt;
-  bool subopt_rnastructure;
-  bool subopt_brute;
-  int subopt_max;
-  int subopt_delta;
+  bool subopt = true;
+  bool subopt_rnastructure = false;
+  bool subopt_brute = true;
+  int subopt_max = 5000;
+  int subopt_delta = 6;
 
-  bool part;
-  bool part_rnastructure;
-  bool part_brute;
+  bool part = true;
+  bool part_rnastructure = false;
+  bool part_brute = true;
 
   std::string Desc();
 
