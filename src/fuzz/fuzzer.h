@@ -24,14 +24,14 @@ using Error = std::deque<std::string>;
 
 class Fuzzer {
  public:
-  Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em);
+  Fuzzer(Primary r, energy::EnergyModel em, FuzzCfg cfg);
 
   Error Run();
 
  private:
   Primary r_;
-  FuzzCfg cfg_;
   energy::EnergyModel em_;
+  FuzzCfg cfg_;
 
   std::vector<subopt::SuboptResult> memerna_subopts_;
   std::vector<DpArray> memerna_dps;

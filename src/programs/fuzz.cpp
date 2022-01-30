@@ -24,7 +24,6 @@
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN
-
 __AFL_FUZZ_INIT();
 #endif
 
@@ -35,29 +34,35 @@ inline const auto OPT_PRINT_INTERVAL =
 // TODO: Get this to work for RNAstructure.
 inline const auto OPT_RANDOM = mrna::Opt().LongName("random").Help("use random energy models");
 
-int main(int argc, char* argv[]) {
-  std::mt19937 eng(uint_fast32_t(time(nullptr)));
-  mrna::ArgParse args;
-  mrna::fuzz::RegisterOpts(&args);
-  args.RegisterOpt(mrna::OPT_AFL);
-  args.RegisterOpt(OPT_PRINT_INTERVAL);
-  args.RegisterOpt(OPT_RANDOM);
-  args.RegisterOpt(mrna::energy::OPT_MEMERNA_DATA);
-  args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
-
-  args.ParseOrExit(argc, argv);
-
-  // TODO: Actually set this.
+class FuzzHarness {
+ public:
+  explicit FuzzHarness(mrna::ArgParse args)
+      : args_(std::move(args)), em_(mrna::energy::EnergyModel::FromArgParse(args_)),
+        cfg_(mrna::fuzz::FuzzCfg::FromArgParse(args_)), e_(uint_fast32_t(time(nullptr))) {
 #ifdef USE_RNASTRUCTURE
-  mrna::bridge::RNAstructure rnastructure(args.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
+    rnastructure_ = std::make_unique<mrna::bridge::RNAstructure>(
+        args.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
 #endif  // USE_RNASTRUCTURE
+  }
 
-  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
+  void Run() {
+    printf("Fuzzing with config: %s\n", cfg_.Desc().c_str());
 
-  auto cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
-  const bool afl_mode = args.Has(mrna::OPT_AFL);
+    if (args_.Has(mrna::OPT_AFL)) {
+      DoAflFuzz();
+    } else {
+      DoRegularFuzz();
+    }
+  }
 
-  if (afl_mode) {
+ private:
+  mrna::ArgParse args_;
+  mrna::energy::EnergyModel em_;
+  mrna::fuzz::FuzzCfg cfg_;
+  std::mt19937 e_;
+  std::unique_ptr<mrna::bridge::RnaPackage> rnastructure_;
+
+  void DoAflFuzz() {
 #ifdef __AFL_FUZZ_TESTCASE_LEN
     __AFL_INIT();
     // This must be after __AFL_INIT and before __AFL_LOOP.
@@ -66,24 +71,26 @@ int main(int argc, char* argv[]) {
       int len = __AFL_FUZZ_TESTCASE_LEN;
       std::string data(buf, len);
       if (data.size() > 0) {
-        cfg.seed = eng();
-        mrna::Fuzzer fuzzer(mrna::StringToPrimary(data), cfg, em, rnastructure);
+        cfg.seed = e_();
+        mrna::Fuzzer fuzzer(mrna::StringToPrimary(data), em_, cfg_);
         const auto res = fuzzer.Run();
         if (!res.empty()) abort();
       }
     }
 #endif
-  } else {
-    verify(args.PosSize() == 2, "require min and max length");
-    const int min_len = args.Pos<int>(0);
-    const int max_len = args.Pos<int>(1);
-    const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
+  }
+
+  void DoRegularFuzz() {
+    verify(args_.PosSize() == 2, "require min and max length");
+    const int min_len = args_.Pos<int>(0);
+    const int max_len = args_.Pos<int>(1);
+    const auto interval = args_.Get<int>(OPT_PRINT_INTERVAL);
 
     verify(min_len > 0, "invalid min length");
     verify(max_len >= min_len, "invalid max len");
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
 
-    printf("Fuzzing [%d, %d] len RNAs - %s\n", min_len, max_len, cfg.Desc().c_str());
+    printf("Regular fuzzing [%d, %d] len RNAs\n", min_len, max_len);
 
     // Normal mode.
     auto start_time = std::chrono::steady_clock::now();
@@ -95,11 +102,11 @@ int main(int argc, char* argv[]) {
         printf("Fuzzed %" PRId64 " RNA\n", i);
         start_time = std::chrono::steady_clock::now();
       }
-      int len = len_dist(eng);
+      int len = len_dist(e_);
       auto r = mrna::Primary::Random(len);
 
       // TODO: respect OPT_RANDOM
-      mrna::fuzz::Fuzzer fuzzer(std::move(r), cfg, em);
+      mrna::fuzz::Fuzzer fuzzer(std::move(r), em_, cfg_);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());
@@ -107,4 +114,19 @@ int main(int argc, char* argv[]) {
       }
     }
   }
+};
+
+int main(int argc, char* argv[]) {
+  mrna::ArgParse args;
+  mrna::fuzz::RegisterOpts(&args);
+  args.RegisterOpt(mrna::OPT_AFL);
+  args.RegisterOpt(mrna::energy::OPT_MEMERNA_DATA);
+  args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
+  args.RegisterOpt(OPT_PRINT_INTERVAL);
+  args.RegisterOpt(OPT_RANDOM);
+
+  args.ParseOrExit(argc, argv);
+
+  auto runner = FuzzHarness(std::move(args));
+  runner.Run();
 }
