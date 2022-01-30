@@ -7,12 +7,12 @@
 #include "compute/boltz_dp.h"
 #include "compute/energy/boltzmann_model.h"
 #include "compute/energy/boltzmann_precomp.h"
+#include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "model/base.h"
 #include "model/model.h"
 #include "model/primary.h"
 #include "util/array.h"
-#include "compute/energy/model.h"
 
 namespace mrna::part {
 
@@ -102,7 +102,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         u2 += base00 * dp[piv + 1][en][PT_U];
         BoltzEnergy val = base00 + base00 * dp[piv + 1][en][PT_U];
         u += val;
-        if (IsGu(stb, pb))
+        if (IsGuPair(stb, pb))
           gu += val;
         else
           wc += val;
@@ -143,11 +143,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         rcoax += val * dp[piv + 1][en][PT_U];
 
         // (   )(<   ) > Flush coax - U
-        val = base01 * bem.stack[pl1b][pb][pb ^ 3][stb] * dp[piv][en][PT_U_WC];
+        val = base01 * bem.stack[pl1b][pb][WcPair(pb)][stb] * dp[piv][en][PT_U_WC];
         u += val;
         u2 += val;
-        if (pb == G || pb == U) {
-          val = base01 * bem.stack[pl1b][pb][pb ^ 1][stb] * dp[piv][en][PT_U_GU];
+        if (IsGu(pb)) {
+          val = base01 * bem.stack[pl1b][pb][GuPair(pb)][stb] * dp[piv][en][PT_U_GU];
           u += val;
           u2 += val;
         }
@@ -363,14 +363,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
           val = base00 * dp[pr][en][PT_U];
           u2 += val;
           u += val;
-          if (IsGu(stb, pb))
+          if (IsGuPair(stb, pb))
             gu += val;
           else
             wc += val;
           // U must cross the boundary to have the rest of it be nothing.
           if (tpiv >= N) {
             u += base00;
-            if (IsGu(stb, pb))
+            if (IsGuPair(stb, pb))
               gu += base00;
             else
               wc += base00;
@@ -378,11 +378,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
 
           // |  )  >>   <(   )<(  | Flush coax
           // straddling
-          val = base00 * bem.stack[pb][prb][prb ^ 3][stb] * dp[pr][en][PT_U_WC];
+          val = base00 * bem.stack[pb][prb][WcPair(prb)][stb] * dp[pr][en][PT_U_WC];
           u += val;
           u2 += val;
-          if (prb == G || prb == U) {
-            val = base00 * bem.stack[pb][prb][prb ^ 1][stb] * dp[pr][en][PT_U_GU];
+          if (IsGu(prb)) {
+            val = base00 * bem.stack[pb][prb][GuPair(prb)][stb] * dp[pr][en][PT_U_GU];
             u += val;
             u2 += val;
           }

@@ -2,8 +2,8 @@
 #ifndef PROGRAMS_PRINT_H_
 #define PROGRAMS_PRINT_H_
 
-#include "compute/partition/partition.h"
 #include "compute/boltz_dp.h"
+#include "compute/partition/partition.h"
 
 void PrintBoltzProbs(const mrna::BoltzProbs& p);
 

@@ -33,7 +33,7 @@ ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const 
       // (   )<   >
       auto val = base00 + ext[en + 1][EXT];
       e = std::min(e, val);
-      if (IsGu(stb, enb))
+      if (IsGuPair(stb, enb))
         ext[st][EXT_GU] = std::min(ext[st][EXT_GU], val);
       else
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
@@ -56,9 +56,9 @@ ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const 
           ext[st][EXT_RCOAX], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
 
       // (   )(<   ) > Flush coax
-      e = std::min(e, base01 + em.stack[en1b][enb][enb ^ 3][stb] + ext[en][EXT_WC]);
-      if (enb == G || enb == U)
-        e = std::min(e, base01 + em.stack[en1b][enb][enb ^ 1][stb] + ext[en][EXT_GU]);
+      e = std::min(e, base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
+      if (IsGu(enb))
+        e = std::min(e, base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU]);
 
       ext[st][EXT] = std::min(ext[st][EXT], e);
     }

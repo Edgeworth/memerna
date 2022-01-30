@@ -45,12 +45,12 @@ class BoltzEnergyModel {
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGu(stb, enb) ? internal_augu_penalty : 1.0;
+    return IsAuGuPair(stb, enb) ? internal_augu_penalty : 1.0;
   }
 
   BoltzEnergy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGu(stb, enb) ? augu_penalty : 1.0;
+    return IsAuGuPair(stb, enb) ? augu_penalty : 1.0;
   }
 
   BoltzEnergy MismatchCoaxial(
@@ -58,9 +58,9 @@ class BoltzEnergyModel {
     assert(IsBase(five_top) && IsBase(mismatch_top) && IsBase(mismatch_bot) && IsBase(three_bot));
     BoltzEnergy coax =
         terminal[five_top][mismatch_top][mismatch_bot][three_bot] * coax_mismatch_non_contiguous;
-    if (IsWatsonCrick(mismatch_top, mismatch_bot))
+    if (IsWcPair(mismatch_top, mismatch_bot))
       coax *= coax_mismatch_wc_bonus;
-    else if (IsGu(mismatch_top, mismatch_bot))
+    else if (IsGuPair(mismatch_top, mismatch_bot))
       coax *= coax_mismatch_gu_bonus;
     return coax;
   }

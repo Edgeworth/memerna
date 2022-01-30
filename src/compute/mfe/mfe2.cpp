@@ -163,7 +163,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
       // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare them to
       // something they can be
       // replaced with, i.e. themselves.
-      if (IsGu(stb, enb)) {
+      if (IsGuPair(stb, enb)) {
         if (normal_base < CAP_E && normal_base < dp[st][en][DP_U_GU] &&
             (cand_st[CAND_U_GU].empty() || normal_base < cand_st[CAND_U_GU].back().energy))
           cand_st[CAND_U_GU].push_back({normal_base, en + 1});
@@ -221,13 +221,15 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
 
       // (   )(<   ) > Flush coax - U, U2
       const auto wc_flush_base =
-          dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.stack[en1b][enb][enb ^ 3][stb];
-      const auto gu_flush_base =
-          dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.stack[en1b][enb][enb ^ 1][stb];
+          dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.stack[en1b][enb][WcPair(enb)][stb];
       if (wc_flush_base < CAP_E && wc_flush_base < dp[st][en - 1][DP_U])
         cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
-      if (gu_flush_base < CAP_E && (enb == G || enb == U) && gu_flush_base < dp[st][en - 1][DP_U])
-        cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
+      if (IsGu(enb)) {
+        const auto gu_flush_base =
+            dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em.stack[en1b][enb][GuPair(enb)][stb];
+        if (gu_flush_base < CAP_E && gu_flush_base < dp[st][en - 1][DP_U])
+          cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
+      }
 
       // Base cases.
       dp[st][en][DP_U] = std::min(dp[st][en][DP_U], normal_base);

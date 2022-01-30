@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <string>
 
+#include "compute/subopt/config.h"
 #include "ctx/config.h"
 #include "ctx/ctx.h"
 #include "model/ctd.h"
@@ -12,7 +13,6 @@
 #include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "compute/subopt/config.h"
 
 // TODO: can replace this with modelcfg ctd stuff
 inline const auto OPT_CTD_OUTPUT =

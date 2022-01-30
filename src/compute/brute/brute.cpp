@@ -6,11 +6,11 @@
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/model.h"
 #include "util/error.h"
-#include "compute/subopt/config.h"
 
 namespace mrna::brute {
 

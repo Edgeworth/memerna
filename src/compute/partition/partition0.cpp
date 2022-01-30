@@ -102,7 +102,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         u2 += base00 * dp[piv + 1][en][PT_U];
         BoltzEnergy val = base00 + base00 * dp[piv + 1][en][PT_U];
         u += val;
-        if (IsGu(stb, pb))
+        if (IsGuPair(stb, pb))
           gu += val;
         else
           wc += val;
@@ -143,11 +143,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         rcoax += val * dp[piv + 1][en][PT_U];
 
         // (   )(<   ) > Flush coax - U
-        val = base01 * Boltz(em.stack[pl1b][pb][pb ^ 3][stb]) * dp[piv][en][PT_U_WC];
+        val = base01 * Boltz(em.stack[pl1b][pb][WcPair(pb)][stb]) * dp[piv][en][PT_U_WC];
         u += val;
         u2 += val;
-        if (pb == G || pb == U) {
-          val = base01 * Boltz(em.stack[pl1b][pb][pb ^ 1][stb]) * dp[piv][en][PT_U_GU];
+        if (IsGu(pb)) {
+          val = base01 * Boltz(em.stack[pl1b][pb][GuPair(pb)][stb]) * dp[piv][en][PT_U_GU];
           u += val;
           u2 += val;
         }
@@ -369,14 +369,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           val = base00 * dp[pr][en][PT_U];
           u2 += val;
           u += val;
-          if (IsGu(stb, pb))
+          if (IsGuPair(stb, pb))
             gu += val;
           else
             wc += val;
           // U must cross the boundary to have the rest of it be nothing.
           if (tpiv >= N) {
             u += base00;
-            if (IsGu(stb, pb))
+            if (IsGuPair(stb, pb))
               gu += base00;
             else
               wc += base00;
@@ -384,11 +384,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
           // |  )  >>   <(   )<(  | Flush coax
           // straddling
-          val = base00 * Boltz(em.stack[pb][prb][prb ^ 3][stb]) * dp[pr][en][PT_U_WC];
+          val = base00 * Boltz(em.stack[pb][prb][WcPair(prb)][stb]) * dp[pr][en][PT_U_WC];
           u += val;
           u2 += val;
-          if (prb == G || prb == U) {
-            val = base00 * Boltz(em.stack[pb][prb][prb ^ 1][stb]) * dp[pr][en][PT_U_GU];
+          if (IsGu(prb)) {
+            val = base00 * Boltz(em.stack[pb][prb][GuPair(prb)][stb]) * dp[pr][en][PT_U_GU];
             u += val;
             u2 += val;
           }

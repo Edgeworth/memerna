@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "compute/dp.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
@@ -13,11 +14,10 @@
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "ctx/config.h"
-#include "model/primary.h"
-#include "util/argparse.h"
-#include "compute/energy/energy.h"
 #include "model/ctd.h"
+#include "model/primary.h"
 #include "model/secondary.h"
+#include "util/argparse.h"
 
 namespace mrna::ctx {
 
