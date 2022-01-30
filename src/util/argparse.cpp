@@ -1,6 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/argparse.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #include "util/string.h"
 
 namespace mrna {

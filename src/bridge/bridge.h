@@ -32,7 +32,7 @@ class RnaPackage {
   virtual ctx::FoldResult Fold(Primary r) const = 0;
   virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const = 0;
   virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const = 0;
-  virtual partition::PartitionResult Partition(Primary r) const = 0;
+  virtual part::PartResult Partition(Primary r) const = 0;
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };

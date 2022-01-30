@@ -102,6 +102,7 @@ set(MEMERNA_SOURCE
     src/bridge/memerna.cpp src/bridge/memerna.h
     src/compute/boltz_dp.h
     src/compute/brute/brute.cpp src/compute/brute/brute.h
+    src/compute/brute/alg.cpp src/compute/brute/alg.h
     src/compute/brute/config.cpp src/compute/brute/config.h
     src/compute/dp.h
     src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
@@ -112,18 +113,15 @@ set(MEMERNA_SOURCE
     src/compute/energy/model.cpp src/compute/energy/model.h
     src/compute/energy/precomp.cpp src/compute/energy/precomp.h
     src/compute/energy/structure.cpp src/compute/energy/structure.h
-    src/compute/mfe/brute.cpp src/compute/mfe/brute.h
     src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
     src/compute/mfe/mfe0.cpp
     src/compute/mfe/mfe1.cpp
     src/compute/mfe/mfe2.cpp
     src/compute/mfe/mfe3.cpp
-    src/compute/partition/brute.cpp src/compute/partition/brute.h
     src/compute/partition/exterior.cpp
     src/compute/partition/partition.cpp src/compute/partition/partition.h
     src/compute/partition/partition0.cpp
     src/compute/partition/partition1.cpp
-    src/compute/subopt/brute.cpp src/compute/subopt/brute.h
     src/compute/subopt/config.cpp src/compute/subopt/config.h
     src/compute/subopt/subopt.h
     src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
@@ -135,18 +133,18 @@ set(MEMERNA_SOURCE
     src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
     src/model/base.cpp src/model/base.h
     src/model/ctd.cpp src/model/ctd.h
-    src/model/config.cpp src/model/config.h
     src/model/model.h
     src/model/primary.cpp src/model/primary.h
     src/model/secondary.cpp src/model/secondary.h
     src/util/argparse.cpp src/util/argparse.h
+    src/programs/print.cpp src/programs/print.h
     src/util/array.h
     src/util/splaymap.h
     src/util/string.cpp src/util/string.h
 )
 set(TEST_SOURCE
     tests/common_test.h
-    tests/compute/brute_test.cpp
+    tests/compute/brute/brute_test.cpp
     tests/compute/energy/energy_test.cpp
     tests/compute/mfe/mfe_test.cpp
     tests/model/base_test.cpp
@@ -164,6 +162,7 @@ endif ()
 
 add_library(memerna ${MEMERNA_SOURCE})
 
+add_executable(brute src/programs/brute.cpp)
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
 add_executable(fuzz src/programs/fuzz.cpp)
@@ -176,6 +175,7 @@ add_executable(subopt src/programs/subopt.cpp)
 target_include_directories(memerna PUBLIC src)
 target_include_directories(run_tests PRIVATE tests)
 
+target_link_libraries(brute PRIVATE memerna)
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)
@@ -212,6 +212,7 @@ endif ()
 
 # Add sanitizers
 add_sanitizers(memerna)
+add_sanitizers(brute)
 add_sanitizers(efn)
 add_sanitizers(fold)
 add_sanitizers(fuzz)
@@ -224,6 +225,7 @@ add_sanitizers(subopt)
 # Add iwyu to targets if requested.
 if (USE_IWYU)
   set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(brute PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")

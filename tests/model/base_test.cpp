@@ -8,22 +8,22 @@
 namespace mrna {
 
 TEST(BaseTest, CanPair) {
-  EXPECT_TRUE(CanPair(A, U));
-  EXPECT_TRUE(CanPair(U, A));
-  EXPECT_TRUE(CanPair(G, U));
-  EXPECT_TRUE(CanPair(U, G));
-  EXPECT_TRUE(CanPair(G, C));
-  EXPECT_TRUE(CanPair(C, G));
-  EXPECT_FALSE(CanPair(A, A));
-  EXPECT_FALSE(CanPair(C, C));
-  EXPECT_FALSE(CanPair(G, G));
-  EXPECT_FALSE(CanPair(U, U));
-  EXPECT_FALSE(CanPair(A, C));
-  EXPECT_FALSE(CanPair(C, A));
-  EXPECT_FALSE(CanPair(A, G));
-  EXPECT_FALSE(CanPair(G, A));
-  EXPECT_FALSE(CanPair(C, U));
-  EXPECT_FALSE(CanPair(U, C));
+  EXPECT_TRUE(BasePair(A, U));
+  EXPECT_TRUE(BasePair(U, A));
+  EXPECT_TRUE(BasePair(G, U));
+  EXPECT_TRUE(BasePair(U, G));
+  EXPECT_TRUE(BasePair(G, C));
+  EXPECT_TRUE(BasePair(C, G));
+  EXPECT_FALSE(BasePair(A, A));
+  EXPECT_FALSE(BasePair(C, C));
+  EXPECT_FALSE(BasePair(G, G));
+  EXPECT_FALSE(BasePair(U, U));
+  EXPECT_FALSE(BasePair(A, C));
+  EXPECT_FALSE(BasePair(C, A));
+  EXPECT_FALSE(BasePair(A, G));
+  EXPECT_FALSE(BasePair(G, A));
+  EXPECT_FALSE(BasePair(C, U));
+  EXPECT_FALSE(BasePair(U, C));
 }
 
 TEST(BaseTest, IsAuGu) {

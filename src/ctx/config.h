@@ -3,6 +3,7 @@
 #define CTX_CONFIG_H_
 
 #include <string>
+#include <iosfwd>
 
 #include "util/argparse.h"
 

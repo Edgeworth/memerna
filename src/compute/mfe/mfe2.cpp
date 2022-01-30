@@ -33,8 +33,8 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModel& em) {
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
-      // Update paired - only if can actually pair.
-      if (ViableFoldingPair(r, st, en)) {
+      // TODO: check lonely pairs
+      if (em.CanPair(r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         mins[DP_P] =
             std::min(mins[DP_P], em.stack[stb][st1b][en1b][enb] + dp[st + 1][en - 1][DP_P]);

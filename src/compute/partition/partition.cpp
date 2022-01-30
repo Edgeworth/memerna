@@ -3,14 +3,14 @@
 
 #include "compute/boltz_dp.h"
 
-namespace mrna::partition {
+namespace mrna::part {
 
-BoltzProbs ComputeBoltzProbs(const Partition& p) {
-  const int N = static_cast<int>(p.p.size());
-  BoltzProbs probs(N, 0);
+BoltzProbs Part::Prob() const {
+  const int N = static_cast<int>(p.size());
+  BoltzProbs prob(N, 0);
   for (int i = 0; i < N; ++i)
-    for (int j = i; j < N; ++j) probs[i][j] = p.p[i][j] * p.p[j][i] / p.q;
-  return probs;
+    for (int j = i; j < N; ++j) prob[i][j] = p[i][j] * p[j][i] / q;
+  return prob;
 }
 
-}  // namespace mrna::partition
+}  // namespace mrna::part

@@ -22,7 +22,7 @@ inline bool IsUnorderedOf(Base a, Base b, int basesA, int basesB) {
   return IsPairOf(a, b, basesA, basesB) || IsPairOf(b, a, basesA, basesB);
 }
 
-inline bool CanPair(Base a, Base b) {
+inline bool BasePair(Base a, Base b) {
   int combined = (1 << a) | (1 << b);
   return combined == (G_b | U_b) || combined == (G_b | C_b) || combined == (A_b | U_b);
 }

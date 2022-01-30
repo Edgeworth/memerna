@@ -6,9 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/model.h"
 #include "compute/energy/structure.h"
-#include "compute/subopt/config.h"
 #include "model/primary.h"
 
 namespace mrna::bridge {
@@ -28,16 +26,14 @@ energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) con
 ctx::FoldResult Memerna::Fold(Primary r) const { return ctx_.Fold(std::move(r)); }
 
 int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
-  return ctx_.Suboptimal(std::move(r), fn, subopt::SuboptCfg{.delta = delta, .sorted = true});
+  return ctx_.Suboptimal(std::move(r), fn, {.delta = delta, .sorted = true});
 }
 
 std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(Primary r, Energy delta) const {
-  return ctx_.SuboptimalIntoVector(std::move(r), subopt::SuboptCfg{.delta = delta, .sorted = true});
+  return ctx_.SuboptimalIntoVector(std::move(r), {.delta = delta, .sorted = true});
 }
 
-partition::PartitionResult Memerna::Partition(Primary r) const {
-  return ctx_.Partition(std::move(r));
-}
+part::PartResult Memerna::Partition(Primary r) const { return ctx_.Partition(std::move(r)); }
 
 Memerna Memerna::FromArgParse(const ArgParse& args) {
   return Memerna(ctx::Ctx::FromArgParse(args));

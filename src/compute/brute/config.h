@@ -2,6 +2,7 @@
 #ifndef COMPUTE_BRUTE_CONFIG_H_
 #define COMPUTE_BRUTE_CONFIG_H_
 
+#include "compute/subopt/config.h"
 #include "util/argparse.h"
 
 namespace mrna::brute {
@@ -9,9 +10,11 @@ namespace mrna::brute {
 void RegisterOpts(ArgParse* args);
 
 struct BruteCfg {
-  bool mfe;  // Whether to compute the mfe.
-  bool subopt;  // Whether to compute suboptimal structures.
-  bool part;  // Whether to compute the partition function.
+  bool mfe = false;  // Whether to compute the mfe.
+  bool subopt = false;  // Whether to compute suboptimal structures.
+  bool part = false;  // Whether to compute the partition function.
+
+  subopt::SuboptCfg subopt_cfg = {};  // Suboptimal structure computation configuration.
 
   static BruteCfg FromArgParse(const ArgParse& args);
 };

@@ -14,6 +14,7 @@
 #include "fuzz/config.h"
 #include "fuzz/fuzzer.h"
 #include "model/primary.h"
+#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
 

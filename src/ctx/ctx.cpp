@@ -8,13 +8,11 @@
 #include <vector>
 
 #include "compute/boltz_dp.h"
+#include "compute/brute/alg.h"
 #include "compute/dp.h"
 #include "compute/energy/boltzmann_model.h"
-#include "compute/mfe/brute.h"
 #include "compute/mfe/mfe.h"
-#include "compute/partition/brute.h"
 #include "compute/partition/partition.h"
-#include "compute/subopt/brute.h"
 #include "compute/subopt/subopt0.h"
 #include "compute/subopt/subopt1.h"
 #include "compute/traceback/traceback.h"
@@ -41,9 +39,8 @@ DpArray Ctx::ComputeTables(const Primary& r) const {
 
 ctx::FoldResult Ctx::Fold(Primary r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
-    auto subopt = mfe::MfeBruteForce(std::move(r), em_);
-    return {
-        .mfe = mfe::MfeResult{.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
+    auto subopt = brute::MfeBruteForce(std::move(r), em_);
+    return {.mfe = {.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
   auto dp = ComputeTables(r);
@@ -51,7 +48,7 @@ ctx::FoldResult Ctx::Fold(Primary r) const {
   auto tb = tb::Traceback(r, em_, dp, ext);
   auto energy = ext[0][EXT];
   return ctx::FoldResult{
-      .mfe = mfe::MfeResult{.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
+      .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
       .tb = std::move(tb),
   };
 }
@@ -69,7 +66,7 @@ std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
 int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO: handle cases other than max structures.
-    auto subopts = subopt::SuboptimalBruteForce(std::move(r), em_, cfg.strucs);
+    auto subopts = brute::SuboptimalBruteForce(std::move(r), em_, std::move(cfg));
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
@@ -86,14 +83,12 @@ int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg)
   }
 }
 
-partition::PartitionResult Ctx::Partition(Primary r) const {
+part::PartResult Ctx::Partition(Primary r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.part_alg) {
-  case CtxCfg::PartAlg::ZERO: res = partition::Partition0(r, em_); break;
-  case CtxCfg::PartAlg::ONE:
-    res = partition::Partition1(r, energy::BoltzEnergyModel(em_));
-    break;
-  case CtxCfg::PartAlg::BRUTE: return partition::PartitionBruteForce(std::move(r), em_);
+  case CtxCfg::PartAlg::ZERO: res = part::Partition0(r, em_); break;
+  case CtxCfg::PartAlg::ONE: res = part::Partition1(r, energy::BoltzEnergyModel(em_)); break;
+  case CtxCfg::PartAlg::BRUTE: return brute::PartitionBruteForce(std::move(r), em_);
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
@@ -101,10 +96,10 @@ partition::PartitionResult Ctx::Partition(Primary r) const {
   for (int i = 0; i < N; ++i)  // TODO optimise this?
     for (int j = 0; j < N; ++j) p[i][j] = dp[i][j][PT_P];
 
-  partition::Partition part{std::move(p), ext[0][PTEXT_R]};
-  auto prob = partition::ComputeBoltzProbs(part);
-  return partition::PartitionResult{
-      .dp = std::move(dp), .ext = std::move(ext), .p = std::move(part), .prob = std::move(prob)};
+  part::Part part{std::move(p), ext[0][PTEXT_R]};
+  auto prob = part.Prob();
+  return part::PartResult{
+      .dp = std::move(dp), .ext = std::move(ext), .part = std::move(part), .prob = std::move(prob)};
 }
 
 Ctx Ctx::FromArgParse(const ArgParse& args) {

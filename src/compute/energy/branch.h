@@ -18,6 +18,12 @@ namespace mrna::energy {
 
 using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 
+// For each base in |s|, the value at the index of that base will contain the
+// number of child branches in the loop that that base is a child of. For
+// example, if the base is part of a base pair inside a multiloop with 2 inner
+// branches, the value will be 2. N.B. that bases in the exterior loop will
+// always have their value set to 2,  the exterior loop is treated as a
+// multiloop.
 std::vector<int> GetBranchCounts(const Secondary& s);
 
 Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Secondary& s,

@@ -11,21 +11,21 @@
 #include "model/model.h"
 #include "model/primary.h"
 
-namespace mrna::partition {
+namespace mrna::part {
 
-struct Partition {
+struct Part {
   BoltzSums p;
   BoltzEnergy q;
+
+  BoltzProbs Prob() const;
 };
 
-struct PartitionResult {
+struct PartResult {
   BoltzDpArray dp;
   BoltzExtArray ext;
-  Partition p;
+  Part part;
   BoltzProbs prob;
 };
-
-BoltzProbs ComputeBoltzProbs(const Partition& partition);
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
     const Primary& r, const energy::BoltzEnergyModel& bem);
@@ -39,6 +39,6 @@ inline int FastMod(int a, int m) {
   return a;
 }
 
-}  // namespace mrna::partition
+}  // namespace mrna::part
 
 #endif  // COMPUTE_PARTITION_PARTITION_H_

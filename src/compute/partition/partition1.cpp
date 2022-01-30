@@ -12,8 +12,9 @@
 #include "model/model.h"
 #include "model/primary.h"
 #include "util/array.h"
+#include "compute/energy/model.h"
 
-namespace mrna::partition {
+namespace mrna::part {
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
     const Primary& r, const energy::BoltzEnergyModel& bem) {
@@ -29,8 +30,8 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
       const Base stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
                  en2b = r[en - 2];
 
-      // if (CanPair(stb, enb)) {  // <- This disables lonely pairs vs ViableFoldingPair
-      if (ViableFoldingPair(r, st, en)) {
+      // TODO: check lonely pairs
+      if (bem.em().CanPair(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)  // TODO lyngso's ?
@@ -174,8 +175,8 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
                  st2b = lspace > 1 ? r[st + 2] : Base(-1), enb = r[en],
                  en1b = rspace ? r[en - 1] : Base(-1), en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      // if (CanPair(enb, stb)) {  // TODO: lonely pairs?
-      if (ViableFoldingPair(r, en, st)) {
+      // TODO: check lonely pairs
+      if (bem.em().CanPair(r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {
@@ -447,4 +448,4 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
   return {std::move(dp), std::move(ext)};
 }
 
-}  // namespace mrna::partition
+}  // namespace mrna::part

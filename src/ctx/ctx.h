@@ -15,6 +15,9 @@
 #include "ctx/config.h"
 #include "model/primary.h"
 #include "util/argparse.h"
+#include "compute/energy/energy.h"
+#include "model/ctd.h"
+#include "model/secondary.h"
 
 namespace mrna::ctx {
 
@@ -39,7 +42,7 @@ class Ctx {
   FoldResult Fold(Primary r) const;
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, subopt::SuboptCfg cfg) const;
   int Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const;
-  partition::PartitionResult Partition(Primary r) const;
+  part::PartResult Partition(Primary r) const;
 
   const energy::EnergyModel& em() const { return em_; }
 
