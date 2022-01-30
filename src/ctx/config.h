@@ -44,13 +44,9 @@ struct CtxCfg {
   inline static constexpr SuboptAlg SUBOPT_ALGS[] = {SuboptAlg::ZERO, SuboptAlg::ONE};
   inline static constexpr PartAlg PART_ALGS[] = {PartAlg::ZERO, PartAlg::ONE};
 
-  CtxCfg(DpAlg dp_alg = DpAlg::TWO, SuboptAlg subopt_alg = SuboptAlg::ONE,
-      PartAlg part_alg = PartAlg::ONE)
-      : dp_alg(dp_alg), subopt_alg(subopt_alg), part_alg(part_alg) {}
-
-  DpAlg dp_alg;
-  SuboptAlg subopt_alg;
-  PartAlg part_alg;
+  DpAlg dp_alg = DpAlg::TWO;
+  SuboptAlg subopt_alg = SuboptAlg::ONE;
+  PartAlg part_alg = PartAlg::ONE;
 
   static CtxCfg FromArgParse(const ArgParse& args);
 };

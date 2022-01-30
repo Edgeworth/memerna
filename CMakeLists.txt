@@ -147,6 +147,9 @@ set(TEST_SOURCE
     tests/compute/brute/brute_test.cpp
     tests/compute/energy/energy_test.cpp
     tests/compute/mfe/mfe_test.cpp
+    tests/compute/partition/partition_test.cpp
+    tests/compute/subopt/subopt_test.cpp
+    tests/compute/traceback/traceback_test.cpp
     tests/model/base_test.cpp
     tests/model/ctds_test.cpp
     tests/model/parsing_test.cpp
