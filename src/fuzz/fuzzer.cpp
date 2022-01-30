@@ -139,7 +139,7 @@ Error Fuzzer::CheckSuboptimal() {
   Error errors;
   std::vector<std::vector<subopt::SuboptResult>> memerna_subopts_delta, memerna_subopts_max;
   for (auto subopt_alg : ctx::CtxCfg::SUBOPT_ALGS) {
-    ctx::CtxCfg cfg(ctx::CtxCfg::DpAlg::TWO, subopt_alg);
+    ctx::CtxCfg cfg{.subopt_alg = subopt_alg};
     ctx::Ctx ctx(em_, cfg);
     memerna_subopts_delta.push_back(
         ctx.SuboptimalIntoVector(Primary(r_), {.delta = cfg_.subopt_delta, .sorted = true}));
@@ -227,8 +227,8 @@ Error Fuzzer::MemernaComputeAndCheckState() {
   // Memerna.
   std::vector<Energy> memerna_ctd_efns;
   std::vector<Energy> memerna_optimal_efns;
-  for (auto table_alg : ctx::CtxCfg::DP_ALGS) {
-    ctx::Ctx ctx(em_, ctx::CtxCfg(table_alg));
+  for (auto dp_alg : ctx::CtxCfg::DP_ALGS) {
+    ctx::Ctx ctx(em_, ctx::CtxCfg{.dp_alg = dp_alg});
     auto res = ctx.Fold(Primary(r_));
     memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
@@ -268,7 +268,7 @@ Error Fuzzer::RnastructureComputeAndCheckState() {
 
 Error Fuzzer::CheckBruteForce() {
   Error errors;
-  ctx::CtxCfg cfg(ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, ctx::CtxCfg::PartAlg::ZERO);
+  ctx::CtxCfg cfg;
   ctx::Ctx ctx(em_, cfg);
 
   if (cfg_.subopt) {
@@ -318,9 +318,8 @@ Error Fuzzer::CheckPartition() {
   Error errors;
   // TODO: Check DP and ext tables?
   std::vector<part::PartResult> memerna_partitions;
-  for (auto partition_alg : ctx::CtxCfg::PART_ALGS) {
-    ctx::Ctx ctx(
-        em_, ctx::CtxCfg(ctx::CtxCfg::DpAlg::TWO, ctx::CtxCfg::SuboptAlg::ONE, partition_alg));
+  for (auto part_alg : ctx::CtxCfg::PART_ALGS) {
+    ctx::Ctx ctx(em_, ctx::CtxCfg{.part_alg = part_alg});
     memerna_partitions.emplace_back(ctx.Partition(Primary(r_)));
   }
 

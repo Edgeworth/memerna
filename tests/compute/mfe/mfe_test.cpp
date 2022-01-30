@@ -15,7 +15,7 @@ namespace mrna::mfe {
 class MfeAlgTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
  public:
   Energy Mfe(const std::string& s) {
-    return ctx::Ctx(t04, ctx::CtxCfg(GetParam())).Fold(Primary::FromString(s)).mfe.energy;
+    return ctx::Ctx(t04, ctx::CtxCfg{.dp_alg = GetParam()}).Fold(Primary::FromString(s)).mfe.energy;
   }
 };
 
