@@ -33,6 +33,8 @@ class Fuzzer {
   energy::EnergyModel em_;
   FuzzCfg cfg_;
 
+  Error errors_;
+
   std::vector<subopt::SuboptResult> memerna_subopts_;
   std::vector<DpArray> memerna_dps;
 
@@ -46,9 +48,7 @@ class Fuzzer {
   }
 #endif  // USE_RNASTRUCTURE
 
-  Error MaybePrepend(const Error& main, const std::string& header);
-
-  void AppendErrors(Error& main, Error&& extra);
+  void Register(const std::string& header, Error&& local);
 
   bool HasDuplicates(const std::vector<subopt::SuboptResult>& subopts);
 

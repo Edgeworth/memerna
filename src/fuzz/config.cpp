@@ -1,11 +1,13 @@
 // Copyright 2021 E.
 #include "fuzz/config.h"
 
+#include "compute/energy/config.h"
 #include "util/string.h"
 
 namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
+  energy::RegisterOpts(args);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -41,7 +43,7 @@ std::string FuzzCfg::Desc() {
 
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
-  cfg.brute_max = args.Get<int>(OPT_FUZZ_BRUTE_MAX);
+  if (args.Has(OPT_FUZZ_BRUTE_MAX)) cfg.brute_max = args.Get<int>(OPT_FUZZ_BRUTE_MAX);
 
   cfg.mfe = args.Has(OPT_FUZZ_MFE);
   cfg.mfe_rnastructure = args.Has(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -51,12 +53,12 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.subopt = args.Has(OPT_FUZZ_SUBOPT);
   cfg.subopt_rnastructure = args.Has(OPT_FUZZ_SUBOPT_RNASTRUCTURE);
   cfg.subopt_brute = args.Has(OPT_FUZZ_SUBOPT_BRUTE);
-  cfg.subopt_max = args.Get<int>(OPT_FUZZ_SUBOPT_MAX);
-  cfg.subopt_delta = args.Get<int>(OPT_FUZZ_SUBOPT_DELTA);
+  if (args.Has(OPT_FUZZ_SUBOPT_MAX)) cfg.subopt_max = args.Get<int>(OPT_FUZZ_SUBOPT_MAX);
+  if (args.Has(OPT_FUZZ_SUBOPT_DELTA)) cfg.subopt_delta = args.Get<int>(OPT_FUZZ_SUBOPT_DELTA);
 
   cfg.part = args.Has(OPT_FUZZ_PARTITION);
   cfg.part_rnastructure = args.Has(OPT_FUZZ_PARTITION_RNASTRUCTURE);
-  cfg.part_brute = args.Has(OPT_FUZZ_SUBOPT);
+  cfg.part_brute = args.Has(OPT_FUZZ_PARTITION_BRUTE);
 
   cfg.mfe = cfg.mfe || cfg.mfe_rnastructure || cfg.mfe_brute;
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure || cfg.subopt_brute;
