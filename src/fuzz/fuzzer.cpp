@@ -29,8 +29,8 @@ namespace mrna::fuzz {
 
 inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
-Fuzzer::Fuzzer(Primary r, FuzzCfg cfg, energy::EnergyModel em)
-    : r_(std::move(r)), cfg_(std::move(cfg)), em_(em) {}
+Fuzzer::Fuzzer(Primary r, energy::EnergyModel em, FuzzCfg cfg)
+    : r_(std::move(r)), em_(em), cfg_(std::move(cfg)) {}
 
 Error Fuzzer::Run() {
   Error errors;

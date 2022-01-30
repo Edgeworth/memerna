@@ -85,6 +85,9 @@ class ArgParse {
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
 
+  ArgParse(ArgParse&&) = default;
+  ArgParse& operator=(ArgParse&&) = default;
+
   void RegisterOpt(const Opt& opt);
   std::string Usage() const;
 
