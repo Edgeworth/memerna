@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   args.ParseOrExit(argc, argv);
 
   mrna::t04 = mrna::energy::EnergyModel::FromArgParse(args);
-  assert(mrna::t04.Checksum() == mrna::T04_MODEL_HASH);
+  assert(mrna::t04->Checksum() == mrna::T04_MODEL_HASH);
 
   mrna::g_em[0] = mrna::t04;
   for (int i = 1; i < mrna::NUM_TEST_MODELS; ++i)

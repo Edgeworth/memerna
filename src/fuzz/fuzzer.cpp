@@ -29,7 +29,7 @@ namespace mrna::fuzz {
 
 inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
 
-Fuzzer::Fuzzer(Primary r, energy::EnergyModel em, FuzzCfg cfg)
+Fuzzer::Fuzzer(Primary r, energy::EnergyModelPtr em, FuzzCfg cfg)
     : r_(std::move(r)), em_(em), cfg_(std::move(cfg)) {}
 
 Error Fuzzer::Run() {
@@ -88,7 +88,7 @@ Error Fuzzer::CheckSuboptimalResult(
 
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
-      auto suboptimal_efn = em_.TotalEnergy(r_, sub.tb.s, &sub.tb.ctd);
+      auto suboptimal_efn = em_->TotalEnergy(r_, sub.tb.s, &sub.tb.ctd);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
             sfmt("structure %d: energy %d != efn %d", i, sub.energy, suboptimal_efn.energy));
@@ -214,10 +214,10 @@ Error Fuzzer::MemernaComputeAndCheckState() {
     auto res = ctx.Fold(Primary(r_));
     memerna_dps.emplace_back(std::move(res.mfe.dp));
     // First compute with the CTDs that fold returned to check the energy.
-    memerna_ctd_efns.push_back(em_.TotalEnergy(r_, res.tb.s, &res.tb.ctd).energy);
+    memerna_ctd_efns.push_back(em_->TotalEnergy(r_, res.tb.s, &res.tb.ctd).energy);
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an equality check.
-    memerna_optimal_efns.push_back(em_.TotalEnergy(r_, res.tb.s, nullptr).energy);
+    memerna_optimal_efns.push_back(em_->TotalEnergy(r_, res.tb.s, nullptr).energy);
     memerna_subopts_.push_back(subopt::SuboptResult(std::move(res.tb), res.mfe.energy));
   }
 

@@ -17,7 +17,6 @@
 namespace mrna::energy {
 
 class BoltzEnergyModel;
-
 using BoltzEnergyModelPtr = std::shared_ptr<BoltzEnergyModel>;
 
 class BoltzEnergyModel {
@@ -44,11 +43,13 @@ class BoltzEnergyModel {
   BoltzEnergy coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
   BoltzEnergy augu_penalty;
 
-  static BoltzEnergyModelPtr Create(EnergyModel em) {
+  BoltzEnergyModel() = delete;
+
+  static BoltzEnergyModelPtr Create(EnergyModelPtr em) {
     return BoltzEnergyModelPtr(new BoltzEnergyModel(std::move(em)));
   }
 
-  const EnergyModel& em() const { return em_; }
+  const EnergyModel& em() const { return *em_; }
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -75,30 +76,30 @@ class BoltzEnergyModel {
   // TODO: Implement versions of Bulge, InternalLoop, TwoLoop, Hairpin with boltzmann baked in.
   BoltzEnergy Hairpin(
       const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em_.Hairpin(r, st, en, s));
+    return Boltz(em().Hairpin(r, st, en, s));
   }
 
   BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em_.Bulge(r, ost, oen, ist, ien, s));
+    return Boltz(em().Bulge(r, ost, oen, ist, ien, s));
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em_.InternalLoop(r, ost, oen, ist, ien, s));
+    return Boltz(em().InternalLoop(r, ost, oen, ist, ien, s));
   }
 
   BoltzEnergy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em_.TwoLoop(r, ost, oen, ist, ien, s));
+    return Boltz(em().TwoLoop(r, ost, oen, ist, ien, s));
   }
 
  private:
-  EnergyModel em_;
+  EnergyModelPtr em_;
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzEnergyModel(EnergyModel em);
+  explicit BoltzEnergyModel(EnergyModelPtr em);
 };
 
 }  // namespace mrna::energy

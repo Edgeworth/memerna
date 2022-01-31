@@ -21,6 +21,9 @@
 
 namespace mrna::energy {
 
+class EnergyModel;
+using EnergyModelPtr = std::shared_ptr<EnergyModel>;
+
 class EnergyModel {
  public:
   inline constexpr static int INITIATION_CACHE_SZ = 31;
@@ -62,7 +65,12 @@ class EnergyModel {
   Energy coax_mismatch_gu_bonus = {};
   Energy augu_penalty = {};
 
-  EnergyCfg cfg;
+  EnergyCfg cfg = {};
+
+  static EnergyModelPtr Create() { return EnergyModelPtr(new EnergyModel); }
+  static EnergyModelPtr FromDataDir(const std::string& data_dir);
+  static EnergyModelPtr Random(uint_fast32_t seed);
+  static EnergyModelPtr FromArgParse(const ArgParse& args);
 
   inline bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs) {
@@ -157,11 +165,10 @@ class EnergyModel {
   bool IsValid(std::string* reason = nullptr) const;
   uint32_t Checksum() const;
 
-  static EnergyModel FromDataDir(const std::string& data_dir);
-  static EnergyModel Random(uint_fast32_t seed);
-  static EnergyModel FromArgParse(const ArgParse& args);
-
  private:
+  // This is private to prevent construction on the stack, since this structure is large.
+  EnergyModel() = default;
+
   Energy SubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
       bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };

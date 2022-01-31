@@ -18,7 +18,7 @@ namespace mrna::subopt {
 
 class Suboptimal0 {
  public:
-  Suboptimal0(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  Suboptimal0(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(SuboptCallback fn);
 
@@ -36,7 +36,7 @@ class Suboptimal0 {
   };
 
   Primary r_;
-  energy::EnergyModel em_;
+  energy::EnergyModelPtr em_;
   DpArray dp_;
   ExtArray ext_;
   SuboptCfg cfg_;

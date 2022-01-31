@@ -29,7 +29,7 @@ struct PartResult {
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
     const Primary& r, energy::BoltzEnergyModelPtr bem);
-std::tuple<BoltzDpArray, BoltzExtArray> Partition0(const Primary& r, const energy::EnergyModel& em);
+std::tuple<BoltzDpArray, BoltzExtArray> Partition0(const Primary& r, energy::EnergyModelPtr em);
 BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const BoltzDpArray& dp);
 
 // Only works with [0, 2N).

@@ -27,12 +27,12 @@ int main(int argc, char* argv[]) {
   mrna::energy::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParsePrimaryCtdString(rs, ss);
-    res = em.TotalEnergy(r, s, &ctd, true);
+    res = em->TotalEnergy(r, s, &ctd, true);
     printf("Energy: %d\n", res.energy);
     printf("%s\n", res.ctd.ToString(s).c_str());
   } else {
     const auto [r, s] = mrna::ParsePrimaryDotBracket(rs, ss);
-    res = em.TotalEnergy(r, s, nullptr, true);
+    res = em->TotalEnergy(r, s, nullptr, true);
     printf("Energy: %d\n", res.energy);
     printf("%s\n", res.ctd.ToString(s).c_str());
   }

@@ -12,7 +12,7 @@
 
 namespace mrna::mfe {
 
-DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
+DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -26,7 +26,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
                  en2b = r[en - 2];
 
       // TODO: check lonely pairs
-      if (em.CanPair(r, st, en)) {
+      if (em->CanPair(r, st, en)) {
         Energy p_min = MAX_E;
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
@@ -36,23 +36,23 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
           }
         }
         // Hairpin loops.
-        p_min = std::min(p_min, em.Hairpin(r, st, en));
+        p_min = std::min(p_min, em->Hairpin(r, st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const auto base_branch_cost = pc.augubranch[stb][enb] + em.multiloop_hack_a;
+        const auto base_branch_cost = pc.augubranch[stb][enb] + em->multiloop_hack_a;
 
         // (<   ><   >)
         p_min = std::min(p_min, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
         // (3<   ><   >) 3'
         p_min = std::min(
-            p_min, base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb]);
+            p_min, base_branch_cost + dp[st + 2][en - 1][DP_U2] + em->dangle3[stb][st1b][enb]);
         // (<   ><   >5) 5'
         p_min = std::min(
-            p_min, base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb]);
+            p_min, base_branch_cost + dp[st + 1][en - 2][DP_U2] + em->dangle5[stb][en1b][enb]);
         // (.<   ><   >.) Terminal mismatch
         p_min = std::min(p_min,
-            base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb]);
+            base_branch_cost + dp[st + 2][en - 2][DP_U2] + em->terminal[stb][st1b][en1b][enb]);
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
@@ -61,7 +61,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
           // (.(   )   .) Left outer coax - P
-          const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+          const auto outer_coax = em->MismatchCoaxial(stb, st1b, en1b, enb);
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][piv][DP_P] + pc.augubranch[st2b][plb] +
                   dp[piv + 1][en - 2][DP_U] + outer_coax);
@@ -73,20 +73,20 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
           // (.(   ).   ) Left right coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][piv - 1][DP_P] + pc.augubranch[st2b][pl1b] +
-                  dp[piv + 1][en - 1][DP_U] + em.MismatchCoaxial(pl1b, plb, st1b, st2b));
+                  dp[piv + 1][en - 1][DP_U] + em->MismatchCoaxial(pl1b, plb, st1b, st2b));
           // (   .(   ).) Right left coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][piv][DP_U] + pc.augubranch[pr1b][en2b] +
-                  dp[piv + 2][en - 2][DP_P] + em.MismatchCoaxial(en2b, en1b, prb, pr1b));
+                  dp[piv + 2][en - 2][DP_P] + em->MismatchCoaxial(en2b, en1b, prb, pr1b));
 
           // ((   )   ) Left flush coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][piv][DP_P] + pc.augubranch[st1b][plb] +
-                  dp[piv + 1][en - 1][DP_U] + em.stack[stb][st1b][plb][enb]);
+                  dp[piv + 1][en - 1][DP_U] + em->stack[stb][st1b][plb][enb]);
           // (   (   )) Right flush coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][piv][DP_U] + pc.augubranch[prb][en1b] +
-                  dp[piv + 1][en - 1][DP_P] + em.stack[stb][prb][en1b][enb]);
+                  dp[piv + 1][en - 1][DP_P] + em->stack[stb][prb][en1b][enb]);
         }
 
         dp[st][en][DP_P] = p_min;
@@ -120,17 +120,17 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
           wc_min = std::min(wc_min, val);
 
         // (   )3<   > 3' - U
-        u_min = std::min(u_min, base01 + em.dangle3[pl1b][pb][stb] + right_unpaired);
-        u2_min = std::min(u2_min, base01 + em.dangle3[pl1b][pb][stb] + dp[piv + 1][en][DP_U]);
+        u_min = std::min(u_min, base01 + em->dangle3[pl1b][pb][stb] + right_unpaired);
+        u2_min = std::min(u2_min, base01 + em->dangle3[pl1b][pb][stb] + dp[piv + 1][en][DP_U]);
         // 5(   )<   > 5' - U
-        u_min = std::min(u_min, base10 + em.dangle5[pb][stb][st1b] + right_unpaired);
-        u2_min = std::min(u2_min, base10 + em.dangle5[pb][stb][st1b] + dp[piv + 1][en][DP_U]);
+        u_min = std::min(u_min, base10 + em->dangle5[pb][stb][st1b] + right_unpaired);
+        u2_min = std::min(u2_min, base10 + em->dangle5[pb][stb][st1b] + dp[piv + 1][en][DP_U]);
         // .(   ).<   > Terminal mismatch - U
-        u_min = std::min(u_min, base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired);
+        u_min = std::min(u_min, base11 + em->terminal[pl1b][pb][stb][st1b] + right_unpaired);
         u2_min =
-            std::min(u2_min, base11 + em.terminal[pl1b][pb][stb][st1b] + dp[piv + 1][en][DP_U]);
+            std::min(u2_min, base11 + em->terminal[pl1b][pb][stb][st1b] + dp[piv + 1][en][DP_U]);
         // .(   ).<(   ) > Left coax - U
-        val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) +
+        val = base11 + em->MismatchCoaxial(pl1b, pb, stb, st1b) +
             std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
@@ -140,14 +140,14 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModel& em) {
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
         rcoax_min =
-            std::min(rcoax_min, base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
+            std::min(rcoax_min, base11 + em->MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
         // (   )(<   ) > Flush coax - U
-        val = base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
+        val = base01 + em->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
         if (IsGu(pb)) {
-          val = base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
+          val = base01 + em->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
           u_min = std::min(u_min, val);
           u2_min = std::min(u2_min, val);
         }
