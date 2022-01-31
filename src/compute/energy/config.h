@@ -10,15 +10,14 @@
 namespace mrna::energy {
 
 inline const Opt OPT_SEED =
-    Opt().LongName("seed").Arg().Help("seed for random energy model for memerna");
-inline const Opt OPT_MEMERNA_DATA = Opt()
+    Opt(Opt::ARG).LongName("seed").Help("seed for random energy model for memerna");
+inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
                                         .LongName("memerna-data")
                                         .ShortName("md")
-                                        .Arg()
                                         .Help("data path for given energy model for memerna");
 inline const auto OPT_LONELY_PAIRS =
-    mrna::Opt().LongName("lonely-pairs").Help("allow lonely pairs");
-inline const auto OPT_CTD = mrna::Opt()
+    mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
+inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
                                 .LongName("ctd")
                                 .Choice({"none", "no_coax", "all"})
                                 .Default("all")

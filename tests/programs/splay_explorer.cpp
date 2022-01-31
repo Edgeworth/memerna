@@ -96,8 +96,8 @@ void DoInteractive(int r) {
   }
 }
 
-inline const mrna::Opt OPT_RANGE =
-    mrna::Opt().ShortName("r").Default("-1").Help("load range from 1 until r");
+inline const auto OPT_RANGE =
+    mrna::Opt(mrna::Opt::ARG).ShortName("r").Default("-1").Help("load range from 1 until r");
 
 int main(int argc, char** argv) {
   mrna::ArgParse args;
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
   args.ParseOrExit(argc, argv);
 
   printf("Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n");
-  const bool afl = args.Has(mrna::OPT_AFL);
+  const bool afl = args.GetOr(mrna::OPT_AFL);
   const int r = args.Get<int>(OPT_RANGE);
   verify(!(afl && (r != -1)), "incompatible options");
 

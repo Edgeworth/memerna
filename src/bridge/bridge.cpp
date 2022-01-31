@@ -19,9 +19,9 @@ void RegisterOpts(ArgParse* args) {
 }
 
 std::unique_ptr<RnaPackage> RnaPackage::FromArgParse(const ArgParse& args) {
-  verify(args.Has(OPT_USE_RNASTRUCTURE) + args.Has(OPT_USE_MEMERNA) == 1,
+  verify(args.Get<bool>(OPT_USE_RNASTRUCTURE) + args.Get<bool>(OPT_USE_MEMERNA) == 1,
       "require exactly one package flag\n%s", args.Usage().c_str());
-  if (args.Has(OPT_USE_RNASTRUCTURE)) {
+  if (args.Get<bool>(OPT_USE_RNASTRUCTURE)) {
 #ifdef USE_RNASTRUCTURE
     return std::unique_ptr<RnaPackage>(new RNAstructure(args.Get(OPT_RNASTRUCTURE_DATA), false));
 #else

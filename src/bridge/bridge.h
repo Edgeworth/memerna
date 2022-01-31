@@ -17,10 +17,11 @@
 
 namespace mrna::bridge {
 
-inline const Opt OPT_USE_RNASTRUCTURE = Opt().LongName("rnastructure").ShortName("r");
+inline const Opt OPT_USE_RNASTRUCTURE =
+    Opt(Opt::FLAG).LongName("rnastructure").ShortName("r").Default(false);
 inline const Opt OPT_RNASTRUCTURE_DATA =
-    Opt().LongName("rnastructure-data").ShortName("rd").Arg().Help("data path for RNAstructure");
-inline const Opt OPT_USE_MEMERNA = Opt().LongName("memerna").ShortName("m");
+    Opt(Opt::ARG).LongName("rnastructure-data").ShortName("rd").Help("data path for RNAstructure");
+inline const Opt OPT_USE_MEMERNA = Opt(Opt::FLAG).LongName("memerna").ShortName("m").Default(false);
 
 void RegisterOpts(ArgParse* args);
 

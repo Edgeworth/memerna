@@ -29,6 +29,13 @@ T convert(std::string s) {
   return t;
 }
 
+template <typename T>
+std::string convert(const T& s) {
+  std::stringstream ss;
+  ss << s;
+  return ss.str();
+}
+
 uint32_t Crc32(const std::string& data);
 
 }  // namespace mrna

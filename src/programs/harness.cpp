@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
   args.RegisterOpt(mrna::OPT_PART);
   args.ParseOrExit(argc, argv);
 
-  verify(args.Has(mrna::OPT_EFN) + args.Has(mrna::OPT_MFE) == 1,
+  verify(args.GetOr(mrna::OPT_EFN) + args.GetOr(mrna::OPT_MFE) == 1,
       "require exactly one program flag\n%s", args.Usage().c_str());
   verify(args.Has(mrna::energy::OPT_SEED) + args.Has(mrna::energy::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   const auto package = mrna::bridge::RnaPackage::FromArgParse(args);
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());
   const bool read_stdin = q.empty();
-  if (args.Has(mrna::OPT_EFN)) {
+  if (args.GetOr(mrna::OPT_EFN)) {
     while (1) {
       std::string seq, db;
       if (read_stdin) {
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
       }
       auto [r, s] = mrna::ParsePrimaryDotBracket(seq, db);
       std::string desc;
-      const auto res = package->Efn(r, s, args.Has(mrna::OPT_VERBOSE) ? &desc : nullptr);
+      const auto res = package->Efn(r, s, args.GetOr(mrna::OPT_VERBOSE) ? &desc : nullptr);
       printf("%d\n%s", res.energy, desc.c_str());
     }
   } else {

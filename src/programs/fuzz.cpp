@@ -27,12 +27,15 @@
 __AFL_FUZZ_INIT();
 #endif
 
-inline const auto OPT_PRINT_INTERVAL =
-    mrna::Opt().LongName("print-interval").Default("5").Help("status update every n seconds");
+inline const auto OPT_PRINT_INTERVAL = mrna::Opt(mrna::Opt::ARG)
+                                           .LongName("print-interval")
+                                           .Default("5")
+                                           .Help("status update every n seconds");
 
 // Energy model options:
 // TODO: Get this to work for RNAstructure.
-inline const auto OPT_RANDOM = mrna::Opt().LongName("random").Help("use random energy models");
+inline const auto OPT_RANDOM =
+    mrna::Opt(mrna::Opt::FLAG).LongName("random").Help("use random energy models");
 
 class FuzzHarness {
  public:
@@ -48,7 +51,7 @@ class FuzzHarness {
   void Run() {
     printf("Fuzzing with config: %s\n", cfg_.Desc().c_str());
 
-    if (args_.Has(mrna::OPT_AFL)) {
+    if (args_.GetOr(mrna::OPT_AFL)) {
       DoAflFuzz();
     } else {
       DoRegularFuzz();

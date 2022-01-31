@@ -11,11 +11,11 @@
 namespace mrna::subopt {
 
 inline const auto OPT_SUBOPT_DELTA =
-    mrna::Opt().LongName("subopt-delta").Arg().Help("maximum energy delta from minimum");
+    Opt(Opt::ARG).LongName("subopt-delta").Help("maximum energy delta from minimum");
 inline const auto OPT_SUBOPT_MAX =
-    mrna::Opt().LongName("subopt-strucs").Arg().Help("maximum number of reported structures");
+    Opt(Opt::ARG).LongName("subopt-strucs").Help("maximum number of reported structures");
 inline const auto OPT_SUBOPT_SORTED =
-    mrna::Opt().LongName("subopt-sorted").Help("if the structures should be sorted");
+    Opt(Opt::FLAG).LongName("subopt-sorted").Help("if the structures should be sorted");
 
 void RegisterOpts(ArgParse* args);
 

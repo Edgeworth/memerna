@@ -13,36 +13,37 @@ namespace mrna::fuzz {
 // Brute force specific options:
 // Allows brute force fuzzing to be given a maximum RNA size
 inline const Opt OPT_FUZZ_BRUTE_MAX =
-    Opt().LongName("brute-max").Arg().Help("maximum RNA size to run brute force on");
+    Opt(Opt::ARG).LongName("brute-max").Help("maximum RNA size to run brute force on");
 
 // MFE fuzzing options:
-inline const Opt OPT_FUZZ_MFE = Opt().LongName("mfe").Help("fuzz mfe");
+inline const Opt OPT_FUZZ_MFE = Opt(Opt::FLAG).LongName("mfe").Help("fuzz mfe");
 inline const Opt OPT_FUZZ_MFE_RNASTRUCTURE =
-    Opt().LongName("mfe-rnastructure").Help("fuzz RNAstructure mfe");
-inline const Opt OPT_FUZZ_MFE_BRUTE = Opt().LongName("mfe-brute").Help("fuzz brute mfe");
+    Opt(Opt::FLAG).LongName("mfe-rnastructure").Help("fuzz RNAstructure mfe");
+inline const Opt OPT_FUZZ_MFE_BRUTE = Opt(Opt::FLAG).LongName("mfe-brute").Help("fuzz brute mfe");
 inline const Opt OPT_FUZZ_MFE_TABLE =
-    Opt().LongName("mfe-table").Help("enable checking mfe dp tables");
+    Opt(Opt::FLAG).LongName("mfe-table").Help("enable checking mfe dp tables");
 
 // Subopt fuzzing:
-inline const Opt OPT_FUZZ_SUBOPT = Opt().LongName("subopt").Help("fuzz suboptimal folding");
+inline const Opt OPT_FUZZ_SUBOPT =
+    Opt(Opt::FLAG).LongName("subopt").Help("fuzz suboptimal folding");
 inline const Opt OPT_FUZZ_SUBOPT_RNASTRUCTURE =
-    Opt().LongName("subopt-rnastructure").Help("fuzz RNAstructure suboptimal folding");
+    Opt(Opt::FLAG).LongName("subopt-rnastructure").Help("fuzz RNAstructure suboptimal folding");
 inline const Opt OPT_FUZZ_SUBOPT_BRUTE =
-    Opt().LongName("subopt-brute").Help("fuzz brute suboptimal folding");
+    Opt(Opt::FLAG).LongName("subopt-brute").Help("fuzz brute suboptimal folding");
 inline const Opt OPT_FUZZ_SUBOPT_MAX =
-    Opt()
+    Opt(Opt::ARG)
         .LongName("subopt-max")
-        .Arg()
         .Help("maximum number of substructures for subopt max-delta fuzz");
 inline const Opt OPT_FUZZ_SUBOPT_DELTA =
-    Opt().LongName("subopt-delta").Arg().Help("max energy delta for subopt delta fuzz");
+    Opt(Opt::ARG).LongName("subopt-delta").Help("max energy delta for subopt delta fuzz");
 
 // Partition fuzzing:
-inline const Opt OPT_FUZZ_PARTITION = Opt().LongName("partition").Help("fuzz partition function");
+inline const Opt OPT_FUZZ_PARTITION =
+    Opt(Opt::FLAG).LongName("partition").Help("fuzz partition function");
 inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
-    Opt().LongName("partition-rnastructure").Help("fuzz RNAstructure partition function");
+    Opt(Opt::FLAG).LongName("part-rnastructure").Help("fuzz RNAstructure partition function");
 inline const Opt OPT_FUZZ_PARTITION_BRUTE =
-    Opt().LongName("partition-brute").Help("fuzz brute partition function");
+    Opt(Opt::FLAG).LongName("part-brute").Help("fuzz brute partition function");
 
 void RegisterOpts(ArgParse* args);
 

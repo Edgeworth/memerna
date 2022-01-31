@@ -43,22 +43,22 @@ std::string FuzzCfg::Desc() {
 
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
-  if (args.Has(OPT_FUZZ_BRUTE_MAX)) cfg.brute_max = args.Get<int>(OPT_FUZZ_BRUTE_MAX);
+  args.MaybeSet(OPT_FUZZ_BRUTE_MAX, &cfg.brute_max);
 
-  cfg.mfe = args.Has(OPT_FUZZ_MFE);
-  cfg.mfe_rnastructure = args.Has(OPT_FUZZ_MFE_RNASTRUCTURE);
-  cfg.mfe_brute = args.Has(OPT_FUZZ_MFE_BRUTE);
-  cfg.mfe_table = args.Has(OPT_FUZZ_MFE_TABLE);
+  args.MaybeSet(OPT_FUZZ_MFE, &cfg.mfe);
+  args.MaybeSet(OPT_FUZZ_MFE_RNASTRUCTURE, &cfg.mfe_rnastructure);
+  args.MaybeSet(OPT_FUZZ_MFE_BRUTE, &cfg.mfe_brute);
+  args.MaybeSet(OPT_FUZZ_MFE_TABLE, &cfg.mfe_table);
 
-  cfg.subopt = args.Has(OPT_FUZZ_SUBOPT);
-  cfg.subopt_rnastructure = args.Has(OPT_FUZZ_SUBOPT_RNASTRUCTURE);
-  cfg.subopt_brute = args.Has(OPT_FUZZ_SUBOPT_BRUTE);
-  if (args.Has(OPT_FUZZ_SUBOPT_MAX)) cfg.subopt_max = args.Get<int>(OPT_FUZZ_SUBOPT_MAX);
-  if (args.Has(OPT_FUZZ_SUBOPT_DELTA)) cfg.subopt_delta = args.Get<int>(OPT_FUZZ_SUBOPT_DELTA);
+  args.MaybeSet(OPT_FUZZ_SUBOPT, &cfg.subopt);
+  args.MaybeSet(OPT_FUZZ_SUBOPT_RNASTRUCTURE, &cfg.subopt_rnastructure);
+  args.MaybeSet(OPT_FUZZ_SUBOPT_BRUTE, &cfg.subopt_brute);
+  args.MaybeSet(OPT_FUZZ_SUBOPT_MAX, &cfg.subopt_max);
+  args.MaybeSet(OPT_FUZZ_SUBOPT_DELTA, &cfg.subopt_delta);
 
-  cfg.part = args.Has(OPT_FUZZ_PARTITION);
-  cfg.part_rnastructure = args.Has(OPT_FUZZ_PARTITION_RNASTRUCTURE);
-  cfg.part_brute = args.Has(OPT_FUZZ_PARTITION_BRUTE);
+  args.MaybeSet(OPT_FUZZ_PARTITION, &cfg.part);
+  args.MaybeSet(OPT_FUZZ_PARTITION_RNASTRUCTURE, &cfg.part_rnastructure);
+  args.MaybeSet(OPT_FUZZ_PARTITION_BRUTE, &cfg.part_brute);
 
   cfg.mfe = cfg.mfe || cfg.mfe_rnastructure || cfg.mfe_brute;
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure || cfg.subopt_brute;

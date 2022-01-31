@@ -10,14 +10,19 @@ namespace mrna {
 
 std::string Opt::Desc() const {
   std::string desc;
-  if (!shortname_.empty() && !longname_.empty()) {
-    desc += "-" + shortname_ + ", --" + longname_;
+  auto longname = longname_;
+
+  // Handle flag --no.
+  if (!longname.empty() && kind_ == FLAG) longname = longname + "/--no-" + longname;
+
+  if (!shortname_.empty() && !longname.empty()) {
+    desc += "-" + shortname_ + ", --" + longname;
   } else if (!shortname_.empty()) {
     desc += "-" + shortname_;
-  } else if (!longname_.empty()) {
-    desc += "--" + longname_;
+  } else if (!longname.empty()) {
+    desc += "--" + longname;
   }
-  if (has_default_) desc += sfmt(" [%s]", default_arg_.c_str());
+  if (has_default_) desc += sfmt(" [%s]", default_.c_str());
   if (!choices_.empty()) {
     desc += " (";
     for (auto iter = choices_.begin(); iter != choices_.end(); ++iter) {
@@ -40,10 +45,19 @@ void ArgParse::RegisterOpt(const Opt& opt) {
     verify(opt == iter->second, "conflicting option registered with shortname %s",
         opt.shortname().c_str());
 
+  // If opt is a flag and has a longname, add the inversion to longname_ map.
+  bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
+  std::string inverted_longname = "no-" + opt.longname();
+  if (auto iter = longname_.find(inverted_longname); has_inversion && iter != longname_.end())
+    verify(opt == iter->second, "conflicting option registered with longname %s",
+        inverted_longname.c_str());
+
   verify(!opt.longname().empty() || !opt.shortname().empty(),
       "option must have either a shortname or a longname");
 
   if (!opt.longname().empty()) longname_.emplace(opt.longname(), opt);
+  if (has_inversion)
+    longname_.emplace(inverted_longname, Opt(opt).LongName(inverted_longname).Hidden());
   if (!opt.shortname().empty()) shortname_.emplace(opt.shortname(), opt);
   opts_.insert(opt);
   // Add default argument if necessary.
@@ -53,30 +67,37 @@ void ArgParse::RegisterOpt(const Opt& opt) {
 
 std::string ArgParse::Usage() const {
   std::string usage = "Usage: \n";
-  for (const auto& arg : opts_) usage += sfmt("  %s\n", arg.Desc().c_str());
+  for (const auto& opt : opts_) {
+    if (opt.hidden()) continue;
+    usage += sfmt("  %s\n", opt.Desc().c_str());
+  }
   return usage;
 }
 
 std::string ArgParse::Parse(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
-    const char* arg = argv[i];
-    bool is_opt = arg[0] == '-';
-    while (*arg == '-') ++arg;
-    bool is_short = arg - argv[i] == 1;
+    const char* s = argv[i];
+    bool is_opt = s[0] == '-';
+    while (*s == '-') ++s;
+    bool is_short = s - argv[i] == 1;
 
     if (!is_opt) {
-      pos_.push_back(arg);
+      pos_.push_back(s);
     } else {
       auto& map = is_short ? shortname_ : longname_;
-      auto iter = map.find(arg);
+      auto iter = map.find(s);
       if (iter == map.end()) return sfmt("unknown option %s", argv[i]);
 
       const auto& opt = iter->second;
-      if (opt.has_arg()) {
+      if (opt.kind() == Opt::ARG) {
         if (i + 1 == argc) return sfmt("missing argument for option %s", opt.Desc().c_str());
         values_[opt] = argv[++i];
       } else {
-        values_[opt] = arg;
+        auto pair = FlagPair(opt);
+        bool on = !opt.IsInverted();
+        values_[pair.first] = convert(on);
+        values_[pair.second] = convert(!on);
+        printf("%s %s\n", values_[pair.first].c_str(), values_[pair.second].c_str());
       }
     }
   }
@@ -104,5 +125,11 @@ const Opt& ArgParse::Lookup(const std::string& name) const {
 }
 
 bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }
+
+std::pair<Opt, Opt> ArgParse::FlagPair(const Opt& opt) const {
+  verify(opt.kind() == Opt::FLAG, "option %s is not a flag", opt.longname().c_str());
+  if (opt.IsInverted()) return {Lookup(opt.longname().substr(3)), opt};
+  return {opt, Lookup("no-" + opt.longname())};
+}
 
 }  // namespace mrna

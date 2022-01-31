@@ -16,7 +16,7 @@
 
 // TODO: can replace this with modelcfg ctd stuff
 inline const auto OPT_CTD_OUTPUT =
-    mrna::Opt().LongName("ctd-output").Help("if we should output CTD data");
+    mrna::Opt(mrna::Opt::FLAG).LongName("ctd-output").Help("if we should output CTD data");
 
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
-  const bool should_print = !args.Has(mrna::OPT_QUIET);
-  const bool ctd_data = args.Has(OPT_CTD_OUTPUT);
+  const bool should_print = !args.GetOr(mrna::OPT_QUIET);
+  const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
   const auto cfg = mrna::subopt::SuboptCfg::FromArgParse(args);
 
   mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
