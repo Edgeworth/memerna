@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
@@ -14,6 +15,10 @@
 #include "model/primary.h"
 
 namespace mrna::energy {
+
+class BoltzEnergyModel;
+
+using BoltzEnergyModelPtr = std::shared_ptr<BoltzEnergyModel>;
 
 class BoltzEnergyModel {
  public:
@@ -39,7 +44,9 @@ class BoltzEnergyModel {
   BoltzEnergy coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
   BoltzEnergy augu_penalty;
 
-  explicit BoltzEnergyModel(EnergyModel em);
+  static BoltzEnergyModelPtr Create(EnergyModel em) {
+    return BoltzEnergyModelPtr(new BoltzEnergyModel(std::move(em)));
+  }
 
   const EnergyModel& em() const { return em_; }
 
@@ -88,6 +95,10 @@ class BoltzEnergyModel {
 
  private:
   EnergyModel em_;
+
+  // This is private to prevent construction on the stack, since this structure
+  // can be very large if arbitrary precision floats are enabled.
+  explicit BoltzEnergyModel(EnergyModel em);
 };
 
 }  // namespace mrna::energy
