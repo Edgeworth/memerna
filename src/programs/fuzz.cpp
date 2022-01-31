@@ -28,7 +28,7 @@ __AFL_FUZZ_INIT();
 #endif
 
 inline const auto OPT_PRINT_INTERVAL =
-    mrna::Opt().LongName("print-interval").Default("-1").Help("status update every n seconds");
+    mrna::Opt().LongName("print-interval").Default("5").Help("status update every n seconds");
 
 // Energy model options:
 // TODO: Get this to work for RNAstructure.

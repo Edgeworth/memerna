@@ -22,8 +22,8 @@ void RegisterOpts(ArgParse* args);
 struct SuboptCfg {
   constexpr static const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 2;
 
-  Energy delta = MAX_E;  // maximum energy delta from minimum. -1 means no limit
-  int strucs = MAX_STRUCTURES;  // maximum number of structures to report.  -1 means no limit
+  Energy delta = MAX_E;  // maximum energy delta from minimum
+  int strucs = MAX_STRUCTURES;  // maximum number of structures to report
   bool sorted = false;  // if the structures should be sorted
 
   static SuboptCfg FromArgParse(const ArgParse& args);
