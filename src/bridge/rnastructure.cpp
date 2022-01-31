@@ -81,9 +81,9 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) co
 }
 
 int RNAstructure::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
-  auto computeds = SuboptimalIntoVector(std::move(r), delta);
-  for (const auto& computed : computeds) fn(computed);
-  return static_cast<int>(computeds.size());
+  auto res = SuboptimalIntoVector(std::move(r), delta);
+  for (const auto& r : res) fn(r);
+  return static_cast<int>(res.size());
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
