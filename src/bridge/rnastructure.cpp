@@ -47,7 +47,8 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-energy::EnergyResult RNAstructure::Efn(Primary r, Secondary s, std::string* desc) const {
+energy::EnergyResult RNAstructure::Efn(
+    const Primary& r, const Secondary& s, std::string* desc) const {
   const auto structure = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;
@@ -57,12 +58,12 @@ energy::EnergyResult RNAstructure::Efn(Primary r, Secondary s, std::string* desc
   return energy::EnergyResult(structure->GetEnergy(1), Ctds(), nullptr);
 }
 
-ctx::FoldResult RNAstructure::Fold(Primary r) const {
+ctx::FoldResult RNAstructure::Fold(const Primary& r) const {
   dp_state_t state;
-  return FoldAndDpTable(std::move(r), &state);
+  return FoldAndDpTable(r, &state);
 }
 
-ctx::FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) const {
+ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;
@@ -80,14 +81,14 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(Primary r, dp_state_t* dp_state) co
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
-  auto res = SuboptimalIntoVector(std::move(r), delta);
+int RNAstructure::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+  auto res = SuboptimalIntoVector(r, delta);
   for (const auto& r : res) fn(r);
   return static_cast<int>(res.size());
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
-    Primary r, Energy delta) const {
+    const Primary& r, Energy delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
   verify(int16_t(delta) == delta, "delta too big");
@@ -102,7 +103,7 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
   return res;
 }
 
-part::PartResult RNAstructure::Partition(Primary r) const {
+part::PartResult RNAstructure::Partition(const Primary& r) const {
   const auto structure = LoadStructure(r);
   const int length = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.

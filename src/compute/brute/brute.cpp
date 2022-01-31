@@ -14,8 +14,8 @@
 
 namespace mrna::brute {
 
-BruteForce::BruteForce(Primary r, energy::EnergyModelPtr em, BruteCfg cfg)
-    : r_(std::move(r)), em_(em), cfg_(std::move(cfg)), s_(r_.size()), ctd_(r_.size()) {}
+BruteForce::BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
+    : r_(r), em_(em), cfg_(std::move(cfg)), s_(r_.size()), ctd_(r_.size()) {}
 
 BruteResult BruteForce::Run() {
   // Preconditions:

@@ -4,7 +4,6 @@ Some notes on the style used in memerna:
 - Format according to the .clang-format
 - Prefer composition and data oriented APIs. Use inheritance carefully, if at
    all.
-- Prefer pass by value and move to pass by const-ref and copy.
 - Prefer non-const pointer for output parameters, const-ref for params,
    const-pointer for optional references.
 

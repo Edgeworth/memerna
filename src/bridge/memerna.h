@@ -29,11 +29,13 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const override;
-  ctx::FoldResult Fold(Primary r) const override;
-  int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const override;
-  std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const override;
-  part::PartResult Partition(Primary r) const override;
+  energy::EnergyResult Efn(
+      const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
+  ctx::FoldResult Fold(const Primary& r) const override;
+  int Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
+  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+      const Primary& r, Energy delta) const override;
+  part::PartResult Partition(const Primary& r) const override;
 
   static Memerna FromArgParse(const ArgParse& args);
 
