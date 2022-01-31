@@ -14,8 +14,8 @@ void RegisterOpts(ArgParse* args) {
 
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   EnergyCfg cfg;
-  cfg.lonely_pairs = args.Has(OPT_LONELY_PAIRS);
-  cfg.ctd = args.Get<Ctd>(OPT_CTD);
+  args.MaybeSet(OPT_LONELY_PAIRS, &cfg.lonely_pairs);
+  args.MaybeSet(OPT_CTD, &cfg.ctd);
   return cfg;
 }
 

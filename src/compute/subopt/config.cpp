@@ -14,9 +14,9 @@ void RegisterOpts(ArgParse* args) {
 
 SuboptCfg SuboptCfg::FromArgParse(const ArgParse& args) {
   SuboptCfg cfg;
-  if (args.Has(OPT_SUBOPT_DELTA)) cfg.delta = args.Get<Energy>(OPT_SUBOPT_DELTA);
-  if (args.Has(OPT_SUBOPT_MAX)) cfg.strucs = args.Get<int>(OPT_SUBOPT_MAX);
-  cfg.sorted = args.Has(OPT_SUBOPT_SORTED);
+  args.MaybeSet(OPT_SUBOPT_DELTA, &cfg.delta);
+  args.MaybeSet(OPT_SUBOPT_MAX, &cfg.strucs);
+  args.MaybeSet(OPT_SUBOPT_SORTED, &cfg.sorted);
   return cfg;
 }
 

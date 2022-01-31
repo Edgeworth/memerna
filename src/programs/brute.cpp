@@ -34,14 +34,14 @@ int main(int argc, char* argv[]) {
 
   auto res = mrna::brute::BruteForce(r, em, std::move(cfg)).Run();
 
-  if (args.Has(mrna::OPT_MFE)) {
+  if (args.GetOr(mrna::OPT_MFE)) {
     const auto& mfe = *res.subopts.begin();
     printf("%d\n", mfe.energy);
     puts(mfe.tb.s.ToDotBracket().c_str());
     puts(mfe.tb.ctd.ToString(mfe.tb.s).c_str());
   }
 
-  if (args.Has(mrna::OPT_SUBOPT)) {
+  if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
       printf("%d\n", s.energy);
       puts(s.tb.s.ToDotBracket().c_str());
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (args.Has(mrna::OPT_PART)) {
+  if (args.GetOr(mrna::OPT_PART)) {
     std::cout << "q: " << res.part.q << '\n';
     std::cout << "p:\n";
     PrintPartition(res.part);

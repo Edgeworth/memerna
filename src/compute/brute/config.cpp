@@ -14,9 +14,9 @@ void RegisterOpts(ArgParse* args) {
 
 BruteCfg BruteCfg::FromArgParse(const ArgParse& args) {
   BruteCfg cfg;
-  cfg.mfe = args.Has(OPT_MFE);
-  cfg.subopt = args.Has(OPT_SUBOPT);
-  cfg.part = args.Has(OPT_PART);
+  args.MaybeSet(OPT_MFE, &cfg.mfe);
+  args.MaybeSet(OPT_SUBOPT, &cfg.subopt);
+  args.MaybeSet(OPT_PART, &cfg.part);
   cfg.subopt_cfg = subopt::SuboptCfg::FromArgParse(args);
   return cfg;
 }

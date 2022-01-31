@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     printf("%s\n", res.ctd.ToString(s).c_str());
   }
 
-  if (args.Has(mrna::OPT_VERBOSE)) {
+  if (args.GetOr(mrna::OPT_VERBOSE)) {
     const auto descs = res.struc->Description();
     for (const auto& desc : descs) printf("%s\n", desc.c_str());
   }
