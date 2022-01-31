@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
   auto r = mrna::Primary::FromString(args.Pos(0));
 
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
-  auto res = ctx.Partition(std::move(r));
+  auto res = ctx.Partition(r);
   std::cout << "q: " << res.part.q << '\n';
   std::cout << "p:\n";
   PrintPartition(res.part);

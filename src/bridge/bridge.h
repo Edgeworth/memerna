@@ -28,11 +28,13 @@ class RnaPackage {
  public:
   virtual ~RnaPackage() = default;
 
-  virtual energy::EnergyResult Efn(Primary r, Secondary s, std::string* desc = nullptr) const = 0;
-  virtual ctx::FoldResult Fold(Primary r) const = 0;
-  virtual int Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const = 0;
-  virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(Primary r, Energy delta) const = 0;
-  virtual part::PartResult Partition(Primary r) const = 0;
+  virtual energy::EnergyResult Efn(
+      const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
+  virtual ctx::FoldResult Fold(const Primary& r) const = 0;
+  virtual int Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const = 0;
+  virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+      const Primary& r, Energy delta) const = 0;
+  virtual part::PartResult Partition(const Primary& r) const = 0;
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };

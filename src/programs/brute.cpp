@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromString(args.Pos(0));
 
-  auto res = mrna::brute::BruteForce(std::move(r), em, std::move(cfg)).Run();
+  auto res = mrna::brute::BruteForce(r, em, std::move(cfg)).Run();
 
   if (args.Has(mrna::OPT_MFE)) {
     const auto& mfe = *res.subopts.begin();

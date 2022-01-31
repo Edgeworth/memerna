@@ -11,8 +11,8 @@
 
 namespace mrna::bridge {
 
-energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) const {
-  auto res = ctx_.Efn(std::move(r), std::move(s), nullptr, desc != nullptr);
+energy::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
+  auto res = ctx_.Efn(r, s, nullptr, desc != nullptr);
   if (desc) {
     for (const auto& s : res.struc->Description()) {
       *desc += s;
@@ -23,17 +23,18 @@ energy::EnergyResult Memerna::Efn(Primary r, Secondary s, std::string* desc) con
   return res;
 }
 
-ctx::FoldResult Memerna::Fold(Primary r) const { return ctx_.Fold(std::move(r)); }
+ctx::FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r); }
 
-int Memerna::Suboptimal(subopt::SuboptCallback fn, Primary r, Energy delta) const {
-  return ctx_.Suboptimal(std::move(r), fn, {.delta = delta, .sorted = true});
+int Memerna::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+  return ctx_.Suboptimal(r, fn, {.delta = delta, .sorted = true});
 }
 
-std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(Primary r, Energy delta) const {
-  return ctx_.SuboptimalIntoVector(std::move(r), {.delta = delta, .sorted = true});
+std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(
+    const Primary& r, Energy delta) const {
+  return ctx_.SuboptimalIntoVector(r, {.delta = delta, .sorted = true});
 }
 
-part::PartResult Memerna::Partition(Primary r) const { return ctx_.Partition(std::move(r)); }
+part::PartResult Memerna::Partition(const Primary& r) const { return ctx_.Partition(r); }
 
 Memerna Memerna::FromArgParse(const ArgParse& args) {
   return Memerna(ctx::Ctx::FromArgParse(args));

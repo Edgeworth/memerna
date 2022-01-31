@@ -23,7 +23,7 @@
 namespace mrna::ctx {
 
 energy::EnergyResult Ctx::Efn(
-    Primary r, Secondary s, const Ctds* given_ctd, bool build_structure) const {
+    const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
   return em().TotalEnergy(r, s, given_ctd, build_structure);
 }
 
@@ -37,9 +37,9 @@ DpArray Ctx::ComputeTables(const Primary& r) const {
   }
 }
 
-ctx::FoldResult Ctx::Fold(Primary r) const {
+ctx::FoldResult Ctx::Fold(const Primary& r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
-    auto subopt = brute::MfeBruteForce(std::move(r), em_);
+    auto subopt = brute::MfeBruteForce(r, em_);
     return {.mfe = {.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
@@ -54,19 +54,18 @@ ctx::FoldResult Ctx::Fold(Primary r) const {
 }
 
 std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
-    Primary r, subopt::SuboptCfg cfg) const {
+    const Primary& r, subopt::SuboptCfg cfg) const {
   std::vector<subopt::SuboptResult> subopts;
   [[maybe_unused]] int strucs = Suboptimal(
-      std::move(r), [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
-      cfg);
+      r, [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); }, cfg);
   assert(strucs == static_cast<int>(subopts.size()));
   return subopts;
 }
 
-int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
+int Ctx::Suboptimal(const Primary& r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO: handle cases other than max structures.
-    auto subopts = brute::SuboptimalBruteForce(std::move(r), em_, std::move(cfg));
+    auto subopts = brute::SuboptimalBruteForce(r, em_, std::move(cfg));
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
@@ -75,22 +74,22 @@ int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg)
   auto ext = mfe::ComputeExterior(r, em(), dp);
   switch (cfg_.subopt_alg) {
   case CtxCfg::SuboptAlg::ZERO:
-    return subopt::Suboptimal0(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
+    return subopt::Suboptimal0(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   case CtxCfg::SuboptAlg::ONE:
-    return subopt::Suboptimal1(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
+    return subopt::Suboptimal1(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   default:
     verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.subopt_alg));
   }
 }
 
-part::PartResult Ctx::Partition(Primary r) const {
+part::PartResult Ctx::Partition(const Primary& r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.part_alg) {
   case CtxCfg::PartAlg::ZERO: res = part::Partition0(r, em_); break;
   case CtxCfg::PartAlg::ONE:
     res = part::Partition1(r, energy::BoltzEnergyModel::Create(em_));
     break;
-  case CtxCfg::PartAlg::BRUTE: return brute::PartitionBruteForce(std::move(r), em_);
+  case CtxCfg::PartAlg::BRUTE: return brute::PartitionBruteForce(r, em_);
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
