@@ -48,16 +48,16 @@ void ArgParse::RegisterOpt(const Opt& opt) {
   // If opt is a flag and has a longname, add the inversion to longname_ map.
   bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
   std::string inverted_longname = "no-" + opt.longname();
+  auto inverted_opt = Opt(opt).LongName(inverted_longname).Hidden();
   if (auto iter = longname_.find(inverted_longname); has_inversion && iter != longname_.end())
-    verify(opt == iter->second, "conflicting option registered with longname %s",
+    verify(inverted_opt == iter->second, "conflicting option registered with longname %s",
         inverted_longname.c_str());
 
   verify(!opt.longname().empty() || !opt.shortname().empty(),
       "option must have either a shortname or a longname");
 
   if (!opt.longname().empty()) longname_.emplace(opt.longname(), opt);
-  if (has_inversion)
-    longname_.emplace(inverted_longname, Opt(opt).LongName(inverted_longname).Hidden());
+  if (has_inversion) longname_.emplace(inverted_longname, inverted_opt);
   if (!opt.shortname().empty()) shortname_.emplace(opt.shortname(), opt);
   opts_.insert(opt);
   // Add default argument if necessary.
