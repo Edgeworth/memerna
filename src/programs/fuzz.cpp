@@ -57,7 +57,7 @@ class FuzzHarness {
 
  private:
   mrna::ArgParse args_;
-  mrna::energy::EnergyModel em_;
+  mrna::energy::EnergyModelPtr em_;
   mrna::fuzz::FuzzCfg cfg_;
   std::mt19937 e_;
   std::unique_ptr<mrna::bridge::RnaPackage> rnastructure_;

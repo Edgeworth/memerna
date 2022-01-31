@@ -14,7 +14,7 @@
 
 namespace mrna::brute {
 
-BruteForce::BruteForce(Primary r, const energy::EnergyModel& em, BruteCfg cfg)
+BruteForce::BruteForce(Primary r, energy::EnergyModelPtr em, BruteCfg cfg)
     : r_(std::move(r)), em_(em), cfg_(std::move(cfg)), s_(r_.size()), ctd_(r_.size()) {}
 
 BruteResult BruteForce::Run() {
@@ -30,7 +30,7 @@ BruteResult BruteForce::Run() {
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
-      if (em_.CanPair(r_, st, en)) pairs_.emplace_back(st, en);
+      if (em_->CanPair(r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
   Dfs(0);
@@ -44,7 +44,7 @@ void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(pairs_.size())) {
     // Small optimisation for case when we're just getting one structure.
     if (cfg_.subopt_cfg.strucs == 1 && !cfg_.part) {
-      auto res = em_.TotalEnergy(r_, s_, nullptr);
+      auto res = em_->TotalEnergy(r_, s_, nullptr);
       if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
         res_.subopts.insert(subopt::SuboptResult(
             tb::TracebackResult(Secondary(s_), std::move(res.ctd)), res.energy));
@@ -85,7 +85,7 @@ void BruteForce::AddAllCombinations(int idx) {
   const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
-    auto energy = em_.TotalEnergy(r_, s_, &ctd_).energy;
+    auto energy = em_->TotalEnergy(r_, s_, &ctd_).energy;
     if (cfg_.part) {
       BoltzEnergy boltz = Boltz(energy);
       res_.part.q += boltz;
@@ -96,7 +96,7 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = em_.SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
+            Energy inside_energy = em_->SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());

@@ -28,8 +28,8 @@ struct FoldResult {
 
 class Ctx {
  public:
-  explicit Ctx(energy::EnergyModel em) : em_(std::move(em)), cfg_() {}
-  Ctx(energy::EnergyModel em, CtxCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
+  explicit Ctx(energy::EnergyModelPtr em) : em_(std::move(em)), cfg_() {}
+  Ctx(energy::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
 
   Ctx(Ctx&& o) = default;
   Ctx& operator=(Ctx&&) = default;
@@ -44,12 +44,12 @@ class Ctx {
   int Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const;
   part::PartResult Partition(Primary r) const;
 
-  const energy::EnergyModel& em() const { return em_; }
+  const energy::EnergyModel& em() const { return *em_; }
 
   static Ctx FromArgParse(const ArgParse& args);
 
  private:
-  energy::EnergyModel em_;
+  energy::EnergyModelPtr em_;
   CtxCfg cfg_;
 
   DpArray ComputeTables(const Primary& r) const;

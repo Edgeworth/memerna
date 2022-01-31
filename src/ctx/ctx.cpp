@@ -24,7 +24,7 @@ namespace mrna::ctx {
 
 energy::EnergyResult Ctx::Efn(
     Primary r, Secondary s, const Ctds* given_ctd, bool build_structure) const {
-  return em_.TotalEnergy(r, s, given_ctd, build_structure);
+  return em().TotalEnergy(r, s, given_ctd, build_structure);
 }
 
 DpArray Ctx::ComputeTables(const Primary& r) const {
@@ -44,8 +44,8 @@ ctx::FoldResult Ctx::Fold(Primary r) const {
   }
 
   auto dp = ComputeTables(r);
-  auto ext = mfe::ComputeExterior(r, em_, dp);
-  auto tb = tb::Traceback(r, em_, dp, ext);
+  auto ext = mfe::ComputeExterior(r, em(), dp);
+  auto tb = tb::Traceback(r, em(), dp, ext);
   auto energy = ext[0][EXT];
   return ctx::FoldResult{
       .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
@@ -72,7 +72,7 @@ int Ctx::Suboptimal(Primary r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg)
   }
 
   auto dp = ComputeTables(r);
-  auto ext = mfe::ComputeExterior(r, em_, dp);
+  auto ext = mfe::ComputeExterior(r, em(), dp);
   switch (cfg_.subopt_alg) {
   case CtxCfg::SuboptAlg::ZERO:
     return subopt::Suboptimal0(std::move(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);

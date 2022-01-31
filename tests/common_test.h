@@ -20,12 +20,11 @@ namespace mrna {
 
 inline constexpr uint32_t T04_MODEL_HASH = 0x9eabeccf;
 
-// Reference energy models by their index into this global array.
-// This is to prevent stack overflows when doing cartesian products of energy
-// models and other parameters in parameterised tests.
+// Make sure to use Range(0, NUM_TEST_MODELS) if making a parameterised test
+// with all models in g_em, since g_em is initialized at runtime.
 inline constexpr int NUM_TEST_MODELS = 5;
-inline energy::EnergyModel g_em[NUM_TEST_MODELS];
-inline energy::EnergyModel t04;
+inline energy::EnergyModelPtr g_em[NUM_TEST_MODELS];
+inline energy::EnergyModelPtr t04;
 
 }  // namespace mrna
 

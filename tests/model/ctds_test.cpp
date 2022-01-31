@@ -97,7 +97,7 @@ class CtdsTest
     : public testing::TestWithParam<std::tuple<int, std::function<CtdTest(const EnergyModel&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
-  const auto& em = g_em[std::get<0>(GetParam())];
+  const auto& em = *g_em[std::get<0>(GetParam())];
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
   BranchCtd computed_branch_ctd;

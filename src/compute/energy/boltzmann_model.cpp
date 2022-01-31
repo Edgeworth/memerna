@@ -20,13 +20,13 @@ void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
 
 }  // namespace
 
-BoltzEnergyModel::BoltzEnergyModel(EnergyModel em) : em_(em) {
-#define FILL_BOLTZ(name)                                                                          \
-  /* NOLINTNEXTLINE */                                                                            \
-  static_assert(sizeof(name) / sizeof(*Decay(name)) == sizeof(em.name) / sizeof(*Decay(em.name)), \
-      "BoltzEnergyModel does not match EnergyModel");                                             \
-  /* NOLINTNEXTLINE */                                                                            \
-  FillBoltzArray(Decay(name), Decay(em.name), sizeof(name) / sizeof(*Decay(name)));
+BoltzEnergyModel::BoltzEnergyModel(EnergyModelPtr em) : em_(em) {
+#define FILL_BOLTZ(name)                                                                  \
+  static_assert(/* NOLINTNEXTLINE */                                                      \
+      sizeof(name) / sizeof(*Decay(name)) == sizeof(em->name) / sizeof(*Decay(em->name)), \
+      "BoltzEnergyModel does not match EnergyModel");                                     \
+  /* NOLINTNEXTLINE */                                                                    \
+  FillBoltzArray(Decay(name), Decay(em->name), sizeof(name) / sizeof(*Decay(name)));
 
   FILL_BOLTZ(stack);
   FILL_BOLTZ(terminal);
@@ -56,7 +56,7 @@ BoltzEnergyModel::BoltzEnergyModel(EnergyModel em) : em_(em) {
   FILL_BOLTZ(coax_mismatch_gu_bonus);
   FILL_BOLTZ(augu_penalty);
 
-  for (const auto& kv : em.hairpin) hairpin[kv.first] = Boltz(kv.second);
+  for (const auto& kv : em->hairpin) hairpin[kv.first] = Boltz(kv.second);
 #undef FILL_BOLTZ
 }
 

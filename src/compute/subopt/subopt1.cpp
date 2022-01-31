@@ -16,7 +16,8 @@
 
 namespace mrna::subopt {
 
-Suboptimal1::Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg)
+Suboptimal1::Suboptimal1(
+    Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 
@@ -153,14 +154,14 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
       const auto stb = r_[st], st1b = r_[st + 1], enb = r_[en], en1b = r_[en - 1];
-      const auto base00 = dp_[st][en][DP_P] + em_.AuGuPenalty(stb, enb) - ext_[st][a];
-      const auto base01 = dp_[st][en - 1][DP_P] + em_.AuGuPenalty(stb, en1b) - ext_[st][a];
-      const auto base10 = dp_[st + 1][en][DP_P] + em_.AuGuPenalty(st1b, enb) - ext_[st][a];
-      const auto base11 = dp_[st + 1][en - 1][DP_P] + em_.AuGuPenalty(st1b, en1b) - ext_[st][a];
+      const auto base00 = dp_[st][en][DP_P] + em_->AuGuPenalty(stb, enb) - ext_[st][a];
+      const auto base01 = dp_[st][en - 1][DP_P] + em_->AuGuPenalty(stb, en1b) - ext_[st][a];
+      const auto base10 = dp_[st + 1][en][DP_P] + em_->AuGuPenalty(st1b, enb) - ext_[st][a];
+      const auto base11 = dp_[st + 1][en - 1][DP_P] + em_->AuGuPenalty(st1b, en1b) - ext_[st][a];
 
       // (   )<.( * ). > Right coax backward
       if (a == EXT_RCOAX) {
-        energy = base11 + em_.MismatchCoaxial(en1b, enb, stb, st1b) + ext_[en + 1][EXT];
+        energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + ext_[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta) exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}});
       }
@@ -183,23 +184,23 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
       if (a != EXT) continue;
 
       // (   )3<   > 3'
-      energy = base01 + em_.dangle3[en1b][enb][stb] + ext_[en + 1][EXT];
+      energy = base01 + em_->dangle3[en1b][enb][stb] + ext_[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE}});
 
       // 5(   )<   > 5'
-      energy = base10 + em_.dangle5[enb][stb][st1b] + ext_[en + 1][EXT];
+      energy = base10 + em_->dangle5[enb][stb][st1b] + ext_[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch
-      energy = base11 + em_.terminal[en1b][enb][stb][st1b] + ext_[en + 1][EXT];
+      energy = base11 + em_->terminal[en1b][enb][stb][st1b] + ext_[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH}});
 
       if (en < N - 1) {
         // .(   ).<(   ) > Left coax
-        energy = base11 + em_.MismatchCoaxial(en1b, enb, stb, st1b);
+        energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b);
         if (energy + ext_[en + 1][EXT_GU] <= delta)
           exps.push_back(
               {energy + ext_[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
@@ -219,13 +220,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
       }
 
       // (   )(<   ) > Flush coax
-      energy = base01 + em_.stack[en1b][enb][WcPair(enb)][stb] + ext_[en][EXT_WC];
+      energy = base01 + em_->stack[en1b][enb][WcPair(enb)][stb] + ext_[en][EXT_WC];
       if (energy <= delta)
         exps.push_back({energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
             {st, CTD_FCOAX_WITH_NEXT}});
 
       if (IsGu(enb)) {
-        energy = base01 + em_.stack[en1b][enb][GuPair(enb)][stb] + ext_[en][EXT_GU];
+        energy = base01 + em_->stack[en1b][enb][GuPair(enb)][stb] + ext_[en][EXT_GU];
         if (energy <= delta)
           exps.push_back({energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
               {st, CTD_FCOAX_WITH_NEXT}});
@@ -254,25 +255,25 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     energy = pc_.Hairpin(st, en) - dp_[st][en][a];
     if (energy <= delta) exps.emplace_back(energy);
 
-    auto base_and_branch = pc_.augubranch[stb][enb] + em_.multiloop_hack_a - dp_[st][en][a];
+    auto base_and_branch = pc_.augubranch[stb][enb] + em_->multiloop_hack_a - dp_[st][en][a];
     // (<   ><    >)
     energy = base_and_branch + dp_[st + 1][en - 1][DP_U2];
     if (energy <= delta) exps.push_back({energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED}});
     // (3<   ><   >) 3'
-    energy = base_and_branch + dp_[st + 2][en - 1][DP_U2] + em_.dangle3[stb][st1b][enb];
+    energy = base_and_branch + dp_[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 1, DP_U2}, {en, CTD_3_DANGLE}});
     // (<   ><   >5) 5'
-    energy = base_and_branch + dp_[st + 1][en - 2][DP_U2] + em_.dangle5[stb][en1b][enb];
+    energy = base_and_branch + dp_[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 1, en - 2, DP_U2}, {en, CTD_5_DANGLE}});
     // (.<   ><   >.) Terminal mismatch
-    energy = base_and_branch + dp_[st + 2][en - 2][DP_U2] + em_.terminal[stb][st1b][en1b][enb];
+    energy = base_and_branch + dp_[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb];
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
       Base pl1b = r_[piv - 1], plb = r_[piv], prb = r_[piv + 1], pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      auto outer_coax = em_.MismatchCoaxial(stb, st1b, en1b, enb);
+      auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);
       energy = base_and_branch + dp_[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
           dp_[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
@@ -288,28 +289,28 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
 
       // (.(   ).   ) Left right coax
       energy = base_and_branch + dp_[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
-          dp_[piv + 1][en - 1][DP_U] + em_.MismatchCoaxial(pl1b, plb, st1b, st2b);
+          dp_[piv + 1][en - 1][DP_U] + em_->MismatchCoaxial(pl1b, plb, st1b, st2b);
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT}});
 
       // (   .(   ).) Right left coax
       energy = base_and_branch + dp_[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
-          dp_[piv + 2][en - 2][DP_P] + em_.MismatchCoaxial(en2b, en1b, prb, pr1b);
+          dp_[piv + 2][en - 2][DP_P] + em_->MismatchCoaxial(en2b, en1b, prb, pr1b);
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P},
             {piv + 2, CTD_LCOAX_WITH_NEXT}, {en, CTD_LCOAX_WITH_PREV}});
 
       // ((   )   ) Left flush coax
       energy = base_and_branch + dp_[st + 1][piv][DP_P] + pc_.augubranch[st1b][plb] +
-          dp_[piv + 1][en - 1][DP_U] + em_.stack[stb][st1b][plb][enb];
+          dp_[piv + 1][en - 1][DP_U] + em_->stack[stb][st1b][plb][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 1, CTD_FCOAX_WITH_PREV}, {en, CTD_FCOAX_WITH_NEXT}});
 
       // (   (   )) Right flush coax
       energy = base_and_branch + dp_[st + 1][piv][DP_U] + pc_.augubranch[prb][en1b] +
-          dp_[piv + 1][en - 1][DP_P] + em_.stack[stb][prb][en1b][enb];
+          dp_[piv + 1][en - 1][DP_P] + em_->stack[stb][prb][en1b][enb];
       if (energy <= delta)
         exps.push_back({energy, {st + 1, piv, DP_U}, {piv + 1, en - 1, DP_P},
             {piv + 1, CTD_FCOAX_WITH_NEXT}, {en, CTD_FCOAX_WITH_PREV}});
@@ -337,7 +338,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     // Check a == U_RCOAX:
     // (   )<.( ** ). > Right coax backward
     if (a == DP_U_RCOAX) {
-      energy = base11 + em_.MismatchCoaxial(pl1b, pb, stb, st1b);
+      energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b);
       // Our ctds will have already been set by now.
       if (energy <= delta) exps.push_back({energy, {st + 1, piv - 1, DP_P}});
       if (energy + dp_[piv + 1][en][DP_U] <= delta)
@@ -371,7 +372,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     assert(a == DP_U || a == DP_U2);
 
     // (   )3<   > 3' - U, U2
-    energy = base01 + em_.dangle3[pl1b][pb][stb];
+    energy = base01 + em_->dangle3[pl1b][pb][stb];
     // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE}});
@@ -380,7 +381,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {st, CTD_3_DANGLE}});
 
     // 5(   )<   > 5' - U, U2
-    energy = base10 + em_.dangle5[pb][stb][st1b];
+    energy = base10 + em_->dangle5[pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st + 1, piv, DP_P}, {st + 1, CTD_5_DANGLE}});
     if (energy + dp_[piv + 1][en][DP_U] <= delta)
@@ -388,7 +389,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {st + 1, CTD_5_DANGLE}});
 
     // .(   ).<   > Terminal mismatch - U, U2
-    energy = base11 + em_.terminal[pl1b][pb][stb][st1b];
+    energy = base11 + em_->terminal[pl1b][pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back({energy, {st + 1, piv - 1, DP_P}, {}, {st + 1, CTD_MISMATCH}});
     if (energy + dp_[piv + 1][en][DP_U] <= delta)
@@ -396,7 +397,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {st + 1, CTD_MISMATCH}});
 
     // .(   ).<(   ) > Left coax - U, U2
-    energy = base11 + em_.MismatchCoaxial(pl1b, pb, stb, st1b);
+    energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b);
     if (energy + dp_[piv + 1][en][DP_U_WC] <= delta)
       exps.push_back({energy + dp_[piv + 1][en][DP_U_WC], {st + 1, piv - 1, DP_P},
           {piv + 1, en, DP_U_WC}, {st + 1, CTD_LCOAX_WITH_NEXT}, {piv + 1, CTD_LCOAX_WITH_PREV}});
@@ -411,13 +412,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
           {piv + 2, CTD_RCOAX_WITH_PREV}});
 
     // (   )(<   ) > Flush coax - U, U2
-    energy = base01 + em_.stack[pl1b][pb][WcPair(pb)][stb] + dp_[piv][en][DP_U_WC];
+    energy = base01 + em_->stack[pl1b][pb][WcPair(pb)][stb] + dp_[piv][en][DP_U_WC];
     if (energy <= delta)
       exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_WC}, {st, CTD_FCOAX_WITH_NEXT},
           {piv, CTD_FCOAX_WITH_PREV}});
 
     if (IsGu(pb)) {
-      energy = base01 + em_.stack[pl1b][pb][GuPair(pb)][stb] + dp_[piv][en][DP_U_GU];
+      energy = base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp_[piv][en][DP_U_GU];
       if (energy <= delta)
         exps.push_back({energy, {st, piv - 1, DP_P}, {piv, en, DP_U_GU}, {st, CTD_FCOAX_WITH_NEXT},
             {piv, CTD_FCOAX_WITH_PREV}});

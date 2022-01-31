@@ -65,16 +65,16 @@ class Precomp {
 
   std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
 
-  Precomp(Primary r, EnergyModel em);
+  Precomp(Primary r, EnergyModelPtr em);
 
-  const EnergyModel& em() const { return em_; }
+  const EnergyModel& em() const { return *em_; }
 
   Energy TwoLoop(int ost, int oen, int ist, int ien) const;
   Energy Hairpin(int st, int en) const;
 
  private:
   Primary r_;
-  EnergyModel em_;
+  EnergyModelPtr em_;
 
   void PrecomputeData();
 };

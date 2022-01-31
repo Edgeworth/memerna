@@ -40,7 +40,7 @@ struct BruteResult {
 
 class BruteForce {
  public:
-  BruteForce(Primary r, const energy::EnergyModel& em, BruteCfg cfg);
+  BruteForce(Primary r, energy::EnergyModelPtr em, BruteCfg cfg);
 
   BruteResult Run();
 
@@ -60,7 +60,7 @@ class BruteForce {
   };
 
   Primary r_;
-  energy::EnergyModel em_;
+  energy::EnergyModelPtr em_;
   BruteCfg cfg_;
 
   Secondary s_;

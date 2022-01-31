@@ -42,7 +42,7 @@ struct Expand {
 
 class Suboptimal1 {
  public:
-  Suboptimal1(Primary r, energy::EnergyModel em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  Suboptimal1(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(SuboptCallback fn);
 
@@ -55,7 +55,7 @@ class Suboptimal1 {
   };
 
   Primary r_;
-  energy::EnergyModel em_;
+  energy::EnergyModelPtr em_;
   energy::Precomp pc_;
   SuboptResult res_;
   DpArray dp_;

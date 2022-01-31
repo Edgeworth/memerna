@@ -24,13 +24,13 @@ using Error = std::deque<std::string>;
 
 class Fuzzer {
  public:
-  Fuzzer(Primary r, energy::EnergyModel em, FuzzCfg cfg);
+  Fuzzer(Primary r, energy::EnergyModelPtr em, FuzzCfg cfg);
 
   Error Run();
 
  private:
   Primary r_;
-  energy::EnergyModel em_;
+  energy::EnergyModelPtr em_;
   FuzzCfg cfg_;
 
   Error errors_;
