@@ -65,9 +65,8 @@ class EnergyModel {
   EnergyCfg cfg;
 
   inline bool CanPair(const Primary& r, int st, int en) const {
-    // TODO: check the correctness of this.
     if (cfg.lonely_pairs) {
-      return IsPair(r[st], r[en]);
+      return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     } else {
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
           ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
