@@ -87,13 +87,15 @@ part::PartResult Ctx::Partition(Primary r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   switch (cfg_.part_alg) {
   case CtxCfg::PartAlg::ZERO: res = part::Partition0(r, em_); break;
-  case CtxCfg::PartAlg::ONE: res = part::Partition1(r, energy::BoltzEnergyModel(em_)); break;
+  case CtxCfg::PartAlg::ONE:
+    res = part::Partition1(r, energy::BoltzEnergyModel::Create(em_));
+    break;
   case CtxCfg::PartAlg::BRUTE: return brute::PartitionBruteForce(std::move(r), em_);
   }
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
   BoltzSums p(N, 0);
-  for (int i = 0; i < N; ++i)  // TODO optimise this?
+  for (int i = 0; i < N; ++i)
     for (int j = 0; j < N; ++j) p[i][j] = dp[i][j][PT_P];
 
   part::Part part{std::move(p), ext[0][PTEXT_R]};

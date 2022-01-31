@@ -28,7 +28,7 @@ struct PartResult {
 };
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
-    const Primary& r, const energy::BoltzEnergyModel& bem);
+    const Primary& r, energy::BoltzEnergyModelPtr bem);
 std::tuple<BoltzDpArray, BoltzExtArray> Partition0(const Primary& r, const energy::EnergyModel& em);
 BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const BoltzDpArray& dp);
 

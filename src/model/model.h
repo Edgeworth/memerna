@@ -13,8 +13,10 @@ namespace mrna {
 using Energy = int32_t;
 using BoltzEnergy = flt;
 
-// Don't change this value. Plays nice with memset.
+// Don't change these values. Plays nice with memset.
+// Used for infinite/sentinel energy values, e.g. in DP tables.
 inline constexpr Energy MAX_E = 0x0F0F0F0F;
+// Used for finite but larger than any possible energy values. e.g. for subopt-delta
 inline constexpr Energy CAP_E = 0x07070707;
 
 // -----------------------------------------------
