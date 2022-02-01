@@ -2,6 +2,7 @@
 #ifndef MODEL_MODEL_H_
 #define MODEL_MODEL_H_
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 
@@ -36,7 +37,11 @@ inline BoltzEnergy Boltz(Energy energy) {
   return exp(BoltzEnergy(energy) * (BoltzEnergy(-1) / BoltzEnergy(10.0 * R * T)));
 }
 
-inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
+inline bool abs_eq(BoltzEnergy a, BoltzEnergy b, flt ep = EP) { return fabs(a - b) < ep; }
+
+inline bool rel_eq(BoltzEnergy a, BoltzEnergy b, flt rel = EP) {
+  return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
+}
 
 }  // namespace mrna
 

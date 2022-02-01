@@ -44,23 +44,24 @@ class Fuzzer {
 #ifdef USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;
   void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
+
+  Error CheckMfeRNAstructure();
+  Error CheckSuboptRNAstructure(subopt::SuboptCfg cfg);
+  Error CheckPartitionRNAstructure();
 #endif  // USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
 
   Error CheckMfe();
-  Error CheckMfeRNAstructure();
 
   Error CheckSubopt();
-  Error CheckSuboptRNAstructure();
 
   bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
   Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
-  Error CheckSuboptResultPair(
-      const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
+  Error CheckSuboptResultPair(subopt::SuboptCfg cfg, const std::vector<subopt::SuboptResult>& a,
+      const std::vector<subopt::SuboptResult>& b);
 
   Error CheckPartition();
-  Error CheckPartitionRNAstructure();
 };
 
 }  // namespace mrna::fuzz
