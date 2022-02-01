@@ -106,7 +106,6 @@ void BruteForce::AddAllCombinations(int idx) {
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
-          res_.prob[i][s_[i]] += boltz;
         }
       }
     } else {
