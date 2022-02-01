@@ -141,6 +141,8 @@ Error Fuzzer::CheckMfeRNAstructure() {
 
   // Check RNAstructure produced structure:
   // First compute with the CTDs that fold returned to check the energy.
+  // TODO: We don't currently pull CTDs from RNAstructure. Also need to
+  // rework the efn api to support different CTD options.
   auto ctd_efn = em_->TotalEnergy(r_, fold.tb.s, &fold.tb.ctd).energy;
   if (ctd_efn != fold.mfe.energy) {
     errors.push_back("mfe/efn energy mismatch:");
@@ -260,12 +262,12 @@ Error Fuzzer::CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt,
     errors.push_back(
         sfmt("lowest structure energy %d != mfe %d", subopt[0].energy, fold_.mfe.energy));
 
-  // Only ones with CTDs set can do these tests.
-  // TODO: check this
-  if (has_ctds) {
-    // Check for duplicate structures.
-    if (SuboptDuplicates(subopt)) errors.push_back("has duplicates");
+  // Check for duplicate structures.
+  if (SuboptDuplicates(subopt)) errors.push_back("has duplicates");
 
+  // Only ones with CTDs set can do these tests.
+  // TODO: Improve this once we have better CTD option support.
+  if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
       auto suboptimal_efn = em_->TotalEnergy(r_, sub.tb.s, &sub.tb.ctd);
