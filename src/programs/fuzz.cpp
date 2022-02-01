@@ -43,8 +43,8 @@ class FuzzHarness {
       : args_(std::move(args)), em_(mrna::energy::EnergyModel::FromArgParse(args_)),
         cfg_(mrna::fuzz::FuzzCfg::FromArgParse(args_)), e_(uint_fast32_t(time(nullptr))) {
 #ifdef USE_RNASTRUCTURE
-    rnastructure_ = std::make_unique<mrna::bridge::RNAstructure>(
-        args.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
+    rstr_ = std::make_shared<mrna::bridge::RNAstructure>(
+        args_.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
 #endif  // USE_RNASTRUCTURE
   }
 
@@ -63,14 +63,19 @@ class FuzzHarness {
   mrna::energy::EnergyModelPtr em_;
   mrna::fuzz::FuzzCfg cfg_;
   std::mt19937 e_;
-  std::unique_ptr<mrna::bridge::RnaPackage> rnastructure_;
+
+#ifdef USE_RNASTRUCTURE
+  std::shared_ptr<mrna::bridge::RNAstructure> rstr_;
+#endif  // USE_RNASTRUCTURE
 
   mrna::fuzz::Fuzzer CreateFuzzer(mrna::Primary r) {
-    if (args_.GetOr(OPT_RANDOM)) {
-      return mrna::fuzz::Fuzzer(std::move(r), mrna::energy::EnergyModel::Random(e_()), cfg_);
-    } else {
-      return mrna::fuzz::Fuzzer(std::move(r), em_, cfg_);
-    }
+    mrna::fuzz::Fuzzer fuzzer(std::move(r), em_, cfg_);
+    if (args_.GetOr(OPT_RANDOM))
+      fuzzer = mrna::fuzz::Fuzzer(std::move(r), mrna::energy::EnergyModel::Random(e_()), cfg_);
+#ifdef USE_RNASTRUCTURE
+    fuzzer.set_rnastructure(rstr_);
+#endif  // USE_RNASTRUCTURE
+    return fuzzer;
   }
 
   void DoAflFuzz() {
@@ -81,10 +86,20 @@ class FuzzHarness {
     while (__AFL_LOOP(1000)) {
       int len = __AFL_FUZZ_TESTCASE_LEN;
       std::string data(buf, len);
-      if (data.size() > 0) {
-        auto fuzzer = CreateFuzzer(mrna::StringToPrimary(data));
-        const auto res = fuzzer.Run();
-        if (!res.empty()) abort();
+      std::stringstream ss(data);
+      std::string rs;
+      while (ss >> rs) {
+        try {
+          auto fuzzer = CreateFuzzer(mrna::Primary::FromString(rs));
+          const auto res = fuzzer.Run();
+          if (!res.empty()) {
+            for (const auto& s : res) printf("%s\n", s.c_str());
+            printf("\n");
+            abort();
+          }
+        } catch (const std::exception& e) {
+          // Ignore. Probably a bad input.
+        }
       }
     }
 #endif

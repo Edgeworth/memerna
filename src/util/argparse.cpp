@@ -95,8 +95,8 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
       } else {
         auto pair = FlagPair(opt);
         bool on = !opt.IsInverted();
-        values_[pair.first] = convert(on);
-        values_[pair.second] = convert(!on);
+        values_[pair.first] = Conv(on);
+        values_[pair.second] = Conv(!on);
         printf("%s %s\n", values_[pair.first].c_str(), values_[pair.second].c_str());
       }
     }

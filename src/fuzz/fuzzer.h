@@ -31,6 +31,10 @@ class Fuzzer {
 
   Error Run();
 
+#ifdef USE_RNASTRUCTURE
+  void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
+#endif  // USE_RNASTRUCTURE
+
  private:
   Primary r_;
   energy::EnergyModelPtr em_;
@@ -43,7 +47,6 @@ class Fuzzer {
 
 #ifdef USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;
-  void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
 
   Error CheckMfeRNAstructure();
   Error CheckSuboptRNAstructure(subopt::SuboptCfg cfg);

@@ -22,7 +22,7 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 template <typename T>
-T convert(std::string s) {
+T Conv(std::string s) {
   T t;
   std::stringstream ss(s);
   ss >> t;
@@ -30,11 +30,15 @@ T convert(std::string s) {
 }
 
 template <typename T>
-std::string convert(const T& s) {
+std::string Conv(const T& s) {
   std::stringstream ss;
   ss << s;
   return ss.str();
 }
+
+std::string TrimLeft(const std::string& s);
+std::string TrimRight(const std::string& s);
+std::string Trim(const std::string& s);
 
 uint32_t Crc32(const std::string& data);
 

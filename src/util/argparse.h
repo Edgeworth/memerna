@@ -44,7 +44,7 @@ struct Opt {
   template <typename T>
   Opt& Default(const T& d) {
     has_default_ = true;
-    default_ = convert(d);
+    default_ = Conv(d);
     return *this;
   }
 
@@ -121,7 +121,7 @@ class ArgParse {
   template <typename T>
   void MaybeSet(const Opt& opt, T* val) const {
     if (auto iter = values_.find(opt); iter != values_.end())
-      *val = convert<T>(iter->second);  // NOLINT
+      *val = Conv<T>(iter->second);  // NOLINT
   }
 
   // Useful mainly with flags where not specifying them means false (or whatever you pass as the
@@ -129,14 +129,14 @@ class ArgParse {
   template <typename T = bool>
   T GetOr(const Opt& opt, T def = T()) const {
     if (auto iter = values_.find(opt); iter != values_.end())
-      return convert<T>(iter->second);  // NOLINT
+      return Conv<T>(iter->second);  // NOLINT
     return def;
   }
 
   template <typename T = std::string>
   T Get(const Opt& opt) const {
     if (auto iter = values_.find(opt); iter != values_.end())
-      return convert<T>(iter->second);  // NOLINT
+      return Conv<T>(iter->second);  // NOLINT
     error("missing option %s", opt.Desc().c_str());
     return {};
   }
@@ -144,7 +144,7 @@ class ArgParse {
   template <typename T = std::string>
   T Pos(std::size_t index) const {
     verify(index < pos_.size(), "index out of bounds");
-    return convert<T>(pos_[index]);
+    return Conv<T>(pos_[index]);
   }
 
   std::size_t PosSize() const { return pos_.size(); }
