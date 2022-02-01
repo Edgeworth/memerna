@@ -48,7 +48,7 @@ AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
   afl-fuzz -x $MRNA/extern/afl/fuzz/dict.dct -m 2000 -t 2000 \
   -i $MRNA/extern/afl/fuzz/testcases -o ./afl -- ./fuzz --afl \
   -md $MRNA/data/ -rd $MRNA/extern/miles_rnastructure/data_tables/ \
-  --mfe-rnastructure --no-subopt --no-partition 100 200
+  --mfe-rnastructure --no-subopt --no-partition
 ```
 
 Reproducing a crash:

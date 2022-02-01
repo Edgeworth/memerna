@@ -105,43 +105,43 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
 
 part::PartResult RNAstructure::Partition(const Primary& r) const {
   const auto structure = LoadStructure(r);
-  const int length = static_cast<int>(r.size());
+  const int N = static_cast<int>(r.size());
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
-  DynProgArray<PFPRECISION> w(length);
-  DynProgArray<PFPRECISION> v(length);
-  DynProgArray<PFPRECISION> wmb(length);
-  DynProgArray<PFPRECISION> wl(length);
-  DynProgArray<PFPRECISION> wlc(length);
-  DynProgArray<PFPRECISION> wmbl(length);
-  DynProgArray<PFPRECISION> wcoax(length);
-  const auto w5 = std::make_unique<PFPRECISION[]>(length + 1);
-  const auto w3 = std::make_unique<PFPRECISION[]>(length + 2);
+  DynProgArray<PFPRECISION> w(N);
+  DynProgArray<PFPRECISION> v(N);
+  DynProgArray<PFPRECISION> wmb(N);
+  DynProgArray<PFPRECISION> wl(N);
+  DynProgArray<PFPRECISION> wlc(N);
+  DynProgArray<PFPRECISION> wmbl(N);
+  DynProgArray<PFPRECISION> wcoax(N);
+  const auto w5 = std::make_unique<PFPRECISION[]>(N + 1);
+  const auto w3 = std::make_unique<PFPRECISION[]>(N + 2);
   const auto pfdata = std::make_unique<pfdatatable>(data_.get(), scaling, T);
-  const auto fce = std::make_unique<forceclass>(length);
-  const auto lfce = std::make_unique<bool[]>(2 * length + 1);
-  const auto mod = std::make_unique<bool[]>(2 * length + 1);
+  const auto fce = std::make_unique<forceclass>(N);
+  const auto lfce = std::make_unique<bool[]>(2 * N + 1);
+  const auto mod = std::make_unique<bool[]>(2 * N + 1);
 
   calculatepfunction(structure.get(), pfdata.get(), nullptr, nullptr, false, nullptr, &w, &v, &wmb,
       &wl, &wlc, &wmbl, &wcoax, fce.get(), w5.get(), w3.get(), mod.get(), lfce.get());
 
-  part::Part partition = {BoltzSums(length, 0), 0};
-  partition.q = BoltzEnergy(w5[length]);
-  for (int i = 1; i <= length; ++i) {
-    for (int j = i; j < length + i; ++j) {
-      int adjusted = j > length ? j - length - 1 : j - 1;
-      partition.p[i - 1][adjusted] = BoltzEnergy(v.f(i, j));
+  part::Part part = {BoltzSums(N, 0), 0};
+  part.q = BoltzEnergy(w5[N]);
+  for (int i = 1; i <= N; ++i) {
+    for (int j = i; j < N + i; ++j) {
+      int adjusted = j > N ? j - N - 1 : j - 1;
+      part.p[i - 1][adjusted] = BoltzEnergy(v.f(i, j));
     }
   }
 
-  BoltzProbs prob(length, 0);
-  for (int i = 0; i < length; ++i) {
-    for (int j = i; j < length; ++j) {
+  BoltzProbs prob(N, 0);
+  for (int i = 0; i < N; ++i) {
+    for (int j = i; j < N; ++j) {
       prob[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, &v, w5.get(), structure.get(),
           pfdata.get(), lfce.get(), mod.get(), scaling, fce.get()));
     }
   }
   // TODO: Convert tables?
-  return {.dp{}, .ext{}, .part = std::move(partition), .prob = std::move(prob)};
+  return {.dp{}, .ext{}, .part = std::move(part), .prob = std::move(prob)};
 }
 
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {

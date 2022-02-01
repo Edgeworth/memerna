@@ -18,6 +18,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "options.h"
+#include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"
 
@@ -27,20 +28,26 @@ int main(int argc, char* argv[]) {
   args.RegisterOpt(mrna::OPT_VERBOSE);
   args.RegisterOpt(mrna::OPT_EFN);
   args.RegisterOpt(mrna::OPT_MFE);
-  // TODO: Implement handling for subopt and partition as well.
   args.RegisterOpt(mrna::OPT_SUBOPT);
+  // Done manually since we only support a subset of options.
+  args.RegisterOpt(mrna::subopt::OPT_SUBOPT_DELTA);
   args.RegisterOpt(mrna::OPT_PART);
   args.ParseOrExit(argc, argv);
 
-  verify(args.GetOr(mrna::OPT_EFN) + args.GetOr(mrna::OPT_MFE) == 1,
-      "require exactly one program flag\n%s", args.Usage().c_str());
+  bool efn = args.GetOr(mrna::OPT_EFN);
+  bool mfe = args.GetOr(mrna::OPT_MFE);
+  bool subopt = args.GetOr(mrna::OPT_SUBOPT);
+  bool part = args.GetOr(mrna::OPT_PART);
+
+  verify(
+      efn + mfe + subopt + part == 1, "require exactly one program flag\n%s", args.Usage().c_str());
   verify(args.Has(mrna::energy::OPT_SEED) + args.Has(mrna::energy::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
 
-  const auto package = mrna::bridge::RnaPackage::FromArgParse(args);
+  auto package = mrna::bridge::RnaPackage::FromArgParse(args);
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());
   const bool read_stdin = q.empty();
-  if (args.GetOr(mrna::OPT_EFN)) {
+  if (efn) {
     while (1) {
       std::string seq, db;
       if (read_stdin) {
@@ -72,17 +79,25 @@ int main(int argc, char* argv[]) {
         q.pop_front();
       }
       auto r = mrna::Primary::FromString(seq);
-      int subopt_delta = args.Get<int>(mrna::subopt::OPT_SUBOPT_DELTA);
-      if (subopt_delta >= 0) {
+
+      if (subopt) {
+        int delta = args.Get<int>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
               printf("%d %s\n", c.energy, c.tb.s.ToDotBracket().c_str());
             },
-            r, subopt_delta);
+            r, delta);
         printf("%d suboptimal structures:\n", strucs);
-      } else {
+      } else if (mfe) {
         const auto res = package->Fold(r);
         printf("%d\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str());
+      } else if (part) {
+        auto res = package->Partition(r);
+        std::cout << "q: " << res.part.q << '\n';
+        std::cout << "p:\n";
+        PrintPartition(res.part);
+        std::cout << "\nprobabilities:\n";
+        PrintBoltzProbs(res.prob);
       }
     }
   }

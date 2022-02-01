@@ -34,7 +34,7 @@ inline const Opt OPT_FUZZ_SUBOPT_DELTA =
 
 // Partition fuzzing:
 inline const Opt OPT_FUZZ_PARTITION =
-    Opt(Opt::FLAG).LongName("partition").Help("fuzz partition function");
+    Opt(Opt::FLAG).LongName("part").Help("fuzz partition function");
 inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
     Opt(Opt::FLAG).LongName("part-rnastructure").Help("fuzz RNAstructure partition function");
 
