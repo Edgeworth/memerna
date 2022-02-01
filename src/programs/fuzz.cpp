@@ -65,6 +65,14 @@ class FuzzHarness {
   std::mt19937 e_;
   std::unique_ptr<mrna::bridge::RnaPackage> rnastructure_;
 
+  mrna::fuzz::Fuzzer CreateFuzzer(mrna::Primary r) {
+    if (args_.GetOr(OPT_RANDOM)) {
+      return mrna::fuzz::Fuzzer(std::move(r), mrna::energy::EnergyModel::Random(e_()), cfg_);
+    } else {
+      return mrna::fuzz::Fuzzer(std::move(r), em_, cfg_);
+    }
+  }
+
   void DoAflFuzz() {
 #ifdef __AFL_FUZZ_TESTCASE_LEN
     __AFL_INIT();
@@ -74,8 +82,7 @@ class FuzzHarness {
       int len = __AFL_FUZZ_TESTCASE_LEN;
       std::string data(buf, len);
       if (data.size() > 0) {
-        cfg.seed = e_();
-        mrna::Fuzzer fuzzer(mrna::StringToPrimary(data), em_, cfg_);
+        auto fuzzer = CreateFuzzer(mrna::StringToPrimary(data));
         const auto res = fuzzer.Run();
         if (!res.empty()) abort();
       }
@@ -108,10 +115,7 @@ class FuzzHarness {
       int len = len_dist(e_);
       auto r = mrna::Primary::Random(len);
 
-      // TODO: respect OPT_RANDOM
-      // TODO: write function to randomize the energy model plus the subopt_struc, subopt_delta
-      // params.
-      mrna::fuzz::Fuzzer fuzzer(std::move(r), em_, cfg_);
+      auto fuzzer = CreateFuzzer(std::move(r));
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());
