@@ -74,6 +74,8 @@ class BruteForce {
   void Dfs(int idx);
   void AddAllCombinations(int idx);
 
+  void PruneInsertSubopt(Energy e);
+
   SubstructureId WriteBits(int st, int en, int N, bool inside);
   SubstructureId BuildInsideStructure(int st, int en, int N);
   SubstructureId BuildOutsideStructure(int st, int en, int N);

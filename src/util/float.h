@@ -37,7 +37,7 @@ static_assert(false, "unknown float bits")
 #if FLOAT_BITS == 32
 inline const flt EP{1e-3};
 #elif FLOAT_BITS == 64
-inline const flt EP{1e-6};
+inline const flt EP{1e-5};  // For parition this has to be a bit smaller than normal.
 #elif FLOAT_BITS == 80
 inline const flt EP{1e-8};
 #else

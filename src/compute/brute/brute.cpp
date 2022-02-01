@@ -42,19 +42,9 @@ BruteResult BruteForce::Run() {
 
 void BruteForce::Dfs(int idx) {
   if (idx == static_cast<int>(pairs_.size())) {
-    // Small optimisation for case when we're just getting one structure.
-    if (cfg_.subopt_cfg.strucs == 1 && !cfg_.part) {
-      auto res = em_->TotalEnergy(r_, s_, nullptr);
-      if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
-        res_.subopts.insert(subopt::SuboptResult(
-            res.energy, tb::TracebackResult(Secondary(s_), std::move(res.ctd))));
-      if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
-    } else {
-      // Precompute whether things are multiloops or not.
-      branch_count_ = energy::GetBranchCounts(s_);
-      AddAllCombinations(0);
-    }
-
+    // Precompute whether things are multiloops or not.
+    branch_count_ = energy::GetBranchCounts(s_);
+    AddAllCombinations(0);
     return;
   }
   // Don't take this base pair.
@@ -108,15 +98,8 @@ void BruteForce::AddAllCombinations(int idx) {
           }
         }
       }
-    } else {
-      // TODO: check here
-      if (static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs ||
-          res_.subopts.rbegin()->energy > energy)
-        res_.subopts.insert(
-            subopt::SuboptResult(energy, tb::TracebackResult(Secondary(s_), Ctds(ctd_))));
-      if (static_cast<int>(res_.subopts.size()) > cfg_.subopt_cfg.strucs)
-        res_.subopts.erase(--res_.subopts.end());
     }
+    if (cfg_.subopt) PruneInsertSubopt(energy);
     return;
   }
 
@@ -199,6 +182,24 @@ void BruteForce::AddAllCombinations(int idx) {
 
   // Reset back to NA.
   ctd_[idx] = CTD_NA;
+}
+
+void BruteForce::PruneInsertSubopt(Energy e) {
+  bool has_room = static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs;
+  bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
+  if (has_room || is_better)
+    res_.subopts.insert(subopt::SuboptResult(e, tb::TracebackResult(Secondary(s_), Ctds(ctd_))));
+
+  // Prune values that exceed the number of structures:
+  if (static_cast<int>(res_.subopts.size()) > cfg_.subopt_cfg.strucs)
+    res_.subopts.erase(--res_.subopts.end());
+
+  // Prune values that exceed the delta:
+  while (!res_.subopts.empty()) {
+    if (res_.subopts.rbegin()->energy - res_.subopts.begin()->energy <= cfg_.subopt_cfg.delta)
+      break;
+    res_.subopts.erase(--res_.subopts.end());
+  }
 }
 
 BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
