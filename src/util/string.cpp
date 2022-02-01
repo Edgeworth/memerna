@@ -56,6 +56,20 @@ std::string vsfmt(const char* fmt, va_list l) {
   throw std::length_error("output of vsfmt would be too large");
 }
 
+std::string TrimLeft(const std::string& s) {
+  auto iter = s.begin();
+  while (iter != s.end() && isspace(*iter)) ++iter;
+  return std::string(iter, s.end());
+}
+
+std::string TrimRight(const std::string& s) {
+  auto iter = s.end();
+  while (iter != s.begin() && isspace(*(iter - 1))) --iter;
+  return std::string(s.begin(), iter);
+}
+
+std::string Trim(const std::string& s) { return TrimLeft(TrimRight(s)); }
+
 uint32_t Crc32(const std::string& data) {
   uint32_t table[1 << 8] = {};
   for (uint32_t i = 0; i < 1 << 8; ++i) {

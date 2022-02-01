@@ -30,9 +30,7 @@
 
 namespace mrna::fuzz {
 
-constexpr flt PEP = 1e-6;
-
-inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, PEP); }
+inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 
 Fuzzer::Fuzzer(Primary r, energy::EnergyModelPtr em, FuzzCfg cfg)
     : r_(std::move(r)), em_(em), cfg_(std::move(cfg)) {}
@@ -316,15 +314,8 @@ Error Fuzzer::CheckMfeRNAstructure() {
   }
 
   // Check RNAstructure produced structure:
-  // First compute with the CTDs that fold returned to check the energy.
   // TODO: We don't currently pull CTDs from RNAstructure. Also need to
   // rework the efn api to support different CTD options.
-  auto ctd_efn = em_->TotalEnergy(r_, fold.tb.s, &fold.tb.ctd).energy;
-  if (ctd_efn != fold.mfe.energy) {
-    errors.push_back("mfe/efn energy mismatch:");
-    errors.push_back(sfmt("  %d (ctd efn) != mfe %d", ctd_efn, fold.mfe.energy));
-  }
-
   // Also check that the optimal CTD configuration has the same energy.
   // Note that it might not be the same, so we can't do an peqality check
   // of CTD structure.
@@ -360,9 +351,9 @@ Error Fuzzer::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
   // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
   if (subopt_[0].energy < -cfg_.subopt_delta) {
-    const auto rnastructure_subopt = rstr_->SuboptimalIntoVector(r_, cfg_.subopt_delta);
-    Register("subopt:", CheckSuboptResult(rnastructure_subopt, false));
-    Register("subopt vs memerna:", CheckSuboptResultPair(cfg, subopt_, rnastructure_subopt));
+    const auto rstr_subopt = rstr_->SuboptimalIntoVector(r_, cfg_.subopt_delta);
+    Register("subopt:", CheckSuboptResult(rstr_subopt, false));
+    Register("subopt vs memerna:", CheckSuboptResultPair(cfg, subopt_, rstr_subopt));
   }
 
   return errors;
@@ -387,6 +378,14 @@ Error Fuzzer::CheckPartitionRNAstructure() {
         sstream << "memerna " << st << " " << en << ": " << part_.part.p[st][en]
                 << " != rnastructure " << rstr_part.part.p[st][en]
                 << "; difference: " << rstr_part.part.p[st][en] - part_.part.p[st][en];
+        errors.push_back(sstream.str());
+      }
+
+      if (!peq(rstr_part.prob[st][en], part_.prob[st][en])) {
+        std::stringstream sstream;
+        sstream << "memerna " << st << " " << en << ": " << part_.prob[st][en]
+                << " != rnastructure " << rstr_part.prob[st][en]
+                << "; difference: " << rstr_part.prob[st][en] - part_.prob[st][en];
         errors.push_back(sstream.str());
       }
     }
