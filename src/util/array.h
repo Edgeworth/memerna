@@ -44,7 +44,6 @@ struct Array2D {
   constexpr std::size_t size() const { return size_; }
   constexpr bool empty() const { return size_ == 0; }
 
- private:
   T* data_;
   std::size_t size_;
 };
