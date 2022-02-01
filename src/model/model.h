@@ -36,6 +36,8 @@ inline BoltzEnergy Boltz(Energy energy) {
   return exp(BoltzEnergy(energy) * (BoltzEnergy(-1) / BoltzEnergy(10.0 * R * T)));
 }
 
+inline bool equ(BoltzEnergy a, BoltzEnergy b) { return fabs(a - b) < EP; }
+
 }  // namespace mrna
 
 #endif  // MODEL_MODEL_H_

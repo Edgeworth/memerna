@@ -3,11 +3,14 @@
 #define FUZZ_FUZZER_H_
 
 #include <deque>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "bridge/bridge.h"
 #include "compute/dp.h"
 #include "compute/energy/model.h"
+#include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "fuzz/config.h"
 #include "model/primary.h"
@@ -33,41 +36,31 @@ class Fuzzer {
   energy::EnergyModelPtr em_;
   FuzzCfg cfg_;
 
+  ctx::FoldResult fold_;
+  std::vector<subopt::SuboptResult> subopt_;
+  part::PartResult part_;
   Error errors_;
 
-  std::vector<subopt::SuboptResult> memerna_subopts_;
-  std::vector<DpArray> memerna_dps;
-
-  // RNAstructure related:
 #ifdef USE_RNASTRUCTURE
-  std::optional<bridge::RNAstructure> rnastructure_;
-  dp_state_t rnastructure_dp_;
-
-  void set_rnastructure(bridge::RNAstructure&& rnastructure) {
-    rnastructure_ = std::move(rnastructure);
-  }
+  std::shared_ptr<bridge::RNAstructure> rstr_;
+  void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
 #endif  // USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
 
-  bool HasDuplicates(const std::vector<subopt::SuboptResult>& subopts);
+  Error CheckMfe();
+  Error CheckMfeRNAstructure();
 
-  Error CheckSuboptimalResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
+  Error CheckSubopt();
+  Error CheckSuboptRNAstructure();
 
-  Error CheckSuboptimalResultPair(
+  bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
+  Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
+  Error CheckSuboptResultPair(
       const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
 
-  Error CheckSuboptimal();
-
-  Error CheckDpTables();
-
-  Error MemernaComputeAndCheckState();
-
-  Error RnastructureComputeAndCheckState();
-
-  Error CheckBruteForce();
-
   Error CheckPartition();
+  Error CheckPartitionRNAstructure();
 };
 
 }  // namespace mrna::fuzz

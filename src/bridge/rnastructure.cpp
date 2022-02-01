@@ -98,7 +98,7 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO: Convert CTDs?
     res.emplace_back(subopt::SuboptResult(
-        tb::TracebackResult(std::move(s_list[i]), Ctds()), Energy(structure->GetEnergy(i + 1))));
+        Energy(structure->GetEnergy(i + 1)), tb::TracebackResult(std::move(s_list[i]), Ctds())));
   }
   return res;
 }
@@ -159,6 +159,10 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r, const S
     if (i < s[i]) struc->SetPair(i + 1, s[i] + 1);
   }
   return struc;
+}
+
+RNAstructure RNAstructure::FromArgParse(const ArgParse& args) {
+  return RNAstructure(args.Get(OPT_RNASTRUCTURE_DATA), false);
 }
 
 }  // namespace mrna::bridge

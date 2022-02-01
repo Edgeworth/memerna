@@ -12,7 +12,7 @@ namespace mrna::subopt {
 
 struct SuboptResult {
   SuboptResult() = default;
-  SuboptResult(tb::TracebackResult tb, Energy energy) : tb(std::move(tb)), energy(energy) {}
+  SuboptResult(Energy energy, tb::TracebackResult tb) : energy(energy), tb(std::move(tb)) {}
 
   SuboptResult(SuboptResult&&) = default;
   SuboptResult& operator=(SuboptResult&&) = default;
@@ -21,8 +21,10 @@ struct SuboptResult {
   explicit SuboptResult(const SuboptResult&) = default;
   SuboptResult& operator=(const SuboptResult&) = delete;
 
+  auto operator<=>(const SuboptResult&) const = default;
+
+  Energy energy;  // Put this first so naive sort is by energy.
   tb::TracebackResult tb;
-  Energy energy;
 };
 
 using SuboptCallback = std::function<void(const SuboptResult&)>;
