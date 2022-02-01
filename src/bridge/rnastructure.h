@@ -41,6 +41,8 @@ class RNAstructure : public RnaPackage {
   // TODO: Can be replaced by Fold now?
   ctx::FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
+  static RNAstructure FromArgParse(const ArgParse& args);
+
  private:
   std::unique_ptr<datatable> data_;
   bool use_lyngso_;

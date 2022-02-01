@@ -42,6 +42,7 @@ struct Array2D {
   constexpr const T* operator[](std::size_t idx) const { return &data_[idx * size_]; }
 
   constexpr std::size_t size() const { return size_; }
+  constexpr bool empty() const { return size_ == 0; }
 
  private:
   T* data_;
@@ -82,6 +83,7 @@ struct Array2D1S {
   }
 
   constexpr std::size_t size() const { return size_; }
+  constexpr bool empty() const { return size_ == 0; }
 
  private:
   T* data_;
@@ -115,6 +117,7 @@ struct Array1D1S {
   constexpr const T* operator[](std::size_t idx) const { return &data_[idx * K]; }
 
   constexpr std::size_t size() const { return size_; }
+  constexpr bool empty() const { return size_ == 0; }
 
  private:
   T* data_;

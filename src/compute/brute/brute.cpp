@@ -47,7 +47,7 @@ void BruteForce::Dfs(int idx) {
       auto res = em_->TotalEnergy(r_, s_, nullptr);
       if (res_.subopts.empty() || res.energy < res_.subopts.begin()->energy)
         res_.subopts.insert(subopt::SuboptResult(
-            tb::TracebackResult(Secondary(s_), std::move(res.ctd)), res.energy));
+            res.energy, tb::TracebackResult(Secondary(s_), std::move(res.ctd))));
       if (res_.subopts.size() == 2) res_.subopts.erase(--res_.subopts.end());
     } else {
       // Precompute whether things are multiloops or not.
@@ -113,7 +113,7 @@ void BruteForce::AddAllCombinations(int idx) {
       if (static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs ||
           res_.subopts.rbegin()->energy > energy)
         res_.subopts.insert(
-            subopt::SuboptResult(tb::TracebackResult(Secondary(s_), Ctds(ctd_)), energy));
+            subopt::SuboptResult(energy, tb::TracebackResult(Secondary(s_), Ctds(ctd_))));
       if (static_cast<int>(res_.subopts.size()) > cfg_.subopt_cfg.strucs)
         res_.subopts.erase(--res_.subopts.end());
     }

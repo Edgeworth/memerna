@@ -33,7 +33,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
   // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert({.not_yet_expanded = {{0, -1, EXT}},
       .history{},
-      .res = SuboptResult(tb::TracebackResult(Secondary(N), Ctds(N)), ext_[0][EXT])});
+      .res = SuboptResult(ext_[0][EXT], tb::TracebackResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
     node = std::move(q_.extract(q_.begin()).value());

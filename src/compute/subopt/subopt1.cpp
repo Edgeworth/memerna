@@ -22,7 +22,7 @@ Suboptimal1::Suboptimal1(
       ext_(std::move(ext)), cfg_(cfg) {}
 
 int Suboptimal1::Run(SuboptCallback fn) {
-  res_ = SuboptResult(tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())), 0);
+  res_ = SuboptResult(0, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 

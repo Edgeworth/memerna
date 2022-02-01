@@ -109,6 +109,8 @@ class FuzzHarness {
       auto r = mrna::Primary::Random(len);
 
       // TODO: respect OPT_RANDOM
+      // TODO: write function to randomize the energy model plus the subopt_struc, subopt_delta
+      // params.
       mrna::fuzz::Fuzzer fuzzer(std::move(r), em_, cfg_);
       const auto res = fuzzer.Run();
       if (!res.empty()) {

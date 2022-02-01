@@ -19,7 +19,6 @@ inline const Opt OPT_FUZZ_BRUTE_MAX =
 inline const Opt OPT_FUZZ_MFE = Opt(Opt::FLAG).LongName("mfe").Help("fuzz mfe");
 inline const Opt OPT_FUZZ_MFE_RNASTRUCTURE =
     Opt(Opt::FLAG).LongName("mfe-rnastructure").Help("fuzz RNAstructure mfe");
-inline const Opt OPT_FUZZ_MFE_BRUTE = Opt(Opt::FLAG).LongName("mfe-brute").Help("fuzz brute mfe");
 inline const Opt OPT_FUZZ_MFE_TABLE =
     Opt(Opt::FLAG).LongName("mfe-table").Help("enable checking mfe dp tables");
 
@@ -28,12 +27,8 @@ inline const Opt OPT_FUZZ_SUBOPT =
     Opt(Opt::FLAG).LongName("subopt").Help("fuzz suboptimal folding");
 inline const Opt OPT_FUZZ_SUBOPT_RNASTRUCTURE =
     Opt(Opt::FLAG).LongName("subopt-rnastructure").Help("fuzz RNAstructure suboptimal folding");
-inline const Opt OPT_FUZZ_SUBOPT_BRUTE =
-    Opt(Opt::FLAG).LongName("subopt-brute").Help("fuzz brute suboptimal folding");
-inline const Opt OPT_FUZZ_SUBOPT_MAX =
-    Opt(Opt::ARG)
-        .LongName("subopt-max")
-        .Help("maximum number of substructures for subopt max-delta fuzz");
+inline const Opt OPT_FUZZ_SUBOPT_STRUCS =
+    Opt(Opt::ARG).LongName("subopt-strucs").Help("maximum number of substructures for subopt fuzz");
 inline const Opt OPT_FUZZ_SUBOPT_DELTA =
     Opt(Opt::ARG).LongName("subopt-delta").Help("max energy delta for subopt delta fuzz");
 
@@ -42,28 +37,23 @@ inline const Opt OPT_FUZZ_PARTITION =
     Opt(Opt::FLAG).LongName("partition").Help("fuzz partition function");
 inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
     Opt(Opt::FLAG).LongName("part-rnastructure").Help("fuzz RNAstructure partition function");
-inline const Opt OPT_FUZZ_PARTITION_BRUTE =
-    Opt(Opt::FLAG).LongName("part-brute").Help("fuzz brute partition function");
 
 void RegisterOpts(ArgParse* args);
 
 struct FuzzCfg {
-  int brute_max = 30;
+  int brute_max = 22;
 
   bool mfe = true;
   bool mfe_rnastructure = false;
-  bool mfe_brute = true;
   bool mfe_table = true;
 
   bool subopt = true;
   bool subopt_rnastructure = false;
-  bool subopt_brute = true;
-  int subopt_max = 5000;
+  int subopt_strucs = 5000;
   int subopt_delta = 6;
 
   bool part = true;
   bool part_rnastructure = false;
-  bool part_brute = true;
 
   std::string Desc();
 
