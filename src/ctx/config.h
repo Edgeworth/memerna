@@ -28,21 +28,15 @@ inline const Opt OPT_PART_ALG = Opt(Opt::ARG)
 void RegisterOpts(ArgParse* args);
 
 struct CtxCfg {
-  enum class DpAlg {
-    ZERO,
-    ONE,
-    TWO,
-    THREE,
-    BRUTE  // TODO: Not included in the normal table algs since exponential.
-  };
-
+  enum class DpAlg { ZERO, ONE, TWO, THREE, BRUTE };
   enum class SuboptAlg { ZERO, ONE, BRUTE };
-
   enum class PartAlg { ZERO, ONE, BRUTE };
 
-  inline static constexpr DpAlg DP_ALGS[] = {DpAlg::ZERO, DpAlg::ONE, DpAlg::TWO, DpAlg::THREE};
-  inline static constexpr SuboptAlg SUBOPT_ALGS[] = {SuboptAlg::ZERO, SuboptAlg::ONE};
-  inline static constexpr PartAlg PART_ALGS[] = {PartAlg::ZERO, PartAlg::ONE};
+  inline static constexpr DpAlg DP_ALGS[] = {
+      DpAlg::ZERO, DpAlg::ONE, DpAlg::TWO, DpAlg::THREE, DpAlg::BRUTE};
+  inline static constexpr SuboptAlg SUBOPT_ALGS[] = {
+      SuboptAlg::ZERO, SuboptAlg::ONE, SuboptAlg::BRUTE};
+  inline static constexpr PartAlg PART_ALGS[] = {PartAlg::ZERO, PartAlg::ONE, PartAlg::BRUTE};
 
   DpAlg dp_alg = DpAlg::TWO;
   SuboptAlg subopt_alg = SuboptAlg::ONE;

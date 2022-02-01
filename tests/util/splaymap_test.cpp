@@ -53,7 +53,7 @@ TEST(SplayMapTest, SmallCase2) {
 class SplayMapRandomTest : public testing::TestWithParam<int_fast32_t> {};
 
 TEST_P(SplayMapRandomTest, CompareAgainstMap) {
-  const int NUM_TRIES = 5000;
+  const int NUM_TRIES = 1000;
   std::mt19937 eng(GetParam());
   SplayMap<int, int> h;
   std::set<int> s;
