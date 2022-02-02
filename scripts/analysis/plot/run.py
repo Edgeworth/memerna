@@ -19,24 +19,24 @@ PREFIX = "../results"
 
 def generate_filename_map(dataset_name, enable):
     d = {
-        "ViennaRNA-d2": os.path.join(PREFIX, "ViennaRNA-d2_%s.results" % dataset_name),
+        "ViennaRNA-d2": os.path.join(PREFIX, f"ViennaRNA-d2_{dataset_name}.results"),
         "ViennaRNA-d2-sorted": os.path.join(
-            PREFIX, "ViennaRNA-d2-sorted_%s.results" % dataset_name
+            PREFIX, f"ViennaRNA-d2-sorted_{dataset_name}.results"
         ),
-        "SparseMFEFold": os.path.join(PREFIX, "SparseMFEFold_%s.results" % dataset_name),
-        "memerna": os.path.join(PREFIX, "memerna_%s.results" % dataset_name),
-        "memerna-sorted": os.path.join(PREFIX, "memerna-sorted_%s.results" % dataset_name),
-        "RNAstructure": os.path.join(PREFIX, "RNAstructureDistribution_%s.results" % dataset_name),
-        "RNAstructure-mod": os.path.join(PREFIX, "RNAstructureHarness_%s.results" % dataset_name),
-        "ViennaRNA-d3": os.path.join(PREFIX, "ViennaRNA-d3_%s.results" % dataset_name),
+        "SparseMFEFold": os.path.join(PREFIX, f"SparseMFEFold_{dataset_name}.results"),
+        "memerna": os.path.join(PREFIX, f"memerna_{dataset_name}.results"),
+        "memerna-sorted": os.path.join(PREFIX, f"memerna-sorted_{dataset_name}.results"),
+        "RNAstructure": os.path.join(PREFIX, f"RNAstructureDistribution_{dataset_name}.results"),
+        "RNAstructure-mod": os.path.join(PREFIX, f"RNAstructureHarness_{dataset_name}.results"),
+        "ViennaRNA-d3": os.path.join(PREFIX, f"ViennaRNA-d3_{dataset_name}.results"),
         "ViennaRNA-d3-sorted": os.path.join(
-            PREFIX, "ViennaRNA-d3-sorted_%s.results" % dataset_name
+            PREFIX, f"ViennaRNA-d3-sorted_{dataset_name}.results"
         ),
-        "SJSViennaMPI": os.path.join(PREFIX, "SJSViennaMPI_%s.results" % dataset_name),
+        "SJSViennaMPI": os.path.join(PREFIX, f"SJSViennaMPI_{dataset_name}.results"),
         "SJSViennaMPI-sorted": os.path.join(
-            PREFIX, "SJSViennaMPI-sorted_%s.results" % dataset_name
+            PREFIX, f"SJSViennaMPI-sorted_{dataset_name}.results"
         ),
-        "UNAFold": os.path.join(PREFIX, "UNAFold_%s.results" % dataset_name),
+        "UNAFold": os.path.join(PREFIX, f"UNAFold_{dataset_name}.results"),
     }
     return {k: d[k] for k in enable}
 
@@ -102,8 +102,8 @@ def subopt_graphs():
     all_ds = []
     for delta in deltas:
         subopt_random_all_ds = read_subopt_dataset(
-            "random_subopt_%d" % delta,
-            generate_filename_map("random_subopt_%d" % delta, ALL_SUBOPTS),
+            f"random_subopt_{int(delta)}",
+            generate_filename_map(f"random_subopt_{int(delta)}", ALL_SUBOPTS),
             os.path.join(PREFIX, "random_all.subset"),
         )
         all_ds.append(subopt_random_all_ds.fmap)
@@ -121,7 +121,7 @@ def extract_highest_structure_count_rows(subopt_name):
     all_ds = []
     cols = ["name", "run", "length", "real", "usersys", "maxrss", "numstruc"]
     for delta in DELTAS:
-        fmap = generate_filename_map("random_subopt_%d" % delta, [subopt_name])
+        fmap = generate_filename_map(f"random_subopt_{int(delta)}", [subopt_name])
         frame = pd.read_csv(fmap[subopt_name], delimiter=" ", header=None, names=cols)
         all_ds.append(frame.groupby(frame["name"]))
     subset = load_subset_file(os.path.join(PREFIX, "random_all.subset"))

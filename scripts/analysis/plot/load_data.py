@@ -92,7 +92,7 @@ class DataSet:
 
 
 def load_subset_file(subset_filename):
-    return set(i.strip() for i in read_file(fix_path(subset_filename)).strip().splitlines())
+    return {i.strip() for i in read_file(fix_path(subset_filename)).strip().splitlines()}
 
 
 def read_fold_dataset(name, filename_map, subset_filename):

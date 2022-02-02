@@ -3,7 +3,7 @@
 import argparse
 
 from scripts.common import read_file
-from scripts.rna import RNA
+from scripts.model.rna import RNA
 
 
 def main():

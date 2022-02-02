@@ -4,7 +4,7 @@ import random
 import sqlite3
 
 from scripts.common import *
-from scripts.rna import RNA
+from scripts.model.rna import RNA
 
 
 class MemeVault:
@@ -14,12 +14,12 @@ class MemeVault:
 
     def add(self, rna):
         self.db.execute(
-            "INSERT INTO %s VALUES (?, ?, ?)" % self.dataset, (rna.name, rna.seq, rna.db())
+            f"INSERT INTO {self.dataset} VALUES (?, ?, ?)", (rna.name, rna.seq, rna.db())
         )
         self.db.commit()
 
     def get_with_seq(self, seq):
-        c = self.db.execute("SELECT *  FROM %s WHERE seq=?" % self.dataset, (seq,))
+        c = self.db.execute(f"SELECT *  FROM {self.dataset} WHERE seq=?", (seq,))
         name, seq, db = c.fetchone()
         return RNA.from_name_seq_db(name, seq, db)
 
@@ -30,24 +30,24 @@ class MemeVault:
             rna = RNA.from_any_file(read_file(filename))
             rna.name = name
             if rna in self:
-                print("Found duplicate RNAs: %s" % rna.name)
+                print(f"Found duplicate RNAs: {rna.name}")
             self.add(rna)
 
     def add_random(self, l):
         seq = "".join(random.choice("GUAC") for _ in range(l))
-        rna = RNA(name="len_%d" % l, seq=seq, pairs=[-1] * l)
+        rna = RNA(name=f"len_{int(l)}", seq=seq, pairs=[-1] * l)
         self.add(rna)
 
     def __contains__(self, item):
-        c = self.db.execute("SELECT count(*) FROM %s WHERE name=?" % self.dataset, (item.name,))
+        c = self.db.execute(f"SELECT count(*) FROM {self.dataset} WHERE name=?", (item.name,))
         return c.fetchone()[0] == 1
 
     def __getitem__(self, item):
-        c = self.db.execute("SELECT * FROM %s WHERE name=?" % self.dataset, (item,))
+        c = self.db.execute(f"SELECT * FROM {self.dataset} WHERE name=?", (item,))
         name, seq, db = c.fetchone()
         return RNA.from_name_seq_db(name, seq, db)
 
     def __iter__(self):
-        c = self.db.execute("SELECT * FROM %s" % self.dataset)
+        c = self.db.execute(f"SELECT * FROM {self.dataset}")
         for name, seq, db in c.fetchall():
             yield RNA.from_name_seq_db(name, seq, db)

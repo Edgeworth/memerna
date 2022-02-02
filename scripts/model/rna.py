@@ -32,11 +32,7 @@ class RNAAccuracy:
         return RNAAccuracy(ppv=ppv, sensitivity=sensitivity)
 
     def __str__(self):
-        return "F-Score: %.2f - PPV: %.2f - Sensitivity: %.2f" % (
-            self.fscore,
-            self.ppv,
-            self.sensitivity,
-        )
+        return f"F-Score: {self.fscore:.2f} - PPV: {self.ppv:.2f} - Sensitivity: {self.sensitivity:.2f}"
 
 
 class RNA:
@@ -47,7 +43,7 @@ class RNA:
         assert len(seq) == len(pairs)
 
     def __str__(self, *args, **kwargs):
-        return "%s:\n  %s\n  %s" % (self.name, self.seq, self.db())
+        return f"{self.name}:\n  {self.seq}\n  {self.db()}"
 
     # Handles pseudoknots.
     def db(self):
@@ -91,19 +87,19 @@ class RNA:
         name = self.name
         if not name:
             name = "unnamed"
-        ct = ["%d\t%s" % (len(self.seq), name)]
+        ct = [f"{len(self.seq)}\t{name}"]
 
         for i, v in enumerate(self.seq):
-            ct.append("%d\t%s\t%d\t%d\t%d\t%d" % (i + 1, v, i, i + 2, self.pairs[i] + 1, i + 1))
+            ct.append(f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.pairs[i] + 1)}\t{int(i + 1)}")
 
         return "\n".join(ct)
 
     def to_db_file(self):
-        return "> %s\n%s\n%s\n" % (self.name, self.seq, self.db())
+        return f"> {self.name}\n{self.seq}\n{self.db()}\n"
 
     # See http://rna.urmc.rochester.edu/Text/File_Formats.html for this format.
     def to_seq_file(self):
-        return ";\n%s\n%s1" % (self.name, self.seq)
+        return f";\n{self.name}\n{self.seq}1"
 
     @staticmethod
     def from_ct_file(data):
@@ -167,10 +163,10 @@ def rnas_from_multi_ct_file(data):
     rnas = []
     while len(data) > 0:
         length = int(re.search(r"(\d+)", data[0].strip()).group(0))
-        subdata = data[0] + "\n"
+        subdata = f"{data[0]}\n"
         data.popleft()
         for i in range(length):
-            subdata += data[0] + "\n"
+            subdata += f"{data[0]}\n"
             data.popleft()
         rnas.append(RNA.from_ct_file(subdata))
     return rnas

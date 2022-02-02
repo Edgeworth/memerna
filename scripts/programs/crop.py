@@ -9,7 +9,7 @@ def main():
     parser.add_argument("files", nargs="+")
     args = parser.parse_args()
     for i in args.files:
-        os.system("convert %s -trim %s" % (i, i))
+        os.system(f"convert {i} -trim {i}")
 
 
 if __name__ == "__main__":
