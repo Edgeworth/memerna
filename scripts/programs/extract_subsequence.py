@@ -15,7 +15,7 @@ def main():
     seq, pairs = read_file(args.filename).split("\n")
     for i in range(0, len(args.starts), 2):
         st, en = args.starts[i], args.starts[i + 1]
-        print("Range [%d, %d]:\n  %s\n  %s" % (st, en, seq[st : en + 1], pairs[st : en + 1]))
+        print(f"Range [{int(st)}, {int(en)}]:\n  {seq[st:en + 1]}\n  {pairs[st:en + 1]}")
     print("Remember to reverse sequences sometimes.")
 
 

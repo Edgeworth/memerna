@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2016 Eliot Courtney.
+# Copyright 2022 Eliot Courtney.
 import argparse
 import shutil
 import tempfile
@@ -7,7 +7,7 @@ import os
 
 from scripts.common import *
 from scripts.memevault import MemeVault
-from scripts.rna import *
+from scripts.model.rna import *
 
 
 class RNAstructureDistribution:
@@ -52,7 +52,7 @@ class RNAstructureDistribution:
             res = try_command(
                 os.path.join(self.loc, "exe", "AllSub"),
                 "-a",
-                "%.2f" % (delta / 10.0),
+                f"{delta / 10.0:.2f}",
                 f.name,
                 out.name,
                 limits=limits,
@@ -101,7 +101,7 @@ class HarnessFolder:
     def batch_efn(self, rnas):
         prev_dir = os.getcwd()
         os.chdir(self.loc)
-        input = "\n".join("%s\n%s" % (rna.seq, rna.db()) for rna in rnas)
+        input = "\n".join(f"{rna.seq}\n{rna.db()}" for rna in rnas)
         res = run_command(os.path.join("harness"), "-e", self.flag, record_stdout=True, input=input)
         os.chdir(prev_dir)
         energies = [float(i) / 10.0 for i in res.stdout.strip().split("\n")]
@@ -273,7 +273,7 @@ class ViennaRNA:
         res = run_command(
             os.path.join(self.loc, "src", "bin", "RNAeval"),
             *self.extra_args,
-            input=rna.seq + "\n" + rna.db(),
+            input=f"{rna.seq}\n{rna.db()}",
             record_stdout=True
         )
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
@@ -286,7 +286,7 @@ class ViennaRNA:
                 os.path.join(self.loc, "src", "bin", "RNAsubopt"),
                 *self.extra_args,
                 "-e",
-                "%.1f" % (delta / 10.0),
+                f"{delta / 10.0:.1f}",
                 input=rna.seq,
                 record_stdout=out.name,
                 limits=limits
@@ -341,7 +341,7 @@ class SJSVienna:
                 *self.extra_args,
                 "-d2",
                 "-e",
-                "%.1f" % (delta / 10.0),
+                f"{delta / 10.0:.1f}",
                 input=rna.seq,
                 record_stdout=out.name,
                 limits=limits
@@ -405,12 +405,12 @@ class SJSViennaMPI:
                 *self.extra_args,
                 "-d2",
                 "-e",
-                "%.1f" % (delta / 10.0),
+                f"{delta / 10.0:.1f}",
                 "-input",
                 f.name,
                 limits=limits
             )
-            files = ["subopt-%d.stdout" % i for i in range(self.n)]
+            files = [f"subopt-{int(i)}.stdout" for i in range(self.n)]
             if num_only:
                 retval = 0
                 for file in files:
@@ -420,7 +420,7 @@ class SJSViennaMPI:
             else:
                 retval = []
                 for file in files:
-                    output = open(file, "r").read()
+                    output = open(file).read()
                     for i in output.splitlines()[2:]:
                         db, energy = re.split(r"\s+", i.strip())[:2]
                         retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
@@ -454,7 +454,7 @@ class UNAFold:
             f.write(rna.to_db_file())
             f.flush()
             res = run_command(os.path.join(self.loc, "src", "hybrid-ss-min"), f.name)
-            predicted = RNA.from_any_file(read_file(os.path.splitext(f.name)[0] + ".ct"))
+            predicted = RNA.from_any_file(read_file(f"{os.path.splitext(f.name)[0]}.ct"))
         os.chdir(prev_dir)
         return predicted, res
 
@@ -516,12 +516,12 @@ class SparseMFEFold:
 
 def run_fold(program, rna):
     frna, res = program.fold(rna)
-    print("Folding %s with %s: %s\n  %s" % (rna.name, program, frna.db(), res))
+    print(f"Folding {rna.name} with {program}: {frna.db()}\n  {res}")
 
 
 def run_efn(program, rna):
     energy, res = program.efn(rna)
-    print("Energy of %s with %s: %f\n  %s" % (rna.name, program, energy, res))
+    print(f"Energy of {rna.name} with {program}: {energy:f}\n  {res}")
 
 
 def run_suboptimal(program, rna, delta, subopt_max_print):
@@ -529,12 +529,12 @@ def run_suboptimal(program, rna, delta, subopt_max_print):
     if res.ret:
         print("Execution failed")
         return
-    print("%d suboptimal structures of %s with %s - %s" % (len(subopts), rna.name, program, res))
+    print(f"{len(subopts)} suboptimal structures of {rna.name} with {program} - {res}")
     subopt_subset = subopts
     if subopt_max_print > 0:
         subopt_subset = subopts[:subopt_max_print]
     for energy, structure in subopt_subset:
-        print("%f %s" % (energy, structure.db()))
+        print(f"{energy:f} {structure.db()}")
 
 
 BENCHMARK_NUM_TRIES = 5
@@ -548,15 +548,15 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
         assert isinstance(program, MemeRNA)  # Only memerna supports num folding.
         nums = {a: int(b) for a, b in [i.split(" ") for i in read_file(num_file).splitlines()]}
     memevault = MemeVault(dataset)
-    print("Benchmarking suboptimals with %s on %s with delta %d" % (program, dataset, delta))
-    filename = "%s_%s_subopt_%d.results" % (program, dataset, delta)
+    print(f"Benchmarking suboptimals with {program} on {dataset} with delta {int(delta)}")
+    filename = f"{program}_{dataset}_subopt_{int(delta)}.results"
     if os.path.exists(filename):
-        print("Not overwriting %s" % filename)
+        print(f"Not overwriting {filename}")
         sys.exit(1)
     with open(filename, "w") as f:
         idx = 1
         for rna in memevault:
-            print("Running %s on #%d %s" % (program, idx, rna.name))
+            print(f"Running {program} on #{int(idx)} {rna.name}")
             idx += 1
             len_res = []
             failed = False
@@ -577,8 +577,7 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
             for i, lr in enumerate(len_res):
                 num_subopt, res = lr
                 f.write(
-                    "%s %d %d %.5f %.5f %.5f %d\n"
-                    % (rna.name, i, len(rna.seq), res.real, res.usersys, res.maxrss, num_subopt)
+                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n"
                 )
 
 
@@ -587,15 +586,15 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
         print("Need RNAstructure for benchmark efn checking")
         sys.exit(1)
     memevault = MemeVault(dataset)
-    print("Benchmarking folding with %s on %s" % (program, dataset))
-    filename = "%s_%s_fold.results" % (program, dataset)
+    print(f"Benchmarking folding with {program} on {dataset}")
+    filename = f"{program}_{dataset}_fold.results"
     if os.path.exists(filename):
-        print("Not overwriting %s" % filename)
+        print(f"Not overwriting {filename}")
         sys.exit(1)
     with open(filename, "w") as f:
         idx = 1
         for rna in memevault:
-            print("Running %s on #%d %s" % (program, idx, rna.name))
+            print(f"Running {program} on #{int(idx)} {rna.name}")
             prs = []
             for i in range(BENCHMARK_NUM_TRIES):
                 prs.append(program.fold(rna))
@@ -605,19 +604,7 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
             for i, pr in enumerate(prs):
                 predicted, res = pr
                 f.write(
-                    "%s %d %d %.5f %.5f %.5f %.5f %.5f %.5f %.2f\n"
-                    % (
-                        rna.name,
-                        i,
-                        len(rna.seq),
-                        res.real,
-                        res.usersys,
-                        res.maxrss,
-                        accuracy.fscore,
-                        accuracy.ppv,
-                        accuracy.sensitivity,
-                        energy,
-                    )
+                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n"
                 )
             idx += 1
 

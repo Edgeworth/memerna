@@ -1,9 +1,8 @@
-build/
 .cache/
 .mypy_cache/
 .vscode/
 __pycache__
 *.pyc
-scripts/default_paths.py
-scripts/memevault.db
+default_paths.py
+memevault.db
 compile_commands.json

@@ -7,7 +7,7 @@ lendeltanum = [(1000, 6, 500000), (1200, 6, 500000), (1600, 6, 500000), (1700, 6
 
 
 def run_num(alg, ldn):
-    print("alg%s - nums, quiet" % alg)
+    print(f"alg{alg} - nums, quiet")
     for l, _, num in ldn:
         res = run_command(
             os.path.join("build", "c++-release", "subopt"),
@@ -18,11 +18,11 @@ def run_num(alg, ldn):
             alg,
             icam1[:l],
         )
-        print("  len %d, num %d: %s" % (l, num, res))
+        print(f"  len {int(l)}, num {int(num)}: {res}")
 
 
 def run_delta(alg, ldn):
-    print("alg%s - deltas, quiet" % alg)
+    print(f"alg{alg} - deltas, quiet")
     for l, d, _ in ldn:
         res = run_command(
             os.path.join("build", "c++-release", "subopt"),
@@ -33,14 +33,14 @@ def run_delta(alg, ldn):
             alg,
             icam1[:l],
         )
-        print("  len %d, delta %d: %s" % (l, d, res))
+        print(f"  len {int(l)}, delta {int(d)}: {res}")
 
 
 def run_fold(alg, lens):
-    print("alg%s -folding" % alg)
+    print(f"alg{alg} -folding")
     for l in lens:
         res = run_command(os.path.join("build", "c++-release", "fold"), "-dp-alg", alg, icam1[:l])
-        print("  len %d: %s" % (l, res))
+        print(f"  len {int(l)}: {res}")
 
 
 def main():

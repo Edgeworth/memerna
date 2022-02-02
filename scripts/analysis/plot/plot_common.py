@@ -16,7 +16,7 @@ EP = 1e-2
 def set_up_axis(ax, names, legend):
     for i, axis in [(0, ax.xaxis), (1, ax.yaxis)]:
         if names[i] is not None:
-            axis.set_label_text("%s" % names[i])
+            axis.set_label_text(f"{names[i]}")
     if legend:
         ax.legend(loc=0, fontsize="medium")
 
@@ -33,7 +33,7 @@ def save_figure(f, name):
 
 
 def savefig_local(dataset, name, f):
-    save_figure(f, "./build/benchmark_figures/%s_%s.png" % (dataset, name))
+    save_figure(f, f"./build/benchmark_figures/{dataset}_{name}.png")
     plt.close(f)
 
 
@@ -41,7 +41,7 @@ def latex_table(rows):
     result = ""
     for row in rows:
         row = np.array(row).tolist()
-        result += " & ".join([str(i) for i in row]) + " \\\\\n"
+        result += f"{' & '.join([str(i) for i in row])} \\\\\n"
     return result
 
 
@@ -83,7 +83,7 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
             data[xid] = data[xid].apply(np.log10)
         if logy:
             data[yid] = data[yid].apply(np.log10)
-        mod = smf.ols("%s ~ %s" % (yid, xid), data=data)
+        mod = smf.ols(f"{yid} ~ {xid}", data=data)
         res = mod.fit()
 
         label = "{0}\n${3:.5f}x + {2:.2f}$\n$R^2 = {1:.3f}$".format(
@@ -96,9 +96,9 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
 
     names = [colmap[xid], colmap[yid]]
     if logx:
-        names[0] = "log(%s)" % names[0]
+        names[0] = f"log({names[0]})"
     if logy:
-        names[1] = "log(%s)" % names[1]
+        names[1] = f"log({names[1]})"
     set_up_figure(f, names=names)
 
     return f
@@ -131,13 +131,13 @@ def do_table(frames, ids, do_median=False):
     cols = ["mean", "SD"]
     if do_median:
         cols.append("median")
-    table = [["Package"] + ["%s %s" % (colmap[i], t) for i in ids for t in cols]]
+    table = [["Package"] + [f"{colmap[i]} {t}" for i in ids for t in cols]]
     for frame_id in sorted(frames.keys()):
         frame = frames[frame_id]
         for i in ids:
             cols = [frame[i].mean(), frame[i].std()]
             if do_median:
                 cols.append(frame[i].median())
-            table.append([frame_id] + ["%.5f" % val for val in cols])
+            table.append([frame_id] + [f"{val:.5f}" for val in cols])
     print("TABLE:")
     print(latex_table(table))

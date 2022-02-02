@@ -48,7 +48,7 @@ def do_mfe_table(frames, xid):
     num_unique /= num_unique.sum()
     table = [
         ["Number of MFEs"] + num_unique.index.tolist(),
-        ["Proportion"] + ["%.2f\\%%" % (i * 100) for i in num_unique.tolist()],
+        ["Proportion"] + [f"{i * 100:.2f}\\%" for i in num_unique.tolist()],
     ]
     print("MFE DISTRIBUTION TABLE:")
     print(latex_table(table))
@@ -59,8 +59,7 @@ def do_ttest(frames, xid):
     table = [["Package"] + frame_keys]
     for i, a_fid in enumerate(frame_keys):
         print(
-            "Package %s on %s: kurtosis: %lf, skew: %lf"
-            % (a_fid, xid, frames[a_fid][xid].kurtosis(), frames[a_fid][xid].skew())
+            f"Package {a_fid} on {xid}: kurtosis: {frames[a_fid][xid].kurtosis():f}, skew: {frames[a_fid][xid].skew():f}"
         )
         table.append([a_fid])
         for j, b_fid in enumerate(frame_keys):
@@ -71,9 +70,9 @@ def do_ttest(frames, xid):
             if i < j:
                 frameA, frameB = frameB, frameA
             t, p = scipy.stats.ttest_rel(frameA, frameB)
-            entry = "%.3f" % t
+            entry = f"{t:.3f}"
             if i < j:
-                entry = "%.3f" % p
+                entry = f"{p:.3f}"
             table[-1].append(entry)
     print("TTEST TABLE:")
     print(latex_table(table))
