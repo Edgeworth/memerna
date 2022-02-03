@@ -50,7 +50,7 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(structure& struc) {
   return res;
 }
 
-struct PartitionFunctionState {
+struct PartitionState {
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
   std::unique_ptr<DynProgArray<PFPRECISION>> w;
   std::unique_ptr<DynProgArray<PFPRECISION>> v;
@@ -65,7 +65,7 @@ struct PartitionFunctionState {
   std::unique_ptr<forceclass> fce;
   std::unique_ptr<bool[]> lfce;
   std::unique_ptr<bool[]> mod;
-  PartitionFunctionState(int N, datatable* data)
+  PartitionState(int N, datatable* data)
       : w(new DynProgArray<PFPRECISION>(N)), v(new DynProgArray<PFPRECISION>(N)),
         wmb(new DynProgArray<PFPRECISION>(N)), wl(new DynProgArray<PFPRECISION>(N)),
         wlc(new DynProgArray<PFPRECISION>(N)), wmbl(new DynProgArray<PFPRECISION>(N)),
@@ -74,8 +74,8 @@ struct PartitionFunctionState {
         fce(new forceclass(N)), lfce(new bool[2 * N + 1]), mod(new bool[2 * N + 1]) {}
 };
 
-PartitionFunctionState RunPartition(structure* struc, datatable* data) {
-  PartitionFunctionState state(struc->GetSequenceLength(), data);
+PartitionState RunPartition(structure* struc, datatable* data) {
+  PartitionState state(struc->GetSequenceLength(), data);
 
   calculatepfunction(struc, state.pfdata.get(), nullptr, nullptr, false, nullptr, state.w.get(),
       state.v.get(), state.wmb.get(), state.wl.get(), state.wlc.get(), state.wmbl.get(),
