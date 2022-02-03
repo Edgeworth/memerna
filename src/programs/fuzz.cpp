@@ -68,10 +68,10 @@ class FuzzHarness {
   std::shared_ptr<mrna::bridge::RNAstructure> rstr_;
 #endif  // USE_RNASTRUCTURE
 
-  mrna::fuzz::Fuzzer CreateFuzzer(mrna::Primary r) {
-    mrna::fuzz::Fuzzer fuzzer(std::move(r), em_, cfg_);
+  mrna::fuzz::Fuzzer CreateFuzzer(const mrna::Primary& r) {
+    mrna::fuzz::Fuzzer fuzzer(r, em_, cfg_);
     if (args_.GetOr(OPT_RANDOM))
-      fuzzer = mrna::fuzz::Fuzzer(std::move(r), mrna::energy::EnergyModel::Random(e_()), cfg_);
+      fuzzer = mrna::fuzz::Fuzzer(r, mrna::energy::EnergyModel::Random(e_()), cfg_);
 #ifdef USE_RNASTRUCTURE
     fuzzer.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE

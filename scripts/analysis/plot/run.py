@@ -20,22 +20,16 @@ PREFIX = "../results"
 def generate_filename_map(dataset_name, enable):
     d = {
         "ViennaRNA-d2": os.path.join(PREFIX, f"ViennaRNA-d2_{dataset_name}.results"),
-        "ViennaRNA-d2-sorted": os.path.join(
-            PREFIX, f"ViennaRNA-d2-sorted_{dataset_name}.results"
-        ),
+        "ViennaRNA-d2-sorted": os.path.join(PREFIX, f"ViennaRNA-d2-sorted_{dataset_name}.results"),
         "SparseMFEFold": os.path.join(PREFIX, f"SparseMFEFold_{dataset_name}.results"),
         "memerna": os.path.join(PREFIX, f"memerna_{dataset_name}.results"),
         "memerna-sorted": os.path.join(PREFIX, f"memerna-sorted_{dataset_name}.results"),
         "RNAstructure": os.path.join(PREFIX, f"RNAstructureDistribution_{dataset_name}.results"),
         "RNAstructure-mod": os.path.join(PREFIX, f"RNAstructureHarness_{dataset_name}.results"),
         "ViennaRNA-d3": os.path.join(PREFIX, f"ViennaRNA-d3_{dataset_name}.results"),
-        "ViennaRNA-d3-sorted": os.path.join(
-            PREFIX, f"ViennaRNA-d3-sorted_{dataset_name}.results"
-        ),
+        "ViennaRNA-d3-sorted": os.path.join(PREFIX, f"ViennaRNA-d3-sorted_{dataset_name}.results"),
         "SJSViennaMPI": os.path.join(PREFIX, f"SJSViennaMPI_{dataset_name}.results"),
-        "SJSViennaMPI-sorted": os.path.join(
-            PREFIX, f"SJSViennaMPI-sorted_{dataset_name}.results"
-        ),
+        "SJSViennaMPI-sorted": os.path.join(PREFIX, f"SJSViennaMPI-sorted_{dataset_name}.results"),
         "UNAFold": os.path.join(PREFIX, f"UNAFold_{dataset_name}.results"),
     }
     return {k: d[k] for k in enable}

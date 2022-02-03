@@ -45,12 +45,12 @@ void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4])
 }
 
 void ParseMapFromFile(
-    const std::string& filename, std::unordered_map<std::string, Energy>& output) {
+    const std::string& filename, std::unordered_map<std::string, Energy>* output) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   char buf[1024];
   Energy energy;
-  while (fscanf(fp, " %s %d ", buf, &energy) == 2) output[buf] = energy;
+  while (fscanf(fp, " %1023s %d ", buf, &energy) == 2) (*output)[buf] = energy;
   fclose(fp);
 }
 
@@ -68,7 +68,7 @@ void ParseInitiationEnergyFromFile(
   fclose(fp);
 }
 
-void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel& em) {
+void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (1) {
@@ -80,12 +80,12 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
     const Base f = CharToBase(static_cast<char>(fgetc(fp)));
     if (a == -1) break;
     verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
-    verify(fscanf(fp, " %d ", &em.internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em->internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
-void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel& em) {
+void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (1) {
@@ -99,12 +99,12 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
     if (a == -1) break;
     verify(
         a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1, "expected base");
-    verify(fscanf(fp, " %d ", &em.internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em->internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
   }
   fclose(fp);
 }
 
-void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel& em) {
+void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (1) {
@@ -119,7 +119,7 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
     if (a == -1) break;
     verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1 && h != -1,
         "expected base");
-    verify(fscanf(fp, " %d ", &em.internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em->internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -138,7 +138,7 @@ void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4]
   fclose(fp);
 }
 
-void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em) {
+void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
 
@@ -154,31 +154,31 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel& em)
   } while (0)
 
   // Bulge loops.
-  READ_DATA(em.bulge_special_c);
+  READ_DATA(em->bulge_special_c);
 
   // Coaxial stacking.
-  READ_DATA(em.coax_mismatch_non_contiguous);
-  READ_DATA(em.coax_mismatch_wc_bonus);
-  READ_DATA(em.coax_mismatch_gu_bonus);
+  READ_DATA(em->coax_mismatch_non_contiguous);
+  READ_DATA(em->coax_mismatch_wc_bonus);
+  READ_DATA(em->coax_mismatch_gu_bonus);
 
   // Hairpin loops.
-  READ_DATA(em.hairpin_uu_ga_first_mismatch);
-  READ_DATA(em.hairpin_gg_first_mismatch);
-  READ_DATA(em.hairpin_special_gu_closure);
-  READ_DATA(em.hairpin_c3_loop);
-  READ_DATA(em.hairpin_all_c_a);
-  READ_DATA(em.hairpin_all_c_b);
+  READ_DATA(em->hairpin_uu_ga_first_mismatch);
+  READ_DATA(em->hairpin_gg_first_mismatch);
+  READ_DATA(em->hairpin_special_gu_closure);
+  READ_DATA(em->hairpin_c3_loop);
+  READ_DATA(em->hairpin_all_c_a);
+  READ_DATA(em->hairpin_all_c_b);
 
   // Internal loops.
-  READ_DATA(em.internal_asym);
-  READ_DATA(em.internal_augu_penalty);
+  READ_DATA(em->internal_asym);
+  READ_DATA(em->internal_augu_penalty);
 
   // Multiloop data.
-  READ_DATA(em.multiloop_hack_a);
-  READ_DATA(em.multiloop_hack_b);
+  READ_DATA(em->multiloop_hack_a);
+  READ_DATA(em->multiloop_hack_b);
 
   // AU/GU penalty
-  READ_DATA(em.augu_penalty);
+  READ_DATA(em->augu_penalty);
 #undef READ_DATA
 
   fclose(fp);
@@ -276,7 +276,7 @@ EnergyModelPtr EnergyModel::FromDataDir(const std::string& data_dir) {
   Parse2x2FromFile(data_dir + "/terminal.data", em->terminal);
 
   // Hairpin data.
-  ParseMapFromFile(data_dir + "/hairpin.data", em->hairpin);
+  ParseMapFromFile(data_dir + "/hairpin.data", &em->hairpin);
   ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", em->hairpin_init);
 
   // Bulge loop data.
@@ -284,9 +284,9 @@ EnergyModelPtr EnergyModel::FromDataDir(const std::string& data_dir) {
 
   // Internal loop data.
   ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", em->internal_init);
-  ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data", *em);
-  ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data", *em);
-  ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data", *em);
+  ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data", em.get());
+  ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data", em.get());
+  ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data", em.get());
   Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", em->internal_2x3_mismatch);
   Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", em->internal_other_mismatch);
 
@@ -295,7 +295,7 @@ EnergyModelPtr EnergyModel::FromDataDir(const std::string& data_dir) {
   ParseDangleDataFromFile(data_dir + "/dangle5.data", em->dangle5);
 
   // Other misc data.
-  ParseMiscDataFromFile(data_dir + "/misc.data", *em);
+  ParseMiscDataFromFile(data_dir + "/misc.data", em.get());
 
   std::string reason;
   verify(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
@@ -522,7 +522,7 @@ Energy EnergyModel::TwoLoop(
 }
 
 Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
-    std::deque<int>& branches, bool use_given_ctds, Ctds* ctd,
+    std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
     std::unique_ptr<Structure>* sstruc) const {
   const bool exterior_loop = s[st] != en;
   Energy energy = 0;
@@ -535,7 +535,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
 
   // Add AUGU penalties.
   int num_unpaired = 0;
-  for (auto branch_st : branches) {
+  for (auto branch_st : *branches) {
     num_unpaired += s[branch_st] - branch_st + 1;
 
     if (IsAuGuPair(r[branch_st], r[s[branch_st]])) {
@@ -546,55 +546,55 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
     }
   }
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
-  if (struc) struc->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches.size() + 1);
+  if (struc) struc->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches->size() + 1);
 
   BranchCtd branch_ctd;
   Energy ctd_energy = 0;
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (use_given_ctds) {
-      ctd_energy = AddBaseCtdsToBranchCtds(*this, r, s, *ctd, branches, &branch_ctd);
+      ctd_energy = AddBaseCtdsToBranchCtds(*this, r, s, *ctd, *branches, &branch_ctd);
     } else {
-      ctd_energy = ComputeOptimalCtds(*this, r, s, branches, true, &branch_ctd);
-      AddBranchCtdsToBaseCtds(branches, branch_ctd, ctd);
+      ctd_energy = ComputeOptimalCtds(*this, r, s, *branches, true, &branch_ctd);
+      AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
     }
   } else {
     if (IsAuGuPair(r[st], r[en])) {
       if (struc) struc->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
       energy += augu_penalty;
     }
-    Energy initiation = MultiloopInitiation(static_cast<int>(branches.size() + 1));
+    Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1));
     if (struc) struc->AddNote("%de - initiation", initiation);
     energy += initiation;
 
     if (use_given_ctds) {
-      branches.push_front(en);
-      ctd_energy = AddBaseCtdsToBranchCtds(*this, r, s, *ctd, branches, &branch_ctd);
-      branches.pop_front();
+      branches->push_front(en);
+      ctd_energy = AddBaseCtdsToBranchCtds(*this, r, s, *ctd, *branches, &branch_ctd);
+      branches->pop_front();
     } else {
       BranchCtd config_ctds[4] = {};
       std::pair<Energy, int> config_energies[4] = {};
-      branches.push_front(en);
-      config_energies[0] = {ComputeOptimalCtds(*this, r, s, branches, true, &config_ctds[0]), 0};
-      config_energies[1] = {ComputeOptimalCtds(*this, r, s, branches, false, &config_ctds[1]), 1};
-      branches.pop_front();
-      branches.push_back(en);
-      config_energies[2] = {ComputeOptimalCtds(*this, r, s, branches, true, &config_ctds[2]), 2};
+      branches->push_front(en);
+      config_energies[0] = {ComputeOptimalCtds(*this, r, s, *branches, true, &config_ctds[0]), 0};
+      config_energies[1] = {ComputeOptimalCtds(*this, r, s, *branches, false, &config_ctds[1]), 1};
+      branches->pop_front();
+      branches->push_back(en);
+      config_energies[2] = {ComputeOptimalCtds(*this, r, s, *branches, true, &config_ctds[2]), 2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
-      config_energies[3] = {ComputeOptimalCtds(*this, r, s, branches, false, &config_ctds[3]), 3};
+      config_energies[3] = {ComputeOptimalCtds(*this, r, s, *branches, false, &config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
-      branches.pop_back();
+      branches->pop_back();
       std::sort(config_energies, config_energies + 4);
       branch_ctd = config_ctds[config_energies[0].second];
       ctd_energy = config_energies[0].first;
 
       // Write the optimal ctds to |ctd|.
-      branches.push_front(en);
-      AddBranchCtdsToBaseCtds(branches, branch_ctd, ctd);
-      branches.pop_front();
+      branches->push_front(en);
+      AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
+      branches->pop_front();
     }
   }
   energy += ctd_energy;
@@ -606,7 +606,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
           energy::CtdToName(branch_ctd[0].first));
       branch_ctd.pop_front();
     }
-    for (const auto& ctd : branch_ctd) struc->AddCtd(ctd.first, ctd.second);
+    for (const auto& [c, e] : branch_ctd) struc->AddCtd(c, e);
     // Give the pointer back.
     *sstruc = std::move(struc);
   }
@@ -634,7 +634,7 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
 
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(r, s, st, en, branches, use_given_ctds, ctd, struc);
+    energy += MultiloopEnergy(r, s, st, en, &branches, use_given_ctds, ctd, struc);
   } else if (branches.empty()) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);

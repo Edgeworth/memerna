@@ -1,7 +1,8 @@
-Some notes on the style used in memerna:
+# Style notes
+Set up pre-commit.
 
-# Language notes
 ## C++
+- C++20
 - Format according to the .clang-format
 - Prefer composition and data oriented APIs. Use inheritance carefully, if at
    all.
@@ -9,6 +10,7 @@ Some notes on the style used in memerna:
    const-pointer for optional references.
 
 ## Python
+- Python 3.8
 - Format according to black -l 100
 
 # Directories

@@ -27,7 +27,7 @@ using Error = std::deque<std::string>;
 
 class Fuzzer {
  public:
-  Fuzzer(Primary r, energy::EnergyModelPtr em, FuzzCfg cfg);
+  Fuzzer(const Primary& r, energy::EnergyModelPtr em, FuzzCfg cfg);
 
   Error Run();
 
@@ -40,9 +40,9 @@ class Fuzzer {
   energy::EnergyModelPtr em_;
   FuzzCfg cfg_;
 
-  ctx::FoldResult fold_;
-  std::vector<subopt::SuboptResult> subopt_;
-  part::PartResult part_;
+  ctx::FoldResult fold_{};
+  std::vector<subopt::SuboptResult> subopt_{};
+  part::PartResult part_{};
   Error errors_;
 
 #ifdef USE_RNASTRUCTURE

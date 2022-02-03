@@ -46,12 +46,12 @@ class Suboptimal0 {
   std::multiset<Node> finished_;
   std::multiset<Node> q_;
 
-  void PruneInsert(std::multiset<Node>& prune, const Node& node) {
+  void PruneInsert(const Node& node, std::multiset<Node>* prune) {
     if (node.res.energy <= ext_[0][EXT] + cfg_.delta) {
-      if (static_cast<int>(prune.size()) >= cfg_.strucs &&
-          (--prune.end())->res.energy > node.res.energy)
-        prune.erase(--prune.end());
-      if (static_cast<int>(prune.size()) < cfg_.strucs) prune.insert(node.copy());
+      if (static_cast<int>(prune->size()) >= cfg_.strucs &&
+          (--prune->end())->res.energy > node.res.energy)
+        prune->erase(--prune->end());
+      if (static_cast<int>(prune->size()) < cfg_.strucs) prune->insert(node.copy());
     }
   }
 
@@ -59,14 +59,14 @@ class Suboptimal0 {
   // need to expand any more ranges than it currently has.
   void Expand(Energy energy) {
     curnode_.res.energy = energy;
-    PruneInsert(q_, curnode_);
+    PruneInsert(curnode_, &q_);
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
   void Expand(Energy energy, Index nye) {
     curnode_.not_yet_expanded.push_back(nye);
     curnode_.res.energy = energy;
-    PruneInsert(q_, curnode_);
+    PruneInsert(curnode_, &q_);
     curnode_.not_yet_expanded.pop_back();
   }
 
@@ -81,7 +81,7 @@ class Suboptimal0 {
     curnode_.not_yet_expanded.push_back(nye0);
     curnode_.not_yet_expanded.push_back(nye1);
     curnode_.res.energy = energy;
-    PruneInsert(q_, curnode_);
+    PruneInsert(curnode_, &q_);
     curnode_.not_yet_expanded.pop_back();
     curnode_.not_yet_expanded.pop_back();
   }

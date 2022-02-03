@@ -11,90 +11,90 @@ namespace mrna {
 
 class ParsingTest : public testing::Test {
  public:
-  const Primary kPrimary1 = {};
-  const Secondary kSecondary1 = {};
-  const Ctds kCtd1 = {};
+  const Primary kPrimary1{};
+  const Secondary kSecondary1{};
+  const Ctds kCtd1{};
   const std::string kCtdString1 = "";
 
   const Primary kPrimary2 = Primary::FromString("A");
-  const Secondary kSecondary2 = {-1};
-  const Ctds kCtd2 = {CTD_NA};
+  const Secondary kSecondary2{-1};
+  const Ctds kCtd2{CTD_NA};
   const std::string kCtdString2 = ".";
 
   const Primary kPrimary3 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary3 = {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
-  const Ctds kCtd3 = {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE,
+  const Secondary kSecondary3{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
+  const Ctds kCtd3{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE,
       CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString3 = "[[...].[...]3]";
 
   const Primary kPrimary4 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary4 = {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
-  const Ctds kCtd4 = {CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary4{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
+  const Ctds kCtd4{CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString4 = ".n...]mp...]M.";
 
   const Primary kPrimary5 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary5 = {-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
-  const Ctds kCtd5 = {CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED,
-      CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
+  const Secondary kSecondary5{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
+  const Ctds kCtd5{CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA,
+      CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString5 = ".[...]3[...]..";
 
   const Primary kPrimary6 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary6 = {6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1};
-  const Ctds kCtd6 = {CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary6{6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1};
+  const Ctds kCtd6{CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString6 = "n[...]]p...]..";
 
   const Primary kPrimary7 = Primary::FromString("UACGUUGGUGCUU");
-  const Secondary kSecondary7 = {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
-  const Ctds kCtd7 = {CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary7{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
+  const Ctds kCtd7{CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT};
   const std::string kCtdString7 = "[p...].[...]N";
 
   const Primary kPrimary8 = Primary::FromString("UACGUUGGUGCUUAA");
-  const Secondary kSecondary8 = {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
-  const Ctds kCtd8 = {CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-      CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT};
+  const Secondary kSecondary8{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
+  const Ctds kCtd8{CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT};
   const std::string kCtdString8 = "[Mp...].[...]mN";
 
   const Primary kPrimary9 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary9 = {13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0};
-  const Ctds kCtd9 = {CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-      CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT};
+  const Secondary kSecondary9{13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0};
+  const Ctds kCtd9{CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT};
   const std::string kCtdString9 = "[mp...]M[...]N";
 
   const Primary kPrimary10 = Primary::FromString("UACGUUGGUGCUU");
-  const Secondary kSecondary10 = {12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
-  const Ctds kCtd10 = {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary10{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
+  const Ctds kCtd10{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV};
   const std::string kCtdString10 = "[[...].n...]P";
 
   const Primary kPrimary11 = Primary::FromString("UACGUUGGUGCUUAA");
-  const Secondary kSecondary11 = {14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
-  const Ctds kCtd11 = {CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary11{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
+  const Ctds kCtd11{CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV};
   const std::string kCtdString11 = "[M[...].n...]mP";
 
   const Primary kPrimary12 = Primary::FromString("UACGUUGGUGCUUA");
-  const Secondary kSecondary12 = {13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
-  const Ctds kCtd12 = {CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary12{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
+  const Ctds kCtd12{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_PREV};
   const std::string kCtdString12 = "[[...]mn...]MP";
 
   const Primary kPrimary13 = Primary::FromString("UACGUUGGUGCU");
-  const Secondary kSecondary13 = {11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0};
-  const Ctds kCtd13 = {CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary13{11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0};
+  const Ctds kCtd13{CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString13 = "[n...]p...]]";
 
   const Primary kPrimary14 = Primary::FromString("AAAAAAA");
-  const Secondary kSecondary14 = {-1, 5, -1, -1, -1, 1, -1};
-  const Ctds kCtd14 = {CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
+  const Secondary kSecondary14{-1, 5, -1, -1, -1, 1, -1};
+  const Ctds kCtd14{CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString14 = "m[...]M";
 
   const Primary kPrimary15 = Primary::FromString("UACGUUGGUGCUAAAA");
-  const Secondary kSecondary15 = {15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0};
-  const Ctds kCtd15 = {CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+  const Secondary kSecondary15{15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0};
+  const Ctds kCtd15{CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString15 = "[m[...]Mm[...]M]";
 };

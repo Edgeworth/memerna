@@ -19,28 +19,28 @@ __AFL_FUZZ_INIT();
 
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 
-OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>& h, std::set<int>& s) {
+OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>* h, std::set<int>* s) {
   bool splay_success = false, set_success = false, invalid = false;
   switch (op) {
   case 'i':
-    splay_success = h.Insert(val, val);
-    set_success = (s.count(val) == 0);
-    s.insert(val);
+    splay_success = h->Insert(val, val);
+    set_success = (s->count(val) == 0);
+    s->insert(val);
     break;
   case 'd':
-    splay_success = h.Delete(val);
-    set_success = (s.count(val) > 0);
-    s.erase(val);
+    splay_success = h->Delete(val);
+    set_success = (s->count(val) > 0);
+    s->erase(val);
     break;
   case 's':
-    splay_success = h.Find(val);
-    set_success = (s.find(val) != s.end());
+    splay_success = h->Find(val);
+    set_success = (s->find(val) != s->end());
     break;
   default: invalid = true;
   }
-  auto keys = h.Keys();
-  if (splay_success != set_success || s.size() != h.Size() ||
-      !std::equal(s.begin(), s.end(), keys.begin(), keys.end()))
+  auto keys = h->Keys();
+  if (splay_success != set_success || s->size() != h->Size() ||
+      !std::equal(s->begin(), s->end(), keys.begin(), keys.end()))
     std::abort();
   if (invalid) return OpResult::INVALID;
   if (splay_success) return OpResult::SUCCESS;
@@ -83,7 +83,7 @@ void DoInteractive(int r) {
     int res = scanf(" %c %d", &op, &val);
     if (res < 0) break;
     if (res == 2) {
-      auto op_res = DoOperation(op, val, h, s);
+      auto op_res = DoOperation(op, val, &h, &s);
       if (op_res == OpResult::INVALID)
         printf("Invalid input\n");
       else if (op_res == OpResult::SUCCESS)

@@ -4,7 +4,9 @@ import pandas as pd
 import seaborn as sns
 
 from scripts.plot.load_data import colmap
-from scripts.plot.plot_common import get_subplot_grid, set_up_figure, do_table
+from scripts.plot.plot_common import do_table
+from scripts.plot.plot_common import get_subplot_grid
+from scripts.plot.plot_common import set_up_figure
 
 
 def subopt_distribution(all_ds, subopts):

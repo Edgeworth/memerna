@@ -152,7 +152,7 @@ class SplayMap {
   }
 
   const Value& Get() {
-    assert(Size() > 0);
+    assert(size_ > 0);
     return ns_[root].v;
   }
 
