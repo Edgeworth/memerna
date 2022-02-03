@@ -39,7 +39,7 @@ std::vector<Secondary> StructureToSecondarys(const structure& struc) {
   return s;
 }
 
-std::vector<subopt::SuboptResult> StructureToSuboptVector(structure& struc) {
+std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc) {
   auto s_list = StructureToSecondarys(struc);
   std::vector<subopt::SuboptResult> res;
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
