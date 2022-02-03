@@ -37,6 +37,10 @@ class RNAstructure : public RnaPackage {
   std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       const Primary& r, Energy delta) const override;
   part::PartResult Partition(const Primary& r) const override;
+  // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies in SuboptResult
+  // are meaningless.
+  std::vector<subopt::SuboptResult> StochasticSampleIntoVector(
+      const Primary& r, int num_samples) const;
 
   // TODO: Can be replaced by Fold now?
   ctx::FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
