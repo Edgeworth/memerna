@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Copyright 2022 Eliot Courtney.
 import argparse
+import os
 import shutil
 import tempfile
-import os
 
 from scripts.common import *
 from scripts.memevault import MemeVault
@@ -91,7 +91,11 @@ class HarnessFolder:
         prev_dir = os.getcwd()
         os.chdir(self.loc)
         res = run_command(
-            os.path.join("harness"), "-f", self.flag, record_stdout=True, input=rna.seq
+            os.path.join("harness"),
+            "-f",
+            self.flag,
+            record_stdout=True,
+            input=rna.seq,
         )
         os.chdir(prev_dir)
         lines = res.stdout.strip().split("\n")
@@ -135,7 +139,7 @@ class HarnessFolder:
                 for i in output.splitlines()[:-1]:
                     energy, db = re.split(r"\s+", i.strip())
                     retval.append(
-                        (float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db))
+                        (float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db)),
                     )
             os.chdir(prev_dir)
         return retval, res
@@ -208,7 +212,7 @@ class MemeRNA:
                 *maxdelta_args,
                 rna.seq,
                 record_stdout=out.name,
-                limits=limits
+                limits=limits,
             )
             os.chdir(prev_dir)
             if num_only:
@@ -222,7 +226,7 @@ class MemeRNA:
                 for i in output.splitlines()[:-1]:
                     energy, db = re.split(r"\s+", i.strip())
                     retval.append(
-                        (float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db))
+                        (float(energy) / 10.0, RNA.from_name_seq_db(rna.name, rna.seq, db)),
                     )
         return retval, res
 
@@ -262,7 +266,7 @@ class ViennaRNA:
                 "--noPS",
                 "-i",
                 f.name,
-                record_stdout=True
+                record_stdout=True,
             )
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
@@ -274,7 +278,7 @@ class ViennaRNA:
             os.path.join(self.loc, "src", "bin", "RNAeval"),
             *self.extra_args,
             input=f"{rna.seq}\n{rna.db()}",
-            record_stdout=True
+            record_stdout=True,
         )
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
         energy = float(match.group(1))
@@ -289,7 +293,7 @@ class ViennaRNA:
                 f"{delta / 10.0:.1f}",
                 input=rna.seq,
                 record_stdout=out.name,
-                limits=limits
+                limits=limits,
             )
             if num_only:
                 res2 = run_command("wc", "-l", out.name, record_stdout=True)
@@ -344,7 +348,7 @@ class SJSVienna:
                 f"{delta / 10.0:.1f}",
                 input=rna.seq,
                 record_stdout=out.name,
-                limits=limits
+                limits=limits,
             )
             if num_only:
                 res2 = run_command("wc", "-l", out.name, record_stdout=True)
@@ -408,7 +412,7 @@ class SJSViennaMPI:
                 f"{delta / 10.0:.1f}",
                 "-input",
                 f.name,
-                limits=limits
+                limits=limits,
             )
             files = [f"subopt-{int(i)}.stdout" for i in range(self.n)]
             if num_only:
@@ -465,7 +469,9 @@ class UNAFold:
             f.write(rna.to_ct_file())
             f.flush()
             res = run_command(
-                os.path.join(self.loc, "src", "ct-energy"), f.name, record_stdout=True
+                os.path.join(self.loc, "src", "ct-energy"),
+                f.name,
+                record_stdout=True,
             )
             energy = float(res.stdout.strip())
         os.chdir(prev_dir)
@@ -494,7 +500,9 @@ class SparseMFEFold:
 
     def fold(self, rna):
         res = run_command(
-            os.path.join(self.loc, "src", "SparseMFEFold"), input=rna.seq, record_stdout=True
+            os.path.join(self.loc, "src", "SparseMFEFold"),
+            input=rna.seq,
+            record_stdout=True,
         )
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
@@ -563,7 +571,11 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
             for i in range(BENCHMARK_NUM_TRIES):
                 if nums:
                     length, res = program.suboptimal_maxdelta(
-                        rna, nums[rna.name], -1, BENCHMARK_LIMITS, True
+                        rna,
+                        nums[rna.name],
+                        -1,
+                        BENCHMARK_LIMITS,
+                        True,
                     )
                 else:
                     length, res = program.suboptimal(rna, delta, BENCHMARK_LIMITS, True)
@@ -577,7 +589,7 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
             for i, lr in enumerate(len_res):
                 num_subopt, res = lr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n"
+                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n",
                 )
 
 
@@ -604,7 +616,7 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
             for i, pr in enumerate(prs):
                 predicted, res = pr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n"
+                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n",
                 )
             idx += 1
 

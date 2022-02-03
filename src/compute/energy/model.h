@@ -152,7 +152,7 @@ class EnergyModel {
   Energy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
-      std::deque<int>& branches, bool use_given_ctds, Ctds* ctd,
+      std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
       std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   // If (st, en) is not paired, treated as an exterior loop.

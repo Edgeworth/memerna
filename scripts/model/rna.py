@@ -90,7 +90,9 @@ class RNA:
         ct = [f"{len(self.seq)}\t{name}"]
 
         for i, v in enumerate(self.seq):
-            ct.append(f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.pairs[i] + 1)}\t{int(i + 1)}")
+            ct.append(
+                f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.pairs[i] + 1)}\t{int(i + 1)}",
+            )
 
         return "\n".join(ct)
 

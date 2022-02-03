@@ -10,7 +10,7 @@ namespace mrna::energy {
 namespace {
 
 template <typename T>
-constexpr auto Decay(T& a) {
+constexpr auto Decay(T& a) {  // NOLINT
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 

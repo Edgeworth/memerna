@@ -10,12 +10,12 @@ option(USE_RNASTRUCTURE "Whether to build in RNAstructure" OFF)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 
 # Always have RNAstructure compiled as release.
-if (USE_RNASTRUCTURE)
+if(USE_RNASTRUCTURE)
   set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
   set(CMAKE_BUILD_TYPE Release)
   add_subdirectory("extern/miles_rnastructure")
   set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
-endif ()
+endif()
 
 # Flags for each build configuration.
 set(CMAKE_CXX_STANDARD 20)
@@ -24,13 +24,13 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=nat
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
 
 # Use include-what-you-use if it exists.
-if (USE_IWYU)
+if(USE_IWYU)
   find_program(IWYU NAMES include-what-you-use iwyu REQUIRED)
   set(IWYU ${IWYU}
     -Xiwyu --max_line_length=100
     -Xiwyu --no_fwd_decls
     -Xiwyu --cxx17ns)
-endif ()
+endif()
 
 # Include things to find libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
@@ -43,26 +43,26 @@ find_package(Boost)
 # Fail loudly.
 # Note we don't support msan because it requires an instrumented libc++.
 # See https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo
-if (SANITIZE_ADDRESS AND NOT ASan_FLAG_DETECTED)
+if(SANITIZE_ADDRESS AND NOT ASan_FLAG_DETECTED)
   message(FATAL_ERROR "requested asan build but not available on current compiler")
-endif ()
-if (SANITIZE_THREAD AND NOT TSan_FLAG_DETECTED)
+endif()
+if(SANITIZE_THREAD AND NOT TSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested tsan build but not available on current compiler")
-endif ()
-if (SANITIZE_UNDEFINED AND NOT UBSan_FLAG_DETECTED)
+endif()
+if(SANITIZE_UNDEFINED AND NOT UBSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested ubsan build but not available on current compiler")
-endif ()
+endif()
 
 # Check for MPFR build.
-if (USE_MPFR)
-  if (NOT MPFR_FOUND)
+if(USE_MPFR)
+  if(NOT MPFR_FOUND)
     message(FATAL_ERROR "mpfr builds require mpfr")
-  endif ()
-  if (NOT Boost_FOUND)
+  endif()
+  if(NOT Boost_FOUND)
     message(FATAL_ERROR "mpfr builds require boost")
-  endif ()
+  endif()
   message(STATUS "Building using MPFR for floats.")
-endif ()
+endif()
 
 # Enable tests.
 set(THREADS_PREFER_PTHREAD_FLAG ON)  # Gtest needs this.
@@ -71,15 +71,15 @@ configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if (result)
+if(result)
   message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif ()
+endif()
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if (result)
+if(result)
   message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif ()
+endif()
 
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
@@ -91,10 +91,10 @@ add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
 # Enable stacktraces if we have boost.
 find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
-if (LIBBACKTRACE)
+if(LIBBACKTRACE)
   message(STATUS "Using Boost stacktrace with libbacktrace - ${LIBBACKTRACE}")
   add_compile_definitions(BOOST_STACKTRACE_USE_BACKTRACE)
-endif ()
+endif()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
@@ -157,11 +157,11 @@ set(TEST_SOURCE
 )
 
 # Use RNAstructure if necessary
-if (USE_RNASTRUCTURE)
+if(USE_RNASTRUCTURE)
   set(MEMERNA_SOURCE ${MEMERNA_SOURCE}
       src/bridge/rnastructure.cpp src/bridge/rnastructure.h
   )
-endif ()
+endif()
 
 add_library(memerna ${MEMERNA_SOURCE})
 
@@ -189,29 +189,29 @@ target_link_libraries(splay_explorer PRIVATE memerna)
 target_link_libraries(subopt PRIVATE memerna)
 
 # Use Boost if available
-if (Boost_FOUND)
+if(Boost_FOUND)
   target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
   target_compile_definitions(memerna PUBLIC USE_BOOST)
   target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS})  # For Boost stacktrace
 
-  if (LIBBACKTRACE)
+  if(LIBBACKTRACE)
     target_link_libraries(memerna PUBLIC ${LIBBACKTRACE})
-  endif ()
-endif ()
+  endif()
+endif()
 
 # Use MPFR if necessary
-if (USE_MPFR)
+if(USE_MPFR)
   target_include_directories(memerna PUBLIC ${MPFR_INCLUDE_DIRS})
   target_compile_definitions(memerna PUBLIC USE_MPFR)
   target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
-endif ()
+endif()
 
 # Use RNAstructure if necessary
-if (USE_RNASTRUCTURE)
+if(USE_RNASTRUCTURE)
   target_include_directories(memerna SYSTEM PUBLIC extern) # Suppress warnings.
   target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
   target_link_libraries(memerna PUBLIC miles_rnastructure)
-endif ()
+endif()
 
 # Add sanitizers
 add_sanitizers(memerna)
@@ -226,7 +226,7 @@ add_sanitizers(splay_explorer)
 add_sanitizers(subopt)
 
 # Add iwyu to targets if requested.
-if (USE_IWYU)
+if(USE_IWYU)
   set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(brute PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
@@ -237,4 +237,4 @@ if (USE_IWYU)
   set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
-endif ()
+endif()

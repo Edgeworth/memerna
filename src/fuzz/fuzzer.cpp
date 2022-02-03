@@ -34,8 +34,8 @@ const flt PROB_EP{0.2};
 inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool prob_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 
-Fuzzer::Fuzzer(Primary r, energy::EnergyModelPtr em, FuzzCfg cfg)
-    : r_(std::move(r)), em_(em), cfg_(std::move(cfg)) {}
+Fuzzer::Fuzzer(const Primary& r, energy::EnergyModelPtr em, FuzzCfg cfg)
+    : r_(r), em_(em), cfg_(std::move(cfg)) {}
 
 Error Fuzzer::Run() {
   if (cfg_.mfe) Register("mfe:", CheckMfe());

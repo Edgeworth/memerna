@@ -50,8 +50,8 @@ class HairpinLoopStructure : public Structure {
  public:
   HairpinLoopStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddBranch(std::unique_ptr<Structure>) { error("invalid operation"); }
-  std::string ShortDesc() const;
+  void AddBranch(std::unique_ptr<Structure>) override { error("invalid operation"); }
+  std::string ShortDesc() const override;
 
  private:
   int st_, en_;
@@ -62,8 +62,8 @@ class TwoLoopStructure : public Structure {
   TwoLoopStructure(int ost, int oen, int ist, int ien)
       : ost_(ost), oen_(oen), ist_(ist), ien_(ien) {}
 
-  void AddBranch(std::unique_ptr<Structure> b);
-  std::string ShortDesc() const;
+  void AddBranch(std::unique_ptr<Structure> b) override;
+  std::string ShortDesc() const override;
 
  private:
   int ost_, oen_, ist_, ien_;
@@ -74,8 +74,8 @@ class MultiLoopStructure : public Structure {
   MultiLoopStructure(int st, int en) : st_(st), en_(en) {}
 
   void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctd_.emplace_back(ctd, ctd_energy); }
-  std::string BranchDesc(int idx) const;
-  std::string ShortDesc() const;
+  std::string BranchDesc(int idx) const override;
+  std::string ShortDesc() const override;
 
  private:
   int st_, en_;
@@ -86,8 +86,8 @@ class StackingStructure : public Structure {
  public:
   StackingStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddBranch(std::unique_ptr<Structure> b);
-  std::string ShortDesc() const;
+  void AddBranch(std::unique_ptr<Structure> b) override;
+  std::string ShortDesc() const override;
 
  private:
   int st_, en_;

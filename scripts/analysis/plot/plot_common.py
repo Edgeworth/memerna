@@ -118,7 +118,11 @@ def do_quantity_plot(frames, xid, yids):
             )
             low, high = frame[yid].min(), frame[yid].max()
             ax.fill_between(
-                [i for i in sorted(frame.groups)], low, high, alpha=0.2, color=palette.pop(0)
+                [i for i in sorted(frame.groups)],
+                low,
+                high,
+                alpha=0.2,
+                color=palette.pop(0),
             )
 
     set_up_figure(f, names=(colmap[xid], colmap[yids[0]]))

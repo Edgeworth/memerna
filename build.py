@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # Copyright 2016 Eliot Courtney.
-import click
 import os
-import sys
 import shutil
+import sys
 from pathlib import Path
+
+import click
 
 
 def run_command(cmd):

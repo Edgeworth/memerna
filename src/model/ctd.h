@@ -36,7 +36,7 @@ enum Ctd : int8_t {
 class Ctds {
  public:
   Ctds() = default;
-  Ctds(std::initializer_list<Ctd> init) : data_(init) {}
+  explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
   explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
 
   Ctds(Ctds&&) = default;

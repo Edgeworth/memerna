@@ -1,5 +1,7 @@
 # Copyright 2016 Eliot Courtney.
-from scripts.plot.plot_common import savefig_local, do_quantity_plot, do_quantity_log_plot
+from scripts.plot.plot_common import do_quantity_log_plot
+from scripts.plot.plot_common import do_quantity_plot
+from scripts.plot.plot_common import savefig_local
 
 
 def fold_perf_results(ds, do_normal_plots=True, do_log_plots=True):

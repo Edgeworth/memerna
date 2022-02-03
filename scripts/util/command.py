@@ -32,7 +32,12 @@ def try_command(*cmd, record_stdout=False, input=None, limits=None):
                 resource.setrlimit(resource.RLIMIT_CPU, (limits[1], limits[1]))
 
     with subprocess.Popen(
-        cmd, shell=False, stdin=stdin, stdout=stdout, stderr=subprocess.PIPE, preexec_fn=pre_exec
+        cmd,
+        shell=False,
+        stdin=stdin,
+        stdout=stdout,
+        stderr=subprocess.PIPE,
+        preexec_fn=pre_exec,
     ) as proc:
         stdout_data, stderr_data = proc.communicate(input=input)
         ret = proc.wait()
@@ -50,7 +55,7 @@ def run_command(*cmd, record_stdout=False, input=None, limits=None):
     res = try_command(*cmd, record_stdout=record_stdout, input=input, limits=limits)
     if res.ret:
         print(
-            f"Running `{cmd}' failed with ret code {int(res.ret)}.\nStderr:\n{res.stderr.decode('utf-8')}\n"
+            f"Running `{cmd}' failed with ret code {int(res.ret)}.\nStderr:\n{res.stderr.decode('utf-8')}\n",
         )
         sys.exit(1)
     return res

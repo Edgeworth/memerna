@@ -39,7 +39,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
     node = std::move(q_.extract(q_.begin()).value());
     // Finished state.
     if (node.not_yet_expanded.empty()) {
-      PruneInsert(finished_, node);
+      PruneInsert(node, &finished_);
       continue;
     }
 

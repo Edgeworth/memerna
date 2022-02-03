@@ -2,7 +2,8 @@
 # Copyright 2016 Eliot Courtney.
 import re
 
-from scripts.common import write_file, read_file
+from scripts.common import read_file
+from scripts.common import write_file
 
 MAX = 0x0F0F0F0F
 ORDER = "ACGU"
@@ -29,7 +30,9 @@ def parse_dangle_file(data):
             values = [parse_number(i.strip()) for i in lines[i + 4].split()]
             for m in range(4):
                 for c in range(4):
-                    outputs[output_idx] += f"{ORDER[idx % 4]}{ORDER[c]}{ORDER[m]} {int(values[m * 4 + c])}\n"
+                    outputs[
+                        output_idx
+                    ] += f"{ORDER[idx % 4]}{ORDER[c]}{ORDER[m]} {int(values[m * 4 + c])}\n"
             idx += 1
     return outputs
 
@@ -155,13 +158,16 @@ def main():
     write_file("data/bulge_initiation.data", bulge)
     write_file("data/hairpin_initiation.data", hairpin)
     write_file(
-        "data/internal_1x1.data", parse_1x1_internal_loop(read_file("extern/orig_data/int11.txt"))
+        "data/internal_1x1.data",
+        parse_1x1_internal_loop(read_file("extern/orig_data/int11.txt")),
     )
     write_file(
-        "data/internal_1x2.data", parse_1x2_internal_loop(read_file("extern/orig_data/int21.txt"))
+        "data/internal_1x2.data",
+        parse_1x2_internal_loop(read_file("extern/orig_data/int21.txt")),
     )
     write_file(
-        "data/internal_2x2.data", parse_2x2_internal_loop(read_file("extern/orig_data/int22.txt"))
+        "data/internal_2x2.data",
+        parse_2x2_internal_loop(read_file("extern/orig_data/int22.txt")),
     )
 
     dangle3, dangle5 = parse_dangle_file(read_file("extern/orig_data/dangle.txt"))

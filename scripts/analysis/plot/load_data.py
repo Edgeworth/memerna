@@ -1,7 +1,8 @@
 # Copyright 2016 Eliot Courtney.
 import pandas as pd
 
-from scripts.common import fix_path, read_file
+from scripts.common import fix_path
+from scripts.common import read_file
 
 colmap = {
     "name": "Name",

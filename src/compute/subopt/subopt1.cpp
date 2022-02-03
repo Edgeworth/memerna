@@ -139,7 +139,7 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
   int st = to_expand.st, en = to_expand.en, a = to_expand.a;
   std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
-  Energy energy = 0;
+  Energy energy;
   // Exterior loop
   if (en == -1) {
     if (a == EXT) {

@@ -26,13 +26,13 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   return dt;
 }
 
-Secondary StructureToSecondary(structure& struc, int struc_num = 1) {
+Secondary StructureToSecondary(const structure& struc, int struc_num = 1) {
   Secondary s(struc.GetSequenceLength());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) s[i] = struc.GetPair(i + 1, struc_num) - 1;
   return s;
 }
 
-std::vector<Secondary> StructureToSecondarys(structure& struc) {
+std::vector<Secondary> StructureToSecondarys(const structure& struc) {
   std::vector<Secondary> s;
   for (int i = 0; i < struc.GetNumberofStructures(); ++i)
     s.push_back(StructureToSecondary(struc, i + 1));
@@ -129,7 +129,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_st
 
 int RNAstructure::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
   auto res = SuboptimalIntoVector(r, delta);
-  for (const auto& r : res) fn(r);
+  for (const auto& subopt : res) fn(subopt);
   return static_cast<int>(res.size());
 }
 
@@ -165,7 +165,7 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
     }
   }
   // TODO: Convert tables?
-  return {.dp{}, .ext{}, .part = std::move(part), .prob = std::move(prob)};
+  return {.dp{}, .ext{}, .part{std::move(part)}, .prob{std::move(prob)}};
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::StochasticSampleIntoVector(

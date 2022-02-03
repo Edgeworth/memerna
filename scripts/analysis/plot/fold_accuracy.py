@@ -4,13 +4,11 @@ import scipy
 import seaborn as sns
 
 from scripts.plot.load_data import colmap
-from scripts.plot.plot_common import (
-    set_up_figure,
-    latex_table,
-    savefig_local,
-    get_subplot_grid,
-    do_table,
-)
+from scripts.plot.plot_common import do_table
+from scripts.plot.plot_common import get_subplot_grid
+from scripts.plot.plot_common import latex_table
+from scripts.plot.plot_common import savefig_local
+from scripts.plot.plot_common import set_up_figure
 
 TEXT_LOC = (0.2, 0.9)
 
@@ -20,7 +18,11 @@ def do_accuracy_plot(frames, xid):
     for i, frame_id in enumerate(sorted(frames.keys())):
         sns.distplot(frames[frame_id][xid], ax=axes[i], label=frame_id)
         axes[i].annotate(
-            frame_id, xy=TEXT_LOC, xytext=TEXT_LOC, size=10, textcoords="axes fraction"
+            frame_id,
+            xy=TEXT_LOC,
+            xytext=TEXT_LOC,
+            size=10,
+            textcoords="axes fraction",
         )
 
     set_up_figure(f, names=(colmap[xid], None), legend=False)
@@ -34,7 +36,11 @@ def do_comparison_plot(frames, aid, bid):
         frame = frames[frame_id]
         sns.kdeplot(frame[aid], frame[bid], shade=True, ax=axes[i], label=frame_id)
         axes[i].annotate(
-            frame_id, xy=TEXT_LOC, xytext=TEXT_LOC, size=10, textcoords="axes fraction"
+            frame_id,
+            xy=TEXT_LOC,
+            xytext=TEXT_LOC,
+            size=10,
+            textcoords="axes fraction",
         )
     set_up_figure(f, names=(colmap[aid], colmap[bid]))
     return f
@@ -59,7 +65,7 @@ def do_ttest(frames, xid):
     table = [["Package"] + frame_keys]
     for i, a_fid in enumerate(frame_keys):
         print(
-            f"Package {a_fid} on {xid}: kurtosis: {frames[a_fid][xid].kurtosis():f}, skew: {frames[a_fid][xid].skew():f}"
+            f"Package {a_fid} on {xid}: kurtosis: {frames[a_fid][xid].kurtosis():f}, skew: {frames[a_fid][xid].skew():f}",
         )
         table.append([a_fid])
         for j, b_fid in enumerate(frame_keys):

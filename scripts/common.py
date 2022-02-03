@@ -5,7 +5,6 @@ import subprocess
 import sys
 
 
-
 def human_size(b, binary=True):
     def fmt(f):
         return (f"{f:.2f}").rstrip("0").rstrip(".")

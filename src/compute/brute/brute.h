@@ -65,7 +65,7 @@ class BruteForce {
 
   Secondary s_;
   Ctds ctd_;
-  BruteResult res_;
+  BruteResult res_{};
   std::vector<std::pair<int, int>> pairs_;  // Holds all possible base pairs to try.
   std::vector<int> branch_count_;  // Number of sibling branches.
 
