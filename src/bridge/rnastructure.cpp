@@ -70,7 +70,7 @@ struct PartitionState {
         wmb(new DynProgArray<PFPRECISION>(N)), wl(new DynProgArray<PFPRECISION>(N)),
         wlc(new DynProgArray<PFPRECISION>(N)), wmbl(new DynProgArray<PFPRECISION>(N)),
         wcoax(new DynProgArray<PFPRECISION>(N)), w5(new PFPRECISION[N + 1]),
-        w3(new PFPRECISION[N] + 1), pfdata(new pfdatatable(data, scaling, T)),
+        w3(new PFPRECISION[N + 2]), pfdata(new pfdatatable(data, scaling, T)),
         fce(new forceclass(N)), lfce(new bool[2 * N + 1]), mod(new bool[2 * N + 1]) {}
 };
 
