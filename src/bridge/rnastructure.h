@@ -51,8 +51,6 @@ class RNAstructure : public RnaPackage {
   std::unique_ptr<datatable> data_;
   bool use_lyngso_;
 
-  PartitionFunctionState CallPartitionFunction(structure* struc) const;
-
   std::unique_ptr<structure> LoadStructure(const Primary& r) const;
   std::unique_ptr<structure> LoadStructure(const Primary& r, const Secondary& s) const;
 };
