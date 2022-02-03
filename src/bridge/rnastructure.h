@@ -51,24 +51,6 @@ class RNAstructure : public RnaPackage {
   std::unique_ptr<datatable> data_;
   bool use_lyngso_;
 
-  struct PartitionFunctionState {
-    const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
-    std::unique_ptr<DynProgArray<PFPRECISION>> w;
-    std::unique_ptr<DynProgArray<PFPRECISION>> v;
-    std::unique_ptr<DynProgArray<PFPRECISION>> wmb;
-    std::unique_ptr<DynProgArray<PFPRECISION>> wl;
-    std::unique_ptr<DynProgArray<PFPRECISION>> wlc;
-    std::unique_ptr<DynProgArray<PFPRECISION>> wmbl;
-    std::unique_ptr<DynProgArray<PFPRECISION>> wcoax;
-    std::unique_ptr<PFPRECISION[]> w5;
-    std::unique_ptr<PFPRECISION[]> w3;
-    std::unique_ptr<pfdatatable> pfdata;
-    std::unique_ptr<forceclass> fce;
-    std::unique_ptr<bool[]> lfce;
-    std::unique_ptr<bool[]> mod;
-    PartitionFunctionState(int N, datatable* data);
-  };
-
   PartitionFunctionState CallPartitionFunction(structure* struc) const;
 
   std::unique_ptr<structure> LoadStructure(const Primary& r) const;
