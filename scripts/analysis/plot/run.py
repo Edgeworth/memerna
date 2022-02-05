@@ -27,8 +27,6 @@ def generate_filename_map(dataset_name, enable):
         "RNAstructure-mod": os.path.join(PREFIX, f"RNAstructureHarness_{dataset_name}.results"),
         "ViennaRNA-d3": os.path.join(PREFIX, f"ViennaRNA-d3_{dataset_name}.results"),
         "ViennaRNA-d3-sorted": os.path.join(PREFIX, f"ViennaRNA-d3-sorted_{dataset_name}.results"),
-        "SJSViennaMPI": os.path.join(PREFIX, f"SJSViennaMPI_{dataset_name}.results"),
-        "SJSViennaMPI-sorted": os.path.join(PREFIX, f"SJSViennaMPI-sorted_{dataset_name}.results"),
         "UNAFold": os.path.join(PREFIX, f"UNAFold_{dataset_name}.results"),
     }
     return {k: d[k] for k in enable}
@@ -80,14 +78,10 @@ def subopt_graphs():
         "ViennaRNA-d3",
         "ViennaRNA-d2-sorted",
         "ViennaRNA-d3-sorted",
-        "SJSViennaMPI",
-        "SJSViennaMPI-sorted",
         "memerna",
         "memerna-sorted",
     ]
-    # ALL_SUBOPTS = ['RNAstructure',  'memerna', 'SJSViennaMPI', 'SJSViennaMPI-sorted']
     # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'ViennaRNA-d3', 'ViennaRNA-d3-sorted',]
-    # ALL_SUBOPTS = ['ViennaRNA-d2', 'RNAstructure', 'ViennaRNA-d3', 'SJSViennaMPI', 'memerna']
     # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'memerna-sorted', 'memerna']
     # ALL_SUBOPTS = ['memerna', 'ViennaRNA-d2']
     deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]

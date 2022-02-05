@@ -11,7 +11,7 @@ class UnaFold(RnaPackage):
         self.tempdir = tempfile.mkdtemp()
         os.putenv("UNAFOLDDAT", os.path.join(self.loc, "data"))
 
-    def efn(self, rna):
+    def efn(self, rna: Rna, cfg: EnergyCfg):
         prev_dir = os.getcwd()
         os.chdir(self.tempdir)
         with open(os.path.join(self.tempdir, "rna.seq"), "w") as f:
@@ -26,7 +26,7 @@ class UnaFold(RnaPackage):
         os.chdir(prev_dir)
         return energy, res
 
-    def fold(self, rna):
+    def fold(self, rna: Rna, cfg: EnergyCfg):
         prev_dir = os.getcwd()
         os.chdir(self.tempdir)
         with open(os.path.join(self.tempdir, "rna.seq"), "w") as f:
@@ -37,7 +37,10 @@ class UnaFold(RnaPackage):
         os.chdir(prev_dir)
         return predicted, res
 
-    def suboptimal(self, rna, delta, limits, num_only=False):
+    def partition(self, rna: Rna, cfg: EnergyCfg):
+        raise NotImplementedError
+
+    def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
         raise NotImplementedError
 
     def close(self):

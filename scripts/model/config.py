@@ -7,7 +7,7 @@ from typing import Optional
 
 
 class CtdCfg(str, Enum):
-    NONE = "none"  #  Do not use CTDs in folding, subopt, partition, etc.
+    NONE = "none"  #  Do not use CTDs in efn, folding, subopt, partition, etc.
     NO_COAX = "no-coax"  #  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.
     ALL = "all"  #  Use CTDs in folding, subopt, partition, etc.
 

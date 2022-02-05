@@ -3,12 +3,38 @@ from pathlib import Path
 import cloup
 
 from scripts.bridge.memerna import MemeRna
+from scripts.bridge.sparsemfefold import SparseMfeFold
+from scripts.bridge.unafold import UnaFold
 
 
 def validate_memerna(ctx, param, value):
     if value is None:
         return None
     return MemeRna(value)
+
+
+def validate_rnastructure(ctx, param, value):
+    if value is None:
+        return None
+    return RNAstructure(value)
+
+
+def validate_viennarna(ctx, param, value):
+    if value is None:
+        return None
+    return ViennaRna(value)
+
+
+def validate_sparsemfefold(ctx, param, value):
+    if value is None:
+        return None
+    return SparseMfeFold(value)
+
+
+def validate_unafold(ctx, param, value):
+    if value is None:
+        return None
+    return UnaFold(value)
 
 
 bridge_options = cloup.option_group(
@@ -26,6 +52,7 @@ bridge_options = cloup.option_group(
         "rnastructure",
         envvar="RNASTRUCTURE",
         show_envvar=True,
+        callback=validate_rnastructure,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
     ),
     cloup.option(
@@ -33,20 +60,7 @@ bridge_options = cloup.option_group(
         "viennarna",
         envvar="VIENNARNA",
         show_envvar=True,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
-    ),
-    cloup.option(
-        "--sjsviennarna-path",
-        "sjsviennarna",
-        envvar="SJSVIENNARNA",
-        show_envvar=True,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
-    ),
-    cloup.option(
-        "--sjsviennarnampi-path",
-        "sjsviennarnampi",
-        envvar="SJSVIENNARNAMPI",
-        show_envvar=True,
+        callback=validate_viennarna,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
     ),
     cloup.option(
@@ -54,6 +68,7 @@ bridge_options = cloup.option_group(
         "sparsemfefold",
         envvar="SPARSEMFEFOLD",
         show_envvar=True,
+        callback=validate_sparsemfefold,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
     ),
     cloup.option(
@@ -61,6 +76,7 @@ bridge_options = cloup.option_group(
         "unafold",
         envvar="UNAFOLD",
         show_envvar=True,
+        callback=validate_unafold,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
     ),
 )

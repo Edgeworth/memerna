@@ -28,7 +28,7 @@ void RegisterOpts(ArgParse* args);
 // TODO: Implement and use these options.
 struct EnergyCfg {
   enum class Ctd {
-    NONE,  //  Do not use CTDs in folding, subopt, partition, etc.
+    NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
     NO_COAX,  //  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.
     ALL,  //  Use CTDs in folding, subopt, partition, etc.
   };

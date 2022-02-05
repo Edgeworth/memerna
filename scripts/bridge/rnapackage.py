@@ -5,10 +5,13 @@ from scripts.model.rna import Rna
 
 
 class RnaPackage:
-    def efn(self, rna: Rna):
+    def efn(self, rna: Rna, cfg: EnergyCfg):
         pass
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
+        pass
+
+    def partition(self, rna: Rna, cfg: EnergyCfg):
         pass
 
     def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
