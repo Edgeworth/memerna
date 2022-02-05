@@ -11,6 +11,12 @@ from scripts.util.format import human_size
 
 
 @dataclass
+class CmdLimits:
+    time_sec: Optional[int] = None  # limit to time in seconds
+    mem_bytes: Optional[int] = None  # limit for rss in bytes
+
+
+@dataclass
 class CmdResult:
     maxrss_bytes: int  # Maximum resident set size in bytes of the process.
     user_sec: float  # User time in seconds.
@@ -28,11 +34,9 @@ def try_cmd(
     *cmd,
     input: Optional[str | bytes] = None,
     return_stdout: bool = True,
-    return_stderr: bool = True,
     stdout_path: Optional[Path] = None,
     cwd: Optional[Path] = None,
-    limit_time_sec: Optional[int] = None,
-    limit_mem_bytes: Optional[int] = None,
+    limits: CmdLimits = CmdLimits(),
 ):
     if isinstance(input, str):
         input = input.encode("utf-8")
@@ -41,10 +45,10 @@ def try_cmd(
     cmd = ["/usr/bin/time", "-f", "%e %U %S %M"] + list(cmd)
 
     def pre_exec():
-        if limit_mem_bytes:
-            resource.setrlimit(resource.RLIMIT_AS, (limit_mem_bytes, limit_mem_bytes))
-        if limit_time_sec:
-            resource.setrlimit(resource.RLIMIT_CPU, (limit_time_sec, limit_time_sec))
+        if limits.mem_bytes:
+            resource.setrlimit(resource.R.AS, (limits.mem_bytes, limits.mem_bytes))
+        if limits.time_sec:
+            resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
 
     if stdout_path:
         stdout = open(stdout_path, "w")
@@ -92,22 +96,18 @@ def try_cmd(
 def run_cmd(
     *cmd,
     input: Optional[str | bytes] = None,
-    return_stdout: bool = False,
-    return_stderr: bool = True,
+    return_stdout: bool = True,
     stdout_path: Optional[Path] = None,
     cwd: Optional[Path] = None,
-    limit_time_sec: Optional[int] = None,
-    limit_mem_bytes: Optional[int] = None,
+    limits: CmdLimits = CmdLimits(),
 ):
     res = try_cmd(
         *cmd,
         input=input,
         return_stdout=return_stdout,
-        return_stderr=return_stderr,
         stdout_path=stdout_path,
         cwd=cwd,
-        limit_time_sec=limit_time_sec,
-        limit_mem_bytes=limit_mem_bytes,
+        limits=limits,
     )
     if res.ret_code != 0:
         click.echo(f"Running `{cmd}' failed with ret code {res.ret_code}.")

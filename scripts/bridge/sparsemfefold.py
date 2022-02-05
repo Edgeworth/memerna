@@ -1,20 +1,22 @@
 # Copyright 2022 Eliot Courtney.
 
 
+from dataclasses import dataclass
 from pathlib import Path
 
+from scripts.bridge.rnapackage import RnaPackage
+from scripts.util.command import CmdLimits
 
+
+@dataclass
 class SparseMfeFold(RnaPackage):
-    def __init__(self, loc: Path):
-        self.loc = loc
-
     def efn(self, rna: Rna, cfg: EnergyCfg):
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
         res = run_command(
-            os.path.join(self.loc, "src", "SparseMFEFold"),
-            input=rna.seq,
+            os.path.join(self.path, "src", "SparseMFEFold"),
+            input=rna.r,
             record_stdout=True,
         )
         seq, db = res.stdout.strip().split("\n")

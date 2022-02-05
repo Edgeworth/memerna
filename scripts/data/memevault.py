@@ -16,7 +16,7 @@ class MemeVault:
     def add(self, rna):
         self.db.execute(
             f"INSERT INTO {self.dataset} VALUES (?, ?, ?)",
-            (rna.name, rna.seq, rna.db()),
+            (rna.name, rna.r, rna.db()),
         )
         self.db.commit()
 

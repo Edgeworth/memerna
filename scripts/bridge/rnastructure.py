@@ -1,13 +1,16 @@
 # Copyright 2022 Eliot Courtney.
-
-
+from dataclasses import dataclass
 from pathlib import Path
+from scripts.bridge.rnapackage import RnaPackage
+
+from scripts.util.command import CmdLimits
 
 
+@dataclass
 class RNAstructure(RnaPackage):
-    def __init__(self, loc: Path):
-        self.loc = loc
-        os.putenv("DATAPATH", os.path.join(self.loc, "data_tables"))
+    def __post_init__(self):
+        # TODO: move this to run_cmd
+        os.putenv("DATAPATH", os.path.join(self.path, "data_tables"))
 
     def efn(self, rna: Rna, cfg: EnergyCfg):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
@@ -17,7 +20,7 @@ class RNAstructure(RnaPackage):
             # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
             # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
             # the fitted -9.
-            res = run_command(os.path.join(self.loc, "exe", "efn2"), "-s", f.name, out.name)
+            res = run_command(os.path.join(self.path, "exe", "efn2"), "-s", f.name, out.name)
             output = out.read()
             match = re.search(r"[eE]nergy = (.+)", output.strip())
             energy = float(match.group(1))
@@ -27,7 +30,7 @@ class RNAstructure(RnaPackage):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
             f.write(rna.to_seq_file())
             f.flush()
-            res = run_command(os.path.join(self.loc, "exe", "Fold"), "-mfe", f.name, out.name)
+            res = run_command(os.path.join(self.path, "exe", "Fold"), "-mfe", f.name, out.name)
             output = out.read()
             predicted = Rna.from_any_file(output)
         return predicted, res
@@ -40,7 +43,7 @@ class RNAstructure(RnaPackage):
             f.write(rna.to_seq_file())
             f.flush()
             res = try_command(
-                os.path.join(self.loc, "exe", "AllSub"),
+                os.path.join(self.path, "exe", "AllSub"),
                 "-a",
                 f"{delta / 10.0:.2f}",
                 f.name,
@@ -50,7 +53,7 @@ class RNAstructure(RnaPackage):
             if num_only:
                 res2 = run_command("wc", "-l", out.name, record_stdout=True)
                 num_lines = int(res2.stdout.strip().split(" ")[0])
-                retval = num_lines // (len(rna.seq) + 1)
+                retval = num_lines // (len(rna.r) + 1)
             else:
                 output = out.read()
                 # TODO does not extract energy yet

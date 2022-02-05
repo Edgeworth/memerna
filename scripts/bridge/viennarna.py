@@ -1,18 +1,20 @@
 # Copyright 2022 Eliot Courtney.
 
 
+from dataclasses import dataclass
 from pathlib import Path
+from scripts.bridge.rnapackage import RnaPackage
+
+from scripts.util.command import CmdLimits
 
 
+@dataclass
 class ViennaRna(RnaPackage):
-    def __init__(self, path: Path):
-        self.path = path
-
     def efn(self, rna: Rna, cfg: EnergyCfg):
         res = run_command(
             os.path.join(self.path, "src", "bin", "RNAeval"),
             *self.extra_args,
-            input=f"{rna.seq}\n{rna.db()}",
+            input=f"{rna.r}\n{rna.db()}",
             record_stdout=True,
         )
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
@@ -21,7 +23,7 @@ class ViennaRna(RnaPackage):
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
         with tempfile.NamedTemporaryFile("w") as f:
-            f.write(rna.seq)
+            f.write(rna.r)
             f.flush()
             res = run_command(
                 os.path.join(self.path, "src", "bin", "RNAfold"),
@@ -46,7 +48,7 @@ class ViennaRna(RnaPackage):
                 *self.extra_args,
                 "-e",
                 f"{delta / 10.0:.1f}",
-                input=rna.seq,
+                input=rna.r,
                 record_stdout=out.name,
                 limits=limits,
             )
@@ -59,7 +61,7 @@ class ViennaRna(RnaPackage):
                 output = out.read()
                 for i in output.splitlines()[1:]:
                     db, energy = re.split(r"\s+", i.strip())
-                    retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.seq, db)))
+                    retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.r, db)))
         return retval, res
 
     def close(self):
