@@ -81,8 +81,19 @@ class Rna:
         return Rna(name=name, r=seq, s=pairs)
 
     @staticmethod
-    def from_name_seq_db(name, seq, db):
-        return Rna(name=name, r=seq_to_primary(seq), s=db_to_secondary(db))
+    def parse(
+        *,
+        name: Optional[str] = None,
+        seq: Optional[str] = None,
+        db: Optional[str] = None,
+        energy: Optional[int] = None,
+    ):
+        return Rna(
+            name=name,
+            r=seq_to_primary(seq) if seq else None,
+            s=db_to_secondary(db) if db else None,
+            energy=energy,
+        )
 
     @staticmethod
     def from_db_file(data):

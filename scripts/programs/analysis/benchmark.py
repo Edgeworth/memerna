@@ -43,7 +43,7 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
             for i, lr in enumerate(len_res):
                 num_subopt, res = lr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n",
+                    f"{rna.name} {int(i)} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n",
                 )
 
 
@@ -70,6 +70,10 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
             for i, pr in enumerate(prs):
                 predicted, res = pr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.seq)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n",
+                    f"{rna.name} {int(i)} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n",
                 )
             idx += 1
+
+
+def benchmark():
+    init_package_limits(**fn_args())
