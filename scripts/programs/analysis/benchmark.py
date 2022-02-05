@@ -1,7 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 BENCHMARK_NUM_TRIES = 5
 # 12 GiB, 4 minutes
-BENCHMARK_LIMITS = (12 * 1024 * 1024, 5 * 60)
+BENCHMARK_LIMITS = (12 * 1024 * 1024 * 1024, 5 * 60)
 
 
 def run_subopt_benchmark(program, dataset, delta, num_file):

@@ -9,7 +9,7 @@ class RNAstructure(RnaPackage):
         self.loc = loc
         os.putenv("DATAPATH", os.path.join(self.loc, "data_tables"))
 
-    def efn(self, rna):
+    def efn(self, rna: Rna, cfg: EnergyCfg):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
             f.write(rna.to_ct_file())
             f.flush()
@@ -23,8 +23,7 @@ class RNAstructure(RnaPackage):
             energy = float(match.group(1))
         return energy, res
 
-
-    def fold(self, rna):
+    def fold(self, rna: Rna, cfg: EnergyCfg):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
             f.write(rna.to_seq_file())
             f.flush()
@@ -33,7 +32,10 @@ class RNAstructure(RnaPackage):
             predicted = Rna.from_any_file(output)
         return predicted, res
 
-    def suboptimal(self, rna, delta, limits, num_only=False):
+    def partition(self, rna: Rna, cfg: EnergyCfg):
+        raise NotImplementedError
+
+    def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
             f.write(rna.to_seq_file())
             f.flush()

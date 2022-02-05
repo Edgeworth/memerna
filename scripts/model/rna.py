@@ -1,4 +1,5 @@
 # Copyright 2016 Eliot Courtney.
+from dataclasses import dataclass
 import re
 from collections import deque
 from typing import Optional
@@ -6,20 +7,28 @@ from typing import Optional
 from scripts.model.parse import db_to_secondary, secondary_to_db, seq_to_primary
 
 
+@dataclass
 class Rna:
-    name: Optional[str]
-    r: Optional[str]
-    s: Optional[list[int]]
+    name: Optional[str] = None
+    r: Optional[str] = None
+    s: Optional[list[int]] = None
+    energy: Optional[int] = None
 
-    def __init__(self, name: str = None, r: str = None, s: list[int] = None):
-        self.name = name
-        self.r = r
-        self.s = s
-        if r and s:
-            assert len(r) == len(s)
+    def __post_init__(self):
+        if self.r and self.s:
+            assert len(self.r) == len(self.s)
 
     def __str__(self):
-        return f"{self.name}:\n  {self.r}\n  {self.db()}"
+        res = ""
+        if self.name:
+            res += f"{self.name}\n"
+        if self.r:
+            res += f"{self.r}\n"
+        if self.s:
+            res += f"{self.db()}\n"
+        if self.energy:
+            res += f"{self.energy}\n"
+        return res
 
     # Used by command line parsing, for example.
     def __len__(self):
@@ -35,15 +44,11 @@ class Rna:
         return secondary_to_db(self.s)
 
     def to_ct_file(self):
-        name = self.name
-        if not name:
-            name = "unnamed"
+        name = self.name if self.name else "unnamed"
         ct = [f"{len(self.r)}\t{name}"]
 
         for i, v in enumerate(self.r):
-            ct.append(
-                f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.s[i] + 1)}\t{int(i + 1)}",
-            )
+            ct.append(f"{i + 1}\t{v}\t{i}\t{i + 2}\t{self.s[i] + 1}\t{i + 1}")
 
         return "\n".join(ct)
 
@@ -66,8 +71,7 @@ class Rna:
             base = v[1]
             base_idx, prev_idx, next_idx, pair_idx = (int(v[0]), int(v[2]), int(v[3]), int(v[4]))
             assert base_idx == i + 1
-            # Only consider fully determined sequences for now.
-            assert base in "GUAC"
+            assert base in "GUAC"  # Only consider fully determined sequences for now.
             assert prev_idx == base_idx - 1
             if i < len(data) - 1:
                 assert next_idx == base_idx + 1
