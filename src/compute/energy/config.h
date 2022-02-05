@@ -19,7 +19,7 @@ inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
 inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
                                 .LongName("ctd")
-                                .Choice({"none", "no_coax", "all"})
+                                .Choice({"none", "no-coax", "all"})
                                 .Default("all")
                                 .Help("whether to use CTDs");
 

@@ -3,6 +3,5 @@
 .vscode/
 __pycache__
 *.pyc
-default_paths.py
 memevault.db
 compile_commands.json

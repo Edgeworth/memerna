@@ -71,7 +71,7 @@ class Ctds {
   std::vector<Ctd> data_;
 };
 
-std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
+std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
     const std::string& prim_str, const std::string& ctd_str);
 
 }  // namespace mrna

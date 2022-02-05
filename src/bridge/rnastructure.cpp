@@ -182,7 +182,7 @@ std::vector<subopt::SuboptResult> RNAstructure::StochasticSampleIntoVector(
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {
   auto struc = std::make_unique<structure>();
   struc->SetThermodynamicDataTable(data_.get());
-  struc->SetSequence(r.ToString());
+  struc->SetSequence(r.ToSeq());
   verify(struc->GetSequenceLength() == static_cast<int>(r.size()), "BUG: structure not loaded");
   return struc;
 }

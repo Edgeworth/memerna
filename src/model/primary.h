@@ -35,10 +35,10 @@ class Primary {
 
   std::size_t size() const { return data_.size(); }
 
-  std::string ToString() const;
+  std::string ToSeq() const;
 
   static Primary Random(int length);
-  static Primary FromString(const std::string& s);
+  static Primary FromSeq(const std::string& s);
 
  private:
   std::vector<Base> data_;

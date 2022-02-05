@@ -226,7 +226,7 @@ EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
   std::uniform_int_distribution<int> num_hairpin_dist(0, RAND_MAX_NUM_HAIRPIN);
   int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
-    auto hairpin = Primary::Random(hairpin_size_dist(eng)).ToString();
+    auto hairpin = Primary::Random(hairpin_size_dist(eng)).ToSeq();
     em->hairpin[hairpin] = energy_dist(eng);
   }
 

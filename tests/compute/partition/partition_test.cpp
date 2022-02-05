@@ -12,7 +12,7 @@ namespace mrna::part {
 class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
  public:
   PartResult Partition(const std::string& s) {
-    return ctx::Ctx(t04, ctx::CtxCfg{.part_alg = GetParam()}).Partition(Primary::FromString(s));
+    return ctx::Ctx(t04, ctx::CtxCfg{.part_alg = GetParam()}).Partition(Primary::FromSeq(s));
   }
 };
 

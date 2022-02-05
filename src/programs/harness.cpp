@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
   mrna::bridge::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_VERBOSE);
   args.RegisterOpt(mrna::OPT_EFN);
-  args.RegisterOpt(mrna::OPT_MFE);
+  args.RegisterOpt(mrna::OPT_FOLD);
   args.RegisterOpt(mrna::OPT_SUBOPT);
   // Done manually since we only support a subset of options.
   args.RegisterOpt(mrna::subopt::OPT_SUBOPT_DELTA);
@@ -35,12 +35,12 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
 
   bool efn = args.GetOr(mrna::OPT_EFN);
-  bool mfe = args.GetOr(mrna::OPT_MFE);
+  bool fold = args.GetOr(mrna::OPT_FOLD);
   bool subopt = args.GetOr(mrna::OPT_SUBOPT);
   bool part = args.GetOr(mrna::OPT_PART);
 
-  verify(
-      efn + mfe + subopt + part == 1, "require exactly one program flag\n%s", args.Usage().c_str());
+  verify(efn + fold + subopt + part == 1, "require exactly one program flag\n%s",
+      args.Usage().c_str());
   verify(args.Has(mrna::energy::OPT_SEED) + args.Has(mrna::energy::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         db = q.front();
         q.pop_front();
       }
-      auto [r, s] = mrna::ParsePrimaryDotBracket(seq, db);
+      auto [r, s] = mrna::ParseSeqDb(seq, db);
       std::string desc;
       const auto res = package->Efn(r, s, args.GetOr(mrna::OPT_VERBOSE) ? &desc : nullptr);
       printf("%d\n%s", res.energy, desc.c_str());
@@ -78,19 +78,19 @@ int main(int argc, char* argv[]) {
         seq = q.front();
         q.pop_front();
       }
-      auto r = mrna::Primary::FromString(seq);
+      auto r = mrna::Primary::FromSeq(seq);
 
       if (subopt) {
         int delta = args.Get<int>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              printf("%d %s\n", c.energy, c.tb.s.ToDotBracket().c_str());
+              printf("%d %s\n", c.energy, c.tb.s.ToDb().c_str());
             },
             r, delta);
         printf("%d suboptimal structures:\n", strucs);
-      } else if (mfe) {
+      } else if (fold) {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.mfe.energy, res.tb.s.ToDotBracket().c_str());
+        printf("%d\n%s\n", res.mfe.energy, res.tb.s.ToDb().c_str());
       } else if (part) {
         auto res = package->Partition(r);
         std::cout << "q: " << res.part.q << '\n';

@@ -29,33 +29,33 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
                                                             return {{}, {}, {}, {}, {}};
                                                           },
     [](const EnergyModel&) -> CtdTest {
-      return {Primary::FromString("A"), Secondary::FromDotBracket("."), Ctds{CTD_NA}, {}, {}};
+      return {Primary::FromSeq("A"), Secondary::FromDb("."), Ctds{CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
       return {
-          Primary::FromString("AG"), Secondary::FromDotBracket(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
+          Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {Primary::FromString("GUA"), Secondary::FromDotBracket("..."),
+      return {Primary::FromSeq("GUA"), Secondary::FromDb("..."),
           Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {Primary::FromString("GUAC"), Secondary::FromDotBracket("...."),
+      return {Primary::FromSeq("GUAC"), Secondary::FromDb("...."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     // 3' dangle inside the branch.
     [](const EnergyModel& em) -> CtdTest {
-      return {Primary::FromString("GAAAC"), Secondary::FromDotBracket("(...)"),
+      return {Primary::FromSeq("GAAAC"), Secondary::FromDb("(...)"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, {{CTD_3_DANGLE, em.dangle3[G][A][C]}},
           {4}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {Primary::FromString("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDotBracket("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
+      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          Secondary::FromDb("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {Primary::FromString("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDotBracket("(...).((...).(...)).(...)."),
+      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
               CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -64,8 +64,8 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
           {0, 6, 20}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {Primary::FromString("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDotBracket("(...).((...).(...)).(...)."),
+      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
               CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
@@ -74,7 +74,7 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
           {18, 7, 13}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {Primary::FromString("GGAAACGAAACC"), Secondary::FromDotBracket("((...)(...))"),
+      return {Primary::FromSeq("GGAAACGAAACC"), Secondary::FromDb("((...)(...))"),
           Ctds{CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
           {{CTD_UNUSED, 0}, {CTD_FCOAX_WITH_NEXT, em.stack[G][G][C][C]},
@@ -82,8 +82,8 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
           {1, 6, 11}};
     },
     [](const EnergyModel& em) -> CtdTest {
-      return {Primary::FromString("UUAGAAACGCAAAGAGGUCCAAAGA"),
-          Secondary::FromDotBracket("(..(...).(...).....(...))"),
+      return {Primary::FromSeq("UUAGAAACGCAAAGAGGUCCAAAGA"),
+          Secondary::FromDb("(..(...).(...).....(...))"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
               CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
               CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},

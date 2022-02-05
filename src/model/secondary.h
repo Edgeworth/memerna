@@ -44,14 +44,14 @@ class Secondary {
     std::fill(data_.begin(), data_.end(), -1);
   }
 
-  static Secondary FromDotBracket(const std::string& pairs_str);
-  std::string ToDotBracket() const;
+  static Secondary FromDb(const std::string& pairs_str);  // Dotbracket
+  std::string ToDb() const;
 
  private:
   std::vector<int> data_;
 };
 
-std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
+std::tuple<Primary, Secondary> ParseSeqDb(
     const std::string& prim_str, const std::string& pairs_str);
 
 }  // namespace mrna

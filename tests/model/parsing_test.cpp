@@ -16,83 +16,83 @@ class ParsingTest : public testing::Test {
   const Ctds kCtd1{};
   const std::string kCtdString1 = "";
 
-  const Primary kPrimary2 = Primary::FromString("A");
+  const Primary kPrimary2 = Primary::FromSeq("A");
   const Secondary kSecondary2{-1};
   const Ctds kCtd2{CTD_NA};
   const std::string kCtdString2 = ".";
 
-  const Primary kPrimary3 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary3 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary3{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
   const Ctds kCtd3{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE,
       CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString3 = "[[...].[...]3]";
 
-  const Primary kPrimary4 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary4 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary4{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
   const Ctds kCtd4{CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString4 = ".n...]mp...]M.";
 
-  const Primary kPrimary5 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary5 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary5{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
   const Ctds kCtd5{CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA,
       CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString5 = ".[...]3[...]..";
 
-  const Primary kPrimary6 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary6 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary6{6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1};
   const Ctds kCtd6{CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString6 = "n[...]]p...]..";
 
-  const Primary kPrimary7 = Primary::FromString("UACGUUGGUGCUU");
+  const Primary kPrimary7 = Primary::FromSeq("UACGUUGGUGCUU");
   const Secondary kSecondary7{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
   const Ctds kCtd7{CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT};
   const std::string kCtdString7 = "[p...].[...]N";
 
-  const Primary kPrimary8 = Primary::FromString("UACGUUGGUGCUUAA");
+  const Primary kPrimary8 = Primary::FromSeq("UACGUUGGUGCUUAA");
   const Secondary kSecondary8{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
   const Ctds kCtd8{CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT};
   const std::string kCtdString8 = "[Mp...].[...]mN";
 
-  const Primary kPrimary9 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary9 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary9{13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0};
   const Ctds kCtd9{CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT};
   const std::string kCtdString9 = "[mp...]M[...]N";
 
-  const Primary kPrimary10 = Primary::FromString("UACGUUGGUGCUU");
+  const Primary kPrimary10 = Primary::FromSeq("UACGUUGGUGCUU");
   const Secondary kSecondary10{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
   const Ctds kCtd10{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV};
   const std::string kCtdString10 = "[[...].n...]P";
 
-  const Primary kPrimary11 = Primary::FromString("UACGUUGGUGCUUAA");
+  const Primary kPrimary11 = Primary::FromSeq("UACGUUGGUGCUUAA");
   const Secondary kSecondary11{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
   const Ctds kCtd11{CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV};
   const std::string kCtdString11 = "[M[...].n...]mP";
 
-  const Primary kPrimary12 = Primary::FromString("UACGUUGGUGCUUA");
+  const Primary kPrimary12 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary12{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
   const Ctds kCtd12{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_PREV};
   const std::string kCtdString12 = "[[...]mn...]MP";
 
-  const Primary kPrimary13 = Primary::FromString("UACGUUGGUGCU");
+  const Primary kPrimary13 = Primary::FromSeq("UACGUUGGUGCU");
   const Secondary kSecondary13{11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0};
   const Ctds kCtd13{CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString13 = "[n...]p...]]";
 
-  const Primary kPrimary14 = Primary::FromString("AAAAAAA");
+  const Primary kPrimary14 = Primary::FromSeq("AAAAAAA");
   const Secondary kSecondary14{-1, 5, -1, -1, -1, 1, -1};
   const Ctds kCtd14{CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString14 = "m[...]M";
 
-  const Primary kPrimary15 = Primary::FromString("UACGUUGGUGCUAAAA");
+  const Primary kPrimary15 = Primary::FromSeq("UACGUUGGUGCUAAAA");
   const Secondary kSecondary15{15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0};
   const Ctds kCtd15{CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
@@ -119,35 +119,35 @@ TEST_F(ParsingTest, SecondaryCtdToCtdString) {
 
 TEST_F(ParsingTest, ParseCtd) {
   EXPECT_EQ(std::make_tuple(kPrimary1, kSecondary1, kCtd1),
-      ParsePrimaryCtdString(kPrimary1.ToString(), kCtdString1));
+      ParseSeqCtdString(kPrimary1.ToSeq(), kCtdString1));
   EXPECT_EQ(std::make_tuple(kPrimary2, kSecondary2, kCtd2),
-      ParsePrimaryCtdString(kPrimary2.ToString(), kCtdString2));
+      ParseSeqCtdString(kPrimary2.ToSeq(), kCtdString2));
   EXPECT_EQ(std::make_tuple(kPrimary3, kSecondary3, kCtd3),
-      ParsePrimaryCtdString(kPrimary3.ToString(), kCtdString3));
+      ParseSeqCtdString(kPrimary3.ToSeq(), kCtdString3));
   EXPECT_EQ(std::make_tuple(kPrimary4, kSecondary4, kCtd4),
-      ParsePrimaryCtdString(kPrimary4.ToString(), kCtdString4));
+      ParseSeqCtdString(kPrimary4.ToSeq(), kCtdString4));
   EXPECT_EQ(std::make_tuple(kPrimary5, kSecondary5, kCtd5),
-      ParsePrimaryCtdString(kPrimary5.ToString(), kCtdString5));
+      ParseSeqCtdString(kPrimary5.ToSeq(), kCtdString5));
   EXPECT_EQ(std::make_tuple(kPrimary6, kSecondary6, kCtd6),
-      ParsePrimaryCtdString(kPrimary6.ToString(), kCtdString6));
+      ParseSeqCtdString(kPrimary6.ToSeq(), kCtdString6));
   EXPECT_EQ(std::make_tuple(kPrimary7, kSecondary7, kCtd7),
-      ParsePrimaryCtdString(kPrimary7.ToString(), kCtdString7));
+      ParseSeqCtdString(kPrimary7.ToSeq(), kCtdString7));
   EXPECT_EQ(std::make_tuple(kPrimary8, kSecondary8, kCtd8),
-      ParsePrimaryCtdString(kPrimary8.ToString(), kCtdString8));
+      ParseSeqCtdString(kPrimary8.ToSeq(), kCtdString8));
   EXPECT_EQ(std::make_tuple(kPrimary9, kSecondary9, kCtd9),
-      ParsePrimaryCtdString(kPrimary9.ToString(), kCtdString9));
+      ParseSeqCtdString(kPrimary9.ToSeq(), kCtdString9));
   EXPECT_EQ(std::make_tuple(kPrimary10, kSecondary10, kCtd10),
-      ParsePrimaryCtdString(kPrimary10.ToString(), kCtdString10));
+      ParseSeqCtdString(kPrimary10.ToSeq(), kCtdString10));
   EXPECT_EQ(std::make_tuple(kPrimary11, kSecondary11, kCtd11),
-      ParsePrimaryCtdString(kPrimary11.ToString(), kCtdString11));
+      ParseSeqCtdString(kPrimary11.ToSeq(), kCtdString11));
   EXPECT_EQ(std::make_tuple(kPrimary12, kSecondary12, kCtd12),
-      ParsePrimaryCtdString(kPrimary12.ToString(), kCtdString12));
+      ParseSeqCtdString(kPrimary12.ToSeq(), kCtdString12));
   EXPECT_EQ(std::make_tuple(kPrimary13, kSecondary13, kCtd13),
-      ParsePrimaryCtdString(kPrimary13.ToString(), kCtdString13));
+      ParseSeqCtdString(kPrimary13.ToSeq(), kCtdString13));
   EXPECT_EQ(std::make_tuple(kPrimary14, kSecondary14, kCtd14),
-      ParsePrimaryCtdString(kPrimary14.ToString(), kCtdString14));
+      ParseSeqCtdString(kPrimary14.ToSeq(), kCtdString14));
   EXPECT_EQ(std::make_tuple(kPrimary15, kSecondary15, kCtd15),
-      ParsePrimaryCtdString(kPrimary15.ToString(), kCtdString15));
+      ParseSeqCtdString(kPrimary15.ToSeq(), kCtdString15));
 }
 
 TEST_F(ParsingTest, IsCtdString) {

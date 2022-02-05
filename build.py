@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import click
+import cloup
 
 
 def run_command(cmd):
@@ -41,46 +42,47 @@ def get_sanitizers(sanitizer):
         raise f"Unknown sanitizer {sanitizer}"
 
 
-@click.command()
+@cloup.command()
 # Build environment options
-@click.option(
+@cloup.option(
     "--prefix",
     type=Path,
     default=os.path.join(Path.home(), "bin"),
     help="Where to place build directory",
 )
-@click.option(
-    "--mrna",
-    type=click.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
+@cloup.option(
+    "--memerna-path",
+    type=cloup.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
     envvar="MRNA",
+    show_envvar=True,
     required=True,
     help="Path to memerna source directory",
 )
-@click.option(
+@cloup.option(
     "--type",
-    type=click.Choice(["debug", "release", "relwithdebinfo"]),
+    type=cloup.Choice(["debug", "release", "relwithdebinfo"]),
     default="debug",
 )
-@click.option(
+@cloup.option(
     "--compiler",
-    type=click.Choice(["default", "gcc", "clang", "afl-fast", "afl-lto"]),
+    type=cloup.Choice(["default", "gcc", "clang", "afl-fast", "afl-lto"]),
     default="default",
 )
-@click.option(
+@cloup.option(
     "--sanitizer",
-    type=click.Choice(["none", "asan", "tsan", "ubsan"]),
+    type=cloup.Choice(["none", "asan", "tsan", "ubsan"]),
     default="none",
 )
-@click.option("--iwyu/--no-iwyu", default=False, help="Whether to build with include-what-you-use")
-@click.option("--regenerate/--no-regenerate", default=False)
-@click.argument("targets", nargs=-1)
+@cloup.option("--iwyu/--no-iwyu", default=False, help="Whether to build with include-what-you-use")
+@cloup.option("--regenerate/--no-regenerate", default=False)
+@cloup.argument("targets", nargs=-1)
 # Memerna configuration options:
-@click.option("--rnastructure/--no-rnastructure", default=False)
-@click.option("--mpfr/--no-mpfr", default=False)
-@click.option("--float-bits", type=int, default=64)
+@cloup.option("--rnastructure/--no-rnastructure", default=False)
+@cloup.option("--mpfr/--no-mpfr", default=False)
+@cloup.option("--float-bits", type=int, default=64)
 # Misc options:
-@click.option("--test/--no-test", default=False)
-@click.option("--build/--no-build", default=True)
+@cloup.option("--test/--no-test", default=False)
+@cloup.option("--build/--no-build", default=True)
 def build(
     prefix,
     mrna,

@@ -30,21 +30,21 @@ int main(int argc, char* argv[]) {
   }
 
   verify(args.PosSize() == 1, "requires primary sequence");
-  auto r = mrna::Primary::FromString(args.Pos(0));
+  auto r = mrna::Primary::FromSeq(args.Pos(0));
 
   auto res = mrna::brute::BruteForce(r, em, std::move(cfg)).Run();
 
-  if (args.GetOr(mrna::OPT_MFE)) {
+  if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
     printf("%d\n", mfe.energy);
-    puts(mfe.tb.s.ToDotBracket().c_str());
+    puts(mfe.tb.s.ToDb().c_str());
     puts(mfe.tb.ctd.ToString(mfe.tb.s).c_str());
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
       printf("%d\n", s.energy);
-      puts(s.tb.s.ToDotBracket().c_str());
+      puts(s.tb.s.ToDb().c_str());
       puts(s.tb.ctd.ToString(s.tb.s).c_str());
     }
   }

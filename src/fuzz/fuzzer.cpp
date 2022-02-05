@@ -44,7 +44,7 @@ Error Fuzzer::Run() {
 
   auto ret = std::move(errors_);
   errors_.clear();
-  Register(sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToString().c_str()), std::move(ret));
+  Register(sfmt("Difference on len %zu RNA %s:", r_.size(), r_.ToSeq().c_str()), std::move(ret));
 
   return std::move(errors_);
 }
@@ -215,7 +215,7 @@ Error Fuzzer::CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt,
       }
 
       // Incidentally test ctd parsing.
-      auto parsed = ParsePrimaryCtdString(r_.ToString(), sub.tb.ctd.ToString(sub.tb.s));
+      auto parsed = ParseSeqCtdString(r_.ToSeq(), sub.tb.ctd.ToString(sub.tb.s));
       if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
           std::get<Ctds>(parsed) != sub.tb.ctd) {
         errors.push_back(sfmt("structure %d: bug in parsing code", i));

@@ -24,37 +24,37 @@ namespace mrna::energy {
 class EnergyTest : public testing::Test {
  public:
   std::tuple<Primary, Secondary> kNNDBHairpin1 =
-      ParsePrimaryDotBracket("CACAAAAAAAUGUG", "((((......))))");
+      ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
   std::tuple<Primary, Secondary> kNNDBHairpin2 =
-      ParsePrimaryDotBracket("CACAGGAAGUGUG", "((((.....))))");
+      ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");
   std::tuple<Primary, Secondary> kNNDBHairpin3 =
-      ParsePrimaryDotBracket("CACCCGAGGGUG", "((((....))))");
+      ParseSeqDb("CACCCGAGGGUG", "((((....))))");
   std::tuple<Primary, Secondary> kNNDBHairpin4 =
-      ParsePrimaryDotBracket("CACACCCCCCUGUG", "((((......))))");
+      ParseSeqDb("CACACCCCCCUGUG", "((((......))))");
   std::tuple<Primary, Secondary> kNNDBHairpin5 =
-      ParsePrimaryDotBracket("CGGGGGAAGUCCG", "((((.....))))");
+      ParseSeqDb("CGGGGGAAGUCCG", "((((.....))))");
   std::tuple<Primary, Secondary> kNNDBBulge1 =
-      ParsePrimaryDotBracket("GCCCGAAACGGC", "(((.(...))))");
+      ParseSeqDb("GCCCGAAACGGC", "(((.(...))))");
   std::tuple<Primary, Secondary> kNNDBBulge2 =
-      ParsePrimaryDotBracket("GAACAGAAACUC", "((...(...)))");
+      ParseSeqDb("GAACAGAAACUC", "((...(...)))");
   std::tuple<Primary, Secondary> kNNDBInternal2x3 =
-      ParsePrimaryDotBracket("CAGACGAAACGGAGUG", "((..((...))...))");
+      ParseSeqDb("CAGACGAAACGGAGUG", "((..((...))...))");
   std::tuple<Primary, Secondary> kNNDBInternal1x5 =
-      ParsePrimaryDotBracket("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+      ParseSeqDb("CAGCGAAACGGAAAGUG", "((.((...)).....))");
   std::tuple<Primary, Secondary> kNNDBInternal2x2 =
-      ParsePrimaryDotBracket("CAGACGAAACGGAUG", "((..((...))..))");
+      ParseSeqDb("CAGACGAAACGGAUG", "((..((...))..))");
   std::tuple<Primary, Secondary> kFlushCoax =
-      ParsePrimaryDotBracket("GUGAAACACAAAAUGA", ".((...))((...)).");
+      ParseSeqDb("GUGAAACACAAAAUGA", ".((...))((...)).");
   // NNDB T99 Multiloop example
   std::tuple<Primary, Secondary> kNNDBMultiloop =
-      ParsePrimaryDotBracket("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+      ParseSeqDb("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
 
-  std::tuple<Primary, Secondary> kBulge1 = ParsePrimaryDotBracket("GCUCGAAACAGC", "(((.(...))))");
+  std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
   std::tuple<Primary, Secondary> kInternal1 =
-      ParsePrimaryDotBracket("AGAGAAACAAAU", "(..(...)...)");
+      ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
 
   Energy GetEnergy(const std::string& r, const std::string& db) {
-    return GetEnergy({Primary::FromString(r), Secondary::FromDotBracket(db)});
+    return GetEnergy({Primary::FromSeq(r), Secondary::FromDb(db)});
   }
 
   Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
@@ -156,15 +156,15 @@ TEST_F(EnergyTest, NNDBInternalLoopExamples) {
 
 TEST_F(EnergyTest, BaseCases) {
   EXPECT_EQ(t04->augu_penalty + t04->stack[G][A][U][C] + t04->hairpin_init[3],
-      GetEnergy(ParsePrimaryDotBracket("GAAAAUC", "((...))")));
+      GetEnergy(ParseSeqDb("GAAAAUC", "((...))")));
   EXPECT_EQ(t04->augu_penalty * 2 + t04->stack[G][A][U][U] + t04->hairpin_init[3],
-      GetEnergy(ParsePrimaryDotBracket("GAAAAUU", "((...))")));
+      GetEnergy(ParseSeqDb("GAAAAUU", "((...))")));
   EXPECT_EQ(t04->augu_penalty * 2 + t04->HairpinInitiation(3) +
           std::min(
               t04->terminal[U][A][A][A], std::min(t04->dangle3[U][A][A], t04->dangle5[U][A][A])),
-      GetEnergy(ParsePrimaryDotBracket("AAAAAUA", ".(...).")));
+      GetEnergy(ParseSeqDb("AAAAAUA", ".(...).")));
   EXPECT_EQ(t04->augu_penalty * 2 + t04->HairpinInitiation(3),
-      GetEnergy(ParsePrimaryDotBracket("AAAAU", "(...)")));
+      GetEnergy(ParseSeqDb("AAAAU", "(...)")));
   EXPECT_EQ(t04->stack[G][C][G][C] + t04->stack[C][U][A][G] + t04->BulgeInitiation(1) +
           t04->stack[U][G][C][A] + t04->HairpinInitiation(3),
       GetEnergy(kBulge1));
@@ -203,7 +203,7 @@ TEST_F(EnergyTest, T04Tests) {
 }
 
 TEST_F(EnergyTest, Precomp) {
-  const Precomp pc(Primary::FromString("GGGGAAACCCC"), t04);
+  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), t04);
   EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
   EXPECT_EQ(-34, pc.min_flush_coax);
   EXPECT_EQ(-26, pc.min_twoloop_not_stack);
@@ -215,28 +215,28 @@ TEST_F(EnergyTest, Precomp) {
 }
 
 TEST_F(EnergyTest, Helpers) {
-  EXPECT_EQ(0, internal::MaxNumContiguous(Primary::FromString("")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromString("A")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromString("AA")));
-  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromString("GUAAC")));
-  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromString("GUACA")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromString("GAUCCC")));
-  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromString("GGGAUC")));
-  EXPECT_EQ(4, internal::MaxNumContiguous(Primary::FromString("GGGAUCAAAA")));
-  EXPECT_EQ(5, internal::MaxNumContiguous(Primary::FromString("GGGAUUUUUCAAAA")));
+  EXPECT_EQ(0, internal::MaxNumContiguous(Primary::FromSeq("")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromSeq("A")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromSeq("AA")));
+  EXPECT_EQ(2, internal::MaxNumContiguous(Primary::FromSeq("GUAAC")));
+  EXPECT_EQ(1, internal::MaxNumContiguous(Primary::FromSeq("GUACA")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromSeq("GAUCCC")));
+  EXPECT_EQ(3, internal::MaxNumContiguous(Primary::FromSeq("GGGAUC")));
+  EXPECT_EQ(4, internal::MaxNumContiguous(Primary::FromSeq("GGGAUCAAAA")));
+  EXPECT_EQ(5, internal::MaxNumContiguous(Primary::FromSeq("GGGAUUUUUCAAAA")));
 }
 
 TEST_F(EnergyTest, GetBranchCounts) {
-  EXPECT_EQ((std::vector<int>{2, 0}), GetBranchCounts(Secondary::FromDotBracket("()")));
-  EXPECT_EQ((std::vector<int>{}), GetBranchCounts(Secondary::FromDotBracket("")));
-  EXPECT_EQ((std::vector<int>{0}), GetBranchCounts(Secondary::FromDotBracket(".")));
+  EXPECT_EQ((std::vector<int>{2, 0}), GetBranchCounts(Secondary::FromDb("()")));
+  EXPECT_EQ((std::vector<int>{}), GetBranchCounts(Secondary::FromDb("")));
+  EXPECT_EQ((std::vector<int>{0}), GetBranchCounts(Secondary::FromDb(".")));
   EXPECT_EQ(
-      (std::vector<int>{2, 0, 2, 0, 2, 0}), GetBranchCounts(Secondary::FromDotBracket("()()()")));
-  EXPECT_EQ((std::vector<int>{2, 1, 0, 1}), GetBranchCounts(Secondary::FromDotBracket("(())")));
+      (std::vector<int>{2, 0, 2, 0, 2, 0}), GetBranchCounts(Secondary::FromDb("()()()")));
+  EXPECT_EQ((std::vector<int>{2, 1, 0, 1}), GetBranchCounts(Secondary::FromDb("(())")));
   EXPECT_EQ((std::vector<int>{2, 3, 0, 3, 0, 3, 0, 3}),
-      GetBranchCounts(Secondary::FromDotBracket("(()()())")));
+      GetBranchCounts(Secondary::FromDb("(()()())")));
   EXPECT_EQ((std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}),
-      GetBranchCounts(Secondary::FromDotBracket("((()()))")));
+      GetBranchCounts(Secondary::FromDb("((()()))")));
 }
 
 }  // namespace mrna::energy
