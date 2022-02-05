@@ -1,107 +1,58 @@
 # Copyright 2016 Eliot Courtney.
 import re
-import string
 from collections import deque
+from typing import Optional
 
-BRACKETS = ["()", "[]", "{}", "<>"]
-BRACKETS += ["%s%s" % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
+from scripts.model.parse import db_to_secondary, secondary_to_db, seq_to_primary
 
 
-class RNAAccuracy:
-    def __init__(self, ppv, sensitivity):
-        self.ppv = ppv
-        self.sensitivity = sensitivity
-        self.fscore = 2.0 * sensitivity * ppv
-        if self.fscore != 0:
-            self.fscore /= ppv + sensitivity
+class Rna:
+    name: Optional[str]
+    r: Optional[str]
+    s: Optional[list[int]]
 
-    @staticmethod
-    def from_rna(true, predicted):
-        num_predicted = sum(1 for i in predicted.pairs if i != -1) / 2
-        num_true = sum(1 for i in true.pairs if i != -1) / 2
-        num_correct = 0
-        for i, pair in enumerate(predicted.pairs):
-            if pair != -1 and true.pairs[i] == pair:
-                num_correct += 1
-        num_correct /= 2
-        assert num_correct <= num_predicted and num_correct <= num_true
-        ppv, sensitivity = num_correct, num_correct
-        if num_correct != 0:
-            ppv /= num_predicted
-            sensitivity /= num_true
-        return RNAAccuracy(ppv=ppv, sensitivity=sensitivity)
+    def __init__(self, name: str = None, r: str = None, s: list[int] = None):
+        self.name = name
+        self.r = r
+        self.s = s
+        if r and s:
+            assert len(r) == len(s)
 
     def __str__(self):
-        return f"F-Score: {self.fscore:.2f} - PPV: {self.ppv:.2f} - Sensitivity: {self.sensitivity:.2f}"
+        return f"{self.name}:\n  {self.r}\n  {self.db()}"
 
+    # Used by command line parsing, for example.
+    def __len__(self):
+        if self.r:
+            return len(self.r)
+        if self.s:
+            return len(self.s)
+        return 0
 
-class RNA:
-    def __init__(self, name=None, seq=None, pairs=None):
-        self.name = name
-        self.seq = seq
-        self.pairs = pairs
-        assert len(seq) == len(pairs)
-
-    def __str__(self, *args, **kwargs):
-        return f"{self.name}:\n  {self.seq}\n  {self.db()}"
-
-    # Handles pseudoknots.
     def db(self):
-        inter = []
-        popularity = {}
-        stacks = []
-        for i, pair in enumerate(self.pairs):
-            assert pair != i
-            if pair == -1:
-                inter.append((-1, 0))
-            elif pair > i:
-                best = len(stacks)
-                for sid, stack in enumerate(stacks):
-                    if not stack or pair < stack[-1]:
-                        best = sid
-                if best == len(stacks):
-                    stacks.append([])
-                stacks[best].append(pair)
-                inter.append((best, 0))
-            else:
-                best = -1
-                for sid, stack in enumerate(stacks):
-                    if stack and stack[-1] == i:
-                        best = sid
-                assert best != -1
-                stacks[best].pop()
-                inter.append((best, 1))
-                popularity.setdefault(best, 0)
-                popularity[best] += 1
-        db = ""
-        stacks_by_pop = sorted(popularity.keys(), key=lambda x: popularity[x], reverse=True)
-        stack_map = {v: i for i, v in enumerate(stacks_by_pop)}
-        for sid, bid in inter:
-            if sid == -1:
-                db += "."
-            else:
-                db += BRACKETS[stack_map[sid]][bid]
-        return db
+        if not self.s:
+            return ""
+        return secondary_to_db(self.s)
 
     def to_ct_file(self):
         name = self.name
         if not name:
             name = "unnamed"
-        ct = [f"{len(self.seq)}\t{name}"]
+        ct = [f"{len(self.r)}\t{name}"]
 
-        for i, v in enumerate(self.seq):
+        for i, v in enumerate(self.r):
             ct.append(
-                f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.pairs[i] + 1)}\t{int(i + 1)}",
+                f"{int(i + 1)}\t{v}\t{int(i)}\t{int(i + 2)}\t{int(self.s[i] + 1)}\t{int(i + 1)}",
             )
 
         return "\n".join(ct)
 
     def to_db_file(self):
-        return f"> {self.name}\n{self.seq}\n{self.db()}\n"
+        return f"> {self.name}\n{self.r}\n{self.db()}\n"
 
     # See http://rna.urmc.rochester.edu/Text/File_Formats.html for this format.
     def to_seq_file(self):
-        return f";\n{self.name}\n{self.seq}1"
+        return f";\n{self.name}\n{self.r}1"
 
     @staticmethod
     def from_ct_file(data):
@@ -123,52 +74,22 @@ class RNA:
             if pair_idx != 0:
                 pairs[pair_idx - 1] = base_idx - 1
                 pairs[base_idx - 1] = pair_idx - 1
-        return RNA(name=name, seq=seq, pairs=pairs)
+        return Rna(name=name, r=seq, s=pairs)
 
     @staticmethod
     def from_name_seq_db(name, seq, db):
-        # Only consider fully determined sequences.
-        assert all(i in "GUAC" for i in seq)
-        opening = {v[0] for v in BRACKETS}
-        closing = {v[1]: v[0] for v in BRACKETS}
-        stack = {}
-        pairs = [-1 for i in range(len(db))]
-        for i, v in enumerate(db):
-            if v in opening:
-                stack.setdefault(v, [])
-                stack[v].append(i)
-            elif v in closing:
-                pair = stack[closing[v]].pop()
-                pairs[pair] = i
-                pairs[i] = pair
-            else:
-                assert v == "."
-        return RNA(name=name, seq=seq, pairs=pairs)
+        return Rna(name=name, r=seq_to_primary(seq), s=db_to_secondary(db))
 
     @staticmethod
     def from_db_file(data):
         name, seq, db = data.strip().split("\n")
         name, seq, db = name.strip(), seq.strip(), db.strip()
         name = re.sub(r"^> ", "", name)
-        return RNA.from_name_seq_db(name, seq, db)
+        return Rna.from_name_seq_db(name, seq, db)
 
     @staticmethod
     def from_any_file(data):
         if data[0] == ">":
-            return RNA.from_db_file(data)
+            return Rna.from_db_file(data)
         else:
-            return RNA.from_ct_file(data)
-
-
-def rnas_from_multi_ct_file(data):
-    data = deque(data.strip().split("\n"))
-    rnas = []
-    while len(data) > 0:
-        length = int(re.search(r"(\d+)", data[0].strip()).group(0))
-        subdata = f"{data[0]}\n"
-        data.popleft()
-        for i in range(length):
-            subdata += f"{data[0]}\n"
-            data.popleft()
-        rnas.append(RNA.from_ct_file(subdata))
-    return rnas
+            return Rna.from_ct_file(data)

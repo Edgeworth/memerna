@@ -8,7 +8,7 @@
 
 namespace mrna {
 
-Secondary Secondary::FromDotBracket(const std::string& pairs_str) {
+Secondary Secondary::FromDb(const std::string& pairs_str) {
   Secondary s(pairs_str.size());
   std::stack<int> stk;
   for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
@@ -24,7 +24,7 @@ Secondary Secondary::FromDotBracket(const std::string& pairs_str) {
   return s;
 }
 
-std::string Secondary::ToDotBracket() const {
+std::string Secondary::ToDb() const {
   std::string db(size(), '.');
   for (int i = 0; i < static_cast<int>(size()); ++i) {
     if (data_[i] == -1) continue;
@@ -36,10 +36,10 @@ std::string Secondary::ToDotBracket() const {
   return db;
 }
 
-std::tuple<Primary, Secondary> ParsePrimaryDotBracket(
+std::tuple<Primary, Secondary> ParseSeqDb(
     const std::string& prim_str, const std::string& pairs_str) {
   verify(prim_str.size() == pairs_str.size(), "requires rna length to be the same as pairs length");
-  return {Primary::FromString(prim_str), Secondary::FromDotBracket(pairs_str)};
+  return {Primary::FromSeq(prim_str), Secondary::FromDb(pairs_str)};
 }
 
 }  // namespace mrna

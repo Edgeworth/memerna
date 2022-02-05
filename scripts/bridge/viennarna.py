@@ -1,16 +1,12 @@
 # Copyright 2022 Eliot Courtney.
 
 
-class ViennaRNA:
-    def __init__(self, loc=None, d3=False, sorted=False):
-        try:
-            import scripts.default_paths
+from pathlib import Path
 
-            loc = loc or scripts.default_paths.VIENNARNA_PATH
-        except ImportError:
-            pass
-        assert loc
-        self.loc = fix_path(loc)
+
+class ViennaRna(RnaPackage):
+    def __init__(self, loc: Path, d3=False, sorted=False):
+        self.loc = loc
         self.extra_args = ["-d2"]
         self.name = "ViennaRNA-d2"
         if d3:
@@ -19,6 +15,17 @@ class ViennaRNA:
         if sorted:
             self.extra_args.append("--sorted")
             self.name += "-sorted"
+
+    def efn(self, rna):
+        res = run_command(
+            os.path.join(self.loc, "src", "bin", "RNAeval"),
+            *self.extra_args,
+            input=f"{rna.seq}\n{rna.db()}",
+            record_stdout=True,
+        )
+        match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
+        energy = float(match.group(1))
+        return energy, res
 
     def fold(self, rna):
         with tempfile.NamedTemporaryFile("w") as f:
@@ -34,19 +41,8 @@ class ViennaRNA:
             )
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
-            predicted = RNA.from_name_seq_db(rna.name, seq.strip(), db.strip())
+            predicted = Rna.from_name_seq_db(rna.name, seq.strip(), db.strip())
         return predicted, res
-
-    def efn(self, rna):
-        res = run_command(
-            os.path.join(self.loc, "src", "bin", "RNAeval"),
-            *self.extra_args,
-            input=f"{rna.seq}\n{rna.db()}",
-            record_stdout=True,
-        )
-        match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
-        energy = float(match.group(1))
-        return energy, res
 
     def suboptimal(self, rna, delta, limits, num_only=False):
         with tempfile.NamedTemporaryFile("r") as out:
@@ -68,7 +64,7 @@ class ViennaRNA:
                 output = out.read()
                 for i in output.splitlines()[1:]:
                     db, energy = re.split(r"\s+", i.strip())
-                    retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
+                    retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.seq, db)))
         return retval, res
 
     def close(self):
@@ -94,10 +90,10 @@ class SJSVienna:
             self.extra_args.append("-s")
             self.name += "-sorted"
 
-    def fold(self, rna):
+    def efn(self, rna):
         raise NotImplementedError
 
-    def efn(self, rna):
+    def fold(self, rna):
         raise NotImplementedError
 
     def suboptimal(self, rna, delta, limits, num_only=False):
@@ -123,7 +119,7 @@ class SJSVienna:
                 output = out.read()
                 for i in output.splitlines()[2:]:
                     db, energy = re.split(r"\s+", i.strip())[:2]
-                    retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
+                    retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.seq, db)))
         return retval, res
 
     def close(self):
@@ -151,10 +147,10 @@ class SJSViennaMPI:
             self.extra_args.append("-s")
             self.name += "-sorted"
 
-    def fold(self, rna):
+    def efn(self, rna):
         raise NotImplementedError
 
-    def efn(self, rna):
+    def fold(self, rna):
         raise NotImplementedError
 
     def suboptimal(self, rna, delta, limits, num_only=False):
@@ -191,7 +187,7 @@ class SJSViennaMPI:
                     output = open(file).read()
                     for i in output.splitlines()[2:]:
                         db, energy = re.split(r"\s+", i.strip())[:2]
-                        retval.append((float(energy), RNA.from_name_seq_db(rna.name, rna.seq, db)))
+                        retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.seq, db)))
         os.chdir(prev_dir)
         return retval, res
 

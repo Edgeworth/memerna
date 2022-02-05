@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2016 Eliot Courtney.
 import os
 import sys

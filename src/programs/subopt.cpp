@@ -42,10 +42,10 @@ int main(int argc, char* argv[]) {
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
         printf("%d ", c.energy);
-        puts(c.tb.s.ToDotBracket().c_str());
+        puts(c.tb.s.ToDb().c_str());
       };
     }
   }
-  int strucs = ctx.Suboptimal(mrna::Primary::FromString(args.Pos(0)), fn, cfg);
+  int strucs = ctx.Suboptimal(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
   printf("%d suboptimal structures\n", strucs);
 }

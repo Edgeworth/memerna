@@ -1,26 +1,13 @@
 # Copyright 2022 Eliot Courtney.
 
 
-class RNAstructureDistribution:
-    def __init__(self, loc=None):
-        try:
-            import scripts.default_paths
+from pathlib import Path
 
-            loc = loc or scripts.default_paths.RNASTRUCTURE_PATH
-        except ImportError:
-            pass
-        assert loc
-        self.loc = fix_path(loc)
+
+class RNAstructure(RnaPackage):
+    def __init__(self, loc: Path):
+        self.loc = loc
         os.putenv("DATAPATH", os.path.join(self.loc, "data_tables"))
-
-    def fold(self, rna):
-        with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
-            f.write(rna.to_seq_file())
-            f.flush()
-            res = run_command(os.path.join(self.loc, "exe", "Fold"), "-mfe", f.name, out.name)
-            output = out.read()
-            predicted = RNA.from_any_file(output)
-        return predicted, res
 
     def efn(self, rna):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
@@ -35,6 +22,16 @@ class RNAstructureDistribution:
             match = re.search(r"[eE]nergy = (.+)", output.strip())
             energy = float(match.group(1))
         return energy, res
+
+
+    def fold(self, rna):
+        with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
+            f.write(rna.to_seq_file())
+            f.flush()
+            res = run_command(os.path.join(self.loc, "exe", "Fold"), "-mfe", f.name, out.name)
+            output = out.read()
+            predicted = Rna.from_any_file(output)
+        return predicted, res
 
     def suboptimal(self, rna, delta, limits, num_only=False):
         with tempfile.NamedTemporaryFile("w") as f, tempfile.NamedTemporaryFile("r") as out:
@@ -62,9 +59,4 @@ class RNAstructureDistribution:
         pass
 
     def __str__(self):
-        return "RNAstructureDistribution"
-
-
-class RNAstructureHarness(HarnessFolder):
-    def __init__(self, loc=None):
-        super().__init__(loc, "RNAstructureHarness", "-r")
+        return "RNAstructure"

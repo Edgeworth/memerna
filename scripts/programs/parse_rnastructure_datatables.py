@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
 # Copyright 2016 Eliot Courtney.
+from pathlib import Path
 import re
+import cloup
 
-from scripts.common import read_file
-from scripts.common import write_file
+from scripts.util.file import read_file, write_file
+
 
 MAX = 0x0F0F0F0F
 ORDER = "ACGU"
@@ -32,7 +33,7 @@ def parse_dangle_file(data):
                 for c in range(4):
                     outputs[
                         output_idx
-                    ] += f"{ORDER[idx % 4]}{ORDER[c]}{ORDER[m]} {int(values[m * 4 + c])}\n"
+                    ] += f"{ORDER[idx % 4]}{ORDER[c]}{ORDER[m]} {values[m * 4 + c]}\n"
             idx += 1
     return outputs
 
@@ -48,7 +49,7 @@ def parse_2x2_file(data):
                 for r in range(4):
                     for c in range(4):
                         val = parse_number(matrix_lines[r][m * 4 + c])
-                        output += f"{ORDER[idx]}{ORDER[r]}{ORDER[c]}{ORDER[m]} {int(val)}\n"
+                        output += f"{ORDER[idx]}{ORDER[r]}{ORDER[c]}{ORDER[m]} {val}\n"
             idx += 1
     return output
 
@@ -67,7 +68,7 @@ def parse_1x1_internal_loop(data):
                 for r in range(4):
                     for c in range(4):
                         val = parse_number(matrix_lines[r][m * 4 + c])
-                        output += f"{t3prime[2 * m]}{ORDER[r]}{t3prime[2 * m + 1]}{t5prime[2 * m + 1]}{ORDER[c]}{t5prime[2 * m]} {int(val)}\n"
+                        output += f"{t3prime[2 * m]}{ORDER[r]}{t3prime[2 * m + 1]}{t5prime[2 * m + 1]}{ORDER[c]}{t5prime[2 * m]} {val}\n"
     return output
 
 
@@ -144,36 +145,43 @@ def parse_terminal_txt(data):
     return parse_2x2_file(data)
 
 
-def main():
+@cloup.command()
+@cloup.option(
+    "-i", "--input", type=cloup.Path(file_okay=False, exists=True, path_type=Path), required=True
+)
+@cloup.option(
+    "-o",
+    "--output",
+    type=cloup.Path(file_okay=False, exists=True, writable=True, path_type=Path),
+    required=True,
+)
+def parse_rnastructure_datatables(input, output):
     write_file(
-        "data/hairpin.data",
-        parse_map_file(read_file("extern/orig_data/triloop.txt"))
-        + parse_map_file(read_file("extern/orig_data/tloop.txt"))
-        + parse_map_file(read_file("extern/orig_data/hexaloop.txt")),
+        output / "hairpin.data",
+        parse_map_file(read_file(input / "triloop.txt"))
+        + parse_map_file(read_file(input / "tloop.txt"))
+        + parse_map_file(read_file(input / "hexaloop.txt")),
     )
-    write_file("data/stacking.data", parse_stack_txt(read_file("extern/orig_data/stack.txt")))
-    write_file("data/terminal.data", parse_terminal_txt(read_file("extern/orig_data/tstack.txt")))
-    internal, bulge, hairpin = parse_loop_file(read_file("extern/orig_data/loop.txt"))
-    write_file("data/internal_initiation.data", internal)
-    write_file("data/bulge_initiation.data", bulge)
-    write_file("data/hairpin_initiation.data", hairpin)
+    write_file(output / "stacking.data", parse_stack_txt(read_file(input / "stack.txt")))
+    write_file(output / "terminal.data", parse_terminal_txt(read_file(input / "tstack.txt")))
+
+    internal, bulge, hairpin = parse_loop_file(read_file(input / "loop.txt"))
+    write_file(output / "internal_initiation.data", internal)
+    write_file(output / "bulge_initiation.data", bulge)
+    write_file(output / "hairpin_initiation.data", hairpin)
     write_file(
-        "data/internal_1x1.data",
-        parse_1x1_internal_loop(read_file("extern/orig_data/int11.txt")),
+        output / "internal_1x1.data",
+        parse_1x1_internal_loop(read_file(input / "int11.txt")),
     )
     write_file(
-        "data/internal_1x2.data",
-        parse_1x2_internal_loop(read_file("extern/orig_data/int21.txt")),
+        output / "internal_1x2.data",
+        parse_1x2_internal_loop(read_file(input / "int21.txt")),
     )
     write_file(
-        "data/internal_2x2.data",
-        parse_2x2_internal_loop(read_file("extern/orig_data/int22.txt")),
+        output / "internal_2x2.data",
+        parse_2x2_internal_loop(read_file(input / "int22.txt")),
     )
 
-    dangle3, dangle5 = parse_dangle_file(read_file("extern/orig_data/dangle.txt"))
-    write_file("data/dangle3.data", dangle3)
-    write_file("data/dangle5.data", dangle5)
-
-
-if __name__ == "__main__":
-    main()
+    dangle3, dangle5 = parse_dangle_file(read_file(input / "dangle.txt"))
+    write_file(output / "dangle3.data", dangle3)
+    write_file(output / "dangle5.data", dangle5)

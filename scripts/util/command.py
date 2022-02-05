@@ -1,4 +1,7 @@
 # Copyright 2022 Eliot Courtney.
+import resource
+import subprocess
+import sys
 
 
 class ProcessResults:
@@ -14,7 +17,7 @@ class ProcessResults:
         return f"{self.real:.2f}s, {human_size(self.maxrss)} "
 
 
-def try_command(*cmd, record_stdout=False, input=None, limits=None):
+def try_cmd(*cmd, record_stdout=False, input=None, limits=None):
     if isinstance(record_stdout, str):
         stdout = open(record_stdout, "w")
     else:
@@ -51,11 +54,11 @@ def try_command(*cmd, record_stdout=False, input=None, limits=None):
         return ProcessResults(stdout_data, stderr_data, ret, real, user + sys, maxrss * 1024)
 
 
-def run_command(*cmd, record_stdout=False, input=None, limits=None):
-    res = try_command(*cmd, record_stdout=record_stdout, input=input, limits=limits)
+def run_cmd(*cmd, record_stdout=False, input=None, limits=None):
+    res = try_cmd(*cmd, record_stdout=record_stdout, input=input, limits=limits)
     if res.ret:
         print(
-            f"Running `{cmd}' failed with ret code {int(res.ret)}.\nStderr:\n{res.stderr.decode('utf-8')}\n",
+            f"Running `{cmd}' failed with ret code {res.ret}.\nStderr:\n{res.stderr.decode('utf-8')}\n",
         )
         sys.exit(1)
     return res

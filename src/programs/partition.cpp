@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
-  auto r = mrna::Primary::FromString(args.Pos(0));
+  auto r = mrna::Primary::FromSeq(args.Pos(0));
 
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
   auto res = ctx.Partition(r);

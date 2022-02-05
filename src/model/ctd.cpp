@@ -57,9 +57,9 @@ bool Ctds::IsCtdString(const std::string& ctd_str) {
 // >(   )>   )<<   )(   )>   )<   )
 // (m(   )m(   )m(   )m)
 
-std::tuple<Primary, Secondary, Ctds> ParsePrimaryCtdString(
+std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
     const std::string& prim_str, const std::string& pairs_str) {
-  auto r = Primary::FromString(prim_str);
+  auto r = Primary::FromSeq(prim_str);
   verify(
       prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(r.size());

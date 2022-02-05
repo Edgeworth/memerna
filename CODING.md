@@ -10,7 +10,7 @@ Set up pre-commit.
    const-pointer for optional references.
 
 ## Python
-- Python 3.8
+- Python 3.10
 - Format according to black -l 100
 
 # Directories
