@@ -238,3 +238,8 @@ if(USE_IWYU)
   set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
 endif()
+
+# Copy data assets to build directory, if the build succeeds:
+add_custom_command(TARGET memerna POST_BUILD COMMAND ${CMAKE_COMMAND}
+  -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data/
+  $<TARGET_FILE_DIR:memerna>/data)

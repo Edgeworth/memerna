@@ -45,7 +45,7 @@ class ViennaRna(RnaPackage):
 
     def efn(self, rna: Rna, cfg: EnergyCfg):
         args = self.energy_cfg_args(cfg)
-        res = self._run_cmd(Path("src") / "bin" / "RNAeval", *args, input=f"{rna.r}\n{rna.db()}")
+        res = self._run_cmd("./src/bin/RNAeval", *args, input=f"{rna.r}\n{rna.db()}")
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         energy = float(match.group(1))
         return energy, res
@@ -55,13 +55,7 @@ class ViennaRna(RnaPackage):
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(rna.r)
             f.flush()
-            res = self._run_cmd(
-                Path("src") / "bin" / "RNAfold",
-                *args,
-                "--noPS",
-                "-i",
-                f.name,
-            )
+            res = self._run_cmd("./src/bin/RNAfold", *args, "--noPS", "-i", f.name)
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
             predicted = Rna.from_name_seq_db(rna.name, seq.strip(), db.strip())
@@ -75,7 +69,7 @@ class ViennaRna(RnaPackage):
         args = self.energy_cfg_args(energy_cfg)
         args += self.subopt_cfg_args(subopt_cfg)
         with tempfile.NamedTemporaryFile("r") as out:
-            res = self._run_cmd(Path("src") / "bin" / "RNAsubopt", *args, input=rna.r)
+            res = self._run_cmd("./src/bin/RNAsubopt", *args, input=rna.r)
             subopts = []
             for i in res.stdout.splitlines()[1:]:
                 db, energy = re.split(r"\s+", i.strip())

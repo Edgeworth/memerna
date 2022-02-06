@@ -22,7 +22,7 @@ class SparseMfeFold(RnaPackage):
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
         self.check_energy_cfg(cfg)
-        res = self._run_cmd(Path("src") / "SparseMFEFold", input=rna.r)
+        res = self._run_cmd("./src/SparseMFEFold", input=rna.r)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
         predicted = Rna.parse(name=rna.name, seq=seq.strip(), db=db.strip())

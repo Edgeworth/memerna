@@ -48,7 +48,7 @@ bridge_options = cloup.option_group(
     cloup.option(
         "--memerna-path",
         "memerna",
-        envvar="MRNA",
+        envvar="MRNA_DIST",
         show_envvar=True,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
         callback=validate_memerna,

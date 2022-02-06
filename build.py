@@ -51,7 +51,7 @@ def get_sanitizers(sanitizer):
     help="Where to place build directory",
 )
 @cloup.option(
-    "--memerna-path",
+    "--memerna-src-path",
     type=cloup.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
     envvar="MRNA",
     show_envvar=True,
@@ -85,7 +85,7 @@ def get_sanitizers(sanitizer):
 @cloup.option("--build/--no-build", default=True)
 def build(
     prefix,
-    mrna,
+    memerna_src_path,
     type,
     compiler,
     sanitizer,
@@ -143,15 +143,15 @@ def build(
     if regenerate:
         click.echo("Regenerating cmake files.")
         def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())
-        run_command(f"cmake {def_str} {mrna}")
+        run_command(f"cmake {def_str} {memerna_src_path}")
 
     if build:
         run_command(f"{' '.join(env)} make -j$(($(nproc)-1)) {' '.join(targets)}")
 
     if test:
-        run_command(f"./run_tests --memerna-data {mrna}/data")
+        run_command(f"./run_tests")
 
-    os.chdir(mrna)
+    os.chdir(memerna_src_path)
 
 
 if __name__ == "__main__":
