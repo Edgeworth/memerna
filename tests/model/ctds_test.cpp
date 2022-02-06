@@ -32,12 +32,11 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
       return {Primary::FromSeq("A"), Secondary::FromDb("."), Ctds{CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {
-          Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
+      return {Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
-      return {Primary::FromSeq("GUA"), Secondary::FromDb("..."),
-          Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
+      return {
+          Primary::FromSeq("GUA"), Secondary::FromDb("..."), Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     [](const EnergyModel&) -> CtdTest {
       return {Primary::FromSeq("GUAC"), Secondary::FromDb("...."),

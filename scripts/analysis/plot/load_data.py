@@ -1,6 +1,5 @@
 # Copyright 2016 E.
 import pandas as pd
-
 from scripts.common import fix_path
 from scripts.common import read_file
 

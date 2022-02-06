@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import cloup
-
 from scripts.programs.analysis.compare_partition import compare_partition
 from scripts.programs.convert_format import convert_format
 from scripts.programs.crop_image import crop_image

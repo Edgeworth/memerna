@@ -5,16 +5,15 @@ from pathlib import Path
 import resource
 import subprocess
 import sys
-from typing import Optional
-import click
 
+import click
 from scripts.util.format import human_size
 
 
 @dataclass
 class CmdLimits:
-    time_sec: Optional[int] = None  # limit to time in seconds
-    mem_bytes: Optional[int] = None  # limit for rss in bytes
+    time_sec: int | None = None  # limit to time in seconds
+    mem_bytes: int | None = None  # limit for rss in bytes
 
 
 @dataclass
@@ -33,11 +32,11 @@ class CmdResult:
 
 def try_cmd(
     *cmd,
-    input: Optional[str | bytes] = None,
+    input: str | bytes | None = None,
     return_stdout: bool = True,
-    stdout_path: Optional[Path] = None,
-    cwd: Optional[Path] = None,
-    extra_env: Optional[dict[str, str]] = None,
+    stdout_path: Path | None = None,
+    cwd: Path | None = None,
+    extra_env: dict[str, str] | None = None,
     limits: CmdLimits = CmdLimits(),
 ):
     if isinstance(input, str):
@@ -101,11 +100,11 @@ def try_cmd(
 
 def run_cmd(
     *cmd,
-    input: Optional[str | bytes] = None,
+    input: str | bytes | None = None,
     return_stdout: bool = True,
-    stdout_path: Optional[Path] = None,
-    cwd: Optional[Path] = None,
-    extra_env: Optional[dict[str, str]] = None,
+    stdout_path: Path | None = None,
+    cwd: Path | None = None,
+    extra_env: dict[str, str] | None = None,
     limits: CmdLimits = CmdLimits(),
 ):
     res = try_cmd(

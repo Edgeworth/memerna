@@ -1,5 +1,4 @@
 # Copyright 2022 E.
-from re import L
 
 
 class RnaAccuracy:

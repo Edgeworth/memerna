@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 import tempfile
+
 from scripts.bridge.rnapackage import RnaPackage
-from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
+from scripts.model.config import CtdCfg
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
 from scripts.model.parse import rnas_from_ct_file
 from scripts.model.rna import Rna
-
-from scripts.util.command import CmdLimits
 
 
 @dataclass
@@ -27,7 +28,7 @@ class RNAstructure(RnaPackage):
             raise NotImplementedError("RNAstructure does not support subopt without delta")
         if cfg.strucs is not None:
             raise NotImplementedError(
-                "RNAstructure does not support subopt with max number of structures"
+                "RNAstructure does not support subopt with max number of structures",
             )
 
     def efn(self, rna: Rna, cfg: EnergyCfg):
@@ -64,7 +65,11 @@ class RNAstructure(RnaPackage):
             fin.write(rna.to_seq_file())
             fin.flush()
             res = self._run_cmd(
-                Path("exe") / "AllSub", "-a", f"{subopt_cfg.delta / 10.0:.2f}", fin.name, fout.name
+                Path("exe") / "AllSub",
+                "-a",
+                f"{subopt_cfg.delta / 10.0:.2f}",
+                fin.name,
+                fout.name,
             )
             output = fout.read()
             # TODO does not extract energy yet
