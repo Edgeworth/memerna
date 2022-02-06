@@ -3,9 +3,6 @@ from pathlib import Path
 import re
 
 import cloup
-from scripts.util.file import read_file
-from scripts.util.file import write_file
-
 
 MAX = 0x0F0F0F0F
 ORDER = "ACGU"
@@ -15,8 +12,10 @@ def parse_number(val, default=MAX):
     if val == ".":
         return default
     else:
-        assert float(val) * 10 == int(val.replace(".", ""))
-        return int(val.replace(".", ""))
+        res = int(val.replace(".", ""))
+        if float(val) * 10 != res:
+            raise ValueError(f"invalid number: {val}")
+        return res
 
 
 # Converts ordering of dangles.
@@ -62,8 +61,10 @@ def parse_1x1_internal_loop(data):
         if re.match(r"(\s*5\' --> 3\'\s*){6}", lines[i]):
             t3prime = re.findall(r"[GUAC]", lines[i + 2])
             t5prime = re.findall(r"[GUAC]", lines[i + 3])
-            assert len(t3prime) == 12
-            assert len(t5prime) == 12
+            if len(t3prime) != 12:
+                raise ValueError(f"invalid t3prime: {t3prime}")
+            if len(t5prime) != 12:
+                raise ValueError(f"invalid t5prime: {t5prime}")
             matrix_lines = [[j.strip() for j in i.split()] for i in lines[i + 6 : i + 10]]
             for m in range(6):
                 for r in range(4):
@@ -80,10 +81,14 @@ def parse_1x2_internal_loop(data):
         if re.match(r"(\s*5\' --> 3\'\s*){6}", lines[i]):
             t3prime = re.findall(r"[GUAC]", lines[i + 2])
             t5prime = re.findall(r"[GUAC]", lines[i + 3])
-            assert len(t3prime) == 12
-            assert len(t5prime) == 12
+            if len(t3prime) != 12:
+                raise ValueError(f"invalid t3prime: {t3prime}")
+            if len(t5prime) != 12:
+                raise ValueError(f"invalid t5prime: {t5prime}")
+
             extra = re.findall(r"[GUAC]", lines[i + 4])
-            assert len(extra) == 6
+            if len(extra) != 6:
+                raise ValueError(f"invalid extra: {extra}")
             matrix_lines = [[j.strip() for j in i.split()] for i in lines[i + 6 : i + 10]]
             for m in range(6):
                 for r in range(4):
@@ -110,8 +115,11 @@ def parse_2x2_internal_loop(data):
         if re.match(r"\s*5\' ------> 3\'\s*", lines[i]):
             t3prime = re.findall(r"[GUAC]", lines[i + 1])
             t5prime = re.findall(r"[GUAC]", lines[i + 2])
-            assert len(t3prime) == 2
-            assert len(t5prime) == 2
+            if len(t3prime) != 2:
+                raise ValueError(f"invalid t3prime: {t3prime}")
+            if len(t5prime) != 2:
+                raise ValueError(f"invalid t5prime: {t5prime}")
+
             matrix_lines = [[j.strip() for j in i.split()] for i in lines[i + 4 : i + 20]]
             for x1 in range(4):
                 for x2 in range(4):
@@ -159,33 +167,29 @@ def parse_terminal_txt(data):
     type=cloup.Path(file_okay=False, exists=True, writable=True, path_type=Path),
     required=True,
 )
-def parse_rnastructure_datatables(input, output):
-    write_file(
-        output / "hairpin.data",
-        parse_map_file(read_file(input / "triloop.txt"))
-        + parse_map_file(read_file(input / "tloop.txt"))
-        + parse_map_file(read_file(input / "hexaloop.txt")),
+def parse_rnastructure_datatables(input: Path, output: Path):
+    (output / "hairpin.data").write_text(
+        parse_map_file((input / "triloop.txt").read_text())
+        + parse_map_file((input / "tloop.txt").read_text())
+        + parse_map_file((input / "hexaloop.txt").read_text())
     )
-    write_file(output / "stacking.data", parse_stack_txt(read_file(input / "stack.txt")))
-    write_file(output / "terminal.data", parse_terminal_txt(read_file(input / "tstack.txt")))
+    (output / "stacking.data").write_text(parse_stack_txt((input / "stack.txt").read_text()))
+    (output / "terminal.data").write_text(parse_terminal_txt((input / "tstack.txt").read_text()))
 
-    internal, bulge, hairpin = parse_loop_file(read_file(input / "loop.txt"))
-    write_file(output / "internal_initiation.data", internal)
-    write_file(output / "bulge_initiation.data", bulge)
-    write_file(output / "hairpin_initiation.data", hairpin)
-    write_file(
-        output / "internal_1x1.data",
-        parse_1x1_internal_loop(read_file(input / "int11.txt")),
+    internal, bulge, hairpin = parse_loop_file((input / "loop.txt").read_text())
+    (output / "internal_initiation.data").write_text(internal)
+    (output / "bulge_initiation.data").write_text(bulge)
+    (output / "hairpin_initiation.data").write_text(hairpin)
+    (output / "internal_1x1.data").write_text(
+        parse_1x1_internal_loop((input / "int11.txt").read_text())
     )
-    write_file(
-        output / "internal_1x2.data",
-        parse_1x2_internal_loop(read_file(input / "int21.txt")),
+    (output / "internal_1x2.data").write_text(
+        parse_1x2_internal_loop((input / "int21.txt").read_text())
     )
-    write_file(
-        output / "internal_2x2.data",
-        parse_2x2_internal_loop(read_file(input / "int22.txt")),
+    (output / "internal_2x2.data").write_text(
+        parse_2x2_internal_loop((input / "int22.txt").read_text())
     )
 
-    dangle3, dangle5 = parse_dangle_file(read_file(input / "dangle.txt"))
-    write_file(output / "dangle3.data", dangle3)
-    write_file(output / "dangle5.data", dangle5)
+    dangle3, dangle5 = parse_dangle_file((input / "dangle.txt").read_text())
+    (output / "dangle3.data").write_text(dangle3)
+    (output / "dangle5.data").write_text(dangle5)

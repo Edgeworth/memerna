@@ -8,7 +8,6 @@ from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
-from scripts.model.parse import rnas_from_ct_file
 from scripts.model.rna import Rna
 
 
@@ -73,7 +72,7 @@ class RNAstructure(RnaPackage):
             )
             output = fout.read()
             # TODO does not extract energy yet
-            subopts = rnas_from_ct_file(output)
+            subopts = Rna.multi_from_ct_file(output)
         return subopts, res
 
     def __str__(self):
