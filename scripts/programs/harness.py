@@ -17,13 +17,14 @@ from scripts.util.util import fn_args
 @subopt_options
 @bridge_options
 @data_options
-@cloup.option("-e", "--efn", type=bool, default=False, help="Run efn the given RNA")
-@cloup.option("-f", "--fold", type=bool, default=False, help="Fold the given RNA")
-@cloup.option("-p", "--partition", type=bool, default=False, help="Run partition on the given RNA")
+@cloup.option("-e", "--efn/--no-efn", default=False, help="Run efn the given RNA")
+@cloup.option("-f", "--fold/--no-fold", default=False, help="Fold the given RNA")
+@cloup.option(
+    "-p", "--partition/--no-partition", default=False, help="Run partition on the given RNA"
+)
 @cloup.option(
     "-s",
-    "--subopt",
-    type=bool,
+    "--subopt/--no-subopt",
     default=False,
     help="Run suboptimal folding on the given RNA",
 )
@@ -52,21 +53,25 @@ def harness(
     energy_cfg = energy_cfg_from_args(**fn_args())
     subopt_cfg = subopt_cfg_from_args(**fn_args())
     rna = rna_from_args(**fn_args())
-    programs: list[RnaPackage] = []
-    for program in programs:
-        programs.append(kwargs[program])
+    packages: list[RnaPackage] = []
 
     for program in programs:
-        if fold:
-            frna, res = program.fold(rna, energy_cfg)
-            click.echo(f"Folding {rna.name} with {program}: {frna.db()}\n  {res}")
+        package = kwargs.get(program)
+        if package is None:
+            raise click.UsageError(f"Path for program {program} not found")
+        packages.append(kwargs[program])
+
+    for p in packages:
         if efn:
-            energy, res = program.efn(rna, energy_cfg)
-            click.echo(f"Energy of {rna.name} with {program}: {energy:f}\n  {res}")
+            energy, res = p.efn(rna, energy_cfg)
+            click.echo(f"Energy of {rna.name} with {p}: {energy:f}\n  {res}")
+        if fold:
+            frna, res = p.fold(rna, energy_cfg)
+            click.echo(f"Folding {rna.name} with {p}: {frna.db()}\n  {res}")
         if partition:
             raise NotImplementedError
         if subopt:
-            subopts, res = program.subopt(rna, energy_cfg, subopt_cfg)
-            click.echo(f"{len(subopts)} suboptimal structures of {rna.name} with {program} - {res}")
+            subopts, res = p.subopt(rna, energy_cfg, subopt_cfg)
+            click.echo(f"{len(subopts)} suboptimal structures of {rna.name} with {p} - {res}")
             for energy, structure in subopts:
                 click.echo(f"{energy} {structure.db()}")

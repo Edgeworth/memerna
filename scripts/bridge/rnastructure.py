@@ -39,7 +39,7 @@ class RNAstructure(RnaPackage):
             # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
             # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
             # the fitted -9.
-            res = self._run_cmd(Path("exe") / "efn2", "-s", fin.name, fout.name)
+            res = self._run_cmd("./exe/efn2", "-s", fin.name, fout.name)
             match = re.search(r"[eE]nergy = (.+)", fout.read())
             energy = float(match.group(1))
         return energy, res
@@ -49,7 +49,7 @@ class RNAstructure(RnaPackage):
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
             fin.write(rna.to_seq_file())
             fin.flush()
-            res = self._run_cmd(Path("exe") / "Fold", "-mfe", fin.name, fout.name)
+            res = self._run_cmd("./exe/Fold", "-mfe", fin.name, fout.name)
             predicted = Rna.from_any_file(fout.read())
         return predicted, res
 
@@ -64,7 +64,7 @@ class RNAstructure(RnaPackage):
             fin.write(rna.to_seq_file())
             fin.flush()
             res = self._run_cmd(
-                Path("exe") / "AllSub",
+                "./exe/AllSub",
                 "-a",
                 f"{subopt_cfg.delta / 10.0:.2f}",
                 fin.name,
