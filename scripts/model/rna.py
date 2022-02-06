@@ -1,4 +1,5 @@
 # Copyright 2016 Eliot Courtney.
+from collections import deque
 from dataclasses import dataclass
 import re
 
@@ -15,8 +16,8 @@ class Rna:
     energy: int | None = None
 
     def __post_init__(self):
-        if self.r and self.s:
-            assert len(self.r) == len(self.s)
+        if self.r and self.s and len(self.r) != len(self.s):
+            raise ValueError("primary and secondary must be the same length")
 
     def __str__(self):
         res = ""
@@ -108,3 +109,17 @@ class Rna:
             return Rna.from_db_file(data)
         else:
             return Rna.from_ct_file(data)
+
+    @staticmethod
+    def multi_from_ct_file(data: str):
+        q = deque(data.strip().split("\n"))
+        rnas = []
+        while len(q) > 0:
+            length = int(re.search(r"(\d+)", q[0].strip()).group(0))
+            subdata = f"{q[0]}\n"
+            q.popleft()
+            for i in range(length):
+                subdata += f"{q[0]}\n"
+                q.popleft()
+            rnas.append(Rna.from_ct_file(subdata))
+        return rnas

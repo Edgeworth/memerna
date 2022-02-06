@@ -1,5 +1,5 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from scripts.model.config import EnergyCfg
@@ -12,8 +12,8 @@ from scripts.util.command import run_cmd
 @dataclass
 class RnaPackage:
     path: Path
-    limits: CmdLimits = CmdLimits()
-    env: dict[str, str] = {}
+    limits: CmdLimits = field(default_factory=CmdLimits)
+    env: dict[str, str] = field(default_factory=dict)
 
     def efn(self, rna: Rna, cfg: EnergyCfg):
         pass

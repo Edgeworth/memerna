@@ -1,9 +1,5 @@
 # Copyright 2022 Eliot Courtney.
-from collections import deque
-import re
 import string
-
-from scripts.model.rna import Rna
 
 BRACKETS = ["()", "[]", "{}", "<>"]
 BRACKETS += ["%s%s" % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
@@ -75,17 +71,3 @@ def secondary_to_db(s):
         else:
             db += BRACKETS[stack_map[sid]][bid]
     return db
-
-
-def rnas_from_ct_file(data: str):
-    q = deque(data.strip().split("\n"))
-    rnas = []
-    while len(q) > 0:
-        length = int(re.search(r"(\d+)", q[0].strip()).group(0))
-        subdata = f"{q[0]}\n"
-        q.popleft()
-        for i in range(length):
-            subdata += f"{q[0]}\n"
-            q.popleft()
-        rnas.append(Rna.from_ct_file(subdata))
-    return rnas
