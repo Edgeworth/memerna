@@ -1,16 +1,15 @@
 # Copyright 2022 Eliot Courtney.
-
-
 from dataclasses import dataclass
 from pathlib import Path
 import re
 import tempfile
-from scripts.bridge.rnapackage import RnaPackage
-from scripts.model.parse import db_to_secondary
 
-from scripts.util.command import CmdLimits
+from scripts.bridge.rnapackage import RnaPackage
+from scripts.model.config import CtdCfg
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
+from scripts.model.parse import db_to_secondary
 from scripts.model.rna import Rna
-from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
 
 
 @dataclass
@@ -26,7 +25,7 @@ class ViennaRna(RnaPackage):
                 args.append("-d2")
             case CtdCfg.NO_COAX:
                 raise NotImplementedError(
-                    "ViennaRNA does not support CTDs with no coaxial stacking"
+                    "ViennaRNA does not support CTDs with no coaxial stacking",
                 )
             case CtdCfg.CTD:
                 args.append("-d3")
@@ -38,7 +37,7 @@ class ViennaRna(RnaPackage):
             args += ["--deltaEnergy", f"{cfg.delta / 10.0:.1f}"]
         if cfg.strucs:
             raise NotImplementedError(
-                "ViennaRNA does not support reporting a maximum number of suboptimal structures"
+                "ViennaRNA does not support reporting a maximum number of suboptimal structures",
             )
         if cfg.sorted:
             args += ["--sorted"]
@@ -80,7 +79,7 @@ class ViennaRna(RnaPackage):
             subopts = []
             for i in res.stdout.splitlines()[1:]:
                 db, energy = re.split(r"\s+", i.strip())
-                subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy)))
+                subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
         return subopts, res
 
     def __str__(self):

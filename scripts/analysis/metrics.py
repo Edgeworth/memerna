@@ -1,5 +1,4 @@
 # Copyright 2022 Eliot Courtney.
-from re import L
 
 
 class RnaAccuracy:

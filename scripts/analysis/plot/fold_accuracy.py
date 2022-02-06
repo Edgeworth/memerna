@@ -1,14 +1,13 @@
 # Copyright 2016 Eliot Courtney.
 import pandas as pd
 import scipy
-import seaborn as sns
-
 from scripts.plot.load_data import colmap
 from scripts.plot.plot_common import do_table
 from scripts.plot.plot_common import get_subplot_grid
 from scripts.plot.plot_common import latex_table
 from scripts.plot.plot_common import savefig_local
 from scripts.plot.plot_common import set_up_figure
+import seaborn as sns
 
 TEXT_LOC = (0.2, 0.9)
 

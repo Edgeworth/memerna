@@ -1,12 +1,11 @@
 # Copyright 2016 Eliot Courtney.
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-
 from scripts.plot.load_data import colmap
 from scripts.plot.plot_common import do_table
 from scripts.plot.plot_common import get_subplot_grid
 from scripts.plot.plot_common import set_up_figure
+import seaborn as sns
 
 
 def subopt_distribution(all_ds, subopts):

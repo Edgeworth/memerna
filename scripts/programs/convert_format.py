@@ -1,10 +1,9 @@
 # Copyright 2016 Eliot Courtney.
-import cloup
 import click
-from cloup.constraints import RequireExactly
-from scripts.model.rna import Rna
+import cloup
+from scripts.data.args import data_options
+from scripts.data.args import rna_from_args
 from scripts.util.util import fn_args
-from scripts.data.args import data_options, rna_from_args
 
 
 @cloup.command(aliases=["conv"])

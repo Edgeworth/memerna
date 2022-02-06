@@ -1,9 +1,10 @@
 # Copyright 2016 Eliot Courtney.
 from pathlib import Path
 import re
-import cloup
 
-from scripts.util.file import read_file, write_file
+import cloup
+from scripts.util.file import read_file
+from scripts.util.file import write_file
 
 
 MAX = 0x0F0F0F0F
@@ -147,7 +148,10 @@ def parse_terminal_txt(data):
 
 @cloup.command()
 @cloup.option(
-    "-i", "--input", type=cloup.Path(file_okay=False, exists=True, path_type=Path), required=True
+    "-i",
+    "--input",
+    type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+    required=True,
 )
 @cloup.option(
     "-o",

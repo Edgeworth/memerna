@@ -1,13 +1,12 @@
 # Copyright 2022 Eliot Courtney.
-
-
 from dataclasses import dataclass
 from pathlib import Path
 
 from scripts.bridge.rnapackage import RnaPackage
-from scripts.util.command import CmdLimits
+from scripts.model.config import CtdCfg
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
-from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
 
 
 @dataclass

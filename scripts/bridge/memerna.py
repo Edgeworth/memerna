@@ -1,12 +1,10 @@
 from dataclasses import dataclass
-from pathlib import Path
-import tempfile
 
 from scripts.bridge.rnapackage import RnaPackage
-from scripts.model.config import EnergyCfg, SuboptCfg
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
 from scripts.model.parse import db_to_secondary
 from scripts.model.rna import Rna
-from scripts.util.command import CmdLimits, run_cmd
 
 
 @dataclass

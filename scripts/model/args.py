@@ -1,9 +1,8 @@
 # Copyright 2022 Eliot Courtney.
-from typing import Optional
-from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
-from scripts.model.parse import db_to_secondary, seq_to_primary
-from scripts.model.rna import Rna
 import cloup
+from scripts.model.config import CtdCfg
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
 
 energy_options = cloup.option_group(
     "Energy options",
@@ -46,7 +45,10 @@ subopt_options = cloup.option_group(
 
 
 def subopt_cfg_from_args(
-    subopt_delta: Optional[int], subopt_strucs: Optional[int], subopt_sorted: bool, **kwargs
+    subopt_delta: int | None,
+    subopt_strucs: int | None,
+    subopt_sorted: bool,
+    **kwargs,
 ):
     return SuboptCfg(
         delta=subopt_delta,

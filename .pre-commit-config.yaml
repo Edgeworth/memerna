@@ -6,6 +6,7 @@ repos:
       - id: check-docstring-first # check for docstring after code
       - id: check-executables-have-shebangs # check for shebang
       - id: check-shebang-scripts-are-executable # check for executable shebang
+        exclude_types: [rust] # Rust files sometimes have #! at the beginning.
       - id: check-merge-conflict # check for merge conflict markers
       - id: check-json # check json syntax
       - id: check-symlinks # check for broken symlinks
@@ -33,7 +34,7 @@ repos:
     rev: 22.1.0
     hooks:
       - id: black
-        args: [--line-length=100]
+        args: [--line-length=100, -tpy310]
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.31.0
     hooks:
@@ -47,24 +48,33 @@ repos:
     rev: v2.2.1
     hooks:
       - id: add-trailing-comma
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.7.1
+        args: [--py36-plus]
+  - repo: https://github.com/sqlalchemyorg/zimports/
+    rev: v0.4.4
     hooks:
-      - id: reorder-python-imports
+      - id: zimports
   - repo: https://github.com/asottile/blacken-docs
     rev: v1.12.1
     hooks:
       - id: blacken-docs
+        args: [--line-length=100, -t=py310]
   - repo: https://github.com/asottile/dead
     rev: v1.4.0
     hooks:
       - id: dead
+  - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
+    rev: 1.6.0
+    hooks:
+      - id: prospector
+        args: [--max-line-length=100]
   # C++ related hooks:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
       - id: clang-format
+        args: [-i] # modify in place
       - id: clang-tidy
+        args: [--fix-errors]
       - id: cppcheck
         args:
           [

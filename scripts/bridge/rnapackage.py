@@ -1,11 +1,12 @@
 # Copyright 2022 Eliot Courtney.
-
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
-from scripts.model.config import EnergyCfg, SuboptCfg
+
+from scripts.model.config import EnergyCfg
+from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
-from scripts.util.command import CmdLimits, run_cmd
+from scripts.util.command import CmdLimits
+from scripts.util.command import run_cmd
 
 
 @dataclass
@@ -29,9 +30,9 @@ class RnaPackage:
     def _run_cmd(
         self,
         *cmd,
-        input: Optional[str] = None,
+        input: str | None = None,
         return_stdout: bool = True,
-        stdout_path: Optional[Path] = None,
+        stdout_path: Path | None = None,
     ):
         return run_cmd(
             *cmd,

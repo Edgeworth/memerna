@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # Copyright 2016 Eliot Courtney.
 import os
+from pathlib import Path
 import shutil
 import sys
-from pathlib import Path
 
 import click
 import cloup

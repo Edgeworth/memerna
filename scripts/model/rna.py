@@ -1,18 +1,18 @@
 # Copyright 2016 Eliot Courtney.
 from dataclasses import dataclass
 import re
-from collections import deque
-from typing import Optional
 
-from scripts.model.parse import db_to_secondary, secondary_to_db, seq_to_primary
+from scripts.model.parse import db_to_secondary
+from scripts.model.parse import secondary_to_db
+from scripts.model.parse import seq_to_primary
 
 
 @dataclass
 class Rna:
-    name: Optional[str] = None
-    r: Optional[str] = None
-    s: Optional[list[int]] = None
-    energy: Optional[int] = None
+    name: str | None = None
+    r: str | None = None
+    s: list[int] | None = None
+    energy: int | None = None
 
     def __post_init__(self):
         if self.r and self.s:
@@ -83,10 +83,10 @@ class Rna:
     @staticmethod
     def parse(
         *,
-        name: Optional[str] = None,
-        seq: Optional[str] = None,
-        db: Optional[str] = None,
-        energy: Optional[int] = None,
+        name: str | None = None,
+        seq: str | None = None,
+        db: str | None = None,
+        energy: int | None = None,
     ):
         return Rna(
             name=name,

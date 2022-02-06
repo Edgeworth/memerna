@@ -1,14 +1,13 @@
 # Copyright 2016 Eliot Courtney.
 import matplotlib as mpl
+from matplotlib import pyplot as plt
 import numpy as np
+from scripts.common import human_size
+from scripts.plot.load_data import colmap
 import seaborn as sns
 import statsmodels as sm
 import statsmodels.formula.api as smf
 import statsmodels.graphics.regressionplots
-from matplotlib import pyplot as plt
-
-from scripts.common import human_size
-from scripts.plot.load_data import colmap
 
 EP = 1e-2
 
@@ -87,11 +86,16 @@ def do_quantity_log_plot(frames, xid, yid, logx=True, logy=True):
         res = mod.fit()
 
         label = "{0}\n${3:.5f}x + {2:.2f}$\n$R^2 = {1:.3f}$".format(
-            frame_id, res.rsquared, *res.params.tolist()
+            frame_id,
+            res.rsquared,
+            *res.params.tolist(),
         )
         sns.regplot(xid, yid, label=label, data=data, fit_reg=False, ax=axes[i])
         sm.graphics.regressionplots.abline_plot(
-            model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), **get_marker(i)
+            model_results=res,
+            ax=axes[i],
+            c=(0, 0, 0, 0.8),
+            **get_marker(i),
         )
 
     names = [colmap[xid], colmap[yid]]
@@ -114,7 +118,12 @@ def do_quantity_plot(frames, xid, yids):
         for yid in yids:
             palette = sns.color_palette(n_colors=len(frames))
             frame[[xid, yid]].mean().plot(
-                x=xid, y=yid, kind="line", ax=ax, label=frame_id, **get_marker(idx)
+                x=xid,
+                y=yid,
+                kind="line",
+                ax=ax,
+                label=frame_id,
+                **get_marker(idx),
             )
             low, high = frame[yid].min(), frame[yid].max()
             ax.fill_between(

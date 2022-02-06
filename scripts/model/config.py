@@ -1,9 +1,6 @@
 # These classes mirror the Cfg structs used in memerna.
-
-
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class CtdCfg(str, Enum):
@@ -21,6 +18,6 @@ class EnergyCfg:
 
 @dataclass
 class SuboptCfg:
-    delta: Optional[int] = None
-    strucs: Optional[int] = None
+    delta: int | None = None
+    strucs: int | None = None
     sorted: bool = True
