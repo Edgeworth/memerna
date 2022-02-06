@@ -37,7 +37,7 @@ class MemeVault:
 
     def add_random(self, l):
         seq = "".join(random.choice("GUAC") for _ in range(l))
-        rna = Rna(name=f"len_{int(l)}", r=seq, s=[-1] * l)
+        rna = Rna(name=f"len_{l}", r=seq, s=[-1] * l)
         self.add(rna)
 
     def __contains__(self, item):

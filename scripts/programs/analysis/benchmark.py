@@ -10,15 +10,15 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
         assert isinstance(program, MemeRNA)  # Only memerna supports num folding.
         nums = {a: int(b) for a, b in [i.split(" ") for i in read_file(num_file).splitlines()]}
     memevault = MemeVault(dataset)
-    print(f"Benchmarking suboptimals with {program} on {dataset} with delta {int(delta)}")
-    filename = f"{program}_{dataset}_subopt_{int(delta)}.results"
+    print(f"Benchmarking suboptimals with {program} on {dataset} with delta {delta}")
+    filename = f"{program}_{dataset}_subopt_{delta}.results"
     if os.path.exists(filename):
         print(f"Not overwriting {filename}")
         sys.exit(1)
     with open(filename, "w") as f:
         idx = 1
         for rna in memevault:
-            print(f"Running {program} on #{int(idx)} {rna.name}")
+            print(f"Running {program} on #{idx} {rna.name}")
             idx += 1
             len_res = []
             failed = False
@@ -43,7 +43,7 @@ def run_subopt_benchmark(program, dataset, delta, num_file):
             for i, lr in enumerate(len_res):
                 num_subopt, res = lr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {int(num_subopt)}\n",
+                    f"{rna.name} {i} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {num_subopt}\n",
                 )
 
 
@@ -60,17 +60,17 @@ def run_fold_benchmark(program, dataset, rnastructure_harness):
     with open(filename, "w") as f:
         idx = 1
         for rna in memevault:
-            print(f"Running {program} on #{int(idx)} {rna.name}")
+            print(f"Running {program} on #{idx} {rna.name}")
             prs = []
             for i in range(BENCHMARK_NUM_TRIES):
                 prs.append(program.fold(rna))
 
-            accuracy = RNAAccuracy.from_rna(rna, prs[0][0])
+            accuracy = RnaAccuracy.from_rna(rna, prs[0][0])
             energy, _ = rnastructure_harness.efn(prs[0][0])
             for i, pr in enumerate(prs):
                 predicted, res = pr
                 f.write(
-                    f"{rna.name} {int(i)} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n",
+                    f"{rna.name} {i} {len(rna.r)} {res.real:.5f} {res.usersys:.5f} {res.maxrss:.5f} {accuracy.fscore:.5f} {accuracy.ppv:.5f} {accuracy.sensitivity:.5f} {energy:.2f}\n",
                 )
             idx += 1
 

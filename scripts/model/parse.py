@@ -3,6 +3,8 @@ from collections import deque
 import re
 import string
 
+from scripts.model.rna import Rna
+
 BRACKETS = ["()", "[]", "{}", "<>"]
 BRACKETS += ["%s%s" % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
 
@@ -75,7 +77,7 @@ def secondary_to_db(s):
     return db
 
 
-def rnas_from_multi_ct_file(data: str):
+def rnas_from_ct_file(data: str):
     q = deque(data.strip().split("\n"))
     rnas = []
     while len(q) > 0:

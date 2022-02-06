@@ -6,29 +6,34 @@ from pathlib import Path
 
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.util.command import CmdLimits
+from scripts.model.rna import Rna
+from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
 
 
 @dataclass
 class SparseMfeFold(RnaPackage):
+    def check_energy_cfg(self, cfg: EnergyCfg):
+        if cfg.lonely_pairs:  # TODO: Check this.
+            raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
+        if cfg.ctd != CtdCfg.NONE:
+            raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
+
     def efn(self, rna: Rna, cfg: EnergyCfg):
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
-        res = run_command(
-            os.path.join(self.path, "src", "SparseMFEFold"),
-            input=rna.r,
-            record_stdout=True,
-        )
+        self.check_energy_cfg(cfg)
+        res = self._run_cmd(Path("src") / "SparseMFEFold", input=rna.r)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
-        predicted = Rna.from_name_seq_db(rna.name, seq.strip(), db.strip())
+        predicted = Rna.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
     def partition(self, rna: Rna, cfg: EnergyCfg):
-        raise NotImplementedError
+        raise NotImplementedError("SparseMFEFold does not support partition")
 
     def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
-        raise NotImplementedError
+        raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
 
     def __str__(self):
         return "SparseMFEFold"

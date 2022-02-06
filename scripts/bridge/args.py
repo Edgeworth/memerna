@@ -6,7 +6,6 @@ import cloup
 from scripts.bridge.memerna import MemeRna
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.bridge.sparsemfefold import SparseMfeFold
-from scripts.bridge.unafold import UnaFold
 
 
 def validate_memerna(ctx, param, value):
@@ -21,22 +20,16 @@ def validate_rnastructure(ctx, param, value):
     return RNAstructure(value)
 
 
-def validate_viennarna(ctx, param, value):
-    if value is None:
-        return None
-    return ViennaRna(value)
-
-
 def validate_sparsemfefold(ctx, param, value):
     if value is None:
         return None
     return SparseMfeFold(value)
 
 
-def validate_unafold(ctx, param, value):
+def validate_viennarna(ctx, param, value):
     if value is None:
         return None
-    return UnaFold(value)
+    return ViennaRna(value)
 
 
 bridge_options = cloup.option_group(
@@ -58,6 +51,7 @@ bridge_options = cloup.option_group(
         show_envvar=True,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
         callback=validate_memerna,
+        help="path to memerna build directory"
     ),
     cloup.option(
         "--rnastructure-path",
@@ -66,14 +60,7 @@ bridge_options = cloup.option_group(
         show_envvar=True,
         callback=validate_rnastructure,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
-    ),
-    cloup.option(
-        "--viennarna-path",
-        "viennarna",
-        envvar="VIENNARNA",
-        show_envvar=True,
-        callback=validate_viennarna,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        help="path to RNAstructure source directory (in-tree build assumed to be done)"
     ),
     cloup.option(
         "--sparsemfefold-path",
@@ -82,13 +69,14 @@ bridge_options = cloup.option_group(
         show_envvar=True,
         callback=validate_sparsemfefold,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        help=""
     ),
     cloup.option(
-        "--unafold-path",
-        "unafold",
-        envvar="UNAFOLD",
+        "--viennarna-path",
+        "viennarna",
+        envvar="VIENNARNA",
         show_envvar=True,
-        callback=validate_unafold,
+        callback=validate_viennarna,
         type=cloup.Path(file_okay=False, exists=True, path_type=Path),
     ),
 )
