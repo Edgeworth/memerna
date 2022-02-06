@@ -12,6 +12,7 @@ from scripts.util.command import CmdLimits, run_cmd
 class RnaPackage:
     path: Path
     limits: CmdLimits = CmdLimits()
+    env: dict[str, str] = {}
 
     def efn(self, rna: Rna, cfg: EnergyCfg):
         pass
@@ -39,4 +40,5 @@ class RnaPackage:
             stdout_path=stdout_path,
             limits=self.limits,
             cwd=self.path,
+            extra_env=self.env,
         )

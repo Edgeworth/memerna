@@ -62,9 +62,8 @@ def run_partition(program, rna):
         [
             "memerna",
             "rnastructure",
-            "viennarna",
             "sparsemfefold",
-            "unafold",
+            "viennarna",
         ]
     ),
     help="Programs to run",

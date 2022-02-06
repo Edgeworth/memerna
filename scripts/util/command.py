@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import resource
 import subprocess
@@ -36,6 +37,7 @@ def try_cmd(
     return_stdout: bool = True,
     stdout_path: Optional[Path] = None,
     cwd: Optional[Path] = None,
+    extra_env: Optional[dict[str, str]] = None,
     limits: CmdLimits = CmdLimits(),
 ):
     if isinstance(input, str):
@@ -50,6 +52,9 @@ def try_cmd(
         if limits.time_sec:
             resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
 
+    env = os.environ.copy()
+    env.update(extra_env)
+
     if stdout_path:
         stdout = open(stdout_path, "w")
     else:
@@ -62,6 +67,7 @@ def try_cmd(
         stdout=stdout,
         stderr=subprocess.PIPE,
         cwd=cwd,
+        env=env,
         preexec_fn=pre_exec,
     ) as proc:
         proc_stdout, proc_stderr = proc.communicate(input=input)
@@ -99,6 +105,7 @@ def run_cmd(
     return_stdout: bool = True,
     stdout_path: Optional[Path] = None,
     cwd: Optional[Path] = None,
+    extra_env: Optional[dict[str, str]] = None,
     limits: CmdLimits = CmdLimits(),
 ):
     res = try_cmd(
@@ -107,6 +114,7 @@ def run_cmd(
         return_stdout=return_stdout,
         stdout_path=stdout_path,
         cwd=cwd,
+        extra_env=extra_env,
         limits=limits,
     )
     if res.ret_code != 0:

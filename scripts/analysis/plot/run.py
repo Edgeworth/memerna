@@ -27,13 +27,12 @@ def generate_filename_map(dataset_name, enable):
         "RNAstructure-mod": os.path.join(PREFIX, f"RNAstructureHarness_{dataset_name}.results"),
         "ViennaRNA-d3": os.path.join(PREFIX, f"ViennaRNA-d3_{dataset_name}.results"),
         "ViennaRNA-d3-sorted": os.path.join(PREFIX, f"ViennaRNA-d3-sorted_{dataset_name}.results"),
-        "UNAFold": os.path.join(PREFIX, f"UNAFold_{dataset_name}.results"),
     }
     return {k: d[k] for k in enable}
 
 
 FAST_FOLDERS = ["ViennaRNA-d2", "SparseMFEFold", "memerna", "ViennaRNA-d3"]
-PERF_FOLDERS = FAST_FOLDERS + ["RNAstructure", "UNAFold"]
+PERF_FOLDERS = FAST_FOLDERS + ["RNAstructure"]
 ACCURACY_FOLDERS = PERF_FOLDERS + ["RNAstructure-mod"]
 
 
@@ -59,7 +58,7 @@ def fold_graphs():
     )
     fold_random_large_all_ds = read_fold_dataset(
         "random_large",
-        generate_filename_map("random_large", FAST_FOLDERS + ["UNAFold"]),
+        generate_filename_map("random_large", FAST_FOLDERS),
         os.path.join(PREFIX, "random_large_all.subset"),
     )
     print("Loaded data")
@@ -81,16 +80,13 @@ def subopt_graphs():
         "memerna",
         "memerna-sorted",
     ]
-    # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'ViennaRNA-d3', 'ViennaRNA-d3-sorted',]
-    # ALL_SUBOPTS = ['ViennaRNA-d2', 'ViennaRNA-d2-sorted', 'memerna-sorted', 'memerna']
-    # ALL_SUBOPTS = ['memerna', 'ViennaRNA-d2']
     deltas = [1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
     all_ds = []
     for delta in deltas:
         subopt_random_all_ds = read_subopt_dataset(
-            f"random_subopt_{int(delta)}",
-            generate_filename_map(f"random_subopt_{int(delta)}", ALL_SUBOPTS),
+            f"random_subopt_{delta}",
+            generate_filename_map(f"random_subopt_{delta}", ALL_SUBOPTS),
             os.path.join(PREFIX, "random_all.subset"),
         )
         all_ds.append(subopt_random_all_ds.fmap)
@@ -108,7 +104,7 @@ def extract_highest_structure_count_rows(subopt_name):
     all_ds = []
     cols = ["name", "run", "length", "real", "usersys", "maxrss", "numstruc"]
     for delta in DELTAS:
-        fmap = generate_filename_map(f"random_subopt_{int(delta)}", [subopt_name])
+        fmap = generate_filename_map(f"random_subopt_{delta}", [subopt_name])
         frame = pd.read_csv(fmap[subopt_name], delimiter=" ", header=None, names=cols)
         all_ds.append(frame.groupby(frame["name"]))
     subset = load_subset_file(os.path.join(PREFIX, "random_all.subset"))

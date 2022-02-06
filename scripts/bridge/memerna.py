@@ -23,7 +23,7 @@ class MemeRna(RnaPackage):
     def subopt_cfg_args(self, cfg: SuboptCfg):
         args = []
         if cfg.delta:
-            args += ["--subopt--delta", str(cfg.delta)]
+            args += ["--subopt-delta", str(cfg.delta)]
         if cfg.strucs:
             args += ["--subopt-strucs", str(cfg.strucs)]
         if cfg.sorted:
@@ -57,3 +57,6 @@ class MemeRna(RnaPackage):
             energy, db = line.strip().split()
             subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
         return subopts, res
+
+    def __str__(self):
+        return "MemeRNA"

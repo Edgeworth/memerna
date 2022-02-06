@@ -117,7 +117,7 @@ def parse_2x2_internal_loop(data):
                     for y1 in range(4):
                         for y2 in range(4):
                             val = parse_number(matrix_lines[4 * x1 + x2][4 * y1 + y2])
-                            output += f"{t3prime[0]}{ORDER[x1]}{ORDER[y1]}{t3prime[1]}{t5prime[1]}{ORDER[y2]}{ORDER[x2]}{t5prime[0]} {int(val)}\n"
+                            output += f"{t3prime[0]}{ORDER[x1]}{ORDER[y1]}{t3prime[1]}{t5prime[1]}{ORDER[y2]}{ORDER[x2]}{t5prime[0]} {val}\n"
     return output
 
 
@@ -130,9 +130,9 @@ def parse_loop_file(data):
     m = re.findall(r"(\d+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)", data)
     internal, bulge, hairpin = "", "", ""
     for i in m:
-        internal += f"{i[0]} {int(parse_number(i[1], 0))}\n"
-        bulge += f"{i[0]} {int(parse_number(i[2], 0))}\n"
-        hairpin += f"{i[0]} {int(parse_number(i[3], 0))}\n"
+        internal += f"{i[0]} {parse_number(i[1], 0)}\n"
+        bulge += f"{i[0]} {parse_number(i[2], 0)}\n"
+        hairpin += f"{i[0]} {parse_number(i[3], 0)}\n"
     return (internal, bulge, hairpin)
 
 

@@ -19,7 +19,7 @@ inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
 inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
                                 .LongName("ctd")
-                                .Choice({"none", "no-coax", "all"})
+                                .Choice({"none", "d2", "no-coax", "all"})
                                 .Default("all")
                                 .Help("whether to use CTDs");
 
@@ -29,6 +29,7 @@ void RegisterOpts(ArgParse* args);
 struct EnergyCfg {
   enum class Ctd {
     NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
+    D2,  // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
     NO_COAX,  //  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.
     ALL,  //  Use CTDs in folding, subopt, partition, etc.
   };

@@ -3,35 +3,65 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
+import tempfile
 from scripts.bridge.rnapackage import RnaPackage
+from scripts.model.parse import db_to_secondary
 
 from scripts.util.command import CmdLimits
+from scripts.model.rna import Rna
+from scripts.model.config import CtdCfg, EnergyCfg, SuboptCfg
 
 
 @dataclass
 class ViennaRna(RnaPackage):
+    def energy_cfg_args(self, cfg: EnergyCfg):
+        args = []
+        if not cfg.lonely_pairs:
+            args.append("--no-lonely-pairs")
+        match cfg.ctd:
+            case CtdCfg.NONE:
+                args.append("-d0")
+            case CtdCfg.D2:
+                args.append("-d2")
+            case CtdCfg.NO_COAX:
+                raise NotImplementedError(
+                    "ViennaRNA does not support CTDs with no coaxial stacking"
+                )
+            case CtdCfg.CTD:
+                args.append("-d3")
+        return args
+
+    def subopt_cfg_args(self, cfg: SuboptCfg):
+        args = []
+        if cfg.delta:
+            args += ["--deltaEnergy", f"{cfg.delta / 10.0:.1f}"]
+        if cfg.strucs:
+            raise NotImplementedError(
+                "ViennaRNA does not support reporting a maximum number of suboptimal structures"
+            )
+        if cfg.sorted:
+            args += ["--sorted"]
+        return args
+
     def efn(self, rna: Rna, cfg: EnergyCfg):
-        res = run_command(
-            os.path.join(self.path, "src", "bin", "RNAeval"),
-            *self.extra_args,
-            input=f"{rna.r}\n{rna.db()}",
-            record_stdout=True,
-        )
-        match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())  # mfw this regex
+        args = self.energy_cfg_args(cfg)
+        res = self._run_cmd(Path("src") / "bin" / "RNAeval", *args, input=f"{rna.r}\n{rna.db()}")
+        match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         energy = float(match.group(1))
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg):
+        args = self.energy_cfg_args(cfg)
         with tempfile.NamedTemporaryFile("w") as f:
             f.write(rna.r)
             f.flush()
-            res = run_command(
-                os.path.join(self.path, "src", "bin", "RNAfold"),
-                *self.extra_args,
+            res = self._run_cmd(
+                Path("src") / "bin" / "RNAfold",
+                *args,
                 "--noPS",
                 "-i",
                 f.name,
-                record_stdout=True,
             )
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
@@ -39,33 +69,19 @@ class ViennaRna(RnaPackage):
         return predicted, res
 
     def partition(self, rna: Rna, cfg: EnergyCfg):
+        # TODO: Implement this.
         raise NotImplementedError
 
     def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
+        args = self.energy_cfg_args(energy_cfg)
+        args += self.subopt_cfg_args(subopt_cfg)
         with tempfile.NamedTemporaryFile("r") as out:
-            res = try_command(
-                os.path.join(self.path, "src", "bin", "RNAsubopt"),
-                *self.extra_args,
-                "-e",
-                f"{delta / 10.0:.1f}",
-                input=rna.r,
-                record_stdout=out.name,
-                limits=limits,
-            )
-            if num_only:
-                res2 = run_command("wc", "-l", out.name, record_stdout=True)
-                num_lines = int(res2.stdout.strip().split(" ")[0])
-                retval = num_lines - 1
-            else:
-                retval = []
-                output = out.read()
-                for i in output.splitlines()[1:]:
-                    db, energy = re.split(r"\s+", i.strip())
-                    retval.append((float(energy), Rna.from_name_seq_db(rna.name, rna.r, db)))
-        return retval, res
-
-    def close(self):
-        pass
+            res = self._run_cmd(Path("src") / "bin" / "RNAsubopt", *args, input=rna.r)
+            subopts = []
+            for i in res.stdout.splitlines()[1:]:
+                db, energy = re.split(r"\s+", i.strip())
+                subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy)))
+        return subopts, res
 
     def __str__(self):
-        return self.name
+        return "ViennaRNA"
