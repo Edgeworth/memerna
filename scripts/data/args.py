@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, TextIO
 
 import click
 import cloup
@@ -9,21 +10,25 @@ from scripts.model.parse import seq_to_primary
 from scripts.model.rna import Rna
 
 
-def validate_rna_file(ctx, param, value):
-    if not value:
-        return value
+def validate_rna_file(
+    _ctx: click.Context, _param: click.Parameter, value: TextIO | None
+) -> Rna | None:
+    if value is None:
+        return None
     return Rna.from_any_file(value.read())
 
 
-def validate_seq(ctx, param, value):
+def validate_seq(_ctx: click.Context, _param: click.Parameter, value: str | None) -> str | None:
     if not value:
         return value
     return seq_to_primary(value)
 
 
-def validate_db(ctx, param, value):
-    if not value:
-        return value
+def validate_db(
+    _ctx: click.Context, _param: click.Parameter, value: str | None
+) -> list[int] | None:
+    if value is None:
+        return None
     return db_to_secondary(value)
 
 
@@ -50,7 +55,7 @@ def rna_from_args(
     file_rna: Rna | None,
     primary: str | None,
     secondary: list[int] | None,
-    **kwargs,
+    **_kwargs: Any,
 ) -> Rna:
     if memevault_rna and not memevault_path:
         raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
@@ -61,6 +66,7 @@ def rna_from_args(
     if file_rna:
         return file_rna
     if memevault_rna:
+        assert memevault_path is not None
         return MemeVault(memevault_path, "archiveii")[memevault_rna]
     if primary or secondary:
         return Rna("cmd", primary, secondary)

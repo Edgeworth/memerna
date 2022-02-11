@@ -2,24 +2,24 @@
 import string
 
 BRACKETS = ["()", "[]", "{}", "<>"]
-BRACKETS += ["%s%s" % i for i in zip(string.ascii_lowercase, string.ascii_uppercase)]
+BRACKETS += [f"{a}{b}" for a, b in zip(string.ascii_lowercase, string.ascii_uppercase)]
 
 
-def seq_to_primary(seq: str):
+def seq_to_primary(seq: str) -> str:
     # Only consider fully determined sequences.
     seq = seq.upper()
     assert all(i in "GUAC" for i in seq)
     return seq
 
 
-def primary_to_seq(r):
+def primary_to_seq(r: str) -> str:
     return r
 
 
-def db_to_secondary(db: str):
+def db_to_secondary(db: str) -> list[int]:
     opening = {v[0] for v in BRACKETS}
     closing = {v[1]: v[0] for v in BRACKETS}
-    stack = {}
+    stack: dict[str, list[int]] = {}
     s = [-1 for i in range(len(db))]
     for i, v in enumerate(db):
         if v in opening:
@@ -35,10 +35,10 @@ def db_to_secondary(db: str):
 
 
 # Handles pseudoknots.
-def secondary_to_db(s):
+def secondary_to_db(s: list[int]) -> str:
     inter = []
-    popularity = {}
-    stacks = []
+    popularity: dict[int, int] = {}
+    stacks: list[list[int]] = []
     for i, p in enumerate(s):
         assert p != i
         if p == -1:

@@ -44,13 +44,23 @@ repos:
     rev: v0.931
     hooks:
       - id: mypy
+        args: [
+            --disallow-untyped-defs, # Require type hints
+            --disallow-any-unimported, # Disallow any type that is not imported
+            --no-implicit-optional, # Disallow implicit optional e.g. arg: str = None
+            --check-untyped-defs, # Check bodies of functions without type annotations too
+            --warn-return-any, # Warn about returning Any from a function annotated to not return it
+            --warn-unused-ignores, # Warn about unused ignore annotations
+            --show-error-codes,
+          ]
+        additional_dependencies: [click, cloup]
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.1
     hooks:
       - id: add-trailing-comma
         args: [--py36-plus]
   - repo: https://github.com/sqlalchemyorg/zimports/
-    rev: v0.4.4
+    rev: v0.5.0
     hooks:
       - id: zimports
   - repo: https://github.com/asottile/blacken-docs

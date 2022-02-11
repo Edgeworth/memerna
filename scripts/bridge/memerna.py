@@ -1,15 +1,17 @@
 from dataclasses import dataclass
+from typing import Tuple
 
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
 from scripts.model.parse import db_to_secondary
 from scripts.model.rna import Rna
+from scripts.util.command import CmdResult
 
 
 @dataclass
 class MemeRna(RnaPackage):
-    def energy_cfg_args(self, cfg: EnergyCfg):
+    def energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
         if cfg.lonely_pairs:
             args.append("--lonely-pairs")
@@ -18,7 +20,7 @@ class MemeRna(RnaPackage):
         args += ["--ctd", f"{cfg.ctd}"]
         return args
 
-    def subopt_cfg_args(self, cfg: SuboptCfg):
+    def subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
         if cfg.delta:
             args += ["--subopt-delta", str(cfg.delta)]
@@ -30,31 +32,36 @@ class MemeRna(RnaPackage):
             args += ["--no-subopt-sorted"]
         return args
 
-    def efn(self, rna: Rna, cfg: EnergyCfg):
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
         args = self.energy_cfg_args(cfg)
+        assert rna.r is not None
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
         energy = float(res.stdout.splitlines()[0].strip()) / 10.0
         return energy, res
 
-    def fold(self, rna: Rna, cfg: EnergyCfg):
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
         args = self.energy_cfg_args(cfg)
+        assert rna.r is not None
         res = self._run_cmd("./fold", *args, rna.r)
         _, db, _ = res.stdout.strip().split("\n")
         return Rna(rna.name, rna.r, db_to_secondary(db)), res
 
-    def partition(self, rna: Rna, cfg: EnergyCfg):
-        args = self.energy_cfg_args(cfg)
+    def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         raise NotImplementedError
 
-    def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
+    def subopt(
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
+    ) -> Tuple[list[Rna], CmdResult]:
         args = self.energy_cfg_args(energy_cfg)
         args += self.subopt_cfg_args(subopt_cfg)
+        assert rna.r is not None
         res = self._run_cmd("./subopt", *args, rna.r)
         subopts = []
         for line in res.stdout.splitlines()[:-1]:
-            energy, db = line.strip().split()
+            energy_str, db = line.strip().split()
+            energy = int(energy_str)
             subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
         return subopts, res
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "MemeRNA"

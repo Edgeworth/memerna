@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+from typing import Any
 import click
 import cloup
 from scripts.bridge.args import bridge_options
@@ -45,14 +46,14 @@ from scripts.util.util import fn_args
     ),
     help="Programs to run",
 )
-def harness(
+def harness(  # pylint: disable=too-many-locals
     programs: list[str],
     efn: bool,
     fold: bool,
     partition: bool,
     subopt: bool,
-    **kwargs,
-):
+    **kwargs: Any,
+) -> None:
     energy_cfg = energy_cfg_from_args(**fn_args())
     subopt_cfg = subopt_cfg_from_args(**fn_args())
     rna = rna_from_args(**fn_args())
@@ -76,5 +77,5 @@ def harness(
         if subopt:
             subopts, res = p.subopt(rna, energy_cfg, subopt_cfg)
             click.echo(f"{len(subopts)} suboptimal structures of RNA {rna.name} with {p} - {res}")
-            for energy, structure in subopts:
-                click.echo(f"{energy} {structure.db()}")
+            for rna in subopts:
+                click.echo(f"{rna.energy} {rna.db()}")

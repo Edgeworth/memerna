@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+from typing import Any
 import cloup
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg
@@ -20,7 +21,7 @@ energy_options = cloup.option_group(
 )
 
 
-def energy_cfg_from_args(lonely_pairs: bool, ctd: CtdCfg, **kwargs):
+def energy_cfg_from_args(lonely_pairs: bool, ctd: CtdCfg, **_kwargs: Any) -> EnergyCfg:
     return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd)
 
 
@@ -48,8 +49,8 @@ def subopt_cfg_from_args(
     subopt_delta: int | None,
     subopt_strucs: int | None,
     subopt_sorted: bool,
-    **kwargs,
-):
+    **_kwargs: Any,
+) -> SuboptCfg:
     return SuboptCfg(
         delta=subopt_delta,
         strucs=subopt_strucs,

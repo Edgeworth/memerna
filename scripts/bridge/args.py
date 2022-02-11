@@ -1,7 +1,9 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
+from typing import Any
 
 import cloup
+import click
 from scripts.bridge.memerna import MemeRna
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.bridge.rnastructure import RNAstructure
@@ -9,25 +11,33 @@ from scripts.bridge.sparsemfefold import SparseMfeFold
 from scripts.bridge.viennarna import ViennaRna
 
 
-def validate_memerna(ctx, param, value):
+def validate_memerna(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> MemeRna | None:
     if value is None:
         return None
     return MemeRna(value)
 
 
-def validate_rnastructure(ctx, param, value):
+def validate_rnastructure(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> RNAstructure | None:
     if value is None:
         return None
     return RNAstructure(value)
 
 
-def validate_sparsemfefold(ctx, param, value):
+def validate_sparsemfefold(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> SparseMfeFold | None:
     if value is None:
         return None
     return SparseMfeFold(value)
 
 
-def validate_viennarna(ctx, param, value):
+def validate_viennarna(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> ViennaRna | None:
     if value is None:
         return None
     return ViennaRna(value)
@@ -83,7 +93,9 @@ bridge_options = cloup.option_group(
 )
 
 
-def init_package_limits(time_limit_seconds: int | None, memory_limit_bytes: int | None, **kwargs):
+def init_package_limits(
+    time_limit_seconds: int | None, memory_limit_bytes: int | None, **kwargs: Any
+) -> None:
     for v in kwargs.values():
         if isinstance(v, RnaPackage):
             v.limits.time_sec = time_limit_seconds

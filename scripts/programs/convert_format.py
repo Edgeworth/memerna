@@ -1,4 +1,5 @@
 # Copyright 2016 Eliot Courtney.
+from typing import Any
 import click
 import cloup
 from scripts.data.args import data_options
@@ -8,11 +9,10 @@ from scripts.util.util import fn_args
 
 @cloup.command(aliases=["conv"])
 @data_options
-@cloup.option("-t", "--type", type=cloup.Choice(["db", "ct"]), default="db")
-def convert_format(type, **kwargs):
+@cloup.option("-k", "--kind", type=cloup.Choice(["db", "ct"]), default="db")
+def convert_format(kind: str, **_kwargs: Any) -> None:
     rna = rna_from_args(**fn_args())
-    match type:
-        case "ct":
-            click.echo(rna.to_ct_file())
-        case "db":
-            click.echo(rna.to_db_file())
+    if kind == "ct":
+        click.echo(rna.to_ct_file())
+    if kind == "db":
+        click.echo(rna.to_db_file())

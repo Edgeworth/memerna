@@ -8,6 +8,8 @@ from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
 from scripts.util.command import CmdLimits
 from scripts.util.command import run_cmd
+from scripts.util.command import CmdResult
+from typing import Tuple
 
 
 @dataclass
@@ -16,28 +18,30 @@ class RnaPackage:
     limits: CmdLimits = field(default_factory=CmdLimits)
     env: dict[str, str] = field(default_factory=dict)
 
-    def efn(self, rna: Rna, cfg: EnergyCfg):
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
         pass
 
-    def fold(self, rna: Rna, cfg: EnergyCfg):
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
         pass
 
-    def partition(self, rna: Rna, cfg: EnergyCfg):
+    def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         pass
 
-    def subopt(self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg):
+    def subopt(
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
+    ) -> Tuple[list[Rna], CmdResult]:
         pass
 
     def _run_cmd(
         self,
-        *cmd,
-        input: str | None = None,
+        *cmd: str,
+        inp: str | None = None,
         return_stdout: bool = True,
         stdout_path: Path | None = None,
-    ):
+    ) -> CmdResult:
         return run_cmd(
             *cmd,
-            input=input,
+            inp=inp,
             return_stdout=return_stdout,
             stdout_path=stdout_path,
             limits=self.limits,
