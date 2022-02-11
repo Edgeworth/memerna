@@ -7,7 +7,6 @@ from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
 from scripts.util.command import CmdResult
-from typing import Tuple
 
 
 @dataclass
@@ -18,10 +17,10 @@ class SparseMfeFold(RnaPackage):
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         raise NotImplementedError
 
-    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self.check_energy_cfg(cfg)
         res = self._run_cmd("./src/SparseMFEFold", inp=rna.r)
         seq, db = res.stdout.strip().split("\n")
@@ -33,8 +32,11 @@ class SparseMfeFold(RnaPackage):
         raise NotImplementedError("SparseMFEFold does not support partition")
 
     def subopt(
-        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> Tuple[list[Rna], CmdResult]:
+        self,
+        rna: Rna,
+        energy_cfg: EnergyCfg,
+        subopt_cfg: SuboptCfg,
+    ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
 
     def __str__(self) -> str:

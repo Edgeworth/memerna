@@ -40,20 +40,6 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py310-plus]
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.931
-    hooks:
-      - id: mypy
-        args: [
-            --disallow-untyped-defs, # Require type hints
-            --disallow-any-unimported, # Disallow any type that is not imported
-            --no-implicit-optional, # Disallow implicit optional e.g. arg: str = None
-            --check-untyped-defs, # Check bodies of functions without type annotations too
-            --warn-return-any, # Warn about returning Any from a function annotated to not return it
-            --warn-unused-ignores, # Warn about unused ignore annotations
-            --show-error-codes,
-          ]
-        additional_dependencies: [click, cloup]
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.2.1
     hooks:
@@ -72,19 +58,37 @@ repos:
     rev: v1.4.0
     hooks:
       - id: dead
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.931
+    hooks:
+      - id: mypy
+        args: [
+            --disallow-untyped-defs, # Require type hints
+            --disallow-any-unimported, # Disallow any type that is not imported
+            --no-implicit-optional, # Disallow implicit optional e.g. arg: str = None
+            --check-untyped-defs, # Check bodies of functions without type annotations too
+            --warn-return-any, # Warn about returning Any from a function annotated to not return it
+            --warn-unused-ignores, # Warn about unused ignore annotations
+            --show-error-codes,
+          ]
+        additional_dependencies: [click, cloup]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
     rev: 1.6.0
     hooks:
       - id: prospector
         args: [--max-line-length=100]
+        additional_dependencies: [click, cloup]
   # C++ related hooks:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
       - id: clang-format
         args: [-i] # modify in place
-      - id: clang-tidy
-        args: [--fix-errors]
+      - id: clang-tidy # will use .clang-tidy in top of repo
+        args: [
+            --fix, # using fix-errors breaks the hook and makes it fail if there is any stderr
+            --quiet, # don't print warnings (e.g. suppressed warnings in system headers)
+          ]
       - id: cppcheck
         args:
           [

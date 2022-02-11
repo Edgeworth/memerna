@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple
 
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import EnergyCfg
@@ -32,14 +31,14 @@ class MemeRna(RnaPackage):
             args += ["--no-subopt-sorted"]
         return args
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         args = self.energy_cfg_args(cfg)
         assert rna.r is not None
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
         energy = float(res.stdout.splitlines()[0].strip()) / 10.0
         return energy, res
 
-    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self.energy_cfg_args(cfg)
         assert rna.r is not None
         res = self._run_cmd("./fold", *args, rna.r)
@@ -50,8 +49,11 @@ class MemeRna(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> Tuple[list[Rna], CmdResult]:
+        self,
+        rna: Rna,
+        energy_cfg: EnergyCfg,
+        subopt_cfg: SuboptCfg,
+    ) -> tuple[list[Rna], CmdResult]:
         args = self.energy_cfg_args(energy_cfg)
         args += self.subopt_cfg_args(subopt_cfg)
         assert rna.r is not None
