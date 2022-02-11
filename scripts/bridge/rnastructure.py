@@ -1,6 +1,5 @@
 # Copyright 2022 E.
 from dataclasses import dataclass
-from pathlib import Path
 import re
 import tempfile
 

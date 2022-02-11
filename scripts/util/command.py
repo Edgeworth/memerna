@@ -27,11 +27,11 @@ class CmdResult:
     stderr: str
 
     def __str__(self):
-        return f"{self.real:.2f}s, {human_size(self.maxrss)} "
+        return f"{self.real_sec:.2f}s, {human_size(self.maxrss_bytes)} "
 
 
 def try_cmd(
-    *cmd,
+    *cmd: list[str],
     input: str | bytes | None = None,
     return_stdout: bool = True,
     stdout_path: Path | None = None,
@@ -43,7 +43,7 @@ def try_cmd(
         input = input.encode("utf-8")
 
     # Uses GNU time.
-    cmd = ["/usr/bin/time", "-f", "%e %U %S %M"] + list(cmd)
+    cmd = ["/usr/bin/time", "-f", "%e %U %S %M"] + cmd
 
     def pre_exec():
         if limits.mem_bytes:
@@ -99,7 +99,7 @@ def try_cmd(
 
 
 def run_cmd(
-    *cmd,
+    *cmd: list[str],
     input: str | bytes | None = None,
     return_stdout: bool = True,
     stdout_path: Path | None = None,

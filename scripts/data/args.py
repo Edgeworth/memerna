@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 import cloup
 from cloup.constraints import RequireAtLeast
+from scripts.data.memevault import MemeVault
 from scripts.model.parse import db_to_secondary
 from scripts.model.parse import seq_to_primary
 from scripts.model.rna import Rna

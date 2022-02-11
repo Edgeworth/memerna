@@ -20,7 +20,10 @@ from scripts.util.util import fn_args
 @cloup.option("-e", "--efn/--no-efn", default=False, help="Run efn the given RNA")
 @cloup.option("-f", "--fold/--no-fold", default=False, help="Fold the given RNA")
 @cloup.option(
-    "-p", "--partition/--no-partition", default=False, help="Run partition on the given RNA"
+    "-p",
+    "--partition/--no-partition",
+    default=False,
+    help="Run partition on the given RNA",
 )
 @cloup.option(
     "-s",
@@ -64,14 +67,14 @@ def harness(
     for p in packages:
         if efn:
             energy, res = p.efn(rna, energy_cfg)
-            click.echo(f"Energy of {rna.name} with {p}: {energy:f}\n  {res}")
+            click.echo(f"Energy of RNA {rna.name} with {p}: {energy:f}\n  {res}")
         if fold:
             frna, res = p.fold(rna, energy_cfg)
-            click.echo(f"Folding {rna.name} with {p}: {frna.db()}\n  {res}")
+            click.echo(f"Folding RNA {rna.name} with {p}: {frna.db()}\n  {res}")
         if partition:
             raise NotImplementedError
         if subopt:
             subopts, res = p.subopt(rna, energy_cfg, subopt_cfg)
-            click.echo(f"{len(subopts)} suboptimal structures of {rna.name} with {p} - {res}")
+            click.echo(f"{len(subopts)} suboptimal structures of RNA {rna.name} with {p} - {res}")
             for energy, structure in subopts:
                 click.echo(f"{energy} {structure.db()}")
