@@ -171,7 +171,7 @@ def parse_rnastructure_datatables(input: Path, output: Path):
     (output / "hairpin.data").write_text(
         parse_map_file((input / "triloop.txt").read_text())
         + parse_map_file((input / "tloop.txt").read_text())
-        + parse_map_file((input / "hexaloop.txt").read_text())
+        + parse_map_file((input / "hexaloop.txt").read_text()),
     )
     (output / "stacking.data").write_text(parse_stack_txt((input / "stack.txt").read_text()))
     (output / "terminal.data").write_text(parse_terminal_txt((input / "tstack.txt").read_text()))
@@ -181,13 +181,13 @@ def parse_rnastructure_datatables(input: Path, output: Path):
     (output / "bulge_initiation.data").write_text(bulge)
     (output / "hairpin_initiation.data").write_text(hairpin)
     (output / "internal_1x1.data").write_text(
-        parse_1x1_internal_loop((input / "int11.txt").read_text())
+        parse_1x1_internal_loop((input / "int11.txt").read_text()),
     )
     (output / "internal_1x2.data").write_text(
-        parse_1x2_internal_loop((input / "int21.txt").read_text())
+        parse_1x2_internal_loop((input / "int21.txt").read_text()),
     )
     (output / "internal_2x2.data").write_text(
-        parse_2x2_internal_loop((input / "int22.txt").read_text())
+        parse_2x2_internal_loop((input / "int22.txt").read_text()),
     )
 
     dangle3, dangle5 = parse_dangle_file((input / "dangle.txt").read_text())

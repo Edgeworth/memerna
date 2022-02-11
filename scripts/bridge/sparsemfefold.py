@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
-from pathlib import Path
 
 from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import CtdCfg

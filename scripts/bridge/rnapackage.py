@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 
 from scripts.model.config import EnergyCfg

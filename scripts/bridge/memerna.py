@@ -33,7 +33,6 @@ class MemeRna(RnaPackage):
     def efn(self, rna: Rna, cfg: EnergyCfg):
         args = self.energy_cfg_args(cfg)
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
-        print(res.stdout)
         energy = float(res.stdout.splitlines()[0].strip()) / 10.0
         return energy, res
 
