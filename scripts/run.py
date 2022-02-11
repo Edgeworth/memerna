@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import cloup
 from scripts.programs.analysis.compare_partition import compare_partition
+from scripts.programs.build import build
 from scripts.programs.convert_format import convert_format
 from scripts.programs.crop_image import crop_image
 from scripts.programs.harness import harness
@@ -22,6 +23,7 @@ def cli() -> None:
 
 
 cli.section("Analysis", compare_partition, harness)
+cli.section("Build", build)
 cli.section("Conversion", convert_format, crop_image, parse_rnastructure_datatables)
 
 if __name__ == "__main__":

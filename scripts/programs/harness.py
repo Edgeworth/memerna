@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from typing import Any
+
 import click
 import cloup
 from scripts.bridge.args import bridge_options

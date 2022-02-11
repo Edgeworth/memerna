@@ -9,7 +9,6 @@ from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
 from scripts.util.command import CmdResult
-from typing import Tuple
 
 
 @dataclass
@@ -31,7 +30,7 @@ class RNAstructure(RnaPackage):
                 "RNAstructure does not support subopt with max number of structures",
             )
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
             fin.write(rna.to_ct_file())
@@ -46,7 +45,7 @@ class RNAstructure(RnaPackage):
             energy = float(match.group(1))
         return energy, res
 
-    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
             fin.write(rna.to_seq_file())
@@ -60,8 +59,11 @@ class RNAstructure(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> Tuple[list[Rna], CmdResult]:
+        self,
+        rna: Rna,
+        energy_cfg: EnergyCfg,
+        subopt_cfg: SuboptCfg,
+    ) -> tuple[list[Rna], CmdResult]:
         self.check_energy_cfg(energy_cfg)
         self.check_subopt_cfg(subopt_cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:

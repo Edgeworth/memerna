@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+
 from scripts.model.rna import Rna
 
 
@@ -36,4 +37,7 @@ class RnaAccuracy:
         return RnaAccuracy(ppv=ppv, sensitivity=sensitivity)
 
     def __str__(self) -> str:
-        return f"F-Score: {self.fscore:.2f} - PPV: {self.ppv:.2f} - Sensitivity: {self.sensitivity:.2f}"
+        return (
+            f"F-Score: {self.fscore:.2f} - PPV: {self.ppv:.2f}"
+            f" - Sensitivity: {self.sensitivity:.2f}"
+        )

@@ -2,8 +2,8 @@
 import decimal
 import math
 
-import cloup
 import click
+import cloup
 
 
 @cloup.command()

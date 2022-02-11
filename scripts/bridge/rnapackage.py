@@ -7,9 +7,8 @@ from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
 from scripts.model.rna import Rna
 from scripts.util.command import CmdLimits
-from scripts.util.command import run_cmd
 from scripts.util.command import CmdResult
-from typing import Tuple
+from scripts.util.command import run_cmd
 
 
 @dataclass
@@ -18,18 +17,21 @@ class RnaPackage:
     limits: CmdLimits = field(default_factory=CmdLimits)
     env: dict[str, str] = field(default_factory=dict)
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         pass
 
-    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         pass
 
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         pass
 
     def subopt(
-        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> Tuple[list[Rna], CmdResult]:
+        self,
+        rna: Rna,
+        energy_cfg: EnergyCfg,
+        subopt_cfg: SuboptCfg,
+    ) -> tuple[list[Rna], CmdResult]:
         pass
 
     def _run_cmd(

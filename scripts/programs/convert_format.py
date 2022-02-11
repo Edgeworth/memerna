@@ -1,5 +1,6 @@
 # Copyright 2016 Eliot Courtney.
 from typing import Any
+
 import click
 import cloup
 from scripts.data.args import data_options

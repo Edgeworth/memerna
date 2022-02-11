@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from typing import Any
+
 import cloup
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg

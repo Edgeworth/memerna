@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any
+from typing import TextIO
 
 import click
 import cloup
@@ -11,7 +12,9 @@ from scripts.model.rna import Rna
 
 
 def validate_rna_file(
-    _ctx: click.Context, _param: click.Parameter, value: TextIO | None
+    _ctx: click.Context,
+    _param: click.Parameter,
+    value: TextIO | None,
 ) -> Rna | None:
     if value is None:
         return None
@@ -25,7 +28,9 @@ def validate_seq(_ctx: click.Context, _param: click.Parameter, value: str | None
 
 
 def validate_db(
-    _ctx: click.Context, _param: click.Parameter, value: str | None
+    _ctx: click.Context,
+    _param: click.Parameter,
+    value: str | None,
 ) -> list[int] | None:
     if value is None:
         return None

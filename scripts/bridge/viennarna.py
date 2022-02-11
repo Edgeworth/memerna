@@ -10,7 +10,6 @@ from scripts.model.config import SuboptCfg
 from scripts.model.parse import db_to_secondary
 from scripts.model.rna import Rna
 from scripts.util.command import CmdResult
-from typing import Tuple
 
 
 @dataclass
@@ -43,7 +42,7 @@ class ViennaRna(RnaPackage):
             args += ["--sorted"]
         return args
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> Tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         args = self.energy_cfg_args(cfg)
         res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
@@ -51,7 +50,7 @@ class ViennaRna(RnaPackage):
         energy = float(match.group(1))
         return energy, res
 
-    def fold(self, rna: Rna, cfg: EnergyCfg) -> Tuple[Rna, CmdResult]:
+    def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self.energy_cfg_args(cfg)
         with tempfile.NamedTemporaryFile("w") as f:
             assert rna.r is not None
@@ -67,8 +66,11 @@ class ViennaRna(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> Tuple[list[Rna], CmdResult]:
+        self,
+        rna: Rna,
+        energy_cfg: EnergyCfg,
+        subopt_cfg: SuboptCfg,
+    ) -> tuple[list[Rna], CmdResult]:
         args = self.energy_cfg_args(energy_cfg)
         args += self.subopt_cfg_args(subopt_cfg)
         res = self._run_cmd("./src/bin/RNAsubopt", *args, inp=rna.r)

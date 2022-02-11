@@ -122,3 +122,14 @@ def run_cmd(
         click.echo(f"stderr: {res.stderr}")
         sys.exit(1)
     return res
+
+
+def run_shell(cmd: str, cwd: Path | None = None) -> None:
+    prev_cwd = os.getcwd()
+    if cwd is not None:
+        os.chdir(cwd)
+    ret_code = os.system(cmd)
+    os.chdir(prev_cwd)
+    if ret_code != 0:
+        click.echo(f"Running `{cmd}' failed with ret code {ret_code}.")
+        sys.exit(1)
