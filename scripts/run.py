@@ -17,7 +17,7 @@ CONTEXT_SETTINGS = cloup.Context.settings(
 
 
 @cloup.group(context_settings=CONTEXT_SETTINGS)
-def cli():
+def cli() -> None:
     pass
 
 
