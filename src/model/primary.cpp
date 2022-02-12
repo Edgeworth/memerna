@@ -18,8 +18,9 @@ Primary Primary::Random(int length) {
 Primary Primary::FromSeq(const std::string& s) {
   Primary r(s.size());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
-    r[i] = CharToBase(s[i]);
-    verify(r[i] != -1, "unexpected base %c", s[i]);
+    const auto base = CharToBase(s[i]);
+    verify(base.has_value(), "unexpected base %c", s[i]);
+    r[i] = *base;
   }
   return r;
 }
@@ -27,7 +28,7 @@ Primary Primary::FromSeq(const std::string& s) {
 std::string Primary::ToSeq() const {
   std::string s;
   s.resize(size());
-  for (int i = 0; i < static_cast<int>(size()); ++i) s[i] = BaseToChar(data_[i]);
+  for (int i = 0; i < static_cast<int>(size()); ++i) s[i] = BaseToChar(data_[i]).value();
   return s;
 }
 

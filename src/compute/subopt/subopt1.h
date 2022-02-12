@@ -67,7 +67,7 @@ class Suboptimal1 {
   std::vector<Index> unexpanded_;
 
   std::pair<int, int> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int structure_limit);
+      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {

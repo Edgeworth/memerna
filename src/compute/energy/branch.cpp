@@ -197,7 +197,7 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
     bool used = false;
     int idx = 0;
     Energy energy = 0;
-    Ctd reason;
+    Ctd reason = CTD_NA;
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
     // We can skip a branch on coaxial stacking interactions, so make sure to insert the ctd energy

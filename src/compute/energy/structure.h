@@ -19,6 +19,10 @@ const char* CtdToName(Ctd ctd);
 class Structure {
  public:
   Structure() = default;
+
+  Structure(Structure&& o) = default;
+  Structure& operator=(Structure&&) = default;
+
   Structure(const Structure&) = delete;
   Structure& operator=(const Structure&) = delete;
 

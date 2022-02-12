@@ -24,6 +24,8 @@ namespace mrna::bridge {
 class RNAstructure : public RnaPackage {
  public:
   RNAstructure(const std::string& data_path, bool use_lyngso);
+  ~RNAstructure() override = default;
+
   RNAstructure(RNAstructure&&) = default;
   RNAstructure& operator=(RNAstructure&&) = default;
 

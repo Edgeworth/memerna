@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/ctd.h"
 
+#include <bits/ranges_algo.h>
+
 #include <stack>
 #include <utility>
 
@@ -48,9 +50,7 @@ std::string Ctds::ToString(const Secondary& s) const {
 }
 
 bool Ctds::IsCtdString(const std::string& ctd_str) {
-  for (auto c : ctd_str)
-    if (c == '(') return false;
-  return true;
+  return std::ranges::none_of(ctd_str, [](char c) { return c == '('; });
 }
 
 // Breaking ambiguous case for the old format:
@@ -58,15 +58,14 @@ bool Ctds::IsCtdString(const std::string& ctd_str) {
 // (m(   )m(   )m(   )m)
 
 std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
-    const std::string& prim_str, const std::string& pairs_str) {
+    const std::string& prim_str, const std::string& ctd_str) {
   auto r = Primary::FromSeq(prim_str);
-  verify(
-      prim_str.size() == pairs_str.size(), "primary and pairs string need to be the same length");
+  verify(prim_str.size() == ctd_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(r.size());
   std::stack<int> stk;
   Secondary s(N);
   for (int i = 0; i < N; ++i) {
-    char c = pairs_str[i];
+    char c = ctd_str[i];
     if (c == 'p' || c == 'n' || c == '[') {
       stk.push(i);
     } else if (c == 'P' || c == 'N' || c == ']') {
@@ -82,7 +81,7 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
   const std::string branch_characters = "nNpP[]";
   Ctds ctd(N);
   for (int i = 0; i < N; ++i) {
-    char c = pairs_str[i];
+    char c = ctd_str[i];
     // Coaxial stacking handling.
     if (c == 'P' || c == 'p') {
       int prev = i - 1;
@@ -92,11 +91,11 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
         --prev;
         mismatch = true;
       }
-      verify(prev >= 0 && s[prev] != -1 && (pairs_str[s[prev]] == 'n' || pairs_str[s[prev]] == 'N'),
+      verify(prev >= 0 && s[prev] != -1 && (ctd_str[s[prev]] == 'n' || ctd_str[s[prev]] == 'N'),
           "invalid input");
       verify(ctd[i] == CTD_NA && ctd[s[prev]] == CTD_NA, "invalid input");
-      bool left_mismatch = s[prev] - 1 >= 0 && pairs_str[s[prev] - 1] == 'm';
-      bool right_mismatch = s[i] + 1 < N && pairs_str[s[i] + 1] == 'M';
+      bool left_mismatch = s[prev] - 1 >= 0 && ctd_str[s[prev] - 1] == 'm';
+      bool right_mismatch = s[i] + 1 < N && ctd_str[s[i] + 1] == 'M';
       verify(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
       if (mismatch) {
         if (left_mismatch) {
@@ -145,14 +144,14 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
       stk.pop();
     }
     if (allowed_characters.find(c) == std::string::npos)
-      verify(false, "invalid input '%c'", pairs_str[i]);
+      verify(false, "invalid input '%c'", ctd_str[i]);
   }
   // Add in the terminal mismatches.
   for (int i = 0; i < N; ++i) {
-    char c = pairs_str[i];
+    char c = ctd_str[i];
     if (c == 'm') {
       bool right_branch_viable =
-          i + 1 < N && s[i + 1] != -1 && s[i + 1] + 1 < N && pairs_str[s[i + 1] + 1] == 'M';
+          i + 1 < N && s[i + 1] != -1 && s[i + 1] + 1 < N && ctd_str[s[i + 1] + 1] == 'M';
       verify(right_branch_viable && ctd[i + 1] != CTD_NA, "invalid input");
       if (ctd[i + 1] == CTD_UNUSED) ctd[i + 1] = CTD_MISMATCH;
     }

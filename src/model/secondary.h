@@ -16,6 +16,7 @@ namespace mrna {
 class Secondary {
  public:
   Secondary() = default;
+  ~Secondary() = default;
   explicit Secondary(std::initializer_list<int> init) : data_(init) {}
   explicit Secondary(std::size_t size) : data_(size, -1) {}
 

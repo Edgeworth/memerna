@@ -22,6 +22,7 @@ namespace mrna::bridge {
 class Memerna : public RnaPackage {
  public:
   explicit Memerna(ctx::Ctx ctx) : ctx_(std::move(ctx)) {}
+  ~Memerna() override = default;
 
   Memerna(Memerna&& o) = default;
   Memerna& operator=(Memerna&&) = default;

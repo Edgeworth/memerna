@@ -79,7 +79,7 @@ uint32_t Crc32(const std::string& data) {
   }
 
   uint32_t window = 0xFFFFFFFF;
-  for (char i : data) window = (window >> 8) ^ (table[(window & 0xFF) ^ uint8_t(i)]);
+  for (char i : data) window = (window >> 8) ^ (table[(window & 0xFFU) ^ uint8_t(i)]);
 
   return ~window;
 }

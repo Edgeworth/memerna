@@ -54,10 +54,6 @@ repos:
     hooks:
       - id: blacken-docs
         args: [--line-length=100, -t=py310]
-  - repo: https://github.com/asottile/dead
-    rev: v1.4.0
-    hooks:
-      - id: dead
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.931
     hooks:
@@ -84,8 +80,6 @@ repos:
     hooks:
       - id: clang-format
         args: [-i] # modify in place
-      - id: clang-tidy # will use .clang-tidy in top of repo
-        args: [--fix-errors]
       - id: cppcheck
         args: [
             -q,
@@ -111,3 +105,11 @@ repos:
             "--filter=-readability/todo,-readability/fn_size,-build/c++11,-build/include_subdir",
             --root=src,
           ]
+  - repo: local # using local clang-tidy because of bugs in pocc. uses .clang-tidy at top of repo
+    hooks:
+      - id: clang-tidy
+        name: clang-tidy
+        description: Statically analyse files with clang-tidy.
+        entry: clang-tidy --fix-errors
+        language: system
+        types_or: [c, c++, objective-c, objective-c++]

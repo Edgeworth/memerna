@@ -46,14 +46,14 @@ class BruteForce {
 
  private:
   // Partition function:
-  inline constexpr static int PT_MAX_BITS = 6;
-  inline constexpr static int CTD_MAX_BITS = 4;
-  inline constexpr static int PT_MASK = (1 << PT_MAX_BITS) - 1;
-  inline constexpr static int CTD_MASK = (1 << CTD_MAX_BITS) - 1;
+  inline constexpr static uint32_t PT_MAX_BITS = 6;
+  inline constexpr static uint32_t CTD_MAX_BITS = 4;
+  inline constexpr static uint32_t PT_MASK = (1 << PT_MAX_BITS) - 1;
+  inline constexpr static uint32_t CTD_MASK = (1 << CTD_MAX_BITS) - 1;
 
   struct SubstructureId {
-    inline constexpr static int BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
-    inline constexpr static int BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
+    inline constexpr static uint32_t BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
+    inline constexpr static uint32_t BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
     uint16_t bits[BYTES / 2];
 
     auto operator<=>(const SubstructureId&) const = default;

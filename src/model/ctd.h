@@ -15,7 +15,7 @@
 
 namespace mrna {
 
-enum Ctd : int8_t {
+enum Ctd : uint8_t {
   // Used if CTDs are not relevant (e.g. unspecified), or if the corresponding base cannot be in a
   // CTD.
   CTD_NA,
@@ -36,6 +36,7 @@ enum Ctd : int8_t {
 class Ctds {
  public:
   Ctds() = default;
+  ~Ctds() = default;
   explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
   explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
 
