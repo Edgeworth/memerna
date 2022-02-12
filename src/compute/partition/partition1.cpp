@@ -17,7 +17,7 @@
 namespace mrna::part {
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
-    const Primary& r, energy::BoltzEnergyModelPtr bem) {
+    const Primary& r, const energy::BoltzEnergyModelPtr& bem) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -27,8 +27,12 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const Base stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
-                 en2b = r[en - 2];
+      const Base stb = r[st];
+      const Base st1b = r[st + 1];
+      const Base st2b = r[st + 2];
+      const Base enb = r[en];
+      const Base en1b = r[en - 1];
+      const Base en2b = r[en - 2];
 
       // TODO: check lonely pairs
       if (bem->em().CanPair(r, st, en)) {
@@ -54,7 +58,10 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         const auto outer_coax = bem->MismatchCoaxial(stb, st1b, en1b, enb);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          Base pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
+          Base pl1b = r[piv - 1];
+          Base plb = r[piv];
+          Base prb = r[piv + 1];
+          Base pr1b = r[piv + 2];
 
           // (.(   )   .) Left outer coax - P
           p += base_branch_cost * dp[st + 2][piv][PT_P] * dp[piv + 1][en - 2][PT_U] *
@@ -80,7 +87,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
 
         dp[st][en][PT_P] = p;
       }
-      BoltzEnergy u{0}, u2{0}, rcoax{0}, wc{0}, gu{0};
+      BoltzEnergy u{0};
+      BoltzEnergy u2{0};
+      BoltzEnergy rcoax{0};
+      BoltzEnergy wc{0};
+      BoltzEnergy gu{0};
       // Update unpaired.
       // Choose |st| to be unpaired.
       if (st + 1 < en) {
@@ -91,7 +102,8 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        const auto pb = r[piv], pl1b = r[piv - 1];
+        const auto pb = r[piv];
+        const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
         const BoltzEnergy base01 = dp[st][piv - 1][PT_P] * bpc.augubranch[stb][pl1b];
@@ -170,10 +182,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
     for (int en = 0; en < st; ++en) {
       //        ..)...(..
       // rspace  en   st  lspace
-      const int lspace = N - st - 1, rspace = en;
-      const Base stb = r[st], st1b = lspace ? r[st + 1] : Base(-1),
-                 st2b = lspace > 1 ? r[st + 2] : Base(-1), enb = r[en],
-                 en1b = rspace ? r[en - 1] : Base(-1), en2b = rspace > 1 ? r[en - 2] : Base(-1);
+      const int lspace = N - st - 1;
+      const int rspace = en;
+      const Base stb = r[st];
+      const Base st1b = lspace ? r[st + 1] : Base(-1);
+      const Base st2b = lspace > 1 ? r[st + 2] : Base(-1);
+      const Base enb = r[en];
+      const Base en1b = rspace ? r[en - 1] : Base(-1);
+      const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
       // TODO: check lonely pairs
       if (bem->em().CanPair(r, en, st)) {
@@ -226,8 +242,12 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
 
           const int limit = en + N;
           for (int tpiv = st; tpiv <= limit; ++tpiv) {
-            const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N), pr = FastMod(tpiv + 1, N);
-            Base pl1b = r[pl], plb = r[piv], prb = r[pr];
+            const int pl = FastMod(tpiv - 1, N);
+            const int piv = FastMod(tpiv, N);
+            const int pr = FastMod(tpiv + 1, N);
+            Base pl1b = r[pl];
+            Base plb = r[piv];
+            Base prb = r[pr];
             const bool left_formable = tpiv < N && tpiv - st - 2 >= HAIRPIN_MIN_SZ;
             const bool right_formable = tpiv >= N && en - piv - 2 >= HAIRPIN_MIN_SZ;
 
@@ -276,10 +296,15 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         // At worst the enclosing loop has to start at st + 1.
         const int limit = en + N;
         for (int tpiv = st + 2; tpiv < limit; ++tpiv) {
-          const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N), pr = FastMod(tpiv + 1, N),
-                    pr1 = FastMod(tpiv + 2, N);
+          const int pl = FastMod(tpiv - 1, N);
+          const int piv = FastMod(tpiv, N);
+          const int pr = FastMod(tpiv + 1, N);
+          const int pr1 = FastMod(tpiv + 2, N);
           // Left block is: [st, piv], Right block is: [piv + 1, en].
-          Base pl1b = r[pl], plb = r[piv], prb = r[pr], pr1b = r[pr1];
+          Base pl1b = r[pl];
+          Base plb = r[piv];
+          Base prb = r[pr];
+          Base pr1b = r[pr1];
           // When neither the left block nor the right block straddles the border
           // we don't get enclosing loops sometimes, so check against N - 1.
           const bool straddling = tpiv != (N - 1);
@@ -338,7 +363,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         }
         dp[st][en][PT_P] = p;
       }
-      BoltzEnergy u{0}, u2{0}, rcoax{0}, wc{0}, gu{0};
+      BoltzEnergy u{0};
+      BoltzEnergy u2{0};
+      BoltzEnergy rcoax{0};
+      BoltzEnergy wc{0};
+      BoltzEnergy gu{0};
       // Update unpaired.
       // Choose |st| to be unpaired, but only if we can maintain the constraint that we have
       // an enclosing loop formed.
@@ -348,8 +377,12 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
       }
 
       for (int tpiv = st + 1; tpiv <= en + N; ++tpiv) {
-        const int pl = FastMod(tpiv - 1, N), piv = FastMod(tpiv, N), pr = FastMod(tpiv + 1, N);
-        const auto pb = r[piv], pl1b = r[pl], prb = r[pr];
+        const int pl = FastMod(tpiv - 1, N);
+        const int piv = FastMod(tpiv, N);
+        const int pr = FastMod(tpiv + 1, N);
+        const auto pb = r[piv];
+        const auto pl1b = r[pl];
+        const auto prb = r[pr];
         const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
         const BoltzEnergy base01 = dp[st][pl][PT_P] * bpc.augubranch[stb][pl1b];
 

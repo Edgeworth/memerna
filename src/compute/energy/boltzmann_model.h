@@ -21,32 +21,32 @@ using BoltzEnergyModelPtr = std::shared_ptr<BoltzEnergyModel>;
 
 class BoltzEnergyModel {
  public:
-  BoltzEnergy stack[4][4][4][4];
-  BoltzEnergy terminal[4][4][4][4];
-  BoltzEnergy internal_init[EnergyModel::INITIATION_CACHE_SZ];
-  BoltzEnergy internal_1x1[4][4][4][4][4][4];
-  BoltzEnergy internal_1x2[4][4][4][4][4][4][4];
-  BoltzEnergy internal_2x2[4][4][4][4][4][4][4][4];
-  BoltzEnergy internal_2x3_mismatch[4][4][4][4];
-  BoltzEnergy internal_other_mismatch[4][4][4][4];
-  BoltzEnergy internal_asym;
-  BoltzEnergy internal_augu_penalty;
-  BoltzEnergy bulge_init[EnergyModel::INITIATION_CACHE_SZ];
-  BoltzEnergy bulge_special_c;
-  BoltzEnergy hairpin_init[EnergyModel::INITIATION_CACHE_SZ];
-  BoltzEnergy hairpin_uu_ga_first_mismatch, hairpin_gg_first_mismatch, hairpin_special_gu_closure,
-      hairpin_c3_loop, hairpin_all_c_a, hairpin_all_c_b;
+  BoltzEnergy stack[4][4][4][4]{};
+  BoltzEnergy terminal[4][4][4][4]{};
+  BoltzEnergy internal_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy internal_1x1[4][4][4][4][4][4]{};
+  BoltzEnergy internal_1x2[4][4][4][4][4][4][4]{};
+  BoltzEnergy internal_2x2[4][4][4][4][4][4][4][4]{};
+  BoltzEnergy internal_2x3_mismatch[4][4][4][4]{};
+  BoltzEnergy internal_other_mismatch[4][4][4][4]{};
+  BoltzEnergy internal_asym{};
+  BoltzEnergy internal_augu_penalty{};
+  BoltzEnergy bulge_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy bulge_special_c{};
+  BoltzEnergy hairpin_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy hairpin_uu_ga_first_mismatch{}, hairpin_gg_first_mismatch{},
+      hairpin_special_gu_closure{}, hairpin_c3_loop{}, hairpin_all_c_a{}, hairpin_all_c_b{};
   std::unordered_map<std::string, BoltzEnergy> hairpin;
-  BoltzEnergy multiloop_hack_a, multiloop_hack_b;
-  BoltzEnergy dangle5[4][4][4];
-  BoltzEnergy dangle3[4][4][4];
-  BoltzEnergy coax_mismatch_non_contiguous, coax_mismatch_wc_bonus, coax_mismatch_gu_bonus;
-  BoltzEnergy augu_penalty;
+  BoltzEnergy multiloop_hack_a{}, multiloop_hack_b{};
+  BoltzEnergy dangle5[4][4][4]{};
+  BoltzEnergy dangle3[4][4][4]{};
+  BoltzEnergy coax_mismatch_non_contiguous{}, coax_mismatch_wc_bonus{}, coax_mismatch_gu_bonus{};
+  BoltzEnergy augu_penalty{};
 
   BoltzEnergyModel() = delete;
 
-  static BoltzEnergyModelPtr Create(EnergyModelPtr em) {
-    return BoltzEnergyModelPtr(new BoltzEnergyModel(std::move(em)));
+  static BoltzEnergyModelPtr Create(const EnergyModelPtr& em) {
+    return BoltzEnergyModelPtr(new BoltzEnergyModel(em));
   }
 
   const EnergyModel& em() const { return *em_; }
@@ -99,7 +99,7 @@ class BoltzEnergyModel {
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzEnergyModel(EnergyModelPtr em);
+  explicit BoltzEnergyModel(const EnergyModelPtr& em);
 };
 
 }  // namespace mrna::energy

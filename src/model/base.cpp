@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "model/base.h"
 
+#include <limits>
+
 namespace mrna {
 
 Base CharToBase(char c) {
@@ -9,7 +11,7 @@ Base CharToBase(char c) {
   case 'C': return C;
   case 'G': return G;
   case 'U': return U;
-  default: return -1;
+  default: return INVALID_BASE;
   }
 }
 

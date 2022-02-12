@@ -55,7 +55,7 @@ struct FuzzCfg {
   bool part = true;
   bool part_rnastructure = false;
 
-  std::string Desc();
+  [[nodiscard]] std::string Desc() const;
 
   static FuzzCfg FromArgParse(const ArgParse& args);
 };

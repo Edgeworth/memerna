@@ -21,7 +21,7 @@ Suboptimal1::Suboptimal1(
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 
-int Suboptimal1::Run(SuboptCallback fn) {
+int Suboptimal1::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(0, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
@@ -41,7 +41,7 @@ int Suboptimal1::Run(SuboptCallback fn) {
 }
 
 std::pair<int, int> Suboptimal1::RunInternal(
-    SuboptCallback fn, Energy delta, bool exact_energy, int max) {
+    const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -111,12 +111,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
           if (count == max) return {count, -1};
         }
         continue;  // Done
-      } else {
-        ns.expand = unexpanded_.back();
-        unexpanded_.pop_back();
-        // This node should replace itself into |unexpanded| when its done.
-        ns.should_unexpand = true;
       }
+      ns.expand = unexpanded_.back();
+      unexpanded_.pop_back();
+      // This node should replace itself into |unexpanded| when its done.
+      ns.should_unexpand = true;
+
     } else {
       // Apply child's modifications to the global state.
       if (exp.ctd0.idx != -1) res_.tb.ctd[exp.ctd0.idx] = exp.ctd0.ctd;
@@ -136,10 +136,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
 
 std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
-  int st = to_expand.st, en = to_expand.en, a = to_expand.a;
+  int st = to_expand.st;
+  int en = to_expand.en;
+  int a = to_expand.a;
   std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
-  Energy energy;
+  Energy energy = 0;
   // Exterior loop
   if (en == -1) {
     if (a == EXT) {
@@ -153,7 +155,10 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
-      const auto stb = r_[st], st1b = r_[st + 1], enb = r_[en], en1b = r_[en - 1];
+      const auto stb = r_[st];
+      const auto st1b = r_[st + 1];
+      const auto enb = r_[en];
+      const auto en1b = r_[en - 1];
       const auto base00 = dp_[st][en][DP_P] + em_->AuGuPenalty(stb, enb) - ext_[st][a];
       const auto base01 = dp_[st][en - 1][DP_P] + em_->AuGuPenalty(stb, en1b) - ext_[st][a];
       const auto base10 = dp_[st + 1][en][DP_P] + em_->AuGuPenalty(st1b, enb) - ext_[st][a];
@@ -237,8 +242,12 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
   }
 
   // Declare the usual base aliases.
-  const auto stb = r_[st], st1b = r_[st + 1], st2b = r_[st + 2], enb = r_[en], en1b = r_[en - 1],
-             en2b = r_[en - 2];
+  const auto stb = r_[st];
+  const auto st1b = r_[st + 1];
+  const auto st2b = r_[st + 2];
+  const auto enb = r_[en];
+  const auto en1b = r_[en - 1];
+  const auto en2b = r_[en - 2];
 
   // Normal stuff
   if (a == DP_P) {
@@ -270,7 +279,10 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-      Base pl1b = r_[piv - 1], plb = r_[piv], prb = r_[piv + 1], pr1b = r_[piv + 2];
+      Base pl1b = r_[piv - 1];
+      Base plb = r_[piv];
+      Base prb = r_[piv + 1];
+      Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
       auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);
@@ -328,7 +340,8 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
   for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
     //   (   .   )<   (
     // stb pl1b pb   pr1b
-    auto pb = r_[piv], pl1b = r_[piv - 1];
+    auto pb = r_[piv];
+    auto pl1b = r_[piv - 1];
     // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
     auto base00 = dp_[st][piv][DP_P] + pc_.augubranch[stb][pb] - dp_[st][en][a];
     auto base01 = dp_[st][piv - 1][DP_P] + pc_.augubranch[stb][pl1b] - dp_[st][en][a];

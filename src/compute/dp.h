@@ -57,9 +57,9 @@ enum : int8_t { CAND_EN_P_MISMATCH, CAND_EN_P_OUTER, CAND_EN_P_FLUSH, CAND_EN_SI
 // Index into the DP tables.
 // Use int16_t here to save memory.
 struct Index {
-  int16_t st, en, a;
+  int16_t st{-1}, en{-1}, a{-1};
 
-  Index() : st(-1), en(-1), a(-1) {}
+  Index() = default;
   Index(int st_, int en_, int a_) : st(int16_t(st_)), en(int16_t(en_)), a(int16_t(a_)) {
     assert(st_ == st && en_ == en && a == a_);
   }
@@ -69,11 +69,11 @@ struct Index {
 
 // Describes a CTD at a particular index.
 struct IndexCtd {
-  IndexCtd() : idx(-1), ctd(CTD_NA) {}
+  IndexCtd() = default;
   IndexCtd(int idx_, Ctd ctd_) : idx(int16_t(idx_)), ctd(ctd_) { assert(idx_ == idx); }
 
-  int16_t idx;
-  Ctd ctd;
+  int16_t idx{-1};
+  Ctd ctd{CTD_NA};
 };
 
 }  // namespace mrna

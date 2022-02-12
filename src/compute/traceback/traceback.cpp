@@ -21,7 +21,9 @@ TracebackResult Traceback(
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
-    int st = q.top().st, en = q.top().en, a = q.top().a;
+    int st = q.top().st;
+    int en = q.top().en;
+    int a = q.top().a;
     q.pop();
 
     if (en == -1) {
@@ -33,7 +35,10 @@ TracebackResult Traceback(
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         // .   .   .   (   .   .   .   )   <   >
         //           stb  st1b   en1b  enb   rem
-        const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+        const auto stb = r[st];
+        const auto st1b = r[st + 1];
+        const auto enb = r[en];
+        const auto en1b = r[en - 1];
         const auto base00 = dp[st][en][DP_P] + em.AuGuPenalty(stb, enb);
         const auto base01 = dp[st][en - 1][DP_P] + em.AuGuPenalty(stb, en1b);
         const auto base10 = dp[st + 1][en][DP_P] + em.AuGuPenalty(st1b, enb);
@@ -133,8 +138,12 @@ TracebackResult Traceback(
         }
       }
     } else {
-      const auto stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
-                 en2b = r[en - 2];
+      const auto stb = r[st];
+      const auto st1b = r[st + 1];
+      const auto st2b = r[st + 2];
+      const auto enb = r[en];
+      const auto en1b = r[en - 1];
+      const auto en2b = r[en - 2];
       if (a == DP_P) {
         // It's paired, so add it to the folding.
         res.s[st] = en;
@@ -185,7 +194,10 @@ TracebackResult Traceback(
         }
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-          const Base pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
+          const Base pl1b = r[piv - 1];
+          const Base plb = r[piv];
+          const Base prb = r[piv + 1];
+          const Base pr1b = r[piv + 2];
 
           // (.(   )   .) Left outer coax - P
           const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
@@ -271,7 +283,8 @@ TracebackResult Traceback(
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        const auto pb = r[piv], pl1b = r[piv - 1];
+        const auto pb = r[piv];
+        const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const auto base00 = dp[st][piv][DP_P] + em.AuGuPenalty(stb, pb) + em.multiloop_hack_b;
         const auto base01 = dp[st][piv - 1][DP_P] + em.AuGuPenalty(stb, pl1b) + em.multiloop_hack_b;

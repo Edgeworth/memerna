@@ -130,7 +130,7 @@ class FuzzHarness {
       int len = len_dist(e_);
       auto r = mrna::Primary::Random(len);
 
-      auto fuzzer = CreateFuzzer(std::move(r));
+      auto fuzzer = CreateFuzzer(r);
       const auto res = fuzzer.Run();
       if (!res.empty()) {
         for (const auto& s : res) printf("%s\n", s.c_str());

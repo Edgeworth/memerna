@@ -19,7 +19,7 @@ constexpr uint32_t CRC_MAGIC = 0xEDB88320;
 std::optional<std::string> sgetline(FILE* fp) {
   auto size = START_BUF_SIZE;
   std::string s;
-  while (1) {
+  while (true) {
     auto buf = std::make_unique<char[]>(size);
     bool done = fgets(buf.get(), size, fp) == nullptr;
     if (done && ferror(fp)) throw std::runtime_error("failed to read file");
@@ -50,7 +50,7 @@ std::string vsfmt(const char* fmt, va_list l) {
     auto buf = std::make_unique<char[]>(size);
     const int res = vsnprintf(buf.get(), size, fmt, l);
     if (res < 0) throw std::runtime_error("failed to vsnprintf");
-    if (res < size) return std::string(buf.get());
+    if (res < size) return buf.get();
     size *= 2;
   } while (size < MAX_BUF_SIZE);
   throw std::length_error("output of vsfmt would be too large");
@@ -59,13 +59,13 @@ std::string vsfmt(const char* fmt, va_list l) {
 std::string TrimLeft(const std::string& s) {
   auto iter = s.begin();
   while (iter != s.end() && isspace(*iter)) ++iter;
-  return std::string(iter, s.end());
+  return {iter, s.end()};
 }
 
 std::string TrimRight(const std::string& s) {
   auto iter = s.end();
   while (iter != s.begin() && isspace(*(iter - 1))) --iter;
-  return std::string(s.begin(), iter);
+  return {s.begin(), iter};
 }
 
 std::string Trim(const std::string& s) { return TrimLeft(TrimRight(s)); }

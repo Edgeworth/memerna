@@ -32,14 +32,15 @@ class RNAstructure : public RnaPackage {
 
   energy::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  ctx::FoldResult Fold(const Primary& r) const override;
-  int Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
-  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+  [[nodiscard]] ctx::FoldResult Fold(const Primary& r) const override;
+  [[nodiscard]] int Suboptimal(
+      subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
+  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       const Primary& r, Energy delta) const override;
-  part::PartResult Partition(const Primary& r) const override;
+  [[nodiscard]] part::PartResult Partition(const Primary& r) const override;
   // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies in SuboptResult
   // are meaningless.
-  std::vector<subopt::SuboptResult> StochasticSampleIntoVector(
+  [[nodiscard]] std::vector<subopt::SuboptResult> StochasticSampleIntoVector(
       const Primary& r, int num_samples) const;
 
   // TODO: Can be replaced by Fold now?
@@ -51,8 +52,9 @@ class RNAstructure : public RnaPackage {
   std::unique_ptr<datatable> data_;
   bool use_lyngso_;
 
-  std::unique_ptr<structure> LoadStructure(const Primary& r) const;
-  std::unique_ptr<structure> LoadStructure(const Primary& r, const Secondary& s) const;
+  [[nodiscard]] std::unique_ptr<structure> LoadStructure(const Primary& r) const;
+  [[nodiscard]] std::unique_ptr<structure> LoadStructure(
+      const Primary& r, const Secondary& s) const;
 };
 
 }  // namespace mrna::bridge

@@ -14,7 +14,7 @@ class ParsingTest : public testing::Test {
   const Primary kPrimary1{};
   const Secondary kSecondary1{};
   const Ctds kCtd1{};
-  const std::string kCtdString1 = "";
+  const std::string kCtdString1;
 
   const Primary kPrimary2 = Primary::FromSeq("A");
   const Secondary kSecondary2{-1};

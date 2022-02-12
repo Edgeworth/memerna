@@ -12,16 +12,16 @@
 namespace mrna::energy {
 
 struct BoltzPrecomp {
-  BoltzEnergy augubranch[4][4];
+  BoltzEnergy augubranch[4][4]{};
   std::vector<HairpinPrecomp<BoltzEnergy, -1>> hairpin;
 
   BoltzPrecomp(Primary r, BoltzEnergyModelPtr bem);
 
-  const EnergyModel& em() const { return bem_->em(); }
-  const BoltzEnergyModel& bem() const { return *bem_; }
+  [[nodiscard]] const EnergyModel& em() const { return bem_->em(); }
+  [[nodiscard]] const BoltzEnergyModel& bem() const { return *bem_; }
 
-  BoltzEnergy Hairpin(int st, int en) const;
-  BoltzEnergy TwoLoop(int ost, int oen, int ist, int ien) const;
+  [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
+  [[nodiscard]] BoltzEnergy TwoLoop(int ost, int oen, int ist, int ien) const;
 
  private:
   Primary r_;

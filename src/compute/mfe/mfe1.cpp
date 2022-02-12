@@ -12,7 +12,7 @@
 
 namespace mrna::mfe {
 
-DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
+DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -22,8 +22,12 @@ DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const Base stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
-                 en2b = r[en - 2];
+      const Base stb = r[st];
+      const Base st1b = r[st + 1];
+      const Base st2b = r[st + 2];
+      const Base enb = r[en];
+      const Base en1b = r[en - 1];
+      const Base en2b = r[en - 2];
 
       // TODO: check lonely pairs
       if (em->CanPair(r, st, en)) {
@@ -56,7 +60,10 @@ DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          Base pl1b = r[piv - 1], plb = r[piv], prb = r[piv + 1], pr1b = r[piv + 2];
+          Base pl1b = r[piv - 1];
+          Base plb = r[piv];
+          Base prb = r[piv + 1];
+          Base pr1b = r[piv + 2];
           //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
@@ -91,7 +98,11 @@ DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
 
         dp[st][en][DP_P] = p_min;
       }
-      Energy u_min = MAX_E, u2_min = MAX_E, rcoax_min = MAX_E, wc_min = MAX_E, gu_min = MAX_E;
+      Energy u_min = MAX_E;
+      Energy u2_min = MAX_E;
+      Energy rcoax_min = MAX_E;
+      Energy wc_min = MAX_E;
+      Energy gu_min = MAX_E;
       // Update unpaired.
       // Choose |st| to be unpaired.
       if (st + 1 < en) {
@@ -101,7 +112,8 @@ DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em) {
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        const auto pb = r[piv], pl1b = r[piv - 1];
+        const auto pb = r[piv];
+        const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const auto base00 = dp[st][piv][DP_P] + pc.augubranch[stb][pb];
         const auto base01 = dp[st][piv - 1][DP_P] + pc.augubranch[stb][pl1b];

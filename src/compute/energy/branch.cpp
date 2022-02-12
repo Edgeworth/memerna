@@ -90,11 +90,19 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
           N + 1, std::make_tuple(false, -1, 0, CTD_NA))};
 
   cache[0][0] = cache[1][0] = 0;
-  int first_lui = branches[0] - 1, last_rui = s[branches[N - 1]] + 1;
+  int first_lui = branches[0] - 1;
+  int last_rui = s[branches[N - 1]] + 1;
 
   // Precompute data about the unpaired bases.
-  std::vector<int> li(N), ri(N), lui(N), rui(N);
-  std::vector<bool> lu_exists(N), lu_usable(N), ru_exists(N), ru_usable(N), ru_shared(N);
+  std::vector<int> li(N);
+  std::vector<int> ri(N);
+  std::vector<int> lui(N);
+  std::vector<int> rui(N);
+  std::vector<bool> lu_exists(N);
+  std::vector<bool> lu_usable(N);
+  std::vector<bool> ru_exists(N);
+  std::vector<bool> ru_usable(N);
+  std::vector<bool> ru_shared(N);
   for (int i = 0; i < N; ++i) {
     li[i] = branches[i];
     ri[i] = s[branches[i]];
@@ -112,7 +120,10 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
   }
 
   for (int i = 0; i < N; ++i) {
-    Base lb = r[li[i]], rb = r[ri[i]], lub = -1, rub = -1;
+    Base lb = r[li[i]];
+    Base rb = r[ri[i]];
+    Base lub = -1;
+    Base rub = -1;
     if (lu_exists[i]) lub = r[lui[i]];
     if (ru_exists[i]) rub = r[rui[i]];
 
@@ -182,10 +193,10 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
   // First state contains no real info, so go ahead one.
   state = back[std::get<0>(state)][std::get<1>(state)];
   assert(branch_ctd->empty());
-  while (1) {
-    bool used;
-    int idx;
-    Energy energy;
+  while (true) {
+    bool used = false;
+    int idx = 0;
+    Energy energy = 0;
     Ctd reason;
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
@@ -228,7 +239,8 @@ Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Se
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     Energy energy = 0;
-    const auto stb = r[branch], enb = r[s[branch]];
+    const auto stb = r[branch];
+    const auto enb = r[s[branch]];
     switch (ctd[branch]) {
     case CTD_UNUSED: break;
     case CTD_3_DANGLE:

@@ -85,21 +85,19 @@ repos:
       - id: clang-format
         args: [-i] # modify in place
       - id: clang-tidy # will use .clang-tidy in top of repo
-        args: [
-            --fix, # using fix-errors breaks the hook and makes it fail if there is any stderr
-            --quiet, # don't print warnings (e.g. suppressed warnings in system headers)
-          ]
+        args: [--fix-errors]
       - id: cppcheck
-        args:
-          [
+        args: [
             -q,
             --error-exitcode=1,
             --enable=all,
-            --suppress=unmatchedSuppression,
+            --suppress=assertWithSideEffect,
             --suppress=missingIncludeSystem,
+            --suppress=syntaxError,
+            --suppress=unmatchedSuppression,
+            --suppress=unreadVariable, # e.g. variable initialized then set in if/else
             --suppress=unusedFunction,
             --suppress=useStlAlgorithm,
-            --suppress=syntaxError,
             --project=compile_commands.json,
             -iextern,
             -igoogletest-src,

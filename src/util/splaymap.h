@@ -16,7 +16,7 @@ namespace mrna {
 template <typename Key, typename Value>
 class SplayMap {
  public:
-  SplayMap() : ns_(2), root(NONE), size_(0) {}
+  SplayMap() : ns_(2), root(NONE) {}
   // Returns false if already in the tree.
   template <typename ValueRef>
   bool Insert(Key key, ValueRef&& value) {
@@ -40,7 +40,8 @@ class SplayMap {
   // Returns true if found.
   bool Find(Key key) {
     if (root == NONE) return false;
-    int lnext = TMP, rnext = TMP;
+    int lnext = TMP;
+    int rnext = TMP;
     bool found = false;
     while (!found) {
       if (key < ns_[root].k) {
@@ -54,11 +55,11 @@ class SplayMap {
           if (ns_[l].l == NONE) {  // No left child
             root = l;
             break;
-          } else {  // Split left child
-            root = ns_[l].l;
-            ns_[rnext].l = l;
-            rnext = l;
-          }
+          }  // Split left child
+          root = ns_[l].l;
+          ns_[rnext].l = l;
+          rnext = l;
+
         } else if (ns_[l].k < key) {
           // Zig - Split left child
           ns_[rnext].l = root;
@@ -66,11 +67,11 @@ class SplayMap {
           if (ns_[l].r == NONE) {  // No right child.
             root = l;
             break;
-          } else {  // Zag - Split right child
-            root = ns_[l].r;
-            ns_[lnext].r = l;
-            lnext = l;
-          }
+          }  // Zag - Split right child
+          root = ns_[l].r;
+          ns_[lnext].r = l;
+          lnext = l;
+
         } else {
           // Found (zig) - Split left child
           ns_[rnext].l = root;
@@ -89,11 +90,11 @@ class SplayMap {
           if (ns_[r].r == NONE) {  // No right child.
             root = r;
             break;
-          } else {  // Split right child
-            root = ns_[r].r;
-            ns_[lnext].r = r;
-            lnext = r;
-          }
+          }  // Split right child
+          root = ns_[r].r;
+          ns_[lnext].r = r;
+          lnext = r;
+
         } else if (key < ns_[r].k) {
           // Zig - Split right child
           ns_[lnext].r = root;
@@ -101,11 +102,11 @@ class SplayMap {
           if (ns_[r].l == NONE) {  // No left child
             root = r;
             break;
-          } else {  // Zag - Split left child.
-            root = ns_[r].l;
-            ns_[rnext].l = r;
-            rnext = r;
-          }
+          }  // Zag - Split left child.
+          root = ns_[r].l;
+          ns_[rnext].l = r;
+          rnext = r;
+
         } else {
           // Found (zig) - Split right child
           ns_[lnext].r = root;
@@ -194,7 +195,7 @@ class SplayMap {
 
   std::vector<Node> ns_;
   int root;
-  std::size_t size_;
+  std::size_t size_{0};
 
   std::vector<std::string> DescribeInternal(int node) {
     if (node == NONE) return {""};

@@ -22,7 +22,7 @@ std::string sfmt(const char* fmt, ...);
 std::string vsfmt(const char* fmt, va_list l);
 
 template <typename T>
-T Conv(std::string s) {
+T Conv(const std::string& s) {
   T t;
   std::stringstream ss(s);
   ss >> t;

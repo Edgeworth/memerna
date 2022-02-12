@@ -34,6 +34,7 @@ Secondary StructureToSecondary(const structure& struc, int struc_num = 1) {
 
 std::vector<Secondary> StructureToSecondarys(const structure& struc) {
   std::vector<Secondary> s;
+  s.reserve(struc.GetNumberofStructures());
   for (int i = 0; i < struc.GetNumberofStructures(); ++i)
     s.push_back(StructureToSecondary(struc, i + 1));
   return s;
@@ -42,6 +43,7 @@ std::vector<Secondary> StructureToSecondarys(const structure& struc) {
 std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc) {
   auto s_list = StructureToSecondarys(struc);
   std::vector<subopt::SuboptResult> res;
+  res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO: Convert CTDs?
     res.emplace_back(subopt::SuboptResult(
@@ -88,7 +90,7 @@ PartitionState RunPartition(structure* struc, datatable* data) {
 
 RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
     : data_(LoadDatatable(data_path)), use_lyngso_(use_lyngso) {
-  verify(data_path.size() && data_path.back() == '/', "invalid data path");
+  verify(!data_path.empty() && data_path.back() == '/', "invalid data path");
   verify(data_->loadedTables, "BUG: data tables not loaded");
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
@@ -101,7 +103,7 @@ energy::EnergyResult RNAstructure::Efn(
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
   // TODO: convert ctds and structure?
-  return energy::EnergyResult(structure->GetEnergy(1), Ctds(), nullptr);
+  return {structure->GetEnergy(1), Ctds(), nullptr};
 }
 
 ctx::FoldResult RNAstructure::Fold(const Primary& r) const {
@@ -197,7 +199,7 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r, const S
 }
 
 RNAstructure RNAstructure::FromArgParse(const ArgParse& args) {
-  return RNAstructure(args.Get(OPT_RNASTRUCTURE_DATA), false);
+  return {args.Get(OPT_RNASTRUCTURE_DATA), false};
 }
 
 }  // namespace mrna::bridge
