@@ -48,8 +48,9 @@ int main(int argc, char* argv[]) {
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());
   const bool read_stdin = q.empty();
   if (efn) {
-    while (1) {
-      std::string seq, db;
+    while (true) {
+      std::string seq;
+      std::string db;
       if (read_stdin) {
         getline(std::cin, seq);
         getline(std::cin, db);
@@ -68,7 +69,7 @@ int main(int argc, char* argv[]) {
       printf("%d\n%s", res.energy, desc.c_str());
     }
   } else {
-    while (1) {
+    while (true) {
       std::string seq;
       if (read_stdin) {
         getline(std::cin, seq);

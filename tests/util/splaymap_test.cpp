@@ -14,11 +14,11 @@ namespace mrna {
 TEST(SplayMapTest, SmallCase1) {
   SplayMap<int, int> h;
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(0u, h.Size());
+    EXPECT_EQ(0U, h.Size());
     EXPECT_FALSE(h.Delete(1));
     EXPECT_FALSE(h.Find(1));
     EXPECT_TRUE(h.Insert(1, 1));
-    EXPECT_EQ(1u, h.Size());
+    EXPECT_EQ(1U, h.Size());
     EXPECT_TRUE(h.Find(1));
     EXPECT_EQ(1, h.Get());
     EXPECT_FALSE(h.Find(2));
@@ -27,27 +27,27 @@ TEST(SplayMapTest, SmallCase1) {
     EXPECT_EQ(2, h.Get());
     EXPECT_TRUE(h.Find(1));
     EXPECT_EQ(1, h.Get());
-    EXPECT_EQ(2u, h.Size());
+    EXPECT_EQ(2U, h.Size());
     EXPECT_TRUE(h.Delete(2));
-    EXPECT_EQ(1u, h.Size());
+    EXPECT_EQ(1U, h.Size());
     EXPECT_FALSE(h.Delete(2));
-    EXPECT_EQ(1u, h.Size());
+    EXPECT_EQ(1U, h.Size());
     EXPECT_TRUE(h.Delete(1));
-    EXPECT_EQ(0u, h.Size());
+    EXPECT_EQ(0U, h.Size());
     EXPECT_FALSE(h.Delete(0));
   }
 }
 
 TEST(SplayMapTest, SmallCase2) {
   SplayMap<int, int> h;
-  EXPECT_EQ(0u, h.Size());
+  EXPECT_EQ(0U, h.Size());
   EXPECT_TRUE(h.Insert(1, 1));
   EXPECT_TRUE(h.Insert(2, 2));
-  EXPECT_EQ(2u, h.Size());
+  EXPECT_EQ(2U, h.Size());
   EXPECT_EQ(2, h.Get());
   EXPECT_FALSE(h.Insert(1, 3));
   EXPECT_EQ(1, h.Get());
-  EXPECT_EQ(2u, h.Size());
+  EXPECT_EQ(2U, h.Size());
 }
 
 class SplayMapRandomTest : public testing::TestWithParam<int_fast32_t> {};

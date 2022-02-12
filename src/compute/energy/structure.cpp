@@ -40,7 +40,7 @@ std::vector<std::string> Structure::Description(int nesting) const {
   return desc;
 }
 
-void Structure::AddNote(std::string note, ...) {
+void Structure::AddNote(std::string note, ...) {  // NOLINT
   va_list l;
   va_start(l, note);
   notes_.push_back(vsfmt(note.c_str(), l));

@@ -62,10 +62,11 @@ std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
   return subopts;
 }
 
-int Ctx::Suboptimal(const Primary& r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const {
+int Ctx::Suboptimal(
+    const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO: handle cases other than max structures.
-    auto subopts = brute::SuboptimalBruteForce(r, em_, std::move(cfg));
+    auto subopts = brute::SuboptimalBruteForce(r, em_, cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
@@ -104,7 +105,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
 }
 
 Ctx Ctx::FromArgParse(const ArgParse& args) {
-  return Ctx(energy::EnergyModel::FromArgParse(args), CtxCfg::FromArgParse(args));
+  return {energy::EnergyModel::FromArgParse(args), CtxCfg::FromArgParse(args)};
 }
 
 }  // namespace mrna::ctx

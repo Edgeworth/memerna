@@ -20,7 +20,9 @@ __AFL_FUZZ_INIT();
 enum class OpResult { INVALID, FAILURE, SUCCESS };
 
 OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>* h, std::set<int>* s) {
-  bool splay_success = false, set_success = false, invalid = false;
+  bool splay_success = false;
+  bool set_success = false;
+  bool invalid = false;
   switch (op) {
   case 'i':
     splay_success = h->Insert(val, val);
@@ -78,7 +80,7 @@ void DoInteractive(int r) {
 
   char op = 0;
   int val = 0;
-  while (1) {
+  while (true) {
     printf("%s\n> ", h.Describe().c_str());
     int res = scanf(" %c %d", &op, &val);
     if (res < 0) break;

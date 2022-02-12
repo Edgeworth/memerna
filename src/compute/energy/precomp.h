@@ -18,7 +18,7 @@ namespace internal {
 
 int MaxNumContiguous(const Primary& r);
 
-}
+}  // namespace internal
 
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
@@ -26,12 +26,10 @@ inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 // This is templated because the partition function wants to use it with a different type.
 template <typename T, int InitVal>
 struct HairpinPrecomp {
-  HairpinPrecomp() : num_c(0) {
-    std::fill(special, special + sizeof(special) / sizeof(special[0]), InitVal);
-  }
+  HairpinPrecomp() { std::fill(special, special + sizeof(special) / sizeof(special[0]), InitVal); }
 
   T special[MAX_SPECIAL_HAIRPIN_SZ + 1];
-  int num_c;
+  int num_c{0};
 };
 
 // TODO: move this?
@@ -58,19 +56,19 @@ std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
 
 class Precomp {
  public:
-  Energy augubranch[4][4];
-  Energy min_mismatch_coax;
-  Energy min_flush_coax;
-  Energy min_twoloop_not_stack;
+  Energy augubranch[4][4]{};
+  Energy min_mismatch_coax{};
+  Energy min_flush_coax{};
+  Energy min_twoloop_not_stack{};
 
   std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
 
   Precomp(Primary r, EnergyModelPtr em);
 
-  const EnergyModel& em() const { return *em_; }
+  [[nodiscard]] const EnergyModel& em() const { return *em_; }
 
-  Energy TwoLoop(int ost, int oen, int ist, int ien) const;
-  Energy Hairpin(int st, int en) const;
+  [[nodiscard]] Energy TwoLoop(int ost, int oen, int ist, int ien) const;
+  [[nodiscard]] Energy Hairpin(int st, int en) const;
 
  private:
   Primary r_;

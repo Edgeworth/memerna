@@ -26,23 +26,25 @@ class Structure {
 
   // This is not a reference because of varargs.
   void AddNote(std::string note, ...);
-  std::vector<std::string> Description(int nesting = 0) const;
-  virtual std::string ShortDesc() const = 0;
+  [[nodiscard]] std::vector<std::string> Description(int nesting = 0) const;
+  [[nodiscard]] virtual std::string ShortDesc() const = 0;
 
   virtual void AddBranch(std::unique_ptr<Structure> b) { branches_.push_back(std::move(b)); }
-  virtual std::string BranchDesc(int idx) const { return branches_[idx]->ShortDesc(); }
+  [[nodiscard]] virtual std::string BranchDesc(int idx) const {
+    return branches_[idx]->ShortDesc();
+  }
 
   void set_self_energy(Energy e) { self_energy_ = e; }
   void set_total_energy(Energy e) { total_energy_ = e; }
-  Energy self_energy() const { return self_energy_; }
-  Energy total_energy() const { return total_energy_; }
+  [[nodiscard]] Energy self_energy() const { return self_energy_; }
+  [[nodiscard]] Energy total_energy() const { return total_energy_; }
 
  protected:
   std::vector<std::unique_ptr<Structure>> branches_;
 
  private:
-  Energy self_energy_;
-  Energy total_energy_;
+  Energy self_energy_{};
+  Energy total_energy_{};
   std::vector<std::string> notes_;
 };
 
@@ -50,8 +52,8 @@ class HairpinLoopStructure : public Structure {
  public:
   HairpinLoopStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddBranch(std::unique_ptr<Structure>) override { error("invalid operation"); }
-  std::string ShortDesc() const override;
+  void AddBranch(std::unique_ptr<Structure> /*b*/) override { error("invalid operation"); }
+  [[nodiscard]] std::string ShortDesc() const override;
 
  private:
   int st_, en_;
@@ -63,7 +65,7 @@ class TwoLoopStructure : public Structure {
       : ost_(ost), oen_(oen), ist_(ist), ien_(ien) {}
 
   void AddBranch(std::unique_ptr<Structure> b) override;
-  std::string ShortDesc() const override;
+  [[nodiscard]] std::string ShortDesc() const override;
 
  private:
   int ost_, oen_, ist_, ien_;
@@ -74,8 +76,8 @@ class MultiLoopStructure : public Structure {
   MultiLoopStructure(int st, int en) : st_(st), en_(en) {}
 
   void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctd_.emplace_back(ctd, ctd_energy); }
-  std::string BranchDesc(int idx) const override;
-  std::string ShortDesc() const override;
+  [[nodiscard]] std::string BranchDesc(int idx) const override;
+  [[nodiscard]] std::string ShortDesc() const override;
 
  private:
   int st_, en_;
@@ -87,7 +89,7 @@ class StackingStructure : public Structure {
   StackingStructure(int st, int en) : st_(st), en_(en) {}
 
   void AddBranch(std::unique_ptr<Structure> b) override;
-  std::string ShortDesc() const override;
+  [[nodiscard]] std::string ShortDesc() const override;
 
  private:
   int st_, en_;

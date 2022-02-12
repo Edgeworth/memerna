@@ -44,14 +44,14 @@ class Suboptimal1 {
  public:
   Suboptimal1(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
-  int Run(SuboptCallback fn);
+  int Run(const SuboptCallback& fn);
 
  private:
   struct DfsState {
-    int idx;
+    int idx{};
     Index expand;
     // Stores whether this node's |expand| was from |unexpanded| and needs to be replaced.
-    bool should_unexpand;
+    bool should_unexpand{};
   };
 
   Primary r_;
@@ -67,7 +67,7 @@ class Suboptimal1 {
   std::vector<Index> unexpanded_;
 
   std::pair<int, int> RunInternal(
-      SuboptCallback fn, Energy cur_delta, bool exact_energy, int structure_limit);
+      const SuboptCallback& fn, Energy delta, bool exact_energy, int structure_limit);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {
@@ -80,7 +80,7 @@ class Suboptimal1 {
     return cache_.Get();
   }
 
-  std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
+  [[nodiscard]] std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
 };
 
 }  // namespace mrna::subopt

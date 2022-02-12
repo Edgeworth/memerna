@@ -27,7 +27,7 @@ using Error = std::deque<std::string>;
 
 class Fuzzer {
  public:
-  Fuzzer(const Primary& r, energy::EnergyModelPtr em, FuzzCfg cfg);
+  Fuzzer(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg);
 
   Error Run();
 
@@ -59,10 +59,10 @@ class Fuzzer {
 
   Error CheckSubopt();
 
-  bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
+  static bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
   Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
-  Error CheckSuboptResultPair(subopt::SuboptCfg cfg, const std::vector<subopt::SuboptResult>& a,
-      const std::vector<subopt::SuboptResult>& b);
+  static Error CheckSuboptResultPair(subopt::SuboptCfg cfg,
+      const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
 
   Error CheckPartition();
 };

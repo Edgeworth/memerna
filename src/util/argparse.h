@@ -64,22 +64,22 @@ struct Opt {
     return *this;
   }
 
-  std::string Desc() const;
+  [[nodiscard]] std::string Desc() const;
 
-  bool IsInverted() const { return longname_.rfind("no-", 0) == 0; }
+  [[nodiscard]] bool IsInverted() const { return longname_.rfind("no-", 0) == 0; }
 
   auto operator<=>(const Opt&) const = default;
 
-  Kind kind() const { return kind_; }
-  const std::string& longname() const { return longname_; }
-  const std::string& shortname() const { return shortname_; }
-  const std::string& help() const { return help_; }
-  const std::string& default_arg() const { return default_; }
-  const std::set<std::string>& choices() const { return choices_; }
+  [[nodiscard]] Kind kind() const { return kind_; }
+  [[nodiscard]] const std::string& longname() const { return longname_; }
+  [[nodiscard]] const std::string& shortname() const { return shortname_; }
+  [[nodiscard]] const std::string& help() const { return help_; }
+  [[nodiscard]] const std::string& default_arg() const { return default_; }
+  [[nodiscard]] const std::set<std::string>& choices() const { return choices_; }
 
-  bool has_default() const { return has_default_; }
-  bool required() const { return required_; }
-  bool hidden() const { return hidden_; }
+  [[nodiscard]] bool has_default() const { return has_default_; }
+  [[nodiscard]] bool required() const { return required_; }
+  [[nodiscard]] bool hidden() const { return hidden_; }
 
  private:
   Kind kind_;
@@ -103,18 +103,18 @@ class ArgParse {
   ArgParse& operator=(ArgParse&&) = default;
 
   void RegisterOpt(const Opt& opt);
-  std::string Usage() const;
+  [[nodiscard]] std::string Usage() const;
 
   std::string Parse(int argc, char* argv[]);
   void ParseOrExit(int argc, char* argv[]);
 
-  const Opt& Lookup(const std::string& name) const;
-  const std::vector<std::string>& Pos() const { return pos_; }
+  [[nodiscard]] const Opt& Lookup(const std::string& name) const;
+  [[nodiscard]] const std::vector<std::string>& Pos() const { return pos_; }
 
   // Note that flags set to false via --no-flag will have Has return true.
   // It returns whether or not this option was specified. Use GetOr instead
   // for flags.
-  bool Has(const Opt& opt) const;
+  [[nodiscard]] bool Has(const Opt& opt) const;
 
   // Prefer this for setting variables over Get<T>(), if those variables
   // have default values.
@@ -147,12 +147,12 @@ class ArgParse {
     return Conv<T>(pos_[index]);
   }
 
-  std::size_t PosSize() const { return pos_.size(); }
+  [[nodiscard]] std::size_t PosSize() const { return pos_.size(); }
 
  private:
   // If the option is a flag, return the positive option first, and the inverted
   // one (--no-flag) second.
-  std::pair<Opt, Opt> FlagPair(const Opt& opt) const;
+  [[nodiscard]] std::pair<Opt, Opt> FlagPair(const Opt& opt) const;
 
   std::map<std::string, Opt> longname_;
   std::map<std::string, Opt> shortname_;

@@ -23,7 +23,10 @@ ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const 
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
-      const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+      const auto stb = r[st];
+      const auto st1b = r[st + 1];
+      const auto enb = r[en];
+      const auto en1b = r[en - 1];
       const auto base00 = dp[st][en][DP_P] + em.AuGuPenalty(stb, enb);
       const auto base01 = dp[st][en - 1][DP_P] + em.AuGuPenalty(stb, en1b);
       const auto base10 = dp[st + 1][en][DP_P] + em.AuGuPenalty(st1b, enb);

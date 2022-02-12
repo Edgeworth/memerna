@@ -29,7 +29,7 @@ struct FoldResult {
 class Ctx {
  public:
   explicit Ctx(energy::EnergyModelPtr em) : em_(std::move(em)), cfg_() {}
-  Ctx(energy::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(std::move(cfg)) {}
+  Ctx(energy::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(cfg) {}
 
   Ctx(Ctx&& o) = default;
   Ctx& operator=(Ctx&&) = default;
@@ -39,13 +39,14 @@ class Ctx {
 
   energy::EnergyResult Efn(const Primary& r, const Secondary& s, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const;
-  FoldResult Fold(const Primary& r) const;
-  std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+  [[nodiscard]] FoldResult Fold(const Primary& r) const;
+  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       const Primary& r, subopt::SuboptCfg cfg) const;
-  int Suboptimal(const Primary& r, subopt::SuboptCallback fn, subopt::SuboptCfg cfg) const;
-  part::PartResult Partition(const Primary& r) const;
+  [[nodiscard]] int Suboptimal(
+      const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
+  [[nodiscard]] part::PartResult Partition(const Primary& r) const;
 
-  const energy::EnergyModel& em() const { return *em_; }
+  [[nodiscard]] const energy::EnergyModel& em() const { return *em_; }
 
   static Ctx FromArgParse(const ArgParse& args);
 
@@ -53,7 +54,7 @@ class Ctx {
   energy::EnergyModelPtr em_;
   CtxCfg cfg_;
 
-  DpArray ComputeTables(const Primary& r) const;
+  [[nodiscard]] DpArray ComputeTables(const Primary& r) const;
 };
 
 }  // namespace mrna::ctx

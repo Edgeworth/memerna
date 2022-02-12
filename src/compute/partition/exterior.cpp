@@ -20,7 +20,10 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
-      const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+      const auto stb = r[st];
+      const auto st1b = r[st + 1];
+      const auto enb = r[en];
+      const auto en1b = r[en - 1];
       const BoltzEnergy base00 = dp[st][en][PT_P] * Boltz(em.AuGuPenalty(stb, enb));
       const BoltzEnergy base01 = dp[st][en - 1][PT_P] * Boltz(em.AuGuPenalty(stb, en1b));
       const BoltzEnergy base10 = dp[st + 1][en][PT_P] * Boltz(em.AuGuPenalty(st1b, enb));
@@ -65,7 +68,10 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
     // Case: No pair ending here
     ext[en][PTEXT_L] += ext[en - 1][PTEXT_L];
     for (int st = 0; st < en - HAIRPIN_MIN_SZ; ++st) {
-      const auto stb = r[st], st1b = r[st + 1], enb = r[en], en1b = r[en - 1];
+      const auto stb = r[st];
+      const auto st1b = r[st + 1];
+      const auto enb = r[en];
+      const auto en1b = r[en - 1];
       const BoltzEnergy base00 = dp[st][en][PT_P] * Boltz(em.AuGuPenalty(stb, enb));
       const BoltzEnergy base01 = dp[st][en - 1][PT_P] * Boltz(em.AuGuPenalty(stb, en1b));
       const BoltzEnergy base10 = dp[st + 1][en][PT_P] * Boltz(em.AuGuPenalty(st1b, enb));

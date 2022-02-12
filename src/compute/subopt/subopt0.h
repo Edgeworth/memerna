@@ -20,7 +20,7 @@ class Suboptimal0 {
  public:
   Suboptimal0(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
-  int Run(SuboptCallback fn);
+  int Run(const SuboptCallback& fn);
 
  private:
   struct Node {
@@ -30,7 +30,7 @@ class Suboptimal0 {
     std::vector<Index> history;
     SuboptResult res;  // Stores the minimum energy this state could have.
 
-    Node copy() const { return Node{not_yet_expanded, history, SuboptResult(res)}; }
+    [[nodiscard]] Node copy() const { return Node{not_yet_expanded, history, SuboptResult(res)}; }
 
     bool operator<(const Node& o) const { return res.energy < o.res.energy; }
   };

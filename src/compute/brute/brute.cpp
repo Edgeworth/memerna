@@ -2,6 +2,7 @@
 #include "compute/brute/brute.h"
 
 #include <iterator>
+#include <utility>
 
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
@@ -15,7 +16,7 @@
 namespace mrna::brute {
 
 BruteForce::BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
-    : r_(r), em_(em), cfg_(std::move(cfg)), s_(r_.size()), ctd_(r_.size()) {}
+    : r_(r), em_(std::move(em)), cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
 
 BruteResult BruteForce::Run() {
   // Preconditions:
@@ -209,7 +210,7 @@ BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool ins
   for (int i = 0, b = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
     if (inside && (i < st || i > en)) continue;
     if (!inside && i > st && i < en) continue;
-    uint16_t pack = uint16_t((s_[i] & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
+    auto pack = uint16_t((s_[i] & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
 
     int byte = b / 16;
     int bit = b & 15;

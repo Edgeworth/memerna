@@ -22,7 +22,7 @@ Suboptimal0::Suboptimal0(
     Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)), cfg_(cfg) {}
 
-int Suboptimal0::Run(SuboptCallback fn) {
+int Suboptimal0::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
@@ -52,7 +52,9 @@ int Suboptimal0::Run(SuboptCallback fn) {
     auto to_expand = node.not_yet_expanded.back();
     node.not_yet_expanded.pop_back();
     node.history.push_back(to_expand);  // Add to history.
-    int st = to_expand.st, en = to_expand.en, a = to_expand.a;
+    int st = to_expand.st;
+    int en = to_expand.en;
+    int a = to_expand.a;
 
     // Initialise - we only make small modifications to it.
     curnode_ = node.copy();
@@ -75,7 +77,10 @@ int Suboptimal0::Run(SuboptCallback fn) {
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         // .   .   .   (   .   .   .   )   <   >
         //           stb  st1b   en1b  enb   rem
-        const auto stb = r_[st], st1b = r_[st + 1], enb = r_[en], en1b = r_[en - 1];
+        const auto stb = r_[st];
+        const auto st1b = r_[st + 1];
+        const auto enb = r_[en];
+        const auto en1b = r_[en - 1];
         const auto base00 = dp_[st][en][DP_P] + em_->AuGuPenalty(stb, enb);
         const auto base01 = dp_[st][en - 1][DP_P] + em_->AuGuPenalty(stb, en1b);
         const auto base10 = dp_[st + 1][en][DP_P] + em_->AuGuPenalty(st1b, enb);
@@ -150,8 +155,12 @@ int Suboptimal0::Run(SuboptCallback fn) {
     // Subtract the minimum energy of the contribution at this node.
     Energy base_energy = node.res.energy - dp_[st][en][a];
     // Declare the usual base aliases.
-    const auto stb = r_[st], st1b = r_[st + 1], st2b = r_[st + 2], enb = r_[en], en1b = r_[en - 1],
-               en2b = r_[en - 2];
+    const auto stb = r_[st];
+    const auto st1b = r_[st + 1];
+    const auto st2b = r_[st + 2];
+    const auto enb = r_[en];
+    const auto en1b = r_[en - 1];
+    const auto en2b = r_[en - 2];
 
     // Normal stuff
     if (a == DP_P) {
@@ -187,7 +196,10 @@ int Suboptimal0::Run(SuboptCallback fn) {
       Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
 
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-        Base pl1b = r_[piv - 1], plb = r_[piv], prb = r_[piv + 1], pr1b = r_[piv + 2];
+        Base pl1b = r_[piv - 1];
+        Base plb = r_[piv];
+        Base prb = r_[piv + 1];
+        Base pr1b = r_[piv + 2];
 
         // (.(   )   .) Left outer coax - P
         auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);
@@ -241,7 +253,8 @@ int Suboptimal0::Run(SuboptCallback fn) {
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
         // stb pl1b pb   pr1b
-        auto pb = r_[piv], pl1b = r_[piv - 1];
+        auto pb = r_[piv];
+        auto pl1b = r_[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
         // right.
         auto base00 = dp_[st][piv][DP_P] + em_->AuGuPenalty(stb, pb) + em_->multiloop_hack_b;
@@ -330,7 +343,7 @@ int Suboptimal0::Run(SuboptCallback fn) {
       }
     }
   }
-  for (auto& struc : finished_) {
+  for (const auto& struc : finished_) {
     assert(struc.not_yet_expanded.empty());
     fn(struc.res);
   }

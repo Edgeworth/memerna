@@ -14,6 +14,7 @@
 #include "compute/energy/branch.h"
 #include "compute/energy/config.h"
 #include "compute/energy/structure.h"
+#include "model/base.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "util/argparse.h"
@@ -32,7 +33,7 @@ const int RAND_MAX_NUM_HAIRPIN = 50;
 void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  while (1) {
+  while (true) {
     const Base a = CharToBase(static_cast<char>(fgetc(fp)));
     const Base b = CharToBase(static_cast<char>(fgetc(fp)));
     const Base c = CharToBase(static_cast<char>(fgetc(fp)));
@@ -49,7 +50,7 @@ void ParseMapFromFile(
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   char buf[1024];
-  Energy energy;
+  Energy energy = 0;
   while (fscanf(fp, " %1023s %d ", buf, &energy) == 2) (*output)[buf] = energy;
   fclose(fp);
 }
@@ -58,8 +59,8 @@ void ParseInitiationEnergyFromFile(
     const std::string& filename, Energy (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  Energy energy;
-  int idx;
+  Energy energy = 0;
+  int idx = 0;
   while (fscanf(fp, "%d %d ", &idx, &energy) == 2) {
     verify(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
         filename.c_str());
@@ -71,7 +72,7 @@ void ParseInitiationEnergyFromFile(
 void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  while (1) {
+  while (true) {
     const Base a = CharToBase(static_cast<char>(fgetc(fp)));
     const Base b = CharToBase(static_cast<char>(fgetc(fp)));
     const Base c = CharToBase(static_cast<char>(fgetc(fp)));
@@ -88,7 +89,7 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
 void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  while (1) {
+  while (true) {
     const Base a = CharToBase(static_cast<char>(fgetc(fp)));
     const Base b = CharToBase(static_cast<char>(fgetc(fp)));
     const Base c = CharToBase(static_cast<char>(fgetc(fp)));
@@ -96,9 +97,10 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
     const Base e = CharToBase(static_cast<char>(fgetc(fp)));
     const Base f = CharToBase(static_cast<char>(fgetc(fp)));
     const Base g = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == -1) break;
-    verify(
-        a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1, "expected base");
+    if (a == INVALID_BASE) break;
+    verify(a != INVALID_BASE && b != INVALID_BASE && c != INVALID_BASE && d != INVALID_BASE &&
+            e != INVALID_BASE && f != INVALID_BASE && g != INVALID_BASE,
+        "expected base");
     verify(fscanf(fp, " %d ", &em->internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
   }
   fclose(fp);
@@ -107,7 +109,7 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
 void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  while (1) {
+  while (true) {
     const Base a = CharToBase(static_cast<char>(fgetc(fp)));
     const Base b = CharToBase(static_cast<char>(fgetc(fp)));
     const Base c = CharToBase(static_cast<char>(fgetc(fp)));
@@ -127,12 +129,12 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
 void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  while (1) {
+  while (true) {
     Base a = CharToBase(static_cast<char>(fgetc(fp)));
     Base b = CharToBase(static_cast<char>(fgetc(fp)));
     Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == -1) break;
-    verify(a != -1 && b != -1 && c != -1, "expected base");
+    if (a == INVALID_BASE) break;
+    verify(a != INVALID_BASE && b != INVALID_BASE && c != INVALID_BASE, "expected base");
     verify(fscanf(fp, " %d ", &output[a][b][c]) == 1, "expected energy");
   }
   fclose(fp);
@@ -364,7 +366,8 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
     }
     return energy;
   }
-  const Base left = r[st + 1], right = r[en - 1];
+  const Base left = r[st + 1];
+  const Base right = r[en - 1];
   if (s) (*s)->AddNote("%de - terminal mismatch", terminal[r[st]][left][right][r[en]]);
   energy += terminal[r[st]][left][right][r[en]];
   if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
@@ -458,7 +461,8 @@ Energy EnergyModel::Bulge(
 //   rotate the rna by 180 degrees to look it up for 3x2.
 Energy EnergyModel::InternalLoop(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
-  const int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1;
+  const int botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<TwoLoopStructure>(ost, oen, ist, ien);
     (*s)->AddNote("%dx%d internal loop", toplen, botlen);
@@ -512,7 +516,8 @@ Energy EnergyModel::InternalLoop(
 
 Energy EnergyModel::TwoLoop(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
-  const int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1;
+  const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
     return stack[r[ost]][r[ist]][r[ien]][r[oen]];
@@ -639,8 +644,10 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
     // Hairpin loop.
     assert(en - st - 1 >= 3);
     energy += Hairpin(r, st, en, struc);
-  } else if (branches.size() == 1) {
-    const int loop_st = branches.front(), loop_en = s[branches.front()];
+  } else {
+    assert(branches.size() == 1);
+    const int loop_st = branches.front();
+    const int loop_en = s[branches.front()];
     energy += TwoLoop(r, st, en, loop_st, loop_en, struc);
   }
 
@@ -668,7 +675,7 @@ EnergyResult EnergyModel::SubstructureEnergy(const Primary& r, const Secondary& 
   std::unique_ptr<Structure> struc;
   auto energy = SubstructureEnergyInternal(
       r, s, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
-  return EnergyResult(energy, std::move(ctd), std::move(struc));
+  return {energy, std::move(ctd), std::move(struc)};
 }
 
 EnergyResult EnergyModel::TotalEnergy(

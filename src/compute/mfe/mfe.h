@@ -21,10 +21,10 @@ struct Cand {
   int idx;
 };
 
-DpArray ComputeTables0(const Primary& r, energy::EnergyModelPtr em);
-DpArray ComputeTables1(const Primary& r, energy::EnergyModelPtr em);
-DpArray ComputeTables2(const Primary& r, energy::EnergyModelPtr em);
-DpArray ComputeTables3(const Primary& r, energy::EnergyModelPtr em);
+DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em);
+DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em);
+DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em);
+DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em);
 ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const DpArray& dp);
 
 }  // namespace mrna::mfe

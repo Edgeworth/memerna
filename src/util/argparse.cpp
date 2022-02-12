@@ -82,7 +82,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     bool is_short = s - argv[i] == 1;
 
     if (!is_opt) {
-      pos_.push_back(s);
+      pos_.emplace_back(s);
     } else {
       auto& map = is_short ? shortname_ : longname_;
       auto iter = map.find(s);

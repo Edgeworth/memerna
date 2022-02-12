@@ -23,7 +23,10 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] > -1)
     return hairpin[st].special[length];
-  Base stb = r_[st], st1b = r_[st + 1], en1b = r_[en - 1], enb = r_[en];
+  Base stb = r_[st];
+  Base st1b = r_[st + 1];
+  Base en1b = r_[en - 1];
+  Base enb = r_[en];
   BoltzEnergy energy = Boltz(em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb));
 
   const bool all_c = hairpin[st + 1].num_c >= length;
@@ -45,7 +48,8 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
 }
 
 BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
-  const int toplen = ist - ost - 1, botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1;
+  const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return bem().stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return bem().Bulge(r_, ost, oen, ist, ien);
   if (toplen == 1 && botlen == 1)

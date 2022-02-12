@@ -11,7 +11,7 @@ namespace mrna::subopt {
 
 class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
  public:
-  std::vector<SuboptResult> Subopt(const std::string& s) {
+  static std::vector<SuboptResult> Subopt(const std::string& s) {
     return ctx::Ctx(t04, ctx::CtxCfg{.subopt_alg = GetParam()})
         .SuboptimalIntoVector(Primary::FromSeq(s), SuboptCfg{.strucs = 10});
   }

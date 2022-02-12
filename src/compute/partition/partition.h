@@ -17,7 +17,7 @@ struct Part {
   BoltzSums p;
   BoltzEnergy q;
 
-  BoltzProbs Prob() const;
+  [[nodiscard]] BoltzProbs Prob() const;
 };
 
 struct PartResult {
@@ -28,8 +28,9 @@ struct PartResult {
 };
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
-    const Primary& r, energy::BoltzEnergyModelPtr bem);
-std::tuple<BoltzDpArray, BoltzExtArray> Partition0(const Primary& r, energy::EnergyModelPtr em);
+    const Primary& r, const energy::BoltzEnergyModelPtr& bem);
+std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
+    const Primary& r, const energy::EnergyModelPtr& em);
 BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const BoltzDpArray& dp);
 
 // Only works with [0, 2N).

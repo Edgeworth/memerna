@@ -14,7 +14,7 @@
 
 namespace mrna::mfe {
 
-DpArray ComputeTables3(const Primary& r, energy::EnergyModelPtr em) {
+DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
@@ -30,8 +30,12 @@ DpArray ComputeTables3(const Primary& r, energy::EnergyModelPtr em) {
   for (int st = N - 1; st >= 0; --st) {
     for (auto& i : cand_st) i.clear();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      const Base stb = r[st], st1b = r[st + 1], st2b = r[st + 2], enb = r[en], en1b = r[en - 1],
-                 en2b = r[en - 2];
+      const Base stb = r[st];
+      const Base st1b = r[st + 1];
+      const Base st2b = r[st + 2];
+      const Base enb = r[en];
+      const Base en1b = r[en - 1];
+      const Base en2b = r[en - 2];
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);

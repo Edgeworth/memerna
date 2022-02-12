@@ -20,7 +20,7 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_PARTITION_RNASTRUCTURE);
 }
 
-std::string FuzzCfg::Desc() {
+std::string FuzzCfg::Desc() const {
   std::string desc;
   desc += sfmt("brute_max: %d\n", brute_max);
   desc += sfmt("mfe: %d\n", mfe);

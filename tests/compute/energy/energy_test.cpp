@@ -44,11 +44,11 @@ class EnergyTest : public testing::Test {
   std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
   std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
 
-  Energy GetEnergy(const std::string& r, const std::string& db) {
+  static Energy GetEnergy(const std::string& r, const std::string& db) {
     return GetEnergy({Primary::FromSeq(r), Secondary::FromDb(db)});
   }
 
-  Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
+  static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
     return t04->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr).energy;
   }
 };

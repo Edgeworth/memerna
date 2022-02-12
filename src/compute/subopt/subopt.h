@@ -23,7 +23,7 @@ struct SuboptResult {
 
   auto operator<=>(const SuboptResult&) const = default;
 
-  Energy energy;  // Put this first so naive sort is by energy.
+  Energy energy{};  // Put this first so naive sort is by energy.
   tb::TracebackResult tb;
 };
 
