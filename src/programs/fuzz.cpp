@@ -90,7 +90,7 @@ class FuzzHarness {
       std::string rs;
       while (ss >> rs) {
         try {
-          auto fuzzer = CreateFuzzer(mrna::Primary::FromString(rs));
+          auto fuzzer = CreateFuzzer(mrna::Primary::FromSeq(rs));
           const auto res = fuzzer.Run();
           if (!res.empty()) {
             for (const auto& s : res) printf("%s\n", s.c_str());

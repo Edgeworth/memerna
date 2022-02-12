@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 import resource
 import subprocess
-import sys
 from typing import Any
 
 import click
@@ -120,7 +119,7 @@ def run_cmd(
     if res.ret_code != 0:
         click.echo(f"Running `{cmd}' failed with ret code {res.ret_code}.")
         click.echo(f"stderr: {res.stderr}")
-        sys.exit(1)
+        raise RuntimeError(f"Shell command failed: {cmd}")
     return res
 
 
@@ -132,4 +131,4 @@ def run_shell(cmd: str, cwd: Path | None = None) -> None:
     os.chdir(prev_cwd)
     if ret_code != 0:
         click.echo(f"Running `{cmd}' failed with ret code {ret_code}.")
-        sys.exit(1)
+        raise RuntimeError(f"Shell command failed: {cmd}")

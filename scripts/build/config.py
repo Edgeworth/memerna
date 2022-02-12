@@ -52,3 +52,6 @@ class BuildCfg:
 
     def build_path(self) -> Path:
         return self.prefix / "memerna" / self.ident()
+
+    def is_afl(self) -> bool:
+        return self.compiler in [Compiler.AFL_LTO, Compiler.AFL_FAST]

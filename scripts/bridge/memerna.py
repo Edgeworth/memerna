@@ -1,3 +1,4 @@
+# Copyright 2022 E.
 from dataclasses import dataclass
 
 from scripts.bridge.rnapackage import RnaPackage
