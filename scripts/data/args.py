@@ -1,3 +1,4 @@
+# Copyright 2022 Eliot Courtney.
 from pathlib import Path
 from typing import Any
 from typing import TextIO

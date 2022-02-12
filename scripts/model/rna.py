@@ -73,11 +73,14 @@ class Rna:
         for i, v in enumerate(line_fields):
             base = v[1]
             base_idx, prev_idx, next_idx, pair_idx = (int(v[0]), int(v[2]), int(v[3]), int(v[4]))
-            assert base_idx == i + 1
-            assert base in "GUAC"  # Only consider fully determined sequences for now.
-            assert prev_idx == base_idx - 1
-            if i < len(line_fields) - 1:
-                assert next_idx == base_idx + 1
+            if base_idx != i + 1:
+                raise ValueError(f"base idx {base_idx} != {i + 1}")
+            if base not in "GUAC":  # Only consider fully determined sequences for now.
+                raise ValueError(f"base {base} not in GUAC")
+            if prev_idx != base_idx - 1:
+                raise ValueError(f"prev_idx {prev_idx} != {base_idx - 1}")
+            if i < len(line_fields) - 1 and next_idx != base_idx + 1:
+                raise ValueError(f"next_idx {next_idx} != {base_idx + 1}")
             if pair_idx != 0:
                 pairs[pair_idx - 1] = base_idx - 1
                 pairs[base_idx - 1] = pair_idx - 1

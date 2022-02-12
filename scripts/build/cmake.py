@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2016 Eliot Courtney.
 from scripts.build.config import BuildCfg
 from scripts.build.config import Compiler
@@ -48,5 +47,5 @@ def generate_cmake(cfg: BuildCfg) -> None:
     def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())
 
     build_path = cfg.build_path()
-    build_path.mkdir(parents=True)
+    build_path.mkdir(parents=True, exist_ok=True)
     run_shell(f"cmake {def_str} {cfg.src}", cwd=build_path)

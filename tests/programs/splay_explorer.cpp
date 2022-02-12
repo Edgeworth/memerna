@@ -63,7 +63,7 @@ void DoAfl() {
     std::stringstream ss(data);
     char op = 0;
     int val = 0;
-    while (ss >> std::ws >> op >> std::ws >> val) DoOperation(op, val, h, s);
+    while (ss >> std::ws >> op >> std::ws >> val) DoOperation(op, val, &h, &s);
     printf("%s\n", h.Describe().c_str());
   }
 #endif
