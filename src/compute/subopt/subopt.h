@@ -12,6 +12,7 @@ namespace mrna::subopt {
 
 struct SuboptResult {
   SuboptResult() = default;
+  ~SuboptResult() = default;
   SuboptResult(Energy energy, tb::TracebackResult tb) : energy(energy), tb(std::move(tb)) {}
 
   SuboptResult(SuboptResult&&) = default;

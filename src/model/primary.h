@@ -13,6 +13,7 @@ namespace mrna {
 class Primary {
  public:
   Primary() = default;
+  ~Primary() = default;
   explicit Primary(std::size_t size) : data_(size, A) {}
 
   Primary(Primary&&) = default;

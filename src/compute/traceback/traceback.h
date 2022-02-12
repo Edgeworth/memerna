@@ -14,6 +14,7 @@ namespace mrna::tb {
 
 struct TracebackResult {
   TracebackResult() = default;
+  ~TracebackResult() = default;
   TracebackResult(Secondary s, Ctds ctd) : s(std::move(s)), ctd(std::move(ctd)) {}
 
   TracebackResult(TracebackResult&&) = default;

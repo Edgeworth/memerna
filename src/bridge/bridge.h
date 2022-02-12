@@ -27,7 +27,14 @@ void RegisterOpts(ArgParse* args);
 
 class RnaPackage {
  public:
+  RnaPackage() = default;
   virtual ~RnaPackage() = default;
+
+  RnaPackage(RnaPackage&& o) = default;
+  RnaPackage& operator=(RnaPackage&&) = default;
+
+  RnaPackage(const RnaPackage&) = delete;
+  RnaPackage& operator=(const RnaPackage&) = delete;
 
   virtual energy::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;

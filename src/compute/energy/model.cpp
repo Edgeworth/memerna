@@ -34,13 +34,13 @@ void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4])
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (true) {
-    const Base a = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base b = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base d = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == -1) break;
-    verify(a != -1 && b != -1 && c != -1 && d != -1, "expected base");
-    verify(fscanf(fp, " %d ", &output[a][b][c][d]) == 1, "expected energy");
+    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
+    if (!a.has_value()) break;
+    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value(), "expected base");
+    verify(fscanf(fp, " %d ", &output[*a][*b][*c][*d]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -73,15 +73,17 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (true) {
-    const Base a = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base b = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base d = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base e = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base f = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == -1) break;
-    verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1, "expected base");
-    verify(fscanf(fp, " %d ", &em->internal_1x1[a][b][c][d][e][f]) == 1, "expected energy");
+    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
+    if (!a.has_value()) break;
+    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
+            f.has_value(),
+        "expected base");
+    verify(fscanf(fp, " %d ", &em->internal_1x1[*a][*b][*c][*d][*e][*f]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -90,18 +92,19 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (true) {
-    const Base a = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base b = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base d = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base e = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base f = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base g = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == INVALID_BASE) break;
-    verify(a != INVALID_BASE && b != INVALID_BASE && c != INVALID_BASE && d != INVALID_BASE &&
-            e != INVALID_BASE && f != INVALID_BASE && g != INVALID_BASE,
+    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto g = CharToBase(static_cast<char>(fgetc(fp)));
+    if (!a.has_value()) break;
+    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
+            f.has_value() && g.has_value(),
         "expected base");
-    verify(fscanf(fp, " %d ", &em->internal_1x2[a][b][c][d][e][f][g]) == 1, "expected energy");
+    verify(
+        fscanf(fp, " %d ", &em->internal_1x2[*a][*b][*c][*d][*e][*f][*g]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -110,18 +113,20 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (true) {
-    const Base a = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base b = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base d = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base e = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base f = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base g = CharToBase(static_cast<char>(fgetc(fp)));
-    const Base h = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == -1) break;
-    verify(a != -1 && b != -1 && c != -1 && d != -1 && e != -1 && f != -1 && g != -1 && h != -1,
+    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto g = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto h = CharToBase(static_cast<char>(fgetc(fp)));
+    if (!a.has_value()) break;
+    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
+            f.has_value() && g.has_value() && h.has_value(),
         "expected base");
-    verify(fscanf(fp, " %d ", &em->internal_2x2[a][b][c][d][e][f][g][h]) == 1, "expected energy");
+    verify(fscanf(fp, " %d ", &em->internal_2x2[*a][*b][*c][*d][*e][*f][*g][*h]) == 1,
+        "expected energy");
   }
   fclose(fp);
 }
@@ -130,12 +135,12 @@ void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4]
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
   while (true) {
-    Base a = CharToBase(static_cast<char>(fgetc(fp)));
-    Base b = CharToBase(static_cast<char>(fgetc(fp)));
-    Base c = CharToBase(static_cast<char>(fgetc(fp)));
-    if (a == INVALID_BASE) break;
-    verify(a != INVALID_BASE && b != INVALID_BASE && c != INVALID_BASE, "expected base");
-    verify(fscanf(fp, " %d ", &output[a][b][c]) == 1, "expected energy");
+    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
+    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
+    if (!a.has_value()) break;
+    verify(a.has_value() && b.has_value() && c.has_value(), "expected base");
+    verify(fscanf(fp, " %d ", &output[*a][*b][*c]) == 1, "expected energy");
   }
   fclose(fp);
 }
@@ -335,7 +340,7 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
   std::string seq;
-  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]);
+  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]).value();
   const auto iter = hairpin.find(seq);
   if (iter != hairpin.end()) {
     if (s) (*s)->AddNote("special hairpin");

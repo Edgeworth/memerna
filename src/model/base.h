@@ -14,14 +14,14 @@ using Base = uint8_t;
 using BaseMask = uint32_t;
 
 // Don't ever change these values.
-constexpr Base A = 0, C = 1, G = 2, U = 3, INVALID_BASE = std::numeric_limits<uint8_t>::max();
+constexpr Base A = 0, C = 1, G = 2, U = 3;
 
-constexpr BaseMask A_b = 1U << A, C_b = 1U << C, G_b = 1U << G, U_b = 1U << U;
+constexpr BaseMask A_b = 1 << A, C_b = 1 << C, G_b = 1 << G, U_b = 1 << U;
 
-inline constexpr bool IsBase(Base b) { return b >= 0 && b <= 3; }
+inline constexpr bool IsBase(Base b) { return b <= 3; }
 
 inline constexpr bool IsPairOf(Base a, Base b, BaseMask basesA, BaseMask basesB) {
-  return (basesA & (1U << a)) && (basesB & (1U << b));
+  return (basesA & (1 << a)) && (basesB & (1 << b));
 }
 
 inline constexpr bool IsUnorderedOf(Base a, Base b, BaseMask basesA, BaseMask basesB) {
@@ -29,36 +29,36 @@ inline constexpr bool IsUnorderedOf(Base a, Base b, BaseMask basesA, BaseMask ba
 }
 
 inline constexpr bool IsPair(Base a, Base b) {
-  int combined = (1U << a) | (1U << b);
+  BaseMask combined = (1 << a) | (1 << b);
   return combined == (G_b | U_b) || combined == (G_b | C_b) || combined == (A_b | U_b);
 }
 
 inline constexpr bool IsAuGuPair(Base a, Base b) {
-  int combined = (1 << a) | (1 << b);
+  BaseMask combined = (1 << a) | (1 << b);
   return combined == (G_b | U_b) || combined == (A_b | U_b);
 }
 
 inline constexpr bool IsGuPair(Base a, Base b) { return (a == G && b == U) || (a == U && b == G); }
 
 inline constexpr bool IsWcPair(Base a, Base b) {
-  int combined = (1U << a) | (1U << b);
+  BaseMask combined = (1 << a) | (1 << b);
   return combined == (A_b | U_b) || combined == (G_b | C_b);
 }
 
 inline constexpr bool IsGu(Base b) { return b == G || b == U; }
 
 // Returns the Watson-Crick complement of the given base.
-inline constexpr Base WcPair(Base b) { return b ^ 3U; }
+inline constexpr Base WcPair(Base b) { return b ^ 3; }
 
 // Returns the GU complement of the given base.
 inline constexpr Base GuPair(Base b) {
   assert(IsGu(b));
-  return b ^ 1U;
+  return b ^ 1;
 }
 
-Base CharToBase(char c);
+std::optional<Base> CharToBase(char c);
 
-char BaseToChar(Base b);
+std::optional<char> BaseToChar(Base b);
 
 }  // namespace mrna
 

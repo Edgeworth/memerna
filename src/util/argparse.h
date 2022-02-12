@@ -96,6 +96,7 @@ struct Opt {
 class ArgParse {
  public:
   ArgParse() = default;
+  ~ArgParse() = default;
   ArgParse(const ArgParse&) = delete;
   ArgParse& operator=(const ArgParse&) = delete;
 

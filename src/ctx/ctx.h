@@ -29,6 +29,7 @@ struct FoldResult {
 class Ctx {
  public:
   explicit Ctx(energy::EnergyModelPtr em) : em_(std::move(em)), cfg_() {}
+  ~Ctx() = default;
   Ctx(energy::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(cfg) {}
 
   Ctx(Ctx&& o) = default;

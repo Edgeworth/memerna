@@ -205,17 +205,17 @@ void BruteForce::PruneInsertSubopt(Energy e) {
 
 BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
-  static_assert((-1 & PT_MASK) == PT_MASK, "mfw not a two's complement machine");
   SubstructureId struc = {};  // Zero initialise.
-  for (int i = 0, b = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
+  uint32_t b = 0;
+  for (int i = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
     if (inside && (i < st || i > en)) continue;
     if (!inside && i > st && i < en) continue;
-    auto pack = uint16_t((s_[i] & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
+    auto pack = uint16_t((uint32_t(s_[i]) & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
 
-    int byte = b / 16;
-    int bit = b & 15;
+    uint32_t byte = b / 16;
+    uint32_t bit = b & 15;
     struc.bits[byte] = uint16_t(struc.bits[byte] | (pack << bit));
-    int space = 16 - bit;
+    uint32_t space = 16 - bit;
     if (space < CTD_MAX_BITS + PT_MAX_BITS)
       struc.bits[byte + 1] = uint16_t(struc.bits[byte + 1] | (pack >> space));
   }
