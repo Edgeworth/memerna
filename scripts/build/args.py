@@ -12,7 +12,7 @@ build_cfg_options = cloup.option_group(
     "Build config options",
     cloup.option(
         "--memerna-src-path",
-        type=cloup.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
+        type=cloup.Path(exists=True, file_okay=False, resolve_path=True, path_type=Path),
         envvar="MRNA",
         show_envvar=True,
         required=True,
@@ -20,7 +20,7 @@ build_cfg_options = cloup.option_group(
     ),
     cloup.option(
         "--prefix",
-        type=cloup.Path(exists=True, resolve_path=True, file_okay=False, path_type=Path),
+        type=cloup.Path(exists=True, file_okay=False, resolve_path=True, path_type=Path),
         default=Path.home() / "bin",
         help="Where to place build directory",
     ),

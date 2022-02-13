@@ -150,13 +150,13 @@ def parse_terminal_txt(data: str) -> str:
 @cloup.option(
     "-i",
     "--input",
-    type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     required=True,
 )
 @cloup.option(
     "-o",
     "--output",
-    type=cloup.Path(file_okay=False, exists=True, writable=True, path_type=Path),
+    type=cloup.Path(file_okay=False, exists=True, writable=True, resolve_path=True, path_type=Path),
     required=True,
 )
 def parse_rnastructure_datatables(inp: Path, out: Path) -> None:
