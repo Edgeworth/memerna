@@ -22,7 +22,7 @@ def run_fuzz(cfg: FuzzCfg) -> None:
 @build_cfg_options
 @cloup.option(
     "--num-procs",
-    default=multiprocessing.cpu_count() - 1,
+    default=multiprocessing.cpu_count() - 2,
     help="Number of fuzzing configurations to run.",
 )
 def fuzz(

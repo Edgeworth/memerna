@@ -52,6 +52,8 @@ class FuzzCfg:
     def __post_init__(self) -> None:
         if self.error():
             raise ValueError(self.error())
+        # Keep the original build config to distinguish a set of fuzzers from another set.
+        self.base_build_cfg = copy.deepcopy(self.build_cfg)
         # Copy config so we can add our environment variables to it.
         self.build_cfg = copy.deepcopy(self.build_cfg)
         self.build_cfg.env.update(self.kind.env())
@@ -68,7 +70,7 @@ class FuzzCfg:
 
     def data_path(self) -> Path:
         """Directory where fuzzing data is stored."""
-        return self.build_cfg.prefix / "memerna-fuzz" / self.build_cfg.ident()
+        return self.build_cfg.prefix / "memerna-fuzz" / self.base_build_cfg.ident()
 
     def bin_path(self) -> Path:
         """Directory where fuzzing binaries are stored"""
@@ -82,6 +84,24 @@ class FuzzCfg:
         # Copy artifacts to fuzz directory.
         self.bin_path().mkdir(parents=True, exist_ok=True)
         shutil.copy(self.build_cfg.build_path() / "fuzz", self.bin_path())
+
+    def _afl_env(self) -> str:
+        # Use ASAN options to enforce memory limit.
+        # These use the AFL default ASAN options plus hard_rss_limit_mb
+        if self.kind == FuzzKind.ASAN:
+            return (
+                "ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:malloc_context_size=0:"
+                f"symbolize=0:allocator_may_return_null=1:hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB}"
+            )
+        if self.kind == FuzzKind.TSAN:
+            return f"TSAN_OPTIONS=hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB}"
+        return ""
+
+    def _afl_limits(self) -> str:
+        # ASAN allocates virtual memory which doesn't work well with AFL memory limit.
+        if self.kind in [FuzzKind.ASAN, FuzzKind.TSAN]:
+            return f"-t {AFL_TIME_LIMIT_MS}"
+        return f"-m {AFL_MEMORY_LIMIT_MB} -t {AFL_TIME_LIMIT_MS}"
 
     # Note that this can't be called in parallel.
     def build(self) -> None:
@@ -106,9 +126,10 @@ class FuzzCfg:
 
         # Add environment vars.
         cmd += "AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 "
+        cmd += f"{self._afl_env()} "
         # Add dictionary for fuzzing.
         cmd += f"afl-fuzz -x {self.build_cfg.src}/extern/aflplusplus/fuzz/dict.dct "
-        cmd += f"-m {AFL_MEMORY_LIMIT_MB} -t {AFL_TIME_LIMIT_MS} "
+        cmd += f"{self._afl_limits()} "
         cmd += f"-i {self.build_cfg.src}/extern/aflplusplus/fuzz/testcases "
         cmd += f"-o {self.data_path()}/afl {instance} "
         if self.kind == FuzzKind.CMPLOG:
@@ -121,7 +142,7 @@ class FuzzCfg:
     def afl_tmin_cmd(self, path: Path) -> str:
         cmd = ""
 
-        cmd += f"afl-tmin -m {AFL_MEMORY_LIMIT_MB} -t {AFL_TIME_LIMIT_MS} "
+        cmd += f"afl-tmin {self._afl_limits()}  "
         cmd += f"-i {path} -o {self.data_path()}/{path.name}.min "
         cmd += "-- " + self._fuzz_cmd()
 
@@ -132,7 +153,7 @@ def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
     """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
     # Constructs fuzzers in this order:
-    # 0: Regular fuzzer.
+    # 0: Regular fuzzer - the main fuzzer.
     # 1: LAF fuzzer.
     # 2: LAF fuzzer.
     # 3: LAF fuzzer.
@@ -143,15 +164,18 @@ def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
     # 8: TSAN fuzzer.
     # 9: CFISAN fuzzer.
     # 10: Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
-    kinds_args: list[tuple[FuzzKind, list[str]]] = [(FuzzKind.REGULAR, [])]
+    kinds_args: list[tuple[FuzzKind, list[str]]] = [
+        (FuzzKind.REGULAR, []),
+        (FuzzKind.CMPLOG, []),
+        (FuzzKind.CMPLOG, ["-l", "AT"]),
+    ]
 
-    # Skip other configurations if RNAstructure is enabled because compiling takes
-    # too long.
+    # Skip other configurations if RNAstructure is enabled because we don't
+    # care about these kinds of issues in RNAstructure.
+    # Also skip LAF, as it takes too long to compile.
     if not build_cfg.rnastructure:
         kinds_args += [
-            (FuzzKind.CMPLOG, []),
             (FuzzKind.LAF, []),
-            (FuzzKind.CMPLOG, ["-l", "AT"]),
             (FuzzKind.LAF, []),
             (FuzzKind.LAF, []),
             (FuzzKind.ASAN, []),
