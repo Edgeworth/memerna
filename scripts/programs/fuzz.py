@@ -1,14 +1,13 @@
 # Copyright 2022 Eliot Courtney.
 import multiprocessing
-
 from typing import Any
 
 import click
 import cloup
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-
-from scripts.build.fuzz import FuzzCfg, build_fuzz_cfgs
+from scripts.build.fuzz import build_fuzz_cfgs
+from scripts.build.fuzz import FuzzCfg
 from scripts.util.command import run_shell
 from scripts.util.util import fn_args
 

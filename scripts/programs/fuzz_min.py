@@ -1,14 +1,12 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
-
 from typing import Any
 
-import cloup
 import click
+import cloup
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-
-from scripts.build.fuzz import FuzzCfg, FuzzKind
+from scripts.build.fuzz import FuzzCfg
 from scripts.util.command import run_shell
 from scripts.util.util import fn_args
 
@@ -24,8 +22,7 @@ def fuzz_min(
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfg = FuzzCfg(build_cfg=build_cfg, kind=FuzzKind.REGULAR, extra_args=[], index=0)
-
+    cfg = FuzzCfg(build_cfg=build_cfg)
     cfg.build()
 
     cmd = cfg.afl_tmin_cmd(path)

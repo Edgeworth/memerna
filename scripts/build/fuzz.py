@@ -1,14 +1,16 @@
 # Copyright 2022 Eliot Courtney.
-from pathlib import Path
-import shutil
-import click
+import copy
 from dataclasses import dataclass
+from dataclasses import field
 from enum import Enum
 from itertools import cycle
 from itertools import islice
+from pathlib import Path
+import shutil
+
+import click
 from scripts.build.config import BuildCfg
 from scripts.build.config import Sanitizer
-from scripts.util.command import run_shell
 
 AFL_MEMORY_LIMIT_MB = "2000"
 AFL_TIME_LIMIT_MS = "2000"
@@ -17,41 +19,42 @@ AFL_TIME_LIMIT_MS = "2000"
 class FuzzKind(str, Enum):
     REGULAR = "regular"
     ASAN = "asan"
-    MSAN = "msan"
     UBSAN = "ubsan"
     TSAN = "tsan"
     CFISAN = "cfisan"
     LAF = "laf"
     CMPLOG = "cmplog"
 
-    def env(self) -> str:
+    def env(self) -> dict[str, str]:
         if self == FuzzKind.ASAN:
-            return "AFL_USE_ASAN=1"
-        if self == FuzzKind.MSAN:
-            return "AFL_USE_MSAN=1"
+            return {"AFL_USE_ASAN": "1"}
         if self == FuzzKind.UBSAN:
-            return "AFL_USE_UBSAN=1"
+            return {"AFL_USE_UBSAN": "1"}
         if self == FuzzKind.TSAN:
-            return "AFL_USE_TSAN=1"
+            return {"AFL_USE_TSAN": "1"}
         if self == FuzzKind.CFISAN:
-            return "AFL_USE_CFISAN=1"
+            return {"AFL_USE_CFISAN": "1"}
         if self == FuzzKind.LAF:
-            return "AFL_LLVM_LAF_ALL=1"
+            return {"AFL_LLVM_LAF_ALL": "1"}
         if self == FuzzKind.CMPLOG:
-            return "AFL_LLVM_CMPLOG=1"
-        return "AFL_HARDEN=1 "
+            return {"AFL_LLVM_CMPLOG": "1"}
+        return {"AFL_HARDEN": "1 "}
 
 
 @dataclass
 class FuzzCfg:
     build_cfg: BuildCfg
-    kind: FuzzKind
-    extra_args: list[str]  # extra args for afl-fuzz. not included in ident
-    index: int
+    kind: FuzzKind = FuzzKind.REGULAR
+    # extra args for afl-fuzz. not included in ident
+    afl_args: list[str] = field(default_factory=list)
+    index: int = 0  # which fuzzer this is when running multiple fuzzers
 
     def __post_init__(self) -> None:
         if self.error():
             raise ValueError(self.error())
+        # Copy config so we can add our environment variables to it.
+        self.build_cfg = copy.deepcopy(self.build_cfg)
+        self.build_cfg.env.update(self.kind.env())
 
     def error(self) -> str:
         if not self.build_cfg.is_afl():
@@ -71,30 +74,21 @@ class FuzzCfg:
         """Directory where fuzzing binaries are stored"""
         return self.data_path() / self.ident()
 
-    def _build_single(self, kind: FuzzKind) -> None:
+    def _build_single(self) -> None:
         # Build with this fuzz configs env vars.
-        build_path = self.build_cfg.build_path()
-        # Need to clean because we changed environment variables.
-        run_shell("make clean", cwd=build_path)
-
-        build_cmd = f"{kind.env()} make -j$(($(nproc)-1)) fuzz"
-        click.echo(f"Building fuzz configuration {build_cmd}")
-        run_shell(build_cmd, cwd=build_path)
+        click.echo(f"Building fuzz configuration {self.ident()}")
+        self.build_cfg.build(["fuzz"])
 
         # Copy artifacts to fuzz directory.
         self.bin_path().mkdir(parents=True, exist_ok=True)
-        shutil.copy(build_path / "fuzz", self.bin_path())
+        shutil.copy(self.build_cfg.build_path() / "fuzz", self.bin_path())
 
     # Note that this can't be called in parallel.
     def build(self) -> None:
-        build_path = self.build_cfg.build_path()
-        self._build_single(self.kind)
-
-        # If it was CMPLOG, rebuild with regular and put existing artifact as .cmplog.
+        self._build_single()
+        # If it was CMPLOG, put existing artifact as .cmplog.
         if self.kind == FuzzKind.CMPLOG:
-            shutil.copy(build_path / "fuzz", self.bin_path() / "fuzz.cmplog")
-            self._build_single(FuzzKind.REGULAR)
-            shutil.copy(build_path / "fuzz", self.bin_path())
+            shutil.copy(self.bin_path() / "fuzz", self.bin_path() / "fuzz.cmplog")
 
     def _fuzz_cmd(self) -> str:
         cmd = f"./fuzz -md {self.build_cfg.src}/data "
@@ -119,7 +113,7 @@ class FuzzCfg:
         cmd += f"-o {self.data_path()}/afl {instance} "
         if self.kind == FuzzKind.CMPLOG:
             cmd += "-c ./fuzz.cmplog "
-        cmd += " ".join(self.extra_args) + " "
+        cmd += " ".join(self.afl_args) + " "
         cmd += "-- " + self._fuzz_cmd()
 
         return cmd
@@ -135,6 +129,7 @@ class FuzzCfg:
 
 
 def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
+    """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
     # Constructs fuzzers in this order:
     # 0: Regular fuzzer.
@@ -144,11 +139,10 @@ def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
     # 4: CMPLOG fuzzer.
     # 5: CMPLOG fuzzer with -l AT transformations.
     # 6: ASAN fuzzer.
-    # 7: MSAN fuzzer.
-    # 8: UBSAN fuzzer.
-    # 9: TSAN fuzzer.
-    # 10: CFISAN fuzzer.
-    # 11: Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
+    # 7: UBSAN fuzzer.
+    # 8: TSAN fuzzer.
+    # 9: CFISAN fuzzer.
+    # 10: Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
     kinds_args: list[tuple[FuzzKind, list[str]]] = [(FuzzKind.REGULAR, [])]
 
     # Skip other configurations if RNAstructure is enabled because compiling takes
@@ -161,7 +155,6 @@ def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
             (FuzzKind.LAF, []),
             (FuzzKind.LAF, []),
             (FuzzKind.ASAN, []),
-            (FuzzKind.MSAN, []),
             (FuzzKind.UBSAN, []),
             (FuzzKind.TSAN, []),
             (FuzzKind.CFISAN, []),
@@ -187,6 +180,6 @@ def build_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[FuzzCfg]:
         kinds_args.append((FuzzKind.REGULAR, mopt + queue + power))
 
     for i, (kind, extra_args) in enumerate(kinds_args):
-        cfgs.append(FuzzCfg(build_cfg=build_cfg, kind=kind, extra_args=extra_args, index=i))
+        cfgs.append(FuzzCfg(build_cfg=build_cfg, kind=kind, afl_args=extra_args, index=i))
 
     return cfgs[:max_num]

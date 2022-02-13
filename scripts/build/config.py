@@ -1,10 +1,11 @@
 # Copyright 2022 Eliot Courtney.
-import shutil
-import click
 from dataclasses import dataclass
+from dataclasses import field
 from enum import Enum
 from pathlib import Path
+import shutil
 
+import click
 from scripts.util.command import run_shell
 
 
@@ -57,6 +58,7 @@ class BuildKind(str, Enum):
 class BuildCfg:
     src: Path
     prefix: Path
+    env: dict[str, str] = field(default_factory=dict)
     kind: BuildKind = BuildKind.DEBUG
     compiler: Compiler = Compiler.DEFAULT
     sanitizer: Sanitizer = Sanitizer.NONE
@@ -76,6 +78,8 @@ class BuildCfg:
             ident += "-rnastructure"
         if self.iwyu:
             ident += "-iwyu"
+        if self.env:
+            ident += "-" + "-".join(f"{k}-{v}" for k, v in self.env.items())
         return ident
 
     def build_path(self) -> Path:
@@ -103,7 +107,7 @@ class BuildCfg:
         build_path.mkdir(parents=True, exist_ok=True)
 
         click.echo("Generating cmake files.")
-        run_shell(f"cmake {def_str} {self.src}", cwd=build_path)
+        run_shell(f"cmake {def_str} {self.src}", cwd=build_path, extra_env=self.env)
 
     def build(self, targets: list[str], regenerate: bool = False) -> None:
         path = self.build_path()
@@ -111,4 +115,4 @@ class BuildCfg:
             shutil.rmtree(path)
         if not path.exists():
             self._generate_cmake()
-        run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=path)
+        run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=path, extra_env=self.env)
