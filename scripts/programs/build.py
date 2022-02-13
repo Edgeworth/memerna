@@ -1,13 +1,10 @@
 # Copyright 2022 Eliot Courtney.
-import os
-import shutil
 from typing import Any
 
 import click
 import cloup
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-from scripts.build.cmake import generate_cmake
 from scripts.util.command import run_shell
 from scripts.util.util import fn_args
 
@@ -28,19 +25,10 @@ def build(
     cfg = build_cfg_from_args(**fn_args())
     build_path = cfg.build_path()
 
-    if regenerate and build_path.exists():
-        shutil.rmtree(build_path)
-
     click.echo(build_path)
-    if not os.path.exists(build_path):
-        regenerate = True
-
-    if regenerate:
-        click.echo("Regenerating cmake files.")
-        generate_cmake(cfg)
 
     if build:
-        run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=build_path)
+        cfg.build(targets, regenerate=regenerate)
 
     if test:
-        run_shell("./run_tests", cwd=cfg.build_path())
+        run_shell("./run_tests", cwd=build_path)
