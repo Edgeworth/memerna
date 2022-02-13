@@ -71,7 +71,7 @@ struct PartitionState {
   PartitionState(int N, datatable* data)
       : w(N), v(N), wmb(N), wl(N), wlc(N), wmbl(N), wcoax(N), w5(new PFPRECISION[N + 1]),
         w3(new PFPRECISION[N + 2]), pfdata(new pfdatatable(data, scaling, T)),
-        fce(new forceclass(N)), lfce(new bool[2 * N + 1]), mod(new bool[2 * N + 1]) {}
+        fce(new forceclass(N)), lfce(new bool[2 * N + 1]()), mod(new bool[2 * N + 1]()) {}
 };
 
 PartitionState RunPartition(structure* struc, datatable* data) {
