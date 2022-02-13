@@ -7,7 +7,6 @@ import cloup
 import click
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-from scripts.build.cmake import generate_cmake
 
 from scripts.build.fuzz import FuzzCfg, FuzzKind
 from scripts.util.command import run_shell
@@ -27,7 +26,6 @@ def fuzz_min(
     build_cfg = build_cfg_from_args(**fn_args())
     cfg = FuzzCfg(build_cfg=build_cfg, kind=FuzzKind.REGULAR, extra_args=[], index=0)
 
-    generate_cmake(build_cfg)
     cfg.build()
 
     cmd = cfg.afl_tmin_cmd(path)
