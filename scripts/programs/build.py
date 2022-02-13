@@ -23,8 +23,8 @@ def build(
     **_kwargs: Any,
 ) -> None:
     cfg = build_cfg_from_args(**fn_args())
-    build_path = cfg.build_path()
 
+    build_path = cfg.build_path()
     click.echo(build_path)
 
     if build:

@@ -39,7 +39,6 @@ cat ./afl/default/crashes/<crash>  | ./fuzz --afl ...
 
 Minimising test cases:
 ```
-afl-tmin -i case -o ./afl/min -- ./fuzz --afl \
-  -rd $MRNA/extern/miles_rnastructure/data_tables/ \
-  -r --table-check
+python -m scripts.run fuzz-min <crash-file>
+
 ```

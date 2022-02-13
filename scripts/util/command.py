@@ -123,10 +123,13 @@ def run_cmd(
     return res
 
 
-def run_shell(cmd: str, cwd: Path | None = None) -> None:
+def run_shell(cmd: str, cwd: Path | None = None, extra_env: dict[str, str] | None = None) -> None:
     prev_cwd = os.getcwd()
     if cwd is not None:
         os.chdir(cwd)
+    if extra_env:
+        cmd = f"{' '.join(f'{k}={v}' for k, v in extra_env.items())} {cmd}"
+    print(cmd)
     ret_code = os.system(cmd)
     os.chdir(prev_cwd)
     if ret_code != 0:
