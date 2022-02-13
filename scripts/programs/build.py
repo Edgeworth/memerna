@@ -40,8 +40,7 @@ def build(
         generate_cmake(cfg)
 
     if build:
-        # Add stack protector etc to catch non-crashing memory bugs.
-        run_shell(f"AFL_HARDEN=1 make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=build_path)
+        run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=build_path)
 
     if test:
         run_shell("./run_tests", cwd=cfg.build_path())

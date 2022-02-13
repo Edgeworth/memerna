@@ -68,7 +68,7 @@ bridge_options = cloup.option_group(
         "memerna",
         envvar="MRNA_DIST",
         show_envvar=True,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
         callback=validate_memerna,
         help="path to memerna build directory",
     ),
@@ -78,7 +78,7 @@ bridge_options = cloup.option_group(
         envvar="RNASTRUCTURE",
         show_envvar=True,
         callback=validate_rnastructure,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
         help="path to RNAstructure source directory (in-tree build assumed to be done)",
     ),
     cloup.option(
@@ -87,7 +87,7 @@ bridge_options = cloup.option_group(
         envvar="SPARSEMFEFOLD",
         show_envvar=True,
         callback=validate_sparsemfefold,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
         help="",
     ),
     cloup.option(
@@ -96,7 +96,7 @@ bridge_options = cloup.option_group(
         envvar="VIENNARNA",
         show_envvar=True,
         callback=validate_viennarna,
-        type=cloup.Path(file_okay=False, exists=True, path_type=Path),
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     ),
 )
 
