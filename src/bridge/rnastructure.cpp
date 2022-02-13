@@ -54,24 +54,22 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
 
 struct PartitionState {
   const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
-  std::unique_ptr<DynProgArray<PFPRECISION>> w;
-  std::unique_ptr<DynProgArray<PFPRECISION>> v;
-  std::unique_ptr<DynProgArray<PFPRECISION>> wmb;
-  std::unique_ptr<DynProgArray<PFPRECISION>> wl;
-  std::unique_ptr<DynProgArray<PFPRECISION>> wlc;
-  std::unique_ptr<DynProgArray<PFPRECISION>> wmbl;
-  std::unique_ptr<DynProgArray<PFPRECISION>> wcoax;
+  DynProgArray<PFPRECISION> w;
+  DynProgArray<PFPRECISION> v;
+  DynProgArray<PFPRECISION> wmb;
+  DynProgArray<PFPRECISION> wl;
+  DynProgArray<PFPRECISION> wlc;
+  DynProgArray<PFPRECISION> wmbl;
+  DynProgArray<PFPRECISION> wcoax;
   std::unique_ptr<PFPRECISION[]> w5;
   std::unique_ptr<PFPRECISION[]> w3;
   std::unique_ptr<pfdatatable> pfdata;
   std::unique_ptr<forceclass> fce;
   std::unique_ptr<bool[]> lfce;
   std::unique_ptr<bool[]> mod;
+
   PartitionState(int N, datatable* data)
-      : w(new DynProgArray<PFPRECISION>(N)), v(new DynProgArray<PFPRECISION>(N)),
-        wmb(new DynProgArray<PFPRECISION>(N)), wl(new DynProgArray<PFPRECISION>(N)),
-        wlc(new DynProgArray<PFPRECISION>(N)), wmbl(new DynProgArray<PFPRECISION>(N)),
-        wcoax(new DynProgArray<PFPRECISION>(N)), w5(new PFPRECISION[N + 1]),
+      : w(N), v(N), wmb(N), wl(N), wlc(N), wmbl(N), wcoax(N), w5(new PFPRECISION[N + 1]),
         w3(new PFPRECISION[N + 2]), pfdata(new pfdatatable(data, scaling, T)),
         fce(new forceclass(N)), lfce(new bool[2 * N + 1]), mod(new bool[2 * N + 1]) {}
 };
@@ -79,10 +77,9 @@ struct PartitionState {
 PartitionState RunPartition(structure* struc, datatable* data) {
   PartitionState state(struc->GetSequenceLength(), data);
 
-  calculatepfunction(struc, state.pfdata.get(), nullptr, nullptr, false, nullptr, state.w.get(),
-      state.v.get(), state.wmb.get(), state.wl.get(), state.wlc.get(), state.wmbl.get(),
-      state.wcoax.get(), state.fce.get(), state.w5.get(), state.w3.get(), state.mod.get(),
-      state.lfce.get());
+  calculatepfunction(struc, state.pfdata.get(), nullptr, nullptr, false, nullptr, &state.w,
+      &state.v, &state.wmb, &state.wl, &state.wlc, &state.wmbl, &state.wcoax, state.fce.get(),
+      state.w5.get(), state.w3.get(), state.mod.get(), state.lfce.get());
   return state;
 }
 
@@ -154,14 +151,14 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
   for (int i = 1; i <= N; ++i) {
     for (int j = i; j < N + i; ++j) {
       int adjusted = j > N ? j - N - 1 : j - 1;
-      part.p[i - 1][adjusted] = BoltzEnergy(state.v->f(i, j));
+      part.p[i - 1][adjusted] = BoltzEnergy(state.v.f(i, j));
     }
   }
 
   BoltzProbs prob(N, 0);
   for (int i = 0; i < N; ++i) {
     for (int j = i; j < N; ++j) {
-      prob[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, state.v.get(), state.w5.get(),
+      prob[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, &state.v, state.w5.get(),
           structure.get(), state.pfdata.get(), state.lfce.get(), state.mod.get(), state.scaling,
           state.fce.get()));
     }
@@ -174,10 +171,9 @@ std::vector<subopt::SuboptResult> RNAstructure::StochasticSampleIntoVector(
     const Primary& r, int num_samples) const {
   const auto structure = LoadStructure(r);
   auto state = RunPartition(structure.get(), data_.get());
-  stochastictraceback(state.w.get(), state.wmb.get(), state.wmbl.get(), state.wcoax.get(),
-      state.wl.get(), state.wlc.get(), state.v.get(), state.fce.get(), state.w3.get(),
-      state.w5.get(), state.scaling, state.lfce.get(), state.mod.get(), state.pfdata.get(),
-      num_samples, structure.get());
+  stochastictraceback(&state.w, &state.wmb, &state.wmbl, &state.wcoax, &state.wl, &state.wlc,
+      &state.v, state.fce.get(), state.w3.get(), state.w5.get(), state.scaling, state.lfce.get(),
+      state.mod.get(), state.pfdata.get(), num_samples, structure.get());
   return StructureToSuboptVector(*structure);
 }
 
