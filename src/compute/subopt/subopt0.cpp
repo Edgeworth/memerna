@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <functional>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 

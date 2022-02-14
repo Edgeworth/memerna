@@ -2,7 +2,6 @@
 #include "compute/subopt/subopt1.h"
 
 #include <algorithm>
-#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -1,17 +1,14 @@
 // Copyright 2021 Eliot Courtney.
-#include "fuzz/fuzzer.h"
+#include "fuzz/fuzz_invocation.h"
 
 #include <algorithm>
-#include <cmath>
 #include <memory>
-#include <ratio>
 #include <set>
 #include <sstream>
 #include <tuple>
 #include <utility>
 
 #include "compute/boltz_dp.h"
-#include "compute/brute/alg.h"
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
@@ -30,14 +27,14 @@
 
 namespace mrna::fuzz {
 
-const flt PROB_EP{0.2};
+const flt PROB_EP{0.1};
 inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool prob_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 
-Fuzzer::Fuzzer(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg)
+FuzzInvocation::FuzzInvocation(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg)
     : r_(r), em_(std::move(em)), cfg_(cfg) {}
 
-Error Fuzzer::Run() {
+Error FuzzInvocation::Run() {
   if (cfg_.mfe) Register("mfe:", CheckMfe());
   if (cfg_.subopt) Register("subopt:", CheckSubopt());
   if (cfg_.part) Register("partition:", CheckPartition());
@@ -49,13 +46,13 @@ Error Fuzzer::Run() {
   return std::move(errors_);
 }
 
-void Fuzzer::Register(const std::string& header, Error&& local) {
+void FuzzInvocation::Register(const std::string& header, Error&& local) {
   if (local.empty()) return;
   local.push_front(header);
   for (auto& error : local) errors_.push_back("  " + error);
 }
 
-Error Fuzzer::CheckMfe() {
+Error FuzzInvocation::CheckMfe() {
   const int N = static_cast<int>(r_.size());
   Error errors;
 
@@ -131,7 +128,7 @@ Error Fuzzer::CheckMfe() {
   return errors;
 }
 
-Error Fuzzer::CheckSubopt() {
+Error FuzzInvocation::CheckSubopt() {
   const int N = static_cast<int>(r_.size());
   Error errors;
 
@@ -180,7 +177,7 @@ Error Fuzzer::CheckSubopt() {
   return errors;
 }
 
-bool Fuzzer::SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts) {
+bool FuzzInvocation::SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts) {
   // If energies are different but everything else is the same, it is still a bug.
   std::set<subopt::SuboptResult> subopt_set;
   for (const auto& subopt : subopts) {
@@ -190,7 +187,8 @@ bool Fuzzer::SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts) 
   return false;
 }
 
-Error Fuzzer::CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds) {
+Error FuzzInvocation::CheckSuboptResult(
+    const std::vector<subopt::SuboptResult>& subopt, bool has_ctds) {
   Error errors;
   // Check at least one suboptimal structure.
   if (subopt.empty()) errors.push_back("no structures returned");
@@ -226,7 +224,7 @@ Error Fuzzer::CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt,
   return errors;
 }
 
-Error Fuzzer::CheckSuboptResultPair(subopt::SuboptCfg cfg,
+Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
     const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b) {
   Error errors;
   if (a.size() != b.size()) {
@@ -248,7 +246,7 @@ Error Fuzzer::CheckSuboptResultPair(subopt::SuboptCfg cfg,
   return errors;
 }
 
-Error Fuzzer::CheckPartition() {
+Error FuzzInvocation::CheckPartition() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   std::vector<part::PartResult> mrna_parts;
@@ -303,7 +301,7 @@ Error Fuzzer::CheckPartition() {
 }
 
 #ifdef USE_RNASTRUCTURE
-Error Fuzzer::CheckMfeRNAstructure() {
+Error FuzzInvocation::CheckMfeRNAstructure() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   dp_state_t rstr_dp;
@@ -350,7 +348,7 @@ Error Fuzzer::CheckMfeRNAstructure() {
   return errors;
 }
 
-Error Fuzzer::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
+Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
   Error errors;
   // Suboptimal folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
@@ -363,7 +361,7 @@ Error Fuzzer::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
   return errors;
 }
 
-Error Fuzzer::CheckPartitionRNAstructure() {
+Error FuzzInvocation::CheckPartitionRNAstructure() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   auto rstr_part = rstr_->Partition(r_);

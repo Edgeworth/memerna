@@ -85,6 +85,9 @@ class BuildCfg:
     def build_path(self) -> Path:
         return self.prefix / "memerna" / self.ident()
 
+    def model_path(self, model: str = "t04") -> Path:
+        return self.src / "data" / "model" / f"{model}"
+
     def is_afl(self) -> bool:
         return self.compiler in [Compiler.AFL_LTO, Compiler.AFL_FAST]
 
@@ -109,10 +112,11 @@ class BuildCfg:
         click.echo("Generating cmake files.")
         run_shell(f"cmake {def_str} {self.src}", cwd=build_path, extra_env=self.env)
 
-    def build(self, targets: list[str], regenerate: bool = False) -> None:
+    def build(self, targets: list[str], build: bool = True, regenerate: bool = False) -> None:
         path = self.build_path()
         if regenerate:
             shutil.rmtree(path)
         if not path.exists():
             self._generate_cmake()
-        run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=path, extra_env=self.env)
+        if build:
+            run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=path, extra_env=self.env)

@@ -15,7 +15,7 @@ python -m scripts.run build
 Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
 
 ### Running include-what-you-use
-./build.py --iwyu --no-build
+python -m scripts.run build --iwyu --no-build
 
 Then from the cmake build directory:
 make -j$(nproc) 2> /tmp/iwyu.out
@@ -29,7 +29,7 @@ Run from $MRNA/run_tests after building.
 ### Fuzzing
 
 ```
-python -m scripts.run fuzz --help
+python -m scripts.run afl-fuzz --help
 ```
 
 Reproducing a crash:

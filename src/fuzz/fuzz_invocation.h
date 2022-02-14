@@ -1,17 +1,16 @@
-// Copyright 2021 Eliot Courtney.
-#ifndef FUZZ_FUZZER_H_
-#define FUZZ_FUZZER_H_
-
+// Copyright 2022 Eliot Courtney.
+#ifndef FUZZ_FUZZ_INVOCATION_H_
+#define FUZZ_FUZZ_INVOCATION_H_
 #include <deque>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "bridge/bridge.h"
-#include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
+#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
+#include "ctx/ctx.h"
 #include "fuzz/config.h"
 #include "model/primary.h"
 
@@ -25,9 +24,9 @@ namespace mrna::fuzz {
 
 using Error = std::deque<std::string>;
 
-class Fuzzer {
+class FuzzInvocation {
  public:
-  Fuzzer(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg);
+  FuzzInvocation(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg);
 
   Error Run();
 
@@ -69,4 +68,4 @@ class Fuzzer {
 
 }  // namespace mrna::fuzz
 
-#endif  // FUZZ_FUZZER_H_
+#endif  // FUZZ_FUZZ_INVOCATION_H_

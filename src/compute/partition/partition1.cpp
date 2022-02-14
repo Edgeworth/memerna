@@ -1,5 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
+#include <memory>
 #include <tuple>
 #include <type_traits>
 #include <utility>

@@ -2,7 +2,6 @@
 #include "compute/partition/partition.h"
 
 #include <iostream>
-#include <utility>
 
 #include "ctx/config.h"
 #include "ctx/ctx.h"

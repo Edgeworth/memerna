@@ -2,6 +2,7 @@
 #include "compute/brute/brute.h"
 
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "compute/energy/branch.h"

@@ -4,6 +4,7 @@
 #include <string>
 
 #include "common_test.h"
+#include "ctx/config.h"
 #include "ctx/ctx.h"
 #include "gtest/gtest.h"
 

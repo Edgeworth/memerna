@@ -4,15 +4,15 @@ from typing import Any
 
 import click
 import cloup
+from scripts.build.afl_fuzz import afl_fuzz_cfgs
+from scripts.build.afl_fuzz import AflFuzzCfg
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-from scripts.build.fuzz import build_fuzz_cfgs
-from scripts.build.fuzz import FuzzCfg
 from scripts.util.command import run_shell
 from scripts.util.util import fn_args
 
 
-def run_fuzz(cfg: FuzzCfg) -> None:
+def run_fuzz(cfg: AflFuzzCfg) -> None:
     cmd = cfg.afl_fuzz_cmd()
     click.echo(f"Running fuzz {cmd}")
     run_shell(cmd, cwd=cfg.bin_path())
@@ -25,12 +25,12 @@ def run_fuzz(cfg: FuzzCfg) -> None:
     default=multiprocessing.cpu_count() - 2,
     help="Number of fuzzing configurations to run.",
 )
-def fuzz(
+def afl_fuzz(
     num_procs: int,
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfgs = build_fuzz_cfgs(build_cfg, num_procs)
+    cfgs = afl_fuzz_cfgs(build_cfg, num_procs)
 
     for cfg in cfgs:
         cfg.build()

@@ -1,8 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/ctd.h"
 
-#include <bits/ranges_algo.h>
-
+#include <functional>
 #include <stack>
 #include <utility>
 

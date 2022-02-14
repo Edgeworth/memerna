@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "compute/energy/structure.h"
