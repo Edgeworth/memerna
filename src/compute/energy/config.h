@@ -14,7 +14,7 @@ inline const Opt OPT_SEED =
 inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
                                         .LongName("memerna-data")
                                         .ShortName("md")
-                                        .Default("./data")
+                                        .Default("./data/model/t04")
                                         .Help("data path for given energy model for memerna");
 inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");

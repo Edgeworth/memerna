@@ -27,8 +27,7 @@ def build(
     build_path = cfg.build_path()
     click.echo(build_path)
 
-    if build:
-        cfg.build(targets, regenerate=regenerate)
+    cfg.build(targets, build=build, regenerate=regenerate)
 
     if test:
         run_shell("./run_tests", cwd=build_path)

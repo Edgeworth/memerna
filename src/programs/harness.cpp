@@ -4,13 +4,13 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "bridge/bridge.h"
 #include "compute/energy/config.h"
 #include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
+#include "compute/partition/partition.h"
 #include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
 #include "compute/traceback/traceback.h"

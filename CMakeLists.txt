@@ -130,7 +130,7 @@ set(MEMERNA_SOURCE
     src/ctx/config.cpp src/ctx/config.h
     src/ctx/ctx.cpp src/ctx/ctx.h
     src/fuzz/config.cpp src/fuzz/config.h
-    src/fuzz/fuzzer.cpp src/fuzz/fuzzer.h
+    src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
     src/model/base.cpp src/model/base.h
     src/model/ctd.cpp src/model/ctd.h
     src/model/model.h
@@ -138,6 +138,7 @@ set(MEMERNA_SOURCE
     src/model/secondary.cpp src/model/secondary.h
     src/util/argparse.cpp src/util/argparse.h
     src/programs/print.cpp src/programs/print.h
+    src/programs/fuzz/fuzz_harness.cpp src/programs/fuzz/fuzz_harness.h
     src/util/array.h
     src/util/splaymap.h
     src/util/string.cpp src/util/string.h
@@ -168,7 +169,8 @@ add_library(memerna ${MEMERNA_SOURCE})
 add_executable(brute src/programs/brute.cpp)
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
-add_executable(fuzz src/programs/fuzz.cpp)
+add_executable(fuzz src/programs/fuzz/fuzz.cpp)
+add_executable(fuzz_afl src/programs/fuzz/fuzz_afl.cpp)
 add_executable(harness src/programs/harness.cpp)
 add_executable(partition src/programs/partition.cpp)
 add_executable(run_tests ${TEST_SOURCE} tests/programs/run_tests.cpp)
@@ -182,6 +184,7 @@ target_link_libraries(brute PRIVATE memerna)
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)
+target_link_libraries(fuzz_afl PRIVATE memerna)
 target_link_libraries(harness PRIVATE memerna)
 target_link_libraries(partition PRIVATE memerna)
 target_link_libraries(run_tests PRIVATE memerna Threads::Threads gtest)
@@ -219,6 +222,7 @@ add_sanitizers(brute)
 add_sanitizers(efn)
 add_sanitizers(fold)
 add_sanitizers(fuzz)
+add_sanitizers(fuzz_afl)
 add_sanitizers(harness)
 add_sanitizers(partition)
 add_sanitizers(run_tests)
@@ -232,6 +236,7 @@ if(USE_IWYU)
   set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(fuzz_afl PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(harness PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")

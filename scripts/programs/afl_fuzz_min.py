@@ -4,9 +4,9 @@ from typing import Any
 
 import click
 import cloup
+from scripts.build.afl_fuzz import AflFuzzCfg
 from scripts.build.args import build_cfg_from_args
 from scripts.build.args import build_cfg_options
-from scripts.build.fuzz import FuzzCfg
 from scripts.util.command import run_shell
 from scripts.util.util import fn_args
 
@@ -17,12 +17,12 @@ from scripts.util.util import fn_args
     "path",
     type=cloup.Path(exists=True, dir_okay=False, resolve_path=True, path_type=Path),
 )
-def fuzz_min(
+def afl_fuzz_min(
     path: Path,
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfg = FuzzCfg(build_cfg=build_cfg)
+    cfg = AflFuzzCfg(build_cfg=build_cfg)
     cfg.build()
 
     cmd = cfg.afl_tmin_cmd(path)

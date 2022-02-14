@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
@@ -17,6 +16,7 @@
 namespace mrna::energy {
 
 class BoltzEnergyModel;
+
 using BoltzEnergyModelPtr = std::shared_ptr<BoltzEnergyModel>;
 
 class BoltzEnergyModel {

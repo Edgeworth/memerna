@@ -2,7 +2,6 @@
 #include "ctx/ctx.h"
 
 #include <cassert>
-#include <functional>
 #include <tuple>
 #include <utility>
 #include <vector>

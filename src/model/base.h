@@ -4,9 +4,7 @@
 
 #include <cassert>
 #include <cstdint>
-#include <limits>
-
-#include "util/error.h"
+#include <optional>
 
 namespace mrna {
 

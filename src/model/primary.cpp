@@ -1,6 +1,7 @@
 // Copyright 2022 E.
 #include "model/primary.h"
 
+#include <optional>
 #include <random>
 
 #include "util/error.h"

@@ -2,6 +2,7 @@
 #ifndef COMPUTE_ENERGY_PRECOMP_H_
 #define COMPUTE_ENERGY_PRECOMP_H_
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>

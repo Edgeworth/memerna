@@ -1,5 +1,6 @@
 // Copyright 2016 E.
 #include <cassert>
+#include <memory>
 
 #include "common_test.h"
 #include "compute/energy/config.h"

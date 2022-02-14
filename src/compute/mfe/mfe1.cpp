@@ -1,5 +1,6 @@
 // Copyright 2016 E.
 #include <algorithm>
+#include <memory>
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"

@@ -1,8 +1,6 @@
 // Copyright 2016 E.
 #include "model/base.h"
 
-#include <limits>
-
 namespace mrna {
 
 std::optional<Base> CharToBase(char c) {
