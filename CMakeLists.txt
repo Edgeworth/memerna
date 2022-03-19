@@ -13,7 +13,7 @@ option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 if(USE_RNASTRUCTURE)
   set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
   set(CMAKE_BUILD_TYPE Release)
-  add_subdirectory("extern/miles_rnastructure")
+  add_subdirectory("extern/rnastructure_bridge")
   set(CMAKE_BUILD_TYPE ${SAVED_BUILD_TYPE})
 endif()
 
@@ -213,7 +213,7 @@ endif()
 if(USE_RNASTRUCTURE)
   target_include_directories(memerna SYSTEM PUBLIC extern) # Suppress warnings.
   target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
-  target_link_libraries(memerna PUBLIC miles_rnastructure)
+  target_link_libraries(memerna PUBLIC rnastructure_bridge)
 endif()
 
 # Add sanitizers
