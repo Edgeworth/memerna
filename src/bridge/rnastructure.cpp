@@ -12,7 +12,7 @@
 
 #include "compute/energy/structure.h"
 #include "compute/subopt/subopt.h"
-#include "miles_rnastructure/include/stochastic.h"
+#include "rnastructure_bridge/include/stochastic.h"
 #include "util/error.h"
 
 namespace mrna::bridge {

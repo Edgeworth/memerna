@@ -24,7 +24,7 @@ inline constexpr Energy CAP_E = 0x07070707;
 // Values affecting the energy model:
 inline constexpr int HAIRPIN_MIN_SZ = 3;
 // N.B. This is for kcal/mol so it's not 8.315.
-inline constexpr double R = 1.9872036e-3;
+inline constexpr double R = 1.98720425864083e-3;
 // This is 37 degrees Celsius. Changing this is not a good idea.
 inline constexpr double T = 310.15;
 // Ninio maximum asymmetry.
