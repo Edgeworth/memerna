@@ -1,0 +1,44 @@
+[tool.mypy]
+show_column_numbers = true
+# Require type hints
+disallow_untyped_defs = true
+
+# Disallow any type that is not imported
+disallow_any_unimported = true
+
+# Disallow implicit optional e.g. arg: str = None
+no_implicit_optional = true
+
+# Check bodies of functions without type annotations too
+check_untyped_defs = true
+
+# Warn about returning Any from a function annotated to not return it
+warn_return_any = true
+
+# Warn about unused ignore annotations
+warn_unused_ignores = true
+
+# Show error codes
+show_error_codes = true
+
+# Set python version.
+python_version = '3.10'
+
+# No type hints for torchvision.
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["torchvision.*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.typecheck]
+generated-members = "numpy.*,torch.*"
+
+[tool.pylint.messages_control]
+# Fix "not callable" errors for torch.nn.Module subclasses
+disable = "not-callable"
