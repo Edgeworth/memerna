@@ -1,12 +1,15 @@
 from pathlib import Path
-from torchvision import datasets
-from torchvision.transforms import ToTensor
+
 import click
 from scripts.design.trainer import Trainer
+from scripts.design.transformer.positional_encoder import PositionalEncoder
+import torch
+from torchvision import datasets
+from torchvision.transforms import ToTensor
 
 
-def run_design(output_path: Path) -> None:
-    click.echo(f"Running design at {output_path}")
+def run_fashion(output_path: Path) -> None:
+    click.echo(f"Running fashion at {output_path}")
     # Download training data from open datasets.
     train_data = datasets.FashionMNIST(
         root=output_path,
@@ -25,3 +28,11 @@ def run_design(output_path: Path) -> None:
 
     trainer = Trainer(train_data, valid_data, output_path)
     trainer.run(5)
+
+
+def run(output_path: Path) -> None:
+    # run_fashion(output_path)
+    # run_transformer(output_path)
+    enc = PositionalEncoder(d_emb=4, max_seq_len=100)
+    a = enc(torch.zeros(5, 3, 4))
+    print(a)

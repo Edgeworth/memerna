@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.2.0
     hooks:
       - id: check-ast # check python syntax
       - id: check-docstring-first # check for docstring after code
@@ -31,17 +31,17 @@ repos:
         exclude: ^cmake/FindMPFR.cmake$
   # Python related hooks:
   - repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 22.3.0
     hooks:
       - id: black
         args: [--line-length=100, -tpy310]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.31.0
+    rev: v2.32.0
     hooks:
       - id: pyupgrade
         args: [--py310-plus]
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.2.1
+    rev: v2.2.3
     hooks:
       - id: add-trailing-comma
         args: [--py36-plus]
@@ -55,25 +55,24 @@ repos:
       - id: blacken-docs
         args: [--line-length=100, -t=py310]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.931
+    rev: v0.942
     hooks:
       - id: mypy
         args: [
             --disallow-untyped-defs, # Require type hints
-            --disallow-any-unimported, # Disallow any type that is not imported
             --no-implicit-optional, # Disallow implicit optional e.g. arg: str = None
             --check-untyped-defs, # Check bodies of functions without type annotations too
             --warn-return-any, # Warn about returning Any from a function annotated to not return it
             --warn-unused-ignores, # Warn about unused ignore annotations
             --show-error-codes,
           ]
-        additional_dependencies: [click, cloup]
+        additional_dependencies: [click, cloup, torch]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
-    rev: 1.6.0
+    rev: 1.7.7
     hooks:
       - id: prospector
         args: [--max-line-length=100]
-        additional_dependencies: [click, cloup]
+        additional_dependencies: [click, cloup, torch]
   # C++ related hooks:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5

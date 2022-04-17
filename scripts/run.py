@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import logging
+
+import click_log
 import cloup
 from scripts.programs.afl_fuzz import afl_fuzz
 from scripts.programs.afl_fuzz_min import afl_fuzz_min
@@ -10,7 +13,6 @@ from scripts.programs.design import design
 from scripts.programs.harness import harness
 from scripts.programs.parse_rnastructure_datatables import parse_rnastructure_datatables
 
-
 CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,
     show_subcommand_aliases=True,
@@ -19,8 +21,12 @@ CONTEXT_SETTINGS = cloup.Context.settings(
     ),
 )
 
+logger = logging.getLogger()
+click_log.basic_config(logger)
+
 
 @cloup.group(context_settings=CONTEXT_SETTINGS)
+@click_log.simple_verbosity_option(logger)
 def cli() -> None:
     pass
 

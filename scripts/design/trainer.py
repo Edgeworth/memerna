@@ -1,25 +1,28 @@
 from datetime import datetime
+import logging
+import multiprocessing
 from pathlib import Path
-from typing import Optional, Tuple
+
+from scripts.design.fashion_model import FashionModel
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, Dataset
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
-import click
-
-from scripts.design.nn import NeuralNetwork
 
 
 class Trainer:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    profiler: Optional[torch.profiler.profile] = None
+    profiler: torch.profiler.profile | None = None
     writer_path: Path
     writer: SummaryWriter
     report_interval: int = 100  # interval to write out data to tensorboard
     print_interval: int = 100  # interval to print summary data to console
 
+    # parallelisation for data loading
+    dataloader_worker_count: int = multiprocessing.cpu_count() // 4
     batch_size: int = 64
     train_dataloader: DataLoader
     valid_dataloader: DataLoader
@@ -30,26 +33,41 @@ class Trainer:
     global_step: int
 
     def __init__(
-        self, train_data: Dataset, valid_data: Dataset, path: Path, profile: bool = True
+        self,
+        train_data: Dataset,
+        valid_data: Dataset,
+        path: Path,
+        profile: bool = False,
     ) -> None:
         # Create data loaders.
-        self.train_dataloader = DataLoader(train_data, batch_size=self.batch_size)
-        self.valid_dataloader = DataLoader(valid_data, batch_size=self.batch_size)
+        self.train_dataloader = DataLoader(
+            train_data,
+            batch_size=self.batch_size,
+            shuffle=True,  # Shuffle data order
+            num_workers=self.dataloader_worker_count,  # Load data faster
+        )
+        self.valid_dataloader = DataLoader(
+            valid_data,
+            batch_size=self.batch_size,
+            shuffle=True,  # Shuffle data order
+            num_workers=self.dataloader_worker_count,  # Load data faster
+        )
 
         self.writer_path = path / "tensorboard" / datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.writer = SummaryWriter(self.writer_path)
 
-        self.model = NeuralNetwork().to(self.device)
+        self.model = FashionModel().to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
         self.loss_fn = nn.CrossEntropyLoss()
         self.global_step = 0
 
         if profile:
+            # Only runs one time at the beginning.
             self.profiler = torch.profiler.profile(
-                schedule=torch.profiler.schedule(wait=2, warmup=2, active=6),
+                schedule=torch.profiler.schedule(wait=2, warmup=2, active=6, repeat=1),
                 on_trace_ready=torch.profiler.tensorboard_trace_handler(str(self.writer_path)),
                 record_shapes=True,
-                profile_memory=True,
+                profile_memory=False,
                 with_stack=False,  # TODO: causes segfault in pytorch 1.11.0
             )
 
@@ -84,7 +102,7 @@ class Trainer:
 
             if batch % self.print_interval == 0:
                 loss, current = loss.item(), batch * len(X)
-                click.echo(f"loss: {loss:>7f}  [{current:>5d}]")
+                logging.info(f"loss: {loss:>7f}  [{current:>5d}]")
 
             if (batch + 1) % self.report_interval == 0:
                 avg_loss /= self.report_interval
@@ -97,7 +115,7 @@ class Trainer:
                 )
                 avg_loss = 0.0
 
-    def _validate(self) -> Tuple[float, float]:
+    def _validate(self) -> tuple[float, float]:
         num_batches = len(self.valid_dataloader)
         self.model.eval()
         loss = 0.0
@@ -121,10 +139,10 @@ class Trainer:
         try:
             self._record_graph()
             for t in range(epochs):
-                click.echo(f"Epoch {t+1}\n-------------------------------")
+                logging.info(f"Epoch {t+1}\n-------------------------------")
                 self._train_epoch()
                 valid_loss, valid_acc = self._validate()
-                click.echo(f"Test Error: \n Correct: {valid_acc}, Avg loss: {valid_loss:>8f} \n")
+                logging.info(f"Test Error: \n Correct: {valid_acc}, Avg loss: {valid_loss:>8f} \n")
         finally:
             if self.profiler:
                 self.profiler.__exit__(None, None, None)
