@@ -2,8 +2,7 @@
 from pathlib import Path
 
 import cloup
-
-from scripts.design.run import run_design
+from scripts.design.run import run
 
 
 @cloup.command()
@@ -20,4 +19,4 @@ from scripts.design.run import run_design
     ),
 )
 def design(output_path: Path) -> None:
-    run_design(output_path)
+    run(output_path)
