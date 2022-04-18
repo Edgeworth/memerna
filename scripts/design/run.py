@@ -33,6 +33,6 @@ def run_fashion(output_path: Path) -> None:
 
 
 def run(output_path: Path) -> None:
-    run_fashion(output_path)
-    # pipeline = LanguagePipeline(output_path=output_path)
-    # pipeline.run(5)
+    # run_fashion(output_path)
+    pipeline = LanguagePipeline(output_path=output_path)
+    pipeline.run(5)

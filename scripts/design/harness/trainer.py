@@ -91,10 +91,13 @@ class Trainer:
                 with_stack=False,  # TODO: causes segfault in pytorch 1.11.0
             )
 
+    def _model_input(self, *, X: torch.Tensor) -> list[torch.Tensor]:
+        return [t.to(self.device) for t in self.model.model_input(X=X)]
+
     def _record_graph(self) -> None:
         self.model.eval()
         X, _ = next(iter(self.train_dataloader))
-        self.writer.add_graph(self.model, X.to(self.device))
+        self.writer.add_graph(self.model, self._model_input(X=X))
 
     def _next_global_step(self) -> int:
         self.global_step += 1
@@ -108,11 +111,12 @@ class Trainer:
             X, y = X.to(self.device), y.to(self.device)
 
             # Compute prediction error
-            out = self.model.model_output(X=X, y=y, loss_fn=self.loss_fn)
+            out = self.model(*self._model_input(X=X))
+            loss, _ = self.model.model_loss(out=out, y=y, loss_fn=self.loss_fn)
 
             # Backpropagation
             self.optimizer.zero_grad()  # Zero out the gradient buffers.
-            out.loss.backward()  # Compute gradients
+            loss.backward()  # Compute gradients
 
             if self.clip_grad_norm:
                 nn.utils.clip_grad_norm_(self.model.parameters(), self.clip_grad_norm)
@@ -121,11 +125,10 @@ class Trainer:
             if self.profiler:
                 self.profiler.step()
 
-            avg_loss += out.loss.item()
+            avg_loss += loss.item()
 
             if batch_idx % self.print_interval == 0:
-                loss, current = out.loss.item(), batch_idx * len(X)
-                logging.info(f"loss: {loss:>7f}  [processed {current:>5d}]")
+                logging.info(f"loss: {loss.item():>7f}  [processed {batch_idx * len(X):>5d}]")
 
             if batch_idx % self.report_interval == 0:
                 avg_loss /= self.report_interval
@@ -139,21 +142,21 @@ class Trainer:
                 avg_loss = 0.0
 
     def _validate(self) -> tuple[float, float]:
-        loss = 0.0
-        correct = 0.0
+        total_loss = 0.0
+        total_correct = 0.0
         total_examples = 0.0
         self.model.eval()
         with torch.no_grad():  # don't calculate gradients
             for X, y in self.valid_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
-
-                out = self.model.model_output(X=X, y=y, loss_fn=self.loss_fn)
-                loss += out.loss.item()
-                correct += out.correct.sum().item()
+                out = self.model(*self._model_input(X=X))
+                loss, correct = self.model.model_loss(out=out, y=y, loss_fn=self.loss_fn)
+                total_loss += loss.item()
+                total_correct += correct.sum().item()
                 total_examples += len(X)
-        loss /= len(self.valid_dataloader)
-        correct /= total_examples
-        return loss, correct
+        total_loss /= len(self.valid_dataloader)
+        total_correct /= total_examples
+        return total_loss, total_correct
 
     def _save_checkpoint(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)

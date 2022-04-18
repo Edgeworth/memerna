@@ -1,5 +1,5 @@
 from typing import Any
-from scripts.design.harness.model import Model, ModelOutput
+from scripts.design.harness.model import Model
 
 from scripts.design.transformer.positional_encoder import PositionalEncoder
 from scripts.design.transformer.word_embedding import WordEmbedding
@@ -69,19 +69,16 @@ class TransformerModel(Model):
 
         return out
 
-    def model_output(
-        self, *, X: torch.Tensor, y: torch.Tensor | None, loss_fn: nn.Module | None
-    ) -> ModelOutput:
+    def model_input(self, *, X: torch.Tensor) -> list[Any]:
         # TODO: masking
-        out = self(X, X)
-        pred = out.argmax(dim=-1)  # Select highest output word in word vector.
-        loss = torch.Tensor()
-        correct = torch.Tensor()
+        return [X, X]
 
-        if loss_fn and y is not None:
-            loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
+    def model_prediction(self, *, out: torch.Tensor) -> torch.Tensor:
+        return out.argmax(dim=-1)
 
-        if y is not None:
-            correct = (pred == y).type(torch.float)
-
-        return ModelOutput(out, pred, loss, correct)
+    def model_loss(
+        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
+        correct = (self.model_prediction(out=out) == y).type(torch.float)
+        return loss, correct

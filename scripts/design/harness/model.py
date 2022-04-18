@@ -1,46 +1,32 @@
-from dataclasses import dataclass
 from torch import nn
 import torch
 
 
-@dataclass
-class ModelOutput:
-    out: torch.Tensor
-    """Raw output of the model."""
-
-    pred: torch.Tensor
-    """Prediction of the model. e.g. argmax of the output"""
-
-    loss: torch.Tensor
-    """Loss of the model if a loss function was specified."""
-
-    correct: torch.Tensor
-    """Correct predictions if labels were specified"""
-
-
 class Model(nn.Module):
-    def model_output(
-        self, *, X: torch.Tensor, y: torch.Tensor | None, loss_fn: nn.Module | None
-    ) -> ModelOutput:
-        """Default implementation for simple models that take the input directly
+    def model_input(self, *, X: torch.Tensor) -> list[torch.Tensor]:
+        """What input the model takes, based on a batch of input."""
+        return [X]
+
+    def model_prediction(self, *, out: torch.Tensor) -> torch.Tensor:
+        """Make a prediction from the output of the model. e.g. argmax of the output
+
+        Args:
+            out: Output of the model
+        """
+        return out.argmax(dim=1)
+
+    def model_loss(
+        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Default loss implementation for simple models that take the input directly
         and output something the loss function can use directly.
 
         Args:
-            X: Input to the model.
+            out: Output of the model
             y: Labels for the input.
             loss_fn: Loss function to use.
+        Returns:
+            loss: Loss for the model.
+            correct: Whether predictions were correct or not.
         """
-        out = self(X)
-        pred = out.argmax(dim=1)
-        loss = torch.Tensor()
-        correct = torch.Tensor()
-
-        if loss_fn:
-            if y is None:
-                raise ValueError("Computing loss requires labels")
-            loss = loss_fn(out, y)
-
-        if y is not None:
-            correct = (pred == y).type(torch.float)
-
-        return ModelOutput(out, pred, loss, correct)
+        return loss_fn(out, y), (self.model_prediction(out=out) == y).type(torch.float)
