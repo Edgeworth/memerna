@@ -11,7 +11,7 @@ import torchtext
 
 from scripts.design.transformer.transformer_model import TransformerModel
 
-MAX_SEQ_LEN = 64  # max sequence length
+MAX_SEQ_LEN = 32  # max sequence length
 
 
 class SequenceDataset(Dataset):
@@ -32,8 +32,8 @@ class SequenceDataset(Dataset):
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, Any]:
         """
         Returns:
-            Next value in the sequence"""
-        return (self.seq[idx : idx + self.seq_size], self.seq[idx + self.seq_size])
+            Next value in the sequence for each point in the sequence"""
+        return (self.seq[idx : idx + self.seq_size], self.seq[idx + 1 : idx + self.seq_size + 1])
 
 
 class LanguagePipeline:
@@ -81,7 +81,7 @@ class LanguagePipeline:
         tokenizer = get_tokenizer("basic_english")
         datasets = []
         for text in data:
-            tokens = torch.Tensor(self.vocab(tokenizer(text)))
+            tokens = torch.LongTensor(self.vocab(tokenizer(text)))
             if len(tokens) <= MAX_SEQ_LEN:
                 continue
             datasets.append(SequenceDataset(seq=tokens, seq_size=MAX_SEQ_LEN))
