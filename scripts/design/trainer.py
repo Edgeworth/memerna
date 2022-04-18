@@ -3,7 +3,6 @@ import logging
 import multiprocessing
 from pathlib import Path
 
-from scripts.design.fashion_model import FashionModel
 import torch
 from torch import nn
 from torch.optim import Optimizer
@@ -97,7 +96,9 @@ class Trainer:
         self.model.train()
 
         avg_loss = 0.0
-        for batch, (X, y) in enumerate(self.train_dataloader):
+        for batch_idx, (X, y) in enumerate(self.train_dataloader, start=1):
+            print(batch_idx, X, y)
+
             X, y = X.to(self.device), y.to(self.device)
 
             # Compute prediction error
@@ -117,11 +118,11 @@ class Trainer:
 
             avg_loss += loss.item()
 
-            if batch % self.print_interval == 0:
-                loss, current = loss.item(), batch * len(X)
+            if batch_idx % self.print_interval == 0:
+                loss, current = loss.item(), batch_idx * len(X)
                 logging.info(f"loss: {loss:>7f}  [{current:>5d}]")
 
-            if (batch + 1) % self.report_interval == 0:
+            if batch_idx % self.report_interval == 0:
                 avg_loss /= self.report_interval
 
                 valid_loss, _ = self._validate()
