@@ -17,5 +17,6 @@ class WordEmbedding(nn.Module):
         self.d_emb = d_emb
 
     def forward(self, seq: torch.Tensor) -> Any:
-        # Transformers multiply the embedding vector by sqrt(d_emb).
+        # Transformers multiply the embedding vector by sqrt(d_emb) for
+        # some unclear reason.
         return self.emb(seq.long()) * math.sqrt(self.d_emb)

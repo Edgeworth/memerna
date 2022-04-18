@@ -28,6 +28,7 @@ class TransformerModel(nn.Module):
         self.inp_emb = WordEmbedding(d_words=d_inp_words, d_emb=d_emb)
         self.out_emb = WordEmbedding(d_words=d_out_words, d_emb=d_emb)
         self.pos_encoder = PositionalEncoder(d_emb=d_emb, max_seq_len=d_seq, dropout=dropout)
+        # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
             d_model=d_emb,
             nhead=8,
