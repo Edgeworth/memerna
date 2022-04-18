@@ -30,15 +30,26 @@ class Trainer:
     model: nn.Module
     optimizer: Optimizer
     loss_fn: nn.CrossEntropyLoss
+    clip_grad_norm: float | None = None
     global_step: int
 
     def __init__(
         self,
+        *,
+        model: nn.Module,
         train_data: Dataset,
         valid_data: Dataset,
         path: Path,
+        clip_grad_norm: float | None = None,
         profile: bool = False,
     ) -> None:
+        """
+        Args:
+            train_data: training data
+            valid_data: validation data
+            path: path to save model and tensorboard logs
+            clip_grad_norm: clip gradient L2 norm to this value if set
+        """
         # Create data loaders.
         self.train_dataloader = DataLoader(
             train_data,
@@ -56,9 +67,11 @@ class Trainer:
         self.writer_path = path / "tensorboard" / datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.writer = SummaryWriter(self.writer_path)
 
-        self.model = FashionModel().to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        self.model = model.to(self.device)
+        # TODO: Use learning schedule. Consider momentum
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-3)
         self.loss_fn = nn.CrossEntropyLoss()
+        self.clip_grad_norm = clip_grad_norm
         self.global_step = 0
 
         if profile:
@@ -94,6 +107,10 @@ class Trainer:
             # Backpropagation
             self.optimizer.zero_grad()  # Zero out the gradient buffers.
             loss.backward()  # Compute gradients
+
+            if self.clip_grad_norm:
+                nn.utils.clip_grad_norm_(self.model.parameters(), self.clip_grad_norm)
+
             self.optimizer.step()  #  Optimize weights
             if self.profiler:
                 self.profiler.step()
