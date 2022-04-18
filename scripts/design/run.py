@@ -2,7 +2,7 @@ from pathlib import Path
 
 import click
 from scripts.design.fashion_model import FashionModel
-from scripts.design.language import LanguagePipeline, run_transformer
+from scripts.design.language import LanguagePipeline
 from scripts.design.trainer import Trainer
 import torchvision
 from torchvision.transforms import ToTensor
