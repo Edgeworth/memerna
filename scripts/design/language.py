@@ -73,7 +73,7 @@ class LanguagePipeline:
             model=self.model,
             train_data=self.train_data,
             valid_data=self.valid_data,
-            path=output_path,
+            output_path=output_path,
             clip_grad_norm=1.0,
         )
 
