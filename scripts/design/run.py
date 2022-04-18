@@ -27,12 +27,12 @@ def run_fashion(output_path: Path) -> None:
     )
 
     trainer = Trainer(
-        model=FashionModel(), train_data=train_data, valid_data=valid_data, path=output_path
+        model=FashionModel(), train_data=train_data, valid_data=valid_data, output_path=output_path
     )
     trainer.run(5)
 
 
 def run(output_path: Path) -> None:
-    # run_fashion(output_path)
-    pipeline = LanguagePipeline(output_path=output_path)
-    pipeline.run(5)
+    run_fashion(output_path)
+    # pipeline = LanguagePipeline(output_path=output_path)
+    # pipeline.run(5)

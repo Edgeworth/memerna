@@ -17,7 +17,8 @@ class Trainer:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
     profiler: torch.profiler.profile | None = None
-    writer_path: Path
+    name: str
+    output_path: Path
     writer: SummaryWriter
     report_interval: int = 100  # interval to write out data to tensorboard
     print_interval: int = 100  # interval to print summary data to console
@@ -40,9 +41,10 @@ class Trainer:
         model: Model,
         train_data: Dataset,
         valid_data: Dataset,
-        path: Path,
-        clip_grad_norm: float | None = None,
+        output_path: Path,
+        name: str | None = None,
         profile: bool = False,
+        clip_grad_norm: float | None = None,
     ) -> None:
         """
         Args:
@@ -51,6 +53,13 @@ class Trainer:
             path: path to save model and tensorboard logs
             clip_grad_norm: clip gradient L2 norm to this value if set
         """
+        time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        self.name = name or f"{model.__class__.__name__}-{time_str}"
+        self.output_path = output_path
+
+        writer_path = output_path / "tensorboard" / self.name
+        self.writer = SummaryWriter(writer_path)
+
         # Create data loaders.
         self.train_dataloader = DataLoader(
             train_data,
@@ -65,9 +74,6 @@ class Trainer:
             num_workers=self.dataloader_worker_count,  # Load data faster
         )
 
-        self.writer_path = path / "tensorboard" / datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        self.writer = SummaryWriter(self.writer_path)
-
         self.model = model.to(self.device)
         # TODO: Use learning schedule. Consider momentum
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-3)
@@ -79,7 +85,7 @@ class Trainer:
             # Only runs one time at the beginning.
             self.profiler = torch.profiler.profile(
                 schedule=torch.profiler.schedule(wait=2, warmup=2, active=6, repeat=1),
-                on_trace_ready=torch.profiler.tensorboard_trace_handler(str(self.writer_path)),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(str(writer_path)),
                 record_shapes=True,
                 profile_memory=False,
                 with_stack=False,  # TODO: causes segfault in pytorch 1.11.0
@@ -133,7 +139,6 @@ class Trainer:
                 avg_loss = 0.0
 
     def _validate(self) -> tuple[float, float]:
-        num_batches = len(self.valid_dataloader)
         loss = 0.0
         correct = 0.0
         total_examples = 0.0
@@ -146,9 +151,26 @@ class Trainer:
                 loss += out.loss.item()
                 correct += out.correct.sum().item()
                 total_examples += len(X)
-        loss /= num_batches
+        loss /= len(self.valid_dataloader)
         correct /= total_examples
         return loss, correct
+
+    def _save_checkpoint(self, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            {
+                "global_step": self.global_step,
+                "model_state_dict": self.model.state_dict(),
+                "optimizer_state_dict": self.optimizer.state_dict(),
+            },
+            path,
+        )
+
+    def _load_checkpoint(self, path: Path) -> None:
+        checkpoint = torch.load(path)
+        self.global_step = checkpoint["global_step"]
+        self.model.load_state_dict(checkpoint["model_state_dict"])
+        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
     def run(self, epochs: int) -> None:
         if self.profiler:
@@ -156,10 +178,11 @@ class Trainer:
 
         try:
             self._record_graph()
-            for t in range(epochs):
-                logging.info(f"Epoch {t+1}\n-------------------------------")
+            for t in range(1, epochs + 1):
+                logging.info(f"Epoch {t}\n-------------------------------")
                 self._train_epoch()
                 valid_loss, valid_correct = self._validate()
+                self._save_checkpoint(self.output_path / self.name / f"checkpoint-{t}.pt")
                 logging.info(
                     f"Test Error: \n Correct: {valid_correct}, Avg loss: {valid_loss:>8f} \n"
                 )
