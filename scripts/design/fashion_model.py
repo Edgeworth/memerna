@@ -3,8 +3,10 @@ from typing import Any
 import torch
 from torch import nn
 
-# Define model
-class FashionModel(nn.Module):
+from scripts.design.harness.model import Model
+
+
+class FashionModel(Model):
     def __init__(self) -> None:
         super().__init__()
         self.flatten = nn.Flatten()

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 import click
-from scripts.design.trainer import Trainer
+from scripts.design.harness.trainer import Trainer
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator, Vocab
 from torch.utils.data import Dataset, ConcatDataset

@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
 
+from scripts.design.harness.model import Model
+
 
 class Trainer:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
@@ -17,8 +19,8 @@ class Trainer:
     profiler: torch.profiler.profile | None = None
     writer_path: Path
     writer: SummaryWriter
-    report_interval: int = 1  # interval to write out data to tensorboard
-    print_interval: int = 1  # interval to print summary data to console
+    report_interval: int = 100  # interval to write out data to tensorboard
+    print_interval: int = 100  # interval to print summary data to console
 
     # parallelisation for data loading
     dataloader_worker_count: int = multiprocessing.cpu_count() // 4
@@ -26,7 +28,7 @@ class Trainer:
     train_dataloader: DataLoader
     valid_dataloader: DataLoader
 
-    model: nn.Module
+    model: Model
     optimizer: Optimizer
     loss_fn: nn.CrossEntropyLoss
     clip_grad_norm: float | None = None
@@ -35,7 +37,7 @@ class Trainer:
     def __init__(
         self,
         *,
-        model: nn.Module,
+        model: Model,
         train_data: Dataset,
         valid_data: Dataset,
         path: Path,
@@ -100,12 +102,11 @@ class Trainer:
             X, y = X.to(self.device), y.to(self.device)
 
             # Compute prediction error
-            pred = self.model(X, X).reshape(-1, 28782)  # TODO: undo
-            loss = self.loss_fn(pred, y.reshape(-1))  # TODO: undo
+            out = self.model.model_output(X=X, y=y, loss_fn=self.loss_fn)
 
             # Backpropagation
             self.optimizer.zero_grad()  # Zero out the gradient buffers.
-            loss.backward()  # Compute gradients
+            out.loss.backward()  # Compute gradients
 
             if self.clip_grad_norm:
                 nn.utils.clip_grad_norm_(self.model.parameters(), self.clip_grad_norm)
@@ -114,11 +115,11 @@ class Trainer:
             if self.profiler:
                 self.profiler.step()
 
-            avg_loss += loss.item()
+            avg_loss += out.loss.item()
 
             if batch_idx % self.print_interval == 0:
-                loss, current = loss.item(), batch_idx * len(X)
-                logging.info(f"loss: {loss:>7f}  [{current:>5d}]")
+                loss, current = out.loss.item(), batch_idx * len(X)
+                logging.info(f"loss: {loss:>7f}  [processed {current:>5d}]")
 
             if batch_idx % self.report_interval == 0:
                 avg_loss /= self.report_interval
@@ -134,35 +135,34 @@ class Trainer:
     def _validate(self) -> tuple[float, float]:
         num_batches = len(self.valid_dataloader)
         loss = 0.0
-        acc = 0.0
-        total_examples = 0.0  #
+        correct = 0.0
+        total_examples = 0.0
         self.model.eval()
         with torch.no_grad():  # don't calculate gradients
             for X, y in self.valid_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
-                pred = self.model(X, X).reshape(-1, 28782)  # TODO: undo
-                loss += self.loss_fn(pred, y.reshape(-1)).item()  # TODO: undo
-                # TODO: undo
-                acc += (pred.argmax(1) == y.reshape(-1)).type(torch.float).sum().item()
+
+                out = self.model.model_output(X=X, y=y, loss_fn=self.loss_fn)
+                loss += out.loss.item()
+                correct += out.correct.sum().item()
                 total_examples += len(X)
-                break  # TODO: undo
-        # TODO: undo
-        # loss /= num_batches
-        acc /= total_examples
-        return loss, acc
+        loss /= num_batches
+        correct /= total_examples
+        return loss, correct
 
     def run(self, epochs: int) -> None:
         if self.profiler:
             self.profiler.__enter__()
 
         try:
-            # TODO: undo
-            # self._record_graph()
+            self._record_graph()
             for t in range(epochs):
                 logging.info(f"Epoch {t+1}\n-------------------------------")
                 self._train_epoch()
-                valid_loss, valid_acc = self._validate()
-                logging.info(f"Test Error: \n Correct: {valid_acc}, Avg loss: {valid_loss:>8f} \n")
+                valid_loss, valid_correct = self._validate()
+                logging.info(
+                    f"Test Error: \n Correct: {valid_correct}, Avg loss: {valid_loss:>8f} \n"
+                )
         finally:
             if self.profiler:
                 self.profiler.__exit__(None, None, None)
