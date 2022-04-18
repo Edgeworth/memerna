@@ -1,4 +1,5 @@
 from typing import Any
+from scripts.design.harness.model import Model, ModelOutput
 
 from scripts.design.transformer.positional_encoder import PositionalEncoder
 from scripts.design.transformer.word_embedding import WordEmbedding
@@ -6,7 +7,9 @@ import torch
 from torch import nn
 
 
-class TransformerModel(nn.Module):
+class TransformerModel(Model):
+    d_out_words: int
+
     def __init__(
         self,
         *,
@@ -25,6 +28,8 @@ class TransformerModel(nn.Module):
             dropout: dropout rate
         """
         super().__init__()
+        self.d_out_words = d_out_words
+
         self.inp_emb = WordEmbedding(d_words=d_inp_words, d_emb=d_emb)
         self.out_emb = WordEmbedding(d_words=d_out_words, d_emb=d_emb)
         self.pos_encoder = PositionalEncoder(d_emb=d_emb, max_seq_len=d_seq, dropout=dropout)
@@ -63,3 +68,20 @@ class TransformerModel(nn.Module):
         out = self.linear(attn)
 
         return out
+
+    def model_output(
+        self, *, X: torch.Tensor, y: torch.Tensor | None, loss_fn: nn.Module | None
+    ) -> ModelOutput:
+        # TODO: masking
+        out = self(X, X)
+        pred = out.argmax(dim=-1)  # Select highest output word in word vector.
+        loss = torch.Tensor()
+        correct = torch.Tensor()
+
+        if loss_fn and y is not None:
+            loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
+
+        if y is not None:
+            correct = (pred == y).type(torch.float)
+
+        return ModelOutput(out, pred, loss, correct)
