@@ -17,8 +17,8 @@ class Trainer:
     profiler: torch.profiler.profile | None = None
     writer_path: Path
     writer: SummaryWriter
-    report_interval: int = 100  # interval to write out data to tensorboard
-    print_interval: int = 100  # interval to print summary data to console
+    report_interval: int = 1  # interval to write out data to tensorboard
+    print_interval: int = 1  # interval to print summary data to console
 
     # parallelisation for data loading
     dataloader_worker_count: int = multiprocessing.cpu_count() // 4
@@ -97,13 +97,11 @@ class Trainer:
 
         avg_loss = 0.0
         for batch_idx, (X, y) in enumerate(self.train_dataloader, start=1):
-            print(batch_idx, X, y)
-
             X, y = X.to(self.device), y.to(self.device)
 
             # Compute prediction error
-            pred = self.model(X)
-            loss = self.loss_fn(pred, y)
+            pred = self.model(X, X).reshape(-1, 28782)  # TODO: undo
+            loss = self.loss_fn(pred, y.reshape(-1))  # TODO: undo
 
             # Backpropagation
             self.optimizer.zero_grad()  # Zero out the gradient buffers.
@@ -135,19 +133,22 @@ class Trainer:
 
     def _validate(self) -> tuple[float, float]:
         num_batches = len(self.valid_dataloader)
-        self.model.eval()
         loss = 0.0
         acc = 0.0
-        total = 0.0
+        total_examples = 0.0  #
+        self.model.eval()
         with torch.no_grad():  # don't calculate gradients
             for X, y in self.valid_dataloader:
                 X, y = X.to(self.device), y.to(self.device)
-                pred = self.model(X)
-                loss += self.loss_fn(pred, y).item()
-                acc += (pred.argmax(1) == y).type(torch.float).sum().item()
-                total += 1.0
-        loss /= num_batches
-        acc /= total
+                pred = self.model(X, X).reshape(-1, 28782)  # TODO: undo
+                loss += self.loss_fn(pred, y.reshape(-1)).item()  # TODO: undo
+                # TODO: undo
+                acc += (pred.argmax(1) == y.reshape(-1)).type(torch.float).sum().item()
+                total_examples += len(X)
+                break  # TODO: undo
+        # TODO: undo
+        # loss /= num_batches
+        acc /= total_examples
         return loss, acc
 
     def run(self, epochs: int) -> None:
@@ -155,7 +156,8 @@ class Trainer:
             self.profiler.__enter__()
 
         try:
-            self._record_graph()
+            # TODO: undo
+            # self._record_graph()
             for t in range(epochs):
                 logging.info(f"Epoch {t+1}\n-------------------------------")
                 self._train_epoch()

@@ -34,7 +34,7 @@ class TransformerModel(nn.Module):
             nhead=8,
             num_encoder_layers=6,
             num_decoder_layers=6,
-            dim_feedforward=2048,
+            dim_feedforward=256,  # TODO: think about this.
             batch_first=True,
             dropout=dropout,
         )
@@ -51,11 +51,15 @@ class TransformerModel(nn.Module):
         Returns:
             , shape [batch_size, seq_len, d_out_word]
         """
-        # Embedding for input, shape: [batch_size, seq_len, d_emb]
+        # Embedding for input, output shape: [batch_size, seq_len, d_emb]
         inp_seq = self.pos_encoder(self.inp_emb(inp_seq))
-        # Embedding for output, shape: [batch_size, seq_len, d_emb]
+        # Embedding for output, ouptut shape: [batch_size, seq_len, d_emb]
         out_seq = self.pos_encoder(self.out_emb(out_seq))
 
-        # Transformer, shape: [batch_size, seq_len, d_emb]
-        out = self.transformer(src=inp_seq, tgt=out_seq)
-        return self.linear(out)
+        # Transformer, output shape: [batch_size, seq_len, d_emb]
+        attn = self.transformer(src=inp_seq, tgt=out_seq)
+
+        # Linear layer, output shape: [batch_size, seq_len, d_out_word]
+        out = self.linear(attn)
+
+        return out
