@@ -71,8 +71,11 @@ class LanguagePipeline:
         )
         self.trainer = Trainer(
             model=self.model,
+            profile=False,
+            batch_size=16,
             train_data=self.train_data,
             valid_data=self.valid_data,
+            valid_batches=10,
             output_path=output_path,
             clip_grad_norm=1.0,
         )

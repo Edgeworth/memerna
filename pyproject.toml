@@ -1,19 +1,24 @@
-[project]
+[tool.poetry]
 authors = ["Eliot Courtney <edgeworth.dev@gmail.com>"]
 classifiers = ["License :: OSI Approved :: GPL-3.0-only"]
 description = "memerna"
 name = "memerna"
 readme = "README.md"
-requires-python = "^3.10"
 version = "0.1.0"
 
-dependencies = [
-  "cloup",
-  "click",
-  "click_log",
-  "torch",
-  "torchvision",
-]
+[tool.poetry.dependencies]
+click = "*"
+click_log = "*"
+cloup = "*"
+itertools = "*"
+python = "^3.10"
+torch = "*"
+torchvision = "*"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+mypy = "*"
+prospector = "*"
 
 [tool.mypy]
 show_column_numbers = true
