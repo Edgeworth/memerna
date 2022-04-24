@@ -4,6 +4,8 @@ import logging
 import multiprocessing
 from pathlib import Path
 
+from scripts.design.harness.model import Model
+from scripts.design.harness.model_harness import ModelHarness
 import torch
 from torch import nn
 from torch.optim import Optimizer
@@ -11,11 +13,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
 
-from scripts.design.harness.model import Model
-
 
 class Trainer:
-    device: str
     profiler: torch.profiler.profile | None = None
     name: str
     output_path: Path
@@ -37,7 +36,7 @@ class Trainer:
     valid_batches: int = -1
     """How many minibatches to run validation on. -1 for all"""
 
-    model: Model
+    model: ModelHarness
     optimizer: Optimizer
     loss_fn: nn.CrossEntropyLoss
     clip_grad_norm: float | None = None
@@ -51,7 +50,6 @@ class Trainer:
         train_data: Dataset,
         valid_data: Dataset,
         output_path: Path,
-        device: str | None = None,
         profile: bool = False,
         name: str | None = None,
         batch_size: int = 64,
@@ -65,11 +63,6 @@ class Trainer:
             path: path to save model and tensorboard logs
             clip_grad_norm: clip gradient L2 norm to this value if set
         """
-        if device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
-
         time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.name = name or f"{model.__class__.__name__}-{time_str}"
         self.batch_size = batch_size
@@ -93,9 +86,11 @@ class Trainer:
             num_workers=self.dataloader_worker_count,  # Load data faster
         )
 
-        self.model = model.to(self.device)
+        self.model = ModelHarness(model=model)
         # TODO: Use learning schedule. Consider momentum
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-3)
+        # TODO: undo learning rate
+        # self.optimizer = torch.optim.SGD(self.model.parameters(), lr=0.1)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.003)
         self.loss_fn = nn.CrossEntropyLoss()
         self.clip_grad_norm = clip_grad_norm
         self.step_count = 0
@@ -110,13 +105,10 @@ class Trainer:
                 with_stack=False,  # TODO: causes segfault in pytorch 1.11.0
             )
 
-    def _model_input(self, *, X: torch.Tensor) -> list[torch.Tensor]:
-        return [t.to(self.device) for t in self.model.model_input(X=X)]
-
     def _record_graph(self) -> None:
         self.model.eval()
         X, _ = next(iter(self.train_dataloader))
-        self.writer.add_graph(self.model, self._model_input(X=X))
+        self.writer.add_graph(self.model.model, self.model.model_input(X=X))
 
     def _next_step(self) -> int:
         self.step_count += 1
@@ -128,11 +120,9 @@ class Trainer:
         avg_loss = 0.0
         logging.info(f"Training epoch on {len(self.train_dataloader)} batches")
         for batch_idx, (X, y) in enumerate(self.train_dataloader, start=1):
-            X, y = X.to(self.device), y.to(self.device)
-
             # Compute prediction error
-            out = self.model(*self._model_input(X=X))
-            loss, _ = self.model.model_loss(out=out, y=y, loss_fn=self.loss_fn)
+            out = self.model(X)
+            loss, _ = self.model.loss(out=out, y=y, loss_fn=self.loss_fn)
 
             # Backpropagation
             self.optimizer.zero_grad()  # Zero out the gradient buffers.
@@ -150,7 +140,8 @@ class Trainer:
 
             if batch_idx % self.print_interval == 0:
                 logging.info(
-                    f"train loss: {loss.item():>7f}  [processed {batch_idx * X.shape[0]:>5d}]"
+                    f"train loss: {loss.item():>7f} [processed {batch_idx:>5d} batches, "
+                    f"{batch_idx * X.shape[0]:>5d}] inputs",
                 )
 
             if batch_idx % self.report_interval == 0:
@@ -166,7 +157,7 @@ class Trainer:
 
             if batch_idx % self.checkpoint_interval == 0:
                 self._save_checkpoint(
-                    self.output_path / self.name / f"checkpoint-{self.step_count}.pt"
+                    self.output_path / self.name / f"checkpoint-{self.step_count}.pt",
                 )
 
     def _validate(self) -> tuple[float, float]:
@@ -182,12 +173,11 @@ class Trainer:
         logging.info(f"validating on {valid_batches} batches")
         with torch.no_grad():  # don't calculate gradients
             for X, y in itertools.islice(self.valid_dataloader, valid_batches):
-                X, y = X.to(self.device), y.to(self.device)
-                out = self.model(*self._model_input(X=X))
-                loss, correct = self.model.model_loss(out=out, y=y, loss_fn=self.loss_fn)
+                out = self.model(X)
+                loss, correct = self.model.loss(out=out, y=y, loss_fn=self.loss_fn)
                 total_loss += loss.item()
                 total_correct += correct.sum().item()
-                total_examples += len(X)
+                total_examples += correct.numel()  # Number of total predictions
         total_loss /= valid_batches
         total_correct /= total_examples
         logging.info(f"validation loss: {total_loss:>7f} accuracy: {total_correct*100:>2f}%")
@@ -205,7 +195,7 @@ class Trainer:
             path,
         )
 
-    def _load_checkpoint(self, path: Path) -> None:
+    def load_checkpoint(self, path: Path) -> None:
         checkpoint = torch.load(path)
         self.step_count = checkpoint["global_step"]
         self.model.load_state_dict(checkpoint["model_state_dict"])
@@ -223,7 +213,7 @@ class Trainer:
                 self._train_epoch()
                 valid_loss, valid_correct = self._validate()
                 logging.info(
-                    f"Test Error: \n Correct: {valid_correct}, Avg loss: {valid_loss:>8f} \n"
+                    f"Test Error: \n Correct: {valid_correct}, Avg loss: {valid_loss:>8f} \n",
                 )
         finally:
             if self.profiler:

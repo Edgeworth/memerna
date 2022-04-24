@@ -18,5 +18,17 @@ from scripts.design.run import run
         path_type=Path,
     ),
 )
-def design(output_path: Path) -> None:
-    run(output_path)
+@cloup.option(
+    "--checkpoint-path",
+    required=False,
+    type=cloup.Path(
+        dir_okay=False,
+        file_okay=True,
+        exists=True,
+        writable=False,
+        resolve_path=True,
+        path_type=Path,
+    ),
+)
+def design(output_path: Path, checkpoint_path: Path | None) -> None:
+    run(output_path, checkpoint_path)
