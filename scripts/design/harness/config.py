@@ -19,27 +19,27 @@ class TrainConfig:
     """Batch size for training"""
 
     train_batches: int = -1
-    """How many minibatches to run training on per epoch. -1 for all"""
+    """How many batches to run training on per epoch. -1 for all"""
 
     fast_valid_batches: int = -1
-    """How many minibatches to run validation on for a quick guess (e.g.
+    """How many batches to run validation on for a quick guess (e.g.
     reporting validation loss regularly). -1 for all"""
 
     accurate_valid_batches: int = -1
-    """How many minibatches to run validation on for accuracy (e.g. at end of
+    """How many batches to run validation on for accuracy (e.g. at end of
     each epoch). -1 for all"""
 
     dataloader_worker_count: int = multiprocessing.cpu_count() // 4
     """How many workers to use for data loading."""
 
-    report_interval: int = 100
-    """After how many minibatches to write out data to tensorboard"""
+    report_interval: int = 4096
+    """After how many batches to write out data to tensorboard"""
 
-    print_interval: int = 100
-    """After how many minibatches to print summary data to console"""
+    print_interval: int = 4096
+    """After how many batches to print summary data to console"""
 
-    checkpoint_interval: int = 10000
-    """After how many minibatches to write out a checkpoint"""
+    checkpoint_interval: int = 500000
+    """After how many batches to write out a checkpoint"""
 
     save_graph: bool = False
     """Whether to save the model's graph to tensorboard."""
@@ -50,6 +50,8 @@ class TrainConfig:
     # TODO: implement
     optimizer: str = "sgd"
     """Which optimizer to use"""
+
+    # TODO: Try autocast.
 
     clip_grad_norm: float | None = None
     """Clip gradient L2 norm to this value if set"""

@@ -1,4 +1,3 @@
-import itertools
 import logging
 from pathlib import Path
 
@@ -6,7 +5,7 @@ from scripts.design.harness.config import TrainConfig
 from scripts.design.harness.device_model import DeviceModel
 from scripts.design.harness.model import Model
 from scripts.design.harness.optimizer import Optimizer
-from scripts.design.harness.reporter import Reporter
+from scripts.design.harness.reporter import Metrics, Reporter
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
@@ -72,25 +71,30 @@ class Trainer:
 
     def _train_epoch(self) -> None:
         logging.info(f"Training epoch on {self.cfg.train_batches} batches")
-        for X, y in itertools.islice(self.train_loader, self.cfg.train_batches):
+        batch_count = 0
+        for X, y in self.train_loader:
             loss, accuracy = self.optimizer.train_batch(X, y)
-            self.reporter.step(loss, accuracy, self)
+            batch_count += len(X)
+            self.reporter.step(loss, accuracy, len(X), self)
+
+            if batch_count > self.cfg.train_batches:
+                break
 
     def validate(self, num_batches: int) -> tuple[float, float]:
-        avg_loss = 0.0
-        avg_accuracy = 0.0
-        num_inputs = 0.0
         logging.info(f"validating on {num_batches} batches")
+        metrics = Metrics()
+        batch_count = 0
         with torch.no_grad():  # don't calculate gradients
-            for X, y in itertools.islice(self.valid_loader, num_batches):
-                loss, correct = self.optimizer.eval_batch(X, y)
-                avg_loss += loss.item()
-                avg_accuracy += correct.sum().item()
-                num_inputs += correct.numel()  # Number of total predictions
-        avg_loss /= num_batches
-        avg_accuracy /= num_inputs
-        logging.info(f"validation loss: {avg_loss:>7f} accuracy: {avg_accuracy*100:.2f}%")
-        return avg_loss, avg_accuracy
+            for X, y in self.valid_loader:
+                loss, accuracy = self.optimizer.eval_batch(X, y)
+                batch_count += len(X)
+                metrics.record(loss, accuracy, len(X))
+
+                if batch_count > num_batches:
+                    break
+        r_loss, r_accuracy, _ = metrics.take()
+        logging.info(f"validation loss: {r_loss:>7f} accuracy: {r_accuracy*100:.2f}%")
+        return r_loss, r_accuracy
 
     def run(self, epochs: int) -> None:
         # Add graph of model to tensorboard.
