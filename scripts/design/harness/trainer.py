@@ -72,12 +72,9 @@ class Trainer:
 
     def _train_epoch(self) -> None:
         logging.info(f"Training epoch on {self.cfg.train_batches} batches")
-        for batch_idx, (X, y) in enumerate(
-            itertools.islice(self.train_loader, self.cfg.train_batches),
-            start=1,
-        ):
+        for X, y in itertools.islice(self.train_loader, self.cfg.train_batches):
             loss, accuracy = self.optimizer.train_batch(X, y)
-            self.reporter.step(loss, accuracy, self, batch_idx)
+            self.reporter.step(loss, accuracy, self)
 
     def validate(self, num_batches: int) -> tuple[float, float]:
         avg_loss = 0.0

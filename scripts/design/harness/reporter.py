@@ -16,7 +16,8 @@ class Reporter:
     cfg: TrainConfig
 
     # State dict elements:
-    step_count: int = 1
+    step_count: int = 0
+    step_count_since_epoch: int = 0
     loss_sum: float = 0.0
     loss_count: float = 0.0
     accuracy_sum: float = 0.0
@@ -42,9 +43,11 @@ class Reporter:
         loss: torch.Tensor,
         accuracy: torch.Tensor,
         trainer: TrainerProtocol,
-        batch_idx: int,
     ) -> None:
         """Report metrics to tensorboard, the console, etc."""
+        self.step_count += 1
+        self.step_count_since_epoch += 1
+
         self.loss_sum += loss.sum().item()
         self.loss_count += loss.numel()
         self.accuracy_sum += accuracy.sum().item()
@@ -52,8 +55,9 @@ class Reporter:
 
         if self.step_count % self.cfg.print_interval == 0:
             logging.info(
-                f"train loss: {loss.item():>7f} [processed "
-                f"{batch_idx:>5d}/{self.cfg.train_batches} batches]",
+                f"train loss: {loss.item():>7f} ["
+                f"{self.step_count_since_epoch:>5d}/{self.cfg.train_batches} batches, "
+                f"{self.step_count:>5d} steps]",
             )
 
         if self.step_count % self.cfg.report_interval == 0:
@@ -82,9 +86,8 @@ class Reporter:
         if self.profiler is not None:
             self.profiler.step()
 
-        self.step_count += 1
-
     def on_epoch(self, loss: float, accuracy: float) -> None:
+        self.step_count_since_epoch = 0
         logging.info(
             f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n",
         )

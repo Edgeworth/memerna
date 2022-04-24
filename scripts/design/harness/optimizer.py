@@ -18,7 +18,8 @@ class Optimizer:
     def __init__(self, cfg: TrainConfig, dm: DeviceModel) -> None:
         self.dm = dm
         # TODO: Use learning schedule. Consider momentum
-        self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
+        # self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
+        self.optimizer = torch.optim.RMSprop(self.dm.parameters())
         # self.optimizer = torch.optim.Adam(self.model.parameters())
 
         if True:
