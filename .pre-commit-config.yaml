@@ -66,13 +66,13 @@ repos:
             --warn-unused-ignores, # Warn about unused ignore annotations
             --show-error-codes,
           ]
-        additional_dependencies: [click, cloup, torch]
+        additional_dependencies: [click, cloup, torch, torchtext, torchvision]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
     rev: 1.7.7
     hooks:
       - id: prospector
         args: [--max-line-length=100]
-        additional_dependencies: [click, cloup, torch]
+        additional_dependencies: [click, cloup, torch, torchtext, torchvision]
   # C++ related hooks:
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5

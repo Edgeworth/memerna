@@ -1,15 +1,18 @@
 from pathlib import Path
-from typing import Any, Iterator
+import random
+from typing import Any
+from typing import Iterator
 
 import click
 from scripts.design.harness.trainer import Trainer
-from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator, Vocab
-from torch.utils.data import Dataset, ConcatDataset
-import torch
-import torchtext
-
 from scripts.design.transformer.transformer_model import TransformerModel
+import torch
+from torch.utils.data import ConcatDataset
+from torch.utils.data import Dataset
+import torchtext
+from torchtext.data.utils import get_tokenizer
+from torchtext.vocab import build_vocab_from_iterator
+from torchtext.vocab import Vocab
 
 MAX_SEQ_LEN = 32  # max sequence length
 
@@ -40,7 +43,7 @@ class LanguagePipeline:
     output_path: Path
     train_data: Dataset
     valid_data: Dataset
-    model: TransformerModel
+    test_data: Dataset
     trainer: Trainer
     vocab: Vocab
 
@@ -54,23 +57,22 @@ class LanguagePipeline:
         self._build_vocab(train_data)
 
         self.train_data = self._build_data(train_data)
-
         self.valid_data = self._build_data(
-            torchtext.datasets.WikiText2(
-                root=output_path,
-                split="valid",
-            )
+            torchtext.datasets.WikiText2(root=output_path, split="valid"),
+        )
+        self.test_data = self._build_data(
+            torchtext.datasets.WikiText2(root=output_path, split="test"),
         )
 
-        self.model = TransformerModel(
+        model = TransformerModel(
             d_seq=MAX_SEQ_LEN,
-            d_inp_words=len(self.vocab),
-            d_out_words=len(self.vocab),
+            d_inp_word=len(self.vocab),
+            d_out_word=len(self.vocab),
             d_emb=256,
             dropout=0.1,
         )
         self.trainer = Trainer(
-            model=self.model,
+            model=model,
             profile=False,
             batch_size=16,
             train_data=self.train_data,
@@ -95,6 +97,26 @@ class LanguagePipeline:
         self.vocab = build_vocab_from_iterator(map(tokenizer, data), specials=["<unk>"])
         self.vocab.set_default_index(self.vocab["<unk>"])
 
-    def run(self, epochs: int) -> None:
+    def _indices_to_words(self, indices: torch.Tensor) -> str:
+        tokens = self.vocab.lookup_tokens(indices.tolist())
+        return " ".join(tokens)
+
+    def load_checkpoint(self, path: Path) -> None:
+        self.trainer.load_checkpoint(path)
+
+    def predict(self) -> None:
+        # Choose random element from the test set:
+        idx = random.randint(0, len(self.test_data) - 1)
+        X, y = self.test_data[idx]
+        print(self._indices_to_words(X))
+        X = X.unsqueeze(0)  # Add batch dimension at beginning.
+        out = self.trainer.model(X=X)
+        pred = self.trainer.model.prediction(out=out)
+        print("Prediction:")
+        print(self._indices_to_words(pred.squeeze(0)))
+        print("Actual:")
+        print(self._indices_to_words(y))
+
+    def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")
         self.trainer.run(epochs)

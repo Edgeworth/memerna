@@ -1,9 +1,8 @@
 from typing import Any
 
+from scripts.design.harness.model import Model
 import torch
 from torch import nn
-
-from scripts.design.harness.model import Model
 
 
 class FashionModel(Model):

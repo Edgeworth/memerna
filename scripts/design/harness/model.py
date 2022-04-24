@@ -1,5 +1,5 @@
-from torch import nn
 import torch
+from torch import nn
 
 
 class Model(nn.Module):
@@ -16,7 +16,7 @@ class Model(nn.Module):
         return out.argmax(dim=1)
 
     def model_loss(
-        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module
+        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Default loss implementation for simple models that take the input directly
         and output something the loss function can use directly.

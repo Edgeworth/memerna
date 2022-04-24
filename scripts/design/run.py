@@ -2,8 +2,8 @@ from pathlib import Path
 
 import click
 from scripts.design.fashion_model import FashionModel
-from scripts.design.language import LanguagePipeline
 from scripts.design.harness.trainer import Trainer
+from scripts.design.language import LanguagePipeline
 import torchvision
 from torchvision.transforms import ToTensor
 
@@ -27,12 +27,17 @@ def run_fashion(output_path: Path) -> None:
     )
 
     trainer = Trainer(
-        model=FashionModel(), train_data=train_data, valid_data=valid_data, output_path=output_path
+        model=FashionModel(), train_data=train_data, valid_data=valid_data, output_path=output_path,
     )
     trainer.run(5)
 
 
-def run(output_path: Path) -> None:
+def run(output_path: Path, checkpoint_path: Path | None) -> None:
     # run_fashion(output_path)
     pipeline = LanguagePipeline(output_path=output_path)
-    pipeline.run(5)
+
+    if checkpoint_path:
+        pipeline.load_checkpoint(checkpoint_path)
+        pipeline.predict()
+    else:
+        pipeline.train(5)

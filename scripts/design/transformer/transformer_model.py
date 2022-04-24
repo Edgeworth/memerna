@@ -1,6 +1,6 @@
 from typing import Any
-from scripts.design.harness.model import Model
 
+from scripts.design.harness.model import Model
 from scripts.design.transformer.positional_encoder import PositionalEncoder
 from scripts.design.transformer.word_embedding import WordEmbedding
 import torch
@@ -14,8 +14,8 @@ class TransformerModel(Model):
         self,
         *,
         d_seq: int,
-        d_inp_words: int,
-        d_out_words: int,
+        d_inp_word: int,
+        d_out_word: int,
         d_emb: int,
         dropout: float = 0.1,
     ) -> None:
@@ -28,10 +28,10 @@ class TransformerModel(Model):
             dropout: dropout rate
         """
         super().__init__()
-        self.d_out_words = d_out_words
+        self.d_out_words = d_out_word
 
-        self.inp_emb = WordEmbedding(d_words=d_inp_words, d_emb=d_emb)
-        self.out_emb = WordEmbedding(d_words=d_out_words, d_emb=d_emb)
+        self.inp_emb = WordEmbedding(d_word=d_inp_word, d_emb=d_emb)
+        self.out_emb = WordEmbedding(d_word=d_out_word, d_emb=d_emb)
         self.pos_encoder = PositionalEncoder(d_emb=d_emb, max_seq_len=d_seq, dropout=dropout)
         # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
@@ -45,7 +45,7 @@ class TransformerModel(Model):
         )
         # Take output of transformer and pass through linear layer to predict a
         # word in the output vocabulary.
-        self.linear = nn.Linear(d_emb, d_out_words)
+        self.linear = nn.Linear(d_emb, d_out_word)
 
     def forward(
         self,
@@ -56,13 +56,13 @@ class TransformerModel(Model):
     ) -> Any:
         """
         Args:
-            inp: input tensor of sequence of "words", shape [batch_size, seq_len, d_word]
-            out: output tensor of sequence of "words", shape [batch_size, seq_len, d_word]
+            inp: input tensor of sequence of "words" by their indices, shape [batch_size, seq_len]
+            out: output tensor of sequence of "words" by their indices, shape [batch_size, seq_len]
             inp_mask: mask of input sequence, shape [seq_len, seq_len]
             out_mask: mask of output sequence, shape [seq_len, seq_len]
 
         Returns:
-            , shape [batch_size, seq_len, d_out_word]
+            output tensor, shape [batch_size, seq_len, d_out_word]
         """
         # Embedding for input, output shape: [batch_size, seq_len, d_emb]
         inp_seq = self.pos_encoder(self.inp_emb(inp_seq))
@@ -89,7 +89,7 @@ class TransformerModel(Model):
         return out.argmax(dim=-1)
 
     def model_loss(
-        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module
+        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
         correct = (self.model_prediction(out=out) == y).type(torch.float)
