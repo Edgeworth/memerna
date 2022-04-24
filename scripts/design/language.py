@@ -69,7 +69,7 @@ class LanguagePipeline:
             d_seq=MAX_SEQ_LEN,
             d_inp_word=len(self.vocab),
             d_out_word=len(self.vocab),
-            d_emb=256,
+            d_emb=512,  # TODO: Parameter to adjust.
             dropout=0.1,
         )
         cfg = TrainConfig(

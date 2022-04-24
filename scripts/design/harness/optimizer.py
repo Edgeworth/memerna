@@ -19,13 +19,14 @@ class Optimizer:
         self.dm = dm
         # TODO: Use learning schedule. Consider momentum
         # self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
-        self.optimizer = torch.optim.RMSprop(self.dm.parameters())
-        # self.optimizer = torch.optim.Adam(self.model.parameters())
+        # self.optimizer = torch.optim.RMSprop(self.dm.parameters())
+        self.optimizer = torch.optim.Adam(self.dm.parameters(), amsgrad=True)
+        # self.optimizer = torch.optim.Adam(self.dm.parameters())
 
         if True:
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,
-                factor=0.1,
+                factor=0.5,
                 patience=2,
             )
 
