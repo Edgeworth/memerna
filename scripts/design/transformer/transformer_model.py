@@ -36,10 +36,10 @@ class TransformerModel(Model):
         # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
             d_model=d_emb,
-            nhead=8,  # TODO: think about this.
-            num_encoder_layers=6,  # TODO: think about this.
-            num_decoder_layers=6,  # TODO: think about this.
-            dim_feedforward=64,  # TODO: think about this.
+            nhead=8,  # TODO: Parameter to adjust.
+            num_encoder_layers=6,  # TODO: Parameter to adjust.
+            num_decoder_layers=6,  # TODO: Parameter to adjust.
+            dim_feedforward=d_emb,  # TODO: Parameter to adjust.
             batch_first=True,
             dropout=dropout,
         )
