@@ -77,7 +77,7 @@ class TransformerModel(Model):
 
         return out
 
-    def model_input(self, *, X: torch.Tensor) -> list[Any]:
+    def model_inputs(self, X: torch.Tensor) -> list[Any]:
         # Input mask adds 0's, so no effect and no masking.
         inp_mask = torch.zeros(X.shape[1], X.shape[1])
         # Output mask adds an upper triangular matrix of -inf, so
@@ -85,12 +85,16 @@ class TransformerModel(Model):
         out_mask = nn.Transformer.generate_square_subsequent_mask(X.shape[1])
         return [X, X, inp_mask, out_mask]
 
-    def model_prediction(self, *, out: torch.Tensor) -> torch.Tensor:
+    def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
         return out.argmax(dim=-1)
 
     def model_loss(
-        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module,
+        self,
+        *,
+        out: torch.Tensor,
+        y: torch.Tensor,
+        loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
-        correct = (self.model_prediction(out=out) == y).type(torch.float)
+        correct = (self.model_prediction(out) == y).type(torch.float)
         return loss, correct

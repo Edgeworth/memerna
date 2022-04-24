@@ -7,8 +7,8 @@ import torch
 from torch import nn
 
 
-class ModelHarness:
-    """Utilities for interacting with a model"""
+class DeviceModel:
+    """Utilities for interacting with a model on a specified device."""
 
     device: str
     model: Model
@@ -19,13 +19,6 @@ class ModelHarness:
         model: Model,
         device: str | None = None,
     ) -> None:
-        """
-        Args:
-            train_data: training data
-            valid_data: validation data
-            path: path to save model and tensorboard logs
-            clip_grad_norm: clip gradient L2 norm to this value if set
-        """
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
@@ -34,7 +27,7 @@ class ModelHarness:
         self.model = model.to(self.device)
 
     def __call__(self, X: torch.Tensor) -> Any:
-        return self.model(*self.model_input(X=X))
+        return self.model(*self.inputs(X))
 
     def parameters(self) -> Iterator[nn.Parameter]:
         return self.model.parameters()
@@ -45,14 +38,18 @@ class ModelHarness:
     def eval(self) -> None:
         self.model.eval()
 
-    def model_input(self, *, X: torch.Tensor) -> list[torch.Tensor]:
-        return [t.to(self.device) for t in self.model.model_input(X=X)]
+    def inputs(self, X: torch.Tensor) -> list[torch.Tensor]:
+        return [t.to(self.device) for t in self.model.model_inputs(X)]
 
-    def prediction(self, *, out: torch.Tensor) -> torch.Tensor:
-        return self.model.model_prediction(out=out)
+    def prediction(self, out: torch.Tensor) -> torch.Tensor:
+        return self.model.model_prediction(out)
 
     def loss(
-        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module,
+        self,
+        *,
+        out: torch.Tensor,
+        y: torch.Tensor,
+        loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         return self.model.model_loss(out=out.to(self.device), y=y.to(self.device), loss_fn=loss_fn)
 
