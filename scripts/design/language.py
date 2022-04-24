@@ -15,7 +15,7 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.vocab import Vocab
 
-MAX_SEQ_LEN = 32  # max sequence length
+MAX_SEQ_LEN = 128  # max sequence length
 
 
 class SequenceDataset(Dataset):
@@ -76,10 +76,10 @@ class LanguagePipeline:
             model_name="LanguageTransformer",
             output_path=output_path,
             profile=False,
-            batch_size=64,
-            train_batches=1000,
-            fast_valid_batches=10,
-            accurate_valid_batches=100,
+            batch_size=6,
+            train_batches=10000,
+            fast_valid_batches=512,
+            accurate_valid_batches=4096,
             clip_grad_norm=1.0,
         )
         self.trainer = Trainer(
