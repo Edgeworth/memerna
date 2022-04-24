@@ -4,6 +4,7 @@ from typing import Any
 from typing import Iterator
 
 import click
+from scripts.design.harness.config import TrainConfig
 from scripts.design.harness.trainer import Trainer
 from scripts.design.transformer.transformer_model import TransformerModel
 import torch
@@ -47,7 +48,7 @@ class LanguagePipeline:
     trainer: Trainer
     vocab: Vocab
 
-    def __init__(self, *, output_path: Path) -> None:
+    def __init__(self, *, output_path: Path, checkpoint_path: Path | None) -> None:
         self.output_path = output_path
 
         train_data = torchtext.datasets.WikiText2(
@@ -71,17 +72,22 @@ class LanguagePipeline:
             d_emb=256,
             dropout=0.1,
         )
-        self.trainer = Trainer(
-            model=model,
+        cfg = TrainConfig(
+            model_name="LanguageTransformer",
+            output_path=output_path,
             profile=False,
             batch_size=16,
-            train_data=self.train_data,
             train_batches=1000,
-            valid_data=self.valid_data,
             fast_valid_batches=10,
             accurate_valid_batches=100,
-            output_path=output_path,
             clip_grad_norm=1.0,
+        )
+        self.trainer = Trainer(
+            model=model,
+            train_data=self.train_data,
+            valid_data=self.valid_data,
+            cfg=cfg,
+            checkpoint_path=checkpoint_path,
         )
 
     def _build_data(self, data: Iterator[str]) -> Dataset:
@@ -103,17 +109,15 @@ class LanguagePipeline:
         tokens = self.vocab.lookup_tokens(indices.tolist())
         return " ".join(tokens)
 
-    def load_checkpoint(self, path: Path) -> None:
-        self.trainer.load_checkpoint(path)
-
     def predict(self) -> None:
         # Choose random element from the test set:
         idx = random.randint(0, len(self.test_data) - 1)
         X, y = self.test_data[idx]
         print(self._indices_to_words(X))
         X = X.unsqueeze(0)  # Add batch dimension at beginning.
-        out = self.trainer.model(X=X)
-        pred = self.trainer.model.prediction(out=out).to("cpu")
+        dm = self.trainer.optimizer.dm
+        out = dm(X)
+        pred = dm.prediction(out=out).to("cpu")
         pred_words = self._indices_to_words(pred.squeeze(0))
         actual_words = self._indices_to_words(y)
         print("Prediction:")

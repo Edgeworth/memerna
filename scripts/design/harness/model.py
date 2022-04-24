@@ -3,11 +3,11 @@ from torch import nn
 
 
 class Model(nn.Module):
-    def model_input(self, *, X: torch.Tensor) -> list[torch.Tensor]:
+    def model_inputs(self, X: torch.Tensor) -> list[torch.Tensor]:
         """What input the model takes, based on a batch of input."""
         return [X]
 
-    def model_prediction(self, *, out: torch.Tensor) -> torch.Tensor:
+    def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
         """Make a prediction from the output of the model. e.g. argmax of the output
 
         Args:
@@ -16,7 +16,11 @@ class Model(nn.Module):
         return out.argmax(dim=1)
 
     def model_loss(
-        self, *, out: torch.Tensor, y: torch.Tensor, loss_fn: nn.Module,
+        self,
+        *,
+        out: torch.Tensor,
+        y: torch.Tensor,
+        loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Default loss implementation for simple models that take the input directly
         and output something the loss function can use directly.
@@ -27,6 +31,6 @@ class Model(nn.Module):
             loss_fn: Loss function to use.
         Returns:
             loss: Loss for the model.
-            correct: Whether predictions were correct or not.
+            accuracy: Whether predictions were correct or not.
         """
-        return loss_fn(out, y), (self.model_prediction(out=out) == y).type(torch.float)
+        return loss_fn(out, y), (self.model_prediction(out) == y).type(torch.float)
