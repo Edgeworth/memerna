@@ -76,8 +76,10 @@ class LanguagePipeline:
             profile=False,
             batch_size=16,
             train_data=self.train_data,
+            train_batches=1000,
             valid_data=self.valid_data,
-            valid_batches=10,
+            fast_valid_batches=10,
+            accurate_valid_batches=100,
             output_path=output_path,
             clip_grad_norm=1.0,
         )
@@ -111,11 +113,14 @@ class LanguagePipeline:
         print(self._indices_to_words(X))
         X = X.unsqueeze(0)  # Add batch dimension at beginning.
         out = self.trainer.model(X=X)
-        pred = self.trainer.model.prediction(out=out)
+        pred = self.trainer.model.prediction(out=out).to("cpu")
+        pred_words = self._indices_to_words(pred.squeeze(0))
+        actual_words = self._indices_to_words(y)
         print("Prediction:")
-        print(self._indices_to_words(pred.squeeze(0)))
+        print(pred_words)
         print("Actual:")
-        print(self._indices_to_words(y))
+        print(actual_words)
+        print(f"Percent correct: {100 * torch.sum(pred == y).item() / len(y)}")
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")
