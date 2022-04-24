@@ -41,6 +41,9 @@ class TrainConfig:
     checkpoint_interval: int = 10000
     """After how many minibatches to write out a checkpoint"""
 
+    save_graph: bool = False
+    """Whether to save the model's graph to tensorboard."""
+
     profile: bool = False
     """Whether to enable profiling of the model"""
 

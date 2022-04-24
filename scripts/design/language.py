@@ -76,7 +76,7 @@ class LanguagePipeline:
             model_name="LanguageTransformer",
             output_path=output_path,
             profile=False,
-            batch_size=16,
+            batch_size=64,
             train_batches=1000,
             fast_valid_batches=10,
             accurate_valid_batches=100,
