@@ -33,9 +33,11 @@ class Metrics:
         self.record_count += 1
 
     def take(self, cfg: TrainConfig) -> tuple[float, float, float]:
-        loss = self.loss_sum / self.loss_count
-        accuracy = self.accuracy_sum / self.accuracy_count
-        batch_time_ms = (time.time() - self.time_since) / self.record_count
+        loss = self.loss_sum / self.loss_count if self.loss_count != 0.0 else 0.0
+        accuracy = self.accuracy_sum / self.accuracy_count if self.accuracy_count != 0.0 else 0.0
+        batch_time_ms = (
+            (time.time() - self.time_since) / self.record_count if self.record_count != 0.0 else 0.0
+        )
         batch_time_ms = 1000.0 * batch_time_ms / cfg.batch_size
         self.reset()
         return loss, accuracy, batch_time_ms
@@ -71,6 +73,9 @@ class Reporter:
             )
         self.cfg = cfg
 
+        self.print_metrics = Metrics()
+        self.report_metrics = Metrics()
+
     def step(
         self,
         loss: torch.Tensor,
@@ -87,14 +92,14 @@ class Reporter:
         if self.step_count % self.cfg.print_interval == 0:
             r_loss, r_accuracy, r_batch_time_ms = self.print_metrics.take(self.cfg)
             logging.info(
-                f"train loss: {r_loss:>7f} | train accuracy: {100*r_accuracy:.2f}% | ",
+                f"train loss: {r_loss:>7f} | train accuracy: {100*r_accuracy:.2f}% | "
                 f"{r_batch_time_ms:.2f} ms/batch | "
                 f"{self.step_count_since_epoch:>5d}/{self.cfg.train_batches} batches | "
                 f"{self.step_count:>5d} steps",
             )
 
         if self.step_count % self.cfg.report_interval == 0:
-            r_loss, r_accuracy, r_batch_time_ms = self.print_metrics.take(self.cfg)
+            r_loss, r_accuracy, r_batch_time_ms = self.report_metrics.take(self.cfg)
 
             valid_loss, valid_accuracy = trainer.validate(self.cfg.fast_valid_batches)
             self.writer.add_scalars(
@@ -122,8 +127,9 @@ class Reporter:
         )
 
     def start(self, module: nn.Module, inputs: list[torch.Tensor]) -> None:
-        module.eval()
-        self.writer.add_graph(module, inputs)
+        if self.cfg.save_graph:
+            module.eval()
+            self.writer.add_graph(module, inputs)
 
         if self.profiler:
             self.profiler.__enter__()
