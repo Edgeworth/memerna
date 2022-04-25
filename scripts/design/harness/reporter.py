@@ -51,7 +51,12 @@ class Reporter:
 
     # Tracking data:
     print_metrics: Metrics
+    prev_print_batch_count: int = 0
+
     report_metrics: Metrics
+    prev_report_batch_count: int = 0
+
+    prev_checkpoint_batch_count: int = 0
 
     # State dict elements:
     batch_count: int = 0
@@ -89,7 +94,7 @@ class Reporter:
         self.print_metrics.record(loss, accuracy, batch_count)
         self.report_metrics.record(loss, accuracy, batch_count)
 
-        if self.batch_count % self.cfg.print_interval == 0:
+        if self.batch_count - self.prev_print_batch_count >= self.cfg.print_interval:
             r_loss, r_accuracy, r_batch_time_ms = self.print_metrics.take()
             logging.info(
                 f"train loss: {r_loss:>7f} | train accuracy: {100*r_accuracy:.2f}% | "
@@ -97,8 +102,9 @@ class Reporter:
                 f"{self.batch_count_since_epoch:>5d}/{self.cfg.train_batches} batches | "
                 f"{self.batch_count:>5d} steps",
             )
+            self.prev_print_batch_count = self.batch_count
 
-        if self.batch_count % self.cfg.report_interval == 0:
+        if self.batch_count - self.prev_report_batch_count >= self.cfg.report_interval:
             r_loss, r_accuracy, r_batch_time_ms = self.report_metrics.take()
 
             valid_loss, valid_accuracy = trainer.validate(self.cfg.fast_valid_batches)
@@ -112,9 +118,11 @@ class Reporter:
                 {"train": r_accuracy * 100, "valid": valid_accuracy * 100},
                 self.batch_count,
             )
+            self.prev_report_batch_count = self.batch_count
 
-        if self.batch_count % self.cfg.checkpoint_interval == 0:
+        if self.batch_count - self.prev_checkpoint_batch_count >= self.cfg.checkpoint_interval:
             trainer.save_checkpoint(self.cfg.checkpoint_path(self.batch_count))
+            self.prev_checkpoint_batch_count = self.batch_count
 
         if self.profiler is not None:
             self.profiler.step()
