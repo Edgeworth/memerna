@@ -1,5 +1,4 @@
 from pathlib import Path
-import random
 from typing import Any
 from typing import Iterator
 
@@ -15,7 +14,7 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.vocab import Vocab
 
-MAX_SEQ_LEN = 16  # max sequence length
+MAX_SEQ_LEN = 64  # max sequence length
 
 
 class SequenceDataset(Dataset):
@@ -76,7 +75,7 @@ class LanguagePipeline:
             model_name="LanguageTransformer",
             output_path=output_path,
             profile=False,
-            batch_size=64,
+            batch_size=20,
             train_samples=10000,
             fast_valid_samples=512,
             accurate_valid_samples=4096,
@@ -105,26 +104,32 @@ class LanguagePipeline:
         self.vocab = build_vocab_from_iterator(map(tokenizer, data), specials=["<unk>"])
         self.vocab.set_default_index(self.vocab["<unk>"])
 
-    def _indices_to_words(self, indices: torch.Tensor) -> str:
-        tokens = self.vocab.lookup_tokens(indices.tolist())
-        return " ".join(tokens)
+    def _indices_to_words(self, indices: torch.Tensor) -> list[str]:
+        return self.vocab.lookup_tokens(indices.tolist())
 
-    def predict(self) -> None:
-        # Choose random element from the test set:
-        idx = random.randint(0, len(self.test_data) - 1)
-        X, y = self.test_data[idx]
-        print(self._indices_to_words(X))
-        X = X.unsqueeze(0)  # Add batch dimension at beginning.
+    def _words_to_indices(self, words: list[str]) -> torch.Tensor:
+        return torch.LongTensor(self.vocab(words))
+
+    def _predict_next(
+        self,
+        words: list[str],
+    ) -> list[str]:
+        X = self._words_to_indices(words)[-MAX_SEQ_LEN:]
+        X = X.unsqueeze(0)
         dm = self.trainer.optimizer.dm
         out = dm(X)
         pred = dm.prediction(out=out).to("cpu")
         pred_words = self._indices_to_words(pred.squeeze(0))
-        actual_words = self._indices_to_words(y)
-        print("Prediction:")
-        print(pred_words)
-        print("Actual:")
-        print(actual_words)
-        print(f"Percent correct: {100 * torch.sum(pred == y).item() / len(y)}")
+        return words + [pred_words[-1]]
+
+    def predict(self, start: str) -> None:
+        # Choose random element from the test set:
+        print("Start input: ", start)
+        tokenizer = get_tokenizer("basic_english")
+        words = tokenizer(start)
+        for _ in range(50):
+            words = self._predict_next(words)
+        print(" ".join(words))
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")

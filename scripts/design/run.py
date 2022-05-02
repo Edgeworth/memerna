@@ -46,6 +46,8 @@ def run(output_path: Path, checkpoint_path: Path | None) -> None:
     pipeline = LanguagePipeline(output_path=output_path, checkpoint_path=checkpoint_path)
 
     if checkpoint_path:
-        pipeline.predict()
+        pipeline.predict(
+            "There once was a nice little dog named Willy. The dog went to the store one"
+        )
     else:
         pipeline.train(5000)
