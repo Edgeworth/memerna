@@ -78,12 +78,14 @@ class TransformerModel(Model):
         return out
 
     def model_inputs(self, X: torch.Tensor) -> list[Any]:
-        # Input mask adds 0's, so no effect and no masking.
         inp_mask = torch.zeros(X.shape[1], X.shape[1])
         # Output mask adds an upper triangular matrix of -inf, so
         # the softmax'd outputs for them are zero.
         out_mask = nn.Transformer.generate_square_subsequent_mask(X.shape[1])
-        return [X, X, inp_mask, out_mask]
+        # TODO: Remove input temporarily to test prediction.
+        inp = torch.zeros_like(X)
+        out = X
+        return [inp, out, inp_mask, out_mask]
 
     def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
         return out.argmax(dim=-1)

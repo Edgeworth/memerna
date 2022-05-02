@@ -17,18 +17,21 @@ class Optimizer:
 
     def __init__(self, cfg: TrainConfig, dm: DeviceModel) -> None:
         self.dm = dm
-        # TODO: Use learning schedule. Consider momentum
-        self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
-        # self.optimizer = torch.optim.RMSprop(self.dm.parameters())
-        # self.optimizer = torch.optim.Adam(self.dm.parameters(), amsgrad=True)
-        # self.optimizer = torch.optim.Adam(self.dm.parameters())
+        self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=0.001)
 
-        if True:
+        if cfg.optimizer == "sgd":
+            self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,
                 factor=0.5,
-                patience=2,
+                patience=5,
             )
+        elif cfg.optimizer == "adam":
+            self.optimizer = torch.optim.Adam(self.dm.parameters())
+        elif cfg.optimizer == "amsgrad":
+            self.optimizer = torch.optim.Adam(self.dm.parameters(), amsgrad=True)
+        elif cfg.optimizer == "rmsprop":
+            self.optimizer = torch.optim.RMSprop(self.dm.parameters())
 
         self.loss_fn = nn.CrossEntropyLoss()
         self.cfg = cfg
