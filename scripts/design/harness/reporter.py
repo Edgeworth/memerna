@@ -14,7 +14,7 @@ class Metrics:
     loss_count: float = 0.0
     accuracy_sum: float = 0.0
     accuracy_count: float = 0.0
-    batch_count: float = 0.0
+    sample_count: float = 0.0
     time_since: float = 0.0
 
     def reset(self) -> None:
@@ -22,24 +22,24 @@ class Metrics:
         self.loss_count = 0.0
         self.accuracy_sum = 0.0
         self.accuracy_count = 0.0
-        self.batch_count = 0.0
+        self.sample_count = 0.0
         self.time_since = time.time()
 
-    def record(self, loss: torch.Tensor, accuracy: torch.Tensor, batch_count: int) -> None:
+    def record(self, loss: torch.Tensor, accuracy: torch.Tensor, sample_count: int) -> None:
         self.loss_sum += loss.sum().item()
         self.loss_count += loss.numel()
         self.accuracy_sum += accuracy.sum().item()
         self.accuracy_count += accuracy.numel()
-        self.batch_count += batch_count
+        self.sample_count += sample_count
 
     def take(self) -> tuple[float, float, float]:
         loss = self.loss_sum / self.loss_count if self.loss_count != 0.0 else 0.0
         accuracy = self.accuracy_sum / self.accuracy_count if self.accuracy_count != 0.0 else 0.0
-        batch_time_ms = (
-            (time.time() - self.time_since) / self.batch_count if self.batch_count != 0.0 else 0.0
+        sample_time_ms = (
+            (time.time() - self.time_since) / self.sample_count if self.sample_count != 0.0 else 0.0
         )
         self.reset()
-        return loss, accuracy, 1000.0 * batch_time_ms
+        return loss, accuracy, 1000.0 * sample_time_ms
 
 
 class Reporter:
@@ -51,16 +51,16 @@ class Reporter:
 
     # Tracking data:
     print_metrics: Metrics
-    prev_print_batch_count: int = 0
+    prev_print_sample_count: int = 0
 
     report_metrics: Metrics
-    prev_report_batch_count: int = 0
+    prev_report_sample_count: int = 0
 
-    prev_checkpoint_batch_count: int = 0
+    prev_checkpoint_sample_count: int = 0
 
     # State dict elements:
-    batch_count: int = 0
-    batch_count_since_epoch: int = 0
+    sample_count: int = 0
+    sample_count_since_epoch: int = 0
 
     def __init__(self, cfg: TrainConfig) -> None:
         writer_path = cfg.output_path / "tensorboard" / cfg.name
@@ -84,51 +84,51 @@ class Reporter:
         self,
         loss: torch.Tensor,
         accuracy: torch.Tensor,
-        batch_count: int,
+        sample_count: int,
         trainer: TrainerProtocol,
     ) -> None:
         """Report metrics to tensorboard, the console, etc."""
-        self.batch_count += batch_count
-        self.batch_count_since_epoch += batch_count
+        self.sample_count += sample_count
+        self.sample_count_since_epoch += sample_count
 
-        self.print_metrics.record(loss, accuracy, batch_count)
-        self.report_metrics.record(loss, accuracy, batch_count)
+        self.print_metrics.record(loss, accuracy, sample_count)
+        self.report_metrics.record(loss, accuracy, sample_count)
 
-        if self.batch_count - self.prev_print_batch_count >= self.cfg.print_interval:
-            r_loss, r_accuracy, r_batch_time_ms = self.print_metrics.take()
+        if self.sample_count - self.prev_print_sample_count >= self.cfg.print_interval:
+            r_loss, r_accuracy, r_sample_time_ms = self.print_metrics.take()
             logging.info(
-                f"train loss: {r_loss:>7f} | train accuracy: {100*r_accuracy:.2f}% | "
-                f"{r_batch_time_ms:.2f} ms/batch | "
-                f"{self.batch_count_since_epoch:>5d}/{self.cfg.train_batches} batches | "
-                f"{self.batch_count:>5d} steps",
+                f"loss: {r_loss:>7f} | accuracy: {100*r_accuracy:.2f}% | "
+                f"{r_sample_time_ms:.2f} ms/sample | "
+                f"{self.sample_count_since_epoch:>5d}/{self.cfg.train_samples} samples | "
+                f"{self.sample_count:>5d} samples",
             )
-            self.prev_print_batch_count = self.batch_count
+            self.prev_print_sample_count = self.sample_count
 
-        if self.batch_count - self.prev_report_batch_count >= self.cfg.report_interval:
-            r_loss, r_accuracy, r_batch_time_ms = self.report_metrics.take()
+        if self.sample_count - self.prev_report_sample_count >= self.cfg.report_interval:
+            r_loss, r_accuracy, r_sample_time_ms = self.report_metrics.take()
 
-            valid_loss, valid_accuracy = trainer.validate(self.cfg.fast_valid_batches)
+            valid_loss, valid_accuracy = trainer.validate(self.cfg.fast_valid_samples)
             self.writer.add_scalars(
                 "loss",
                 {"train": r_loss, "valid": valid_loss},
-                self.batch_count,
+                self.sample_count,
             )
             self.writer.add_scalars(
                 "accuracy",
                 {"train": r_accuracy * 100, "valid": valid_accuracy * 100},
-                self.batch_count,
+                self.sample_count,
             )
-            self.prev_report_batch_count = self.batch_count
+            self.prev_report_sample_count = self.sample_count
 
-        if self.batch_count - self.prev_checkpoint_batch_count >= self.cfg.checkpoint_interval:
-            trainer.save_checkpoint(self.cfg.checkpoint_path(self.batch_count))
-            self.prev_checkpoint_batch_count = self.batch_count
+        if self.sample_count - self.prev_checkpoint_sample_count >= self.cfg.checkpoint_interval:
+            trainer.save_checkpoint(self.cfg.checkpoint_path(self.sample_count))
+            self.prev_checkpoint_sample_count = self.sample_count
 
         if self.profiler is not None:
             self.profiler.step()
 
     def on_epoch(self, loss: float, accuracy: float) -> None:
-        self.batch_count_since_epoch = 0
+        self.sample_count_since_epoch = 0
         logging.info(
             f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n",
         )
@@ -150,7 +150,7 @@ class Reporter:
         self.writer.flush()
 
     def state_dict(self) -> dict:
-        return {"batch_count": self.batch_count}
+        return {"sample_count": self.sample_count}
 
     def load_state_dict(self, state_dict: dict) -> None:
-        self.batch_count = state_dict["batch_count"]
+        self.sample_count = state_dict["sample_count"]

@@ -18,28 +18,28 @@ class TrainConfig:
     batch_size: int = 64
     """Batch size for training"""
 
-    train_batches: int = -1
-    """How many batches to run training on per epoch. -1 for all"""
+    train_samples: int = -1
+    """How many samples to run training on per epoch. -1 for all"""
 
-    fast_valid_batches: int = -1
-    """How many batches to run validation on for a quick guess (e.g.
+    fast_valid_samples: int = -1
+    """How many samples to run validation on for a quick guess (e.g.
     reporting validation loss regularly). -1 for all"""
 
-    accurate_valid_batches: int = -1
-    """How many batches to run validation on for accuracy (e.g. at end of
+    accurate_valid_samples: int = -1
+    """How many samples to run validation on for accuracy (e.g. at end of
     each epoch). -1 for all"""
 
     dataloader_worker_count: int = multiprocessing.cpu_count() // 4
     """How many workers to use for data loading."""
 
-    report_interval: int = 4096
-    """After how many batches to write out data to tensorboard"""
+    report_interval: int = 1024
+    """After how many samples to write out data to tensorboard"""
 
-    print_interval: int = 4096
-    """After how many batches to print summary data to console"""
+    print_interval: int = 1024
+    """After how many samples to print summary data to console"""
 
-    checkpoint_interval: int = 500000
-    """After how many batches to write out a checkpoint"""
+    checkpoint_interval: int = 200000
+    """After how many samples to write out a checkpoint"""
 
     save_graph: bool = False
     """Whether to save the model's graph to tensorboard."""
@@ -65,15 +65,15 @@ class TrainConfig:
         time_str = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         self.name = f"{self.model_name}-{time_str}"
 
-    def set_max_batches(self, max_train_batches: int, max_valid_batches: int) -> None:
-        def batch_num(batches: int, max_batches: int) -> int:
-            if batches == -1:
-                return max_batches
-            return min(batches, max_batches)
+    def set_samples(self, max_train_samples: int, max_valid_samples: int) -> None:
+        def sample_num(samples: int, max_samples: int) -> int:
+            if samples == -1:
+                return max_samples
+            return min(samples, max_samples)
 
-        self.train_batches = batch_num(self.train_batches, max_train_batches)
-        self.fast_valid_batches = batch_num(self.fast_valid_batches, max_valid_batches)
-        self.accurate_valid_batches = batch_num(self.accurate_valid_batches, max_valid_batches)
+        self.train_samples = sample_num(self.train_samples, max_train_samples)
+        self.fast_valid_samples = sample_num(self.fast_valid_samples, max_valid_samples)
+        self.accurate_valid_samples = sample_num(self.accurate_valid_samples, max_valid_samples)
 
     def checkpoint_path(self, step_count: int) -> Path:
         return self.output_path / self.name / f"checkpoint-{step_count}.pt"
