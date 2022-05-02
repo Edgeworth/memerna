@@ -6,5 +6,5 @@ class TrainerProtocol(Protocol):
     def save_checkpoint(self, path: Path) -> None:
         raise NotImplementedError
 
-    def validate(self, num_batches: int) -> tuple[float, float]:
+    def validate(self, num_samples: int) -> tuple[float, float]:
         raise NotImplementedError

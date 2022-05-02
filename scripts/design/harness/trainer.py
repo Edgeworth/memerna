@@ -47,8 +47,10 @@ class Trainer:
             checkpoint = torch.load(checkpoint_path)
             cfg.load_state_dict(checkpoint["config"])
 
-        # Set config batch counts to the actual batch counts.
-        cfg.set_max_batches(len(self.train_loader), len(self.valid_loader))
+        # Set config sample counts to the actual sample counts.
+        cfg.set_samples(
+            len(self.train_loader) * cfg.batch_size, len(self.valid_loader) * cfg.batch_size
+        )
 
         self.optimizer = Optimizer(cfg, DeviceModel(model=model))
         self.reporter = Reporter(cfg)
@@ -70,27 +72,27 @@ class Trainer:
         torch.save(data, path)
 
     def _train_epoch(self) -> None:
-        logging.info(f"Training epoch on {self.cfg.train_batches} batches")
-        batch_count = 0
+        logging.info(f"Training epoch on {self.cfg.train_samples} samples")
+        sample_count = 0
         for X, y in self.train_loader:
             loss, accuracy = self.optimizer.train_batch(X, y)
-            batch_count += len(X)
+            sample_count += len(X)
             self.reporter.step(loss, accuracy, len(X), self)
 
-            if batch_count > self.cfg.train_batches:
+            if sample_count > self.cfg.train_samples:
                 break
 
-    def validate(self, num_batches: int) -> tuple[float, float]:
-        logging.info(f"validating on {num_batches} batches")
+    def validate(self, num_samples: int) -> tuple[float, float]:
+        logging.info(f"validating on {num_samples} samples")
         metrics = Metrics()
-        batch_count = 0
+        sample_count = 0
         with torch.no_grad():  # don't calculate gradients
             for X, y in self.valid_loader:
                 loss, accuracy = self.optimizer.eval_batch(X, y)
-                batch_count += len(X)
+                sample_count += len(X)
                 metrics.record(loss, accuracy, len(X))
 
-                if batch_count > num_batches:
+                if sample_count > num_samples:
                     break
         r_loss, r_accuracy, _ = metrics.take()
         logging.info(f"validation loss: {r_loss:>7f} accuracy: {r_accuracy*100:.2f}%")
@@ -108,7 +110,7 @@ class Trainer:
             for t in range(1, epochs + 1):
                 logging.info(f"Epoch {t}\n-------------------------------")
                 self._train_epoch()
-                loss, accuracy = self.validate(self.cfg.accurate_valid_batches)
+                loss, accuracy = self.validate(self.cfg.accurate_valid_samples)
                 self.reporter.on_epoch(loss, accuracy)
                 self.optimizer.on_epoch(loss, accuracy)
 
