@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Any
 from typing import Iterator
 
 import click
 from scripts.design.harness.config import TrainConfig
+from scripts.design.harness.sequence import SequenceDataset
 from scripts.design.harness.trainer import Trainer
 from scripts.design.transformer.transformer_model import TransformerModel
 import torch
@@ -14,32 +14,10 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.vocab import Vocab
 
-MAX_SEQ_LEN = 64  # max sequence length
+MAX_SEQ_LEN = 32  # max sequence length
 
 
-class SequenceDataset(Dataset):
-    """Dataset that produces overlapped sequences from the given data and predicts the next value"""
-
-    seq: torch.Tensor
-    seq_size: int
-
-    def __init__(self, *, seq: torch.Tensor, seq_size: int) -> None:
-        if not isinstance(seq, torch.Tensor):
-            raise TypeError("seq must be a torch.Tensor")
-        self.seq = seq
-        self.seq_size = seq_size
-
-    def __len__(self) -> int:
-        return max(len(self.seq) - self.seq_size, 0)
-
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, Any]:
-        """
-        Returns:
-            Next value in the sequence for each point in the sequence"""
-        return (self.seq[idx : idx + self.seq_size], self.seq[idx + 1 : idx + self.seq_size + 1])
-
-
-class LanguagePipeline:
+class RnaPipeline:
     output_path: Path
     train_data: Dataset
     valid_data: Dataset
@@ -75,7 +53,7 @@ class LanguagePipeline:
             model_name="LanguageTransformer",
             output_path=output_path,
             profile=False,
-            batch_size=20,
+            batch_size=32,
             train_samples=10000,
             fast_valid_samples=512,
             accurate_valid_samples=4096,
