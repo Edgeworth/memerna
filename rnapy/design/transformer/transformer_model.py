@@ -1,14 +1,13 @@
 from typing import Any
 
-from rnapy.design.harness.model import Model
 from rnapy.design.transformer.positional_encoder import PositionalEncoder
 from rnapy.design.transformer.word_embedding import WordEmbedding
 import torch
 from torch import nn
 
 
-class TransformerModel(Model):
-    d_out_words: int
+class TransformerModel(nn.Module):
+    """Transformer model. Good to composte this into a Model subclass."""
 
     def __init__(
         self,
@@ -28,7 +27,6 @@ class TransformerModel(Model):
             dropout: dropout rate
         """
         super().__init__()
-        self.d_out_words = d_out_word
 
         self.inp_emb = WordEmbedding(d_word=d_inp_word, d_emb=d_emb)
         self.out_emb = WordEmbedding(d_word=d_out_word, d_emb=d_emb)
@@ -64,6 +62,7 @@ class TransformerModel(Model):
         Returns:
             output tensor, shape [batch_size, seq_len, d_out_word]
         """
+
         # Embedding for input, output shape: [batch_size, seq_len, d_emb]
         inp_seq = self.pos_encoder(self.inp_emb(inp_seq))
         # Embedding for output, ouptut shape: [batch_size, seq_len, d_emb]
@@ -76,26 +75,3 @@ class TransformerModel(Model):
         out = self.linear(attn)
 
         return out
-
-    def model_inputs(self, X: torch.Tensor) -> list[Any]:
-        inp_mask = torch.zeros(X.shape[1], X.shape[1])
-        # Output mask adds an upper triangular matrix of -inf, so
-        # the softmax'd outputs for them are zero.
-        # TODO: what kind of masking here?
-        out_mask = nn.Transformer.generate_square_subsequent_mask(X.shape[1])
-        out = X
-        return [inp, out, inp_mask, out_mask]
-
-    def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
-        return out.argmax(dim=-1)
-
-    def model_loss(
-        self,
-        *,
-        out: torch.Tensor,
-        y: torch.Tensor,
-        loss_fn: nn.Module,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        loss = loss_fn(out.reshape(-1, self.d_out_words), y.reshape(-1))
-        correct = (self.model_prediction(out) == y).type(torch.float)
-        return loss, correct

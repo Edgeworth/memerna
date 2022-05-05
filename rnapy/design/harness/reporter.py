@@ -132,10 +132,10 @@ class Reporter:
             f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n",
         )
 
-    def start(self, module: nn.Module, inputs: list[torch.Tensor]) -> None:
+    def start(self, module: nn.Module, batch: list[torch.Tensor]) -> None:
         if self.cfg.save_graph:
             module.eval()
-            self.writer.add_graph(module, inputs)
+            self.writer.add_graph(module, batch)
 
         if self.profiler:
             self.profiler.__enter__()

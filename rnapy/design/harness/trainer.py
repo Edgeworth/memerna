@@ -76,10 +76,10 @@ class Trainer:
     def _train_epoch(self) -> None:
         logging.info(f"Training epoch on {self.cfg.train_samples} samples")
         sample_count = 0
-        for X, y in self.train_loader:
-            loss, accuracy = self.optimizer.train_batch(X, y)
-            sample_count += len(X)
-            self.reporter.step(loss, accuracy, len(X), self)
+        for batch in self.train_loader:
+            loss, accuracy = self.optimizer.train_batch(batch)
+            sample_count += len(loss)
+            self.reporter.step(loss, accuracy, len(loss), self)
 
             if sample_count > self.cfg.train_samples:
                 break
@@ -89,10 +89,10 @@ class Trainer:
         metrics = Metrics()
         sample_count = 0
         with torch.no_grad():  # don't calculate gradients
-            for X, y in self.valid_loader:
-                loss, accuracy = self.optimizer.eval_batch(X, y)
-                sample_count += len(X)
-                metrics.record(loss, accuracy, len(X))
+            for batch in self.valid_loader:
+                loss, accuracy = self.optimizer.eval_batch(batch)
+                sample_count += len(loss)
+                metrics.record(loss, accuracy, len(loss))
 
                 if sample_count > num_samples:
                     break
@@ -104,8 +104,8 @@ class Trainer:
         # Add graph of model to tensorboard.
         dm = self.optimizer.dm
         dm.eval()
-        X, _ = next(iter(self.train_loader))
-        self.reporter.start(dm.model, dm.inputs(X))
+        batch = next(iter(self.train_loader))
+        self.reporter.start(dm.model, dm.inputs(batch))
 
         try:
             logging.info(f"Start training for {epochs} epochs")
