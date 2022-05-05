@@ -7,8 +7,8 @@ from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
-from scripts.model.parse import db_to_secondary
 from scripts.model.rna import Rna
+from scripts.model.rna_parser import db_to_secondary
 from scripts.util.command import CmdResult
 
 

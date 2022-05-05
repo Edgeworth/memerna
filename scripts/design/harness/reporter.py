@@ -2,11 +2,10 @@ import logging
 import time
 
 from scripts.design.harness.config import TrainConfig
+from scripts.design.harness.trainer_protocol import TrainerProtocol
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
-
-from scripts.design.harness.trainer_protocol import TrainerProtocol
 
 
 class Metrics:
