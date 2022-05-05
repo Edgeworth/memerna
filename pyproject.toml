@@ -10,10 +10,9 @@ version = "0.1.0"
 click = "*"
 click_log = "*"
 cloup = "*"
-itertools = "*"
 python = "^3.10"
 torch = "*"
-torchvision = "*"
+torch-tb-profiler = "*"
 
 [tool.poetry.dev-dependencies]
 black = "*"
