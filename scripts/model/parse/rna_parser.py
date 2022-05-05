@@ -78,7 +78,8 @@ class RnaParser:
             rnas.append(RnaParser.from_ct_file(subdata))
         return rnas
 
-    def to_ct_file(self, rna: Rna) -> str:
+    @staticmethod
+    def to_ct_file(rna: Rna) -> str:
         assert rna.r is not None and rna.s is not None
 
         name = rna.name if rna.name else "unnamed"
@@ -89,9 +90,11 @@ class RnaParser:
 
         return "\n".join(ct)
 
-    def to_db_file(self, rna: Rna) -> str:
+    @staticmethod
+    def to_db_file(rna: Rna) -> str:
         return f"> {rna.name}\n{rna.r}\n{rna.db()}\n"
 
     # See http://rna.urmc.rochester.edu/Text/File_Formats.html for this format.
-    def to_seq_file(self, rna: Rna) -> str:
+    @staticmethod
+    def to_seq_file(rna: Rna) -> str:
         return f";\n{rna.name}\n{rna.r}1"

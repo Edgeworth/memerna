@@ -7,9 +7,10 @@ import click
 import cloup
 from cloup.constraints import RequireAtLeast
 from scripts.data.memevault import MemeVault
+from scripts.model.parse.rna_parser import RnaParser
+from scripts.model.parse.sequence import db_to_secondary
+from scripts.model.parse.sequence import seq_to_primary
 from scripts.model.rna import Rna
-from scripts.model.rna_parser import db_to_secondary
-from scripts.model.rna_parser import seq_to_primary
 
 
 def validate_rna_file(
@@ -19,7 +20,7 @@ def validate_rna_file(
 ) -> Rna | None:
     if value is None:
         return None
-    return Rna.from_any_file(value.read())
+    return RnaParser.from_any_file(value.read())
 
 
 def validate_seq(_ctx: click.Context, _param: click.Parameter, value: str | None) -> str | None:

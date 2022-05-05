@@ -50,7 +50,8 @@ class Trainer:
 
         # Set config sample counts to the actual sample counts.
         cfg.set_samples(
-            len(self.train_loader) * cfg.batch_size, len(self.valid_loader) * cfg.batch_size,
+            len(self.train_loader) * cfg.batch_size,
+            len(self.valid_loader) * cfg.batch_size,
         )
 
         self.optimizer = Optimizer(cfg, DeviceModel(model=model))

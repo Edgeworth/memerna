@@ -51,7 +51,7 @@ class RNAstructure : public RnaPackage {
   static RNAstructure FromArgParse(const ArgParse& args);
 
  private:
-  std::unique_ptr<datatable> data_;
+  std::unique_ptr<datatable> data_{};
   bool use_lyngso_;
 
   [[nodiscard]] std::unique_ptr<structure> LoadStructure(const Primary& r) const;

@@ -22,19 +22,11 @@ repos:
       - id: mixed-line-ending # replaces or checks mixed line ending.
       - id: requirements-txt-fixer # sorts entries in requirements.txt.
       - id: trailing-whitespace # trims trailing whitespace.
-  # Misc hooks:
-  - repo: https://github.com/cmake-lint/cmake-lint
-    rev: 1.4.2
-    hooks:
-      - id: cmakelint
-        args: [--linelength=100]
-        exclude: ^cmake/FindMPFR.cmake$
   # Python related hooks:
   - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:
       - id: black
-        args: [--line-length=100, -tpy310]
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.32.0
     hooks:
@@ -58,24 +50,21 @@ repos:
     rev: v0.942
     hooks:
       - id: mypy
-        args: [
-            --disallow-untyped-defs, # Require type hints
-            --no-implicit-optional, # Disallow implicit optional e.g. arg: str = None
-            --check-untyped-defs, # Check bodies of functions without type annotations too
-            --warn-return-any, # Warn about returning Any from a function annotated to not return it
-            --warn-unused-ignores, # Warn about unused ignore annotations
-            --show-error-codes,
-          ]
         additional_dependencies:
           [click, click_log, cloup, torch, torchtext, torchvision]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
     rev: 1.7.7
     hooks:
       - id: prospector
-        args: [--max-line-length=100]
         additional_dependencies:
           [click, click_log, cloup, torch, torchtext, torchvision]
   # C++ related hooks:
+  - repo: https://github.com/cmake-lint/cmake-lint
+    rev: 1.4.2
+    hooks:
+      - id: cmakelint
+        args: [--linelength=100]
+        exclude: ^cmake/FindMPFR.cmake$
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:

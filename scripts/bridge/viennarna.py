@@ -7,8 +7,9 @@ from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
+from scripts.model.parse.rna_parser import RnaParser
+from scripts.model.parse.sequence import db_to_secondary
 from scripts.model.rna import Rna
-from scripts.model.rna_parser import db_to_secondary
 from scripts.util.command import CmdResult
 
 
@@ -59,7 +60,7 @@ class ViennaRna(RnaPackage):
             res = self._run_cmd("./src/bin/RNAfold", *args, "--noPS", "-i", f.name)
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
-            predicted = Rna.parse(name=rna.name, seq=seq.strip(), db=db.strip())
+            predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
