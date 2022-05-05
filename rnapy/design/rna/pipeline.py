@@ -4,7 +4,7 @@ import click
 from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.trainer import Trainer
 from rnapy.design.rna.dataset import RnaDataset
-from rnapy.design.transformer.transformer_model import TransformerModel
+from rnapy.design.rna.rna_transformer import RnaTransformer
 from torch.utils.data import Dataset
 
 
@@ -31,18 +31,12 @@ class RnaPipeline:
             num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN
         )
 
-        # Input here is the secondary structure, and the output is the primary structure.
-        model = TransformerModel(
-            d_seq=MAX_SEQ_LEN,
-            d_inp_word=3,  # TODO: abstract this based on mapping choice.
-            d_out_word=5,
-            d_emb=512,  # TODO: Parameter to adjust.
-            dropout=0.1,
-        )
+        model = RnaTransformer(max_seq_len=MAX_SEQ_LEN)
         cfg = TrainConfig(
             model_name="RnaTransformer",
             output_path=output_path,
-            profile=False,
+            profile=True,
+            save_graph=True,
             batch_size=64,
             train_samples=10000,
             fast_valid_samples=512,

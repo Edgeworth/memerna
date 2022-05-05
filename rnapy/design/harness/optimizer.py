@@ -42,18 +42,18 @@ class Optimizer:
             lrs.append(float(param_group["lr"]))
         return lrs
 
-    def eval_batch(self, X: torch.Tensor, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def eval_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evalute a single batch of data.
 
         Returns:
             loss: The loss tensor.
             accuracy: The accuracy tensor."""
         self.dm.eval()
-        out = self.dm(X)
-        loss, accuracy = self.dm.loss(out=out, y=y, loss_fn=self.loss_fn)
+        out = self.dm(batch)
+        loss, accuracy = self.dm.loss(batch=batch, out=out, loss_fn=self.loss_fn)
         return loss, accuracy
 
-    def train_batch(self, X: torch.Tensor, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def train_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Perform a single backprop step.
 
         Returns:
@@ -61,8 +61,8 @@ class Optimizer:
             accuracy: The accuracy tensor."""
         # Compute prediction error
         self.dm.train()
-        out = self.dm(X)
-        loss, accuracy = self.dm.loss(out=out, y=y, loss_fn=self.loss_fn)
+        out = self.dm(batch)
+        loss, accuracy = self.dm.loss(batch=batch, out=out, loss_fn=self.loss_fn)
 
         # Backpropagation
         self.optimizer.zero_grad()  # Zero out the gradient buffers.

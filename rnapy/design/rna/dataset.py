@@ -33,8 +33,8 @@ class RnaDataset(Dataset):
     def __len__(self) -> int:
         return len(self.primaries)
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> list[torch.Tensor]:
         """
         Returns:
             Next value in the sequence for each point in the sequence"""
-        return (self.secondaries[idx], self.primaries[idx])
+        return [self.secondaries[idx], self.primaries[idx]]
