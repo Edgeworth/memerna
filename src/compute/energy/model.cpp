@@ -728,9 +728,12 @@ uint32_t EnergyModel::Checksum() const {
   APPEND_DATA(hairpin_all_c_a);
   APPEND_DATA(hairpin_all_c_b);
 
-  for (const auto& v : hairpin) {
-    data += v.first;
-    APPEND_DATA(v.second);
+  // Order keys so the hash doesn't change depending on unordered_map's implementation.
+  std::vector<std::pair<std::string, Energy>> ordered_keys(hairpin.begin(), hairpin.end());
+  std::sort(ordered_keys.begin(), ordered_keys.end());
+  for (const auto& [k, e] : ordered_keys) {
+    data += k;
+    APPEND_DATA(e);
   }
 
   APPEND_DATA(multiloop_hack_a);
