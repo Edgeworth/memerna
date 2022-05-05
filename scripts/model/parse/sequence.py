@@ -1,8 +1,11 @@
 # Copyright 2022 Eliot Courtney.
 import string
 
-BRACKETS = ["()", "[]", "{}", "<>"]
-BRACKETS += [f"{a}{b}" for a, b in zip(string.ascii_lowercase, string.ascii_uppercase)]
+
+def default_brackets() -> list[str]:
+    return ["()", "[]", "{}", "<>"] + [
+        f"{a}{b}" for a, b in zip(string.ascii_lowercase, string.ascii_uppercase)
+    ]
 
 
 def seq_to_primary(seq: str) -> str:
@@ -16,9 +19,12 @@ def primary_to_seq(r: str) -> str:
     return r
 
 
-def db_to_secondary(db: str) -> list[int]:
-    opening = {v[0] for v in BRACKETS}
-    closing = {v[1]: v[0] for v in BRACKETS}
+def db_to_secondary(
+    db: str,
+    brackets: list[str] = default_brackets(),
+) -> list[int]:
+    opening = {v[0] for v in brackets}
+    closing = {v[1]: v[0] for v in brackets}
     stack: dict[str, list[int]] = {}
     s = [-1 for i in range(len(db))]
     for i, v in enumerate(db):
@@ -34,8 +40,8 @@ def db_to_secondary(db: str) -> list[int]:
     return s
 
 
-# Handles pseudoknots.
-def secondary_to_db(s: list[int]) -> str:
+def secondary_to_db(s: list[int], brackets: list[str] = default_brackets()) -> str:
+    """Handles pseudoknots."""
     inter = []
     popularity: dict[int, int] = {}
     stacks: list[list[int]] = []
@@ -69,5 +75,5 @@ def secondary_to_db(s: list[int]) -> str:
         if sid == -1:
             db += "."
         else:
-            db += BRACKETS[stack_map[sid]][bid]
+            db += brackets[stack_map[sid]][bid]
     return db

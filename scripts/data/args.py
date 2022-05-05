@@ -7,9 +7,9 @@ import click
 import cloup
 from cloup.constraints import RequireAtLeast
 from scripts.data.memevault import MemeVault
-from scripts.model.parse import db_to_secondary
-from scripts.model.parse import seq_to_primary
 from scripts.model.rna import Rna
+from scripts.model.rna_parser import db_to_secondary
+from scripts.model.rna_parser import seq_to_primary
 
 
 def validate_rna_file(

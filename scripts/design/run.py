@@ -53,7 +53,7 @@ def run(output_path: Path, checkpoint_path: Path | None) -> None:
             World Snooker Championship was held at the Crucible Theatre and was
             the 15th and final ranking event of the 2020-21 snooker season.
             It was organised by the World Snooker Tour, a subsidiary of the
-            World Professional Billiards and Snooker Association."""
+            World Professional Billiards and Snooker Association.""",
         )
     else:
         pipeline.train(5000)

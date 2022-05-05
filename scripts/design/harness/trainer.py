@@ -5,7 +5,8 @@ from scripts.design.harness.config import TrainConfig
 from scripts.design.harness.device_model import DeviceModel
 from scripts.design.harness.model import Model
 from scripts.design.harness.optimizer import Optimizer
-from scripts.design.harness.reporter import Metrics, Reporter
+from scripts.design.harness.reporter import Metrics
+from scripts.design.harness.reporter import Reporter
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
@@ -49,7 +50,7 @@ class Trainer:
 
         # Set config sample counts to the actual sample counts.
         cfg.set_samples(
-            len(self.train_loader) * cfg.batch_size, len(self.valid_loader) * cfg.batch_size
+            len(self.train_loader) * cfg.batch_size, len(self.valid_loader) * cfg.batch_size,
         )
 
         self.optimizer = Optimizer(cfg, DeviceModel(model=model))

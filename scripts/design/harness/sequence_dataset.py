@@ -1,5 +1,3 @@
-from typing import Any
-
 import torch
 from torch.utils.data import Dataset
 
@@ -19,7 +17,7 @@ class SequenceDataset(Dataset):
     def __len__(self) -> int:
         return max(len(self.seq) - self.seq_size, 0)
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, Any]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Returns:
             Next value in the sequence for each point in the sequence"""
