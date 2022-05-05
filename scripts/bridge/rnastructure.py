@@ -7,6 +7,7 @@ from scripts.bridge.rnapackage import RnaPackage
 from scripts.model.config import CtdCfg
 from scripts.model.config import EnergyCfg
 from scripts.model.config import SuboptCfg
+from scripts.model.parse.rna_parser import RnaParser
 from scripts.model.rna import Rna
 from scripts.util.command import CmdResult
 
@@ -33,7 +34,7 @@ class RNAstructure(RnaPackage):
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
-            fin.write(rna.to_ct_file())
+            fin.write(RnaParser.to_ct_file(rna))
             fin.flush()
             # Note that not giving the -s flag doesn't make it logarithmic.
             # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
@@ -48,10 +49,10 @@ class RNAstructure(RnaPackage):
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
-            fin.write(rna.to_seq_file())
+            fin.write(RnaParser.to_seq_file(rna))
             fin.flush()
             res = self._run_cmd("./exe/Fold", "-mfe", fin.name, fout.name)
-            predicted = Rna.from_any_file(fout.read())
+            predicted = RnaParser.from_any_file(fout.read())
         return predicted, res
 
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
@@ -67,7 +68,7 @@ class RNAstructure(RnaPackage):
         self.check_energy_cfg(energy_cfg)
         self.check_subopt_cfg(subopt_cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
-            fin.write(rna.to_seq_file())
+            fin.write(RnaParser.to_seq_file(rna))
             fin.flush()
 
             assert subopt_cfg.delta is not None
@@ -80,7 +81,7 @@ class RNAstructure(RnaPackage):
             )
             output = fout.read()
             # TODO does not extract energy yet
-            subopts = Rna.multi_from_ct_file(output)
+            subopts = RnaParser.multi_from_ct_file(output)
         return subopts, res
 
     def __str__(self) -> str:

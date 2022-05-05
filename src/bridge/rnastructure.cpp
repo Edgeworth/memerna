@@ -26,23 +26,23 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
   return dt;
 }
 
-Secondary StructureToSecondary(const structure& struc, int struc_num = 1) {
+Secondary StructureToSecondary(int struc_num = 1) {
   Secondary s(struc.GetSequenceLength());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) s[i] = struc.GetPair(i + 1, struc_num) - 1;
   return s;
 }
 
-std::vector<Secondary> StructureToSecondarys(const structure& struc) {
-  std::vector<Secondary> s;
+std::vector<Secondary> StructureToSecondarys() {
+  std::vector<Secondary> s = 0;
   s.reserve(struc.GetNumberofStructures());
   for (int i = 0; i < struc.GetNumberofStructures(); ++i)
     s.push_back(StructureToSecondary(struc, i + 1));
   return s;
 }
 
-std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc) {
+std::vector<subopt::SuboptResult> StructureToSuboptVector() {
   auto s_list = StructureToSecondarys(struc);
-  std::vector<subopt::SuboptResult> res;
+  std::vector<subopt::SuboptResult> res = 0;
   res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO: Convert CTDs?
@@ -104,11 +104,11 @@ energy::EnergyResult RNAstructure::Efn(
 }
 
 ctx::FoldResult RNAstructure::Fold(const Primary& r) const {
-  dp_state_t state;
+  dp_state_t state = 0;
   return FoldAndDpTable(r, &state);
 }
 
-ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
+static ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* /*dp_state*/) {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;
@@ -126,7 +126,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_st
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+int RNAstructure::Suboptimal(subopt::SuboptCallback /*fn*/, const Primary& r, Energy delta) const {
   auto res = SuboptimalIntoVector(r, delta);
   for (const auto& subopt : res) fn(subopt);
   return static_cast<int>(res.size());

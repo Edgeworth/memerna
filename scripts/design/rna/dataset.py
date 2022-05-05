@@ -13,8 +13,8 @@ class RnaDataset(Dataset):
     def __init__(self, *, num_seq: int, seq_size: int) -> None:
         for _ in range(num_seq):
             primary = RandomRna.primary(seq_size)
-            db, _ = RNA.fold(primary)
-            self.primaries.append(primary)
+            _, _ = RNA.fold(primary)
+            # self.primaries.append(primary)
 
     def __len__(self) -> int:
         return len(self.primaries)
