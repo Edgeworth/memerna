@@ -22,13 +22,13 @@ class RnaPipeline:
         STRUC_LEN = 128
         MAX_SEQ_LEN = 32
         self.train_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN
+            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
         )
         self.valid_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN
+            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
         )
         self.test_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN
+            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
         )
 
         model = RnaTransformer(max_seq_len=MAX_SEQ_LEN)

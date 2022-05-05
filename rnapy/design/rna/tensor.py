@@ -4,7 +4,7 @@ import torch
 class RnaTensor:
     @staticmethod
     def from_primary(
-        primary: str, nuc_map: dict[str, int] = {"X": 0, "A": 1, "C": 2, "G": 3, "U": 4}
+        primary: str, nuc_map: dict[str, int] = {"X": 0, "A": 1, "C": 2, "G": 3, "U": 4},
     ) -> torch.Tensor:
         """Index representation of a primary structure."""
         return torch.LongTensor([nuc_map[i] for i in primary])
