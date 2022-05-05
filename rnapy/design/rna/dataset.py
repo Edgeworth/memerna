@@ -15,7 +15,7 @@ class RnaDataset(Dataset):
     def __init__(self, *, num_struc: int, struc_len: int, max_seq_len: int) -> None:
         if max_seq_len > struc_len:
             raise ValueError(
-                f"Transformer input len ({max_seq_len}) > structure size ({struc_len})"
+                f"Transformer input len ({max_seq_len}) > structure size ({struc_len})",
             )
 
         self.primaries = []
