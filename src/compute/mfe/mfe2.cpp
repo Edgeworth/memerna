@@ -37,7 +37,6 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
-      // TODO: check lonely pairs
       if (em->CanPair(r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         mins[DP_P] =

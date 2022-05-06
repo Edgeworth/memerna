@@ -15,7 +15,6 @@
 #endif  // USE_RNASTRUCTURE
 
 // Energy model options:
-// TODO: Get this to work for RNAstructure.
 inline const auto OPT_RANDOM =
     mrna::Opt(mrna::Opt::FLAG).LongName("random").Help("use random energy models");
 

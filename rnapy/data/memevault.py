@@ -8,7 +8,6 @@ from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 
 
-# TODO: review, fix
 class MemeVault:
     def __init__(self, path: Path, dataset: str):
         self.db = sqlite3.connect(path)

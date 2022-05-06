@@ -30,7 +30,6 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      // TODO: check lonely pairs
       if (em->CanPair(r, st, en)) {
         Energy p_min = MAX_E;
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);

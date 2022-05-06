@@ -58,7 +58,6 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em) {
                 dp[st + 1][en - l - 1][DP_P]);
       }
 
-      // TODO: check lonely pairs
       if (em->CanPair(r, st, en)) {
         // Stacking
         mins[DP_P] =

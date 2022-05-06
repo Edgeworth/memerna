@@ -34,7 +34,6 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      // TODO: check lonely pairs
       if (em->CanPair(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
