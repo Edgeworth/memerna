@@ -11,7 +11,7 @@ class Optimizer:
 
     dm: DeviceModel
     optimizer: torch.optim.Optimizer
-    scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau | None
+    scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau | None = None
     loss_fn: nn.CrossEntropyLoss
     cfg: TrainConfig
 
@@ -80,11 +80,13 @@ class Optimizer:
             logging.info(f"Using learning rates: {self.lr_params()}")
 
     def state_dict(self) -> dict:
-        return {
+        d = {
             "model": self.dm.state_dict(),
             "optimizer": self.optimizer.state_dict(),
-            "scheduler": self.scheduler.state_dict() if self.scheduler else None,
         }
+        if self.scheduler is not None:
+            d["scheduler"] = self.scheduler.state_dict()
+        return d
 
     def load_state_dict(self, state_dict: dict) -> None:
         self.dm.load_state_dict(state_dict["model"])
