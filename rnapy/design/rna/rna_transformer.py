@@ -1,13 +1,13 @@
 from typing import Any
 
 from rnapy.design.harness.model import Model
+from rnapy.design.rna.tensor import RnaTensor
 from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
 from torch import nn
 
-IN_TOKEN = 3
-OUT_TOKEN = 5
-EMB_SIZE = 128 # This can't be too small - need to be able to encode position.
+EMB_SIZE = 128  # This can't be too small - need to be able to encode position.
+
 
 class RnaTransformer(Model):
     model: TransformerModel
@@ -18,8 +18,8 @@ class RnaTransformer(Model):
         # Input here is the secondary structure, and the output is the primary structure.
         self.model = TransformerModel(
             d_seq=max_seq_len,
-            d_inp_tok=IN_TOKEN,  # TODO: abstract this based on mapping choice.
-            d_out_tok=OUT_TOKEN,  # TODO: same here
+            d_inp_tok=RnaTensor.secondary_dim(),
+            d_out_tok=RnaTensor.primary_dim(),
             d_emb=EMB_SIZE,  # TODO: Parameter to adjust.
             dropout=0.1,
         )
@@ -55,6 +55,6 @@ class RnaTransformer(Model):
         loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         y = batch[1]
-        loss = loss_fn(out.reshape(-1, OUT_TOKEN), y.reshape(-1))
+        loss = loss_fn(out.reshape(-1, RnaTensor.primary_dim()), y.reshape(-1))
         correct = (self.model_prediction(out) == y).type(torch.float)
         return loss, correct

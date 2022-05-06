@@ -65,4 +65,5 @@ generated-members = "numpy.*,torch.*"
 [tool.pylint.messages_control]
 # Fix "not callable" errors for torch.nn.Module subclasses
 # Want to use f-strings in logging
-disable = ["not-callable", "logging-fstring-interpolation"]
+# unsubscriptable-object: Fix false positive on bimap indexing
+disable = ["not-callable", "logging-fstring-interpolation", "unsubscriptable-object"]
