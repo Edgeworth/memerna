@@ -1,13 +1,21 @@
 import torch
+from bidict import bidict
+
+NUC_MAP = bidict({"X": 0, "A": 1, "C": 2, "G": 3, "U": 4})
 
 
 class RnaTensor:
     @staticmethod
-    def from_primary(
-        primary: str, nuc_map: dict[str, int] = {"X": 0, "A": 1, "C": 2, "G": 3, "U": 4},
-    ) -> torch.Tensor:
+    def from_primary(primary: str) -> torch.Tensor:
         """Index representation of a primary structure."""
-        return torch.LongTensor([nuc_map[i] for i in primary])
+        return torch.LongTensor([NUC_MAP[i] for i in primary])
+
+    @staticmethod
+    def to_primary(index: torch.LongTensor) -> str:
+        """Primary structure from index representation."""
+        return "".join(
+            [NUC_MAP.inverse[i] for i in index]  # pylint: disable=unsubscriptable-object
+        )
 
     @staticmethod
     def secondary_flat_mapping(s: list[int]) -> list[int]:

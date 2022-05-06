@@ -57,6 +57,8 @@ class Reporter:
 
     prev_checkpoint_sample_count: int = 0
 
+    best_valid_loss: float = float("inf")
+
     # State dict elements:
     sample_count: int = 0
     sample_count_since_epoch: int = 0
@@ -120,14 +122,20 @@ class Reporter:
             self.prev_report_sample_count = self.sample_count
 
         if self.sample_count - self.prev_checkpoint_sample_count >= self.cfg.checkpoint_interval:
-            trainer.save_checkpoint(self.cfg.checkpoint_path(self.sample_count))
+            trainer.save_checkpoint(self.cfg.checkpoint_path(str(self.sample_count)))
             self.prev_checkpoint_sample_count = self.sample_count
 
         if self.profiler is not None:
             self.profiler.step()
 
-    def on_epoch(self, loss: float, accuracy: float) -> None:
+    def on_epoch(self, loss: float, accuracy: float, trainer: TrainerProtocol) -> None:
         self.sample_count_since_epoch = 0
+
+        if loss < self.best_valid_loss:
+            self.best_valid_loss = loss
+            if self.cfg.checkpoint_valid_loss:
+                trainer.save_checkpoint(self.cfg.checkpoint_path("best"))
+
         logging.info(
             f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n",
         )

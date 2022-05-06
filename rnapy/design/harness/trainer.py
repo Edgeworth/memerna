@@ -29,6 +29,14 @@ class Trainer:
         cfg: TrainConfig,
         checkpoint_path: Path | None = None,
     ) -> None:
+        """
+        Args:
+            model: Model to train.
+            train_data: Dataset to train on. Tensors should be of shape [batch_size, ...].
+            valid_data: Dataset to validate on. Tensors should be of shape [batch_size, ...].
+            cfg: Training configuration.
+            checkpoint_path: Path to save checkpoint to.
+        """
         # Create data loaders.
         self.train_loader = DataLoader(
             train_data,
@@ -78,8 +86,8 @@ class Trainer:
         sample_count = 0
         for batch in self.train_loader:
             loss, accuracy = self.optimizer.train_batch(batch)
-            sample_count += len(loss)
-            self.reporter.step(loss, accuracy, len(loss), self)
+            sample_count += len(batch[0])
+            self.reporter.step(loss, accuracy, len(batch[0]), self)
 
             if sample_count > self.cfg.train_samples:
                 break
@@ -91,8 +99,8 @@ class Trainer:
         with torch.no_grad():  # don't calculate gradients
             for batch in self.valid_loader:
                 loss, accuracy = self.optimizer.eval_batch(batch)
-                sample_count += len(loss)
-                metrics.record(loss, accuracy, len(loss))
+                sample_count += len(batch[0])
+                metrics.record(loss, accuracy, len(batch[0]))
 
                 if sample_count > num_samples:
                     break
@@ -113,7 +121,7 @@ class Trainer:
                 logging.info(f"Epoch {t}\n-------------------------------")
                 self._train_epoch()
                 loss, accuracy = self.validate(self.cfg.accurate_valid_samples)
-                self.reporter.on_epoch(loss, accuracy)
+                self.reporter.on_epoch(loss, accuracy, self)
                 self.optimizer.on_epoch(loss, accuracy)
 
         finally:

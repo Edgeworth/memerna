@@ -5,9 +5,9 @@ from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
 from torch import nn
 
-
-OUT_WORD = 5
-
+IN_TOKEN = 3
+OUT_TOKEN = 5
+EMB_SIZE = 128 # This can't be too small - need to be able to encode position.
 
 class RnaTransformer(Model):
     model: TransformerModel
@@ -18,9 +18,9 @@ class RnaTransformer(Model):
         # Input here is the secondary structure, and the output is the primary structure.
         self.model = TransformerModel(
             d_seq=max_seq_len,
-            d_inp_word=3,  # TODO: abstract this based on mapping choice.
-            d_out_word=OUT_WORD,  # TODO: same here
-            d_emb=512,  # TODO: Parameter to adjust.
+            d_inp_tok=IN_TOKEN,  # TODO: abstract this based on mapping choice.
+            d_out_tok=OUT_TOKEN,  # TODO: same here
+            d_emb=EMB_SIZE,  # TODO: Parameter to adjust.
             dropout=0.1,
         )
 
@@ -35,11 +35,12 @@ class RnaTransformer(Model):
             primary: primary structure, shape [batch_size, seq_len, d_primary]
 
         Returns:
-            output tensor, shape [batch_size, seq_len, d_out_word]
+            output tensor, shape [batch_size, seq_len, d_out_tok]
         """
 
-        inp_mask = torch.zeros(secondary.shape[1], secondary.shape[1])
-        out_mask = nn.Transformer.generate_square_subsequent_mask(primary.shape[1])
+        device = secondary.device
+        inp_mask = torch.zeros(secondary.shape[1], secondary.shape[1]).to(device)
+        out_mask = nn.Transformer.generate_square_subsequent_mask(primary.shape[1]).to(device)
 
         return self.model(inp_seq=secondary, out_seq=primary, inp_mask=inp_mask, out_mask=out_mask)
 
@@ -54,6 +55,6 @@ class RnaTransformer(Model):
         loss_fn: nn.Module,
     ) -> tuple[torch.Tensor, torch.Tensor]:
         y = batch[1]
-        loss = loss_fn(out.reshape(-1, OUT_WORD), y.reshape(-1))
+        loss = loss_fn(out.reshape(-1, OUT_TOKEN), y.reshape(-1))
         correct = (self.model_prediction(out) == y).type(torch.float)
         return loss, correct
