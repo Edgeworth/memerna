@@ -6,7 +6,9 @@ from rnapy.design.harness.trainer import Trainer
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.rna_transformer import RnaTransformer
 from torch.utils.data import Dataset
+from rnapy.design.rna.tensor import BOS_IDX, RnaTensor
 from rnapy.model.parse.sequence import db_to_secondary
+import torch
 
 
 class RnaPipeline:
@@ -59,16 +61,6 @@ class RnaPipeline:
             checkpoint_path=checkpoint_path,
         )
 
-    # def _build_data(self, data: Iterator[str]) -> Dataset:
-    #     tokenizer = get_tokenizer("basic_english")
-    #     datasets = []
-    #     for text in data:
-    #         tokens = torch.LongTensor(self.vocab(tokenizer(text)))
-    #         if len(tokens) <= MAX_SEQ_LEN:
-    #             continue
-    #         datasets.append(SequenceDataset(seq=tokens, seq_size=MAX_SEQ_LEN))
-    #     return ConcatDataset(datasets)
-
     # def _predict_next(
     #     self,
     #     words: list[str],
@@ -82,8 +74,15 @@ class RnaPipeline:
     #     return words + [pred_words[-1]]
 
     def predict(self, db: str) -> None:
-        secondary = db_to_secondary(db)
+        primary = torch.Tensor([BOS_IDX])
+        secondary = RnaTensor.from_secondary(db_to_secondary(db))
+        print(secondary)
+        dm = self.trainer.optimizer.dm
         # Greedy for now.
+        for i in range(len(secondary)):
+            out = dm([secondary.unsqueeze(0), primary.unsqueeze(0)])
+            print(i)
+            print(out)
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")
