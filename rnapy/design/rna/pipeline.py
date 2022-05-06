@@ -20,21 +20,21 @@ class RnaPipeline:
     def __init__(self, *, output_path: Path, checkpoint_path: Path | None) -> None:
         self.output_path = output_path
 
-        STRUC_LEN = 128
-        MAX_SEQ_LEN = 32
-        BATCH_SIZE = 128
+        STRUC_LEN = 256
+        MAX_SEQ_LEN = 64
+        BATCH_SIZE = 64
         self.train_data = RnaDataset(
             num_struc=1024,
             struc_len=STRUC_LEN,
             max_seq_len=MAX_SEQ_LEN,
         )
         self.valid_data = RnaDataset(
-            num_struc=64,
+            num_struc=128,
             struc_len=STRUC_LEN,
             max_seq_len=MAX_SEQ_LEN,
         )
         self.test_data = RnaDataset(
-            num_struc=64,
+            num_struc=128,
             struc_len=STRUC_LEN,
             max_seq_len=MAX_SEQ_LEN,
         )
@@ -46,6 +46,7 @@ class RnaPipeline:
             profile=False,
             save_graph=False,
             checkpoint_valid_loss=True,
+            optimizer="sgd",
             batch_size=BATCH_SIZE,
             train_samples=10000,
             fast_valid_samples=512,
@@ -59,18 +60,6 @@ class RnaPipeline:
             cfg=cfg,
             checkpoint_path=checkpoint_path,
         )
-
-    # def _predict_next(
-    #     self,
-    #     words: list[str],
-    # ) -> list[str]:
-    #     X = self._words_to_indices(words)[-MAX_SEQ_LEN:]
-    #     X = X.unsqueeze(0)
-    #     dm = self.trainer.optimizer.dm
-    #     out = dm(X)
-    #     pred = dm.prediction(out=out).to("cpu")
-    #     pred_words = self._indices_to_words(pred.squeeze(0))
-    #     return words + [pred_words[-1]]
 
     def predict(self, db: str) -> None:
         primary = [BOS_IDX]
