@@ -5,6 +5,7 @@ BOS_IDX = 0  # beginning of sequence
 EOS_IDX = 1  # end of sequence
 UNK_IDX = 2  # unknown
 PRIMARY_MAP = bidict({"X": UNK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
+DB_MAP = bidict({"(": 3, ".": 4, ")": 5})
 
 
 class RnaTensor:
@@ -14,8 +15,10 @@ class RnaTensor:
         return torch.LongTensor([BOS_IDX] + [PRIMARY_MAP[i] for i in primary] + [EOS_IDX])
 
     @staticmethod
-    def to_primary(index: torch.LongTensor) -> str:
+    def to_primary(index: torch.Tensor | list[int]) -> str:
         """Primary structure from index representation."""
+        if isinstance(index, torch.Tensor):
+            index = index.tolist()
         return "".join([PRIMARY_MAP.inverse[i] for i in index if i not in [BOS_IDX, EOS_IDX]])
 
     @staticmethod
@@ -24,25 +27,24 @@ class RnaTensor:
         return UNK_IDX + 1 + len(PRIMARY_MAP)
 
     @staticmethod
-    def secondary_flat_mapping(s: list[int]) -> list[int]:
+    def db_flat_mapping(db: str) -> list[int]:
         """3=>(, 4=>., 5=>)"""
-        mapping = []
-        for i, p in enumerate(s):
-            if p == -1:
-                mapping.append(4)
-            elif p > i:
-                mapping.append(3)
-            else:
-                mapping.append(5)
-        return mapping
+        return [DB_MAP[i] for i in db]
 
     @staticmethod
-    def from_secondary(secondary: list[int]) -> torch.Tensor:
-        """Index representation of a secondary structure."""
+    def from_db(db: str) -> torch.Tensor:
+        """Index representation of a db structure."""
         # TODO: try relative, absolute, and 0/1/2 representations.
-        return torch.LongTensor([BOS_IDX] + RnaTensor.secondary_flat_mapping(secondary) + [EOS_IDX])
+        return torch.LongTensor([BOS_IDX] + RnaTensor.db_flat_mapping(db) + [EOS_IDX])
 
     @staticmethod
-    def secondary_dim() -> int:
-        """Dimension of secondary tokens."""
-        return UNK_IDX + 1 + 3
+    def to_db(index: torch.Tensor | list[int]) -> str:
+        """db structure from index representation."""
+        if isinstance(index, torch.Tensor):
+            index = index.tolist()
+        return "".join([DB_MAP.inverse[i] for i in index if i not in [BOS_IDX, EOS_IDX]])
+
+    @staticmethod
+    def db_dim() -> int:
+        """Dimension of db tokens."""
+        return UNK_IDX + 1 + len(DB_MAP)
