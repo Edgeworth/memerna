@@ -5,15 +5,15 @@ import torch
 from torch import nn
 
 
-class WordEmbedding(nn.Module):
-    def __init__(self, *, d_word: int, d_emb: int) -> None:
+class TokenEmbedding(nn.Module):
+    def __init__(self, *, d_tok: int, d_emb: int) -> None:
         """
         Args:
-            d_word: dimension of vocabulary (size of vocabulary)
-            d_emb: dimension of embedding of words
+            d_tok: dimension of vocabulary (size of vocabulary)
+            d_emb: dimension of embedding of tokens
         """
         super().__init__()
-        self.emb = nn.Embedding(d_word, d_emb)
+        self.emb = nn.Embedding(d_tok, d_emb)
         self.d_emb = d_emb
 
     def forward(self, seq: torch.Tensor) -> Any:

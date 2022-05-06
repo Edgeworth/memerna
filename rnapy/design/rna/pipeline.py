@@ -6,6 +6,7 @@ from rnapy.design.harness.trainer import Trainer
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.rna_transformer import RnaTransformer
 from torch.utils.data import Dataset
+from rnapy.model.parse.sequence import db_to_secondary
 
 
 class RnaPipeline:
@@ -22,21 +23,28 @@ class RnaPipeline:
         STRUC_LEN = 128
         MAX_SEQ_LEN = 32
         self.train_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
+            num_struc=NUM_STRUC,
+            struc_len=STRUC_LEN,
+            max_seq_len=MAX_SEQ_LEN,
         )
         self.valid_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
+            num_struc=NUM_STRUC,
+            struc_len=STRUC_LEN,
+            max_seq_len=MAX_SEQ_LEN,
         )
         self.test_data = RnaDataset(
-            num_struc=NUM_STRUC, struc_len=STRUC_LEN, max_seq_len=MAX_SEQ_LEN,
+            num_struc=NUM_STRUC,
+            struc_len=STRUC_LEN,
+            max_seq_len=MAX_SEQ_LEN,
         )
 
         model = RnaTransformer(max_seq_len=MAX_SEQ_LEN)
         cfg = TrainConfig(
             model_name="RnaTransformer",
             output_path=output_path,
-            profile=True,
-            save_graph=True,
+            profile=False,
+            save_graph=False,
+            checkpoint_valid_loss=True,
             batch_size=64,
             train_samples=10000,
             fast_valid_samples=512,
@@ -61,12 +69,6 @@ class RnaPipeline:
     #         datasets.append(SequenceDataset(seq=tokens, seq_size=MAX_SEQ_LEN))
     #     return ConcatDataset(datasets)
 
-    # def _indices_to_words(self, indices: torch.Tensor) -> list[str]:
-    #     return self.vocab.lookup_tokens(indices.tolist())
-
-    # def _words_to_indices(self, words: list[str]) -> torch.Tensor:
-    #     return torch.LongTensor(self.vocab(words))
-
     # def _predict_next(
     #     self,
     #     words: list[str],
@@ -79,12 +81,9 @@ class RnaPipeline:
     #     pred_words = self._indices_to_words(pred.squeeze(0))
     #     return words + [pred_words[-1]]
 
-    def predict(self, start: str) -> None:
-        # Choose random element from the test set:
-        print("Start input: ", start)
-        # for _ in range(50):
-        #     words = self._predict_next(words)
-        # print(" ".join(words))
+    def predict(self, db: str) -> None:
+        secondary = db_to_secondary(db)
+        # Greedy for now.
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")

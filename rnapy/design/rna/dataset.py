@@ -26,8 +26,9 @@ class RnaDataset(Dataset):
 
             primary_tensor = RnaTensor.from_primary(primary)
             secondary_tensor = RnaTensor.from_secondary(db_to_secondary(db))
-            for i in range(struc_len - max_seq_len):
-                self.primaries.append(primary_tensor[i : i + max_seq_len])
+            # TODO: providing offset primary here.
+            for i in range(struc_len - max_seq_len - 1):
+                self.primaries.append(primary_tensor[i + 1 : i + max_seq_len + 1])
                 self.secondaries.append(secondary_tensor[i : i + max_seq_len])
 
     def __len__(self) -> int:

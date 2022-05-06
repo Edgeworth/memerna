@@ -41,13 +41,15 @@ class TrainConfig:
     checkpoint_interval: int = 200000
     """After how many samples to write out a checkpoint"""
 
+    checkpoint_valid_loss: bool = False
+    """Whether to checkpoint the best validation loss model so far."""
+
     save_graph: bool = False
     """Whether to save the model's graph to tensorboard."""
 
     profile: bool = False
     """Whether to enable profiling of the model"""
 
-    # TODO: implement
     optimizer: str = "sgd"
     """Which optimizer to use"""
 
@@ -75,8 +77,8 @@ class TrainConfig:
         self.fast_valid_samples = sample_num(self.fast_valid_samples, max_valid_samples)
         self.accurate_valid_samples = sample_num(self.accurate_valid_samples, max_valid_samples)
 
-    def checkpoint_path(self, step_count: int) -> Path:
-        return self.output_path / self.name / f"checkpoint-{step_count}.pt"
+    def checkpoint_path(self, tag: str) -> Path:
+        return self.output_path / self.name / f"checkpoint-{tag}.pt"
 
     def state_dict(self) -> dict:
         # Just save the config name, so we can restart from the same e.g. tensorboard log dir.
