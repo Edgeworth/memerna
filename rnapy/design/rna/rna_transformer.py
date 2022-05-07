@@ -6,13 +6,11 @@ from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
 from torch import nn
 
-EMB_SIZE = 128  # This can't be too small - need to be able to encode position.
-
 
 class RnaTransformer(Model):
     model: TransformerModel
 
-    def __init__(self, *, max_seq_len: int):
+    def __init__(self, *, d_emb: int, max_seq_len: int):
         super().__init__()
 
         # Input here is the db structure, and the output is the primary structure.
@@ -20,7 +18,7 @@ class RnaTransformer(Model):
             d_seq=max_seq_len,
             d_inp_tok=RnaTensor.db_dim(),
             d_out_tok=RnaTensor.primary_dim(),
-            d_emb=EMB_SIZE,  # TODO: Parameter to adjust.
+            d_emb=d_emb,
             dropout=0.1,
         )
 
