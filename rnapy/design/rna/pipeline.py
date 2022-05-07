@@ -21,8 +21,9 @@ class RnaPipeline:
         self.output_path = output_path
 
         STRUC_LEN = 256
-        MAX_SEQ_LEN = 64
+        MAX_SEQ_LEN = 32
         BATCH_SIZE = 64
+        D_EMB = 16  # TODO: Tweak this.
         self.train_data = RnaDataset(
             num_struc=1024,
             struc_len=STRUC_LEN,
@@ -39,7 +40,7 @@ class RnaPipeline:
             max_seq_len=MAX_SEQ_LEN,
         )
 
-        model = RnaTransformer(max_seq_len=MAX_SEQ_LEN)
+        model = RnaTransformer(d_emb=D_EMB, max_seq_len=MAX_SEQ_LEN)
         cfg = TrainConfig(
             model_name="RnaTransformer",
             output_path=output_path,
