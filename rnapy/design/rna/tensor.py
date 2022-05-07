@@ -3,10 +3,12 @@ from bidict import bidict
 
 BOS_IDX = 0  # beginning of sequence
 EOS_IDX = 1  # end of sequence
-UNK_IDX = 2  # unknown
-UNK_TOK = "X"
-PRIMARY_MAP = bidict({UNK_TOK: UNK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
-DB_MAP = bidict({UNK_TOK: UNK_IDX, "(": 3, ".": 4, ")": 5})
+MASK_IDX = 2  # masked
+PAD_IDX = 3  # padding
+IDX_END = PAD_IDX  # last special index
+MASK_TOK = "X"
+PRIMARY_MAP = bidict({MASK_TOK: MASK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
+DB_MAP = bidict({MASK_TOK: MASK_IDX, "(": 3, ".": 4, ")": 5})
 
 
 class RnaTensor:
@@ -25,7 +27,7 @@ class RnaTensor:
     @staticmethod
     def primary_dim() -> int:
         """Dimension of primary tokens."""
-        return UNK_IDX + 1 + len(PRIMARY_MAP)
+        return IDX_END + 1 + len(PRIMARY_MAP)
 
     @staticmethod
     def db_flat_mapping(db: str) -> list[int]:
@@ -48,4 +50,4 @@ class RnaTensor:
     @staticmethod
     def db_dim() -> int:
         """Dimension of db tokens."""
-        return UNK_IDX + 1 + len(DB_MAP)
+        return IDX_END + 1 + len(DB_MAP)
