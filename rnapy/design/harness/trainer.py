@@ -32,8 +32,8 @@ class Trainer:
         """
         Args:
             model: Model to train.
-            train_data: Dataset to train on. Tensors should be of shape [batch_size, ...].
-            valid_data: Dataset to validate on. Tensors should be of shape [batch_size, ...].
+            train_data: Dataset to train on. Tensors should be of shape (batch_size, ...).
+            valid_data: Dataset to validate on. Tensors should be of shape (batch_size, ...).
             cfg: Training configuration.
             checkpoint_path: Path to save checkpoint to.
         """

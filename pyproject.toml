@@ -66,4 +66,5 @@ generated-members = "numpy.*,torch.*"
 # Fix "not callable" errors for torch.nn.Module subclasses
 # Want to use f-strings in logging
 # unsubscriptable-object: Fix false positive on bimap indexing
-disable = ["not-callable", "logging-fstring-interpolation", "unsubscriptable-object"]
+# too-many-arguments: Unavoidable sometimes.
+disable = ["not-callable", "logging-fstring-interpolation", "unsubscriptable-object", "too-many-arguments"]

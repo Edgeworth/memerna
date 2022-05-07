@@ -49,18 +49,22 @@ class TransformerModel(nn.Module):
         self,
         inp_seq: torch.Tensor,
         out_seq: torch.Tensor,
-        inp_mask: torch.Tensor,
-        out_mask: torch.Tensor,
+        inp_mask: torch.Tensor | None = None,
+        out_mask: torch.Tensor | None = None,
+        inp_token_mask: torch.ByteTensor | torch.BoolTensor | None = None,
+        out_token_mask: torch.ByteTensor | torch.BoolTensor | None = None,
     ) -> Any:
         """
         Args:
-            inp: input tensor of sequence of "tokens" by their indices, shape [batch_size, seq_len]
-            out: output tensor of sequence of "tokens" by their indices, shape [batch_size, seq_len]
-            inp_mask: mask of input sequence, shape [seq_len, seq_len]
-            out_mask: mask of output sequence, shape [seq_len, seq_len]
+            inp: input tensor of sequence of "tokens" by their indices, shape (batch_size, seq_len)
+            out: output tensor of sequence of "tokens" by their indices, shape (batch_size, seq_len)
+            inp_mask: mask of input attention weights, shape (seq_len, seq_len)
+            out_mask: mask of output attention weights, shape (seq_len, seq_len)
+            inp_token_mask: non-zero to ignore tokens in input, shape ([batch_size], seq_len)
+            out_token_mask: non-zero to ignore tokens in output, shape ([batch_size], seq_len)
 
         Returns:
-            output tensor, shape [batch_size, seq_len, d_out_tok]
+            output tensor, shape (batch_size, seq_len, d_out_tok)
         """
 
         # Embedding for input, output shape: [batch_size, seq_len, d_emb]
@@ -69,7 +73,14 @@ class TransformerModel(nn.Module):
         out_seq = self.pos_encoder(self.out_emb(out_seq))
 
         # Transformer, output shape: [batch_size, seq_len, d_emb]
-        attn = self.transformer(src=inp_seq, tgt=out_seq, src_mask=inp_mask, tgt_mask=out_mask)
+        attn = self.transformer(
+            src=inp_seq,
+            tgt=out_seq,
+            src_mask=inp_mask,
+            tgt_mask=out_mask,
+            src_key_padding_mask=inp_token_mask,
+            tgt_key_padding_mask=out_token_mask,
+        )
 
         # Linear layer, output shape: [batch_size, seq_len, d_out_tok]
         out = self.linear(attn)
