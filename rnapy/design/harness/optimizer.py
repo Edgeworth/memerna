@@ -33,7 +33,6 @@ class Optimizer:
         elif cfg.optimizer == "rmsprop":
             self.optimizer = torch.optim.RMSprop(self.dm.parameters())
 
-        self.loss_fn = nn.CrossEntropyLoss()
         self.cfg = cfg
 
     def lr_params(self) -> list[float]:
@@ -49,8 +48,8 @@ class Optimizer:
             loss: The loss tensor.
             accuracy: The accuracy tensor."""
         self.dm.eval()
-        out = self.dm(batch)
-        loss, accuracy = self.dm.loss(batch=batch, out=out, loss_fn=self.loss_fn)
+        outs = self.dm(batch)
+        loss, accuracy = self.dm.loss(batch=batch, outs=outs)
         return loss, accuracy
 
     def train_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
@@ -61,8 +60,8 @@ class Optimizer:
             accuracy: The accuracy tensor."""
         # Compute prediction error
         self.dm.train()
-        out = self.dm(batch)
-        loss, accuracy = self.dm.loss(batch=batch, out=out, loss_fn=self.loss_fn)
+        outs = self.dm(batch)
+        loss, accuracy = self.dm.loss(batch=batch, outs=outs)
 
         # Backpropagation
         self.optimizer.zero_grad()  # Zero out the gradient buffers.

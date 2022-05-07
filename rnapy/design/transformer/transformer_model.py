@@ -21,6 +21,7 @@ class TransformerModel(nn.Module):
         num_encoder_layers: int = 6,
         num_decoder_layers: int = 6,
         dim_feedforward: int = 2048,
+        activation: str = "relu",
     ) -> None:
         """
         Args:
@@ -37,13 +38,14 @@ class TransformerModel(nn.Module):
         self.pos_encoder = PositionalEncoder(d_emb=d_emb, max_seq_len=d_seq, dropout=dropout)
         # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
+            batch_first=True,
             d_model=d_emb,
             nhead=nhead,
             num_encoder_layers=num_encoder_layers,
             num_decoder_layers=num_decoder_layers,
             dim_feedforward=dim_feedforward,
-            batch_first=True,
             dropout=dropout,
+            activation=activation,
         )
         # Take output of transformer and pass through linear layer to predict a
         # token in the output vocabulary.

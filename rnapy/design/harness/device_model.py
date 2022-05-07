@@ -48,12 +48,9 @@ class DeviceModel:
         self,
         *,
         batch: list[torch.Tensor],
-        out: torch.Tensor,
-        loss_fn: nn.Module,
+        outs: list[torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        return self.model.model_loss(
-            batch=self.inputs(batch), out=out.to(self.device), loss_fn=loss_fn,
-        )
+        return self.model.model_loss(batch=self.inputs(batch), outs=outs)
 
     def state_dict(self) -> OrderedDict[str, torch.Tensor]:
         return self.model.state_dict()

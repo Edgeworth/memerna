@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 
 class Model(nn.Module):
@@ -12,17 +13,17 @@ class Model(nn.Module):
         return out.argmax(dim=1)
 
     def model_loss(
-        self, *, batch: list[torch.Tensor], out: torch.Tensor, loss_fn: nn.Module,
+        self, *, batch: list[torch.Tensor], outs: list[torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Returns the loss for a given batch and output.
 
         Args:
             batch: Input batch
-            out: Output of the model
-            loss_fn: Loss function to use.
+            outs: Outputs of the model
         Returns:
             loss: Loss for the model.
             accuracy: Whether predictions were correct or not.
         """
         y = batch[-1]
-        return loss_fn(out, y), (self.model_prediction(out) == y).type(torch.float)
+        loss = F.cross_entropy(outs[0], y)
+        return loss, (self.model_prediction(outs[0]) == y).type(torch.float)

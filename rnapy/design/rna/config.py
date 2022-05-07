@@ -12,8 +12,11 @@ class RnaPipelineConfig:
     batch_size: int = 64
     """Number of sequences to train on at a time"""
 
-    unk_proportion: float = 0.2
-    """Proportion of unknown bases to generate in the training data"""
+    mask_prop: float = 0.15
+    """Proportion of masked bases to generate in the training data"""
+
+    activation: str = "gelu"
+    """Activation function to use in the pipeline"""
 
     d_emb: int = 16
     """Dimension of the embedding used for the transformer"""
