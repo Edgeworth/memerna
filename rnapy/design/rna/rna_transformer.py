@@ -1,6 +1,7 @@
 from typing import Any
 
 from rnapy.design.harness.model import Model
+from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.tensor import UNK_IDX, RnaTensor
 from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
@@ -10,16 +11,20 @@ from torch import nn
 class RnaTransformer(Model):
     model: TransformerModel
 
-    def __init__(self, *, d_emb: int, max_seq_len: int):
+    def __init__(self, *, cfg: RnaPipelineConfig):
         super().__init__()
 
         # Input here is the db structure, and the output is the primary structure.
         self.model = TransformerModel(
-            d_seq=max_seq_len,
+            d_seq=cfg.max_seq_len,
             d_inp_tok=RnaTensor.db_dim(),
             d_out_tok=RnaTensor.primary_dim(),
-            d_emb=d_emb,
+            d_emb=cfg.d_emb,
             dropout=0.1,
+            nhead=cfg.nhead,
+            num_encoder_layers=cfg.num_encoder_layers,
+            num_decoder_layers=cfg.num_decoder_layers,
+            dim_feedforward=cfg.dim_feedforward,
         )
 
     def forward(

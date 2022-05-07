@@ -17,6 +17,10 @@ class TransformerModel(nn.Module):
         d_out_tok: int,
         d_emb: int,
         dropout: float = 0.1,
+        nhead: int = 8,
+        num_encoder_layers: int = 6,
+        num_decoder_layers: int = 6,
+        dim_feedforward: int = 2048,
     ) -> None:
         """
         Args:
@@ -34,10 +38,10 @@ class TransformerModel(nn.Module):
         # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
             d_model=d_emb,
-            nhead=8,  # TODO: Parameter to adjust.
-            num_encoder_layers=6,  # TODO: Parameter to adjust.
-            num_decoder_layers=6,  # TODO: Parameter to adjust.
-            dim_feedforward=2048,  # TODO: Parameter to adjust.
+            nhead=nhead,
+            num_encoder_layers=num_encoder_layers,
+            num_decoder_layers=num_decoder_layers,
+            dim_feedforward=dim_feedforward,
             batch_first=True,
             dropout=dropout,
         )

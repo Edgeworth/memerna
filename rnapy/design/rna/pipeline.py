@@ -3,6 +3,7 @@ from pathlib import Path
 import click
 from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.trainer import Trainer
+from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.rna_transformer import RnaTransformer
 from torch.utils.data import Dataset
@@ -17,38 +18,24 @@ class RnaPipeline:
     test_data: Dataset
     trainer: Trainer
 
-    def __init__(self, *, output_path: Path, checkpoint_path: Path | None) -> None:
+    def __init__(
+        self, *, cfg: RnaPipelineConfig, output_path: Path, checkpoint_path: Path | None
+    ) -> None:
         self.output_path = output_path
 
-        STRUC_LEN = 128
-        MAX_SEQ_LEN = 32
-        BATCH_SIZE = 64
-        D_EMB = 16  # TODO: Tweak this.
-        self.train_data = RnaDataset(
-            num_struc=1024,
-            struc_len=STRUC_LEN,
-            max_seq_len=MAX_SEQ_LEN,
-        )
-        self.valid_data = RnaDataset(
-            num_struc=128,
-            struc_len=STRUC_LEN,
-            max_seq_len=MAX_SEQ_LEN,
-        )
-        self.test_data = RnaDataset(
-            num_struc=128,
-            struc_len=STRUC_LEN,
-            max_seq_len=MAX_SEQ_LEN,
-        )
+        self.train_data = RnaDataset(num_struc=1024, cfg=cfg)
+        self.valid_data = RnaDataset(num_struc=128, cfg=cfg)
+        self.test_data = RnaDataset(num_struc=128, cfg=cfg)
 
-        model = RnaTransformer(d_emb=D_EMB, max_seq_len=MAX_SEQ_LEN)
-        cfg = TrainConfig(
+        model = RnaTransformer(cfg=cfg)
+        train_cfg = TrainConfig(
             model_name="RnaTransformer",
             output_path=output_path,
             profile=False,
             save_graph=False,
             checkpoint_valid_loss=True,
             optimizer="sgd",
-            batch_size=BATCH_SIZE,
+            batch_size=cfg.batch_size,
             train_samples=10000,
             fast_valid_samples=512,
             accurate_valid_samples=4096,
@@ -58,7 +45,7 @@ class RnaPipeline:
             model=model,
             train_data=self.train_data,
             valid_data=self.valid_data,
-            cfg=cfg,
+            cfg=train_cfg,
             checkpoint_path=checkpoint_path,
         )
 
