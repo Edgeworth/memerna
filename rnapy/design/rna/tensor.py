@@ -4,8 +4,9 @@ from bidict import bidict
 BOS_IDX = 0  # beginning of sequence
 EOS_IDX = 1  # end of sequence
 UNK_IDX = 2  # unknown
-PRIMARY_MAP = bidict({"X": UNK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
-DB_MAP = bidict({"(": 3, ".": 4, ")": 5})
+UNK_TOK = "X"
+PRIMARY_MAP = bidict({UNK_TOK: UNK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
+DB_MAP = bidict({UNK_TOK: UNK_IDX, "(": 3, ".": 4, ")": 5})
 
 
 class RnaTensor:

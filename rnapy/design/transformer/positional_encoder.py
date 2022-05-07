@@ -40,8 +40,8 @@ class PositionalEncoder(nn.Module):
     def forward(self, seq_emb: torch.Tensor) -> Any:
         """
         Args:
-            seq_emb: embedding of input sequence, shape [batch_size, seq_len, d_emb]
+            seq_emb: embedding of input sequence, shape (batch_size, seq_len, d_emb)
         Returns:
-            position encoded tensor, shape [batch_size, seq_len, d_emb]
+            position encoded tensor, shape (batch_size, seq_len, d_emb)
         """
         return self.dropout(seq_emb + self.pos_emb[: seq_emb.size(1)])

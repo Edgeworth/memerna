@@ -20,7 +20,7 @@ class RnaPipeline:
     def __init__(self, *, output_path: Path, checkpoint_path: Path | None) -> None:
         self.output_path = output_path
 
-        STRUC_LEN = 256
+        STRUC_LEN = 128
         MAX_SEQ_LEN = 32
         BATCH_SIZE = 64
         D_EMB = 16  # TODO: Tweak this.
