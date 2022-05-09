@@ -130,8 +130,9 @@ class RnaTransformer(Model):
         if randomize_mask:
             primary, mask = self.randomize_mask(primary)
 
-        # print(RnaTensor.to_primary(primary[0]))
-        # print(RnaTensor.to_db(db[0]))
+        # print(primary[0])
+        # print(self.cfg.tensor.to_primary(primary[0]))
+        # print(self.cfg.tensor.to_db(db[0]))
         return [self.model(inp_seq=db, out_seq=primary), mask]
 
     def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
@@ -160,6 +161,6 @@ class RnaTransformer(Model):
         # This will collapse to 1D but that's okay.
         accuracy = (self.model_prediction(out) == y).type(torch.float).masked_select(mask)
 
-        # print(RnaTensor.to_primary(y[0]))
-        # print(RnaTensor.to_primary(self.model_prediction(out)[0]))
+        # print(self.cfg.tensor.to_primary(y[0]))
+        # print(self.cfg.tensor.to_primary(self.model_prediction(out)[0]))
         return loss, accuracy
