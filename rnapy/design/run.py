@@ -1,6 +1,6 @@
 from pathlib import Path
-from rnapy.design.rna.config import RnaPipelineConfig
 
+from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.pipeline import RnaPipeline
 
 

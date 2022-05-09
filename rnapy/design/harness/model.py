@@ -13,7 +13,10 @@ class Model(nn.Module):
         return out.argmax(dim=1)
 
     def model_loss(
-        self, *, batch: list[torch.Tensor], outs: list[torch.Tensor]
+        self,
+        *,
+        batch: list[torch.Tensor],
+        outs: list[torch.Tensor],
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Returns the loss for a given batch and output.
 

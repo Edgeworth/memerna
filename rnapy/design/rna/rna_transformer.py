@@ -1,13 +1,14 @@
 from math import ceil
+import random
 from typing import Any
 
 from rnapy.design.harness.model import Model
 from rnapy.design.rna.config import RnaPipelineConfig
-from rnapy.design.rna.tensor import MASK_IDX, PAD_IDX, RnaTensor
+from rnapy.design.rna.tensor import MASK_IDX
+from rnapy.design.rna.tensor import PAD_IDX
 from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
 import torch.nn.functional as F
-import random
 
 
 class RnaTransformer(Model):
@@ -21,8 +22,8 @@ class RnaTransformer(Model):
         # Input here is the db structure, and the output is the primary structure.
         self.model = TransformerModel(
             d_seq=cfg.max_seq_len,
-            d_inp_tok=RnaTensor.db_dim(),
-            d_out_tok=RnaTensor.primary_dim(),
+            d_inp_tok=cfg.tensor.db_dim(),
+            d_out_tok=cfg.tensor.primary_dim(),
             d_emb=cfg.d_emb,
             dropout=0.1,
             nhead=cfg.nhead,
@@ -94,7 +95,10 @@ class RnaTransformer(Model):
         if self.cfg.mask_incorrect_prop > 0:
             # Select some of the masked tokens to be passed through as incorrect.
             random_tokens = torch.randint(
-                0, RnaTensor.primary_dim(), size=primary.shape, device=primary.device
+                0,
+                self.cfg.tensor.primary_dim(),
+                size=primary.shape,
+                device=primary.device,
             )
             # Remove the ignored tokens. We may not passthrough enough incorrect tokens
             # but oh well.
@@ -126,6 +130,8 @@ class RnaTransformer(Model):
         if randomize_mask:
             primary, mask = self.randomize_mask(primary)
 
+        # print(RnaTensor.to_primary(primary[0]))
+        # print(RnaTensor.to_db(db[0]))
         return [self.model(inp_seq=db, out_seq=primary), mask]
 
     def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
@@ -145,14 +151,15 @@ class RnaTransformer(Model):
         y = batch[-1].masked_fill(~mask, PAD_IDX)
 
         loss = F.cross_entropy(
-            out.reshape(-1, RnaTensor.primary_dim()), y.reshape(-1), ignore_index=PAD_IDX
+            out.reshape(-1, self.cfg.tensor.primary_dim()),
+            y.reshape(-1),
+            ignore_index=PAD_IDX,
         )
 
         # Select only the masked tokens for accuracy calculation.
-        # Thils will collapse to 1D but that's okay.
+        # This will collapse to 1D but that's okay.
         accuracy = (self.model_prediction(out) == y).type(torch.float).masked_select(mask)
 
-        # print(RnaTensor.to_primary(batch[1][0]))
         # print(RnaTensor.to_primary(y[0]))
         # print(RnaTensor.to_primary(self.model_prediction(out)[0]))
         return loss, accuracy

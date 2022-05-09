@@ -6,9 +6,9 @@ from rnapy.design.harness.trainer import Trainer
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.rna_transformer import RnaTransformer
-from torch.utils.data import Dataset
-from rnapy.design.rna.tensor import BOS_IDX, RnaTensor
+from rnapy.design.rna.tensor import BOS_IDX
 import torch
+from torch.utils.data import Dataset
 
 
 class RnaPipeline:
@@ -17,11 +17,17 @@ class RnaPipeline:
     valid_data: Dataset
     test_data: Dataset
     trainer: Trainer
+    cfg: RnaPipelineConfig
 
     def __init__(
-        self, *, cfg: RnaPipelineConfig, output_path: Path, checkpoint_path: Path | None
+        self,
+        *,
+        cfg: RnaPipelineConfig,
+        output_path: Path,
+        checkpoint_path: Path | None,
     ) -> None:
         self.output_path = output_path
+        self.cfg = cfg
 
         self.train_data = RnaDataset(num_struc=cfg.train_num_struc, cfg=cfg)
         self.valid_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
@@ -51,7 +57,7 @@ class RnaPipeline:
 
     def predict(self, db: str) -> None:
         primary = [BOS_IDX]
-        db_tensor = RnaTensor.from_db(db)
+        db_tensor = self.cfg.tensor.from_db(db)
         print(db_tensor)
         dm = self.trainer.optimizer.dm
         # Greedy for now.
@@ -60,7 +66,7 @@ class RnaPipeline:
             pred = dm.prediction(out=out).to("cpu").squeeze(0)
             print(primary, pred[-1].item())
             primary.append(int(pred[-1].item()))
-        print(RnaTensor.to_primary(primary))
+        print(self.cfg.tensor.to_primary(primary))
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")
