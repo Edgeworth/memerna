@@ -1,6 +1,5 @@
 import RNA
 from rnapy.design.rna.config import RnaPipelineConfig
-from rnapy.design.rna.tensor import RnaTensor
 from rnapy.model.random import RandomRna
 import torch
 from torch.utils.data import Dataset
@@ -13,20 +12,15 @@ class RnaDataset(Dataset):
     db: list[torch.Tensor]
 
     def __init__(self, *, num_struc: int, cfg: RnaPipelineConfig) -> None:
-        if cfg.max_seq_len > cfg.struc_len:
-            raise ValueError(
-                f"Transformer input len ({cfg.max_seq_len}) > structure size ({cfg.struc_len})",
-            )
-
         self.primary = []
         self.db = []
         for _ in range(num_struc):
             primary = RandomRna.primary(cfg.struc_len)
             db, _ = RNA.fold(primary)
 
-            primary_tensor = RnaTensor.from_primary(primary)
-            db_tensor = RnaTensor.from_db(db)
-            for i in range(cfg.struc_len - cfg.max_seq_len + 1):
+            primary_tensor = cfg.tensor.from_primary(primary)
+            db_tensor = cfg.tensor.from_db(db)
+            for i in range(len(primary_tensor) - cfg.max_seq_len + 1):
                 self.primary.append(primary_tensor[i : i + cfg.max_seq_len])
                 self.db.append(db_tensor[i : i + cfg.max_seq_len])
 

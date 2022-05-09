@@ -1,4 +1,3 @@
-import itertools
 import logging
 from pathlib import Path
 
@@ -113,7 +112,7 @@ class Trainer:
                 if sample_count > num_samples:
                     break
                 logging.warning(
-                    f"reached end of validation data after {sample_count} samples. reusing..."
+                    f"reached end of validation data after {sample_count} samples. reusing...",
                 )
         r_loss, r_accuracy, _ = metrics.take()
         logging.info(f"validation loss: {r_loss:>7f} accuracy: {r_accuracy*100:.2f}%")
@@ -128,7 +127,7 @@ class Trainer:
 
         try:
             logging.info(
-                f"Start training for {epochs} epochs, model has {dm.num_parameters()} parameters"
+                f"Start training for {epochs} epochs, model has {dm.num_parameters()} parameters",
             )
             for t in range(1, epochs + 1):
                 logging.info(f"Epoch {t}\n-------------------------------")
