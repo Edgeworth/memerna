@@ -3,19 +3,19 @@ from dataclasses import dataclass
 
 @dataclass
 class RnaPipelineConfig:
-    train_num_struc: int = 1024
+    train_num_struc: int = 1
     """Number of structures to generate training data from"""
 
     valid_num_struc: int = 128
     """Number of structures to generate validation data from"""
 
-    struc_len: int = 128
+    struc_len: int = 32
     """Length of the primary structures used to generate training data"""
 
     max_seq_len: int = 32
     """Maximum length of the sequences used to train the transformer"""
 
-    batch_size: int = 64
+    batch_size: int = 32
     """Number of sequences to train on at a time"""
 
     mask_prop: float = 0.15
