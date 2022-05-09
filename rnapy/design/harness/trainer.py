@@ -116,7 +116,9 @@ class Trainer:
         self.reporter.start(dm.model, dm.inputs(batch))
 
         try:
-            logging.info(f"Start training for {epochs} epochs")
+            logging.info(
+                f"Start training for {epochs} epochs, model has {dm.num_parameters()} parameters"
+            )
             for t in range(1, epochs + 1):
                 logging.info(f"Epoch {t}\n-------------------------------")
                 self._train_epoch()

@@ -67,4 +67,11 @@ generated-members = "numpy.*,torch.*"
 # Want to use f-strings in logging
 # unsubscriptable-object: Fix false positive on bimap indexing
 # too-many-arguments: Unavoidable sometimes.
-disable = ["not-callable", "logging-fstring-interpolation", "unsubscriptable-object", "too-many-arguments"]
+# consider-using-enumerate: False positives for: for i in range(len(...))
+disable = [
+  "not-callable",
+  "logging-fstring-interpolation",
+  "unsubscriptable-object",
+  "too-many-arguments",
+  "consider-using-enumerate",
+]

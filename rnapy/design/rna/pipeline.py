@@ -23,9 +23,9 @@ class RnaPipeline:
     ) -> None:
         self.output_path = output_path
 
-        self.train_data = RnaDataset(num_struc=1024, cfg=cfg)
-        self.valid_data = RnaDataset(num_struc=128, cfg=cfg)
-        self.test_data = RnaDataset(num_struc=128, cfg=cfg)
+        self.train_data = RnaDataset(num_struc=cfg.train_num_struc, cfg=cfg)
+        self.valid_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
+        self.test_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
 
         model = RnaTransformer(cfg=cfg)
         train_cfg = TrainConfig(

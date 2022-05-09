@@ -3,6 +3,12 @@ from dataclasses import dataclass
 
 @dataclass
 class RnaPipelineConfig:
+    train_num_struc: int = 1024
+    """Number of structures to generate training data from"""
+
+    valid_num_struc: int = 128
+    """Number of structures to generate validation data from"""
+
     struc_len: int = 128
     """Length of the primary structures used to generate training data"""
 
@@ -15,10 +21,16 @@ class RnaPipelineConfig:
     mask_prop: float = 0.15
     """Proportion of masked bases to generate in the training data"""
 
+    mask_passthrough_prop: float = 0.1
+    """Proportion of masked bases to not mask and just pass through"""
+
+    mask_random_prop: float = 0.1
+    """Proportion of masked bases to randomly change in the input"""
+
     activation: str = "gelu"
     """Activation function to use in the pipeline"""
 
-    d_emb: int = 16
+    d_emb: int = 512
     """Dimension of the embedding used for the transformer"""
 
     nhead: int = 8
