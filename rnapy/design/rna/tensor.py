@@ -7,8 +7,10 @@ MASK_IDX = 2  # masked
 PAD_IDX = 3  # padding
 IDX_END = PAD_IDX  # last special index
 MASK_TOK = "X"
-PRIMARY_MAP = bidict({MASK_TOK: MASK_IDX, "A": 3, "C": 4, "G": 5, "U": 6})
-DB_MAP = bidict({MASK_TOK: MASK_IDX, "(": 3, ".": 4, ")": 5})
+PRIMARY_MAP = bidict(
+    {MASK_TOK: MASK_IDX, "A": IDX_END + 1, "C": IDX_END + 2, "G": IDX_END + 3, "U": IDX_END + 4}
+)
+DB_MAP = bidict({MASK_TOK: MASK_IDX, "(": IDX_END + 1, ".": IDX_END + 2, ")": IDX_END + 3})
 
 
 class RnaTensor:
@@ -31,7 +33,7 @@ class RnaTensor:
 
     @staticmethod
     def db_flat_mapping(db: str) -> list[int]:
-        """3=>(, 4=>., 5=>)"""
+        """Maps (.) directly."""
         return [DB_MAP[i] for i in db]
 
     @staticmethod

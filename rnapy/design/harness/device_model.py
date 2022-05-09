@@ -26,6 +26,10 @@ class DeviceModel:
 
         self.model = model.to(self.device)
 
+    def num_parameters(self) -> int:
+        """Returns the number of trainable parameters in the model."""
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
     def __call__(self, batch: list[torch.Tensor]) -> Any:
         return self.model(*self.inputs(batch))
 
