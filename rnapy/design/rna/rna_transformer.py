@@ -71,6 +71,40 @@ class RnaTransformer(Model):
     def prob_mask_like(src: torch.Tensor, prob: float) -> torch.Tensor:
         return RnaTransformer.prob_mask_subset(torch.ones_like(src, dtype=torch.bool), prob)
 
+    def randomize_mask(self, primary: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        # Tokens to not randomize.
+        ignored_tokens = [PAD_IDX]
+
+        # Decide which bases to mask. First find all non-padded tokens.
+        mask = ~self.mask_for_values(primary, ignored_tokens)
+
+        # Select subset with given probability to mask out.
+        mask = self.prob_mask_subset(mask, self.cfg.mask_prop)
+
+        # TODO: Add purposely incorrect ones.
+        # Select some of the masked tokens to be passed through as correct.
+        passthrough_prop = self.cfg.mask_correct_prop + self.cfg.mask_incorrect_prop
+        passthrough_mask = self.prob_mask_subset(mask, passthrough_prop)
+
+        # Tokens to be actually masked out
+        blocked_mask = mask & ~passthrough_mask
+
+        primary = primary.masked_fill(blocked_mask, MASK_IDX)
+
+        if self.cfg.mask_incorrect_prop > 0:
+            # Select some of the masked tokens to be passed through as incorrect.
+            random_tokens = torch.randint(
+                0, RnaTensor.primary_dim(), size=primary.shape, device=primary.device
+            )
+            # Remove the ignored tokens. We may not passthrough enough incorrect tokens
+            # but oh well.
+            random_ignored = self.mask_for_values(random_tokens, ignored_tokens)
+            incorrect_mask = self.prob_mask_subset(passthrough_mask, self.cfg.mask_incorrect_prop)
+            incorrect_mask &= ~random_ignored
+            primary = torch.where(incorrect_mask, random_tokens, primary)
+
+        return (primary, mask)
+
     def forward(
         self,
         db: torch.Tensor,
@@ -87,26 +121,12 @@ class RnaTransformer(Model):
             output tensor, shape (batch_size, seq_len, d_out_tok)
         """
 
-        out_seq = primary
         # If not randomizing the mask ourselves, input should come with masked values already.
         mask = torch.zeros_like(primary, dtype=torch.bool)
         if randomize_mask:
-            # Decide which bases to mask. First find all non-padded tokens.
-            mask = ~self.mask_for_values(primary, [PAD_IDX])
+            primary, mask = self.randomize_mask(primary)
 
-            # Select subset with given probability to mask out.
-            mask = self.prob_mask_subset(mask, self.cfg.mask_prop)
-
-            # TODO: Add purposely incorrect ones.
-            # Select some of the masked tokens to be passed through as correct.
-            passthrough_mask = self.prob_mask_like(mask, self.cfg.mask_passthrough_prop)
-
-            # Tokens to be actually masked out
-            blocked_mask = mask & ~passthrough_mask
-
-            out_seq = out_seq.masked_fill(blocked_mask, MASK_IDX)
-
-        return [self.model(inp_seq=db, out_seq=out_seq), mask]
+        return [self.model(inp_seq=db, out_seq=primary), mask]
 
     def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
         return out.argmax(dim=-1)

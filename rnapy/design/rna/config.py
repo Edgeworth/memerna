@@ -21,10 +21,10 @@ class RnaPipelineConfig:
     mask_prop: float = 0.15
     """Proportion of masked bases to generate in the training data"""
 
-    mask_passthrough_prop: float = 0.1
+    mask_correct_prop: float = 0.15
     """Proportion of masked bases to not mask and just pass through"""
 
-    mask_random_prop: float = 0.1
+    mask_incorrect_prop: float = 0.15
     """Proportion of masked bases to randomly change in the input"""
 
     activation: str = "gelu"
