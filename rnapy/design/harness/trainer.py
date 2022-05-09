@@ -1,3 +1,4 @@
+import itertools
 import logging
 from pathlib import Path
 
@@ -84,26 +85,36 @@ class Trainer:
     def _train_epoch(self) -> None:
         logging.info(f"Training epoch on {self.cfg.train_samples} samples")
         sample_count = 0
-        for batch in self.train_loader:
-            loss, accuracy = self.optimizer.train_batch(batch)
-            sample_count += len(batch[0])
-            self.reporter.step(loss, accuracy, len(batch[0]), self)
+        while True:
+            for batch in self.train_loader:
+                loss, accuracy = self.optimizer.train_batch(batch)
+                sample_count += len(batch[0])
+                self.reporter.step(loss, accuracy, len(batch[0]), self)
 
+                if sample_count > self.cfg.train_samples:
+                    break
             if sample_count > self.cfg.train_samples:
                 break
+            logging.warning(f"reached end of train data after {sample_count} samples. reusing...")
 
     def validate(self, num_samples: int) -> tuple[float, float]:
         logging.info(f"validating on {num_samples} samples")
         metrics = Metrics()
         sample_count = 0
         with torch.no_grad():  # don't calculate gradients
-            for batch in self.valid_loader:
-                loss, accuracy = self.optimizer.eval_batch(batch)
-                sample_count += len(batch[0])
-                metrics.record(loss, accuracy, len(batch[0]))
+            while True:
+                for batch in self.valid_loader:
+                    loss, accuracy = self.optimizer.eval_batch(batch)
+                    sample_count += len(batch[0])
+                    metrics.record(loss, accuracy, len(batch[0]))
 
+                    if sample_count > num_samples:
+                        break
                 if sample_count > num_samples:
                     break
+                logging.warning(
+                    f"reached end of validation data after {sample_count} samples. reusing..."
+                )
         r_loss, r_accuracy, _ = metrics.take()
         logging.info(f"validation loss: {r_loss:>7f} accuracy: {r_accuracy*100:.2f}%")
         return r_loss, r_accuracy

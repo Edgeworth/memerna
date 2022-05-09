@@ -26,7 +26,7 @@ class RnaDataset(Dataset):
 
             primary_tensor = RnaTensor.from_primary(primary)
             db_tensor = RnaTensor.from_db(db)
-            for i in range(cfg.struc_len - cfg.max_seq_len):
+            for i in range(cfg.struc_len - cfg.max_seq_len + 1):
                 self.primary.append(primary_tensor[i : i + cfg.max_seq_len])
                 self.db.append(db_tensor[i : i + cfg.max_seq_len])
 

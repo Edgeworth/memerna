@@ -34,7 +34,7 @@ class RnaPipeline:
             profile=False,
             save_graph=False,
             checkpoint_valid_loss=True,
-            optimizer="sgd",
+            optimizer="adam",
             batch_size=cfg.batch_size,
             train_samples=10000,
             fast_valid_samples=512,

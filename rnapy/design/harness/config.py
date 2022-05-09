@@ -71,7 +71,7 @@ class TrainConfig:
         def sample_num(samples: int, max_samples: int) -> int:
             if samples == -1:
                 return max_samples
-            return min(samples, max_samples)
+            return samples
 
         self.train_samples = sample_num(self.train_samples, max_train_samples)
         self.fast_valid_samples = sample_num(self.fast_valid_samples, max_valid_samples)
