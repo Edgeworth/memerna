@@ -358,6 +358,11 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
     energy += augu_penalty;
   }
 
+  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
+    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
+    energy += hairpin_special_gu_closure;
+  }
+
   // T04 says hairpin loops with all C bases inside them are treated specially.
   bool all_c = true;
   for (int i = st + 1; i <= en - 1; ++i) {
@@ -389,10 +394,6 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
     energy += all_c_energy;
   }
 
-  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
-    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
-    energy += hairpin_special_gu_closure;
-  }
   return energy;
 }
 
@@ -444,12 +445,12 @@ Energy EnergyModel::Bulge(
   }
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
-  int num_states = 0;
-  for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
-  for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
-  Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
-  if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
-  energy += states_bonus;
+  // int num_states = 0;
+  // for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i)
+  // num_states++; for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
+  // Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
+  // if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
+  // energy += states_bonus;
 
   return energy;
 }
