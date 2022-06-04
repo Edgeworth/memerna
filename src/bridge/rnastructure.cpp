@@ -147,11 +147,12 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
   const int N = static_cast<int>(r.size());
 
   part::Part part = {BoltzSums(N, 0), 0};
-  part.q = BoltzEnergy(state.w5[N]);
+  // RNAstructure partition values are stored in natural log space.
+  part.q = BoltzEnergy(exp(state.w5[N]));
   for (int i = 1; i <= N; ++i) {
     for (int j = i; j < N + i; ++j) {
       int adjusted = j > N ? j - N - 1 : j - 1;
-      part.p[i - 1][adjusted] = BoltzEnergy(state.v.f(i, j));
+      part.p[i - 1][adjusted] = BoltzEnergy(exp(state.v.f(i, j)));
     }
   }
 

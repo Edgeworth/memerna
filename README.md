@@ -32,6 +32,8 @@ Run from $MRNA/run_tests after building.
 
 ### Fuzzing
 
+Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
+
 ```
 python -m rnapy.run afl-fuzz --help
 ```
@@ -45,6 +47,6 @@ cat ./afl/default/crashes/<crash>  | ./fuzz --afl ...
 Minimising test cases:
 
 ```
-python -m rnapy.run fuzz-min <crash-file>
+python -m rnapy.run afl-fuzz-min <crash-file>
 
 ```

@@ -28,34 +28,54 @@ int main(int argc, char* argv[]) {
   args.RegisterOpt(OPT_RANDOM);
   args.ParseOrExit(argc, argv);
 
-  verify(args.PosSize() == 2, "require min and max length");
-  const int min_len = args.Pos<int>(0);
-  const int max_len = args.Pos<int>(1);
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
-  verify(min_len > 0, "invalid min length");
-  verify(max_len >= min_len, "invalid max len");
-  std::uniform_int_distribution<int> len_dist(min_len, max_len);
+  int min_len = 0;
+  int max_len = 0;
+  std::string seq;
+
+  if (args.PosSize() == 1) {
+    seq = args.Pos(0);
+  } else if (args.PosSize() == 2) {
+    int min_len = args.Pos<int>(0);
+    int max_len = args.Pos<int>(1);
+    verify(min_len > 0, "invalid min length");
+    verify(max_len >= min_len, "invalid max len");
+  } else {
+    error("require min and max length or a sequence");
+  }
 
   auto harness = FuzzHarness(std::move(args));
 
-  printf("Regular fuzzing [%d, %d] len RNAs\n", min_len, max_len);
-  auto start_time = std::chrono::steady_clock::now();
-  for (int64_t i = 0;; ++i) {
-    if (interval > 0 &&
-        std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::steady_clock::now() - start_time)
-                .count() > interval) {
-      printf("Fuzzed %" PRId64 " RNA\n", i);
-      start_time = std::chrono::steady_clock::now();
-    }
-    int len = len_dist(harness.e());
-    auto r = mrna::Primary::Random(len);
-
+  if (!seq.empty()) {
+    const auto r = mrna::Primary::FromSeq(seq);
+    printf("Running single fuzz on %s\n", seq.c_str());
     auto invoc = harness.CreateInvocation(r);
     const auto res = invoc.Run();
     if (!res.empty()) {
       for (const auto& s : res) printf("%s\n", s.c_str());
       printf("\n");
+    }
+  } else {
+    printf("Regular fuzzing [%d, %d] len RNAs\n", min_len, max_len);
+    std::uniform_int_distribution<int> len_dist(min_len, max_len);
+    auto start_time = std::chrono::steady_clock::now();
+    for (int64_t i = 0;; ++i) {
+      if (interval > 0 &&
+          std::chrono::duration_cast<std::chrono::seconds>(
+              std::chrono::steady_clock::now() - start_time)
+                  .count() > interval) {
+        printf("Fuzzed %" PRId64 " RNA\n", i);
+        start_time = std::chrono::steady_clock::now();
+      }
+      int len = len_dist(harness.e());
+      auto r = mrna::Primary::Random(len);
+
+      auto invoc = harness.CreateInvocation(r);
+      const auto res = invoc.Run();
+      if (!res.empty()) {
+        for (const auto& s : res) printf("%s\n", s.c_str());
+        printf("\n");
+      }
     }
   }
 }
