@@ -12,12 +12,20 @@
 __AFL_FUZZ_INIT();
 #endif
 
+inline const auto OPT_MAX_LEN = mrna::Opt(mrna::Opt::ARG)
+                                    .LongName("max-len")
+                                    .Help("limit max length of sequences fuzzed")
+                                    .Default(-1);
+
 int main(int argc, char* argv[]) {
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
   args.RegisterOpt(OPT_RANDOM);
+  args.RegisterOpt(OPT_MAX_LEN);
   args.ParseOrExit(argc, argv);
+
+  [[maybe_unused]] const auto max_len = args.Get<int>(OPT_MAX_LEN);
 
   auto harness = FuzzHarness(std::move(args));
 
@@ -32,6 +40,7 @@ int main(int argc, char* argv[]) {
     std::string rs;
     while (ss >> rs) {
       try {
+        if (max_len > 0 && rs.size() > max_len) rs.resize(max_len);
         auto invoc = harness.CreateInvocation(mrna::Primary::FromSeq(rs));
         const auto res = invoc.Run();
         if (!res.empty()) {

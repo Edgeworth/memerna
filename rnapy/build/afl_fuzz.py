@@ -51,6 +51,9 @@ class AflFuzzCfg:
     afl_args: list[str] = field(default_factory=list)
     index: int = 0  # which fuzzer this is when running multiple fuzzers
 
+    # Info for the actual fuzz_afl invocation:
+    max_len: int = -1
+
     def __post_init__(self) -> None:
         if self.error():
             raise ValueError(self.error())
@@ -117,7 +120,7 @@ class AflFuzzCfg:
         if self.build_cfg.rnastructure:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
             # cmd += "--mfe-rnastructure "  # TODO?: "--subopt-rnastructure --part-rnastructure "
-            cmd += "--part-rnastructure --no-mfe --no-subopt "
+            cmd += f"--part-rnastructure --no-mfe --no-subopt --max-len {self.max_len} "
 
         return cmd
 
@@ -151,7 +154,7 @@ class AflFuzzCfg:
         return cmd
 
 
-def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[AflFuzzCfg]:
+def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int, max_len: int) -> list[AflFuzzCfg]:
     """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
     # Constructs fuzzers in this order:
@@ -206,6 +209,10 @@ def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int) -> list[AflFuzzCfg]:
         kinds_args.append((AflFuzzKind.REGULAR, mopt + queue + power))
 
     for i, (kind, extra_args) in enumerate(kinds_args):
-        cfgs.append(AflFuzzCfg(build_cfg=build_cfg, kind=kind, afl_args=extra_args, index=i))
+        cfgs.append(
+            AflFuzzCfg(
+                build_cfg=build_cfg, kind=kind, afl_args=extra_args, max_len=max_len, index=i
+            )
+        )
 
     return cfgs[:max_num]
