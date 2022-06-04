@@ -6,19 +6,19 @@ from rnapy.design.rna.tensor import RnaTensor
 
 @dataclass
 class RnaPipelineConfig:
-    train_num_struc: int = 10000
+    train_num_struc: int = 1000  # TODO: Undo
     """Number of structures to generate training data from"""
 
-    valid_num_struc: int = 5000
+    valid_num_struc: int = 500  # TODO: Undo
     """Number of structures to generate validation data from"""
 
-    struc_len: int = 256
+    struc_len: int = 128
     """Length of the primary structures used to generate training data"""
 
     max_seq_len: int = 64
     """Maximum length of the sequences used to train the transformer"""
 
-    batch_size: int = 64
+    batch_size: int = 128
     """Number of sequences to train on at a time"""
 
     mask_prop: float = 0.15
@@ -33,19 +33,19 @@ class RnaPipelineConfig:
     activation: str = "gelu"
     """Activation function to use in the pipeline"""
 
-    d_emb: int = 128
+    d_emb: int = 512
     """Dimension of the embedding used for the transformer"""
 
     nhead: int = 8
     """Number of heads used for the transformer"""
 
-    num_encoder_layers: int = 6
+    num_encoder_layers: int = 12
     """Number of layers in the encoder"""
 
-    num_decoder_layers: int = 6
+    num_decoder_layers: int = 12
     """Number of layers in the decoder"""
 
     dim_feedforward: int = 2048
     """Dimension of the feedforward layers in the transformer"""
 
-    tensor: RnaTensor = ChunkedRnaTensor(2)
+    tensor: RnaTensor = ChunkedRnaTensor(1)
