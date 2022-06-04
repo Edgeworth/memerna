@@ -116,7 +116,8 @@ class AflFuzzCfg:
         cmd = f"./{AFL_TARGET} -md {self.build_cfg.model_path()} "
         if self.build_cfg.rnastructure:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
-            cmd += "--mfe-rnastructure "  # TODO?: "--subopt-rnastructure --part-rnastructure "
+            # cmd += "--mfe-rnastructure "  # TODO?: "--subopt-rnastructure --part-rnastructure "
+            cmd += "--part-rnastructure --no-mfe --no-subopt "
 
         return cmd
 
