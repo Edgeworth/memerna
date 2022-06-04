@@ -25,12 +25,18 @@ def run_fuzz(cfg: AflFuzzCfg) -> None:
     default=multiprocessing.cpu_count() - 2,
     help="Number of fuzzing configurations to run.",
 )
+@cloup.option(
+    "--max-len",
+    default=-1,
+    help="Max size of sequences to fuzz",
+)
 def afl_fuzz(
     num_procs: int,
+    max_len: int,
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfgs = afl_fuzz_cfgs(build_cfg, num_procs)
+    cfgs = afl_fuzz_cfgs(build_cfg, num_procs, max_len)
 
     for cfg in cfgs:
         cfg.build()
