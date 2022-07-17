@@ -81,7 +81,7 @@ class BoltzEnergyModel {
 
   BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().Bulge(r, ost, oen, ist, ien, s));
+    return Boltz(em().Bulge(r, ost, oen, ist, ien, s, /*include_states=*/false));
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,

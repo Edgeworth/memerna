@@ -1,5 +1,15 @@
 # memerna
 
+# TODO, afl seqs:
+
+UCCACGGCCCACGG
+UGGAACGGCACGGC
+
+Breaking cases:
+UGGAAACGGCCACGGGC
+
+UCGAAAGGGCCUCGGC
+
 Check out docs/thesis/thesis.pdf for my thesis which will explain a bit about
 what this is all about.
 
