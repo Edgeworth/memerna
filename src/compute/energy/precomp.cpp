@@ -92,9 +92,6 @@ Energy Precomp::Hairpin(int st, int en) const {
 
   bool all_c = hairpin[st + 1].num_c >= length;
 
-  if (stb == G && enb == U && st >= 2 && r_[st - 1] == G && r_[st - 2] == G)
-    energy += em().hairpin_special_gu_closure;
-
   if (length == 3) {
     if (all_c) energy += em().hairpin_c3_loop;
     return energy;
@@ -105,6 +102,8 @@ Energy Precomp::Hairpin(int st, int en) const {
     energy += em().hairpin_uu_ga_first_mismatch;
   if (st1b == G && en1b == G) energy += em().hairpin_gg_first_mismatch;
   if (all_c) energy += em().hairpin_all_c_a * length + em().hairpin_all_c_b;
+  if (stb == G && enb == U && st >= 2 && r_[st - 1] == G && r_[st - 2] == G)
+    energy += em().hairpin_special_gu_closure;
 
   return energy;
 }

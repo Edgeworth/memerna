@@ -42,7 +42,7 @@ void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4])
     verify(a.has_value() && b.has_value() && c.has_value() && d.has_value(), "expected base");
     verify(fscanf(fp, " %d ", &output[*a][*b][*c][*d]) == 1, "expected energy");
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseMapFromFile(
@@ -52,7 +52,7 @@ void ParseMapFromFile(
   char buf[1024];
   Energy energy = 0;
   while (fscanf(fp, " %1023s %d ", buf, &energy) == 2) (*output)[buf] = energy;
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseInitiationEnergyFromFile(
@@ -66,7 +66,7 @@ void ParseInitiationEnergyFromFile(
         filename.c_str());
     output[idx] = energy;
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel* em) {
@@ -85,7 +85,7 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
         "expected base");
     verify(fscanf(fp, " %d ", &em->internal_1x1[*a][*b][*c][*d][*e][*f]) == 1, "expected energy");
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel* em) {
@@ -106,7 +106,7 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
     verify(
         fscanf(fp, " %d ", &em->internal_1x2[*a][*b][*c][*d][*e][*f][*g]) == 1, "expected energy");
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel* em) {
@@ -128,7 +128,7 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
     verify(fscanf(fp, " %d ", &em->internal_2x2[*a][*b][*c][*d][*e][*f][*g][*h]) == 1,
         "expected energy");
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
@@ -142,7 +142,7 @@ void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4]
     verify(a.has_value() && b.has_value() && c.has_value(), "expected base");
     verify(fscanf(fp, " %d ", &output[*a][*b][*c]) == 1, "expected energy");
   }
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em) {
@@ -188,7 +188,7 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em)
   READ_DATA(em->augu_penalty);
 #undef READ_DATA
 
-  fclose(fp);
+  verify(fclose(fp) == 0, "could not close file");
 }
 
 }  // namespace
@@ -358,11 +358,6 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
     energy += augu_penalty;
   }
 
-  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
-    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
-    energy += hairpin_special_gu_closure;
-  }
-
   // T04 says hairpin loops with all C bases inside them are treated specially.
   bool all_c = true;
   for (int i = st + 1; i <= en - 1; ++i) {
@@ -393,6 +388,10 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
     if (s) (*s)->AddNote("%de - all C penalty", all_c_energy);
     energy += all_c_energy;
   }
+  if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
+    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
+    energy += hairpin_special_gu_closure;
+  }
 
   return energy;
 }
@@ -408,8 +407,8 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
 //    bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
 //    bonus from that.
-Energy EnergyModel::Bulge(
-    const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+Energy EnergyModel::Bulge(const Primary& r, int ost, int oen, int ist, int ien,
+    std::unique_ptr<Structure>* s, bool include_states) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
@@ -445,12 +444,14 @@ Energy EnergyModel::Bulge(
   }
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
-  // int num_states = 0;
-  // for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i)
-  // num_states++; for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
-  // Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
-  // if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
-  // energy += states_bonus;
+  if (include_states) {
+    int num_states = 0;
+    for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
+    for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
+    Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
+    if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
+    energy += states_bonus;
+  }
 
   return energy;
 }

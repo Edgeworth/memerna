@@ -27,7 +27,7 @@
 
 namespace mrna::fuzz {
 
-const flt PROB_EP{0.05};
+const flt PROB_EP{0.0001};
 inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool prob_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 
