@@ -49,7 +49,7 @@ class BoltzEnergyModel {
     return BoltzEnergyModelPtr(new BoltzEnergyModel(em));
   }
 
-  const EnergyModel& em() const { return *em_; }
+  const EnergyModel& em() const { return em_; }
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -81,7 +81,7 @@ class BoltzEnergyModel {
 
   BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().Bulge(r, ost, oen, ist, ien, s, /*include_states=*/false));
+    return Boltz(em().Bulge(r, ost, oen, ist, ien, s));
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
@@ -95,7 +95,7 @@ class BoltzEnergyModel {
   }
 
  private:
-  EnergyModelPtr em_;
+  EnergyModel em_;
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.

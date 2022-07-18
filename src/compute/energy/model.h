@@ -71,6 +71,7 @@ class EnergyModel {
   static EnergyModelPtr FromDataDir(const std::string& data_dir);
   static EnergyModelPtr Random(uint_fast32_t seed);
   static EnergyModelPtr FromArgParse(const ArgParse& args);
+  inline EnergyModelPtr Clone() const { return std::make_shared<EnergyModel>(*this); }
 
   inline bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs) return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
@@ -143,11 +144,8 @@ class EnergyModel {
   }
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
-  // Use |include_states| to include bonuses for bulge loop states. This is used
-  // for minimum free energy like calculations. For partition function like
-  // calculations, the states are already handled.
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr, bool include_states = true) const;
+      std::unique_ptr<Structure>* s = nullptr) const;
   Energy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,

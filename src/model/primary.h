@@ -38,6 +38,9 @@ class Primary {
 
   [[nodiscard]] std::string ToSeq() const;
 
+  // Treat the sequence as a number and perform an increment.
+  void Increment();
+
   static Primary Random(int length);
   static Primary FromSeq(const std::string& s);
 

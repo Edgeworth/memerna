@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "compute/energy/boltzmann_model.h"
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
@@ -17,7 +18,8 @@
 namespace mrna::brute {
 
 BruteForce::BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
-    : r_(r), em_(std::move(em)), cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
+    : r_(r), em_(std::move(em)), bem_(energy::BoltzEnergyModel::Create(em_)), cfg_(cfg),
+      s_(r_.size()), ctd_(r_.size()) {}
 
 BruteResult BruteForce::Run() {
   // Preconditions:
@@ -77,10 +79,9 @@ void BruteForce::AddAllCombinations(int idx) {
   const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
-    auto energy = em_->TotalEnergy(r_, s_, &ctd_).energy;
     if (cfg_.part) {
-      BoltzEnergy boltz = Boltz(energy);
-      res_.part.q += boltz;
+      auto energy = bem_->em().TotalEnergy(r_, s_, &ctd_).energy;
+      res_.part.q += Boltz(energy);
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
           const auto inside_structure = BuildInsideStructure(i, s_[i], N);
@@ -88,7 +89,7 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = em_->SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
+            Energy inside_energy = bem_->em().SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
@@ -101,7 +102,10 @@ void BruteForce::AddAllCombinations(int idx) {
         }
       }
     }
-    if (cfg_.subopt) PruneInsertSubopt(energy);
+    if (cfg_.subopt) {
+      auto energy = em_->TotalEnergy(r_, s_, &ctd_).energy;
+      PruneInsertSubopt(energy);
+    }
     return;
   }
 

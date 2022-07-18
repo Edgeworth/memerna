@@ -9,6 +9,7 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_SEED);
   args->RegisterOpt(OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_LONELY_PAIRS);
+  args->RegisterOpt(OPT_BULGE_STATES);
   args->RegisterOpt(OPT_CTD);
 }
 

@@ -10,6 +10,7 @@
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/config.h"
+#include "compute/energy/boltzmann_model.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
@@ -62,6 +63,7 @@ class BruteForce {
 
   Primary r_;
   energy::EnergyModelPtr em_;
+  energy::BoltzEnergyModelPtr bem_;
   BruteCfg cfg_;
 
   Secondary s_;

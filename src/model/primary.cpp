@@ -33,4 +33,17 @@ std::string Primary::ToSeq() const {
   return s;
 }
 
+void Primary::Increment() {
+  bool carry = true;
+  for (auto& base : data_) {
+    base++;
+    if (base != MAX_BASE) {
+      carry = false;
+      break;
+    }
+    base = MIN_BASE;
+  }
+  if (carry) data_.push_back(0);
+}
+
 }  // namespace mrna

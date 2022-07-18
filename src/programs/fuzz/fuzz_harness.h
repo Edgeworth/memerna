@@ -15,8 +15,8 @@
 #endif  // USE_RNASTRUCTURE
 
 // Energy model options:
-inline const auto OPT_RANDOM =
-    mrna::Opt(mrna::Opt::FLAG).LongName("random").Help("use random energy models");
+inline const auto OPT_RANDOM_MODEL =
+    mrna::Opt(mrna::Opt::FLAG).LongName("random-model").Help("use random energy models");
 
 class FuzzHarness {
  public:

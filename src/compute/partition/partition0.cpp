@@ -17,9 +17,13 @@
 namespace mrna::part {
 
 std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
-    const Primary& r, const energy::EnergyModelPtr& em) {
+    const Primary& r, const energy::EnergyModelPtr& initial_em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
+
+  // Force bulge states off.
+  auto em = initial_em->Clone();
+  em->cfg.bulge_states = false;
 
   const int N = static_cast<int>(r.size());
   const energy::Precomp pc(Primary(r), em);

@@ -407,8 +407,8 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
 //    bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
 //    bonus from that.
-Energy EnergyModel::Bulge(const Primary& r, int ost, int oen, int ist, int ien,
-    std::unique_ptr<Structure>* s, bool include_states) const {
+Energy EnergyModel::Bulge(
+    const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
@@ -444,7 +444,7 @@ Energy EnergyModel::Bulge(const Primary& r, int ost, int oen, int ist, int ien,
   }
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
-  if (include_states) {
+  if (cfg.bulge_states) {
     int num_states = 0;
     for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
