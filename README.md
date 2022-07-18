@@ -2,16 +2,11 @@
 
 # TODO, afl seqs:
 
+Breaking cases:
+GGGGAGUCG
 UCCACGGCCCACGG
 UGGAACGGCACGGC
-
-Breaking cases:
 UGGAAACGGCCACGGGC
-
-UCGAAAGGGCCUCGGC
-
-Check out docs/thesis/thesis.pdf for my thesis which will explain a bit about
-what this is all about.
 
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 

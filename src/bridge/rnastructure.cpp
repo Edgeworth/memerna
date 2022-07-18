@@ -45,7 +45,7 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   std::vector<subopt::SuboptResult> res;
   res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
-    // TODO: Convert CTDs?
+    // TODO(2): Convert CTDs?
     res.emplace_back(subopt::SuboptResult(
         Energy(struc.GetEnergy(i + 1)), tb::TracebackResult(std::move(s_list[i]), Ctds())));
   }
@@ -53,7 +53,7 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
 }
 
 struct PartitionState {
-  const PFPRECISION scaling = 1.0;  // TODO return scaling to 0.6.
+  const PFPRECISION scaling = 1.0;  // TODO(0) return scaling to 0.6.
   DynProgArray<PFPRECISION> w;
   DynProgArray<PFPRECISION> v;
   DynProgArray<PFPRECISION> wmb;
@@ -99,7 +99,7 @@ energy::EnergyResult RNAstructure::Efn(
   std::stringstream sstr;
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
-  // TODO: convert ctds and structure?
+  // TODO(2): convert ctds and structure?
   return {structure->GetEnergy(1), Ctds(), nullptr};
 }
 

@@ -64,7 +64,7 @@ std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
 int Ctx::Suboptimal(
     const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
-    // TODO: handle cases other than max structures.
+    // TODO(3): handle cases other than max structures.
     auto subopts = brute::SuboptimalBruteForce(r, em_, cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());

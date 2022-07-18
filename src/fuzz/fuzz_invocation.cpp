@@ -181,7 +181,7 @@ bool FuzzInvocation::SuboptDuplicates(const std::vector<subopt::SuboptResult>& s
   // If energies are different but everything else is the same, it is still a bug.
   std::set<subopt::SuboptResult> subopt_set;
   for (const auto& subopt : subopts) {
-    if (subopt_set.count(subopt)) return true;
+    if (subopt_set.contains(subopt)) return true;
     subopt_set.insert(subopt);
   }
   return false;

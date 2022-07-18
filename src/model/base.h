@@ -12,7 +12,7 @@ using Base = uint8_t;
 using BaseMask = uint32_t;
 
 // Don't ever change these values.
-constexpr Base A = 0, C = 1, G = 2, U = 3;
+constexpr Base A = 0, C = 1, G = 2, U = 3, MAX_BASE = 4, MIN_BASE = 0;
 
 constexpr BaseMask A_b = 1 << A, C_b = 1 << C, G_b = 1 << G, U_b = 1 << U;
 
