@@ -146,7 +146,7 @@ class Reporter:
             self.writer.add_graph(module, batch)
 
         if self.profiler:
-            self.profiler.__enter__()
+            self.profiler.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         self.print_metrics.reset()
         self.report_metrics.reset()

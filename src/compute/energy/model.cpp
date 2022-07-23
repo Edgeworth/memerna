@@ -10,6 +10,7 @@
 #include <random>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "compute/energy/branch.h"
 #include "compute/energy/config.h"
