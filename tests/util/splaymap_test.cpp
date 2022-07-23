@@ -79,13 +79,15 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
     case 1:
       // Check non-existing
       // NOLINTNEXTLINE
-      do { key = val_dist(eng); } while (s.count(key));
+      do {
+        key = val_dist(eng);
+      } while (s.contains(key));
       EXPECT_FALSE(h.Find(key));
       break;
     case 2: {
       // Insert case
       int val = val_dist(eng);
-      if (s.count(val))
+      if (s.contains(val))
         EXPECT_FALSE(h.Insert(val, val));
       else
         EXPECT_TRUE(h.Insert(val, val));
@@ -106,7 +108,9 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
     case 4:
       // Delete non-existing
       // NOLINTNEXTLINE
-      do { key = val_dist(eng); } while (s.count(key));
+      do {
+        key = val_dist(eng);
+      } while (s.contains(key));
       EXPECT_FALSE(h.Delete(key));
       break;
     default: bug();

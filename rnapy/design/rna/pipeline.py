@@ -3,9 +3,9 @@ from pathlib import Path
 import click
 from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.trainer import Trainer
+from rnapy.design.models.rna_transformer import RnaTransformer
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.dataset import RnaDataset
-from rnapy.design.rna.rna_transformer import RnaTransformer
 from rnapy.design.rna.tensor import BOS_IDX
 import torch
 from torch.utils.data import Dataset

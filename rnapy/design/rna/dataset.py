@@ -15,14 +15,27 @@ class RnaDataset(Dataset):
         self.primary = []
         self.db = []
         for _ in range(num_struc):
-            primary = RandomRna.primary(cfg.struc_len)
-            db, _ = RNA.fold(primary)
+            # TODO(0): Undo
+            primary, db = self._overfitting_test_primary_db_pair(cfg.struc_len)
 
             primary_tensor = cfg.tensor.from_primary(primary)
             db_tensor = cfg.tensor.from_db(db)
             for i in range(len(primary_tensor) - cfg.max_seq_len + 1):
                 self.primary.append(primary_tensor[i : i + cfg.max_seq_len])
                 self.db.append(db_tensor[i : i + cfg.max_seq_len])
+
+    def _random_primary_db_pair(self, length: int) -> tuple[str, str]:
+        primary = RandomRna.primary(length)
+        db, _ = RNA.fold(primary)
+        return primary, db
+
+    def _overfitting_test_primary_db_pair(self, length: int) -> tuple[str, str]:
+        primary = RandomRna.primary(length)
+        db, _ = RNA.fold(primary)
+
+        overfit_map = {"(": "A", ")": "U", ".": "G"}
+        primary = "".join(overfit_map[c] for c in db)
+        return primary, db
 
     def __len__(self) -> int:
         return len(self.db)

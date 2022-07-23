@@ -1,13 +1,5 @@
 # memerna
 
-# TODO, afl seqs:
-
-Breaking cases:
-GGGGAGUCG
-UCCACGGCCCACGG
-UGGAACGGCACGGC
-UGGAAACGGCCACGGGC
-
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
 ### Building

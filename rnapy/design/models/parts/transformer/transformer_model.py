@@ -1,7 +1,7 @@
 from typing import Any
 
-from rnapy.design.transformer.positional_encoder import PositionalEncoder
-from rnapy.design.transformer.token_embedding import TokenEmbedding
+from rnapy.design.models.parts.transformer.positional_encoder import PositionalEncoder
+from rnapy.design.models.parts.transformer.token_embedding import TokenEmbedding
 import torch
 from torch import nn
 

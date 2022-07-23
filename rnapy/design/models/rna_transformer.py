@@ -3,10 +3,10 @@ import random
 from typing import Any
 
 from rnapy.design.harness.model import Model
+from rnapy.design.models.parts.transformer.transformer_model import TransformerModel
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.tensor import MASK_IDX
 from rnapy.design.rna.tensor import PAD_IDX
-from rnapy.design.transformer.transformer_model import TransformerModel
 import torch
 import torch.nn.functional as F
 

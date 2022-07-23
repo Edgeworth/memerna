@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from rnapy.design.rna.tensor import BasicRnaTensor, ChunkedRnaTensor
+from rnapy.design.rna.tensor import ChunkedRnaTensor
 from rnapy.design.rna.tensor import RnaTensor
 
 
 @dataclass
 class RnaPipelineConfig:
-    train_num_struc: int = 1000  # TODO: Undo
+    train_num_struc: int = 10000  # TODO: Undo
     """Number of structures to generate training data from"""
 
-    valid_num_struc: int = 500  # TODO: Undo
+    valid_num_struc: int = 5000  # TODO: Undo
     """Number of structures to generate validation data from"""
 
     struc_len: int = 128
