@@ -1,6 +1,5 @@
 from typing import Any
 from typing import Iterator
-from typing import OrderedDict
 
 from rnapy.design.harness.model import Model
 import torch
@@ -56,8 +55,8 @@ class DeviceModel:
     ) -> tuple[torch.Tensor, torch.Tensor]:
         return self.model.model_loss(batch=self.inputs(batch), outs=outs)
 
-    def state_dict(self) -> OrderedDict[str, torch.Tensor]:
+    def state_dict(self) -> dict[str, torch.Tensor]:
         return self.model.state_dict()
 
-    def load_state_dict(self, state_dict: OrderedDict[str, torch.Tensor]) -> None:
+    def load_state_dict(self, state_dict: dict[str, torch.Tensor]) -> None:
         self.model.load_state_dict(state_dict)

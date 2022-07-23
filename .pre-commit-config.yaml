@@ -51,7 +51,16 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          [click, click_log, cloup, torch, torchtext, torchvision]
+          [
+            click,
+            click_log,
+            cloup,
+            torch,
+            torchtext,
+            torchvision,
+            ViennaRNA,
+            bidict,
+          ]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
     rev: 1.7.7
     hooks:

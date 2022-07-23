@@ -1,5 +1,8 @@
 import itertools
-from typing import Any, Generator, Sequence
+from typing import Any
+from typing import Generator
+from typing import Sequence
+
 from bidict import bidict
 import torch
 
@@ -109,7 +112,7 @@ class ChunkedRnaTensor(RnaTensor):
                 "<": EOS_IDX,
                 MASK_TOK: MASK_IDX,
                 PAD_TOK: PAD_IDX,
-            }
+            },
         )
         self.db_map = bidict(
             {

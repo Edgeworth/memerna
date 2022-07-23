@@ -14,7 +14,8 @@ cloup = "*"
 protobuf = "3.20.1" # Breaking release, so keep this as 3.20.1 for now.
 python = "^3.10"
 # Poetry can't handle extra-index-url, or anything else that would help.
-torch = {url = "https://download.pytorch.org/whl/cu115/torch-1.11.0%2Bcu115-cp310-cp310-linux_x86_64.whl"}
+ray = "*"
+torch = {url = "https://download.pytorch.org/whl/cu116/torch-1.12.0%2Bcu116-cp310-cp310-linux_x86_64.whl"}
 torch-tb-profiler = "*"
 
 [tool.poetry.dev-dependencies]

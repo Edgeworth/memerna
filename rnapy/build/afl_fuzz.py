@@ -211,8 +211,12 @@ def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int, max_len: int) -> list[AflFu
     for i, (kind, extra_args) in enumerate(kinds_args):
         cfgs.append(
             AflFuzzCfg(
-                build_cfg=build_cfg, kind=kind, afl_args=extra_args, max_len=max_len, index=i
-            )
+                build_cfg=build_cfg,
+                kind=kind,
+                afl_args=extra_args,
+                max_len=max_len,
+                index=i,
+            ),
         )
 
     return cfgs[:max_num]
