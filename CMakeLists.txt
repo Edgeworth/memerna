@@ -6,7 +6,7 @@ project(memerna VERSION 0.1 LANGUAGES CXX)
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(FLOAT_BITS "Number of bits to use for floats.
     Valid values are 32, 64, 80, or any value if MPFR is enabled." 64)
-option(USE_RNASTRUCTURE "Whether to build in RNAstructure" OFF)
+option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 
 # Always have RNAstructure compiled as release.
@@ -46,9 +46,11 @@ find_package(Boost)
 if(SANITIZE_ADDRESS AND NOT ASan_FLAG_DETECTED)
   message(FATAL_ERROR "requested asan build but not available on current compiler")
 endif()
+
 if(SANITIZE_THREAD AND NOT TSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested tsan build but not available on current compiler")
 endif()
+
 if(SANITIZE_UNDEFINED AND NOT UBSan_FLAG_DETECTED)
   message(FATAL_ERROR "requested ubsan build but not available on current compiler")
 endif()
@@ -58,31 +60,37 @@ if(USE_MPFR)
   if(NOT MPFR_FOUND)
     message(FATAL_ERROR "mpfr builds require mpfr")
   endif()
+
   if(NOT Boost_FOUND)
     message(FATAL_ERROR "mpfr builds require boost")
   endif()
+
   message(STATUS "Building using MPFR for floats.")
 endif()
 
 # Enable tests.
-set(THREADS_PREFER_PTHREAD_FLAG ON)  # Gtest needs this.
+set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
+
 # Download and unpack googletest at configure time
 configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+
 if(result)
   message(FATAL_ERROR "CMake step for googletest failed: ${result}")
 endif()
+
 execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+
 if(result)
   message(FATAL_ERROR "Build step for googletest failed: ${result}")
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
+  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
 include(GoogleTest)
 enable_testing()
 
@@ -91,6 +99,7 @@ add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
 # Enable stacktraces if we have boost.
 find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
+
 if(LIBBACKTRACE)
   message(STATUS "Using Boost stacktrace with libbacktrace - ${LIBBACKTRACE}")
   add_compile_definitions(BOOST_STACKTRACE_USE_BACKTRACE)
@@ -98,69 +107,69 @@ endif()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
-    src/bridge/bridge.cpp src/bridge/bridge.h
-    src/bridge/memerna.cpp src/bridge/memerna.h
-    src/compute/boltz_dp.h
-    src/compute/brute/brute.cpp src/compute/brute/brute.h
-    src/compute/brute/alg.cpp src/compute/brute/alg.h
-    src/compute/brute/config.cpp src/compute/brute/config.h
-    src/compute/dp.h
-    src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
-    src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
-    src/compute/energy/branch.cpp src/compute/energy/branch.h
-    src/compute/energy/config.cpp src/compute/energy/config.h
-    src/compute/energy/energy.cpp src/compute/energy/energy.h
-    src/compute/energy/model.cpp src/compute/energy/model.h
-    src/compute/energy/precomp.cpp src/compute/energy/precomp.h
-    src/compute/energy/structure.cpp src/compute/energy/structure.h
-    src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
-    src/compute/mfe/mfe0.cpp
-    src/compute/mfe/mfe1.cpp
-    src/compute/mfe/mfe2.cpp
-    src/compute/mfe/mfe3.cpp
-    src/compute/partition/exterior.cpp
-    src/compute/partition/partition.cpp src/compute/partition/partition.h
-    src/compute/partition/partition0.cpp
-    src/compute/partition/partition1.cpp
-    src/compute/subopt/config.cpp src/compute/subopt/config.h
-    src/compute/subopt/subopt.h
-    src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
-    src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
-    src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
-    src/ctx/config.cpp src/ctx/config.h
-    src/ctx/ctx.cpp src/ctx/ctx.h
-    src/fuzz/config.cpp src/fuzz/config.h
-    src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
-    src/model/base.cpp src/model/base.h
-    src/model/ctd.cpp src/model/ctd.h
-    src/model/model.h
-    src/model/primary.cpp src/model/primary.h
-    src/model/secondary.cpp src/model/secondary.h
-    src/util/argparse.cpp src/util/argparse.h
-    src/programs/print.cpp src/programs/print.h
-    src/programs/fuzz/fuzz_harness.cpp src/programs/fuzz/fuzz_harness.h
-    src/util/array.h
-    src/util/splaymap.h
-    src/util/string.cpp src/util/string.h
+  src/bridge/bridge.cpp src/bridge/bridge.h
+  src/bridge/memerna.cpp src/bridge/memerna.h
+  src/compute/boltz_dp.h
+  src/compute/brute/brute.cpp src/compute/brute/brute.h
+  src/compute/brute/alg.cpp src/compute/brute/alg.h
+  src/compute/brute/config.cpp src/compute/brute/config.h
+  src/compute/dp.h
+  src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
+  src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
+  src/compute/energy/branch.cpp src/compute/energy/branch.h
+  src/compute/energy/config.cpp src/compute/energy/config.h
+  src/compute/energy/energy.cpp src/compute/energy/energy.h
+  src/compute/energy/model.cpp src/compute/energy/model.h
+  src/compute/energy/precomp.cpp src/compute/energy/precomp.h
+  src/compute/energy/structure.cpp src/compute/energy/structure.h
+  src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
+  src/compute/mfe/mfe0.cpp
+  src/compute/mfe/mfe1.cpp
+  src/compute/mfe/mfe2.cpp
+  src/compute/mfe/mfe3.cpp
+  src/compute/partition/exterior.cpp
+  src/compute/partition/partition.cpp src/compute/partition/partition.h
+  src/compute/partition/partition0.cpp
+  src/compute/partition/partition1.cpp
+  src/compute/subopt/config.cpp src/compute/subopt/config.h
+  src/compute/subopt/subopt.h
+  src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
+  src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
+  src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
+  src/ctx/config.cpp src/ctx/config.h
+  src/ctx/ctx.cpp src/ctx/ctx.h
+  src/fuzz/config.cpp src/fuzz/config.h
+  src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
+  src/model/base.cpp src/model/base.h
+  src/model/ctd.cpp src/model/ctd.h
+  src/model/model.h
+  src/model/primary.cpp src/model/primary.h
+  src/model/secondary.cpp src/model/secondary.h
+  src/util/argparse.cpp src/util/argparse.h
+  src/programs/print.cpp src/programs/print.h
+  src/programs/fuzz/fuzz_harness.cpp src/programs/fuzz/fuzz_harness.h
+  src/util/array.h
+  src/util/splaymap.h
+  src/util/string.cpp src/util/string.h
 )
 set(TEST_SOURCE
-    tests/common_test.h
-    tests/compute/brute/brute_test.cpp
-    tests/compute/energy/energy_test.cpp
-    tests/compute/mfe/mfe_test.cpp
-    tests/compute/partition/partition_test.cpp
-    tests/compute/subopt/subopt_test.cpp
-    tests/compute/traceback/traceback_test.cpp
-    tests/model/base_test.cpp
-    tests/model/ctds_test.cpp
-    tests/model/parsing_test.cpp
-    tests/util/splaymap_test.cpp
+  tests/common_test.h
+  tests/compute/brute/brute_test.cpp
+  tests/compute/energy/energy_test.cpp
+  tests/compute/mfe/mfe_test.cpp
+  tests/compute/partition/partition_test.cpp
+  tests/compute/subopt/subopt_test.cpp
+  tests/compute/traceback/traceback_test.cpp
+  tests/model/base_test.cpp
+  tests/model/ctds_test.cpp
+  tests/model/parsing_test.cpp
+  tests/util/splaymap_test.cpp
 )
 
 # Use RNAstructure if necessary
 if(USE_RNASTRUCTURE)
   set(MEMERNA_SOURCE ${MEMERNA_SOURCE}
-      src/bridge/rnastructure.cpp src/bridge/rnastructure.h
+    src/bridge/rnastructure.cpp src/bridge/rnastructure.h
   )
 endif()
 
@@ -195,7 +204,7 @@ target_link_libraries(subopt PRIVATE memerna)
 if(Boost_FOUND)
   target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
   target_compile_definitions(memerna PUBLIC USE_BOOST)
-  target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS})  # For Boost stacktrace
+  target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS}) # For Boost stacktrace
 
   if(LIBBACKTRACE)
     target_link_libraries(memerna PUBLIC ${LIBBACKTRACE})

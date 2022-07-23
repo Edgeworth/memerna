@@ -10,17 +10,17 @@ namespace mrna {
 
 std::string Opt::Desc() const {
   std::string desc;
-  auto longname = longname_;
+  auto ln = longname_;
 
   // Handle flag --no.
-  if (!longname.empty() && kind_ == FLAG) longname = longname + "/--no-" + longname;
+  if (!ln.empty() && kind_ == FLAG) ln = ln + "/--no-" + ln;
 
-  if (!shortname_.empty() && !longname.empty()) {
-    desc += "-" + shortname_ + ", --" + longname;
+  if (!shortname_.empty() && !ln.empty()) {
+    desc += "-" + shortname_ + ", --" + ln;
   } else if (!shortname_.empty()) {
     desc += "-" + shortname_;
-  } else if (!longname.empty()) {
-    desc += "--" + longname;
+  } else if (!ln.empty()) {
+    desc += "--" + ln;
   }
   if (has_default_) desc += sfmt(" [%s]", default_.c_str());
   if (!choices_.empty()) {
@@ -112,7 +112,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    std::fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str());
+    verify(std::fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str()), "error showing usage");
     std::exit(1);  // NOLINT
   }
 }

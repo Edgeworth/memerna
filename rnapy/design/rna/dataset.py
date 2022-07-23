@@ -1,8 +1,8 @@
-import RNA
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.model.random import RandomRna
 import torch
 from torch.utils.data import Dataset
+from ViennaRNA import RNA
 
 
 class RnaDataset(Dataset):
