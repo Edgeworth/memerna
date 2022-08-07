@@ -36,7 +36,6 @@ class TransformerModel(nn.Module):
         self.inp_emb = TokenEmbedding(d_tok=d_inp_tok, d_emb=d_emb)
         self.out_emb = TokenEmbedding(d_tok=d_out_tok, d_emb=d_emb)
         self.pos_encoder = PositionalEncoder(d_emb=d_emb, max_seq_len=d_seq, dropout=dropout)
-        # TODO: Think about parameters here.
         self.transformer = nn.Transformer(
             batch_first=True,
             d_model=d_emb,

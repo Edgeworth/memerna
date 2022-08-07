@@ -3,7 +3,6 @@ from pathlib import Path
 import click
 from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.trainer import Trainer
-from rnapy.design.models.mlm.masked_language_model import MaskedLanguageModel
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.tensor import BOS_IDX
@@ -33,7 +32,7 @@ class RnaPipeline:
         self.valid_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
         self.test_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
 
-        model = MaskedLanguageModel(cfg=cfg)
+        model = cfg.model_class(cfg=cfg)
         train_cfg = TrainConfig(
             model_name="RnaTransformer",
             output_path=output_path,

@@ -121,7 +121,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_st
   constexpr auto disable_coax = false;
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
-  // TODO: convert dp tables, ext, ctds?, delete this function and move all to Fold.
+  // TODO(2): convert dp tables, ext, ctds?, delete this function and move all to Fold.
   return {.mfe = {.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
@@ -164,7 +164,7 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
           state.fce.get()));
     }
   }
-  // TODO: Convert tables?
+  // TODO(2): Convert tables?
   return {.dp{}, .ext{}, .part{std::move(part)}, .prob{std::move(prob)}};
 }
 

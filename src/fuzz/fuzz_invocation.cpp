@@ -201,7 +201,7 @@ Error FuzzInvocation::CheckSuboptResult(
   if (SuboptDuplicates(subopt)) errors.push_back("has duplicates");
 
   // Only ones with CTDs set can do these tests.
-  // TODO: Improve this once we have better CTD option support.
+  // TODO(2): Improve this once we have better CTD option support.
   if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
@@ -287,8 +287,8 @@ Error FuzzInvocation::CheckPartition() {
       }
     }
 
-    // TODO: Check probability tables
-    // TODO: Check DP and ext tables? - not for brute force
+    // TODO(2): Check probability tables
+    // TODO(2): Check DP and ext tables? - not for brute force
   }
 
   part_ = std::move(mrna_parts[0]);
@@ -316,7 +316,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   }
 
   // Check RNAstructure produced structure:
-  // TODO: We don't currently pull CTDs from RNAstructure. Also need to
+  // TODO(2): We don't currently pull CTDs from RNAstructure. Also need to
   // rework the efn api to support different CTD options.
   // Also check that the optimal CTD configuration has the same energy.
   // Note that it might not be the same, so we can't do an peqality check
@@ -344,7 +344,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
     }
   }
 
-  // TODO: Check RNAstructure ext table.
+  // TODO(2): Check RNAstructure ext table.
   return errors;
 }
 
@@ -366,7 +366,7 @@ Error FuzzInvocation::CheckPartitionRNAstructure() {
   Error errors;
   auto rstr_part = rstr_->Partition(r_);
   // Types for the partition function are meant to be a bit configurable, so use sstream here.
-  // TODO: uncomment; rnastructure q is 0 instead of 1?
+  // TODO(1): uncomment; rnastructure q is 0 instead of 1?
   // if (!part_eq(rstr_part.part.q, part_.part.q)) {
   //   std::stringstream sstream;
   //   sstream << "q: rnastructure partition " << rstr_part.part.q << " != memerna " << part_.part.q
@@ -376,7 +376,7 @@ Error FuzzInvocation::CheckPartitionRNAstructure() {
 
   for (int st = 0; st < N; ++st) {
     for (int en = 0; en < N; ++en) {
-      // TODO: uncomment when figure out what's going on with rnastructure
+      // TODO(1): uncomment when figure out what's going on with rnastructure
       // auto rstr_p = std::max(rstr_part.part.p[st][en], flt());
       // if (!part_eq(rstr_p, part_.part.p[st][en])) {
       //   std::stringstream sstream;

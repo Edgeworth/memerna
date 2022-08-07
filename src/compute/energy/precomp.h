@@ -23,7 +23,7 @@ int MaxNumContiguous(const Primary& r);
 
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
-// TODO: move this?
+// TODO(3): move this?
 // This is templated because the partition function wants to use it with a different type.
 template <typename T, int InitVal>
 struct HairpinPrecomp {
@@ -33,7 +33,7 @@ struct HairpinPrecomp {
   int num_c{0};
 };
 
-// TODO: move this?
+// TODO(3): move this?
 template <typename HairpinPrecomp, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
   std::vector<HairpinPrecomp> pc;

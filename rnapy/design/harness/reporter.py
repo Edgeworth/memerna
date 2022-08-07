@@ -74,7 +74,7 @@ class Reporter:
                 on_trace_ready=torch.profiler.tensorboard_trace_handler(str(writer_path)),
                 record_shapes=True,
                 profile_memory=True,
-                with_stack=False,  # TODO: causes segfault in pytorch 1.11.0
+                with_stack=False,  # TODO(1): causes segfault in pytorch 1.11.0
             )
         self.cfg = cfg
 

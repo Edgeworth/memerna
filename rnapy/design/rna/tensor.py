@@ -81,7 +81,7 @@ class BasicRnaTensor(RnaTensor):
         return [self.db_map[i] for i in db]
 
     def from_db(self, db: str) -> torch.Tensor:
-        # TODO: try relative, absolute, and 0/1/2 representations.
+        # TODO(1): try relative, absolute, and 0/1/2 representations.
         return torch.LongTensor([BOS_IDX] + self.db_flat_mapping(db) + [EOS_IDX])
 
     def to_db(self, index: torch.Tensor | list[int]) -> str:

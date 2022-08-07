@@ -14,7 +14,7 @@ subopt::SuboptResult MfeBruteForce(const Primary& r, energy::EnergyModelPtr em) 
 }
 
 part::PartResult PartitionBruteForce(const Primary& r, energy::EnergyModelPtr em) {
-  // TODO: Allow lonely pairs for the partition function
+  // TODO(2): Allow lonely pairs for the partition function
   auto res = BruteForce(r, std::move(em), {.part = true}).Run();
   return {.dp{}, .ext{}, .part = std::move(res.part), .prob = std::move(res.prob)};
 }

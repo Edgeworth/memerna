@@ -45,7 +45,7 @@ class RNAstructure : public RnaPackage {
   [[nodiscard]] std::vector<subopt::SuboptResult> StochasticSampleIntoVector(
       const Primary& r, int num_samples) const;
 
-  // TODO: Can be replaced by Fold now?
+  // TODO(2): Can be replaced by Fold now?
   ctx::FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
   static RNAstructure FromArgParse(const ArgParse& args);

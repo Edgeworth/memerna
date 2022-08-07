@@ -22,7 +22,7 @@ class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
 };
 
 TEST_P(SuboptAlgTest, T04) {
-  // TODO: Test these results. For now just run them.
+  // TODO(2): Test these results. For now just run them.
   Subopt("CCUCCGGG");
   Subopt("CGGAAACGG");
   Subopt("UGCAAAGCAA");
