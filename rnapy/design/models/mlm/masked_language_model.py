@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 
 
-class RnaTransformer(Model):
+class MaskedLanguageModel(Model):
     model: TransformerModel
     cfg: RnaPipelineConfig
 
@@ -24,11 +24,11 @@ class RnaTransformer(Model):
             d_seq=cfg.max_seq_len,
             d_inp_tok=cfg.tensor.db_dim(),
             d_out_tok=cfg.tensor.primary_dim(),
-            d_emb=cfg.d_emb,
+            d_emb=cfg.mlm.d_emb,
             dropout=0.1,
-            nhead=cfg.nhead,
-            num_encoder_layers=cfg.num_encoder_layers,
-            num_decoder_layers=cfg.num_decoder_layers,
+            nhead=cfg.mlm.nhead,
+            num_encoder_layers=cfg.mlm.num_encoder_layers,
+            num_decoder_layers=cfg.mlm.num_decoder_layers,
             dim_feedforward=cfg.dim_feedforward,
             activation=cfg.activation,
         )
@@ -70,7 +70,7 @@ class RnaTransformer(Model):
 
     @staticmethod
     def prob_mask_like(src: torch.Tensor, prob: float) -> torch.Tensor:
-        return RnaTransformer.prob_mask_subset(torch.ones_like(src, dtype=torch.bool), prob)
+        return MaskedLanguageModel.prob_mask_subset(torch.ones_like(src, dtype=torch.bool), prob)
 
     def randomize_mask(self, primary: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Tokens to not randomize.
@@ -80,11 +80,11 @@ class RnaTransformer(Model):
         mask = ~self.mask_for_values(primary, ignored_tokens)
 
         # Select subset with given probability to mask out.
-        mask = self.prob_mask_subset(mask, self.cfg.mask_prop)
+        mask = self.prob_mask_subset(mask, self.cfg.mlm.mask_prop)
 
         # TODO: Add purposely incorrect ones.
         # Select some of the masked tokens to be passed through as correct.
-        passthrough_prop = self.cfg.mask_correct_prop + self.cfg.mask_incorrect_prop
+        passthrough_prop = self.cfg.mlm.mask_correct_prop + self.cfg.mlm.mask_incorrect_prop
         passthrough_mask = self.prob_mask_subset(mask, passthrough_prop)
 
         # Tokens to be actually masked out
@@ -92,7 +92,7 @@ class RnaTransformer(Model):
 
         primary = primary.masked_fill(blocked_mask, MASK_IDX)
 
-        if self.cfg.mask_incorrect_prop > 0:
+        if self.cfg.mlm.mask_incorrect_prop > 0:
             # Select some of the masked tokens to be passed through as incorrect.
             random_tokens = torch.randint(
                 0,
@@ -103,7 +103,9 @@ class RnaTransformer(Model):
             # Remove the ignored tokens. We may not passthrough enough incorrect tokens
             # but oh well.
             random_ignored = self.mask_for_values(random_tokens, ignored_tokens)
-            incorrect_mask = self.prob_mask_subset(passthrough_mask, self.cfg.mask_incorrect_prop)
+            incorrect_mask = self.prob_mask_subset(
+                passthrough_mask, self.cfg.mlm.mask_incorrect_prop
+            )
             incorrect_mask &= ~random_ignored
             primary = torch.where(incorrect_mask, random_tokens, primary)
 
@@ -118,11 +120,12 @@ class RnaTransformer(Model):
         """
         Args:
             db: db structure, shape (batch_size, seq_len, d_db)
-            primary_in: in primary structure, shape (batch_size, seq_len, d_primary)
-            primary_out: expected primary structure, shape (batch_size, seq_len, d_primary)
+            primary: in primary structure, shape (batch_size, seq_len, d_primary)
+            randomize_mask: Whether to make a random mask (used during training).
 
         Returns:
             output tensor, shape (batch_size, seq_len, d_out_tok)
+            mask tensor (if randomly generated), shape (batch_size, seq_len, d_primary)
         """
 
         # If not randomizing the mask ourselves, input should come with masked values already.
