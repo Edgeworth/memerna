@@ -32,7 +32,7 @@ struct SuboptCmp {
 
 struct BruteResult {
   // Suboptimal structures:
-  // TODO: use splayset here?
+  // TODO(2): use splayset here?
   std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
 
   // Partition function:

@@ -4,7 +4,7 @@ from rnapy.design.harness.model import Model
 from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.tensor import PAD_IDX
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class SimpleFeedForward(Model):

@@ -53,7 +53,7 @@ class TrainConfig:
     optimizer: str = "sgd"
     """Which optimizer to use"""
 
-    # TODO: Try autocast.
+    # TODO(1): Try autocast.
 
     clip_grad_norm: float | None = None
     """Clip gradient L2 norm to this value if set"""

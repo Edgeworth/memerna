@@ -73,7 +73,7 @@ class BoltzEnergyModel {
     return coax;
   }
 
-  // TODO: Implement versions of Bulge, InternalLoop, TwoLoop, Hairpin with boltzmann baked in.
+  // TODO(2): Implement versions of Bulge, InternalLoop, TwoLoop, Hairpin with boltzmann baked in.
   BoltzEnergy Hairpin(
       const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const {
     return Boltz(em().Hairpin(r, st, en, s));

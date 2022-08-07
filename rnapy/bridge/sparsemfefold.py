@@ -13,7 +13,7 @@ from rnapy.util.command import CmdResult
 @dataclass
 class SparseMfeFold(RnaPackage):
     def check_energy_cfg(self, cfg: EnergyCfg) -> None:
-        if cfg.lonely_pairs:  # TODO: Check this.
+        if cfg.lonely_pairs:  # TODO(3): Check this.
             raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")

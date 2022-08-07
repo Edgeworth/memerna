@@ -80,7 +80,7 @@ class RNAstructure(RnaPackage):
                 fout.name,
             )
             output = fout.read()
-            # TODO does not extract energy yet
+            # TODO(3): does not extract energy yet
             subopts = RnaParser.multi_from_ct_file(output)
         return subopts, res
 

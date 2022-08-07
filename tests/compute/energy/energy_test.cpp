@@ -187,7 +187,7 @@ TEST_F(EnergyTest, T04Tests) {
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(179, GetEnergy("UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
 
-  // Special stacking - this is not implemented. TODO: Implement this?
+  // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(37, GetEnergy("GGUCAAAGGUC", "((((...))))"));
   EXPECT_EQ(-45, GetEnergy("GGGGAAACCCC", "((((...))))"));
   EXPECT_EQ(72, GetEnergy("UGACAAAGGCGA", "(..(...)...)"));

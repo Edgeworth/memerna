@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+from typing import Type
+from rnapy.design.harness.model import Model
 from rnapy.design.models.mlm.config import MaskedLanguageModelConfig
+from rnapy.design.models.mlm.mlm import MaskedLanguageModel
 
 from rnapy.design.rna.tensor import ChunkedRnaTensor
 from rnapy.design.rna.tensor import RnaTensor
@@ -31,3 +34,5 @@ class RnaPipelineConfig:
     tensor: RnaTensor = ChunkedRnaTensor(1)
 
     mlm: MaskedLanguageModelConfig = MaskedLanguageModelConfig()
+
+    model_class: Type[Model] = MaskedLanguageModel

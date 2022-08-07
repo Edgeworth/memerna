@@ -82,7 +82,7 @@ class MaskedLanguageModel(Model):
         # Select subset with given probability to mask out.
         mask = self.prob_mask_subset(mask, self.cfg.mlm.mask_prop)
 
-        # TODO: Add purposely incorrect ones.
+        # TODO(1): Add purposely incorrect ones.
         # Select some of the masked tokens to be passed through as correct.
         passthrough_prop = self.cfg.mlm.mask_correct_prop + self.cfg.mlm.mask_incorrect_prop
         passthrough_mask = self.prob_mask_subset(mask, passthrough_prop)

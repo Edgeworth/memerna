@@ -14,7 +14,7 @@
 #include "util/argparse.h"
 #include "util/error.h"
 
-// TODO: can replace this with modelcfg ctd stuff
+// TODO(2): can replace this with modelcfg ctd stuff
 inline const auto OPT_CTD_OUTPUT =
     mrna::Opt(mrna::Opt::FLAG).LongName("ctd-output").Help("if we should output CTD data");
 
