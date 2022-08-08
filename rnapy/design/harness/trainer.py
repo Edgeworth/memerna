@@ -1,12 +1,12 @@
 import logging
 from pathlib import Path
 
-from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.device_model import DeviceModel
 from rnapy.design.harness.model import Model
 from rnapy.design.harness.optimizer import Optimizer
 from rnapy.design.harness.reporter import Metrics
 from rnapy.design.harness.reporter import Reporter
+from rnapy.design.harness.train_cfg import TrainCfg
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
@@ -18,7 +18,7 @@ class Trainer:
 
     optimizer: Optimizer
     reporter: Reporter
-    cfg: TrainConfig
+    cfg: TrainCfg
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class Trainer:
         model: Model,
         train_data: Dataset,
         valid_data: Dataset,
-        cfg: TrainConfig,
+        cfg: TrainCfg,
         checkpoint_path: Path | None = None,
     ) -> None:
         """

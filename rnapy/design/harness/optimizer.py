@@ -1,7 +1,7 @@
 import logging
 
-from rnapy.design.harness.config import TrainConfig
 from rnapy.design.harness.device_model import DeviceModel
+from rnapy.design.harness.train_cfg import TrainCfg
 import torch
 from torch import nn
 
@@ -13,9 +13,9 @@ class Optimizer:
     optimizer: torch.optim.Optimizer
     scheduler: torch.optim.lr_scheduler.ReduceLROnPlateau | None = None
     loss_fn: nn.CrossEntropyLoss
-    cfg: TrainConfig
+    cfg: TrainCfg
 
-    def __init__(self, cfg: TrainConfig, dm: DeviceModel) -> None:
+    def __init__(self, cfg: TrainCfg, dm: DeviceModel) -> None:
         self.dm = dm
         self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=0.001)
 

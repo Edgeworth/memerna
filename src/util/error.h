@@ -33,8 +33,10 @@
   } while (0)
 #endif
 
-#define error(...) verify(false, __VA_ARGS__)
+#define error(...)            \
+  verify(false, __VA_ARGS__); \
+  __builtin_unreachable()
 
-#define bug() verify(false, "bug")
+#define bug() error("bug")
 
 #endif  // UTIL_ERROR_H_

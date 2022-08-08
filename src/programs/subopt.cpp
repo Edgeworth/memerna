@@ -4,9 +4,9 @@
 #include <cstdio>
 #include <string>
 
-#include "compute/subopt/config.h"
-#include "ctx/config.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
+#include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"

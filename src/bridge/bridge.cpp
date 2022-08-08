@@ -2,7 +2,7 @@
 #include "bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "ctx/config.h"
+#include "ctx/ctx_cfg.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE

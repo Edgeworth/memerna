@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 @dataclass(eq=True, kw_only=True)
-class TrainConfig:
+class TrainCfg:
     """Encapsulates all configuration for running training for a model."""
 
     model_name: str

@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.config import CtdCfg
-from rnapy.model.config import EnergyCfg
-from rnapy.model.config import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult

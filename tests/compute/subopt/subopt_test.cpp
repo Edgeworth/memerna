@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "common_test.h"
-#include "compute/subopt/config.h"
-#include "ctx/config.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
+#include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 

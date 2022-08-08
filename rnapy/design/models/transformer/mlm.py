@@ -4,7 +4,7 @@ from typing import Any
 
 from rnapy.design.harness.model import Model
 from rnapy.design.models.parts.transformer.transformer_model import TransformerModel
-from rnapy.design.rna.config import RnaPipelineConfig
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 from rnapy.design.rna.tensor import MASK_IDX
 from rnapy.design.rna.tensor import PAD_IDX
 import torch
@@ -13,9 +13,9 @@ import torch.nn.functional as F
 
 class MLMTransformer(Model):
     model: TransformerModel
-    cfg: RnaPipelineConfig
+    cfg: RnaPipelineCfg
 
-    def __init__(self, *, cfg: RnaPipelineConfig):
+    def __init__(self, *, cfg: RnaPipelineCfg):
         super().__init__()
         self.cfg = cfg
 

@@ -1,7 +1,7 @@
 import logging
 import time
 
-from rnapy.design.harness.config import TrainConfig
+from rnapy.design.harness.train_cfg import TrainCfg
 from rnapy.design.harness.trainer_protocol import TrainerProtocol
 import torch
 from torch import nn
@@ -46,7 +46,7 @@ class Reporter:
 
     writer: SummaryWriter
     profiler: torch.profiler.profile | None = None
-    cfg: TrainConfig
+    cfg: TrainCfg
 
     # Tracking data:
     print_metrics: Metrics
@@ -63,7 +63,7 @@ class Reporter:
     sample_count: int = 0
     sample_count_since_epoch: int = 0
 
-    def __init__(self, cfg: TrainConfig) -> None:
+    def __init__(self, cfg: TrainCfg) -> None:
         writer_path = cfg.output_path / "tensorboard" / cfg.name
         self.writer = SummaryWriter(writer_path)
 

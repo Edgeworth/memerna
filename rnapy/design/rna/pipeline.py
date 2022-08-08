@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import click
-from rnapy.design.harness.config import TrainConfig
+from rnapy.design.harness.train_cfg import TrainCfg
 from rnapy.design.harness.trainer import Trainer
-from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.dataset import RnaDataset
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 from rnapy.design.rna.tensor import BOS_IDX
 import torch
 from torch.utils.data import Dataset
@@ -16,12 +16,12 @@ class RnaPipeline:
     valid_data: Dataset
     test_data: Dataset
     trainer: Trainer
-    cfg: RnaPipelineConfig
+    cfg: RnaPipelineCfg
 
     def __init__(
         self,
         *,
-        cfg: RnaPipelineConfig,
+        cfg: RnaPipelineCfg,
         output_path: Path,
         checkpoint_path: Path | None,
     ) -> None:
@@ -35,7 +35,7 @@ class RnaPipeline:
 
         model = cfg.model_class(cfg=cfg)
         # TODO(0): Defaults for train config per model kind? e.g. checkpoint_interval
-        train_cfg = TrainConfig(
+        train_cfg = TrainCfg(
             model_name="RnaPipeline",
             output_path=output_path,
             profile=False,
@@ -43,9 +43,9 @@ class RnaPipeline:
             checkpoint_valid_loss=True,
             optimizer="adam",
             batch_size=cfg.batch_size,
-            train_samples=100000,  # TODO(0): Per model defaults, was 10k
-            fast_valid_samples=512,
-            accurate_valid_samples=4096,
+            train_samples=cfg.batch_size * 128,  # 128 batches per epoch.
+            fast_valid_samples=cfg.batch_size * 4,  # 4 batches
+            accurate_valid_samples=cfg.batch_size * 32,  # 32 batches
             clip_grad_norm=1.0,
         )
         self.trainer = Trainer(
@@ -56,15 +56,15 @@ class RnaPipeline:
             checkpoint_path=checkpoint_path,
         )
 
-    def predict_oneshot(self, db: str) -> str:
+    def predict_db_only(self, db: str) -> str:
+        """Predicts a primary from a dot-bracket sequence only."""
         db_tensor = self.cfg.tensor.from_db(db)
         dm = self.trainer.optimizer.dm
-        # TODO(0): SimpleFeedForward is ignoring the primary at the moment. MLMFeedForward?
-        out = dm([db_tensor.unsqueeze(0), db_tensor.unsqueeze(0)])
+        out = dm([db_tensor.unsqueeze(0), torch.empty()])
         pred = dm.prediction(out=out[0]).to("cpu").squeeze(0)
         return self.cfg.tensor.to_primary(pred)
 
-    def predict(self, db: str) -> str:
+    def predict_mlm(self, db: str) -> str:
         primary = [BOS_IDX]
         db_tensor = self.cfg.tensor.from_db(db)
         print(db_tensor)

@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 from typing import Any
-from typing import Iterator
 
 from rnapy.design.harness.model import Model
 import torch

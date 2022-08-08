@@ -2,7 +2,7 @@
 #include <utility>
 
 #include "bridge/bridge.h"
-#include "fuzz/config.h"
+#include "fuzz/fuzz_cfg.h"
 #include "programs/fuzz/fuzz_harness.h"
 #include "util/argparse.h"
 

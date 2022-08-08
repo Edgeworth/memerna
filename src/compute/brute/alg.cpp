@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "compute/brute/brute.h"
-#include "compute/subopt/config.h"
+#include "compute/subopt/subopt_cfg.h"
 
 namespace mrna::brute {
 

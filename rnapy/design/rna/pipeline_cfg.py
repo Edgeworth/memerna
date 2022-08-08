@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
 from rnapy.design.harness.model import Model
-from rnapy.design.models.transformer.config import MLMTransformerConfig
+from rnapy.design.models.transformer.transformer_cfg import MLMTransformerCfg
 from rnapy.design.rna.tensor import ChunkedRnaTensor
 from rnapy.design.rna.tensor import RnaTensor
 
 
 @dataclass
-class RnaPipelineConfig:
+class RnaPipelineCfg:
     train_num_struc: int = 10000
     """Number of structures to generate training data from"""
 
@@ -31,6 +31,6 @@ class RnaPipelineConfig:
 
     tensor: RnaTensor = ChunkedRnaTensor(1)
 
-    mlm: MLMTransformerConfig = MLMTransformerConfig()
+    mlm: MLMTransformerCfg = MLMTransformerCfg()
 
     model_class: type[Model] = Model  # Needs to be set.

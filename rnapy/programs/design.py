@@ -4,8 +4,8 @@ from pathlib import Path
 import cloup
 from rnapy.design.models.ff.simple import SimpleFF
 from rnapy.design.models.transformer.mlm import MLMTransformer
-from rnapy.design.rna.config import RnaPipelineConfig
 from rnapy.design.rna.pipeline import RnaPipeline
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 
 
 @cloup.command()
@@ -39,7 +39,7 @@ from rnapy.design.rna.pipeline import RnaPipeline
     type=cloup.Choice(["simple", "transformer"]),
 )
 def design(output_path: Path, checkpoint_path: Path | None, model: str) -> None:
-    cfg = RnaPipelineConfig(activation="gelu")
+    cfg = RnaPipelineCfg(activation="gelu")
 
     match model:
         case "simple":
@@ -54,7 +54,7 @@ def design(output_path: Path, checkpoint_path: Path | None, model: str) -> None:
         # print(pipeline.predict_oneshot("....((..((....))....))..."))
 
         # e.g. part of rd0260: GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUC
-        print(pl.predict_oneshot("(((((((((((.((...((((....))))..)).)))..((((..((((....))))...))"))
+        print(pl.predict_db_only("(((((((((((.((...((((....))))..)).)))..((((..((((....))))...))"))
 
     else:
         pl.train(5000)

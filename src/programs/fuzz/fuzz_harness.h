@@ -5,7 +5,7 @@
 #include <random>
 
 #include "compute/energy/model.h"
-#include "fuzz/config.h"
+#include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"
 #include "util/argparse.h"

@@ -8,10 +8,10 @@
 
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
-#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
-#include "fuzz/config.h"
+#include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"
 
 #ifdef USE_RNASTRUCTURE
