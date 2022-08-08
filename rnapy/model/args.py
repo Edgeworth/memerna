@@ -2,9 +2,9 @@
 from typing import Any
 
 import cloup
-from rnapy.model.config import CtdCfg
-from rnapy.model.config import EnergyCfg
-from rnapy.model.config import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import SuboptCfg
 
 energy_options = cloup.option_group(
     "Energy options",

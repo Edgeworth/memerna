@@ -1,7 +1,7 @@
 // Copyright 2021 Eliot Courtney.
-#ifndef CTX_CONFIG_H_
-#define CTX_CONFIG_H_
 
+#ifndef CTX_CTX_CFG_H_
+#define CTX_CTX_CFG_H_
 #include <iosfwd>
 #include <string>
 
@@ -50,5 +50,4 @@ std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o);
 std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o);
 
 }  // namespace mrna::ctx
-
-#endif  // CTX_CONFIG_H_
+#endif  // CTX_CTX_CFG_H_

@@ -77,8 +77,7 @@ int Ctx::Suboptimal(
     return subopt::Suboptimal0(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
   case CtxCfg::SuboptAlg::ONE:
     return subopt::Suboptimal1(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
-  default:
-    verify(false, "bug - no such suboptimal algorithm %d", static_cast<int>(cfg_.subopt_alg));
+  default: error("no such suboptimal algorithm %d", static_cast<int>(cfg_.subopt_alg));
   }
 }
 

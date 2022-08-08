@@ -6,8 +6,8 @@
 
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
-#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "model/primary.h"
 
 namespace mrna::brute {

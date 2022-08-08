@@ -1,4 +1,4 @@
-from rnapy.design.rna.config import RnaPipelineConfig
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 from rnapy.model.random import RandomRna
 import torch
 from torch.utils.data import Dataset
@@ -11,7 +11,7 @@ class RnaDataset(Dataset):
     primary: list[torch.Tensor]
     db: list[torch.Tensor]
 
-    def __init__(self, *, num_struc: int, cfg: RnaPipelineConfig) -> None:
+    def __init__(self, *, num_struc: int, cfg: RnaPipelineCfg) -> None:
         self.primary = []
         self.db = []
         for _ in range(num_struc):

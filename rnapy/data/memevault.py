@@ -1,8 +1,8 @@
 # Copyright 2016 Eliot Courtney.
+from collections.abc import Generator
 from pathlib import Path
 import random
 import sqlite3
-from typing import Generator
 
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "compute/boltz_dp.h"
-#include "compute/brute/config.h"
+#include "compute/brute/brute_cfg.h"
 #include "compute/energy/boltzmann_model.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"

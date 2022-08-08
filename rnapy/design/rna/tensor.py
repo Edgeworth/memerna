@@ -1,7 +1,7 @@
+from collections.abc import Generator
+from collections.abc import Sequence
 import itertools
 from typing import Any
-from typing import Generator
-from typing import Sequence
 
 from bidict import bidict
 import torch

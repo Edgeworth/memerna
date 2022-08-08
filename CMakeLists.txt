@@ -112,12 +112,12 @@ set(MEMERNA_SOURCE
   src/compute/boltz_dp.h
   src/compute/brute/brute.cpp src/compute/brute/brute.h
   src/compute/brute/alg.cpp src/compute/brute/alg.h
-  src/compute/brute/config.cpp src/compute/brute/config.h
+  src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
   src/compute/dp.h
   src/compute/energy/boltzmann_model.cpp src/compute/energy/boltzmann_model.h
   src/compute/energy/boltzmann_precomp.cpp src/compute/energy/boltzmann_precomp.h
   src/compute/energy/branch.cpp src/compute/energy/branch.h
-  src/compute/energy/config.cpp src/compute/energy/config.h
+  src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
   src/compute/energy/model.cpp src/compute/energy/model.h
   src/compute/energy/precomp.cpp src/compute/energy/precomp.h
@@ -131,14 +131,14 @@ set(MEMERNA_SOURCE
   src/compute/partition/partition.cpp src/compute/partition/partition.h
   src/compute/partition/partition0.cpp
   src/compute/partition/partition1.cpp
-  src/compute/subopt/config.cpp src/compute/subopt/config.h
+  src/compute/subopt/subopt_cfg.cpp src/compute/subopt/subopt_cfg.h
   src/compute/subopt/subopt.h
   src/compute/subopt/subopt0.cpp src/compute/subopt/subopt0.h
   src/compute/subopt/subopt1.cpp src/compute/subopt/subopt1.h
   src/compute/traceback/traceback.cpp src/compute/traceback/traceback.h
-  src/ctx/config.cpp src/ctx/config.h
+  src/ctx/ctx_cfg.cpp src/ctx/ctx_cfg.h
   src/ctx/ctx.cpp src/ctx/ctx.h
-  src/fuzz/config.cpp src/fuzz/config.h
+  src/fuzz/fuzz_cfg.cpp src/fuzz/fuzz_cfg.h
   src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
   src/model/base.cpp src/model/base.h
   src/model/ctd.cpp src/model/ctd.h

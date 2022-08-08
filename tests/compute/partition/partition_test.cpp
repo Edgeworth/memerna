@@ -4,8 +4,8 @@
 #include <string>
 
 #include "common_test.h"
-#include "ctx/config.h"
 #include "ctx/ctx.h"
+#include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
 
 namespace mrna::part {

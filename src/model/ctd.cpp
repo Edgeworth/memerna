@@ -142,8 +142,7 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
       }
       stk.pop();
     }
-    if (allowed_characters.find(c) == std::string::npos)
-      verify(false, "invalid input '%c'", ctd_str[i]);
+    if (allowed_characters.find(c) == std::string::npos) error("invalid input '%c'", ctd_str[i]);
   }
   // Add in the terminal mismatches.
   for (int i = 0; i < N; ++i) {

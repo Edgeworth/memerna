@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/brute/config.h"
+#include "compute/brute/brute_cfg.h"
 
 #include "options.h"
 

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from pathlib import Path
 
-from rnapy.model.config import EnergyCfg
-from rnapy.model.config import SuboptCfg
+from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdLimits
 from rnapy.util.command import CmdResult

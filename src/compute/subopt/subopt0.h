@@ -7,8 +7,8 @@
 
 #include "compute/dp.h"
 #include "compute/energy/model.h"
-#include "compute/subopt/config.h"
 #include "compute/subopt/subopt.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "model/ctd.h"
 #include "model/model.h"

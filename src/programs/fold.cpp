@@ -4,8 +4,8 @@
 
 #include "compute/mfe/mfe.h"
 #include "compute/traceback/traceback.h"
-#include "ctx/config.h"
 #include "ctx/ctx.h"
+#include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"

@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Any
 
 import cloup
-from rnapy.build.config import BuildCfg
-from rnapy.build.config import BuildKind
-from rnapy.build.config import Compiler
-from rnapy.build.config import Sanitizer
+from rnapy.build.build_cfg import BuildCfg
+from rnapy.build.build_cfg import BuildKind
+from rnapy.build.build_cfg import Compiler
+from rnapy.build.build_cfg import Sanitizer
 
 build_cfg_options = cloup.option_group(
     "Build config options",

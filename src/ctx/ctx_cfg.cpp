@@ -1,8 +1,8 @@
 // Copyright 2021 Eliot Courtney.
-#include "ctx/config.h"
+#include "ctx/ctx_cfg.h"
 
-#include "compute/energy/config.h"
-#include "compute/subopt/config.h"
+#include "compute/energy/energy_cfg.h"
+#include "compute/subopt/subopt_cfg.h"
 #include "util/error.h"
 
 namespace mrna::ctx {

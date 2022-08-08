@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "ctx/config.h"
 #include "ctx/ctx.h"
+#include "ctx/ctx_cfg.h"
 #include "model/primary.h"
 #include "programs/print.h"
 #include "util/argparse.h"

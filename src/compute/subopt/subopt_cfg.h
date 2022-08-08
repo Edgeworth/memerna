@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_CONFIG_H_
-#define COMPUTE_SUBOPT_CONFIG_H_
+#ifndef COMPUTE_SUBOPT_SUBOPT_CFG_H_
+#define COMPUTE_SUBOPT_SUBOPT_CFG_H_
 
 #include <limits>
 #include <memory>
@@ -33,4 +33,4 @@ struct SuboptCfg {
 
 }  // namespace mrna::subopt
 
-#endif  // COMPUTE_SUBOPT_CONFIG_H_
+#endif  // COMPUTE_SUBOPT_SUBOPT_CFG_H_

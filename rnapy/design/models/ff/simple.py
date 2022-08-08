@@ -1,7 +1,7 @@
 from typing import Any
 
 from rnapy.design.harness.model import Model
-from rnapy.design.rna.config import RnaPipelineConfig
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -11,9 +11,9 @@ class SimpleFF(Model):
     """Simple feed forward network, e.g. to do a basic check the pipeline is working."""
 
     model: nn.Module
-    cfg: RnaPipelineConfig
+    cfg: RnaPipelineCfg
 
-    def __init__(self, *, cfg: RnaPipelineConfig):
+    def __init__(self, *, cfg: RnaPipelineCfg):
         super().__init__()
         self.cfg = cfg
 

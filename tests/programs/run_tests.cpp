@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "common_test.h"
-#include "compute/energy/config.h"
+#include "compute/energy/energy_cfg.h"
 #include "compute/energy/model.h"
 #include "gtest/gtest.h"
 #include "util/argparse.h"

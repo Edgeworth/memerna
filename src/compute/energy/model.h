@@ -10,8 +10,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/config.h"
 #include "compute/energy/energy.h"
+#include "compute/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/model.h"

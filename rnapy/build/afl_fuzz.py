@@ -9,8 +9,8 @@ from pathlib import Path
 import shutil
 
 import click
-from rnapy.build.config import BuildCfg
-from rnapy.build.config import Sanitizer
+from rnapy.build.build_cfg import BuildCfg
+from rnapy.build.build_cfg import Sanitizer
 
 AFL_MEMORY_LIMIT_MB = "2000"
 AFL_TIME_LIMIT_MS = "2000"

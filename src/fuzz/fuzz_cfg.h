@@ -1,6 +1,6 @@
 // Copyright 2021 Eliot Courtney.
-#ifndef FUZZ_CONFIG_H_
-#define FUZZ_CONFIG_H_
+#ifndef FUZZ_FUZZ_CFG_H_
+#define FUZZ_FUZZ_CFG_H_
 
 #include <string>
 
@@ -62,4 +62,4 @@ struct FuzzCfg {
 
 }  // namespace mrna::fuzz
 
-#endif  // FUZZ_CONFIG_H_
+#endif  // FUZZ_FUZZ_CFG_H_

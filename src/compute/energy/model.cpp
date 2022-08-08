@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "compute/energy/branch.h"
-#include "compute/energy/config.h"
+#include "compute/energy/energy_cfg.h"
 #include "compute/energy/structure.h"
 #include "model/base.h"
 #include "model/ctd.h"
