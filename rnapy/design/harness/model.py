@@ -1,13 +1,13 @@
+from typing import Any
+
 import torch
 from torch import nn
 import torch.nn.functional as F
 
-from rnapy.design.rna.config import RnaPipelineConfig
-
 
 class Model(nn.Module):
-    def __init__(self, cfg: RnaPipelineConfig):
-        raise NotImplementedError()
+    def __init__(self, **kwargs: Any) -> None:
+        pass
 
     def model_prediction(self, out: torch.Tensor) -> torch.Tensor:
         """Make a prediction from the output of the model. e.g. argmax of the output

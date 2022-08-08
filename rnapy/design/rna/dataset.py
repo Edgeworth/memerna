@@ -15,8 +15,7 @@ class RnaDataset(Dataset):
         self.primary = []
         self.db = []
         for _ in range(num_struc):
-            # TODO(0): Undo
-            primary, db = self._overfitting_test_primary_db_pair(cfg.struc_len)
+            primary, db = self._random_primary_db_pair(cfg.struc_len)
 
             primary_tensor = cfg.tensor.from_primary(primary)
             db_tensor = cfg.tensor.from_db(db)
@@ -30,6 +29,7 @@ class RnaDataset(Dataset):
         return primary, db
 
     def _overfitting_test_primary_db_pair(self, length: int) -> tuple[str, str]:
+        """Map where each base always maps to a specific DB value."""
         primary = RandomRna.primary(length)
         db, _ = RNA.fold(primary)
 

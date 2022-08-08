@@ -38,7 +38,7 @@ class TrainConfig:
     print_interval: int = 1024
     """After how many samples to print summary data to console"""
 
-    checkpoint_interval: int = 200000
+    checkpoint_interval: int = 2000000  # TODO(0): Per model defaults, was 200k
     """After how many samples to write out a checkpoint"""
 
     checkpoint_valid_loss: bool = False

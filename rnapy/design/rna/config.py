@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from typing import Type
-from rnapy.design.harness.model import Model
-from rnapy.design.models.mlm.config import MaskedLanguageModelConfig
-from rnapy.design.models.mlm.mlm import MaskedLanguageModel
 
+from rnapy.design.harness.model import Model
+from rnapy.design.models.transformer.config import MLMTransformerConfig
 from rnapy.design.rna.tensor import ChunkedRnaTensor
 from rnapy.design.rna.tensor import RnaTensor
 
@@ -19,8 +17,8 @@ class RnaPipelineConfig:
     struc_len: int = 128
     """Length of the primary structures used to generate training data"""
 
-    max_seq_len: int = 64
-    """Maximum length of the sequences used to train the transformer"""
+    max_seq_len: int = 32
+    """Maximum length of the sequences used to train the model"""
 
     batch_size: int = 128
     """Number of sequences to train on at a time"""
@@ -33,6 +31,6 @@ class RnaPipelineConfig:
 
     tensor: RnaTensor = ChunkedRnaTensor(1)
 
-    mlm: MaskedLanguageModelConfig = MaskedLanguageModelConfig()
+    mlm: MLMTransformerConfig = MLMTransformerConfig()
 
-    model_class: Type[Model] = MaskedLanguageModel
+    model_class: type[Model] = Model  # Needs to be set.
