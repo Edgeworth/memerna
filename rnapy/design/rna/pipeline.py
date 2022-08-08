@@ -28,20 +28,22 @@ class RnaPipeline:
         self.output_path = output_path
         self.cfg = cfg
 
+        # TODO(0): Inference without all this training infrastructure.
         self.train_data = RnaDataset(num_struc=cfg.train_num_struc, cfg=cfg)
         self.valid_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
         self.test_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
 
         model = cfg.model_class(cfg=cfg)
+        # TODO(0): Defaults for train config per model kind? e.g. checkpoint_interval
         train_cfg = TrainConfig(
-            model_name="RnaTransformer",
+            model_name="RnaPipeline",
             output_path=output_path,
             profile=False,
             save_graph=False,
             checkpoint_valid_loss=True,
             optimizer="adam",
             batch_size=cfg.batch_size,
-            train_samples=10000,
+            train_samples=100000,  # TODO(0): Per model defaults, was 10k
             fast_valid_samples=512,
             accurate_valid_samples=4096,
             clip_grad_norm=1.0,
@@ -54,7 +56,15 @@ class RnaPipeline:
             checkpoint_path=checkpoint_path,
         )
 
-    def predict(self, db: str) -> None:
+    def predict_oneshot(self, db: str) -> str:
+        db_tensor = self.cfg.tensor.from_db(db)
+        dm = self.trainer.optimizer.dm
+        # TODO(0): SimpleFeedForward is ignoring the primary at the moment. MLMFeedForward?
+        out = dm([db_tensor.unsqueeze(0), db_tensor.unsqueeze(0)])
+        pred = dm.prediction(out=out[0]).to("cpu").squeeze(0)
+        return self.cfg.tensor.to_primary(pred)
+
+    def predict(self, db: str) -> str:
         primary = [BOS_IDX]
         db_tensor = self.cfg.tensor.from_db(db)
         print(db_tensor)
@@ -65,7 +75,7 @@ class RnaPipeline:
             pred = dm.prediction(out=out).to("cpu").squeeze(0)
             print(primary, pred[-1].item())
             primary.append(int(pred[-1].item()))
-        print(self.cfg.tensor.to_primary(primary))
+        return self.cfg.tensor.to_primary(primary)
 
     def train(self, epochs: int) -> None:
         click.echo(f"Running transformer at {self.output_path}")

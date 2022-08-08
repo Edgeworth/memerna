@@ -11,7 +11,7 @@ import torch
 import torch.nn.functional as F
 
 
-class MaskedLanguageModel(Model):
+class MLMTransformer(Model):
     model: TransformerModel
     cfg: RnaPipelineConfig
 
@@ -70,7 +70,7 @@ class MaskedLanguageModel(Model):
 
     @staticmethod
     def prob_mask_like(src: torch.Tensor, prob: float) -> torch.Tensor:
-        return MaskedLanguageModel.prob_mask_subset(torch.ones_like(src, dtype=torch.bool), prob)
+        return MLMTransformer.prob_mask_subset(torch.ones_like(src, dtype=torch.bool), prob)
 
     def randomize_mask(self, primary: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Tokens to not randomize.
@@ -104,7 +104,8 @@ class MaskedLanguageModel(Model):
             # but oh well.
             random_ignored = self.mask_for_values(random_tokens, ignored_tokens)
             incorrect_mask = self.prob_mask_subset(
-                passthrough_mask, self.cfg.mlm.mask_incorrect_prop
+                passthrough_mask,
+                self.cfg.mlm.mask_incorrect_prop,
             )
             incorrect_mask &= ~random_ignored
             primary = torch.where(incorrect_mask, random_tokens, primary)

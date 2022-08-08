@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class MaskedLanguageModelConfig:
+class MLMTransformerConfig:
     mask_prop: float = 0.15
     """Proportion of masked bases to generate in the training data"""
 

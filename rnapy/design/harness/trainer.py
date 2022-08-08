@@ -35,7 +35,7 @@ class Trainer:
             train_data: Dataset to train on. Tensors should be of shape (batch_size, ...).
             valid_data: Dataset to validate on. Tensors should be of shape (batch_size, ...).
             cfg: Training configuration.
-            checkpoint_path: Path to save checkpoint to.
+            checkpoint_path: Path to load checkpoint from.
         """
         # Create data loaders.
         self.train_loader = DataLoader(
