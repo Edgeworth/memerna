@@ -5,3 +5,4 @@ __pycache__
 *.pyc
 memevault.db
 compile_commands.json
+.env

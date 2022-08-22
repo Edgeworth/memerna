@@ -10,7 +10,8 @@ test:
   # Uses :::+ to match mpfr-rnastructure and no-mpfr-no-rnastructure
   # Necessary to compile with multiple compilers, as some issues have only shown
   # themselves on a specfic compiler.
-  parallel --progress --halt soon,fail=1 --jobs 8 python -m rnapy.run build --test {} ">" /dev/null ::: \
+  parallel --progress --halt soon,fail=1 --jobs 8 poetry run python -m rnapy.run \
+    build --test {} ">" /dev/null ::: \
     --kind=debug --kind=relwithdebinfo ::: --sanitizer=asan \
     --sanitizer=tsan --sanitizer=ubsan ::: \
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
