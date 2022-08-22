@@ -15,7 +15,7 @@ from rnapy.util.command import CmdResult
 
 @dataclass
 class ViennaRna(RnaPackage):
-    def energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
+    def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
         if not cfg.lonely_pairs:
             args.append("--no-lonely-pairs")
@@ -31,7 +31,7 @@ class ViennaRna(RnaPackage):
             args.append("-d3")
         return args
 
-    def subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
+    def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
         if cfg.delta:
             args += ["--deltaEnergy", f"{cfg.delta / 10.0:.1f}"]
@@ -44,7 +44,7 @@ class ViennaRna(RnaPackage):
         return args
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
-        args = self.energy_cfg_args(cfg)
+        args = self._energy_cfg_args(cfg)
         res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         assert match is not None
@@ -52,7 +52,7 @@ class ViennaRna(RnaPackage):
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
-        args = self.energy_cfg_args(cfg)
+        args = self._energy_cfg_args(cfg)
         with tempfile.NamedTemporaryFile("w") as f:
             assert rna.r is not None
             f.write(rna.r)
@@ -72,8 +72,8 @@ class ViennaRna(RnaPackage):
         energy_cfg: EnergyCfg,
         subopt_cfg: SuboptCfg,
     ) -> tuple[list[Rna], CmdResult]:
-        args = self.energy_cfg_args(energy_cfg)
-        args += self.subopt_cfg_args(subopt_cfg)
+        args = self._energy_cfg_args(energy_cfg)
+        args += self._subopt_cfg_args(subopt_cfg)
         res = self._run_cmd("./src/bin/RNAsubopt", *args, inp=rna.r)
         subopts = []
         for i in res.stdout.splitlines()[1:]:

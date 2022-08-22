@@ -12,7 +12,7 @@ from rnapy.util.command import CmdResult
 
 @dataclass
 class SparseMfeFold(RnaPackage):
-    def check_energy_cfg(self, cfg: EnergyCfg) -> None:
+    def _check_energy_cfg(self, cfg: EnergyCfg) -> None:
         if cfg.lonely_pairs:  # TODO(3): Check this.
             raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.NONE:
@@ -22,7 +22,7 @@ class SparseMfeFold(RnaPackage):
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
-        self.check_energy_cfg(cfg)
+        self._check_energy_cfg(cfg)
         res = self._run_cmd("./src/SparseMFEFold", inp=rna.r)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]

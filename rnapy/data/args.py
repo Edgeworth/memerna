@@ -38,15 +38,16 @@ def validate_db(
         return None
     return db_to_secondary(value)
 
-
-data_options = cloup.option_group(
-    "Data options",
-    cloup.option(
+memevault_options = cloup.option(
         "--memevault-path",
         envvar="MEMEVAULT",
         show_envvar=True,
         type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
-    ),
+    )
+
+data_options = cloup.option_group(
+    "Data options",
+    memevault_options,
     RequireAtLeast(1)(
         cloup.option("-mr", "--memevault-rna"),
         cloup.option("-fr", "--file-rna", type=cloup.File("r"), callback=validate_rna_file),

@@ -11,7 +11,7 @@ from rnapy.util.command import CmdResult
 
 @dataclass
 class MemeRna(RnaPackage):
-    def energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
+    def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
         if cfg.lonely_pairs:
             args.append("--lonely-pairs")
@@ -20,7 +20,7 @@ class MemeRna(RnaPackage):
         args += ["--ctd", f"{cfg.ctd}"]
         return args
 
-    def subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
+    def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
         if cfg.delta:
             args += ["--subopt-delta", str(cfg.delta)]
@@ -33,14 +33,14 @@ class MemeRna(RnaPackage):
         return args
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
-        args = self.energy_cfg_args(cfg)
+        args = self._energy_cfg_args(cfg)
         assert rna.r is not None
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
         energy = float(res.stdout.splitlines()[0].strip()) / 10.0
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
-        args = self.energy_cfg_args(cfg)
+        args = self._energy_cfg_args(cfg)
         assert rna.r is not None
         res = self._run_cmd("./fold", *args, rna.r)
         _, db, _ = res.stdout.strip().split("\n")
@@ -55,8 +55,8 @@ class MemeRna(RnaPackage):
         energy_cfg: EnergyCfg,
         subopt_cfg: SuboptCfg,
     ) -> tuple[list[Rna], CmdResult]:
-        args = self.energy_cfg_args(energy_cfg)
-        args += self.subopt_cfg_args(subopt_cfg)
+        args = self._energy_cfg_args(energy_cfg)
+        args += self._subopt_cfg_args(subopt_cfg)
         assert rna.r is not None
         res = self._run_cmd("./subopt", *args, rna.r)
         subopts = []
