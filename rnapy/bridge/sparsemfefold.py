@@ -18,6 +18,9 @@ class SparseMfeFold(RnaPackage):
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
 
+    def name(self) -> str:
+        return "SparseMFEFold"
+
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         raise NotImplementedError
 

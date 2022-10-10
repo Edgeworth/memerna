@@ -2,6 +2,20 @@
 
 In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
+### Environment variables
+
+Optionally, it can be useful to set the following variables, for example in
+a .env file (used by rnapy):
+
+```
+MRNA=...
+MEMEVAULT=${MRNA}/rnapy/data/memevault.db
+MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
+RNASTRUCTURE=${HOME}/...
+SPARSEMFEFOLD=${HOME}/...
+VIENNARNA=${HOME}/...
+```
+
 ### Building
 
 The rest of this document uses $MRNA to locate the memerna directory.

@@ -43,6 +43,9 @@ class ViennaRna(RnaPackage):
             args += ["--sorted"]
         return args
 
+    def name(self) -> str:
+        return "ViennaRNA"
+
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         args = self._energy_cfg_args(cfg)
         res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")

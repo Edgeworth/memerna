@@ -38,12 +38,13 @@ def validate_db(
         return None
     return db_to_secondary(value)
 
+
 memevault_options = cloup.option(
-        "--memevault-path",
-        envvar="MEMEVAULT",
-        show_envvar=True,
-        type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
-    )
+    "--memevault-path",
+    envvar="MEMEVAULT",
+    show_envvar=True,
+    type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
+)
 
 data_options = cloup.option_group(
     "Data options",

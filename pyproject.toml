@@ -7,18 +7,16 @@ readme = "README.md"
 version = "0.1.0"
 
 [tool.poetry.dependencies]
-bidict = "^0.22.0"
-click = "^8.1.3"
-click_log = "^0.4.0"
-cloup = "^1.0.0"
+bidict = "^0.22.0" 
+click = "^8.0.4" 
+click_log = "^0.4.0" 
+cloup = "^1.0.0" 
 protobuf = "3.20.1" # Breaking release, so keep this as 3.20.1 for now.
-python = "~3.10"
-ray = "^1.13.0"
-
-python-dotenv = "^0.20.0"
-torch = {
-  url = "https://download.pytorch.org/whl/cu116/torch-1.12.0%2Bcu116-cp310-cp310-linux_x86_64.whl"
-} # Poetry can't handle extra-index-url, or anything else that would help.
+python = "~3.10" 
+python-dotenv = "^0.20.0" 
+ray = "^1.13.0" 
+# Poetry can't handle extra-index-url, or anything else that would help.
+torch = {url = "https://download.pytorch.org/whl/cu116/torch-1.12.0%2Bcu116-cp310-cp310-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.0"
 
 [tool.poetry.dev-dependencies]

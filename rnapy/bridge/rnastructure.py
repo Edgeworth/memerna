@@ -31,6 +31,9 @@ class RNAstructure(RnaPackage):
                 "RNAstructure does not support subopt with max number of structures",
             )
 
+    def name(self) -> str:
+        return "RNAstructure"
+
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:

@@ -6,12 +6,14 @@ import cloup
 from rnapy.programs.afl_fuzz import afl_fuzz
 from rnapy.programs.afl_fuzz_min import afl_fuzz_min
 from rnapy.programs.analysis.compare_partition import compare_partition
+from rnapy.programs.analysis.mfe_comparison import mfe_comparison
 from rnapy.programs.build import build
-from rnapy.programs.convert_format import convert_format
-from rnapy.programs.crop_image import crop_image
+from rnapy.programs.util.convert_format import convert_format
+from rnapy.programs.util.crop_image import crop_image
 from rnapy.programs.design import design
 from rnapy.programs.harness import harness
-from rnapy.programs.parse_rnastructure_datatables import parse_rnastructure_datatables
+from rnapy.programs.util.parse_rnastructure_datatables import parse_rnastructure_datatables
+from dotenv import load_dotenv
 
 CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,
@@ -21,6 +23,7 @@ CONTEXT_SETTINGS = cloup.Context.settings(
     ),
 )
 
+load_dotenv()
 logger = logging.getLogger()
 click_log.basic_config(logger)
 
@@ -31,7 +34,7 @@ def cli() -> None:
     pass
 
 
-cli.section("Analysis", compare_partition, harness)
+cli.section("Analysis", compare_partition, harness, mfe_comparison)
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section("Conversion", convert_format, crop_image, parse_rnastructure_datatables)
 cli.section("Design", design)

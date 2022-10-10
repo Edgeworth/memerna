@@ -9,6 +9,8 @@ from rnapy.model.rna import Rna
 
 
 class MemeVault:
+    dataset: str
+
     def __init__(self, path: Path, dataset: str):
         self.db = sqlite3.connect(path)
         self.dataset = dataset

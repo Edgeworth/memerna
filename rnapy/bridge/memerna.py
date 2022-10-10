@@ -32,6 +32,9 @@ class MemeRna(RnaPackage):
             args += ["--no-subopt-sorted"]
         return args
 
+    def name(self) -> str:
+        return "memerna"
+
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         args = self._energy_cfg_args(cfg)
         assert rna.r is not None
