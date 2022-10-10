@@ -17,6 +17,9 @@ class RnaPackage:
     limits: CmdLimits = field(default_factory=CmdLimits)
     env: dict[str, str] = field(default_factory=dict)
 
+    def name(self) -> str:
+        raise NotImplementedError
+
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
         pass
 
