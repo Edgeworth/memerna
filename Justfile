@@ -22,4 +22,4 @@ fix:
 
 update:
   pre-commit autoupdate
-  poetry update
+  poetryup --latest
