@@ -22,4 +22,5 @@ fix:
 
 update:
   pre-commit autoupdate
-  poetryup --latest
+  # Ray wants older protobuf and click. Remove when it updates.
+  poetryup --latest --exclude-name protobuf --exclude-name click
