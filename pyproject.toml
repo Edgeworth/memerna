@@ -7,24 +7,24 @@ readme = "README.md"
 version = "0.1.0"
 
 [tool.poetry.dependencies]
-bidict = "^0.22.0" 
-click = "^8.0.4" 
-click_log = "^0.4.0" 
-cloup = "^1.0.0" 
-pandas = "^1.5.0" 
-protobuf = "3.20.1" # Breaking release, so keep this as 3.20.1 for now.
-python = "~3.10" 
-python-dotenv = "^0.20.0" 
-ray = "^1.13.0" 
-# Poetry can't handle extra-index-url, or anything else that would help.
-seaborn = "^0.12.0"
-statsmodels = "^0.13.2"
+bidict = "^0.22.0"
+click = "^8.0.4"
+click_log = "^0.4.0"
+cloup = "^1.0.2"
+pandas = "^1.5.1"
+protobuf = "3.20.1" 
+python = "~3.10"
+python-dotenv = "^0.21.0"
+ray = "^2.0.1"
+seaborn = "^0.12.1"
+statsmodels = "^0.13.5"
 torch = {url = "https://download.pytorch.org/whl/cu117/torch-1.13.0%2Bcu117-cp310-cp310-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
-black = "^22.6.0"
-mypy = "^0.971"
+black = "^22.10.0"
+mypy = "^0.982"
+poetryup = "^0.12.3"
 prospector = "^1.7.7"
 
 [tool.mypy]
