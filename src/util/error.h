@@ -33,9 +33,11 @@
   } while (0)
 #endif
 
-#define error(...)            \
-  verify(false, __VA_ARGS__); \
-  __builtin_unreachable()
+#define error(...)              \
+  do {                          \
+    verify(false, __VA_ARGS__); \
+    __builtin_unreachable();    \
+  } while (0)
 
 #define bug() error("bug")
 
