@@ -18,7 +18,7 @@ class ViennaRna(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
         if not cfg.lonely_pairs:
-            args.append("--no-lonely-pairs")
+            args.append("--noLP")
         if cfg.ctd == CtdCfg.NONE:
             args.append("-d0")
         if cfg.ctd == CtdCfg.D2:

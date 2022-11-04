@@ -2,7 +2,8 @@
 from pathlib import Path
 from typing import Any
 import cloup
-from rnapy.analysis.fold_perf import FoldPerfRunner
+from rnapy.analysis.fold_perf.runner import FoldPerfRunner
+from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnastructure import RNAstructure
@@ -21,7 +22,7 @@ from rnapy.data.memevault import MemeVault
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
     required=True,
 )
-def mfe_comparison(
+def run_fold_perf(
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
@@ -36,3 +37,19 @@ def mfe_comparison(
         memevault, output_dir, memerna, rnastructure, viennarna, sparsemfefold
     )
     analyser.run()
+
+
+@cloup.command()
+@cloup.option(
+    "--input-dir",
+    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
+    required=True,
+)
+@cloup.option(
+    "--output-dir",
+    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
+    required=True,
+)
+def plot_fold_perf(input_dir: Path, output_dir: Path) -> None:
+    plotter = FoldPerfPlotter(input_dir, output_dir)
+    plotter.run()

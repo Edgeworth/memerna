@@ -1,17 +1,33 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Iterator
+import pandas as pd
 
 from rnapy.model.rna import Rna
+
+
+@dataclass
+class Dataset:
+    name: str
+    dfs: dict[str, pd.DataFrame] = field(default_factory=dict)
+
+    def __len__(self) -> int:
+        return len(self.dfs)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.dfs)
+
+    def __getitem__(self, key: str) -> pd.DataFrame:
+        return self.dfs[key]
+
+    def keys(self) -> set[str]:
+        return set(self.dfs)
 
 
 @dataclass
 class RnaAccuracy:
     ppv: float
     sensitivity: float
-
-    def __init__(self, ppv: float, sensitivity: float):
-        self.ppv = ppv
-        self.sensitivity = sensitivity
 
     def fscore(self) -> float:
         fscore = 2.0 * self.sensitivity * self.ppv
