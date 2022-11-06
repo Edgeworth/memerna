@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
+from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Iterator
+from typing import Iterator, Sequence
 import pandas as pd
 
 from rnapy.model.rna import Rna
@@ -20,8 +21,22 @@ class Dataset:
     def __getitem__(self, key: str) -> pd.DataFrame:
         return self.dfs[key]
 
+    def concat(self, other: Dataset) -> Dataset:
+        # Concat shared dataframes:
+        shared = self.keys() & other.keys()
+        dfs = {k: pd.concat([self[k], other[k]]) for k in shared}
+        # Add unique dataframes:
+        dfs.update({k: v for k, v in self.dfs.items() if k not in shared})
+        dfs.update({k: v for k, v in other.dfs.items() if k not in shared})
+        return Dataset(self.name, dfs)
+
     def keys(self) -> set[str]:
         return set(self.dfs)
+
+    def exclude(self, names: str | Sequence[str]) -> Dataset:
+        if isinstance(names, str):
+            names = [names]
+        return Dataset(self.name, {k: v for k, v in self.dfs.items() if k not in names})
 
 
 @dataclass

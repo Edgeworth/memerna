@@ -1,12 +1,12 @@
 # Copyright 2022 Eliot Courtney.
+from functools import reduce
 from pathlib import Path
 import pandas as pd
-import seaborn as sns
 import matplotlib as mpl
 
 from rnapy.analysis.metrics import Dataset
-from rnapy.analysis.plot.plots import Column, plot_mean_quantity
-from rnapy.analysis.plot.util import save_figure
+from rnapy.analysis.plot.plots import Column, plot_mean_log_quantity, plot_mean_quantity
+from rnapy.analysis.plot.util import save_figure, set_style
 from rnapy.util.format import human_size
 
 
@@ -29,7 +29,7 @@ class FoldPerfPlotter:
     def __init__(self, input_dir: Path, output_dir: Path) -> None:
         self.input_dir = input_dir
         self.output_dir = output_dir
-        sns.set(color_codes=True)
+        set_style()
 
     def _load_datasets(self) -> dict[str, Dataset]:
         datasets: dict[str, Dataset] = {}
@@ -43,12 +43,22 @@ class FoldPerfPlotter:
     def _path(self, ds: Dataset, name: str) -> Path:
         return self.output_dir / f"{ds.name}_{name}.png"
 
-    def _plot(self, ds: Dataset) -> None:
-        f = plot_mean_quantity(ds, self.COLS["length"], self.COLS["real_sec"])
-        save_figure(f, self._path(ds, "test"))
+    def _plot_quantity(self, ds: Dataset) -> None:
+        for y in ["real_sec", "maxrss_bytes"]:
+            f = plot_mean_quantity(ds, self.COLS["length"], self.COLS[y])
+            save_figure(f, self._path(ds, y))
 
     def run(self) -> None:
         datasets = self._load_datasets()
+        # Plot quantities
         for ds in datasets.values():
-            self._plot(ds)
-            break
+            if "large" in ds.name:
+                ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
+            self._plot_quantity(ds)
+        # Plot log graphs
+
+        combined_ds = reduce(lambda a, b: a.concat(b), datasets.values())
+        print(combined_ds)
+        for y in ["real_sec", "maxrss_bytes"]:
+            f = plot_mean_log_quantity(combined_ds, self.COLS["length"], self.COLS[y])
+            save_figure(f, self._path(combined_ds, f"{y}_log"))

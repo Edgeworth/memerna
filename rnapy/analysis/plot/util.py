@@ -1,6 +1,11 @@
 from pathlib import Path
 from typing import Any
 from matplotlib import pyplot as plt
+import seaborn as sns
+
+
+def set_style() -> None:
+    sns.set_theme(context="notebook", palette="deep")
 
 
 def get_subplot_grid(
@@ -19,11 +24,11 @@ def get_subplot_grid(
     f.tight_layout()
 
     # Hide subplots that are not used
-    if factors[0] * factors[1] != n:
-        axes[-1].clear()
-        axes[-1].set_axis_off()
-        axes[-1].get_xaxis().set_visible(False)
-        axes[-1].get_yaxis().set_visible(False)
+    for i in range(n, factors[0] * factors[1]):
+        axes[i].clear()
+        axes[i].set_axis_off()
+        axes[i].get_xaxis().set_visible(False)
+        axes[i].get_yaxis().set_visible(False)
 
     f.set_size_inches(factors[1] * inches, factors[0] * inches)
     return f, axes
@@ -36,7 +41,7 @@ def get_marker(idx: int) -> dict[str, Any]:
 
 def save_figure(f: plt.Figure, path: Path) -> None:
     f.tight_layout()
-    f.savefig(path, dpi=150)
+    f.savefig(path, dpi=300)
     plt.close(f)
 
 
