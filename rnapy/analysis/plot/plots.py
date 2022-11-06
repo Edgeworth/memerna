@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
-import statsmodels as sm
+import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from rnapy.analysis.metrics import Dataset
 from rnapy.analysis.plot.util import get_marker, get_subplot_grid, set_up_figure
@@ -31,7 +31,7 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
             x, y = xcol.idx, ycol.idx
             df = df[[x, y]].groupby(x)
             with sns.color_palette(n_colors=len(ds)) as palette:
-                df.mean().plot(kind="line", ax=ax, label=did, **get_marker(idx))
+                sns.lineplot(df.mean(), x=x, y=y, label=did, ax=ax, **get_marker(idx))
                 low, high = df[y].min(), df[y].max()
                 ax.fill_between(list(sorted(df.groups)), low, high, alpha=0.2, color=palette.pop(0))
 
@@ -41,7 +41,7 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
     return f
 
 
-def plot_quantity_log(
+def plot_mean_log_quantity(
     ds: Dataset, xcol: Column, ycol: Column, logx: bool = True, logy: bool = True
 ) -> plt.Figure:
     EP = 1e-2
@@ -49,22 +49,22 @@ def plot_quantity_log(
     f, axes = get_subplot_grid(len(ds), True, True)
     palette = sns.color_palette(n_colors=len(ds))
     for i, did in enumerate(sorted(ds.keys())):
-        df = ds[did][[xcol, ycol]].mean()
-        df = df[df[ycol] > EP]
+        x, y = xcol.idx, ycol.idx
+
+        df = ds[did][[x, y]].groupby(x).mean()
+        df = df[df[y] > EP].reset_index()
         if logx:
-            df[xcol] = df[xcol].apply(np.log10)
+            df[x] = df[x].apply(np.log10)
         if logy:
-            df[ycol] = df[ycol].apply(np.log10)
-        mod = smf.ols(f"{ycol} ~ {xcol}", data=df)
+            df[y] = df[y].apply(np.log10)
+        mod = smf.ols(f"{y} ~ {x}", data=df)
         res = mod.fit()
 
-        label = "{0}\n${3:.5f}x + {2:.2f}$\n$R^2 = {1:.3f}$".format(
-            did, res.rsquared, *res.params.tolist()
-        )
-        sns.regplot(xcol, ycol, label=label, data=df, fit_reg=False, ax=axes[i])
-        sm.graphics.regressionplots.abline_plot(
-            model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), **get_marker(i)
-        )
+        b, a = res.params.tolist()
+        sign = "-" if b < 0 else "+"
+        label = f"{did}\n${a:.5f}x {sign} {abs(b):.2f}$\n$R^2 = {res.rsquared:.3f}$"
+        sns.regplot(x=x, y=y, label=label, data=df, fit_reg=False, ax=axes[i], color=palette.pop(0))
+        sm.graphics.abline_plot(model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), **get_marker(i))
 
     names = [xcol.name, ycol.name]
     if logx:
