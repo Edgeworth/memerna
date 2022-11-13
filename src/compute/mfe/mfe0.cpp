@@ -83,12 +83,12 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em) {
               base_branch_cost + dp[st + 2][piv][DP_U] + em->multiloop_hack_b +
                   em->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax);
 
-          // (.(   ).   ) Left right coax
+          // (.(   ).   ) Left inner coax
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 2][piv - 1][DP_P] + em->multiloop_hack_b +
                   em->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                   em->MismatchCoaxial(pl1b, plb, st1b, st2b));
-          // (   .(   ).) Right left coax
+          // (   .(   ).) Right inner coax
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 1][piv][DP_U] + em->multiloop_hack_b +
                   em->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +

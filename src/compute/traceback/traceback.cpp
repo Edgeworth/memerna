@@ -221,7 +221,7 @@ TracebackResult Traceback(
             goto loopend;
           }
 
-          // (.(   ).   ) Left right coax
+          // (.(   ).   ) Left inner coax
           if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
                   em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                   em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
@@ -232,7 +232,7 @@ TracebackResult Traceback(
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
           }
-          // (   .(   ).) Right left coax
+          // (   .(   ).) Right inner coax
           if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
                   em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                   em.MismatchCoaxial(en2b, en1b, prb, pr1b) ==

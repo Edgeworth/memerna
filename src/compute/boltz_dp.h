@@ -18,7 +18,8 @@ enum : int8_t {
   PTEXT_L,
   PTEXT_R_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   PTEXT_R_GU,  // Must start with a branch not involved in an interaction that is GU
-  PTEXT_R_RCOAX,  // Must start with a branch, that branch is involved backwards in a RCOAX stack.
+  // Must start with a branch, that branch is involved backwards in a right coaxial stack.
+  PTEXT_R_RCOAX,
   PTEXT_L_WC,
   PTEXT_L_GU,
   PTEXT_L_LCOAX,

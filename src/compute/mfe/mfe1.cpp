@@ -77,11 +77,11 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
               base_branch_cost + dp[st + 2][piv][DP_U] + pc.augubranch[prb][en2b] +
                   dp[piv + 1][en - 2][DP_P] + outer_coax);
 
-          // (.(   ).   ) Left right coax
+          // (.(   ).   ) Left inner coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][piv - 1][DP_P] + pc.augubranch[st2b][pl1b] +
                   dp[piv + 1][en - 1][DP_U] + em->MismatchCoaxial(pl1b, plb, st1b, st2b));
-          // (   .(   ).) Right left coax
+          // (   .(   ).) Right inner coax
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][piv][DP_U] + pc.augubranch[pr1b][en2b] +
                   dp[piv + 2][en - 2][DP_P] + em->MismatchCoaxial(en2b, en1b, prb, pr1b));

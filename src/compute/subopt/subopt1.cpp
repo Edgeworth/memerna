@@ -298,14 +298,14 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
         exps.push_back({energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P},
             {piv + 1, CTD_RCOAX_WITH_NEXT}, {en, CTD_RCOAX_WITH_PREV}});
 
-      // (.(   ).   ) Left right coax
+      // (.(   ).   ) Left inner coax
       energy = base_and_branch + dp_[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
           dp_[piv + 1][en - 1][DP_U] + em_->MismatchCoaxial(pl1b, plb, st1b, st2b);
       if (energy <= delta)
         exps.push_back({energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT}});
 
-      // (   .(   ).) Right left coax
+      // (   .(   ).) Right inner coax
       energy = base_and_branch + dp_[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
           dp_[piv + 2][en - 2][DP_P] + em_->MismatchCoaxial(en2b, en1b, prb, pr1b);
       if (energy <= delta)

@@ -65,32 +65,32 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_P] = std::min(mins[DP_P],
             base_branch_cost + dp[st + 2][en - 2][DP_U2] + em->terminal[stb][st1b][en1b][enb]);
 
-        // (.(   ).   ) Left right coax
-        for (auto cand : cand_st[CAND_P_MISMATCH])
+        // (.(   ).   ) Left inner coax
+        for (auto cand : cand_st[CAND_P_LIC])
           mins[DP_P] =
               std::min(mins[DP_P], base_branch_cost + cand.energy + dp[cand.idx][en - 1][DP_U]);
         // (.(   )   .) Left outer coax
         const auto outer_coax = em->MismatchCoaxial(stb, st1b, en1b, enb);
-        for (auto cand : cand_st[CAND_P_OUTER])
+        for (auto cand : cand_st[CAND_P_LOC])
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + cand.energy - pc.min_mismatch_coax + outer_coax +
                   dp[cand.idx][en - 2][DP_U]);
         // ((   )   ) Left flush coax
-        for (auto cand : cand_st[CAND_P_FLUSH])
+        for (auto cand : cand_st[CAND_P_LFC])
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + cand.energy - pc.min_flush_coax +
                   em->stack[stb][st1b][r[cand.idx]][enb] + dp[cand.idx + 1][en - 1][DP_U]);
-        // (   .(   ).) Right left coax
-        for (auto cand : p_cand_en[CAND_EN_P_MISMATCH][en])
+        // (   .(   ).) Right inner coax
+        for (auto cand : p_cand_en[CAND_EN_P_RIC][en])
           mins[DP_P] =
               std::min(mins[DP_P], base_branch_cost + cand.energy + dp[st + 1][cand.idx][DP_U]);
         // (.   (   ).) Right outer coax
-        for (auto cand : p_cand_en[CAND_EN_P_OUTER][en])
+        for (auto cand : p_cand_en[CAND_EN_P_ROC][en])
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + cand.energy - pc.min_mismatch_coax + outer_coax +
                   dp[st + 2][cand.idx][DP_U]);
         // (   (   )) Right flush coax
-        for (auto cand : p_cand_en[CAND_EN_P_FLUSH][en])
+        for (auto cand : p_cand_en[CAND_EN_P_RFC][en])
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + cand.energy - pc.min_flush_coax +
                   em->stack[stb][r[cand.idx]][en1b][enb] + dp[st + 1][cand.idx - 1][DP_U]);
@@ -107,7 +107,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_U] = std::min(mins[DP_U], cand.energy + std::min(dp[cand.idx][en][DP_U], 0));
         mins[DP_U2] = std::min(mins[DP_U2], cand.energy + dp[cand.idx][en][DP_U]);
       }
-      for (auto cand : cand_st[CAND_U_LCOAX]) {
+      for (auto cand : cand_st[CAND_U_LC]) {
         const auto val =
             cand.energy + std::min(dp[cand.idx][en][DP_U_WC], dp[cand.idx][en][DP_U_GU]);
         mins[DP_U] = std::min(mins[DP_U], val);
@@ -118,13 +118,13 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_WC_FLUSH]) {
+      for (auto cand : cand_st[CAND_U_LFC_WC]) {
         // (   )(<   ) > Flush coax - U
         const auto val = cand.energy + dp[cand.idx][en][DP_U_WC];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_GU_FLUSH]) {
+      for (auto cand : cand_st[CAND_U_LFC_GU]) {
         auto val = cand.energy + dp[cand.idx][en][DP_U_GU];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
@@ -205,7 +205,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       const auto lcoax_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
           em->MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < CAP_E && lcoax_base < dp[st][en][DP_U])
-        cand_st[CAND_U_LCOAX].push_back({lcoax_base, en + 1});
+        cand_st[CAND_U_LC].push_back({lcoax_base, en + 1});
       // (   )<.(   ). > Right coax forward - U, U2
       const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < dp[st][en][DP_U])
@@ -226,12 +226,12 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       const auto wc_flush_base =
           dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + em->stack[en1b][enb][WcPair(enb)][stb];
       if (wc_flush_base < CAP_E && wc_flush_base < dp[st][en - 1][DP_U])
-        cand_st[CAND_U_WC_FLUSH].push_back({wc_flush_base, en});
+        cand_st[CAND_U_LFC_WC].push_back({wc_flush_base, en});
       if (IsGu(enb)) {
         const auto gu_flush_base = dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] +
             em->stack[en1b][enb][GuPair(enb)][stb];
         if (gu_flush_base < CAP_E && gu_flush_base < dp[st][en - 1][DP_U])
-          cand_st[CAND_U_GU_FLUSH].push_back({gu_flush_base, en});
+          cand_st[CAND_U_LFC_GU].push_back({gu_flush_base, en});
       }
 
       // Base cases.
@@ -248,30 +248,30 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       const auto plocoax_base =
           dp[st + 2][en][DP_P] + pc.augubranch[st2b][enb] + pc.min_mismatch_coax;
       if (plocoax_base < CAP_E && plocoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_OUTER].push_back({plocoax_base, en + 1});
+        cand_st[CAND_P_LOC].push_back({plocoax_base, en + 1});
       // (.   (   ).) Right outer coax
       const auto procoax_base =
           dp[st][en - 2][DP_P] + pc.augubranch[stb][en2b] + pc.min_mismatch_coax;
       if (procoax_base < CAP_E && procoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_OUTER][en].push_back({procoax_base, st - 1});
-      // (.(   ).   ) Left right coax
+        p_cand_en[CAND_EN_P_ROC][en].push_back({procoax_base, st - 1});
+      // (.(   ).   ) Left inner coax
       const auto plrcoax_base = dp[st + 2][en - 1][DP_P] + pc.augubranch[st2b][en1b] +
           em->MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < CAP_E && plrcoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_MISMATCH].push_back({plrcoax_base, en + 1});
-      // (   .(   ).) Right left coax
+        cand_st[CAND_P_LIC].push_back({plrcoax_base, en + 1});
+      // (   .(   ).) Right inner coax
       const auto prlcoax_base = dp[st + 1][en - 2][DP_P] + pc.augubranch[st1b][en2b] +
           em->MismatchCoaxial(en2b, en1b, stb, st1b);
       if (prlcoax_base < CAP_E && prlcoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_MISMATCH][en].push_back({prlcoax_base, st - 1});
+        p_cand_en[CAND_EN_P_RIC][en].push_back({prlcoax_base, st - 1});
       // ((   )   ) Left flush coax
       const auto plfcoax_base = dp[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + pc.min_flush_coax;
       if (plfcoax_base < CAP_E && plfcoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_FLUSH].push_back({plfcoax_base, en});
+        cand_st[CAND_P_LFC].push_back({plfcoax_base, en});
       // (   (   )) Right flush coax
       const auto prfcoax_base = dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_flush_coax;
       if (prfcoax_base < CAP_E && prfcoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_FLUSH][en].push_back({prfcoax_base, st});
+        p_cand_en[CAND_EN_P_RFC][en].push_back({prfcoax_base, st});
     }
   }
 

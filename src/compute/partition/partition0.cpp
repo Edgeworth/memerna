@@ -74,10 +74,10 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           p += base_branch_cost * dp[st + 2][piv][PT_U] * dp[piv + 1][en - 2][PT_P] *
               Boltz(pc.augubranch[prb][en2b] + outer_coax);
 
-          // (.(   ).   ) Left right coax
+          // (.(   ).   ) Left inner coax
           p += base_branch_cost * dp[st + 2][piv - 1][PT_P] * dp[piv + 1][en - 1][PT_U] *
               Boltz(pc.augubranch[st2b][pl1b] + em->MismatchCoaxial(pl1b, plb, st1b, st2b));
-          // (   .(   ).) Right left coax
+          // (   .(   ).) Right inner coax
           p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[piv + 2][en - 2][PT_P] *
               Boltz(pc.augubranch[pr1b][en2b] + em->MismatchCoaxial(en2b, en1b, prb, pr1b));
 
@@ -260,7 +260,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
             if (left_formable) {
               const BoltzEnergy rp1ext = ext[piv + 1][PTEXT_R];
-              // |<   >)   (.(   ).<   >| Exterior loop - Left right coax
+              // |<   >)   (.(   ).<   >| Exterior loop - Left inner coax
               // lspace > 1 && not enclosed
               p += dp[st + 2][pl][PT_P] * lext * rp1ext *
                   Boltz(em->AuGuPenalty(stb, enb) + em->AuGuPenalty(st2b, pl1b) +
@@ -281,7 +281,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
             if (right_formable) {
               const BoltzEnergy lpext = piv > 0 ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
-              // |<   >.(   ).)   (<   >| Exterior loop - Right left coax
+              // |<   >.(   ).)   (<   >| Exterior loop - Right inner coax
               // rspace > 1 && not enclosed
               p += dp[pr][en - 2][PT_P] * lpext * rext *
                   Boltz(em->AuGuPenalty(stb, enb) + em->AuGuPenalty(prb, en2b) +
@@ -343,14 +343,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           }
 
           if (lspace > 1 && rspace && left_dot_formable) {
-            // |  >)   (.(   ).<  | Enclosing loop - Left right coax
+            // |  >)   (.(   ).<  | Enclosing loop - Left inner coax
             // lspace > 1 && rspace > 0 && enclosed && no dot split
             p += base_branch_cost * dp[st + 2][pl][PT_P] * dp[pr][en - 1][PT_U] *
                 Boltz(pc.augubranch[st2b][pl1b] + em->MismatchCoaxial(pl1b, plb, st1b, st2b));
           }
 
           if (lspace && rspace > 1 && right_dot_formable) {
-            // |  >.(   ).)   (<  | Enclosing loop - Right left coax
+            // |  >.(   ).)   (<  | Enclosing loop - Right inner coax
             // lspace > 0 && rspace > 1 && enclosed && no dot split
             p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[pr1][en - 2][PT_P] *
                 Boltz(pc.augubranch[pr1b][en2b] + em->MismatchCoaxial(en2b, en1b, prb, pr1b));
