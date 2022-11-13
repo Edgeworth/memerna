@@ -62,8 +62,9 @@ int main(int argc, char* argv[]) {
     printf("Exhaustive fuzzing [%d, %d] len RNAs\n", min_len, max_len);
     int64_t i = 0;
     mrna::Primary r(min_len);
-    while (int(r.size()) <= max_len) {
-      if (++i % 1000 == 0) printf("Fuzzed %" PRId64 " RNA, current size: %d\n", i, int(r.size()));
+    while (static_cast<int>(r.size()) <= max_len) {
+      if (++i % 1000 == 0)
+        printf("Fuzzed %" PRId64 " RNA, current size: %d\n", i, static_cast<int>(r.size()));
 
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();

@@ -49,9 +49,9 @@ BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const Bo
       ext[st][PTEXT_R] += val * ext[en + 1][PTEXT_R_WC];
 
       // (   )<.(   ). > Right coax forward
-      ext[st][PTEXT_R] += base00 * ext[en + 1][PTEXT_R_RCOAX];
+      ext[st][PTEXT_R] += base00 * ext[en + 1][PT_U_RCOAX];
       // (   )<.( * ). > Right coax backward
-      ext[st][PTEXT_R_RCOAX] +=
+      ext[st][PT_U_RCOAX] +=
           base11 * Boltz(em.MismatchCoaxial(en1b, enb, stb, st1b)) * ext[en + 1][PTEXT_R];
 
       // (   )(<   ) > Flush coax

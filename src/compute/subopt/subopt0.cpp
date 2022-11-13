@@ -214,14 +214,14 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
         Expand(energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P}, {piv + 1, CTD_RCOAX_WITH_NEXT},
             {en, CTD_RCOAX_WITH_PREV});
 
-        // (.(   ).   ) Left right coax
+        // (.(   ).   ) Left inner coax
         energy = base_and_branch + dp_[st + 2][piv - 1][DP_P] + em_->multiloop_hack_b +
             em_->AuGuPenalty(st2b, pl1b) + dp_[piv + 1][en - 1][DP_U] +
             em_->MismatchCoaxial(pl1b, plb, st1b, st2b);
         Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
             {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT});
 
-        // (   .(   ).) Right left coax
+        // (   .(   ).) Right inner coax
         energy = base_and_branch + dp_[st + 1][piv][DP_U] + em_->multiloop_hack_b +
             em_->AuGuPenalty(pr1b, en2b) + dp_[piv + 2][en - 2][DP_P] +
             em_->MismatchCoaxial(en2b, en1b, prb, pr1b);
