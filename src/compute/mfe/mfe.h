@@ -21,9 +21,16 @@ struct Cand {
   int idx;
 };
 
+// Basic MFE folding.
 DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em);
+
+// Basic MFE folding.
 DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em);
+
+// Sparse folding.
 DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em);
+
+// Sparse folding with Lyngso's algorithm.
 DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em);
 ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const DpArray& dp);
 
