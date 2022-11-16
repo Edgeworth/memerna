@@ -113,8 +113,8 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
-      for (auto cand : cand_st[CAND_U_RCOAX_FWD]) {
-        const auto val = cand.energy - pc.min_mismatch_coax + dp[cand.idx][en][DP_U_RCOAX];
+      for (auto cand : cand_st[CAND_U_RC_FWD]) {
+        const auto val = cand.energy - pc.min_mismatch_coax + dp[cand.idx][en][DP_U_RC];
         mins[DP_U] = std::min(mins[DP_U], val);
         mins[DP_U2] = std::min(mins[DP_U2], val);
       }
@@ -133,10 +133,9 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_U_WC] = std::min(mins[DP_U_WC], cand.energy + std::min(dp[cand.idx][en][DP_U], 0));
       for (auto cand : cand_st[CAND_U_GU])
         mins[DP_U_GU] = std::min(mins[DP_U_GU], cand.energy + std::min(dp[cand.idx][en][DP_U], 0));
-      for (auto cand : cand_st[CAND_U_RCOAX]) {
+      for (auto cand : cand_st[CAND_U_RC]) {
         // (   )<.( * ). > Right coax backward
-        mins[DP_U_RCOAX] =
-            std::min(mins[DP_U_RCOAX], cand.energy + std::min(dp[cand.idx][en][DP_U], 0));
+        mins[DP_U_RC] = std::min(mins[DP_U_RC], cand.energy + std::min(dp[cand.idx][en][DP_U], 0));
       }
 
       // Set these so we can use sparse folding.
@@ -144,7 +143,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       dp[st][en][DP_U2] = mins[DP_U2];
       dp[st][en][DP_U_WC] = mins[DP_U_WC];
       dp[st][en][DP_U_GU] = mins[DP_U_GU];
-      dp[st][en][DP_U_RCOAX] = mins[DP_U_RCOAX];
+      dp[st][en][DP_U_RC] = mins[DP_U_RC];
 
       // Now build the candidates arrays based off the current area [st, en].
       // In general, the idea is to see if there exists something we could replace a structure with
@@ -152,7 +151,7 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       // e.g. we could replace a (   )3' with the equivalent U since we know the energy for (   )3'
       // that is, it is self contained. If replacing it with U[st][en] is better, then we do not
       // need to consider (...)3' when computing a larger U. In some cases we use the minimum
-      // possible energy if we don't know the energy exactly for a structure (e.g. RCOAX). These
+      // possible energy if we don't know the energy exactly for a structure (e.g. RC). These
       // orderings are useful to remember: U <= U_WC, U_GU, U2
       Energy cand_st_u = MAX_E;
 
@@ -209,18 +208,18 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
       // (   )<.(   ). > Right coax forward - U, U2
       const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < dp[st][en][DP_U])
-        cand_st[CAND_U_RCOAX_FWD].push_back({rcoaxf_base, en + 1});
+        cand_st[CAND_U_RC_FWD].push_back({rcoaxf_base, en + 1});
 
-      // (   )<.( * ). > Right coax backward - RCOAX
-      // Again, we can't replace RCOAX with U, we'd have to replace it with RCOAX, so compare to
+      // (   )<.( * ). > Right coax backward - RC
+      // Again, we can't replace RC with U, we'd have to replace it with RC, so compare to
       // itself.
       const auto rcoaxb_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
           em->MismatchCoaxial(en1b, enb, stb, st1b);
-      if (rcoaxb_base < CAP_E && rcoaxb_base < dp[st][en][DP_U_RCOAX] &&
-          (cand_st[CAND_U_RCOAX].empty() || rcoaxb_base < cand_st[CAND_U_RCOAX].back().energy))
-        cand_st[CAND_U_RCOAX].push_back({rcoaxb_base, en + 1});
+      if (rcoaxb_base < CAP_E && rcoaxb_base < dp[st][en][DP_U_RC] &&
+          (cand_st[CAND_U_RC].empty() || rcoaxb_base < cand_st[CAND_U_RC].back().energy))
+        cand_st[CAND_U_RC].push_back({rcoaxb_base, en + 1});
       // Base case.
-      dp[st][en][DP_U_RCOAX] = std::min(dp[st][en][DP_U_RCOAX], rcoaxb_base);
+      dp[st][en][DP_U_RC] = std::min(dp[st][en][DP_U_RC], rcoaxb_base);
 
       // (   )(<   ) > Flush coax - U, U2
       const auto wc_flush_base =

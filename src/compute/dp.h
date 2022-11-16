@@ -17,8 +17,8 @@ enum : int8_t {
   DP_U2,  // Contains at least two branches.
   DP_U_WC,  // Unpaired but must start with a branch not in a CTD that is not GU.
   DP_U_GU,  // Unpaired but must start with a branch not in a CTD that is GU.
-  DP_U_RCOAX,  // Unpaired but must start with a branch in a right coaxial stack - includes energy
-               // for it.
+  DP_U_RC,  // Unpaired but must start with a branch in a right coaxial stack - includes energy
+            // for it.
   DP_SIZE
 };
 
@@ -28,7 +28,7 @@ enum : int8_t {
   EXT,
   EXT_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   EXT_GU,  // Must start with a branch not involved in an interaction that is GU
-  EXT_RCOAX,  // Must start with a branch involved backwards in a right coaxial stack.
+  EXT_RC,  // Must start with a branch involved backwards in a right coaxial stack.
   EXT_SIZE
 };
 
@@ -80,7 +80,7 @@ enum : int8_t {
   // Energy: Partial, since we don't know the bases on the right.
   // Right coax forward
   // |(   )|<.(   ). >
-  CAND_U_RCOAX_FWD,
+  CAND_U_RC_FWD,
 
   // Not monotonic, because we are forced to place a branch on the right.
   // Replaceability: Unpaired
@@ -115,7 +115,7 @@ enum : int8_t {
   // Energy: Fully determined, because we know all the bases.
   // UnpairedRcoax
   // (   )|<.( * ). >|
-  CAND_U_RCOAX,
+  CAND_U_RC,
 
   CAND_SIZE
 };

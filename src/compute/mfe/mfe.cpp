@@ -53,10 +53,10 @@ ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const 
       e = std::min(e, val + ext[en + 1][EXT_WC]);
 
       // (   )<.(   ). > Right coax forward
-      e = std::min(e, base00 + ext[en + 1][EXT_RCOAX]);
+      e = std::min(e, base00 + ext[en + 1][EXT_RC]);
       // (   )<.( * ). > Right coax backward
-      ext[st][EXT_RCOAX] = std::min(
-          ext[st][EXT_RCOAX], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
+      ext[st][EXT_RC] = std::min(
+          ext[st][EXT_RC], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
 
       // (   )(<   ) > Flush coax
       e = std::min(e, base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);

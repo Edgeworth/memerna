@@ -19,8 +19,8 @@ const char* CtdToName(Ctd ctd) {
   case CTD_MISMATCH: return "terminal mismatch";
   case CTD_LCOAX_WITH_NEXT: return "left mismatch coax with next";
   case CTD_LCOAX_WITH_PREV: return "left mismatch coax with prev";
-  case CTD_RCOAX_WITH_NEXT: return "right mismatch coax with next";
-  case CTD_RCOAX_WITH_PREV: return "right mismatch coax with prev";
+  case CTD_RC_WITH_NEXT: return "right mismatch coax with next";
+  case CTD_RC_WITH_PREV: return "right mismatch coax with prev";
   case CTD_FCOAX_WITH_NEXT: return "flush coax with next";
   case CTD_FCOAX_WITH_PREV: return "flush coax with prev";
   default: bug();

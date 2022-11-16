@@ -9,7 +9,7 @@
 namespace mrna {
 
 // DP arrays
-enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RCOAX, PT_SIZE };
+enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RC, PT_SIZE };
 
 using BoltzDpArray = Array2D1S<BoltzEnergy, PT_SIZE>;
 
@@ -19,7 +19,7 @@ enum : int8_t {
   PTEXT_R_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   PTEXT_R_GU,  // Must start with a branch not involved in an interaction that is GU
   // Must start with a branch, that branch is involved backwards in a right coaxial stack.
-  PTEXT_R_RCOAX,
+  PTEXT_R_RC,
   PTEXT_L_WC,
   PTEXT_L_GU,
   PTEXT_L_LCOAX,

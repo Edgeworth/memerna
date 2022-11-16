@@ -29,8 +29,8 @@ class ParsingTest : public testing::Test {
 
   const Primary kPrimary4 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary4{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
-  const Ctds kCtd4{CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-      CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
+  const Ctds kCtd4{CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString4 = ".n...]mp...]M.";
 
   const Primary kPrimary5 = Primary::FromSeq("UACGUUGGUGCUUA");
@@ -59,8 +59,8 @@ class ParsingTest : public testing::Test {
 
   const Primary kPrimary9 = Primary::FromSeq("UACGUUGGUGCUUA");
   const Secondary kSecondary9{13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0};
-  const Ctds kCtd9{CTD_UNUSED, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-      CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT};
+  const Ctds kCtd9{CTD_UNUSED, CTD_NA, CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT};
   const std::string kCtdString9 = "[mp...]M[...]N";
 
   const Primary kPrimary10 = Primary::FromSeq("UACGUUGGUGCUU");
@@ -72,7 +72,7 @@ class ParsingTest : public testing::Test {
   const Primary kPrimary11 = Primary::FromSeq("UACGUUGGUGCUUAA");
   const Secondary kSecondary11{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
   const Ctds kCtd11{CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-      CTD_RCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV};
+      CTD_RC_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_PREV};
   const std::string kCtdString11 = "[M[...].n...]mP";
 
   const Primary kPrimary12 = Primary::FromSeq("UACGUUGGUGCUUA");
