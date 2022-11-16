@@ -34,8 +34,8 @@ std::string Ctds::ToString(const Secondary& s) const {
       str[s[i] + 1] = 'M';
       break;
     case CTD_LCOAX_WITH_PREV: str[i] = closing ? 'P' : 'p'; break;
-    case CTD_RCOAX_WITH_NEXT: str[i] = closing ? 'N' : 'n'; break;
-    case CTD_RCOAX_WITH_PREV:
+    case CTD_RC_WITH_NEXT: str[i] = closing ? 'N' : 'n'; break;
+    case CTD_RC_WITH_PREV:
       str[i] = closing ? 'P' : 'p';
       str[i - 1] = 'm';
       str[s[i] + 1] = 'M';
@@ -101,8 +101,8 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
           ctd[i] = CTD_LCOAX_WITH_PREV;
           ctd[s[prev]] = CTD_LCOAX_WITH_NEXT;
         } else {
-          ctd[i] = CTD_RCOAX_WITH_PREV;
-          ctd[s[prev]] = CTD_RCOAX_WITH_NEXT;
+          ctd[i] = CTD_RC_WITH_PREV;
+          ctd[s[prev]] = CTD_RC_WITH_NEXT;
         }
       } else {
         ctd[i] = CTD_FCOAX_WITH_PREV;

@@ -88,7 +88,7 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
         curnode_ = node.copy();
 
         // (   )<.( * ). > Right coax backward
-        if (a == EXT_RCOAX) {
+        if (a == EXT_RC) {
           energy =
               base_energy + base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + ext_[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
@@ -143,9 +143,9 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
         }
         if (en < N - 2) {
           // (   )<.(   ). > Right coax forward
-          energy = base_energy + base00 + ext_[en + 1][EXT_RCOAX];
-          Expand(energy, {en + 1, -1, EXT_RCOAX}, {st, en, DP_P}, {en + 2, CTD_RCOAX_WITH_PREV},
-              {st, CTD_RCOAX_WITH_NEXT});
+          energy = base_energy + base00 + ext_[en + 1][EXT_RC];
+          Expand(energy, {en + 1, -1, EXT_RC}, {st, en, DP_P}, {en + 2, CTD_RC_WITH_PREV},
+              {st, CTD_RC_WITH_NEXT});
         }
       }
       // Finished exterior loop, don't do anymore.
@@ -211,15 +211,15 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
         // (.   (   ).) Right outer coax
         energy = base_and_branch + dp_[st + 2][piv][DP_U] + em_->multiloop_hack_b +
             em_->AuGuPenalty(prb, en2b) + dp_[piv + 1][en - 2][DP_P] + outer_coax;
-        Expand(energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P}, {piv + 1, CTD_RCOAX_WITH_NEXT},
-            {en, CTD_RCOAX_WITH_PREV});
+        Expand(energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P}, {piv + 1, CTD_RC_WITH_NEXT},
+            {en, CTD_RC_WITH_PREV});
 
         // (.(   ).   ) Left inner coax
         energy = base_and_branch + dp_[st + 2][piv - 1][DP_P] + em_->multiloop_hack_b +
             em_->AuGuPenalty(st2b, pl1b) + dp_[piv + 1][en - 1][DP_U] +
             em_->MismatchCoaxial(pl1b, plb, st1b, st2b);
-        Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
-            {st + 2, CTD_RCOAX_WITH_PREV}, {en, CTD_RCOAX_WITH_NEXT});
+        Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U}, {st + 2, CTD_RC_WITH_PREV},
+            {en, CTD_RC_WITH_NEXT});
 
         // (   .(   ).) Right inner coax
         energy = base_and_branch + dp_[st + 1][piv][DP_U] + em_->multiloop_hack_b +
@@ -263,9 +263,9 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
         auto base11 =
             dp_[st + 1][piv - 1][DP_P] + em_->AuGuPenalty(st1b, pl1b) + em_->multiloop_hack_b;
 
-        // Check a == U_RCOAX:
+        // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
-        if (a == DP_U_RCOAX) {
+        if (a == DP_U_RC) {
           energy = base_energy + base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b);
           // Our ctds will have already been set by now.
           Expand(energy, {st + 1, piv - 1, DP_P});
@@ -336,9 +336,9 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
 
         if (piv < en - 1) {
           // (   )<.(   ). > Right coax forward - U, U2
-          energy = base_energy + base00 + dp_[piv + 1][en][DP_U_RCOAX];
-          Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_RCOAX}, {st, CTD_RCOAX_WITH_NEXT},
-              {piv + 2, CTD_RCOAX_WITH_PREV});
+          energy = base_energy + base00 + dp_[piv + 1][en][DP_U_RC];
+          Expand(energy, {st, piv, DP_P}, {piv + 1, en, DP_U_RC}, {st, CTD_RC_WITH_NEXT},
+              {piv + 2, CTD_RC_WITH_PREV});
         }
       }
     }

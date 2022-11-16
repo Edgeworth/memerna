@@ -121,7 +121,7 @@ void BruteForce::AddAllCombinations(int idx) {
   const bool lu_usable = lu_exists &&
       (!lu_shared ||
           (ctd_[s_[idx - 2]] != CTD_3_DANGLE && ctd_[s_[idx - 2]] != CTD_MISMATCH &&
-              ctd_[s_[idx - 2]] != CTD_RCOAX_WITH_PREV));
+              ctd_[s_[idx - 2]] != CTD_RC_WITH_PREV));
   const bool ru_exists = s_[idx] + 1 < N && s_[s_[idx] + 1] == -1;
   const bool ru_shared = ru_exists && s_[idx] + 2 < N && s_[s_[idx] + 2] != -1;
   const bool ru_usable = ru_exists &&
@@ -164,12 +164,12 @@ void BruteForce::AddAllCombinations(int idx) {
   }
 
   // Check that the previous branch hasn't been set already.
-  // CTD_RCOAX_WITH_PREV
+  // CTD_RC_WITH_PREV
   if (lu_usable && lu_shared && ru_usable) {
     auto prevval = ctd_[s_[idx - 2]];
     if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      ctd_[idx] = CTD_RCOAX_WITH_PREV;
-      ctd_[s_[idx - 2]] = CTD_RCOAX_WITH_NEXT;
+      ctd_[idx] = CTD_RC_WITH_PREV;
+      ctd_[s_[idx - 2]] = CTD_RC_WITH_NEXT;
       AddAllCombinations(idx + 1);
       ctd_[s_[idx - 2]] = prevval;
     }

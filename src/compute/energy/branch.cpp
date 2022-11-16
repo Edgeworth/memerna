@@ -169,11 +169,11 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
       if (ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
         Energy right_coax = em.MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
-        UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RCOAX_WITH_NEXT);
+        UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RC_WITH_NEXT);
         if (lu_exists[i]) {
           // In the case that lu doesn't exist but it is "used" it means this branch was consumed by
           // a coaxial interaction so don't use it.
-          UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, CTD_RCOAX_WITH_NEXT);
+          UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, CTD_RC_WITH_NEXT);
         }
       }
     }
@@ -203,7 +203,7 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
     // We can skip a branch on coaxial stacking interactions, so make sure to insert the ctd energy
     // for the branch. We build branch_ctd backwards, so we need to insert this later branch first.
     // To get the PREV versions, just add one.
-    if (reason == CTD_LCOAX_WITH_NEXT || reason == CTD_RCOAX_WITH_NEXT ||
+    if (reason == CTD_LCOAX_WITH_NEXT || reason == CTD_RC_WITH_NEXT ||
         reason == CTD_FCOAX_WITH_NEXT)
       branch_ctd->emplace_back(Ctd(reason + 1), energy);
     branch_ctd->emplace_back(reason, energy);
@@ -263,12 +263,12 @@ Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Se
       branch_ctd->emplace_back(CTD_LCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
-    case CTD_RCOAX_WITH_PREV:
+    case CTD_RC_WITH_PREV:
       assert(branch > 0 && s[branch] + 1 < static_cast<int>(r.size()));
       // (   ).(   ). or (.(   ).   )
       energy = em.MismatchCoaxial(enb, r[s[branch] + 1], r[branch - 1], stb);
       // Need to do rotations
-      branch_ctd->emplace_back(CTD_RCOAX_WITH_NEXT, energy);
+      branch_ctd->emplace_back(CTD_RC_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_FCOAX_WITH_PREV:
@@ -278,7 +278,7 @@ Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Se
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_LCOAX_WITH_NEXT:
-    case CTD_RCOAX_WITH_NEXT:
+    case CTD_RC_WITH_NEXT:
     case CTD_FCOAX_WITH_NEXT:
       // All these cases will be handled in the next branch (PREV).
       continue;

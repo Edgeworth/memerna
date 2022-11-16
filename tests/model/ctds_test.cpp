@@ -55,11 +55,11 @@ std::function<CtdTest(const EnergyModel&)> CTD_TESTS[] = {[](const EnergyModel&)
     [](const EnergyModel& em) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."),
-          Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RCOAX_WITH_NEXT, CTD_NA,
+          Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-              CTD_NA, CTD_NA, CTD_RCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
-          {{CTD_UNUSED, 0}, {CTD_RCOAX_WITH_NEXT, em.MismatchCoaxial(C, A, A, G)},
-              {CTD_RCOAX_WITH_PREV, em.MismatchCoaxial(C, A, A, G)}},
+              CTD_NA, CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
+          {{CTD_UNUSED, 0}, {CTD_RC_WITH_NEXT, em.MismatchCoaxial(C, A, A, G)},
+              {CTD_RC_WITH_PREV, em.MismatchCoaxial(C, A, A, G)}},
           {0, 6, 20}};
     },
     [](const EnergyModel& em) -> CtdTest {
@@ -107,7 +107,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   for (const auto& branch_ctd : ctd_test.branch_ctd) {
     // Make sure each branch energy is only represented once.
     if (branch_ctd.first == CTD_FCOAX_WITH_NEXT || branch_ctd.first == CTD_LCOAX_WITH_NEXT ||
-        branch_ctd.first == CTD_RCOAX_WITH_NEXT)
+        branch_ctd.first == CTD_RC_WITH_NEXT)
       continue;
     test_energy += branch_ctd.second;
   }

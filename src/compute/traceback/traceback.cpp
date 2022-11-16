@@ -45,10 +45,10 @@ TracebackResult Traceback(
         const auto base11 = dp[st + 1][en - 1][DP_P] + em.AuGuPenalty(st1b, en1b);
 
         // (   )<.( * ). > Right coax backward
-        if (a == EXT_RCOAX) {
+        if (a == EXT_RC) {
           // Don't set CTDs here since they will have already been set.
           if (base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT] ==
-              ext[st][EXT_RCOAX]) {
+              ext[st][EXT_RC]) {
             q.emplace(st + 1, en - 1, DP_P);
             q.emplace(en + 1, -1, EXT);
             goto loopend;
@@ -111,11 +111,11 @@ TracebackResult Traceback(
           }
 
           // (   )<.(   ). > Right coax forward
-          if (base00 + ext[en + 1][EXT_RCOAX] == ext[st][EXT]) {
-            res.ctd[st] = CTD_RCOAX_WITH_NEXT;
-            res.ctd[en + 2] = CTD_RCOAX_WITH_PREV;
+          if (base00 + ext[en + 1][EXT_RC] == ext[st][EXT]) {
+            res.ctd[st] = CTD_RC_WITH_NEXT;
+            res.ctd[en + 2] = CTD_RC_WITH_PREV;
             q.emplace(st, en, DP_P);
-            q.emplace(en + 1, -1, EXT_RCOAX);
+            q.emplace(en + 1, -1, EXT_RC);
             goto loopend;
           }
 
@@ -214,8 +214,8 @@ TracebackResult Traceback(
           if (base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
                   em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
               dp[st][en][DP_P]) {
-            res.ctd[en] = CTD_RCOAX_WITH_PREV;
-            res.ctd[piv + 1] = CTD_RCOAX_WITH_NEXT;
+            res.ctd[en] = CTD_RC_WITH_PREV;
+            res.ctd[piv + 1] = CTD_RC_WITH_NEXT;
             q.emplace(st + 2, piv, DP_U);
             q.emplace(piv + 1, en - 2, DP_P);
             goto loopend;
@@ -226,8 +226,8 @@ TracebackResult Traceback(
                   em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                   em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
               dp[st][en][DP_P]) {
-            res.ctd[en] = CTD_RCOAX_WITH_NEXT;
-            res.ctd[st + 2] = CTD_RCOAX_WITH_PREV;
+            res.ctd[en] = CTD_RC_WITH_NEXT;
+            res.ctd[st + 2] = CTD_RC_WITH_PREV;
             q.emplace(st + 2, piv - 1, DP_P);
             q.emplace(piv + 1, en - 1, DP_U);
             goto loopend;
@@ -297,11 +297,11 @@ TracebackResult Traceback(
         auto right_unpaired = dp[piv + 1][en][DP_U];
         if (a != DP_U2) right_unpaired = std::min(right_unpaired, 0);
 
-        // Check a == U_RCOAX:
+        // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
-        if (a == DP_U_RCOAX) {
+        if (a == DP_U_RC) {
           if (base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
-              dp[st][en][DP_U_RCOAX]) {
+              dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             q.emplace(st + 1, piv - 1, DP_P);
             if (right_unpaired) q.emplace(piv + 1, en, DP_U);
@@ -363,11 +363,11 @@ TracebackResult Traceback(
         }
 
         // (   )<.(   ). > Right coax forward - U, U2
-        if (base00 + dp[piv + 1][en][DP_U_RCOAX] == dp[st][en][a]) {
-          res.ctd[st] = CTD_RCOAX_WITH_NEXT;
-          res.ctd[piv + 2] = CTD_RCOAX_WITH_PREV;
+        if (base00 + dp[piv + 1][en][DP_U_RC] == dp[st][en][a]) {
+          res.ctd[st] = CTD_RC_WITH_NEXT;
+          res.ctd[piv + 2] = CTD_RC_WITH_PREV;
           q.emplace(st, piv, DP_P);
-          q.emplace(piv + 1, en, DP_U_RCOAX);
+          q.emplace(piv + 1, en, DP_U_RC);
           goto loopend;
         }
 

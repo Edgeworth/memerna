@@ -148,7 +148,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
         u2_min = std::min(u2_min, val);
 
         // (   )<.(   ). > Right coax forward and backward
-        val = base00 + dp[piv + 1][en][DP_U_RCOAX];
+        val = base00 + dp[piv + 1][en][DP_U_RC];
         u_min = std::min(u_min, val);
         u2_min = std::min(u2_min, val);
         rcoax_min =
@@ -169,7 +169,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
       dp[st][en][DP_U2] = u2_min;
       dp[st][en][DP_U_WC] = wc_min;
       dp[st][en][DP_U_GU] = gu_min;
-      dp[st][en][DP_U_RCOAX] = rcoax_min;
+      dp[st][en][DP_U_RC] = rcoax_min;
     }
   }
 

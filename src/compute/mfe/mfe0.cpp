@@ -155,11 +155,10 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em) {
         UPDATE_CACHE(DP_U2, val);
 
         // (   )<.(   ). > Right coax forward and backward
-        val = base00 + dp[piv + 1][en][DP_U_RCOAX];
+        val = base00 + dp[piv + 1][en][DP_U_RC];
         UPDATE_CACHE(DP_U, val);
         UPDATE_CACHE(DP_U2, val);
-        UPDATE_CACHE(
-            DP_U_RCOAX, base11 + em->MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
+        UPDATE_CACHE(DP_U_RC, base11 + em->MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
 
         // (   )(<   ) > Flush coax - U
         val = base01 + em->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];

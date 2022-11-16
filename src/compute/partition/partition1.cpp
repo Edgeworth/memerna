@@ -147,7 +147,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
         u2 += val;
 
         // (   )<.(   ). > Right coax forward and backward
-        val = base00 * dp[piv + 1][en][PT_U_RCOAX];
+        val = base00 * dp[piv + 1][en][PT_U_RC];
         u += val;
         u2 += val;
         val = base11 * bem->MismatchCoaxial(pl1b, pb, stb, st1b);
@@ -168,7 +168,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
       dp[st][en][PT_U2] = u2;
       dp[st][en][PT_U_WC] = wc;
       dp[st][en][PT_U_GU] = gu;
-      dp[st][en][PT_U_RCOAX] = rcoax;
+      dp[st][en][PT_U_RC] = rcoax;
     }
   }
 
@@ -177,7 +177,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
 
   // Fill the left triangle.
   // The meaning of the tables changes here:
-  // U, U2, WC, GU, RCOAX: any table index with en < st must have a loop enclosing (en, st)
+  // U, U2, WC, GU, RC: any table index with en < st must have a loop enclosing (en, st)
   for (int st = N - 1; st >= 0; --st) {
     for (int en = 0; en < st; ++en) {
       //        ..)...(..
@@ -420,7 +420,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
           }
           // |  ).  >>   <(   )<.(   | Right coax forward
           // straddling
-          val = base00 * dp[pr][en][PT_U_RCOAX];
+          val = base00 * dp[pr][en][PT_U_RC];
           u += val;
           u2 += val;
         }
@@ -473,7 +473,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
       dp[st][en][PT_U2] = u2;
       dp[st][en][PT_U_WC] = wc;
       dp[st][en][PT_U_GU] = gu;
-      dp[st][en][PT_U_RCOAX] = rcoax;
+      dp[st][en][PT_U_RC] = rcoax;
     }
   }
 
