@@ -141,8 +141,9 @@ set(MEMERNA_SOURCE
   src/fuzz/fuzz_cfg.cpp src/fuzz/fuzz_cfg.h
   src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
   src/model/base.cpp src/model/base.h
+  src/model/constants.h
   src/model/ctd.cpp src/model/ctd.h
-  src/model/model.cpp src/model/model.h
+  src/model/energy.cpp src/model/energy.h
   src/model/primary.cpp src/model/primary.h
   src/model/secondary.cpp src/model/secondary.h
   src/util/argparse.cpp src/util/argparse.h

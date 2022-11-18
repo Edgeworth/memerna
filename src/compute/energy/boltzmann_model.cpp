@@ -15,7 +15,7 @@ constexpr auto Decay(T& a) {  // NOLINT
 }
 
 void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
-  for (int i = 0; i < elements; ++i) output[i] = Boltz(input[i]);
+  for (int i = 0; i < elements; ++i) output[i] = input[i].Boltz();
 }
 
 }  // namespace
@@ -60,7 +60,7 @@ BoltzEnergyModel::BoltzEnergyModel(const EnergyModelPtr& em) : em_(*em) {
   FILL_BOLTZ(coax_mismatch_gu_bonus);
   FILL_BOLTZ(augu_penalty);
 
-  for (const auto& kv : em->hairpin) hairpin[kv.first] = Boltz(kv.second);
+  for (const auto& kv : em->hairpin) hairpin[kv.first] = kv.second.Boltz();
 #undef FILL_BOLTZ
 }
 

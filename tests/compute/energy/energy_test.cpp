@@ -15,7 +15,7 @@
 #include "compute/energy/precomp.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 
@@ -166,38 +166,38 @@ TEST_F(EnergyTest, BaseCases) {
 }
 
 TEST_F(EnergyTest, T04Tests) {
-  EXPECT_EQ(88, t04->HairpinInitiation(87));
-  EXPECT_EQ(68, t04->BulgeInitiation(57));
-  EXPECT_EQ(46, t04->InternalLoopInitiation(67));
+  EXPECT_EQ(E(8.8), t04->HairpinInitiation(87));
+  EXPECT_EQ(E(6.8), t04->BulgeInitiation(57));
+  EXPECT_EQ(E(4.6), t04->InternalLoopInitiation(67));
 
-  EXPECT_EQ(45, GetEnergy("GCAAAGCC", "((...).)"));
-  EXPECT_EQ(57, GetEnergy("CCCAAAAUG", ".(.(...))"));
-  EXPECT_EQ(55, GetEnergy("UACAGA", "(....)"));
-  EXPECT_EQ(-6, GetEnergy("AGGGUCAUCCG", ".(((...)))."));
-  EXPECT_EQ(80, GetEnergy("AGAGAAACAAAU", "(..(...)...)"));
-  EXPECT_EQ(95, GetEnergy("CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
-  EXPECT_EQ(77, GetEnergy("CCCGAAACAG", "(..(...).)"));
-  EXPECT_EQ(74, GetEnergy("GACAGAAACGCUGAAUC", "((..(...)......))"));
-  EXPECT_EQ(173, GetEnergy("CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(182, GetEnergy("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(176, GetEnergy("AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(131, GetEnergy("CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(-276,
+  EXPECT_EQ(E(4.5), GetEnergy("GCAAAGCC", "((...).)"));
+  EXPECT_EQ(E(5.7), GetEnergy("CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.5), GetEnergy("UACAGA", "(....)"));
+  EXPECT_EQ(E(-0.6), GetEnergy("AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(8.0), GetEnergy("AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(9.5), GetEnergy("CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
+  EXPECT_EQ(E(7.7), GetEnergy("CCCGAAACAG", "(..(...).)"));
+  EXPECT_EQ(E(7.4), GetEnergy("GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(1.73), GetEnergy("CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(1.82), GetEnergy("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(1.76), GetEnergy("AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(1.31), GetEnergy("CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-2.76),
       GetEnergy("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(179, GetEnergy("UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(1.79), GetEnergy("UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
-  EXPECT_EQ(37, GetEnergy("GGUCAAAGGUC", "((((...))))"));
-  EXPECT_EQ(-45, GetEnergy("GGGGAAACCCC", "((((...))))"));
-  EXPECT_EQ(72, GetEnergy("UGACAAAGGCGA", "(..(...)...)"));
+  EXPECT_EQ(E(3.7), GetEnergy("GGUCAAAGGUC", "((((...))))"));
+  EXPECT_EQ(E(-4.5), GetEnergy("GGGGAAACCCC", "((((...))))"));
+  EXPECT_EQ(E(7.2), GetEnergy("UGACAAAGGCGA", "(..(...)...)"));
 }
 
 TEST_F(EnergyTest, Precomp) {
   const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), t04);
-  EXPECT_EQ(-21 - 4 - 16, pc.min_mismatch_coax);
-  EXPECT_EQ(-34, pc.min_flush_coax);
-  EXPECT_EQ(-26, pc.min_twoloop_not_stack);
+  EXPECT_EQ(E(-2.1 - 0.4 - 1.6), pc.min_mismatch_coax);
+  EXPECT_EQ(E(-3.4), pc.min_flush_coax);
+  EXPECT_EQ(E(-2.6), pc.min_twoloop_not_stack);
 
   Energy augubranch[4][4] = {
       {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};

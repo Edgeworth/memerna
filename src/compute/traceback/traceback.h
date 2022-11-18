@@ -24,7 +24,7 @@ struct TracebackResult {
   explicit TracebackResult(const TracebackResult&) = default;
   TracebackResult& operator=(const TracebackResult&) = delete;
 
-  auto operator<=>(const TracebackResult&) const = default;
+  constexpr auto operator<=>(const TracebackResult&) const = default;
 
   Secondary s;
   Ctds ctd;  // May be empty if CTDs were not computed.

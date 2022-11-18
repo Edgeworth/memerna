@@ -4,8 +4,8 @@
 
 #include <memory>
 
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 
 namespace mrna::energy {
 
@@ -21,7 +21,7 @@ struct EnergyResult {
   EnergyResult(const EnergyResult&) = delete;
   EnergyResult& operator=(const EnergyResult&) = delete;
 
-  Energy energy = 0;
+  Energy energy = ZERO_E;
   Ctds ctd;  // May be empty if CTDs were not computed.
   std::unique_ptr<Structure> struc;  // May be nullptr if you didn't ask for a Structure.
 };

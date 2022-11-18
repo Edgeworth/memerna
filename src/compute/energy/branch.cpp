@@ -83,13 +83,14 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
   if (N < 1) return 0;
 
   // cache[used][i]
-  std::vector<int> cache[2] = {std::vector<int>(N + 1, MAX_E), std::vector<int>(N + 1, MAX_E)};
+  std::vector<Energy> cache[2] = {
+      std::vector<Energy>(N + 1, MAX_E), std::vector<Energy>(N + 1, MAX_E)};
   std::vector<std::tuple<bool, int, Energy, Ctd>> back[2] = {
       std::vector<std::tuple<bool, int, Energy, Ctd>>(N + 1, std::make_tuple(false, -1, 0, CTD_NA)),
       std::vector<std::tuple<bool, int, Energy, Ctd>>(
           N + 1, std::make_tuple(false, -1, 0, CTD_NA))};
 
-  cache[0][0] = cache[1][0] = 0;
+  cache[0][0] = cache[1][0] = ZERO_E;
   int first_lui = branches[0] - 1;
   int last_rui = s[branches[N - 1]] + 1;
 

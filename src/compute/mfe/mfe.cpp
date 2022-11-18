@@ -16,7 +16,7 @@ ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const 
   auto ext = ExtArray(r.size() + 1, MAX_E);
 
   // Exterior loop calculation. There can be no paired base on ext[en].
-  ext[N][EXT] = 0;
+  ext[N][EXT] = ZERO_E;
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
     ext[st][EXT] = ext[st + 1][EXT];

@@ -10,8 +10,8 @@
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/primary.h"
 
 namespace mrna::subopt {

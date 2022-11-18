@@ -14,8 +14,8 @@
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/splaymap.h"
@@ -58,7 +58,7 @@ class BruteForce {
     inline constexpr static uint32_t BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
     uint16_t bits[BYTES / 2];
 
-    auto operator<=>(const SubstructureId&) const = default;
+    constexpr auto operator<=>(const SubstructureId&) const = default;
   };
 
   Primary r_;

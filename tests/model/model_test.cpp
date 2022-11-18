@@ -1,9 +1,8 @@
 // Copyright 2022 Eliot Courtney.
-#include "model/model.h"
-
 #include <memory>
 
 #include "gtest/gtest.h"
+#include "model/constants.h"
 
 namespace mrna {
 

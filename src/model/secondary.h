@@ -27,7 +27,7 @@ class Secondary {
   explicit Secondary(const Secondary&) = default;
   Secondary& operator=(const Secondary&) = delete;
 
-  auto operator<=>(const Secondary&) const = default;
+  constexpr auto operator<=>(const Secondary&) const = default;
 
   int& operator[](std::size_t pos) { return data_[pos]; }
   const int& operator[](std::size_t pos) const { return data_[pos]; }

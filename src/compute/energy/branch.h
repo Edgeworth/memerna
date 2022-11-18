@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "compute/energy/model.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 

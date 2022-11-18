@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "bridge/rnastructure.h"
 #include "compute/boltz_dp.h"
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
@@ -18,8 +19,8 @@
 #include "compute/traceback/traceback.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/secondary.h"
 #include "util/array.h"
 #include "util/float.h"
@@ -333,9 +334,9 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
       for (int a = 0; a < DP_SIZE; ++a) {
         auto dp = fold_.mfe.dp[st][en][a];
         if (a == DP_P || a == DP_U) {
-          Energy rstr_eval = a == DP_P ? rstr_dp.v.f(st + 1, en + 1) : rstr_dp.w.f(st + 1, en + 1);
+          auto rstr_eval = a == DP_P ? rstr_dp.v.f(st + 1, en + 1) : rstr_dp.w.f(st + 1, en + 1);
           if (((dp < CAP_E) != (rstr_eval < INFINITE_ENERGY - 1000) ||
-                  (dp < CAP_E && dp != rstr_eval))) {
+                  (dp < CAP_E && dp != bridge::RNAstructure::ToEnergy(rstr_eval)))) {
             errors.push_back("dp mismatch:");
             errors.push_back(sfmt("  dp at %d %d %d: %d != %d", st, en, a, rstr_eval, dp));
           }

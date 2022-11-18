@@ -21,14 +21,14 @@ Suboptimal1::Suboptimal1(
       ext_(std::move(ext)), cfg_(cfg) {}
 
 int Suboptimal1::Run(const SuboptCallback& fn) {
-  res_ = SuboptResult(0, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
+  res_ = SuboptResult(ZERO_E, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES) {
     int count = 0;
-    Energy delta = 0;
+    Energy delta = ZERO_E;
     while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
       auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
       count += res.first;
@@ -53,7 +53,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
-  Energy energy = 0;
+  Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
   q_.push_back({0, {0, -1, EXT}, false});

@@ -8,7 +8,7 @@
 #include "compute/boltz_dp.h"
 #include "compute/energy/boltzmann_model.h"
 #include "compute/energy/model.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 
 namespace mrna::part {

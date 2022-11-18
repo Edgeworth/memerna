@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "compute/traceback/traceback.h"
-#include "model/model.h"
+#include "model/constants.h"
 
 namespace mrna::subopt {
 
@@ -22,7 +22,7 @@ struct SuboptResult {
   explicit SuboptResult(const SuboptResult&) = default;
   SuboptResult& operator=(const SuboptResult&) = delete;
 
-  auto operator<=>(const SuboptResult&) const = default;
+  constexpr auto operator<=>(const SuboptResult&) const = default;
 
   Energy energy{};  // Put this first so naive sort is by energy.
   tb::TracebackResult tb;

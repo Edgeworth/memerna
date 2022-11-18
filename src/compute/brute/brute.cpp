@@ -12,7 +12,7 @@
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "util/error.h"
 
 namespace mrna::brute {
@@ -81,7 +81,7 @@ void BruteForce::AddAllCombinations(int idx) {
   if (idx == N) {
     if (cfg_.part) {
       auto energy = bem_->em().TotalEnergy(r_, s_, &ctd_).energy;
-      res_.part.q += Boltz(energy);
+      res_.part.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
           const auto inside_structure = BuildInsideStructure(i, s_[i], N);
@@ -91,11 +91,11 @@ void BruteForce::AddAllCombinations(int idx) {
           if (inside_new || outside_new) {
             Energy inside_energy = bem_->em().SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
-              res_.part.p[i][s_[i]] += Boltz(inside_energy);
+              res_.part.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.part.p[s_[i]][i] += Boltz(energy - inside_energy);
+              res_.part.p[s_[i]][i] += (energy - inside_energy).Boltz();
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }

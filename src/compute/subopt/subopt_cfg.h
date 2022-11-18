@@ -5,7 +5,7 @@
 #include <limits>
 #include <memory>
 
-#include "model/model.h"
+#include "model/constants.h"
 #include "util/argparse.h"
 
 namespace mrna::subopt {
