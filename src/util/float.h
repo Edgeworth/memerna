@@ -2,6 +2,9 @@
 #ifndef UTIL_FLOAT_H_
 #define UTIL_FLOAT_H_
 
+#include <cmath>
+#include <cstdint>
+
 #ifdef USE_MPFR
 #include <boost/multiprecision/mpfr.hpp>
 namespace boost {
@@ -43,6 +46,12 @@ inline const flt EP{1e-8};
 #else
 inline const flt EP{1e-30};
 #endif
+
+inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) < ep; }
+
+inline bool rel_eq(flt a, flt b, flt rel = EP) {
+  return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
+}
 
 }  // namespace mrna
 

@@ -6,6 +6,9 @@
   use decimal point format?
   need to update python, programs - use functions to convert
   find all random energy constants, wrap in function to convert.
+  search for 100
+  allow CAP string
+  allow MAX string
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names
 

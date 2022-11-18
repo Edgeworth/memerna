@@ -3,10 +3,9 @@
 #define MODEL_MODEL_H_
 
 #include <algorithm>
-#include <cmath>
-#include <cstdint>
 
 #include "model/primary.h"
+#include "util/error.h"
 #include "util/float.h"
 
 namespace mrna {
@@ -19,6 +18,23 @@ using BoltzEnergy = flt;
 inline constexpr Energy MAX_E = 0x0F0F0F0F;
 // Used for finite but larger than any possible energy values. e.g. for subopt-delta
 inline constexpr Energy CAP_E = 0x07070707;
+
+// Precision of energy values.
+inline constexpr int ENERGY_FACTOR = 100;
+inline constexpr int ENERGY_EXPONENT = 2;
+
+// Converts a floating point energy value in kcal/mol to an integer energy value.
+inline Energy E(double energy) {
+  auto rounded = static_cast<Energy>(std::round(energy * ENERGY_FACTOR));
+  verify(abs_eq(energy * ENERGY_FACTOR, rounded), "energy value not convertible from double: %f",
+      energy);
+  verify(rounded < CAP_E && rounded > -CAP_E, "energy value out of range: %f", energy);
+  return rounded;
+}
+
+Energy EnergyFromString(const std::string& s);
+
+std::string EnergyToString(Energy energy);
 
 // -----------------------------------------------
 // Values affecting the energy model:
@@ -34,13 +50,7 @@ inline constexpr int TWOLOOP_MAX_SZ = 30;
 
 inline BoltzEnergy Boltz(Energy energy) {
   if (energy >= CAP_E) return 0;
-  return exp(BoltzEnergy(energy) * (BoltzEnergy(-1) / BoltzEnergy(10.0 * R * T)));
-}
-
-inline bool abs_eq(BoltzEnergy a, BoltzEnergy b, flt ep = EP) { return fabs(a - b) < ep; }
-
-inline bool rel_eq(BoltzEnergy a, BoltzEnergy b, flt rel = EP) {
-  return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
+  return exp(BoltzEnergy(energy) * (BoltzEnergy(-1) / BoltzEnergy(ENERGY_FACTOR * R * T)));
 }
 
 }  // namespace mrna
