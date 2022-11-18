@@ -1,5 +1,6 @@
 # Copyright 2016 Eliot Courtney.
 from dataclasses import dataclass
+from decimal import Decimal
 
 from rnapy.model.parse.sequence import secondary_to_db
 
@@ -9,7 +10,7 @@ class Rna:
     name: str | None = None
     r: str | None = None
     s: list[int] | None = None
-    energy: int | None = None
+    energy: Decimal | None = None
 
     def __post_init__(self) -> None:
         if self.r and self.s and len(self.r) != len(self.s):

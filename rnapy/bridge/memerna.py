@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import EnergyCfg
@@ -65,7 +66,7 @@ class MemeRna(RnaPackage):
         subopts = []
         for line in res.stdout.splitlines()[:-1]:
             energy_str, db = line.strip().split()
-            energy = int(energy_str)
+            energy = Decimal(energy_str)
             subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
         return subopts, res
 

@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 # These classes mirror the Cfg structs used in memerna.
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import Enum
 
 
@@ -20,6 +21,6 @@ class EnergyCfg:
 
 @dataclass
 class SuboptCfg:
-    delta: int | None = None
+    delta: Decimal | None = None
     strucs: int | None = None
     sorted: bool = True

@@ -21,13 +21,13 @@ class RnaPackage:
         raise NotImplementedError
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
-        pass
+        raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
-        pass
+        raise NotImplementedError
 
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
-        pass
+        raise NotImplementedError
 
     def subopt(
         self,
@@ -35,7 +35,7 @@ class RnaPackage:
         energy_cfg: EnergyCfg,
         subopt_cfg: SuboptCfg,
     ) -> tuple[list[Rna], CmdResult]:
-        pass
+        raise NotImplementedError
 
     def _run_cmd(
         self,

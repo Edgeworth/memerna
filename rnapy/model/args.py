@@ -1,5 +1,7 @@
 # Copyright 2022 Eliot Courtney.
+from decimal import Decimal
 from typing import Any
+from click_params import DECIMAL
 
 import cloup
 from rnapy.model.model_cfg import CtdCfg
@@ -30,7 +32,7 @@ subopt_options = cloup.option_group(
     "Subopt options",
     cloup.option(
         "--subopt-delta",
-        type=int,
+        type=DECIMAL,
         help="maximum energy delta from minimum",
     ),
     cloup.option(
@@ -47,7 +49,7 @@ subopt_options = cloup.option_group(
 
 
 def subopt_cfg_from_args(
-    subopt_delta: int | None,
+    subopt_delta: Decimal | None,
     subopt_strucs: int | None,
     subopt_sorted: bool,
     **_kwargs: Any,

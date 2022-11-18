@@ -78,7 +78,7 @@ class RNAstructure(RnaPackage):
             res = self._run_cmd(
                 "./exe/AllSub",
                 "-a",
-                f"{subopt_cfg.delta / 10.0:.2f}",
+                f"{subopt_cfg.delta}",
                 fin.name,
                 fout.name,
             )

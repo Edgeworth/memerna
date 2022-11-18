@@ -2,6 +2,7 @@
 
 
 from collections import deque
+from decimal import Decimal
 import re
 
 from rnapy.model.parse.sequence import db_to_secondary
@@ -40,13 +41,13 @@ class RnaParser:
         name: str | None = None,
         seq: str | None = None,
         db: str | None = None,
-        energy: int | None = None,
+        energy: str | None = None,
     ) -> Rna:
         return Rna(
             name=name,
             r=seq_to_primary(seq) if seq else None,
             s=db_to_secondary(db) if db else None,
-            energy=energy,
+            energy=Decimal(energy) if energy else None,
         )
 
     @staticmethod

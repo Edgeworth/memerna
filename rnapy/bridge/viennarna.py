@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+from decimal import Decimal
 import re
 import tempfile
 
@@ -34,7 +35,7 @@ class ViennaRna(RnaPackage):
     def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
         if cfg.delta:
-            args += ["--deltaEnergy", f"{cfg.delta / 10.0:.1f}"]
+            args += ["--deltaEnergy", f"{cfg.delta}"]
         if cfg.strucs:
             raise NotImplementedError(
                 "ViennaRNA does not support reporting a maximum number of suboptimal structures",
@@ -81,7 +82,7 @@ class ViennaRna(RnaPackage):
         subopts = []
         for i in res.stdout.splitlines()[1:]:
             db, energy_str = re.split(r"\s+", i.strip())
-            energy = int(float(energy_str) * 10)
+            energy = Decimal(energy_str)
             subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
         return subopts, res
 
