@@ -9,13 +9,14 @@ MAX = 0x0F0F0F0F
 ORDER = "ACGU"
 
 
-def parse_number(val: str, default: int = MAX) -> int:
+def parse_number(val: str, default: str = "MAX") -> str:
     if val == ".":
         return default
-    res = int(val.replace(".", ""))
-    if float(val) * 10 != res:
+    if val[0] == "+":
+        val = val[1:]
+    if str(float(val)) != val:
         raise ValueError(f"invalid number: {val}")
-    return res
+    return val
 
 
 # Converts ordering of dangles.
@@ -124,16 +125,16 @@ def parse_2x2_internal_loop(data: str) -> str:
 
 def parse_map_file(data: str) -> str:
     m = re.findall(r"([GUAC]+)\s*(\S+)", data)
-    return "".join(f"{i[0]} {i[1].replace('.', '')}\n" for i in m)
+    return "".join(f"{i[0]} {parse_number(i[1])}\n" for i in m)
 
 
 def parse_loop_file(data: str) -> tuple[str, str, str]:
     m = re.findall(r"(\d+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)\s+([0-9.\-+]+)", data)
     internal, bulge, hairpin = "", "", ""
     for i in m:
-        internal += f"{i[0]} {parse_number(i[1], 0)}\n"
-        bulge += f"{i[0]} {parse_number(i[2], 0)}\n"
-        hairpin += f"{i[0]} {parse_number(i[3], 0)}\n"
+        internal += f"{i[0]} {parse_number(i[1], '0')}\n"
+        bulge += f"{i[0]} {parse_number(i[2], '0')}\n"
+        hairpin += f"{i[0]} {parse_number(i[3], '0')}\n"
     return (internal, bulge, hairpin)
 
 
@@ -150,38 +151,40 @@ def parse_terminal_txt(data: str) -> str:
 @cloup.option(
     "-i",
     "--input",
+    "inp",
     type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     required=True,
 )
 @cloup.option(
     "-o",
     "--output",
+    "out",
     type=cloup.Path(file_okay=False, exists=True, writable=True, resolve_path=True, path_type=Path),
     required=True,
 )
 def parse_rnastructure_datatables(inp: Path, out: Path) -> None:
     (out / "hairpin.data").write_text(
-        parse_map_file((inp / "triloop.txt").read_text())
-        + parse_map_file((inp / "tloop.txt").read_text())
-        + parse_map_file((inp / "hexaloop.txt").read_text()),
+        parse_map_file((inp / "triloop.dat").read_text())
+        + parse_map_file((inp / "tloop.dat").read_text())
+        + parse_map_file((inp / "hexaloop.dat").read_text()),
     )
-    (out / "stacking.data").write_text(parse_stack_txt((inp / "stack.txt").read_text()))
-    (out / "terminal.data").write_text(parse_terminal_txt((inp / "tstack.txt").read_text()))
+    (out / "stacking.data").write_text(parse_stack_txt((inp / "stack.dat").read_text()))
+    (out / "terminal.data").write_text(parse_terminal_txt((inp / "tstack.dat").read_text()))
 
-    internal, bulge, hairpin = parse_loop_file((inp / "loop.txt").read_text())
+    internal, bulge, hairpin = parse_loop_file((inp / "loop.dat").read_text())
     (out / "internal_initiation.data").write_text(internal)
     (out / "bulge_initiation.data").write_text(bulge)
     (out / "hairpin_initiation.data").write_text(hairpin)
     (out / "internal_1x1.data").write_text(
-        parse_1x1_internal_loop((inp / "int11.txt").read_text()),
+        parse_1x1_internal_loop((inp / "int11.dat").read_text()),
     )
     (out / "internal_1x2.data").write_text(
-        parse_1x2_internal_loop((inp / "int21.txt").read_text()),
+        parse_1x2_internal_loop((inp / "int21.dat").read_text()),
     )
     (out / "internal_2x2.data").write_text(
-        parse_2x2_internal_loop((inp / "int22.txt").read_text()),
+        parse_2x2_internal_loop((inp / "int22.dat").read_text()),
     )
 
-    dangle3, dangle5 = parse_dangle_file((inp / "dangle.txt").read_text())
+    dangle3, dangle5 = parse_dangle_file((inp / "dangle.dat").read_text())
     (out / "dangle3.data").write_text(dangle3)
     (out / "dangle5.data").write_text(dangle5)

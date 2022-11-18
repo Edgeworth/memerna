@@ -6,9 +6,8 @@
   use decimal point format?
   need to update python, programs - use functions to convert
   find all random energy constants, wrap in function to convert.
-  search for 100
-  allow CAP string
-  allow MAX string
+  search for 100, 10, 10.0
+
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names
 
@@ -70,6 +69,7 @@ need to apply to all loop types - affects energy model, exterior loop, mfe.
   - hack values for multiloop coefficients should stay the same?
 - Still using 10\*kcal/mol. Should switch precision? What accuracy changes did
   Dave see?
+- does it use higher precision for t04?
 - check initiation/symmetry values
   energy model:
 
