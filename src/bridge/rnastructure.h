@@ -12,7 +12,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "ctx/ctx.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/secondary.h"
 #include "rnastructure_bridge/include/algorithm.h"
 #include "rnastructure_bridge/include/alltrace.h"
@@ -49,6 +49,14 @@ class RNAstructure : public RnaPackage {
   ctx::FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
   static RNAstructure FromArgParse(const ArgParse& args);
+
+  static Energy ToEnergy(int16_t energy) { return Energy::FromRaw(energy * Energy::FACTOR / 10); }
+
+  static int16_t FromEnergy(Energy energy) {
+    auto rstr_energy = energy.v * 10 / Energy::FACTOR;
+    verify(int16_t(rstr_energy) == rstr_energy, "energy too big");
+    return int16_t(rstr_energy);
+  }
 
  private:
   std::unique_ptr<datatable> data_{};

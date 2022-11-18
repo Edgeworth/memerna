@@ -136,8 +136,7 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
     const Primary& r, Energy delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  verify(int16_t(delta) == delta, "delta too big");
-  alltrace(structure.get(), data_.get(), 100, int16_t(delta), nullptr, nullptr, false);
+  alltrace(structure.get(), data_.get(), 100, FromEnergy(delta), nullptr, nullptr, false);
   return StructureToSuboptVector(*structure);
 }
 

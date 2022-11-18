@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "model/model.h"
+#include "model/constants.h"
 
 namespace mrna {
 

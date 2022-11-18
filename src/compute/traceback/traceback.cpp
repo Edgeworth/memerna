@@ -8,7 +8,7 @@
 #include "compute/dp.h"
 #include "compute/energy/model.h"
 #include "model/base.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
@@ -295,7 +295,7 @@ TracebackResult Traceback(
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.
         auto right_unpaired = dp[piv + 1][en][DP_U];
-        if (a != DP_U2) right_unpaired = std::min(right_unpaired, 0);
+        if (a != DP_U2) right_unpaired = std::min(right_unpaired, ZERO_E);
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
@@ -304,7 +304,7 @@ TracebackResult Traceback(
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             q.emplace(st + 1, piv - 1, DP_P);
-            if (right_unpaired) q.emplace(piv + 1, en, DP_U);
+            if (right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
             goto loopend;
           }
           continue;
@@ -317,7 +317,7 @@ TracebackResult Traceback(
           // already set.
           if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
           q.emplace(st, piv, DP_P);
-          if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
 
@@ -328,21 +328,21 @@ TracebackResult Traceback(
         if (base01 + em.dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
           res.ctd[st] = CTD_3_DANGLE;
           q.emplace(st, piv - 1, DP_P);
-          if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // 5(   )<   > 5' - U, U2
         if (base10 + em.dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_5_DANGLE;
           q.emplace(st + 1, piv, DP_P);
-          if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch - U, U2
         if (base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_MISMATCH;
           q.emplace(st + 1, piv - 1, DP_P);
-          if (a == DP_U2 || right_unpaired) q.emplace(piv + 1, en, DP_U);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<(   ) > Left coax - U, U2

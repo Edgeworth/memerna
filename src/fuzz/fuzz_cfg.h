@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "model/energy.h"
 #include "util/argparse.h"
 
 namespace mrna::fuzz {
@@ -50,7 +51,7 @@ struct FuzzCfg {
   bool subopt = true;
   bool subopt_rnastructure = false;
   int subopt_strucs = 5000;
-  int subopt_delta = 6;
+  Energy subopt_delta = E(0.6);
 
   bool part = true;
   bool part_rnastructure = false;

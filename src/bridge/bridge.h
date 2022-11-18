@@ -10,7 +10,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "ctx/ctx.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"

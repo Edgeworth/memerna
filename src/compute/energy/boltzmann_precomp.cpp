@@ -27,7 +27,7 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   Base st1b = r_[st + 1];
   Base en1b = r_[en - 1];
   Base enb = r_[en];
-  BoltzEnergy energy = Boltz(em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb));
+  BoltzEnergy energy = (em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb)).Boltz();
 
   const bool all_c = hairpin[st + 1].num_c >= length;
 
@@ -40,7 +40,7 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   if ((st1b == U && en1b == U) || (st1b == G && en1b == A))
     energy *= bem().hairpin_uu_ga_first_mismatch;
   if (st1b == G && en1b == G) energy *= bem().hairpin_gg_first_mismatch;
-  if (all_c) energy *= Boltz(em().hairpin_all_c_a * length) * bem().hairpin_all_c_b;
+  if (all_c) energy *= (em().hairpin_all_c_a * length).Boltz() * bem().hairpin_all_c_b;
   if (stb == G && enb == U && st >= 2 && r_[st - 1] == G && r_[st - 2] == G)
     energy *= bem().hairpin_special_gu_closure;
 
@@ -68,7 +68,7 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
       TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
   assert(toplen + botlen < EnergyModel::INITIATION_CACHE_SZ);
   BoltzEnergy energy = bem().internal_init[toplen + botlen] *
-      Boltz(std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM));
+      std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM).Boltz();
 
   energy *= bem().InternalLoopAuGuPenalty(r_[ost], r_[oen]);
   energy *= bem().InternalLoopAuGuPenalty(r_[ist], r_[ien]);

@@ -8,7 +8,7 @@
 #include "compute/energy/precomp.h"
 #include "compute/mfe/mfe.h"
 #include "model/base.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
@@ -177,7 +177,8 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em) {
         mins[DP_U2] = std::min(mins[DP_U2], dp[st + 1][en][DP_U2]);
       }
       for (auto cand : cand_st[CAND_U]) {
-        mins[DP_U] = std::min(mins[DP_U], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], 0));
+        mins[DP_U] =
+            std::min(mins[DP_U], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], ZERO_E));
         mins[DP_U2] = std::min(mins[DP_U2], cand.energy + dp[cand.idx + 1][en][DP_U]);
       }
       for (auto cand : cand_st[CAND_U_LC]) {
@@ -204,14 +205,14 @@ DpArray ComputeTables3(const Primary& r, const energy::EnergyModelPtr& em) {
       }
       for (auto cand : cand_st[CAND_U_WC])
         mins[DP_U_WC] =
-            std::min(mins[DP_U_WC], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], 0));
+            std::min(mins[DP_U_WC], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], ZERO_E));
       for (auto cand : cand_st[CAND_U_GU])
         mins[DP_U_GU] =
-            std::min(mins[DP_U_GU], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], 0));
+            std::min(mins[DP_U_GU], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], ZERO_E));
       for (auto cand : cand_st[CAND_U_RC]) {
         // (   )<.( * ). > Right coax backward
         mins[DP_U_RC] =
-            std::min(mins[DP_U_RC], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], 0));
+            std::min(mins[DP_U_RC], cand.energy + std::min(dp[cand.idx + 1][en][DP_U], ZERO_E));
       }
 
       dp[st][en][DP_U] = mins[DP_U];

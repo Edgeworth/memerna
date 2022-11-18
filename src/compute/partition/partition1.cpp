@@ -11,7 +11,7 @@
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "model/base.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 

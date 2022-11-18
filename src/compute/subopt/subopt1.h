@@ -12,7 +12,7 @@
 #include "compute/energy/precomp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "util/splaymap.h"
 

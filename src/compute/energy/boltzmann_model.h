@@ -10,7 +10,7 @@
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "model/base.h"
-#include "model/model.h"
+#include "model/constants.h"
 #include "model/primary.h"
 
 namespace mrna::energy {
@@ -76,22 +76,22 @@ class BoltzEnergyModel {
   // TODO(2): Implement versions of Bulge, InternalLoop, TwoLoop, Hairpin with boltzmann baked in.
   BoltzEnergy Hairpin(
       const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().Hairpin(r, st, en, s));
+    return em().Hairpin(r, st, en, s).Boltz();
   }
 
   BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().Bulge(r, ost, oen, ist, ien, s));
+    return em().Bulge(r, ost, oen, ist, ien, s).Boltz();
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().InternalLoop(r, ost, oen, ist, ien, s));
+    return em().InternalLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
   BoltzEnergy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return Boltz(em().TwoLoop(r, ost, oen, ist, ien, s));
+    return em().TwoLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
  private:

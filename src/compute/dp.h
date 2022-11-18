@@ -155,7 +155,7 @@ struct Index {
     assert(st_ == st && en_ == en && a == a_);
   }
 
-  auto operator<=>(const Index&) const = default;
+  constexpr auto operator<=>(const Index&) const = default;
 };
 
 // Describes a CTD at a particular index.

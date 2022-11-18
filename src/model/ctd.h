@@ -47,7 +47,7 @@ class Ctds {
   explicit Ctds(const Ctds&) = default;
   Ctds& operator=(const Ctds&) = delete;
 
-  auto operator<=>(const Ctds&) const = default;
+  constexpr auto operator<=>(const Ctds&) const = default;
 
   Ctd& operator[](std::size_t pos) { return data_[pos]; }
   const Ctd& operator[](std::size_t pos) const { return data_[pos]; }

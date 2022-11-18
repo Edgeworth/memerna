@@ -7,6 +7,7 @@
   find all random energy constants, wrap in function to convert.
   search for 100, 10, 10.0, 100.0
   output of memerna programs
+  check memcpys etc for new Energy class
 
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names
@@ -42,36 +43,26 @@ same for subopt, partition etc
 
 # s22 notes
 
-2004 model:
+Turner 2004 model:
 
 - Special stacks of length > 2 base pairs are not handled.
 - Internal loops are limited to size 30 in most implementations in memerna.
 
-2012 model: GU penalty removed from AU/GU penalty
-2022 model:
+Update in 2012 model:
+
+- GU penalty removed from AU/GU penalty + stacking energy changed
+  "Testing the nearest neighbor model for Canonical RNA base pairs" paper
+  Just use the updated GU stacks, not for WC stacks since they didn't change that much
+  That's what RNAstructure does.
+
+Update in 2022 model:
 
 - AU penalty removed as well
 - stacking params updated
 - sequence dependent parameters for terminal base pairs based on the penultimate
   pair
 
-To ask Dave:
 need to apply to all loop types - affects energy model, exterior loop, mfe.
-
-- hairpin loop
-  - Special hairpins should remain unchanged?
-  - Special GU closure (with GG) should remain?
-- bulge loop
-- internal loop
-  - special internal loops should remain unchanged?
-  - AU/GU penalty is different for internal loops, but make it the new parameters too?
-- multiloop branches
-  - hack values for multiloop coefficients should stay the same?
-- Still using 10\*kcal/mol. Should switch precision? What accuracy changes did
-  Dave see?
-- does it use higher precision for t04?
-- check initiation/symmetry values
-  energy model:
 
 - augu_penalty, internal_augu_penalty goes away;
 - add [4][4][4][4] table for terminal base pairs.

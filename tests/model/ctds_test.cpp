@@ -10,8 +10,8 @@
 #include "compute/energy/model.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 

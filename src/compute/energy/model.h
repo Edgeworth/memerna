@@ -13,8 +13,8 @@
 #include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "model/base.h"
+#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
@@ -86,7 +86,7 @@ class EnergyModel {
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to match
     // RNAstructure.
-    return Energy(round(hairpin_init[30] + 10.0 * 1.75 * R * T * log(n / 30.0)));
+    return hairpin_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
   Energy BulgeInitiation(int n) const {
@@ -94,7 +94,7 @@ class EnergyModel {
     if (n < INITIATION_CACHE_SZ) return bulge_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to match RNAstructure.
-    return Energy(round(bulge_init[30] + 10.0 * 1.75 * R * T * log(n / 30.0)));
+    return bulge_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
   Energy InternalLoopInitiation(int n) const {
@@ -102,7 +102,7 @@ class EnergyModel {
     if (n < INITIATION_CACHE_SZ) return internal_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match RNAstructure.
-    return Energy(round(internal_init[30] + 10.0 * 1.08 * log(n / 30.0)));
+    return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
   Energy MultiloopInitiation(int num_branches) const {
@@ -111,12 +111,12 @@ class EnergyModel {
 
   Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? augu_penalty : 0;
+    return IsAuGuPair(stb, enb) ? augu_penalty : ZERO_E;
   }
 
   Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? internal_augu_penalty : 0;
+    return IsAuGuPair(stb, enb) ? internal_augu_penalty : ZERO_E;
   }
 
   // We use the normal terminal mismatch parameters for the mismatch that is on

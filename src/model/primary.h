@@ -23,7 +23,7 @@ class Primary {
   explicit Primary(const Primary&) = default;
   Primary& operator=(const Primary&) = delete;
 
-  auto operator<=>(const Primary&) const = default;
+  constexpr auto operator<=>(const Primary&) const = default;
 
   Base& operator[](std::size_t pos) { return data_[pos]; }
   const Base& operator[](std::size_t pos) const { return data_[pos]; }
