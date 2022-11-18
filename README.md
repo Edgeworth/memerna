@@ -3,10 +3,10 @@
 ## TODO:
 
 - higher precision energy
-  use decimal point format?
   need to update python, programs - use functions to convert
   find all random energy constants, wrap in function to convert.
-  search for 100, 10, 10.0
+  search for 100, 10, 10.0, 100.0
+  output of memerna programs
 
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names

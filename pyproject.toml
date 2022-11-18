@@ -9,10 +9,11 @@ version = "0.1.0"
 [tool.poetry.dependencies]
 bidict = "^0.22.0"
 click = "^8.0.4"
+click-params = "^0.4.0"
 click_log = "^0.4.0"
 cloup = "^1.0.2"
 pandas = "^1.5.1"
-protobuf = "3.20.1" 
+protobuf = "3.20.1"
 python = "~3.10"
 python-dotenv = "^0.21.0"
 ray = "^2.1.0"
@@ -68,6 +69,7 @@ module = [
   "matplotlib.*",
   "seaborn.*",
   "statsmodels.*",
+  "click_params.*",
 ]
 
 [tool.black]
