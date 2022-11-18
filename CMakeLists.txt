@@ -142,7 +142,7 @@ set(MEMERNA_SOURCE
   src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
   src/model/base.cpp src/model/base.h
   src/model/ctd.cpp src/model/ctd.h
-  src/model/model.h
+  src/model/model.cpp src/model/model.h
   src/model/primary.cpp src/model/primary.h
   src/model/secondary.cpp src/model/secondary.h
   src/util/argparse.cpp src/util/argparse.h
@@ -162,6 +162,7 @@ set(TEST_SOURCE
   tests/compute/traceback/traceback_test.cpp
   tests/model/base_test.cpp
   tests/model/ctds_test.cpp
+  tests/model/model_test.cpp
   tests/model/parsing_test.cpp
   tests/util/splaymap_test.cpp
 )
