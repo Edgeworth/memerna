@@ -47,12 +47,12 @@ class ViennaRna(RnaPackage):
     def name(self) -> str:
         return "ViennaRNA"
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
         res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         assert match is not None
-        energy = float(match.group(1))
+        energy = Decimal(match.group(1))
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:

@@ -19,21 +19,27 @@ NUCS = ["A", "C", "G", "U"]
 class RnaTensor:
     def from_primary(self, primary: str) -> torch.Tensor:
         """Index representation of a primary structure."""
+        raise NotImplementedError
 
     def to_primary(self, index: torch.Tensor | list[int]) -> str:
         """Primary structure from index representation."""
+        raise NotImplementedError
 
     def primary_dim(self) -> int:
         """Dimension of primary tokens."""
+        raise NotImplementedError
 
     def from_db(self, db: str) -> torch.Tensor:
         """Index representation of a db structure."""
+        raise NotImplementedError
 
     def to_db(self, index: torch.Tensor | list[int]) -> str:
         """db structure from index representation."""
+        raise NotImplementedError
 
     def db_dim(self) -> int:
         """Dimension of db tokens."""
+        raise NotImplementedError
 
 
 class BasicRnaTensor(RnaTensor):

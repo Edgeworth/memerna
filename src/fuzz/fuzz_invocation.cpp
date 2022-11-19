@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 
-#include "bridge/rnastructure.h"
 #include "compute/boltz_dp.h"
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
@@ -50,7 +49,7 @@ Error FuzzInvocation::Run() {
 void FuzzInvocation::Register(const std::string& header, Error&& local) {
   if (local.empty()) return;
   local.push_front(header);
-  for (auto& error : local) errors_.push_back("  " + error);
+  for (const auto& error : local) errors_.push_back("  " + error);
 }
 
 Error FuzzInvocation::CheckMfe() {

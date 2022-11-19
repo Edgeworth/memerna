@@ -2,6 +2,7 @@
 #ifndef UTIL_FLOAT_H_
 #define UTIL_FLOAT_H_
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 

@@ -136,8 +136,8 @@ void Precomp::PrecomputeData() {
               &em().internal_other_mismatch[0][0][0][0], sizeof(em().internal_other_mismatch)));
   const auto min_internal_init = MinEnergy(
       &em().internal_init[4], sizeof(em().internal_init) - 4 * sizeof(em().internal_init[0]));
-  min_internal = std::min(
-      min_internal, min_internal_init + std::min(2 * em().internal_augu_penalty, 0) + min_mismatch);
+  min_internal = std::min(min_internal,
+      min_internal_init + std::min(2 * em().internal_augu_penalty, ZERO_E) + min_mismatch);
 
   const auto min_bulge_init =
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
@@ -147,7 +147,7 @@ void Precomp::PrecomputeData() {
       std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);
 
-  hairpin = PrecomputeHairpin<HairpinPrecomp<Energy, MAX_E>>(r_, em());
+  hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>>(r_, em(), MAX_E);
 }
 
 }  // namespace mrna::energy

@@ -1,12 +1,15 @@
 from dataclasses import dataclass
+
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
-import matplotlib as mpl
+from rnapy.analysis.metrics import Dataset
+from rnapy.analysis.plot.util import get_marker
+from rnapy.analysis.plot.util import get_subplot_grid
+from rnapy.analysis.plot.util import set_up_figure
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-from rnapy.analysis.metrics import Dataset
-from rnapy.analysis.plot.util import get_marker, get_subplot_grid, set_up_figure
 
 
 @dataclass
@@ -41,8 +44,12 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
     return f
 
 
-def plot_mean_log_quantity(
-    ds: Dataset, xcol: Column, ycol: Column, logx: bool = True, logy: bool = True
+def plot_mean_log_quantity(  # noqa: too-many-locals
+    ds: Dataset,
+    xcol: Column,
+    ycol: Column,
+    logx: bool = True,
+    logy: bool = True,
 ) -> plt.Figure:
     EP = 1e-2
 

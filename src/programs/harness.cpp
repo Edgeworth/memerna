@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
       auto [r, s] = mrna::ParseSeqDb(seq, db);
       std::string desc;
       const auto res = package->Efn(r, s, args.GetOr(mrna::OPT_VERBOSE) ? &desc : nullptr);
-      printf("%d\n%s", res.energy, desc.c_str());
+      printf("%s\n%s", res.energy.ToString().c_str(), desc.c_str());
     }
   } else {
     while (true) {
@@ -82,16 +82,16 @@ int main(int argc, char* argv[]) {
       auto r = mrna::Primary::FromSeq(seq);
 
       if (subopt) {
-        int delta = args.Get<int>(mrna::subopt::OPT_SUBOPT_DELTA);
+        auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              printf("%d %s\n", c.energy, c.tb.s.ToDb().c_str());
+              printf("%s %s\n", c.energy.ToString().c_str(), c.tb.s.ToDb().c_str());
             },
             r, delta);
         printf("%d suboptimal structures:\n", strucs);
       } else if (fold) {
         const auto res = package->Fold(r);
-        printf("%d\n%s\n", res.mfe.energy, res.tb.s.ToDb().c_str());
+        printf("%s\n%s\n", res.mfe.energy.ToString().c_str(), res.tb.s.ToDb().c_str());
       } else if (part) {
         auto res = package->Partition(r);
         std::cout << "q: " << res.part.q << '\n';

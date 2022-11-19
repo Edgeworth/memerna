@@ -36,11 +36,11 @@ class MemeRna(RnaPackage):
     def name(self) -> str:
         return "memerna"
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
         assert rna.r is not None
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
-        energy = float(res.stdout.splitlines()[0].strip()) / 10.0
+        energy = Decimal(res.stdout.splitlines()[0].strip())
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:

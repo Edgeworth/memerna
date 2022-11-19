@@ -3,17 +3,18 @@ import logging
 
 import click_log
 import cloup
+from dotenv import load_dotenv
 from rnapy.programs.afl_fuzz import afl_fuzz
 from rnapy.programs.afl_fuzz_min import afl_fuzz_min
 from rnapy.programs.analysis.compare_partition import compare_partition
-from rnapy.programs.analysis.fold_perf import plot_fold_perf, run_fold_perf
+from rnapy.programs.analysis.fold_perf import plot_fold_perf
+from rnapy.programs.analysis.fold_perf import run_fold_perf
 from rnapy.programs.build import build
-from rnapy.programs.util.convert_format import convert_format
-from rnapy.programs.util.crop_image import crop_image
 from rnapy.programs.design import design
 from rnapy.programs.harness import harness
+from rnapy.programs.util.convert_format import convert_format
+from rnapy.programs.util.crop_image import crop_image
 from rnapy.programs.util.parse_rnastructure_datatables import parse_rnastructure_datatables
-from dotenv import load_dotenv
 
 CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,

@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -9,7 +10,10 @@ def set_style() -> None:
 
 
 def get_subplot_grid(
-    n: int, sharex: bool = False, sharey: bool = False, inches: float = 3.0
+    n: int,
+    sharex: bool = False,
+    sharey: bool = False,
+    inches: float = 3.0,
 ) -> tuple[plt.Figure, list[plt.Axes]]:
     SPLITTINGS = [(0, 0), (1, 1), (1, 2), (2, 2), (2, 2), (2, 3), (2, 3), (3, 3), (3, 3), (3, 3)]
 

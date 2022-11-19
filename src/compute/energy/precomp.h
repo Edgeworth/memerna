@@ -25,9 +25,11 @@ inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
 // TODO(3): move this?
 // This is templated because the partition function wants to use it with a different type.
-template <typename T, int InitVal>
+template <typename T>
 struct HairpinPrecomp {
-  HairpinPrecomp() { std::fill(special, special + sizeof(special) / sizeof(special[0]), InitVal); }
+  explicit HairpinPrecomp(T init) {
+    std::fill(special, special + sizeof(special) / sizeof(special[0]), init);
+  }
 
   T special[MAX_SPECIAL_HAIRPIN_SZ + 1];
   int num_c{0};
@@ -35,9 +37,8 @@ struct HairpinPrecomp {
 
 // TODO(3): move this?
 template <typename HairpinPrecomp, typename EM>
-std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em) {
-  std::vector<HairpinPrecomp> pc;
-  pc.resize(r.size());
+std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em, auto init) {
+  std::vector<HairpinPrecomp> pc(r.size(), HairpinPrecomp(init));
   std::string rna_str = r.ToSeq();
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
@@ -62,7 +63,7 @@ class Precomp {
   Energy min_flush_coax{};
   Energy min_twoloop_not_stack{};
 
-  std::vector<HairpinPrecomp<Energy, MAX_E>> hairpin;
+  std::vector<HairpinPrecomp<Energy>> hairpin;
 
   Precomp(Primary r, EnergyModelPtr em);
 

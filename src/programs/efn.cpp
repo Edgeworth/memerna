@@ -28,12 +28,12 @@ int main(int argc, char* argv[]) {
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
     res = em->TotalEnergy(r, s, &ctd, true);
-    printf("%d\n", res.energy);
+    printf("%s\n", res.energy.ToString().c_str());
     printf("%s\n", res.ctd.ToString(s).c_str());
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
     res = em->TotalEnergy(r, s, nullptr, true);
-    printf("%d\n", res.energy);
+    printf("%s\n", res.energy.ToString().c_str());
     printf("%s\n", res.ctd.ToString(s).c_str());
   }
 

@@ -15,6 +15,11 @@
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names
 
+- switch to c++ input/output
+  - use std::ios_base::sync_with_stdio(false);
+  - can remove energy.ToString() calls, FromString() calls
+  - add operator<<>> to others? Ctd
+
 ## s22 notes (impl)
 
 split code into t04 model and others
