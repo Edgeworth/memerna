@@ -1,8 +1,8 @@
 # Copyright 2022 Eliot Courtney.
 from decimal import Decimal
 from typing import Any
-from click_params import DECIMAL
 
+from click_params import DECIMAL
 import cloup
 from rnapy.model.model_cfg import CtdCfg
 from rnapy.model.model_cfg import EnergyCfg

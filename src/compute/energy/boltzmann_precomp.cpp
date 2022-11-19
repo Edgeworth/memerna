@@ -87,7 +87,7 @@ void BoltzPrecomp::PrecomputeData() {
   for (Base i = 0; i < 4; ++i)
     for (Base j = 0; j < 4; ++j)
       augubranch[i][j] = bem().multiloop_hack_b * bem().AuGuPenalty(i, j);
-  hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy, -1>>(r_, bem());
+  hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>>(r_, bem(), -1.0);
 }
 
 }  // namespace mrna::energy

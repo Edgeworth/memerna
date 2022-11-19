@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+from decimal import Decimal
 import re
 import tempfile
 
@@ -34,7 +35,7 @@ class RNAstructure(RnaPackage):
     def name(self) -> str:
         return "RNAstructure"
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         self.check_energy_cfg(cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
             fin.write(RnaParser.to_ct_file(rna))
@@ -46,7 +47,7 @@ class RNAstructure(RnaPackage):
             res = self._run_cmd("./exe/efn2", "-s", fin.name, fout.name)
             match = re.search(r"[eE]nergy = (.+)", fout.read())
             assert match is not None
-            energy = float(match.group(1))
+            energy = Decimal(match.group(1))
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:

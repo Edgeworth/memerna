@@ -66,7 +66,7 @@ class Suboptimal1 {
   std::vector<DfsState> q_;
   std::vector<Index> unexpanded_;
 
-  std::pair<int, int> RunInternal(
+  std::pair<int, Energy> RunInternal(
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {

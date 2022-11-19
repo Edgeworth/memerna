@@ -15,7 +15,7 @@ namespace mrna::energy {
 
 struct BoltzPrecomp {
   BoltzEnergy augubranch[4][4]{};
-  std::vector<HairpinPrecomp<BoltzEnergy, -1>> hairpin;
+  std::vector<HairpinPrecomp<BoltzEnergy>> hairpin;
 
   BoltzPrecomp(Primary r, BoltzEnergyModelPtr bem);
 

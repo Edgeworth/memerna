@@ -1,9 +1,12 @@
 # Copyright 2022 Eliot Courtney.
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Iterator, Sequence
-import pandas as pd
 
+from collections.abc import Iterator
+from collections.abc import Sequence
+from dataclasses import dataclass
+from dataclasses import field
+
+import pandas as pd
 from rnapy.model.rna import Rna
 
 
@@ -51,7 +54,7 @@ class RnaAccuracy:
         return fscore
 
     @staticmethod
-    def from_rna(true: Rna, pred: Rna) -> "RnaAccuracy":
+    def from_rna(true: Rna, pred: Rna) -> RnaAccuracy:
         assert pred.s is not None and true.s is not None
         num_predicted = sum(1 for i in pred.s if i != -1) / 2
         num_true = sum(1 for i in true.s if i != -1) / 2

@@ -36,12 +36,12 @@ int main(int argc, char* argv[]) {
   if (should_print) {
     if (ctd_data) {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        printf("%d ", c.energy);
+        printf("%s ", c.energy.ToString().c_str());
         puts(c.tb.ctd.ToString(c.tb.s).c_str());
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        printf("%d ", c.energy);
+        printf("%s ", c.energy.ToString().c_str());
         puts(c.tb.s.ToDb().c_str());
       };
     }

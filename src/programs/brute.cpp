@@ -31,19 +31,18 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-
   auto res = mrna::brute::BruteForce(r, em, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
-    printf("%d\n", mfe.energy);
+    printf("%s\n", mfe.energy.ToString().c_str());
     puts(mfe.tb.s.ToDb().c_str());
     puts(mfe.tb.ctd.ToString(mfe.tb.s).c_str());
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
-      printf("%d\n", s.energy);
+      printf("%s\n", s.energy.ToString().c_str());
       puts(s.tb.s.ToDb().c_str());
       puts(s.tb.ctd.ToString(s.tb.s).c_str());
     }

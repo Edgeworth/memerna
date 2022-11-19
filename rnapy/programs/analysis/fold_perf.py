@@ -1,9 +1,10 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
 from typing import Any
+
 import cloup
-from rnapy.analysis.fold_perf.runner import FoldPerfRunner
 from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
+from rnapy.analysis.fold_perf.runner import FoldPerfRunner
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnastructure import RNAstructure
@@ -34,7 +35,12 @@ def run_fold_perf(
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
     analyser = FoldPerfRunner(
-        memevault, output_dir, memerna, rnastructure, viennarna, sparsemfefold
+        memevault,
+        output_dir,
+        memerna,
+        rnastructure,
+        viennarna,
+        sparsemfefold,
     )
     analyser.run()
 

@@ -39,7 +39,7 @@ int Suboptimal1::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, int> Suboptimal1::RunInternal(
+std::pair<int, Energy> Suboptimal1::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -75,14 +75,12 @@ std::pair<int, int> Suboptimal1::RunInternal(
     }
 
     // Update the next best seen variable
-    if (s.idx != static_cast<int>(exps.size()) &&
-        (delta == -1 || exps[s.idx].energy + energy > delta))
+    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].energy + energy > delta)
       next_seen = std::min(next_seen, exps[s.idx].energy + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.idx == static_cast<int>(exps.size()) ||
-        (delta == -1 || exps[s.idx].energy + energy > delta)) {
+    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
       if (s.expand.en != -1 && s.expand.a == DP_P)
         res_.tb.s[s.expand.st] = res_.tb.s[s.expand.en] = -1;
@@ -107,7 +105,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
           ++count;
 
           // Hit structure limit.
-          if (count == max) return {count, -1};
+          if (count == max) return {count, CAP_E};
         }
         continue;  // Done
       }
@@ -128,7 +126,7 @@ std::pair<int, int> Suboptimal1::RunInternal(
     }
     q_.push_back(ns);
   }
-  assert(unexpanded_.empty() && energy == 0 && res_.tb.s == Secondary(res_.tb.s.size()) &&
+  assert(unexpanded_.empty() && energy == ZERO_E && res_.tb.s == Secondary(res_.tb.s.size()) &&
       res_.tb.ctd == Ctds(res_.tb.ctd.size()));
   return {count, next_seen};
 }
@@ -140,13 +138,13 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
   int a = to_expand.a;
   std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
-  Energy energy = 0;
+  Energy energy = ZERO_E;
   // Exterior loop
   if (en == -1) {
     if (a == EXT) {
       // Base case: do nothing.
       if (st == N)
-        exps.emplace_back(0);
+        exps.emplace_back(ZERO_E);
       else
         // Case: No pair starting here (for EXT only)
         exps.push_back({ext_[st + 1][EXT] - ext_[st][a], {st + 1, -1, EXT}});

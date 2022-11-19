@@ -27,7 +27,11 @@ Energy Energy::FromString(const std::string& s) {
   verify(ss >> hi, "invalid energy: %s", s.c_str());
   if (!ss.eof()) {
     verify(ss.get() == '.', "invalid energy: %s", s.c_str());
-    verify(ss >> lo, "invalid energy: %s", s.c_str());
+    std::string decimal;
+    verify(ss >> decimal, "invalid energy: %s", s.c_str());
+    verify(decimal.size() <= Energy::EXPONENT, "invalid energy: %s", s.c_str());
+    decimal.resize(Energy::EXPONENT, '0');
+    lo = std::stoi(decimal);
   }
   verify(ss.eof(), "invalid energy: %s", s.c_str());
   verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: %s", s.c_str());

@@ -113,7 +113,7 @@ TEST_F(EnergyTest, NNDBHairpinLoopExamples) {
 TEST_F(EnergyTest, NNDBBulgeLoopExamples) {
   EXPECT_EQ(t04->stack[G][C][G][C] + t04->stack[C][C][G][G] + t04->BulgeInitiation(1) +
           t04->bulge_special_c + t04->stack[C][G][C][G] + t04->HairpinInitiation(3) -
-          Energy(round(10.0 * R * T * log(3))),
+          E(R * T * log(3)),
       GetEnergy(kNNDBBulge1));
 
   EXPECT_EQ(t04->stack[G][A][U][C] + t04->augu_penalty + t04->BulgeInitiation(3) +
@@ -199,8 +199,9 @@ TEST_F(EnergyTest, Precomp) {
   EXPECT_EQ(E(-3.4), pc.min_flush_coax);
   EXPECT_EQ(E(-2.6), pc.min_twoloop_not_stack);
 
-  Energy augubranch[4][4] = {
-      {-6, -6, -6, 5 - 6}, {-6, -6, -6, -6}, {-6, -6, -6, 5 - 6}, {5 - 6, -6, 5 - 6, -6}};
+  Energy augubranch[4][4] = {{E(-0.6), E(-0.6), E(-0.6), E(0.5 - 0.6)},
+      {E(-0.6), E(-0.6), E(-0.6), E(-0.6)}, {E(-0.6), E(-0.6), E(-0.6), E(0.5 - 0.6)},
+      {E(0.5 - 0.6), E(-0.6), E(0.5 - 0.6), E(-0.6)}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }

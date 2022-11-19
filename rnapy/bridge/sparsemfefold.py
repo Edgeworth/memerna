@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
+from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import CtdCfg
@@ -21,7 +22,7 @@ class SparseMfeFold(RnaPackage):
     def name(self) -> str:
         return "SparseMFEFold"
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:

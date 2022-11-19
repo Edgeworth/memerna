@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
 from dataclasses import field
+from decimal import Decimal
 from pathlib import Path
 
 from rnapy.model.model_cfg import EnergyCfg
@@ -20,7 +21,7 @@ class RnaPackage:
     def name(self) -> str:
         raise NotImplementedError
 
-    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[float, CmdResult]:
+    def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
