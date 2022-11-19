@@ -128,7 +128,7 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em) {
         const auto base11 =
             dp[st + 1][piv - 1][DP_P] + em->AuGuPenalty(st1b, pl1b) + em->multiloop_hack_b;
         // Min is for either placing another unpaired or leaving it as nothing.
-        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], 0);
+        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], ZERO_E);
 
         // (   )<   > - U, U_WC?, U_GU?
         UPDATE_CACHE(DP_U2, base00 + dp[piv + 1][en][DP_U]);

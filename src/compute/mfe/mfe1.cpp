@@ -120,7 +120,7 @@ DpArray ComputeTables1(const Primary& r, const energy::EnergyModelPtr& em) {
         const auto base10 = dp[st + 1][piv][DP_P] + pc.augubranch[st1b][pb];
         const auto base11 = dp[st + 1][piv - 1][DP_P] + pc.augubranch[st1b][pl1b];
         // Min is for either placing another unpaired or leaving it as nothing.
-        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], 0);
+        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], ZERO_E);
 
         // (   )<   > - U, U_WC?, U_GU?
         u2_min = std::min(u2_min, base00 + dp[piv + 1][en][DP_U]);

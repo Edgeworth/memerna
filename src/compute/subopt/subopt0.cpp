@@ -59,7 +59,7 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
     // Initialise - we only make small modifications to it.
     curnode_ = node.copy();
     // Temporary variable to hold energy calculations.
-    Energy energy = 0;
+    Energy energy = ZERO_E;
 
     // Exterior loop
     if (en == -1) {

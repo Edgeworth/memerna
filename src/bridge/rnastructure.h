@@ -50,7 +50,7 @@ class RNAstructure : public RnaPackage {
 
   static RNAstructure FromArgParse(const ArgParse& args);
 
-  static Energy ToEnergy(int16_t energy) { return Energy::FromRaw(energy * Energy::FACTOR / 10); }
+  static Energy ToEnergy(int energy) { return Energy::FromRaw(energy * Energy::FACTOR / 10); }
 
   static int16_t FromEnergy(Energy energy) {
     auto rstr_energy = energy.v * 10 / Energy::FACTOR;

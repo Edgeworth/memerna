@@ -26,14 +26,16 @@ namespace mrna::energy {
 
 namespace {
 
-const Energy RAND_MIN_ENERGY = -100;
-const Energy RAND_MAX_ENERGY = 100;
-const int RAND_MAX_HAIRPIN_SZ = 8;
-const int RAND_MAX_NUM_HAIRPIN = 50;
+constexpr double RAND_MIN_ENERGY = -10.0;
+constexpr double RAND_MAX_ENERGY = 10.0;
+constexpr int RAND_MAX_HAIRPIN_SZ = 8;
+constexpr int RAND_MAX_NUM_HAIRPIN = 50;
+constexpr int BUFSZ = 256;
 
 void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
+  char buf[BUFSZ];
   while (true) {
     const auto a = CharToBase(static_cast<char>(fgetc(fp)));
     const auto b = CharToBase(static_cast<char>(fgetc(fp)));
@@ -41,7 +43,8 @@ void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4])
     const auto d = CharToBase(static_cast<char>(fgetc(fp)));
     if (!a.has_value()) break;
     verify(a.has_value() && b.has_value() && c.has_value() && d.has_value(), "expected base");
-    verify(fscanf(fp, " %d ", &output[*a][*b][*c][*d]) == 1, "expected energy");
+    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
+    output[*a][*b][*c][*d] = Energy::FromString(buf);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -50,9 +53,10 @@ void ParseMapFromFile(
     const std::string& filename, std::unordered_map<std::string, Energy>* output) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  char buf[1024];
-  Energy energy = 0;
-  while (fscanf(fp, " %1023s %d ", buf, &energy) == 2) (*output)[buf] = energy;
+  char name[BUFSZ];
+  char energy[BUFSZ];
+  while (fscanf(fp, " %255s %255s ", name, energy) == 2)
+    (*output)[name] = Energy::FromString(energy);
   verify(fclose(fp) == 0, "could not close file");
 }
 
@@ -60,12 +64,12 @@ void ParseInitiationEnergyFromFile(
     const std::string& filename, Energy (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
-  Energy energy = 0;
+  char energy[BUFSZ];
   int idx = 0;
-  while (fscanf(fp, "%d %d ", &idx, &energy) == 2) {
+  while (fscanf(fp, "%d %255s ", &idx, energy) == 2) {
     verify(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
         filename.c_str());
-    output[idx] = energy;
+    output[idx] = Energy::FromString(energy);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -73,6 +77,7 @@ void ParseInitiationEnergyFromFile(
 void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
+  char buf[BUFSZ];
   while (true) {
     const auto a = CharToBase(static_cast<char>(fgetc(fp)));
     const auto b = CharToBase(static_cast<char>(fgetc(fp)));
@@ -84,7 +89,8 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
     verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
             f.has_value(),
         "expected base");
-    verify(fscanf(fp, " %d ", &em->internal_1x1[*a][*b][*c][*d][*e][*f]) == 1, "expected energy");
+    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
+    em->internal_1x1[*a][*b][*c][*d][*e][*f] = Energy::FromString(buf);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -92,6 +98,7 @@ void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyMod
 void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
+  char buf[BUFSZ];
   while (true) {
     const auto a = CharToBase(static_cast<char>(fgetc(fp)));
     const auto b = CharToBase(static_cast<char>(fgetc(fp)));
@@ -104,8 +111,8 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
     verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
             f.has_value() && g.has_value(),
         "expected base");
-    verify(
-        fscanf(fp, " %d ", &em->internal_1x2[*a][*b][*c][*d][*e][*f][*g]) == 1, "expected energy");
+    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
+    em->internal_1x2[*a][*b][*c][*d][*e][*f][*g] = Energy::FromString(buf);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -113,6 +120,7 @@ void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyMod
 void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel* em) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
+  char buf[BUFSZ];
   while (true) {
     const auto a = CharToBase(static_cast<char>(fgetc(fp)));
     const auto b = CharToBase(static_cast<char>(fgetc(fp)));
@@ -126,8 +134,8 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
     verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
             f.has_value() && g.has_value() && h.has_value(),
         "expected base");
-    verify(fscanf(fp, " %d ", &em->internal_2x2[*a][*b][*c][*d][*e][*f][*g][*h]) == 1,
-        "expected energy");
+    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
+    em->internal_2x2[*a][*b][*c][*d][*e][*f][*g][*h] = Energy::FromString(buf);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -135,13 +143,15 @@ void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyMod
 void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
+  char buf[BUFSZ];
   while (true) {
     const auto a = CharToBase(static_cast<char>(fgetc(fp)));
     const auto b = CharToBase(static_cast<char>(fgetc(fp)));
     const auto c = CharToBase(static_cast<char>(fgetc(fp)));
     if (!a.has_value()) break;
     verify(a.has_value() && b.has_value() && c.has_value(), "expected base");
-    verify(fscanf(fp, " %d ", &output[*a][*b][*c]) == 1, "expected energy");
+    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
+    output[*a][*b][*c] = Energy::FromString(buf);
   }
   verify(fclose(fp) == 0, "could not close file");
 }
@@ -150,15 +160,15 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em)
   FILE* fp = fopen(filename.c_str(), "r");
   verify(fp != nullptr, "could not open file");
 
-#define READ_DATA(var)                                                  \
-  do {                                                                  \
-    while (1) {                                                         \
-      auto line = sgetline(fp);                                         \
-      verify(line.has_value(), "unexpected EOF or error");              \
-      if ((*line)[0] == '/' || (*line)[0] == '\n') continue;            \
-      verify(sscanf(line->c_str(), "%d", &(var)) == 1, "expected int"); \
-      break;                                                            \
-    }                                                                   \
+#define READ_DATA(var)                                       \
+  do {                                                       \
+    while (1) {                                              \
+      auto line = sgetline(fp);                              \
+      verify(line.has_value(), "unexpected EOF or error");   \
+      if ((*line)[0] == '/' || (*line)[0] == '\n') continue; \
+      (var) = Energy::FromString(Trim(*line));               \
+      break;                                                 \
+    }                                                        \
   } while (0)
 
   // Bulge loops.
@@ -197,13 +207,14 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em)
 EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
   auto em = Create();
   std::mt19937 eng(seed);
-  std::uniform_int_distribution<Energy> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  std::uniform_int_distribution<Energy> nonneg_energy_dist(0, RAND_MAX_ENERGY);
-#define RANDOMISE_DATA(d)                                                                \
-  do {                                                                                   \
-    auto dp = reinterpret_cast<Energy*>(&(d));                                           \
-    /* NOLINTNEXTLINE */                                                                 \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) dp[i] = energy_dist(eng); \
+  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  std::uniform_real_distribution<double> nonneg_energy_dist(0, RAND_MAX_ENERGY);
+#define RANDOMISE_DATA(d)                                      \
+  do {                                                         \
+    auto dp = reinterpret_cast<Energy*>(&(d));                 \
+    /* NOLINTNEXTLINE */                                       \
+    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) \
+      dp[i] = Energy::FromDouble(energy_dist(eng));            \
   } while (0)
 
   RANDOMISE_DATA(em->stack);
@@ -215,7 +226,7 @@ EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
   RANDOMISE_DATA(em->internal_2x3_mismatch);
   RANDOMISE_DATA(em->internal_other_mismatch);
   // This needs to be non-negative for some optimisations.
-  em->internal_asym = nonneg_energy_dist(eng);
+  em->internal_asym = Energy::FromDouble(nonneg_energy_dist(eng));
   RANDOMISE_DATA(em->internal_augu_penalty);
   RANDOMISE_DATA(em->bulge_init);
   RANDOMISE_DATA(em->bulge_special_c);
@@ -235,7 +246,7 @@ EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
   int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
     auto hairpin = Primary::Random(hairpin_size_dist(eng)).ToSeq();
-    em->hairpin[hairpin] = energy_dist(eng);
+    em->hairpin[hairpin] = Energy::FromDouble(energy_dist(eng));
   }
 
   RANDOMISE_DATA(em->multiloop_hack_a);
@@ -449,7 +460,7 @@ Energy EnergyModel::Bulge(
     int num_states = 0;
     for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
-    Energy states_bonus = -Energy(round(10.0 * R * T * log(num_states)));
+    Energy states_bonus = -E(R * T * log(num_states));
     if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
     energy += states_bonus;
   }
@@ -538,7 +549,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
     std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
     std::unique_ptr<Structure>* sstruc) const {
   const bool exterior_loop = s[st] != en;
-  Energy energy = 0;
+  Energy energy = ZERO_E;
 
   std::unique_ptr<MultiLoopStructure> struc = nullptr;
   if (sstruc) {
@@ -562,7 +573,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
   if (struc) struc->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches->size() + 1);
 
   BranchCtd branch_ctd;
-  Energy ctd_energy = 0;
+  Energy ctd_energy = ZERO_E;
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (use_given_ctds) {
@@ -631,7 +642,7 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
     bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
   assert(en >= st);
   const bool exterior_loop = s[st] != en;
-  Energy energy = 0;
+  Energy energy = ZERO_E;
 
   // Look for branches inside.
   std::deque<int> branches;
@@ -774,7 +785,7 @@ bool EnergyModel::IsValid(std::string* reason) const {
           // Expect 180 degree rotations to be the same.
           CHECK_COND(
               stack[a][b][c][d] == stack[c][d][a][b], "180 degree rotations should be the same");
-          CHECK_COND(internal_asym >= 0, "optimisations rely on this");
+          CHECK_COND(internal_asym >= ZERO_E, "optimisations rely on this");
 
           for (int e = 0; e < 4; ++e) {
             for (int f = 0; f < 4; ++f) {

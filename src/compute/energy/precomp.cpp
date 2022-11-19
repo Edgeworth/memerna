@@ -23,8 +23,8 @@ Energy MinEnergy(const Energy* energy, std::size_t size) {
 namespace internal {
 
 int MaxNumContiguous(const Primary& r) {
-  Energy num_contig = 0;
-  Energy max_num_contig = 0;
+  int num_contig = 0;
+  int max_num_contig = 0;
   Base prev = -1;
   for (auto b : r) {
     if (b == prev)
@@ -117,7 +117,7 @@ void Precomp::PrecomputeData() {
 
   // Non continuous (-2.1), -4 for WC, -16 for terminal mismatch.
   min_mismatch_coax = em().coax_mismatch_non_contiguous +
-      std::min(std::min(em().coax_mismatch_gu_bonus, em().coax_mismatch_wc_bonus), 0) +
+      std::min(std::min(em().coax_mismatch_gu_bonus, em().coax_mismatch_wc_bonus), ZERO_E) +
       MinEnergy(&em().terminal[0][0][0][0], sizeof(em().terminal));
   // Minimum of all stacking params.
   min_flush_coax = min_stack;
@@ -127,7 +127,7 @@ void Precomp::PrecomputeData() {
       min_internal, MinEnergy(&em().internal_1x2[0][0][0][0][0][0][0], sizeof(em().internal_1x2)));
   min_internal = std::min(min_internal,
       MinEnergy(&em().internal_2x2[0][0][0][0][0][0][0][0], sizeof(em().internal_2x2)));
-  verify(em().internal_asym >= 0,
+  verify(em().internal_asym >= ZERO_E,
       "min_internal optimisation does not work for negative asymmetry penalties");
   const auto min_mismatch = 2 *
       std::min(
@@ -142,9 +142,9 @@ void Precomp::PrecomputeData() {
   const auto min_bulge_init =
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
 
-  Energy states_bonus = -Energy(round(10.0 * R * T * log(internal::MaxNumContiguous(r_))));
-  Energy min_bulge = min_bulge_init + std::min(2 * em().augu_penalty, 0) + min_stack +
-      std::min(em().bulge_special_c, 0) + states_bonus;
+  Energy states_bonus = -E(R * T * log(internal::MaxNumContiguous(r_)));
+  Energy min_bulge = min_bulge_init + std::min(2 * em().augu_penalty, ZERO_E) + min_stack +
+      std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);
 
   hairpin = PrecomputeHairpin<HairpinPrecomp<Energy, MAX_E>>(r_, em());
