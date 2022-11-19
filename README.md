@@ -9,6 +9,9 @@
   output of memerna programs
   check memcpys etc for new Energy class
 
+- Ensure precision for t*_p*; look for instances of t04 in code and replace.
+- Support energy model selection
+
 - update data tables with higher precision energy, compare to RNAstructure
 - ComputeTables0,1,2,3 => better names
 
@@ -43,12 +46,12 @@ same for subopt, partition etc
 
 # s22 notes
 
-Turner 2004 model:
+Turner 2004 model (t04_p10, t04_p100):
 
 - Special stacks of length > 2 base pairs are not handled.
 - Internal loops are limited to size 30 in most implementations in memerna.
 
-Update in 2012 model:
+Update in 2012 model (t12_p100):
 
 - GU penalty removed from AU/GU penalty + stacking energy changed
   "Testing the nearest neighbor model for Canonical RNA base pairs" paper

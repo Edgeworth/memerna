@@ -46,8 +46,8 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO(2): Convert CTDs?
-    res.emplace_back(subopt::SuboptResult(
-        Energy(struc.GetEnergy(i + 1)), tb::TracebackResult(std::move(s_list[i]), Ctds())));
+    res.emplace_back(subopt::SuboptResult(RNAstructure::ToEnergy(struc.GetEnergy(i + 1)),
+        tb::TracebackResult(std::move(s_list[i]), Ctds())));
   }
   return res;
 }
@@ -100,7 +100,7 @@ energy::EnergyResult RNAstructure::Efn(
   efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
   if (desc) *desc = sstr.str();
   // TODO(2): convert ctds and structure?
-  return {structure->GetEnergy(1), Ctds(), nullptr};
+  return {ToEnergy(structure->GetEnergy(1)), Ctds(), nullptr};
 }
 
 ctx::FoldResult RNAstructure::Fold(const Primary& r) const {
@@ -122,7 +122,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_st
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO(2): convert dp tables, ext, ctds?, delete this function and move all to Fold.
-  return {.mfe = {.dp{}, .ext{}, .energy = Energy(structure->GetEnergy(1))},
+  return {.mfe = {.dp{}, .ext{}, .energy = ToEnergy(structure->GetEnergy(1))},
       .tb = tb::TracebackResult(StructureToSecondary(*structure), Ctds())};
 }
 

@@ -11,6 +11,7 @@
 
 #include "compute/energy/model.h"
 #include "model/base.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "util/error.h"
 
@@ -80,15 +81,16 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
   int RSZ = static_cast<int>(r.size());
   assert(branch_ctd->empty());
   // Could be on the exterior loop with a branch (0, N - 1).
-  if (N < 1) return 0;
+  if (N < 1) return ZERO_E;
 
   // cache[used][i]
   std::vector<Energy> cache[2] = {
       std::vector<Energy>(N + 1, MAX_E), std::vector<Energy>(N + 1, MAX_E)};
   std::vector<std::tuple<bool, int, Energy, Ctd>> back[2] = {
-      std::vector<std::tuple<bool, int, Energy, Ctd>>(N + 1, std::make_tuple(false, -1, 0, CTD_NA)),
       std::vector<std::tuple<bool, int, Energy, Ctd>>(
-          N + 1, std::make_tuple(false, -1, 0, CTD_NA))};
+          N + 1, std::make_tuple(false, -1, ZERO_E, CTD_NA)),
+      std::vector<std::tuple<bool, int, Energy, Ctd>>(
+          N + 1, std::make_tuple(false, -1, ZERO_E, CTD_NA))};
 
   cache[0][0] = cache[1][0] = ZERO_E;
   int first_lui = branches[0] - 1;
@@ -185,19 +187,19 @@ Energy ComputeOptimalCtds(const EnergyModel& em, const Primary& r, const Seconda
     }
 
     // Have the option of doing nothing.
-    UPDATE_CACHE(0, i + 1, 0, i, 0, CTD_UNUSED);
-    UPDATE_CACHE(0, i + 1, 1, i, 0, CTD_UNUSED);
+    UPDATE_CACHE(0, i + 1, 0, i, ZERO_E, CTD_UNUSED);
+    UPDATE_CACHE(0, i + 1, 1, i, ZERO_E, CTD_UNUSED);
   }
 
-  std::tuple<bool, int, Energy, Ctd> state{false, N, 0, CTD_NA};
-  if (cache[1][N] < cache[0][N]) state = std::make_tuple(true, N, 0, CTD_NA);
+  std::tuple<bool, int, Energy, Ctd> state{false, N, ZERO_E, CTD_NA};
+  if (cache[1][N] < cache[0][N]) state = std::make_tuple(true, N, ZERO_E, CTD_NA);
   // First state contains no real info, so go ahead one.
   state = back[std::get<0>(state)][std::get<1>(state)];
   assert(branch_ctd->empty());
   while (true) {
     bool used = false;
     int idx = 0;
-    Energy energy = 0;
+    Energy energy = ZERO_E;
     Ctd reason = CTD_NA;
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
@@ -230,7 +232,7 @@ void AddBranchCtdsToBaseCtds(
 Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Secondary& s,
     const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
-  Energy total_energy = 0;
+  Energy total_energy = ZERO_E;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
   // last, to NEXT. In this case, we need to fix the branch_ctd so that the corresponding branch
   // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
@@ -239,7 +241,7 @@ Energy AddBaseCtdsToBranchCtds(const EnergyModel& em, const Primary& r, const Se
   for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
-    Energy energy = 0;
+    Energy energy = ZERO_E;
     const auto stb = r[branch];
     const auto enb = r[s[branch]];
     switch (ctd[branch]) {
