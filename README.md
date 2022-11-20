@@ -2,6 +2,9 @@
 
 ## TODO:
 
+check float bits, partition fn
+
+
 - higher precision energy
   need to update python, programs - use functions to convert
   find all random energy constants, wrap in function to convert.

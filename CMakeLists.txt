@@ -4,10 +4,12 @@ project(memerna VERSION 0.1 LANGUAGES CXX)
 
 # Options
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
-option(FLOAT_BITS "Number of bits to use for floats.
-    Valid values are 32, 64, 80, or any value if MPFR is enabled." 64)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
+set(FLOAT_BITS 64 CACHE STRING "Number of bits to use for floats.
+    Valid values are 32, 64, 80, or any value if MPFR is enabled.")
+set(ENERGY_PRECISION 2 CACHE STRING
+  "Number of decimal places to use for energy calculations")
 
 # Always have RNAstructure compiled as release.
 if(USE_RNASTRUCTURE)
@@ -226,6 +228,12 @@ if(USE_RNASTRUCTURE)
   target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
   target_link_libraries(memerna PUBLIC rnastructure_bridge)
 endif()
+
+# Set float bits
+target_compile_definitions(memerna PUBLIC FLOAT_BITS=${FLOAT_BITS})
+
+# Set energy precision
+target_compile_definitions(memerna PUBLIC ENERGY_PRECISION=${ENERGY_PRECISION})
 
 # Add sanitizers
 add_sanitizers(memerna)

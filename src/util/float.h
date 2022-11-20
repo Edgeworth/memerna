@@ -20,9 +20,11 @@ inline void throw_exception(const std::exception& e) {
 
 namespace mrna {
 
-#ifndef FLOAT_BITS
-#define FLOAT_BITS 64
-#endif
+constexpr int powi(int base, int exp) {
+  int result = 1;
+  for (int i = 0; i < exp; ++i) result *= base;
+  return result;
+}
 
 #ifdef USE_MPFR
 using flt = boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_BITS>>;
@@ -36,6 +38,9 @@ using flt = long double;
 #else
 static_assert(false, "unknown float bits")
 #endif
+
+inline flt abs(flt v) { return fabs(v); }
+
 #endif  // USE_MPFR
 
 #if FLOAT_BITS == 32
@@ -48,10 +53,10 @@ inline const flt EP{1e-8};
 inline const flt EP{1e-30};
 #endif
 
-inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) < ep; }
+inline bool abs_eq(flt a, flt b, flt ep = EP) { return abs(a - b) < ep; }
 
 inline bool rel_eq(flt a, flt b, flt rel = EP) {
-  return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
+  return abs(a - b) <= rel * std::max(abs(a), abs(b));
 }
 
 }  // namespace mrna

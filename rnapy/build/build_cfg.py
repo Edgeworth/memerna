@@ -63,9 +63,10 @@ class BuildCfg:
     compiler: Compiler = Compiler.DEFAULT
     sanitizer: Sanitizer = Sanitizer.NONE
     mpfr: bool = False
-    float_bits: int = 64
     rnastructure: bool = False
     iwyu: bool = False
+    float_bits: int = 64
+    energy_precision: int = 2
 
     def ident(self) -> str:
         ident = self.kind + "-" + self.compiler
@@ -74,6 +75,7 @@ class BuildCfg:
         if self.mpfr:
             ident += "-mpfr"
         ident += f"-{self.float_bits}"
+        ident += f"-{self.energy_precision}"
         if self.rnastructure:
             ident += "-rnastructure"
         if self.iwyu:
