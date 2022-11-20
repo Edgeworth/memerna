@@ -25,13 +25,10 @@ struct __attribute__((packed, aligned(4))) Energy {
 
   // Converts a floating point energy value in kcal/mol to an integer energy value.
   [[nodiscard]] static Energy FromDouble(double energy);
-
   [[nodiscard]] static Energy FromString(const std::string& s);
 
   [[nodiscard]] std::string ToString() const;
-
   [[nodiscard]] double ToDouble() const { return v / static_cast<double>(FACTOR); }
-
   [[nodiscard]] BoltzEnergy Boltz() const;
 
   constexpr auto operator<=>(const Energy&) const = default;

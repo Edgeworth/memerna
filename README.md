@@ -3,14 +3,8 @@
 ## TODO:
 
 check float bits, partition fn
-
-
-- higher precision energy
-  need to update python, programs - use functions to convert
-  find all random energy constants, wrap in function to convert.
-  search for 100, 10, 10.0, 100.0
-  output of memerna programs
-  check memcpys etc for new Energy class
+update tests based on precision , ifdefs
+pass data dir, separate energy model selection.
 
 - Ensure precision for t*_p*; look for instances of t04 in code and replace.
 - Support energy model selection
@@ -54,12 +48,12 @@ same for subopt, partition etc
 
 # s22 notes
 
-Turner 2004 model (t04_p10, t04_p100):
+Turner 2004 model (t04_p1, t04_p2):
 
 - Special stacks of length > 2 base pairs are not handled.
 - Internal loops are limited to size 30 in most implementations in memerna.
 
-Update in 2012 model (t12_p100):
+Update in 2012 model (t12_p2):
 
 - GU penalty removed from AU/GU penalty + stacking energy changed
   "Testing the nearest neighbor model for Canonical RNA base pairs" paper

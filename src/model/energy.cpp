@@ -22,9 +22,11 @@ Energy Energy::FromString(const std::string& s) {
   if (s == "CAP") return CAP_E;
   // Check for a number.
   std::stringstream ss(s);
+  int sgn = ss.peek() == '-' ? -1 : 1;
   int hi = 0;
   int lo = 0;
   verify(ss >> hi, "invalid energy: %s", s.c_str());
+  hi = std::abs(hi);
   if (!ss.eof()) {
     verify(ss.get() == '.', "invalid energy: %s", s.c_str());
     std::string decimal;
@@ -35,7 +37,7 @@ Energy Energy::FromString(const std::string& s) {
   }
   verify(ss.eof(), "invalid energy: %s", s.c_str());
   verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: %s", s.c_str());
-  Energy energy = Energy::FromRaw(hi * Energy::FACTOR + lo);
+  Energy energy = Energy::FromRaw(sgn * (hi * Energy::FACTOR + lo));
   verify(energy < CAP_E, "energy out of range: %s", s.c_str());
   return energy;
 }
@@ -44,7 +46,9 @@ std::string Energy::ToString() const {
   if (*this == MAX_E) return "MAX";
   if (*this == CAP_E) return "CAP";
   std::stringstream ss;
-  ss << v / FACTOR << "." << std::setw(EXPONENT) << std::setfill('0') << abs(v % FACTOR);
+  const auto* sgn = (v < 0 ? "-" : "");
+  const auto abs = std::abs(v);
+  ss << sgn << abs / FACTOR << "." << std::setw(EXPONENT) << std::setfill('0') << abs % FACTOR;
   return ss.str();
 }
 

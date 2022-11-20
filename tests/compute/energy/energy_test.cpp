@@ -178,14 +178,14 @@ TEST_F(EnergyTest, T04Tests) {
   EXPECT_EQ(E(9.5), GetEnergy("CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
   EXPECT_EQ(E(7.7), GetEnergy("CCCGAAACAG", "(..(...).)"));
   EXPECT_EQ(E(7.4), GetEnergy("GACAGAAACGCUGAAUC", "((..(...)......))"));
-  EXPECT_EQ(E(1.73), GetEnergy("CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(E(1.82), GetEnergy("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(E(1.76), GetEnergy("AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(E(1.31), GetEnergy("CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(E(-2.76),
+  EXPECT_EQ(E(17.3), GetEnergy("CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(18.2), GetEnergy("UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.6), GetEnergy("AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(13.1), GetEnergy("CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-27.6),
       GetEnergy("GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(E(1.79), GetEnergy("UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(17.9), GetEnergy("UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.7), GetEnergy("GGUCAAAGGUC", "((((...))))"));
