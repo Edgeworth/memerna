@@ -18,7 +18,8 @@
 
 namespace mrna {
 
-inline constexpr uint32_t T04_MODEL_HASH = 0x3bc125da;
+inline constexpr uint32_t T04_P1_MODEL_HASH = 0x768ab8e1;
+inline constexpr uint32_t T04_P2_MODEL_HASH = 0x3bc125da;
 
 // Make sure to use Range(0, NUM_TEST_MODELS) if making a parameterised test
 // with all models in g_em, since g_em is initialized at runtime.

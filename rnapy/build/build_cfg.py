@@ -75,7 +75,7 @@ class BuildCfg:
         if self.mpfr:
             ident += "-mpfr"
         ident += f"-{self.float_bits}"
-        ident += f"-{self.energy_precision}"
+        ident += f"-p{self.energy_precision}"
         if self.rnastructure:
             ident += "-rnastructure"
         if self.iwyu:
@@ -104,6 +104,7 @@ class BuildCfg:
             "USE_MPFR": "ON" if self.mpfr else "OFF",
             "USE_IWYU": "ON" if self.iwyu else "OFF",
             "FLOAT_BITS": f"{self.float_bits}",
+            "ENERGY_PRECISION": f"{self.energy_precision}",
         }
         defs.update(self.sanitizer.cmake_defs())
         def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())

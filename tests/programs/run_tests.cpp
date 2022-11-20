@@ -15,9 +15,10 @@ int main(int argc, char** argv) {
   mrna::energy::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
 
+  // TODO(0): deal with precision stuff.
   mrna::t04 = mrna::energy::EnergyModel::FromArgParse(args);
-  verify(mrna::t04->Checksum() == mrna::T04_MODEL_HASH, "Expected T04 model hash %d, got %d",
-      mrna::T04_MODEL_HASH, mrna::t04->Checksum());
+  verify(mrna::t04->Checksum() == mrna::T04_P1_MODEL_HASH, "Expected T04 model hash %d, got %d",
+      mrna::T04_P1_MODEL_HASH, mrna::t04->Checksum());
 
   mrna::g_em[0] = mrna::t04;
   for (int i = 1; i < mrna::NUM_TEST_MODELS; ++i)

@@ -39,7 +39,7 @@ using flt = long double;
 static_assert(false, "unknown float bits")
 #endif
 
-inline flt abs(flt v) { return fabs(v); }
+inline flt fabs(flt v) { return std::abs(v); }
 
 #endif  // USE_MPFR
 
@@ -53,10 +53,10 @@ inline const flt EP{1e-8};
 inline const flt EP{1e-30};
 #endif
 
-inline bool abs_eq(flt a, flt b, flt ep = EP) { return abs(a - b) < ep; }
+inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) < ep; }
 
 inline bool rel_eq(flt a, flt b, flt rel = EP) {
-  return abs(a - b) <= rel * std::max(abs(a), abs(b));
+  return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
 }
 
 }  // namespace mrna
