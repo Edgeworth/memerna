@@ -18,8 +18,8 @@ using BoltzEnergy = flt;
 struct __attribute__((packed, aligned(4))) Energy {
  public:
   // Precision of energy values.
-  static constexpr int FACTOR = 100;
-  static constexpr int EXPONENT = 2;
+  static constexpr int FACTOR = powi(10, ENERGY_PRECISION);
+  static constexpr int EXPONENT = ENERGY_PRECISION;
 
   [[nodiscard]] static constexpr Energy FromRaw(int32_t v) { return Energy{.v = v}; }
 
