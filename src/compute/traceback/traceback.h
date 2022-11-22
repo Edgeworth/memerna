@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -29,9 +29,6 @@ struct TracebackResult {
   Secondary s;
   Ctds ctd;  // May be empty if CTDs were not computed.
 };
-
-TracebackResult Traceback(
-    const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::tb
 

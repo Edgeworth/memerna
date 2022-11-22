@@ -2,14 +2,13 @@
 #include "compute/brute/brute.h"
 
 #include <algorithm>
-#include <cstdio>
 #include <iostream>
 #include <string>
 
 #include "compute/brute/brute_cfg.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "options.h"
@@ -18,6 +17,7 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::brute::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
@@ -35,16 +35,16 @@ int main(int argc, char* argv[]) {
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
-    printf("%s\n", mfe.energy.ToString().c_str());
-    puts(mfe.tb.s.ToDb().c_str());
-    puts(mfe.tb.ctd.ToString(mfe.tb.s).c_str());
+    std::cout << mfe.energy << '\n';
+    std::cout << mfe.tb.s.ToDb() << '\n';
+    std::cout << mfe.tb.ctd.ToString(mfe.tb.s) << '\n';
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
-      printf("%s\n", s.energy.ToString().c_str());
-      puts(s.tb.s.ToDb().c_str());
-      puts(s.tb.ctd.ToString(s.tb.s).c_str());
+      std::cout << s.energy << '\n';
+      std::cout << s.tb.s.ToDb() << '\n';
+      std::cout << s.tb.ctd.ToString(s.tb.s) << '\n';
     }
   }
 

@@ -3,19 +3,13 @@
 #define UTIL_STRING_H_
 
 #include <cstdint>
-#include <cstdio>
 #include <optional>
 #include <sstream>
 #include <string>
 
 namespace mrna {
 
-// Behaves as stated in the following cases:
-//  error: throws exception
-//  already eof: returns none
-//  eof during: returns non-newline terminated line
-//  normal: returns newline terminated line
-std::optional<std::string> sgetline(FILE* fp);
+std::string sgetline(FILE* fp);
 
 std::string sfmt(const char* fmt, ...);
 

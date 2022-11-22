@@ -10,8 +10,8 @@
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/brute_cfg.h"
-#include "compute/energy/boltzmann_model.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/boltz_model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/constants.h"

@@ -12,6 +12,7 @@
 
 #include "compute/energy/structure.h"
 #include "compute/subopt/subopt.h"
+#include "compute/traceback/traceback.h"
 #include "rnastructure_bridge/include/stochastic.h"
 #include "util/error.h"
 

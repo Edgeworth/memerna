@@ -28,19 +28,20 @@ inline const Opt OPT_PART_ALG = Opt(Opt::ARG)
 void RegisterOpts(ArgParse* args);
 
 struct CtxCfg {
-  enum class DpAlg { ZERO, ONE, TWO, THREE, BRUTE };
-  enum class SuboptAlg { ZERO, ONE, BRUTE };
-  enum class PartAlg { ZERO, ONE, BRUTE };
+  enum class DpAlg { SLOWEST, SLOW, FASTEST, LYNGSO, BRUTE };
+  enum class SuboptAlg { SLOWEST, FASTEST, BRUTE };
+  enum class PartAlg { SLOWEST, FASTEST, BRUTE };
 
   inline static constexpr DpAlg DP_ALGS[] = {
-      DpAlg::ZERO, DpAlg::ONE, DpAlg::TWO, DpAlg::THREE, DpAlg::BRUTE};
+      DpAlg::SLOWEST, DpAlg::SLOW, DpAlg::FASTEST, DpAlg::LYNGSO, DpAlg::BRUTE};
   inline static constexpr SuboptAlg SUBOPT_ALGS[] = {
-      SuboptAlg::ZERO, SuboptAlg::ONE, SuboptAlg::BRUTE};
-  inline static constexpr PartAlg PART_ALGS[] = {PartAlg::ZERO, PartAlg::ONE, PartAlg::BRUTE};
+      SuboptAlg::SLOWEST, SuboptAlg::FASTEST, SuboptAlg::BRUTE};
+  inline static constexpr PartAlg PART_ALGS[] = {
+      PartAlg::SLOWEST, PartAlg::FASTEST, PartAlg::BRUTE};
 
-  DpAlg dp_alg = DpAlg::TWO;
-  SuboptAlg subopt_alg = SuboptAlg::ONE;
-  PartAlg part_alg = PartAlg::ONE;
+  DpAlg dp_alg = DpAlg::FASTEST;
+  SuboptAlg subopt_alg = SuboptAlg::FASTEST;
+  PartAlg part_alg = PartAlg::FASTEST;
 
   static CtxCfg FromArgParse(const ArgParse& args);
 };

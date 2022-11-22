@@ -11,8 +11,8 @@
 
 #include "common_test.h"
 #include "compute/energy/branch.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/precomp.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -21,7 +21,7 @@
 
 namespace mrna::energy {
 
-class EnergyTest : public testing::Test {
+class EnergyTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
  public:
   std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
   std::tuple<Primary, Secondary> kNNDBHairpin2 = ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");

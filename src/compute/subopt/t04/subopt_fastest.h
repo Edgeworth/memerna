@@ -8,15 +8,15 @@
 #include <vector>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/precomp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/splaymap.h"
 
-namespace mrna::subopt {
+namespace mrna::subopt::t04 {
 
 struct Expand {
   Expand() = delete;
@@ -40,9 +40,9 @@ struct Expand {
   bool operator<(const Expand& o) const { return energy < o.energy; }
 };
 
-class Suboptimal1 {
+class SuboptimalFastest {
  public:
-  Suboptimal1(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptimalFastest(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -83,6 +83,6 @@ class Suboptimal1 {
   [[nodiscard]] std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
 };
 
-}  // namespace mrna::subopt
+}  // namespace mrna::subopt::t04
 
 #endif  // COMPUTE_SUBOPT_SUBOPT1_H_

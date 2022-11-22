@@ -6,24 +6,24 @@
 #include <utility>
 
 #include "compute/boltz_dp.h"
-#include "compute/energy/boltzmann_model.h"
-#include "compute/energy/boltzmann_precomp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/boltz_model.h"
+#include "compute/energy/t04/boltz_precomp.h"
 #include "compute/partition/partition.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::part {
+namespace mrna::part::t04 {
 
-std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
-    const Primary& r, const energy::BoltzEnergyModelPtr& bem) {
+std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
+    const Primary& r, const energy::t04::BoltzModelPtr& bem) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::BoltzPrecomp bpc(Primary(r), bem);
+  const energy::t04::BoltzPrecomp bpc(Primary(r), bem);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {
@@ -480,4 +480,4 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition1(
   return {std::move(dp), std::move(ext)};
 }
 
-}  // namespace mrna::part
+}  // namespace mrna::part::t04

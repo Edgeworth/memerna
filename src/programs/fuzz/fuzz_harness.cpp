@@ -2,7 +2,6 @@
 #include "programs/fuzz/fuzz_harness.h"
 
 #include <cinttypes>
-#include <cstdio>
 #include <ctime>
 #include <string>
 #include <utility>
@@ -14,7 +13,7 @@ FuzzHarness::FuzzHarness(mrna::ArgParse args)
   rstr_ = std::make_shared<mrna::bridge::RNAstructure>(
       args_.Get(mrna::bridge::OPT_RNASTRUCTURE_DATA), false);
 #endif  // USE_RNASTRUCTURE
-  printf("Fuzzing with config: %s\n", cfg_.Desc().c_str());
+  std::cout << "Fuzzing with config: " << cfg_.Desc() << '\n';
 }
 
 mrna::fuzz::FuzzInvocation FuzzHarness::CreateInvocation(const mrna::Primary& r) {

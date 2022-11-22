@@ -7,23 +7,21 @@
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/energy.h"
-#include "compute/energy/model.h"
+#include "compute/energy/t04/model.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
-class BoltzEnergyModel;
+class BoltzModel;
+using BoltzModelPtr = std::shared_ptr<BoltzModel>;
 
-using BoltzEnergyModelPtr = std::shared_ptr<BoltzEnergyModel>;
-
-class BoltzEnergyModel {
+class BoltzModel {
  public:
   BoltzEnergy stack[4][4][4][4]{};
   BoltzEnergy terminal[4][4][4][4]{};
-  BoltzEnergy internal_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy internal_init[Model::INITIATION_CACHE_SZ]{};
   BoltzEnergy internal_1x1[4][4][4][4][4][4]{};
   BoltzEnergy internal_1x2[4][4][4][4][4][4][4]{};
   BoltzEnergy internal_2x2[4][4][4][4][4][4][4][4]{};
@@ -31,9 +29,9 @@ class BoltzEnergyModel {
   BoltzEnergy internal_other_mismatch[4][4][4][4]{};
   BoltzEnergy internal_asym{};
   BoltzEnergy internal_augu_penalty{};
-  BoltzEnergy bulge_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy bulge_init[Model::INITIATION_CACHE_SZ]{};
   BoltzEnergy bulge_special_c{};
-  BoltzEnergy hairpin_init[EnergyModel::INITIATION_CACHE_SZ]{};
+  BoltzEnergy hairpin_init[Model::INITIATION_CACHE_SZ]{};
   BoltzEnergy hairpin_uu_ga_first_mismatch{}, hairpin_gg_first_mismatch{},
       hairpin_special_gu_closure{}, hairpin_c3_loop{}, hairpin_all_c_a{}, hairpin_all_c_b{};
   std::unordered_map<std::string, BoltzEnergy> hairpin;
@@ -43,13 +41,13 @@ class BoltzEnergyModel {
   BoltzEnergy coax_mismatch_non_contiguous{}, coax_mismatch_wc_bonus{}, coax_mismatch_gu_bonus{};
   BoltzEnergy augu_penalty{};
 
-  BoltzEnergyModel() = delete;
+  BoltzModel() = delete;
 
-  static BoltzEnergyModelPtr Create(const EnergyModelPtr& em) {
-    return BoltzEnergyModelPtr(new BoltzEnergyModel(em));
+  static BoltzModelPtr Create(const EnergyModelPtr& em) {
+    return BoltzModelPtr(new BoltzModel(em));
   }
 
-  const EnergyModel& em() const { return em_; }
+  const Model& em() const { return em_; }
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -95,13 +93,13 @@ class BoltzEnergyModel {
   }
 
  private:
-  EnergyModel em_;
+  Model em_;
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzEnergyModel(const EnergyModelPtr& em);
+  explicit BoltzModel(const EnergyModelPtr& em);
 };
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04
 
 #endif  // COMPUTE_ENERGY_BOLTZMANN_MODEL_H_

@@ -4,17 +4,17 @@
 #include <vector>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/precomp.h"
 #include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::mfe {
+namespace mrna::mfe::t04 {
 
-DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
+DpArray ComputeTablesFastest(const Primary& r, const energy::EnergyModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -280,4 +280,4 @@ DpArray ComputeTables2(const Primary& r, const energy::EnergyModelPtr& em) {
   return dp;
 }
 
-}  // namespace mrna::mfe
+}  // namespace mrna::mfe::t04

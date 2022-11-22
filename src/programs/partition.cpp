@@ -11,6 +11,7 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::ctx::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);

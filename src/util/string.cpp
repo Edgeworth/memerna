@@ -3,7 +3,6 @@
 
 #include <cctype>
 #include <cstdarg>
-#include <cstdio>
 #include <memory>
 #include <stdexcept>
 
@@ -17,21 +16,9 @@ constexpr uint32_t CRC_MAGIC = 0xEDB88320;
 
 }  // namespace
 
-std::optional<std::string> sgetline(FILE* fp) {
-  auto size = START_BUF_SIZE;
+std::string sgetline(std::istream& is) {
   std::string s;
-  while (true) {
-    auto buf = std::make_unique<char[]>(size);
-    bool done = fgets(buf.get(), size, fp) == nullptr;
-    if (done && ferror(fp)) throw std::runtime_error("failed to read file");
-
-    std::string append(buf.get());
-    s += append;
-
-    // Minus one for null character.
-    if (done || static_cast<int>(append.size()) < size - 1) break;
-    if (size < MAX_BUF_SIZE) size *= 2;
-  }
+  std::getline(is, s);
   return s;
 }
 
