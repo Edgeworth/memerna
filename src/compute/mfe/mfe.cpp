@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "model/base.h"
 #include "model/primary.h"
 #include "util/array.h"

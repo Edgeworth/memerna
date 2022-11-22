@@ -8,12 +8,11 @@
 
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
-#include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/primary.h"

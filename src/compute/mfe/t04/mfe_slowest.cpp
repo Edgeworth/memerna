@@ -3,14 +3,14 @@
 #include <memory>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::mfe {
+namespace mrna::mfe::t04 {
 
 #define UPDATE_CACHE(a, value)                                          \
   do {                                                                  \
@@ -20,7 +20,7 @@ namespace mrna::mfe {
     }                                                                   \
   } while (0)
 
-DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em) {
+DpArray ComputeTablesSlowest(const Primary& r, const energy::EnergyModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -178,4 +178,4 @@ DpArray ComputeTables0(const Primary& r, const energy::EnergyModelPtr& em) {
 
 #undef UPDATE_CACHE
 
-}  // namespace mrna::mfe
+}  // namespace mrna::mfe::t04

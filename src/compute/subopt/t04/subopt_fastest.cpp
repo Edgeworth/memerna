@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/subopt/subopt1.h"
+#include "compute/subopt/t04/subopt_fastest.h"
 
 #include <algorithm>
 #include <memory>
@@ -7,20 +7,20 @@
 #include <vector>
 
 #include "compute/subopt/subopt.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/array.h"
 
-namespace mrna::subopt {
+namespace mrna::subopt::t04 {
 
-Suboptimal1::Suboptimal1(
+SuboptimalFastest::SuboptimalFastest(
     Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 
-int Suboptimal1::Run(const SuboptCallback& fn) {
+int SuboptimalFastest::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
@@ -39,7 +39,7 @@ int Suboptimal1::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> Suboptimal1::RunInternal(
+std::pair<int, Energy> SuboptimalFastest::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -131,7 +131,8 @@ std::pair<int, Energy> Suboptimal1::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Energy delta) const {
+std::vector<Expand> SuboptimalFastest::GenerateExpansions(
+    const Index& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   int st = to_expand.st;
   int en = to_expand.en;
@@ -438,4 +439,4 @@ std::vector<Expand> Suboptimal1::GenerateExpansions(const Index& to_expand, Ener
   return exps;
 }
 
-}  // namespace mrna::subopt
+}  // namespace mrna::subopt::t04

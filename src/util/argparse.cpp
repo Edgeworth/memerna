@@ -1,7 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/argparse.h"
 
-#include <cstdio>
 #include <cstdlib>
 
 #include "util/string.h"
@@ -112,7 +111,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    verify(std::fprintf(stderr, "%s\n%s\n", ret.c_str(), Usage().c_str()), "error showing usage");
+    std::cerr << ret << '\n' << Usage() << '\n';
     std::exit(1);  // NOLINT
   }
 }

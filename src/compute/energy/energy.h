@@ -3,11 +3,19 @@
 #define COMPUTE_ENERGY_ENERGY_H_
 
 #include <memory>
+#include <variant>
 
 #include "model/constants.h"
 #include "model/ctd.h"
 
 namespace mrna::energy {
+
+namespace t04 {
+class Model;
+using ModelPtr = std::shared_ptr<Model>;
+}  // namespace t04
+
+using EnergyModelPtr = std::variant<t04::ModelPtr>;
 
 class Structure;
 

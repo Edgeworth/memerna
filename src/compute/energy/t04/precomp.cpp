@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/energy/precomp.h"
+#include "compute/energy/t04/precomp.h"
 
 #include <algorithm>
 #include <cassert>
@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 namespace {
 
@@ -150,4 +150,4 @@ void Precomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>>(r_, em(), MAX_E);
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04

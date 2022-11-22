@@ -14,8 +14,13 @@ inline const Opt OPT_SEED =
 inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
                                         .LongName("memerna-data")
                                         .ShortName("md")
-                                        .Default("./data/model/t04_p1")
-                                        .Help("data path for given energy model for memerna");
+                                        .Default("./data/")
+                                        .Help("data path for memerna data");
+inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
+                                         .LongName("energy-model")
+                                         .ShortName("em")
+                                         .Default("t04_p100")
+                                         .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
 inline const auto OPT_BULGE_STATES =

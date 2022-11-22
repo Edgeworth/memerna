@@ -1,11 +1,11 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/boltzmann_model.h"
+#include "compute/energy/t04/boltz_model.h"
 
 #include <string>
 #include <type_traits>
 #include <utility>
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 namespace {
 
@@ -64,4 +64,4 @@ BoltzEnergyModel::BoltzEnergyModel(const EnergyModelPtr& em) : em_(*em) {
 #undef FILL_BOLTZ
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04

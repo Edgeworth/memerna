@@ -18,6 +18,7 @@ inline const auto OPT_MAX_LEN = mrna::Opt(mrna::Opt::ARG)
                                     .Default(-1);
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
@@ -44,8 +45,8 @@ int main(int argc, char* argv[]) {
         auto invoc = harness.CreateInvocation(mrna::Primary::FromSeq(rs));
         const auto res = invoc.Run();
         if (!res.empty()) {
-          for (const auto& s : res) printf("%s\n", s.c_str());
-          printf("\n");
+          for (const auto& s : res) std::cout << s << '\n';
+          std::cout << '\n';
           abort();
         }
       } catch (const std::exception& e) {

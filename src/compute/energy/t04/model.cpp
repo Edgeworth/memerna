@@ -1,10 +1,8 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/energy/model.h"
-
 #include <algorithm>
 #include <cassert>
-#include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <random>
@@ -13,6 +11,7 @@
 #include <vector>
 
 #include "compute/energy/branch.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/structure.h"
 #include "model/base.h"
@@ -22,149 +21,23 @@
 #include "util/error.h"
 #include "util/string.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 namespace {
-
 constexpr double RAND_MIN_ENERGY = -10.0;
 constexpr double RAND_MAX_ENERGY = 10.0;
 constexpr int RAND_MAX_HAIRPIN_SZ = 8;
 constexpr int RAND_MAX_NUM_HAIRPIN = 50;
-constexpr int BUFSZ = 256;
 
-void Parse2x2FromFile(const std::string& filename, Energy (&output)[4][4][4][4]) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char buf[BUFSZ];
-  while (true) {
-    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value(), "expected base");
-    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
-    output[*a][*b][*c][*d] = Energy::FromString(buf);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseMapFromFile(
-    const std::string& filename, std::unordered_map<std::string, Energy>* output) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char name[BUFSZ];
-  char energy[BUFSZ];
-  while (fscanf(fp, " %255s %255s ", name, energy) == 2)
-    (*output)[name] = Energy::FromString(energy);
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseInitiationEnergyFromFile(
-    const std::string& filename, Energy (&output)[energy::EnergyModel::INITIATION_CACHE_SZ]) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char energy[BUFSZ];
-  int idx = 0;
-  while (fscanf(fp, "%d %255s ", &idx, energy) == 2) {
-    verify(idx < energy::EnergyModel::INITIATION_CACHE_SZ, "out of bounds index in %s",
-        filename.c_str());
-    output[idx] = Energy::FromString(energy);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseInternalLoop1x1FromFile(const std::string& filename, energy::EnergyModel* em) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char buf[BUFSZ];
-  while (true) {
-    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value(),
-        "expected base");
-    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
-    em->internal_1x1[*a][*b][*c][*d][*e][*f] = Energy::FromString(buf);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseInternalLoop1x2FromFile(const std::string& filename, energy::EnergyModel* em) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char buf[BUFSZ];
-  while (true) {
-    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto g = CharToBase(static_cast<char>(fgetc(fp)));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value() && g.has_value(),
-        "expected base");
-    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
-    em->internal_1x2[*a][*b][*c][*d][*e][*f][*g] = Energy::FromString(buf);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseInternalLoop2x2FromFile(const std::string& filename, energy::EnergyModel* em) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char buf[BUFSZ];
-  while (true) {
-    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto d = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto e = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto f = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto g = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto h = CharToBase(static_cast<char>(fgetc(fp)));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value() && g.has_value() && h.has_value(),
-        "expected base");
-    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
-    em->internal_2x2[*a][*b][*c][*d][*e][*f][*g][*h] = Energy::FromString(buf);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseDangleDataFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
-  char buf[BUFSZ];
-  while (true) {
-    const auto a = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto b = CharToBase(static_cast<char>(fgetc(fp)));
-    const auto c = CharToBase(static_cast<char>(fgetc(fp)));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value(), "expected base");
-    verify(fscanf(fp, " %255s ", buf) == 1, "expected energy");
-    output[*a][*b][*c] = Energy::FromString(buf);
-  }
-  verify(fclose(fp) == 0, "could not close file");
-}
-
-void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em) {
-  FILE* fp = fopen(filename.c_str(), "r");
-  verify(fp != nullptr, "could not open file");
+void ParseMiscDataFromFile(const std::string& filename, Model* em) {
+  std::ifstream f(filename);
+  verify(f, "could not open file");
 
 #define READ_DATA(var)                                       \
   do {                                                       \
     while (1) {                                              \
-      auto line = sgetline(fp);                              \
-      verify(line.has_value(), "unexpected EOF or error");   \
+      auto line = sgetline(f);                               \
+      verify(line, "unexpected EOF or error");               \
       if ((*line)[0] == '/' || (*line)[0] == '\n') continue; \
       (var) = Energy::FromString(Trim(*line));               \
       break;                                                 \
@@ -199,7 +72,7 @@ void ParseMiscDataFromFile(const std::string& filename, energy::EnergyModel* em)
   READ_DATA(em->augu_penalty);
 #undef READ_DATA
 
-  verify(fclose(fp) == 0, "could not close file");
+  verify(f.eof(), "expected EOF");
 }
 
 }  // namespace
@@ -808,4 +681,4 @@ bool EnergyModel::IsValid(std::string* reason) const {
   return true;
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04

@@ -4,7 +4,7 @@
 #include <memory>
 #include <random>
 
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"

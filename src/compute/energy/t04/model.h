@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_MODEL_H_
-#define COMPUTE_ENERGY_MODEL_H_
+#ifndef COMPUTE_ENERGY_T04_MODEL_H_
+#define COMPUTE_ENERGY_T04_MODEL_H_
 
 #include <cassert>
 #include <cmath>
@@ -10,8 +10,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
+#include "compute/energy/structure.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -19,12 +19,9 @@
 #include "model/secondary.h"
 #include "util/argparse.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
-class EnergyModel;
-using EnergyModelPtr = std::shared_ptr<EnergyModel>;
-
-class EnergyModel {
+class Model {
  public:
   inline constexpr static int INITIATION_CACHE_SZ = 31;
   // Stacking related:
@@ -67,11 +64,11 @@ class EnergyModel {
 
   EnergyCfg cfg = {};
 
-  static EnergyModelPtr Create() { return EnergyModelPtr(new EnergyModel); }
-  static EnergyModelPtr FromDataDir(const std::string& data_dir);
-  static EnergyModelPtr Random(uint_fast32_t seed);
-  static EnergyModelPtr FromArgParse(const ArgParse& args);
-  inline EnergyModelPtr Clone() const { return std::make_shared<EnergyModel>(*this); }
+  static ModelPtr Create() { return ModelPtr(new Model); }
+  static ModelPtr FromDataDir(const std::string& data_dir);
+  static ModelPtr Random(uint_fast32_t seed);
+  static ModelPtr FromArgParse(const ArgParse& args);
+  inline ModelPtr Clone() const { return std::make_shared<Model>(*this); }
 
   inline bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs) return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
@@ -166,12 +163,12 @@ class EnergyModel {
 
  private:
   // This is private to prevent construction on the stack, since this structure is large.
-  EnergyModel() = default;
+  Model() = default;
 
   Energy SubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
       bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04
 
-#endif  // COMPUTE_ENERGY_MODEL_H_
+#endif  // COMPUTE_ENERGY_T04_MODEL_H_

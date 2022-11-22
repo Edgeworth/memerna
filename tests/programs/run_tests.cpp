@@ -3,14 +3,15 @@
 #include <memory>
 
 #include "common_test.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
-#include "compute/energy/model.h"
 #include "gtest/gtest.h"
 #include "util/argparse.h"
 #include "util/error.h"
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::energy::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);

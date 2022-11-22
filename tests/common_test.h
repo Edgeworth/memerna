@@ -1,20 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef TESTS_COMMON_TEST_H_
-#define TESTS_COMMON_TEST_H_
+#ifndef COMMON_TEST_H_
+#define COMMON_TEST_H_
 
 #include <cstdint>
 
-#include "compute/energy/model.h"
-
-#define ONLY_FOR_THIS_MODEL(em_, hash_)                                                          \
-  do {                                                                                           \
-    auto our_hash = (em_).Checksum();                                                            \
-    if (our_hash != (hash_)) {                                                                   \
-      printf("Skipping energy model specific tests: %#010x != " #hash_ " (%#010x).\n", our_hash, \
-          hash_);                                                                                \
-      return;                                                                                    \
-    }                                                                                            \
-  } while (0)
+#include "compute/energy/energy.h"
 
 namespace mrna {
 
@@ -25,8 +15,13 @@ inline constexpr uint32_t T04_P2_MODEL_HASH = 0x3bc125da;
 // with all models in g_em, since g_em is initialized at runtime.
 inline constexpr int NUM_TEST_MODELS = 5;
 inline energy::EnergyModelPtr g_em[NUM_TEST_MODELS];
-inline energy::EnergyModelPtr t04;
+
+#if ENERGY_PRECISION == 1
+inline energy::EnergyModelPtr t04_p1;
+#elif ENERGY_PRECISION == 2
+inline energy::EnergyModelPtr t04_p2;
+#endif
 
 }  // namespace mrna
 
-#endif  // TESTS_COMMON_TEST_H_
+#endif  // COMMON_TEST_H_

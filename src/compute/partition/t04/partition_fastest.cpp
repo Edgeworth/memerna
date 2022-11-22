@@ -6,27 +6,24 @@
 #include <utility>
 
 #include "compute/boltz_dp.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/boltz_model.h"
+#include "compute/energy/t04/boltz_precomp.h"
 #include "compute/partition/partition.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::part {
+namespace mrna::part::t04 {
 
-std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
-    const Primary& r, const energy::EnergyModelPtr& initial_em) {
+std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
+    const Primary& r, const energy::t04::BoltzModelPtr& bem) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-  // Force bulge states off.
-  auto em = initial_em->Clone();
-  em->cfg.bulge_states = false;
-
   const int N = static_cast<int>(r.size());
-  const energy::Precomp pc(Primary(r), em);
+  const energy::t04::BoltzPrecomp bpc(Primary(r), bem);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {
@@ -38,29 +35,27 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (em->CanPair(r, st, en)) {
+      if (bem->em().CanPair(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
-        for (int ist = st + 1; ist < st + max_inter + 2; ++ist)  // TODO lyngso's ?
+        for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
-            p += pc.TwoLoop(st, en, ist, ien).Boltz() * dp[ist][ien][PT_P];
+            p += bpc.TwoLoop(st, en, ist, ien) * dp[ist][ien][PT_P];
         // Hairpin loops.
-        p += em->Hairpin(r, st, en).Boltz();
+        p += bpc.Hairpin(st, en);
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const BoltzEnergy base_branch_cost =
-            (pc.augubranch[stb][enb] + em->multiloop_hack_a).Boltz();
+        const BoltzEnergy base_branch_cost = bpc.augubranch[stb][enb] * bem->multiloop_hack_a;
 
         // (<   ><   >)
         p += base_branch_cost * dp[st + 1][en - 1][PT_U2];
         // (3<   ><   >) 3'
-        p += base_branch_cost * dp[st + 2][en - 1][PT_U2] * em->dangle3[stb][st1b][enb].Boltz();
+        p += base_branch_cost * dp[st + 2][en - 1][PT_U2] * bem->dangle3[stb][st1b][enb];
         // (<   ><   >5) 5'
-        p += base_branch_cost * dp[st + 1][en - 2][PT_U2] * em->dangle5[stb][en1b][enb].Boltz();
+        p += base_branch_cost * dp[st + 1][en - 2][PT_U2] * bem->dangle5[stb][en1b][enb];
         // (.<   ><   >.) Terminal mismatch
-        p += base_branch_cost * dp[st + 2][en - 2][PT_U2] *
-            em->terminal[stb][st1b][en1b][enb].Boltz();
+        p += base_branch_cost * dp[st + 2][en - 2][PT_U2] * bem->terminal[stb][st1b][en1b][enb];
 
-        const auto outer_coax = em->MismatchCoaxial(stb, st1b, en1b, enb);
+        const auto outer_coax = bem->MismatchCoaxial(stb, st1b, en1b, enb);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
           Base pl1b = r[piv - 1];
@@ -70,24 +65,24 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
           // (.(   )   .) Left outer coax - P
           p += base_branch_cost * dp[st + 2][piv][PT_P] * dp[piv + 1][en - 2][PT_U] *
-              (pc.augubranch[st2b][plb] + outer_coax).Boltz();
+              bpc.augubranch[st2b][plb] * outer_coax;
           // (.   (   ).) Right outer coax
           p += base_branch_cost * dp[st + 2][piv][PT_U] * dp[piv + 1][en - 2][PT_P] *
-              (pc.augubranch[prb][en2b] + outer_coax).Boltz();
+              bpc.augubranch[prb][en2b] * outer_coax;
 
           // (.(   ).   ) Left inner coax
           p += base_branch_cost * dp[st + 2][piv - 1][PT_P] * dp[piv + 1][en - 1][PT_U] *
-              (pc.augubranch[st2b][pl1b] + em->MismatchCoaxial(pl1b, plb, st1b, st2b)).Boltz();
+              bpc.augubranch[st2b][pl1b] * bem->MismatchCoaxial(pl1b, plb, st1b, st2b);
           // (   .(   ).) Right inner coax
           p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[piv + 2][en - 2][PT_P] *
-              (pc.augubranch[pr1b][en2b] + em->MismatchCoaxial(en2b, en1b, prb, pr1b)).Boltz();
+              bpc.augubranch[pr1b][en2b] * bem->MismatchCoaxial(en2b, en1b, prb, pr1b);
 
           // ((   )   ) Left flush coax
           p += base_branch_cost * dp[st + 1][piv][PT_P] * dp[piv + 1][en - 1][PT_U] *
-              (pc.augubranch[st1b][plb] + em->stack[stb][st1b][plb][enb]).Boltz();
+              bpc.augubranch[st1b][plb] * bem->stack[stb][st1b][plb][enb];
           // (   (   )) Right flush coax
           p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[piv + 1][en - 1][PT_P] *
-              (pc.augubranch[prb][en1b] + em->stack[stb][prb][en1b][enb]).Boltz();
+              bpc.augubranch[prb][en1b] * bem->stack[stb][prb][en1b][enb];
         }
 
         dp[st][en][PT_P] = p;
@@ -110,10 +105,10 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        const BoltzEnergy base00 = dp[st][piv][PT_P] * pc.augubranch[stb][pb].Boltz();
-        const BoltzEnergy base01 = dp[st][piv - 1][PT_P] * pc.augubranch[stb][pl1b].Boltz();
-        const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * pc.augubranch[st1b][pb].Boltz();
-        const BoltzEnergy base11 = dp[st + 1][piv - 1][PT_P] * pc.augubranch[st1b][pl1b].Boltz();
+        const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
+        const BoltzEnergy base01 = dp[st][piv - 1][PT_P] * bpc.augubranch[stb][pl1b];
+        const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * bpc.augubranch[st1b][pb];
+        const BoltzEnergy base11 = dp[st + 1][piv - 1][PT_P] * bpc.augubranch[st1b][pl1b];
 
         // (   )<   > - U, U_WC?, U_GU?
         u2 += base00 * dp[piv + 1][en][PT_U];
@@ -125,28 +120,28 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           wc += val;
 
         // (   )3<   > 3' - U
-        val = base01 * em->dangle3[pl1b][pb][stb].Boltz();
+        val = base01 * bem->dangle3[pl1b][pb][stb];
         u += val;
         val *= dp[piv + 1][en][PT_U];
         u += val;
         u2 += val;
 
         // 5(   )<   > 5' - U
-        val = base10 * em->dangle5[pb][stb][st1b].Boltz();
+        val = base10 * bem->dangle5[pb][stb][st1b];
         u += val;
         val *= dp[piv + 1][en][PT_U];
         u += val;
         u2 += val;
 
         // .(   ).<   > Terminal mismatch - U
-        val = base11 * em->terminal[pl1b][pb][stb][st1b].Boltz();
+        val = base11 * bem->terminal[pl1b][pb][stb][st1b];
         u += val;
         val *= dp[piv + 1][en][PT_U];
         u += val;
         u2 += val;
 
         // .(   ).<(   ) > Left coax - U
-        val = base11 * em->MismatchCoaxial(pl1b, pb, stb, st1b).Boltz();
+        val = base11 * bem->MismatchCoaxial(pl1b, pb, stb, st1b);
         val = val * (dp[piv + 1][en][PT_U_WC] + dp[piv + 1][en][PT_U_GU]);
         u += val;
         u2 += val;
@@ -155,16 +150,16 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         val = base00 * dp[piv + 1][en][PT_U_RC];
         u += val;
         u2 += val;
-        val = base11 * em->MismatchCoaxial(pl1b, pb, stb, st1b).Boltz();
+        val = base11 * bem->MismatchCoaxial(pl1b, pb, stb, st1b);
         rcoax += val;
         rcoax += val * dp[piv + 1][en][PT_U];
 
         // (   )(<   ) > Flush coax - U
-        val = base01 * em->stack[pl1b][pb][WcPair(pb)][stb].Boltz() * dp[piv][en][PT_U_WC];
+        val = base01 * bem->stack[pl1b][pb][WcPair(pb)][stb] * dp[piv][en][PT_U_WC];
         u += val;
         u2 += val;
         if (IsGu(pb)) {
-          val = base01 * em->stack[pl1b][pb][GuPair(pb)][stb].Boltz() * dp[piv][en][PT_U_GU];
+          val = base01 * bem->stack[pl1b][pb][GuPair(pb)][stb] * dp[piv][en][PT_U_GU];
           u += val;
           u2 += val;
         }
@@ -178,7 +173,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
   }
 
   // Compute the exterior tables.
-  auto ext = Exterior(r, *em, dp);
+  auto ext = Exterior(r, bem->em(), dp);
 
   // Fill the left triangle.
   // The meaning of the tables changes here:
@@ -196,22 +191,20 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      // TODO: check pairs:
-      if (em->CanPair(r, en, st)) {
+      if (bem->em().CanPair(r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {
           const int oen_min = std::max(en - TWOLOOP_MAX_SZ - 1 + (ost - st - 1), 0);
           for (int oen = en - 1; oen >= oen_min; --oen)
-            p += pc.TwoLoop(oen, ost, en, st).Boltz() * dp[ost][oen][PT_P];
+            p += bpc.TwoLoop(oen, ost, en, st) * dp[ost][oen][PT_P];
         }
-        const BoltzEnergy base_branch_cost =
-            (pc.augubranch[stb][enb] + em->multiloop_hack_a).Boltz();
-        const Energy outer_coax =
-            lspace && rspace ? em->MismatchCoaxial(stb, st1b, en1b, enb) : MAX_E;
+        const BoltzEnergy base_branch_cost = bpc.augubranch[stb][enb] * bem->multiloop_hack_a;
+        const BoltzEnergy outer_coax =
+            lspace && rspace ? bem->MismatchCoaxial(stb, st1b, en1b, enb) : 0.0;
         // Try being an exterior loop - coax cases handled in the loop after this.
         {
-          const BoltzEnergy augu = em->AuGuPenalty(enb, stb).Boltz();
+          const BoltzEnergy augu = bem->AuGuPenalty(enb, stb);
           const BoltzEnergy rext = ext[st + 1][PTEXT_R];
           const BoltzEnergy r1ext = lspace > 1 ? ext[st + 2][PTEXT_R] : BoltzEnergy{1};
           const BoltzEnergy lext = rspace ? ext[en - 1][PTEXT_L] : BoltzEnergy{1};
@@ -222,32 +215,29 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           if (lspace) {
             // |<   >(   )3<   >| 3' - Exterior loop
             // lspace > 0
-            p += augu * lext * r1ext * em->dangle3[stb][st1b][enb].Boltz();
+            p += augu * lext * r1ext * bem->dangle3[stb][st1b][enb];
             // |  >5)   (<   | 5' - Enclosing loop
             if (rspace > 1)
-              p += base_branch_cost * dp[st + 1][en - 2][PT_U2] *
-                  em->dangle5[stb][en1b][enb].Boltz();
+              p += base_branch_cost * dp[st + 1][en - 2][PT_U2] * bem->dangle5[stb][en1b][enb];
           }
           if (rspace) {
             // |<   >5(   )<   >| 5' - Exterior loop
             // rspace > 0
-            p += augu * l1ext * rext * em->dangle5[stb][en1b][enb].Boltz();
+            p += augu * l1ext * rext * bem->dangle5[stb][en1b][enb];
             // |   >)   (3<  | 3' - Enclosing loop
             if (lspace > 1)
-              p += base_branch_cost * dp[st + 2][en - 1][PT_U2] *
-                  em->dangle3[stb][st1b][enb].Boltz();
+              p += base_branch_cost * dp[st + 2][en - 1][PT_U2] * bem->dangle3[stb][st1b][enb];
           }
           if (lspace && rspace) {
             // |<   >m(   )m<   >| Terminal mismatch - Exterior loop
             // lspace > 0 && rspace > 0
-            p += augu * l1ext * r1ext * em->terminal[stb][st1b][en1b][enb].Boltz();
+            p += augu * l1ext * r1ext * bem->terminal[stb][st1b][en1b][enb];
             // |   >)   (<   | - Enclosing loop
             p += base_branch_cost * dp[st + 1][en - 1][PT_U2];
           }
           // |  >m)   (m<  | Terminal mismatch - Enclosing loop
           if (lspace > 1 && rspace > 1)
-            p += base_branch_cost * dp[st + 2][en - 2][PT_U2] *
-                em->terminal[stb][st1b][en1b][enb].Boltz();
+            p += base_branch_cost * dp[st + 2][en - 2][PT_U2] * bem->terminal[stb][st1b][en1b][enb];
 
           const int limit = en + N;
           for (int tpiv = st; tpiv <= limit; ++tpiv) {
@@ -264,22 +254,18 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
               const BoltzEnergy rp1ext = ext[piv + 1][PTEXT_R];
               // |<   >)   (.(   ).<   >| Exterior loop - Left inner coax
               // lspace > 1 && not enclosed
-              p += dp[st + 2][pl][PT_P] * lext * rp1ext *
-                  (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(st2b, pl1b) +
-                      em->MismatchCoaxial(pl1b, plb, st1b, st2b))
-                      .Boltz();
+              p += dp[st + 2][pl][PT_P] * lext * rp1ext * bem->AuGuPenalty(stb, enb) *
+                  bem->AuGuPenalty(st2b, pl1b) * bem->MismatchCoaxial(pl1b, plb, st1b, st2b);
               // |<   >)   ((   )<   >| Exterior loop - Left flush coax
               // lspace > 0 && not enclosed
-              p += dp[st + 1][piv][PT_P] * lext * rp1ext *
-                  (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(st1b, plb) +
-                      em->stack[stb][st1b][plb][enb])
-                      .Boltz();
+              p += dp[st + 1][piv][PT_P] * lext * rp1ext * bem->AuGuPenalty(stb, enb) *
+                  bem->AuGuPenalty(st1b, plb) * bem->stack[stb][st1b][plb][enb];
 
               if (rspace) {
                 // |<   >.)   (.(   )<   >| Exterior loop - Left outer coax
                 // lspace > 0 && rspace > 0 && not enclosed
-                p += dp[st + 2][piv][PT_P] * l1ext * rp1ext *
-                    (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(st2b, plb) + outer_coax).Boltz();
+                p += dp[st + 2][piv][PT_P] * l1ext * rp1ext * bem->AuGuPenalty(stb, enb) *
+                    bem->AuGuPenalty(st2b, plb) * outer_coax;
               }
             }
 
@@ -287,22 +273,18 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
               const BoltzEnergy lpext = piv > 0 ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
               // |<   >.(   ).)   (<   >| Exterior loop - Right inner coax
               // rspace > 1 && not enclosed
-              p += dp[pr][en - 2][PT_P] * lpext * rext *
-                  (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(prb, en2b) +
-                      em->MismatchCoaxial(en2b, en1b, plb, prb))
-                      .Boltz();
+              p += dp[pr][en - 2][PT_P] * lpext * rext * bem->AuGuPenalty(stb, enb) *
+                  bem->AuGuPenalty(prb, en2b) * bem->MismatchCoaxial(en2b, en1b, plb, prb);
               // |<   >(   ))   (<   >| Exterior loop - Right flush coax
               // rspace > 0 && not enclosed
-              p += dp[piv][en - 1][PT_P] * lpext * rext *
-                  (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(plb, en1b) +
-                      em->stack[en1b][enb][stb][plb])
-                      .Boltz();
+              p += dp[piv][en - 1][PT_P] * lpext * rext * bem->AuGuPenalty(stb, enb) *
+                  bem->AuGuPenalty(plb, en1b) * bem->stack[en1b][enb][stb][plb];
 
               if (lspace) {
                 // |<   >(   ).)   (.<   >| Exterior loop - Right outer coax
                 // lspace > 0 && rspace > 1 && not enclosed
-                p += dp[piv][en - 2][PT_P] * lpext * r1ext *
-                    (em->AuGuPenalty(stb, enb) + em->AuGuPenalty(plb, en2b) + outer_coax).Boltz();
+                p += dp[piv][en - 2][PT_P] * lpext * r1ext * bem->AuGuPenalty(stb, enb) *
+                    bem->AuGuPenalty(plb, en2b) * outer_coax;
               }
             }
           }
@@ -337,14 +319,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
               // |  >.)   (.(   )<  | Enclosing loop - Left outer coax
               // lspace > 1 && rspace > 1 && enclosed
               p += base_branch_cost * dp[st + 2][piv][PT_P] * dp[pr][en - 2][PT_U] *
-                  (pc.augubranch[st2b][plb] + outer_coax).Boltz();
+                  bpc.augubranch[st2b][plb] * outer_coax;
             }
 
             if (right_formable) {
               // |  >(   ).)   (.<  | Enclosing loop - Right outer coax
               // lspace > 1 && rspace > 1 && enclosed
               p += base_branch_cost * dp[st + 2][piv][PT_U] * dp[pr][en - 2][PT_P] *
-                  (pc.augubranch[prb][en2b] + outer_coax).Boltz();
+                  bpc.augubranch[prb][en2b] * outer_coax;
             }
           }
 
@@ -352,14 +334,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
             // |  >)   (.(   ).<  | Enclosing loop - Left inner coax
             // lspace > 1 && rspace > 0 && enclosed && no dot split
             p += base_branch_cost * dp[st + 2][pl][PT_P] * dp[pr][en - 1][PT_U] *
-                (pc.augubranch[st2b][pl1b] + em->MismatchCoaxial(pl1b, plb, st1b, st2b)).Boltz();
+                bpc.augubranch[st2b][pl1b] * bem->MismatchCoaxial(pl1b, plb, st1b, st2b);
           }
 
           if (lspace && rspace > 1 && right_dot_formable) {
             // |  >.(   ).)   (<  | Enclosing loop - Right inner coax
             // lspace > 0 && rspace > 1 && enclosed && no dot split
             p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[pr1][en - 2][PT_P] *
-                (pc.augubranch[pr1b][en2b] + em->MismatchCoaxial(en2b, en1b, prb, pr1b)).Boltz();
+                bpc.augubranch[pr1b][en2b] * bem->MismatchCoaxial(en2b, en1b, prb, pr1b);
           }
 
           if (lspace && rspace) {
@@ -367,14 +349,14 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
               // |  >)   ((   )<  | Enclosing loop - Left flush coax
               // lspace > 0 && rspace > 0 && enclosed
               p += base_branch_cost * dp[st + 1][piv][PT_P] * dp[pr][en - 1][PT_U] *
-                  (pc.augubranch[st1b][plb] + em->stack[stb][st1b][plb][enb]).Boltz();
+                  bpc.augubranch[st1b][plb] * bem->stack[stb][st1b][plb][enb];
             }
 
             if (right_formable) {
               // |  >(   ))   (<  | Enclosing loop - Right flush coax
               // lspace > 0 && rspace > 0 && enclosed
               p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[pr][en - 1][PT_P] *
-                  (pc.augubranch[prb][en1b] + em->stack[en1b][enb][stb][prb]).Boltz();
+                  bpc.augubranch[prb][en1b] * bem->stack[en1b][enb][stb][prb];
             }
           }
         }
@@ -400,9 +382,8 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         const auto pb = r[piv];
         const auto pl1b = r[pl];
         const auto prb = r[pr];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        const BoltzEnergy base00 = dp[st][piv][PT_P] * pc.augubranch[stb][pb].Boltz();
-        const BoltzEnergy base01 = dp[st][pl][PT_P] * pc.augubranch[stb][pl1b].Boltz();
+        const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
+        const BoltzEnergy base01 = dp[st][pl][PT_P] * bpc.augubranch[stb][pl1b];
 
         // Must have an enclosing loop.
         const bool straddling = tpiv != N - 1;
@@ -429,11 +410,11 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
           // |  )  >>   <(   )<(  | Flush coax
           // straddling
-          val = base00 * em->stack[pb][prb][WcPair(prb)][stb].Boltz() * dp[pr][en][PT_U_WC];
+          val = base00 * bem->stack[pb][prb][WcPair(prb)][stb] * dp[pr][en][PT_U_WC];
           u += val;
           u2 += val;
           if (IsGu(prb)) {
-            val = base00 * em->stack[pb][prb][GuPair(prb)][stb].Boltz() * dp[pr][en][PT_U_GU];
+            val = base00 * bem->stack[pb][prb][GuPair(prb)][stb] * dp[pr][en][PT_U_GU];
             u += val;
             u2 += val;
           }
@@ -446,7 +427,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
 
         if (dot_straddling) {
           // |  >>   <(   )3<  | 3'
-          val = base01 * em->dangle3[pl1b][pb][stb].Boltz();
+          val = base01 * bem->dangle3[pl1b][pb][stb];
           if (tpiv >= N) u += val;
           val *= dp[pr][en][PT_U];
           u += val;
@@ -454,12 +435,12 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
         }
 
         if (lspace) {
-          const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * pc.augubranch[st1b][pb].Boltz();
-          const BoltzEnergy base11 = dp[st + 1][pl][PT_P] * pc.augubranch[st1b][pl1b].Boltz();
+          const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * bpc.augubranch[st1b][pb];
+          const BoltzEnergy base11 = dp[st + 1][pl][PT_P] * bpc.augubranch[st1b][pl1b];
 
           if (straddling) {
             // |  >>   <5(   )<  | 5'
-            val = base10 * em->dangle5[pb][stb][st1b].Boltz();
+            val = base10 * bem->dangle5[pb][stb][st1b];
             if (tpiv >= N) u += val;
             val *= dp[pr][en][PT_U];
             u += val;
@@ -469,19 +450,19 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
           if (dot_straddling) {
             // |  >>   <.(   ).<  | Terminal mismatch
             // lspace > 0 && dot_straddling
-            val = base11 * em->terminal[pl1b][pb][stb][st1b].Boltz();
+            val = base11 * bem->terminal[pl1b][pb][stb][st1b];
             if (tpiv >= N) u += val;
             val *= dp[pr][en][PT_U];
             u += val;
             u2 += val;
             // |  )>>   <.(   ).<(  | Left coax
             // lspace > 0 && dot_straddling
-            val = base11 * em->MismatchCoaxial(pl1b, pb, stb, st1b).Boltz();
+            val = base11 * bem->MismatchCoaxial(pl1b, pb, stb, st1b);
             val = val * (dp[pr][en][PT_U_WC] + dp[pr][en][PT_U_GU]);
             u += val;
             u2 += val;
             // |  ).  >>   <(   )<.(   | Right coax backward
-            val = base11 * em->MismatchCoaxial(pl1b, pb, stb, st1b).Boltz();
+            val = base11 * bem->MismatchCoaxial(pl1b, pb, stb, st1b);
             if (tpiv >= N) rcoax += val;
             rcoax += val * dp[pr][en][PT_U];
           }
@@ -499,4 +480,4 @@ std::tuple<BoltzDpArray, BoltzExtArray> Partition0(
   return {std::move(dp), std::move(ext)};
 }
 
-}  // namespace mrna::part
+}  // namespace mrna::part::t04

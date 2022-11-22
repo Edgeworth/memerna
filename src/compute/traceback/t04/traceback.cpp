@@ -1,18 +1,18 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 
 #include <algorithm>
 #include <memory>
 #include <stack>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::tb {
+namespace mrna::tb::t04 {
 
 TracebackResult Traceback(
     const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
@@ -396,4 +396,4 @@ TracebackResult Traceback(
   return res;
 }
 
-}  // namespace mrna::tb
+}  // namespace mrna::tb::t04

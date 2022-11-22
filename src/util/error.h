@@ -2,7 +2,6 @@
 #ifndef UTIL_ERROR_H_
 #define UTIL_ERROR_H_
 
-#include <cstdio>
 #include <stdexcept>
 
 #include "util/string.h"

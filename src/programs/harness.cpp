@@ -1,5 +1,4 @@
 // Copyright 2016 Eliot Courtney.
-#include <cstdio>
 #include <deque>
 #include <iostream>
 #include <memory>
@@ -13,7 +12,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "ctx/ctx.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -23,6 +22,7 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::bridge::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_VERBOSE);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
       auto [r, s] = mrna::ParseSeqDb(seq, db);
       std::string desc;
       const auto res = package->Efn(r, s, args.GetOr(mrna::OPT_VERBOSE) ? &desc : nullptr);
-      printf("%s\n%s", res.energy.ToString().c_str(), desc.c_str());
+      std::cout << res.energy << '\n' << desc;
     }
   } else {
     while (true) {
@@ -85,13 +85,13 @@ int main(int argc, char* argv[]) {
         auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              printf("%s %s\n", c.energy.ToString().c_str(), c.tb.s.ToDb().c_str());
+              std::cout << c.energy << ' ' << c.s.ToDb() << '\n';
             },
             r, delta);
-        printf("%d suboptimal structures:\n", strucs);
+        std::cout << strucs << " suboptimal structures\n";
       } else if (fold) {
         const auto res = package->Fold(r);
-        printf("%s\n%s\n", res.mfe.energy.ToString().c_str(), res.tb.s.ToDb().c_str());
+        std::cout << res.mfe.energy << '\n' << res.tb.s.ToDb() << '\n';
       } else if (part) {
         auto res = package->Partition(r);
         std::cout << "q: " << res.part.q << '\n';

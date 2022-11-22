@@ -6,19 +6,19 @@
 #include <vector>
 
 #include "compute/dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 
-namespace mrna::subopt {
+namespace mrna::subopt::t04 {
 
-class Suboptimal0 {
+class SuboptimalSlowest {
  public:
-  Suboptimal0(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptimalSlowest(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -101,6 +101,6 @@ class Suboptimal0 {
   }
 };
 
-}  // namespace mrna::subopt
+}  // namespace mrna::subopt::t04
 
 #endif  // COMPUTE_SUBOPT_SUBOPT0_H_

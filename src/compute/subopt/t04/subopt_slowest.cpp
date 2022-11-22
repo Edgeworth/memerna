@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/subopt/subopt0.h"
+#include "compute/subopt/t04/subopt_slowest.h"
 
 #include <algorithm>
 #include <cassert>
@@ -10,19 +10,19 @@
 #include <vector>
 
 #include "compute/subopt/subopt.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "model/base.h"
 #include "model/secondary.h"
 #include "util/array.h"
 #include "util/error.h"
 
-namespace mrna::subopt {
+namespace mrna::subopt::t04 {
 
-Suboptimal0::Suboptimal0(
+SuboptimalSlowest::SuboptimalSlowest(
     Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)), cfg_(cfg) {}
 
-int Suboptimal0::Run(const SuboptCallback& fn) {
+int SuboptimalSlowest::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
@@ -350,4 +350,4 @@ int Suboptimal0::Run(const SuboptCallback& fn) {
   return static_cast<int>(finished_.size());
 }
 
-}  // namespace mrna::subopt
+}  // namespace mrna::subopt::t04

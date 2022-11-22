@@ -7,7 +7,7 @@
 
 #include "common_test.h"
 #include "compute/energy/branch.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"

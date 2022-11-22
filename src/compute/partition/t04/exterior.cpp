@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/boltz_dp.h"
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "compute/partition/partition.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -9,7 +9,7 @@
 
 namespace mrna::part {
 
-BoltzExtArray Exterior(const Primary& r, const energy::EnergyModel& em, const BoltzDpArray& dp) {
+BoltzExtArray Exterior(const Primary& r, const energy::t04::ModelPtr& em, const BoltzDpArray& dp) {
   const int N = static_cast<int>(r.size());
   auto ext = BoltzExtArray(r.size() + 1, 0);
 

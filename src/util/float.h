@@ -11,7 +11,7 @@
 namespace boost {
 
 inline void throw_exception(const std::exception& e) {
-  fprintf(stderr, "Boost exception: %s\n", e.what());
+  std::cerr << "Boost exception: " << e.what() << '\n';
   std::abort();
 }
 

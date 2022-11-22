@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/boltzmann_precomp.h"
+#include "compute/energy/t04/boltz_precomp.h"
 
 #include <algorithm>
 #include <cassert>
@@ -8,10 +8,10 @@
 #include <unordered_map>
 #include <utility>
 
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "model/base.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzEnergyModelPtr bem)
     : r_(std::move(r)), bem_(std::move(bem)) {
@@ -90,4 +90,4 @@ void BoltzPrecomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>>(r_, bem(), -1.0);
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04

@@ -6,16 +6,20 @@ check float bits, partition fn
 update tests based on precision , ifdefs
 pass data dir, separate energy model selection.
 
-- Ensure precision for t*_p*; look for instances of t04 in code and replace.
+check symmetry for new terminal mismatch table
+
+- Ensure precision for t*\_p*; look for instances of t04 in code and replace.
 - Support energy model selection
 
 - update data tables with higher precision energy, compare to RNAstructure
-- ComputeTables0,1,2,3 => better names
 
-- switch to c++ input/output
-  - use std::ios_base::sync_with_stdio(false);
-  - can remove energy.ToString() calls, FromString() calls
-  - add operator<<>> to others? Ctd
+- run IWYU
+
+6Map: internal_1x1
+7Map: internal_1x2
+8Map: internal_2x2
+dangledata: 3map
+initiation: 1Vec
 
 ## s22 notes (impl)
 
@@ -43,6 +47,16 @@ One Cfg for all models. Maybe later need model specific config.
 Ctx:
 
 EnergyModel:
+option: add terminal stacking value, ignore for t04,t12. energymodel gets more and more parameters.
+option: subclasses + downcasting? + interface?; t22 . final on methods optimisation?
+option: use variant of shared_ptrs? <--- Choose this one
+brute force: needs CanPair, TotalEnergy, SubstructureEnergy -> variant visitation?
+How to handle different algs between models? 0, 1, 2, etc. -> all share same enum.
+rename to fast, slow, slower, lyngso, etc?
+T04EnergyModel
+T12EnergyModel is just T04 with different parameters
+T22EnergyModel also has the terminal stacking params
+what about precomp?
 
 same for subopt, partition etc
 
@@ -60,14 +74,14 @@ Update in 2012 model (t12_p2):
   Just use the updated GU stacks, not for WC stacks since they didn't change that much
   That's what RNAstructure does.
 
-Update in 2022 model:
+Update in 2022 model (t22_p2):
 
 - AU penalty removed as well
 - stacking params updated
 - sequence dependent parameters for terminal base pairs based on the penultimate
   pair
 
-need to apply to all loop types - affects energy model, exterior loop, mfe.
+need to apply to all loop types - affects energy model, efn, exterior loop, mfe.
 
 - augu_penalty, internal_augu_penalty goes away;
 - add [4][4][4][4] table for terminal base pairs.

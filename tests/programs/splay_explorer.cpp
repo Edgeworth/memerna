@@ -1,6 +1,5 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
-#include <cstdio>
 #include <cstdlib>
 #include <set>
 #include <string>
@@ -64,7 +63,7 @@ void DoAfl() {
     char op = 0;
     int val = 0;
     while (ss >> std::ws >> op >> std::ws >> val) DoOperation(op, val, &h, &s);
-    printf("%s\n", h.Describe().c_str());
+    std::cout << h.Describe() << '\n';
   }
 #endif
 }
@@ -81,19 +80,18 @@ void DoInteractive(int r) {
   char op = 0;
   int val = 0;
   while (true) {
-    printf("%s\n> ", h.Describe().c_str());
-    int res = scanf(" %c %d", &op, &val);
-    if (res < 0) break;
+    std::cout << h.Describe() << "\n>";
+    if (!(std::cin >> op >> val)) break;
     if (res == 2) {
       auto op_res = DoOperation(op, val, &h, &s);
       if (op_res == OpResult::INVALID)
-        printf("Invalid input\n");
+        std::cout << "Invalid input\n";
       else if (op_res == OpResult::SUCCESS)
-        printf("Operation successful.\n");
+        std::cout << "Operation successful.\n";
       else
-        printf("Operation failed.\n");
+        std::cout << "Operation failed.\n";
     } else {
-      printf("Invalid input.\n");
+      std::cout << "Invalid input.\n";
     }
   }
 }
@@ -102,12 +100,13 @@ inline const auto OPT_RANGE =
     mrna::Opt(mrna::Opt::ARG).ShortName("r").Default("-1").Help("load range from 1 until r");
 
 int main(int argc, char** argv) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   args.RegisterOpt(mrna::OPT_AFL);
   args.RegisterOpt(OPT_RANGE);
   args.ParseOrExit(argc, argv);
 
-  printf("Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n");
+  std::cout << "Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n";
   const bool afl = args.GetOr(mrna::OPT_AFL);
   const int r = args.Get<int>(OPT_RANGE);
   verify(!(afl && (r != -1)), "incompatible options");

@@ -5,9 +5,9 @@
 #include <memory>
 #include <utility>
 
-#include "compute/energy/boltzmann_model.h"
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
+#include "compute/energy/t04/boltz_model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"

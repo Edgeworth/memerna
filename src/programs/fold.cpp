@@ -1,9 +1,8 @@
 // Copyright 2016 Eliot Courtney.
-#include <cstdio>
 #include <string>
 
 #include "compute/mfe/mfe.h"
-#include "compute/traceback/traceback.h"
+#include "compute/traceback/t04/traceback.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
@@ -13,6 +12,7 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::ctx::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
   const auto res = ctx.Fold(mrna::Primary::FromSeq(args.Pos(0)));
 
-  printf("%s\n%s\n%s\n", res.mfe.energy.ToString().c_str(), res.tb.s.ToDb().c_str(),
-      res.tb.ctd.ToString(res.tb.s).c_str());
+  std::cout << res.mfe.energy << '\n'
+            << res.tb.s.ToDb() << '\n'
+            << res.tb.ctd.ToString(res.tb.s) << '\n';
 }

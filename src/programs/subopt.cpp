@@ -1,7 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/subopt/subopt.h"
 
-#include <cstdio>
 #include <string>
 
 #include "compute/subopt/subopt_cfg.h"
@@ -19,6 +18,7 @@ inline const auto OPT_CTD_OUTPUT =
     mrna::Opt(mrna::Opt::FLAG).LongName("ctd-output").Help("if we should output CTD data");
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::ctx::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_QUIET);
@@ -36,16 +36,14 @@ int main(int argc, char* argv[]) {
   if (should_print) {
     if (ctd_data) {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        printf("%s ", c.energy.ToString().c_str());
-        puts(c.tb.ctd.ToString(c.tb.s).c_str());
+        std::cout << c.energy << ' ' << c.tb.ctd.ToString(c.tb.s) << '\n';
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        printf("%s ", c.energy.ToString().c_str());
-        puts(c.tb.s.ToDb().c_str());
+        std::cout << c.energy << ' ' << c.tb.s.ToDb() << '\n';
       };
     }
   }
   int strucs = ctx.Suboptimal(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
-  printf("%d suboptimal structures\n", strucs);
+  std::cout << structs << " suboptimal structures\n";
 }

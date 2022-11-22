@@ -1,19 +1,19 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_PRECOMP_H_
-#define COMPUTE_ENERGY_PRECOMP_H_
+#ifndef COMPUTE_ENERGY_T04_PRECOMP_H_
+#define COMPUTE_ENERGY_T04_PRECOMP_H_
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "compute/energy/model.h"
+#include "compute/energy/energy.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/error.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 namespace internal {
 
@@ -79,6 +79,6 @@ class Precomp {
   void PrecomputeData();
 };
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04
 
-#endif  // COMPUTE_ENERGY_PRECOMP_H_
+#endif  // COMPUTE_ENERGY_T04_PRECOMP_H_

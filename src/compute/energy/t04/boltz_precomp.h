@@ -5,13 +5,13 @@
 #include <memory>
 #include <vector>
 
-#include "compute/energy/boltzmann_model.h"
-#include "compute/energy/model.h"
-#include "compute/energy/precomp.h"
+#include "compute/energy/energy.h"
+#include "compute/energy/t04/boltz_model.h"
+#include "compute/energy/t04/precomp.h"
 #include "model/constants.h"
 #include "model/primary.h"
 
-namespace mrna::energy {
+namespace mrna::energy::t04 {
 
 struct BoltzPrecomp {
   BoltzEnergy augubranch[4][4]{};
@@ -32,6 +32,6 @@ struct BoltzPrecomp {
   void PrecomputeData();
 };
 
-}  // namespace mrna::energy
+}  // namespace mrna::energy::t04
 
 #endif  // COMPUTE_ENERGY_BOLTZMANN_PRECOMP_H_

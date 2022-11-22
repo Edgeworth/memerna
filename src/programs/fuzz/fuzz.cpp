@@ -1,7 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include <chrono>
 #include <cinttypes>
-#include <cstdio>
 #include <deque>
 #include <random>
 #include <string>
@@ -23,6 +22,7 @@ inline const auto OPT_ENUMERATE =
     mrna::Opt(mrna::Opt::FLAG).LongName("enumerate").Help("enumerate all sequences");
 
 int main(int argc, char* argv[]) {
+  std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
@@ -51,33 +51,33 @@ int main(int argc, char* argv[]) {
   auto harness = FuzzHarness(std::move(args));
   if (!seq.empty()) {
     const auto r = mrna::Primary::FromSeq(seq);
-    printf("Running single fuzz on %s\n", seq.c_str());
+    std::cout << "Running single fuzz on " << seq << '\n';
     auto invoc = harness.CreateInvocation(r);
     const auto res = invoc.Run();
     if (!res.empty()) {
-      for (const auto& s : res) printf("%s\n", s.c_str());
-      printf("\n");
+      for (const auto& s : res) std::cout << s << '\n';
+      std::cout << '\n';
     }
   } else if (enumerate) {
-    printf("Exhaustive fuzzing [%d, %d] len RNAs\n", min_len, max_len);
+    std::cout << "Exhaustive fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
     int64_t i = 0;
     mrna::Primary r(min_len);
     while (static_cast<int>(r.size()) <= max_len) {
       if (++i % 1000 == 0)
-        printf("Fuzzed %" PRId64 " RNA, current size: %d\n", i, static_cast<int>(r.size()));
+        std::cout << "Fuzzed " << i << " RNA, current size: " << r.size() << '\n';
 
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        for (const auto& s : res) printf("%s\n", s.c_str());
-        printf("\n");
+        for (const auto& s : res) std::cout << s << '\n';
+        std::cout << '\n';
       }
 
       r.Increment();
     }
-    printf("Finished exhaustive fuzzing [%d, %d] len RNAs\n", min_len, max_len);
+    std::cout << "Finished exhaustive fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
   } else {
-    printf("Random fuzzing [%d, %d] len RNAs\n", min_len, max_len);
+    std::cout << "Random fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
     auto start_time = std::chrono::steady_clock::now();
     for (int64_t i = 0;; ++i) {
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
           std::chrono::duration_cast<std::chrono::seconds>(
               std::chrono::steady_clock::now() - start_time)
                   .count() > interval) {
-        printf("Fuzzed %" PRId64 " RNA\n", i);
+        std::cout << "Fuzzed " << i << " RNAs\n";
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(harness.e());
@@ -94,8 +94,8 @@ int main(int argc, char* argv[]) {
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        for (const auto& s : res) printf("%s\n", s.c_str());
-        printf("\n");
+        for (const auto& s : res) std::cout << s << '\n';
+        std::cout << '\n';
       }
     }
   }
