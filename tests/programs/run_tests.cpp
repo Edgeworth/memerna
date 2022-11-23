@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
-#include <cassert>
 #include <memory>
+#include <ios>
+#include <variant>
 
 #include "common_test.h"
 #include "compute/energy/energy_cfg.h"
@@ -8,6 +9,7 @@
 #include "gtest/gtest.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "compute/energy/t04/model.h"
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
@@ -18,7 +20,8 @@ int main(int argc, char** argv) {
 
 #if ENERGY_PRECISION == 1
 
-  mrna::t04_p1 = mrna::erg::t04::Model::FromArgParse(args);
+  mrna::t04_p1 =
+      mrna::erg::t04::Model::FromDataDir(mrna::erg::ModelPathFromArgParse(args, "t04_p1"));
   verify(mrna::t04_p1->Checksum() == mrna::T04_P1_MODEL_HASH,
       "Expected t04_p1 model hash %d, got %d", mrna::T04_P1_MODEL_HASH, mrna::t04_p1->Checksum());
 
@@ -28,7 +31,8 @@ int main(int argc, char** argv) {
 #elif ENERGY_PRECISION == 2
 
   // TODO(0): support t12
-  mrna::t04_p2 = mrna::erg::t04::Model::FromArgParse(args);
+  mrna::t04_p2 =
+      mrna::erg::t04::Model::FromDataDir(mrna::erg::ModelPathFromArgParse(args, "t04_p2"));
   verify(mrna::t04_p2->Checksum() == mrna::T04_P2_MODEL_HASH,
       "Expected t04_p2 model hash %d, got %d", mrna::T04_P2_MODEL_HASH, mrna::t04_p2->Checksum());
 

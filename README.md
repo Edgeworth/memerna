@@ -16,8 +16,6 @@ check symmetry for new terminal mismatch table
 - run IWYU
 - add google benchmark lib
 
-energy => erg
-
 ## s22 notes (impl)
 
 split code into t04 model and others

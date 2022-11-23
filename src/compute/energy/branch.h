@@ -6,10 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "model/constants.h"
 #include "model/ctd.h"
-#include "model/primary.h"
 #include "model/secondary.h"
+#include "model/energy.h"
 
 namespace mrna::erg {
 

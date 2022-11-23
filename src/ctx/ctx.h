@@ -2,7 +2,6 @@
 #ifndef CTX_CTX_H_
 #define CTX_CTX_H_
 
-#include <memory>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -19,6 +18,8 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
+#include "compute/energy/energy.h"
+#include "model/energy.h"
 
 namespace mrna::ctx {
 

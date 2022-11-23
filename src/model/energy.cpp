@@ -1,10 +1,12 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/energy.h"
 
+#include <cmath>
+#include <cstdlib>
 #include <iomanip>
+#include <istream>
 
 #include "model/constants.h"
-#include "model/primary.h"
 #include "util/error.h"
 
 namespace mrna {

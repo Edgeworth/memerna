@@ -7,11 +7,12 @@
 #include <vector>
 
 #include "compute/subopt/subopt.h"
-#include "compute/traceback/t04/traceback.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/array.h"
+#include "compute/traceback/traceback.h"
+#include "model/constants.h"
 
 namespace mrna::subopt::t04 {
 

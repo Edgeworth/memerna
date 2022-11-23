@@ -1,19 +1,10 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/energy/branch.h"
 
-#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <stack>
-#include <tuple>
-#include <utility>
 #include <vector>
-
-#include "compute/energy/model.h"
-#include "model/base.h"
-#include "model/energy.h"
-#include "model/primary.h"
-#include "util/error.h"
 
 namespace mrna::erg {
 

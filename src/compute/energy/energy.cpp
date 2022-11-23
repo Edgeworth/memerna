@@ -3,9 +3,10 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
-#include "compute/energy/model.h"
 #include "compute/energy/structure.h"
+#include "model/base.h"
 
 namespace mrna::erg {
 

@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "compute/energy/energy_cfg.h"
+
 namespace mrna::erg::t04 {
 
 namespace {

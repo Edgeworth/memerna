@@ -5,8 +5,10 @@
 #include <fstream>
 #include <string>
 #include <unordered_map>
+#include <cstddef>
 
 #include "model/energy.h"
+#include "util/error.h"
 
 namespace mrna::erg {
 

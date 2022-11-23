@@ -5,13 +5,14 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <type_traits>
+#include <variant>
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/alg.h"
 #include "compute/dp.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/energy/t04/model.h"
-#include "compute/mfe/mfe.h"
 #include "compute/mfe/t04/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/partition/t04/partition.h"
@@ -114,7 +115,7 @@ int Ctx::Suboptimal(
 }
 
 part::PartResult Ctx::Partition(const Primary& r) const {
-  if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
+  if (cfg_.part_alg == CtxCfg::PartAlg::BRUTE) {
     return brute::PartitionBrute(r, em_);
   }
 

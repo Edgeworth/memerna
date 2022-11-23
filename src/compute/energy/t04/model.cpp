@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <compare>
+#include <cstdlib>
 #include <fstream>
 #include <memory>
 #include <optional>
@@ -36,15 +38,15 @@ void ParseMiscDataFromFile(const std::string& filename, Model* em) {
   std::ifstream f(filename);
   verify(f, "could not open file");
 
-#define READ_DATA(var)                                  \
-  do {                                                  \
-    while (1) {                                         \
-      auto line = sgetline(f);                          \
-      verify(!line.empty(), "unexpected EOF or error"); \
-      if (line[0] == '/' || line[0] == '\n') continue;  \
-      (var) = Energy::FromString(Trim(line));           \
-      break;                                            \
-    }                                                   \
+#define READ_DATA(var)                              \
+  do {                                              \
+    while (1) {                                     \
+      auto line = sgetline(f);                      \
+      verify(f, "unexpected EOF or error");         \
+      if (line.empty() || line[0] == '/') continue; \
+      (var) = Energy::FromString(Trim(line));       \
+      break;                                        \
+    }                                               \
   } while (0)
 
   // Bulge loops.
@@ -75,6 +77,7 @@ void ParseMiscDataFromFile(const std::string& filename, Model* em) {
   READ_DATA(em->augu_penalty);
 #undef READ_DATA
 
+  f >> std::ws;
   verify(f.eof(), "expected EOF");
 }
 

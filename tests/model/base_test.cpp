@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "model/base.h"
 
-#include <memory>
+#include <string>
 
 #include "gtest/gtest.h"
 

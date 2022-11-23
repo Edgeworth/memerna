@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "compute/energy/energy_cfg.h"
+
 FuzzHarness::FuzzHarness(mrna::ArgParse args)
     : args_(std::move(args)), em_(mrna::erg::FromArgParse(args_)),
       cfg_(mrna::fuzz::FuzzCfg::FromArgParse(args_)), e_(uint_fast32_t(time(nullptr))) {

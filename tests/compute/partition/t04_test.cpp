@@ -1,13 +1,13 @@
 // Copyright 2022 Eliot Courtney.
-#include <iomanip>
 #include <string>
 
 #include "common_test.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
+#include "model/primary.h"
 
 namespace mrna::part {
 

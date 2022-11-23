@@ -1,20 +1,10 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/energy/energy.h"
 
-#include <algorithm>
-#include <cmath>
-#include <cstring>
-#include <string>
-#include <tuple>
-#include <unordered_map>
 #include <vector>
 
-#include "common_test.h"
 #include "compute/energy/branch.h"
-#include "compute/energy/t04/precomp.h"
 #include "gtest/gtest.h"
-#include "model/base.h"
-#include "model/constants.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 

@@ -2,6 +2,9 @@
 #include "compute/energy/model.h"
 
 #include <string>
+#include <ostream>
+
+#include "util/string.h"
 
 namespace mrna::erg {
 

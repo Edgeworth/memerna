@@ -3,7 +3,6 @@
 #include <string>
 
 #include "compute/mfe/mfe.h"
-#include "compute/traceback/t04/traceback.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
@@ -11,6 +10,8 @@
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "compute/traceback/traceback.h"
+#include "model/energy.h"
 
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);

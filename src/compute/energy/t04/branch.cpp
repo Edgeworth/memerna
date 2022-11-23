@@ -2,9 +2,15 @@
 #include "compute/energy/t04/branch.h"
 
 #include <algorithm>
+#include <cassert>
+#include <compare>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "compute/energy/t04/model.h"
+#include "model/base.h"
+#include "util/error.h"
 
 namespace mrna::erg::t04 {
 

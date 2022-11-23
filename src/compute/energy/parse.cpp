@@ -2,6 +2,9 @@
 #include "compute/energy/parse.h"
 
 #include <string>
+#include <optional>
+
+#include "model/base.h"
 
 namespace mrna::erg {
 
@@ -11,6 +14,7 @@ void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
 
   std::string energy;
   while (true) {
+    fp >> std::ws;
     const auto a = CharToBase(static_cast<char>(fp.get()));
     const auto b = CharToBase(static_cast<char>(fp.get()));
     const auto c = CharToBase(static_cast<char>(fp.get()));
@@ -28,6 +32,7 @@ void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
   std::string energy;
   while (true) {
+    fp >> std::ws;
     const auto a = CharToBase(static_cast<char>(fp.get()));
     const auto b = CharToBase(static_cast<char>(fp.get()));
     const auto c = CharToBase(static_cast<char>(fp.get()));
@@ -46,6 +51,7 @@ void Parse6MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
   std::string energy;
   while (true) {
+    fp >> std::ws;
     const auto a = CharToBase(static_cast<char>(fp.get()));
     const auto b = CharToBase(static_cast<char>(fp.get()));
     const auto c = CharToBase(static_cast<char>(fp.get()));
@@ -68,6 +74,7 @@ void Parse7MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
   std::string energy;
   while (true) {
+    fp >> std::ws;
     const auto a = CharToBase(static_cast<char>(fp.get()));
     const auto b = CharToBase(static_cast<char>(fp.get()));
     const auto c = CharToBase(static_cast<char>(fp.get()));
@@ -91,6 +98,7 @@ void Parse8MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
   std::string energy;
   while (true) {
+    fp >> std::ws;
     const auto a = CharToBase(static_cast<char>(fp.get()));
     const auto b = CharToBase(static_cast<char>(fp.get()));
     const auto c = CharToBase(static_cast<char>(fp.get()));

@@ -1,5 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include <utility>
+#include <ios>
+#include <memory>
 
 #include "bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"

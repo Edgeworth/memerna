@@ -11,14 +11,13 @@
 #include "compute/boltz_dp.h"
 #include "compute/brute/brute_cfg.h"
 #include "compute/energy/model.h"
-#include "compute/energy/t04/boltz_model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
-#include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/splaymap.h"
+#include "model/energy.h"
 
 namespace mrna::brute {
 

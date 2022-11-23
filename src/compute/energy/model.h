@@ -1,13 +1,19 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef COMPUTE_ENERGY_MODEL_H_
 #define COMPUTE_ENERGY_MODEL_H_
-#include <memory>
+#include <cstdint>
+#include <iosfwd>
 #include <variant>
 
+#include "compute/energy/energy.h"
+#include "compute/energy/energy_cfg.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/energy/t04/model.h"
-#include "model/constants.h"
 #include "model/ctd.h"
+#include "model/primary.h"
+#include "model/secondary.h"
+#include "util/argparse.h"
+#include "util/error.h"
 
 namespace mrna::erg {
 

@@ -38,6 +38,7 @@ inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
 void RegisterOpts(ArgParse* args);
 
 std::string ModelPathFromArgParse(const ArgParse& args);
+std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model);
 
 struct EnergyCfg {
   enum class Ctd {

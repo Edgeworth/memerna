@@ -1,14 +1,15 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
 #include <memory>
+#include <compare>
 
 #include "compute/dp.h"
-#include "compute/energy/energy.h"
-#include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "util/array.h"
+#include "compute/energy/t04/model.h"
+#include "model/energy.h"
 
 namespace mrna::mfe::t04 {
 

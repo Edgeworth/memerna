@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "model/constants.h"
+#include "model/energy.h"
 
 namespace mrna {
 

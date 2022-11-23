@@ -1,14 +1,16 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
+#include <compare>
 #include <memory>
 #include <vector>
 
 #include "compute/dp.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
 #include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "util/array.h"
 

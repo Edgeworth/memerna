@@ -19,10 +19,12 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
+#include "model/energy.h"
 
 namespace mrna::erg::t04 {
 
 class Model;
+
 using ModelPtr = std::shared_ptr<Model>;
 
 class Model {
