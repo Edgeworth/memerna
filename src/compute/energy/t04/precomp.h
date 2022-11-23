@@ -14,7 +14,7 @@
 #include "model/primary.h"
 #include "util/error.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
@@ -74,6 +74,6 @@ class Precomp {
   void PrecomputeData();
 };
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04
 
 #endif  // COMPUTE_ENERGY_T04_PRECOMP_H_

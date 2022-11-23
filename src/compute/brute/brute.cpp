@@ -17,9 +17,8 @@
 
 namespace mrna::brute {
 
-Brute::Brute(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
-    : r_(r), em_(std::move(em)), bem_(energy::Boltz(em_)), cfg_(cfg), s_(r_.size()),
-      ctd_(r_.size()) {}
+Brute::Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg)
+    : r_(r), em_(std::move(em)), bem_(erg::Boltz(em_)), cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
 
 BruteResult Brute::Run() {
   // Preconditions:
@@ -34,7 +33,7 @@ BruteResult Brute::Run() {
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
-      if (energy::CanPair(em_, r_, st, en)) pairs_.emplace_back(st, en);
+      if (erg::CanPair(em_, r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
   Dfs(0);
@@ -47,7 +46,7 @@ BruteResult Brute::Run() {
 void Brute::Dfs(int idx) {
   if (idx == static_cast<int>(pairs_.size())) {
     // Precompute whether things are multiloops or not.
-    branch_count_ = energy::GetBranchCounts(s_);
+    branch_count_ = erg::GetBranchCounts(s_);
     AddAllCombinations(0);
     return;
   }
@@ -80,7 +79,7 @@ void Brute::AddAllCombinations(int idx) {
   // Base case
   if (idx == N) {
     if (cfg_.part) {
-      auto energy = energy::TotalEnergy(energy::Underlying(bem_), r_, s_, &ctd_).energy;
+      auto energy = erg::TotalEnergy(erg::Underlying(bem_), r_, s_, &ctd_).energy;
       res_.part.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -90,7 +89,7 @@ void Brute::AddAllCombinations(int idx) {
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
             Energy inside_energy =
-                energy::SubEnergy(energy::Underlying(bem_), r_, s_, &ctd_, i, s_[i]).energy;
+                erg::SubEnergy(erg::Underlying(bem_), r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -104,7 +103,7 @@ void Brute::AddAllCombinations(int idx) {
       }
     }
     if (cfg_.subopt) {
-      auto energy = energy::TotalEnergy(em_, r_, s_, &ctd_).energy;
+      auto energy = erg::TotalEnergy(em_, r_, s_, &ctd_).energy;
       PruneInsertSubopt(energy);
     }
     return;

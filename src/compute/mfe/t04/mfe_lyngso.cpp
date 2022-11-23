@@ -14,12 +14,12 @@
 
 namespace mrna::mfe::t04 {
 
-DpArray MfeLyngso(const Primary& r, const energy::t04::ModelPtr& em) {
+DpArray MfeLyngso(const Primary& r, const erg::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::t04::Precomp pc(Primary(r), em);
+  const erg::t04::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1, MAX_E);
 
   // See ComputeTables2 for comments - it is mostly the same.
@@ -72,7 +72,7 @@ DpArray MfeLyngso(const Primary& r, const energy::t04::ModelPtr& em) {
 
         // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have
         // special energies.
-        static_assert(energy::t04::Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
+        static_assert(erg::t04::Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
             "need initiation cached up to TWOLOOP_MAX_SZ");
         auto base_internal_loop = em->InternalLoopAuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {

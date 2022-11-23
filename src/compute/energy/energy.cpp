@@ -4,7 +4,7 @@
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 int MaxNumContiguous(const Primary& r) {
   int num_contig = 0;
@@ -26,4 +26,4 @@ EnergyResult::EnergyResult(Energy energy, Ctds ctd, std::unique_ptr<Structure> s
 
 EnergyResult::~EnergyResult() = default;
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

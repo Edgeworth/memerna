@@ -1,7 +1,6 @@
 // Copyright 2016 E.
 #include "util/argparse.h"
 
-#include <cstdlib>
 #include <iostream>
 
 #include "util/string.h"

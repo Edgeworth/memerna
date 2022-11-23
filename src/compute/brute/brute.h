@@ -42,7 +42,7 @@ struct BruteResult {
 
 class Brute {
  public:
-  Brute(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg);
+  Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg);
 
   BruteResult Run();
 
@@ -62,8 +62,8 @@ class Brute {
   };
 
   Primary r_;
-  energy::EnergyModelPtr em_;
-  energy::BoltzEnergyModelPtr bem_;
+  erg::EnergyModelPtr em_;
+  erg::BoltzEnergyModelPtr bem_;
   BruteCfg cfg_;
 
   Secondary s_;

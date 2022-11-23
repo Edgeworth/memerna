@@ -6,7 +6,7 @@
 namespace mrna::subopt {
 
 void RegisterOpts(ArgParse* args) {
-  energy::RegisterOpts(args);
+  erg::RegisterOpts(args);
   args->RegisterOpt(OPT_SUBOPT_DELTA);
   args->RegisterOpt(OPT_SUBOPT_MAX);
   args->RegisterOpt(OPT_SUBOPT_SORTED);

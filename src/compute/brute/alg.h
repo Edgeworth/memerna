@@ -12,12 +12,12 @@
 
 namespace mrna::brute {
 
-subopt::SuboptResult MfeBrute(const Primary& r, energy::EnergyModelPtr em);
+subopt::SuboptResult MfeBrute(const Primary& r, erg::EnergyModelPtr em);
 
-part::PartResult PartitionBrute(const Primary& r, energy::EnergyModelPtr em);
+part::PartResult PartitionBrute(const Primary& r, erg::EnergyModelPtr em);
 
 std::vector<subopt::SuboptResult> SuboptBrute(
-    const Primary& r, energy::EnergyModelPtr em, subopt::SuboptCfg cfg);
+    const Primary& r, erg::EnergyModelPtr em, subopt::SuboptCfg cfg);
 
 }  // namespace mrna::brute
 

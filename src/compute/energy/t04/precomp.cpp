@@ -4,11 +4,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstdlib>
 #include <memory>
 #include <utility>
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 namespace {
 
@@ -130,4 +129,4 @@ void Precomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>>(r_, em(), MAX_E);
 }
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04

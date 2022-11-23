@@ -26,7 +26,7 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg);
+  FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg);
 
   Error Run();
 
@@ -36,7 +36,7 @@ class FuzzInvocation {
 
  private:
   Primary r_;
-  energy::EnergyModelPtr em_;
+  erg::EnergyModelPtr em_;
   FuzzCfg cfg_;
 
   ctx::FoldResult fold_{};

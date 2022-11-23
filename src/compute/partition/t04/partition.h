@@ -13,13 +13,13 @@
 namespace mrna::part::t04 {
 
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
-    const Primary& r, const energy::t04::ModelPtr& em);
+    const Primary& r, const erg::t04::ModelPtr& em);
 
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
-    const Primary& r, const energy::t04::BoltzModelPtr& bem);
+    const Primary& r, const erg::t04::BoltzModelPtr& bem);
 
 BoltzExtArray PartitionExterior(
-    const Primary& r, const energy::t04::ModelPtr& em, const BoltzDpArray& dp);
+    const Primary& r, const erg::t04::ModelPtr& em, const BoltzDpArray& dp);
 
 }  // namespace mrna::part::t04
 

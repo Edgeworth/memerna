@@ -1,6 +1,6 @@
 #include "compute/energy/model.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 std::istream& operator>>(std::istream& is, ModelKind& kind) {
   std::string s;
@@ -23,4 +23,4 @@ std::ostream& operator<<(std::ostream& os, ModelKind kind) {
   }
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

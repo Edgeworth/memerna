@@ -36,7 +36,7 @@ class RnaPackage {
   RnaPackage(const RnaPackage&) = delete;
   RnaPackage& operator=(const RnaPackage&) = delete;
 
-  virtual energy::EnergyResult Efn(
+  virtual erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
   [[nodiscard]] virtual ctx::FoldResult Fold(const Primary& r) const = 0;
   [[nodiscard]] virtual int Suboptimal(

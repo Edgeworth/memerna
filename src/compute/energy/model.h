@@ -8,7 +8,7 @@
 #include "model/constants.h"
 #include "model/ctd.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 using EnergyModelPtr = std::variant<t04::ModelPtr>;
 using BoltzEnergyModelPtr = std::variant<t04::BoltzModelPtr>;
@@ -55,8 +55,12 @@ inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
   return std::visit([](const auto& bem) { return bem->em(); }, bem);
 }
 
-inline ModelKind Kind(const EnergyModelPtr& model) {
-  return std::visit([](const t04::ModelPtr&) { return ModelKind::T04_LIKE; }, model);
+inline uint32_t Checksum(const EnergyModelPtr& em) {
+  return std::visit([&](const auto& em) -> uint32_t { return em->Checksum(); }, em);
+}
+
+inline ModelKind Kind(const EnergyModelPtr& em) {
+  return std::visit([](const t04::ModelPtr&) { return ModelKind::T04_LIKE; }, em);
 }
 
 inline bool CanPair(const EnergyModelPtr& em, const Primary& r, int st, int en) {
@@ -75,6 +79,6 @@ inline EnergyResult SubEnergy(const EnergyModelPtr& em, const Primary& r, const 
       [&](const auto& em) { return em->SubEnergy(r, s, given_ctd, st, en, build_structure); }, em);
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_MODEL_H_

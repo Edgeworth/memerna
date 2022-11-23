@@ -13,7 +13,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 Energy ComputeOptimalCtds(const Model& em, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd);
@@ -23,6 +23,6 @@ Energy ComputeOptimalCtds(const Model& em, const Primary& r, const Secondary& s,
 Energy AddBaseCtdsToBranchCtds(const Model& em, const Primary& r, const Secondary& s,
     const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd);
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04
 
 #endif  // COMPUTE_ENERGY_T04_BRANCH_H_

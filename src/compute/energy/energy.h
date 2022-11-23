@@ -8,7 +8,7 @@
 #include "model/constants.h"
 #include "model/ctd.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 class Structure;
 
@@ -29,6 +29,6 @@ struct EnergyResult {
 
 int MaxNumContiguous(const Primary& r);
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_ENERGY_H_

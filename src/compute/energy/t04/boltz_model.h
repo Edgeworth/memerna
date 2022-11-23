@@ -12,7 +12,7 @@
 #include "model/constants.h"
 #include "model/primary.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 class BoltzModel;
 using BoltzModelPtr = std::shared_ptr<BoltzModel>;
@@ -98,6 +98,6 @@ class BoltzModel {
   explicit BoltzModel(const ModelPtr& em);
 };
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04
 
 #endif  // COMPUTE_ENERGY_BOLTZMANN_MODEL_H_

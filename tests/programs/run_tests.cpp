@@ -13,17 +13,35 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::energy::RegisterOpts(&args);
+  mrna::erg::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
 
-  // TODO(0): deal with precision stuff.
-  mrna::t04 = mrna::energy::FromArgParse(args);
-  verify(mrna::t04->Checksum() == mrna::T04_P1_MODEL_HASH, "Expected T04 model hash %d, got %d",
-      mrna::T04_P1_MODEL_HASH, mrna::t04->Checksum());
+#if ENERGY_PRECISION == 1
 
-  mrna::g_em[0] = mrna::t04;
-  for (int i = 1; i < mrna::NUM_TEST_MODELS; ++i)
-    mrna::g_em[i] = mrna::energy::EnergyModel::Random(i);
+  mrna::t04_p1 = mrna::erg::t04::Model::FromArgParse(args);
+  verify(mrna::t04_p1->Checksum() == mrna::T04_P1_MODEL_HASH,
+      "Expected t04_p1 model hash %d, got %d", mrna::T04_P1_MODEL_HASH, mrna::t04_p1->Checksum());
+
+  mrna::test_ems[0] = mrna::t04_p1;
+  mrna::test_t04_ems[0] = mrna::t04_p1;
+
+#elif ENERGY_PRECISION == 2
+
+  // TODO(0): support t12
+  mrna::t04_p2 = mrna::erg::t04::Model::FromArgParse(args);
+  verify(mrna::t04_p2->Checksum() == mrna::T04_P2_MODEL_HASH,
+      "Expected t04_p2 model hash %d, got %d", mrna::T04_P2_MODEL_HASH, mrna::t04_p2->Checksum());
+
+  mrna::test_ems[0] = mrna::t04_p2;
+  mrna::test_t04_ems[0] = mrna::t04_p2;
+
+#endif
+
+  // TODO(1): support t22
+  for (int i = 1; i < mrna::NUM_TEST_MODELS; ++i) {
+    mrna::test_ems[i] = mrna::erg::Random(mrna::erg::ModelKind::T04_LIKE, i);
+    mrna::test_t04_ems[i] = mrna::erg::t04::Model::Random(i);
+  }
 
   return RUN_ALL_TESTS();
 }

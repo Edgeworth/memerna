@@ -16,23 +16,23 @@
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::energy::RegisterOpts(&args);
+  mrna::erg::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_VERBOSE);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
-  const auto em = mrna::energy::FromArgParse(args);
+  const auto em = mrna::erg::FromArgParse(args);
   const auto& rs = args.Pos(0);
   const auto& ss = args.Pos(1);
-  mrna::energy::EnergyResult res;
+  mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
-    res = mrna::energy::TotalEnergy(em, r, s, &ctd, true);
+    res = mrna::erg::TotalEnergy(em, r, s, &ctd, true);
     std::cout << res.energy << '\n';
     std::cout << res.ctd.ToString(s) << '\n';
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
-    res = mrna::energy::TotalEnergy(em, r, s, nullptr, true);
+    res = mrna::erg::TotalEnergy(em, r, s, nullptr, true);
     std::cout << res.energy << '\n';
     std::cout << res.ctd.ToString(s) << '\n';
   }

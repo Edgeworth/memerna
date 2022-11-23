@@ -20,7 +20,7 @@
 #include "model/secondary.h"
 #include "util/argparse.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 class Model;
 using ModelPtr = std::shared_ptr<Model>;
@@ -173,6 +173,6 @@ class Model {
       bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04
 
 #endif  // COMPUTE_ENERGY_T04_MODEL_H_

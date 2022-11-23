@@ -28,9 +28,9 @@ struct FoldResult {
 
 class Ctx {
  public:
-  explicit Ctx(energy::EnergyModelPtr em) : em_(std::move(em)), cfg_() {}
+  explicit Ctx(erg::EnergyModelPtr em) : em_(std::move(em)), cfg_() {}
   ~Ctx() = default;
-  Ctx(energy::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(cfg) {}
+  Ctx(erg::EnergyModelPtr em, CtxCfg cfg) : em_(std::move(em)), cfg_(cfg) {}
 
   Ctx(Ctx&& o) = default;
   Ctx& operator=(Ctx&&) = default;
@@ -38,7 +38,7 @@ class Ctx {
   Ctx(const Ctx& o) = delete;
   Ctx& operator=(const Ctx&) = delete;
 
-  energy::EnergyResult Efn(const Primary& r, const Secondary& s, const Ctds* given_ctd = nullptr,
+  erg::EnergyResult Efn(const Primary& r, const Secondary& s, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const;
   [[nodiscard]] FoldResult Fold(const Primary& r) const;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
@@ -47,16 +47,17 @@ class Ctx {
       const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
   [[nodiscard]] part::PartResult Partition(const Primary& r) const;
 
-  [[nodiscard]] const energy::EnergyModelPtr& em() const { return em_; }
+  [[nodiscard]] const erg::EnergyModelPtr& em() const { return em_; }
 
   static Ctx FromArgParse(const ArgParse& args);
 
  private:
-  energy::EnergyModelPtr em_;
+  erg::EnergyModelPtr em_;
   CtxCfg cfg_;
 
   [[nodiscard]] DpArray ComputeMfe(const Primary& r) const;
-  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeMfeExterior(const Primary& r, const DpArray& dp) const;
+  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeMfeExterior(
+      const Primary& r, const DpArray& dp) const;
   [[nodiscard]] tb::TracebackResult ComputeTraceback(
       const Primary& r, const DpArray& dp, const ExtArray& ext) const;
 };

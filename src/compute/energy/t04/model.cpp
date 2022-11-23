@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
 #include <fstream>
 #include <memory>
 #include <optional>
@@ -25,7 +24,7 @@
 #include "util/error.h"
 #include "util/string.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 namespace {
 constexpr double RAND_MIN_ENERGY = -10.0;
@@ -504,7 +503,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     struc->AddNote("%de - ctd", ctd_energy);
     if (!exterior_loop) {
       struc->AddNote("%de - outer loop stacking - %s", branch_ctd[0].second,
-          energy::CtdToName(branch_ctd[0].first));
+          erg::CtdToName(branch_ctd[0].first));
       branch_ctd.pop_front();
     }
     for (const auto& [c, e] : branch_ctd) struc->AddCtd(c, e);
@@ -684,4 +683,4 @@ bool Model::IsValid(std::string* reason) const {
   return true;
 }
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04

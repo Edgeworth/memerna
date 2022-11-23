@@ -15,7 +15,7 @@
 #include "model/primary.h"
 #include "util/error.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 std::vector<int> GetBranchCounts(const Secondary& s) {
   std::vector<int> branch_count(s.size(), 0);
@@ -59,4 +59,4 @@ void AddBranchCtdsToBaseCtds(
   }
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

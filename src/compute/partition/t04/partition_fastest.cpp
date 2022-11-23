@@ -20,12 +20,12 @@
 namespace mrna::part::t04 {
 
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
-    const Primary& r, const energy::t04::BoltzModelPtr& bem) {
+    const Primary& r, const erg::t04::BoltzModelPtr& bem) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::t04::BoltzPrecomp bpc(Primary(r), bem);
+  const erg::t04::BoltzPrecomp bpc(Primary(r), bem);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {

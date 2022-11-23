@@ -13,12 +13,12 @@
 
 namespace mrna::mfe::t04 {
 
-DpArray MfeSlow(const Primary& r, const energy::t04::ModelPtr& em) {
+DpArray MfeSlow(const Primary& r, const erg::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::t04::Precomp pc(Primary(r), em);
+  const erg::t04::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1, MAX_E);
 
   for (int st = N - 1; st >= 0; --st) {

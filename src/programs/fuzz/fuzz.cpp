@@ -2,6 +2,7 @@
 #include <chrono>
 #include <cinttypes>
 #include <deque>
+#include <iostream>
 #include <random>
 #include <string>
 #include <utility>

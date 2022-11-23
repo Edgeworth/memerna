@@ -12,7 +12,7 @@
 #include "model/ctd.h"
 #include "util/error.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 const char* CtdToName(Ctd ctd);
 
@@ -99,6 +99,6 @@ class StackingStructure : public Structure {
   int st_, en_;
 };
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_STRUCTURE_H_
