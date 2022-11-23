@@ -3,16 +3,13 @@
 #define COMPUTE_ENERGY_T04_BRANCH_H_
 
 #include <deque>
-#include <utility>
-#include <vector>
 
 #include "compute/energy/branch.h"
-#include "compute/energy/energy.h"
 #include "compute/energy/t04/model.h"
-#include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "model/energy.h"
 
 namespace mrna::erg::t04 {
 

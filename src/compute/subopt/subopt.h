@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "compute/traceback/traceback.h"
-#include "model/constants.h"
+#include "model/energy.h"
 
 namespace mrna::subopt {
 

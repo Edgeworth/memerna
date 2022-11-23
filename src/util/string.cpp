@@ -1,6 +1,7 @@
 // Copyright 2016 E.
 #include "util/string.h"
 
+#include <cstdio>
 #include <cctype>
 #include <cstdarg>
 #include <memory>

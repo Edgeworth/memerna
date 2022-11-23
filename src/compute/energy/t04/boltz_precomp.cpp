@@ -3,12 +3,13 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <unordered_map>
 #include <utility>
 
-#include "compute/energy/energy.h"
 #include "model/base.h"
+#include "model/constants.h"
 
 namespace mrna::erg::t04 {
 

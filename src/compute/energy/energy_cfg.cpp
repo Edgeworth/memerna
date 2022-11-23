@@ -15,7 +15,11 @@ void RegisterOpts(ArgParse* args) {
 }
 
 std::string ModelPathFromArgParse(const ArgParse& args) {
-  return args.Get(OPT_MEMERNA_DATA) + "/model/" + args.Get(OPT_ENERGY_MODEL);
+  return ModelPathFromArgParse(args, args.Get(OPT_ENERGY_MODEL));
+}
+
+std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model) {
+  return args.Get(OPT_MEMERNA_DATA) + "/model/" + model;
 }
 
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {

@@ -6,15 +6,16 @@
 #include <cassert>
 #include <utility>
 #include <vector>
+#include <compare>
 
 #include "compute/dp.h"
-#include "compute/energy/energy.h"
 #include "compute/energy/t04/precomp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "model/constants.h"
 #include "model/primary.h"
 #include "util/splaymap.h"
+#include "compute/energy/t04/model.h"
+#include "model/energy.h"
 
 namespace mrna::subopt::t04 {
 

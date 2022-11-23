@@ -6,14 +6,14 @@
 #include <string>
 #include <vector>
 
-#include "compute/energy/model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "ctx/ctx.h"
-#include "model/constants.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
+#include "compute/energy/energy.h"
+#include "model/energy.h"
 
 namespace mrna::bridge {
 

@@ -1,7 +1,7 @@
 // Copyright 2016 E.
 #include "model/base.h"
 
-#include <memory>
+#include <string>
 
 #include "gtest/gtest.h"
 

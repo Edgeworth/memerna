@@ -2,6 +2,7 @@
 #include "util/argparse.h"
 
 #include <iostream>
+#include <cstdlib>
 
 #include "util/string.h"
 

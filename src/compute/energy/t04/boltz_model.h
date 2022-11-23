@@ -9,12 +9,14 @@
 
 #include "compute/energy/t04/model.h"
 #include "model/base.h"
-#include "model/constants.h"
 #include "model/primary.h"
+#include "compute/energy/structure.h"
+#include "model/energy.h"
 
 namespace mrna::erg::t04 {
 
 class BoltzModel;
+
 using BoltzModelPtr = std::shared_ptr<BoltzModel>;
 
 class BoltzModel {

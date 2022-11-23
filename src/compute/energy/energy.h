@@ -3,10 +3,10 @@
 #define COMPUTE_ENERGY_ENERGY_H_
 
 #include <memory>
-#include <variant>
 
-#include "model/constants.h"
 #include "model/ctd.h"
+#include "model/energy.h"
+#include "model/primary.h"
 
 namespace mrna::erg {
 

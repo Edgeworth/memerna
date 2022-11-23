@@ -2,12 +2,11 @@
 #ifndef MODEL_ENERGY_H_
 #define MODEL_ENERGY_H_
 
-#include <algorithm>
+#include <compare>
+#include <cstdint>
+#include <iosfwd>
 #include <string>
 
-#include "model/ctd.h"
-#include "model/primary.h"
-#include "util/error.h"
 #include "util/float.h"
 
 namespace mrna {

@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "compute/energy/branch.h"
-#include "model/constants.h"
 #include "model/ctd.h"
+#include "model/energy.h"
 #include "util/error.h"
 
 namespace mrna::erg {

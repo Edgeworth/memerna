@@ -7,6 +7,7 @@
 #include <sstream>
 #include <tuple>
 #include <utility>
+#include <compare>
 
 #include "compute/boltz_dp.h"
 #include "compute/dp.h"
@@ -15,7 +16,6 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/t04/traceback.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/constants.h"
@@ -24,6 +24,9 @@
 #include "util/array.h"
 #include "util/float.h"
 #include "util/string.h"
+#include "compute/energy/energy.h"
+#include "compute/traceback/traceback.h"
+#include "model/energy.h"
 
 namespace mrna::fuzz {
 

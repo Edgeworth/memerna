@@ -4,8 +4,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <compare>
+#include <cstdlib>
 #include <memory>
 #include <utility>
+
+#include "compute/energy/energy.h"
+#include "model/constants.h"
 
 namespace mrna::erg::t04 {
 

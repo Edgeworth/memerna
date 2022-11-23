@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include "options.h"
 #include "util/argparse.h"

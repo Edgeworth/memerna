@@ -2,7 +2,6 @@
 #ifndef FUZZ_FUZZ_INVOCATION_H_
 #define FUZZ_FUZZ_INVOCATION_H_
 #include <deque>
-#include <memory>
 #include <string>
 #include <vector>
 
