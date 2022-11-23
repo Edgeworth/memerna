@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 namespace {
 
@@ -64,4 +64,4 @@ BoltzModel::BoltzModel(const ModelPtr& em) : em_(em->Clone()) {
 #undef FILL_BOLTZ
 }
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04

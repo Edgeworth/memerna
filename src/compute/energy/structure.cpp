@@ -8,7 +8,7 @@
 
 #include "util/string.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 const char* CtdToName(Ctd ctd) {
   switch (ctd) {
@@ -79,4 +79,4 @@ void StackingStructure::AddBranch(std::unique_ptr<Structure> b) {
   Structure::AddBranch(std::move(b));
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

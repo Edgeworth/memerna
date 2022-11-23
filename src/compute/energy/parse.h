@@ -6,7 +6,7 @@
 
 #include "model/energy.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]);
 
@@ -35,6 +35,6 @@ void ParseVecFromFile(const std::string& filename, Energy (&output)[N]) {
   verify(f.eof(), "expected EOF");
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_PARSE_H_

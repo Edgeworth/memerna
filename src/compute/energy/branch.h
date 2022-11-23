@@ -11,7 +11,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 
@@ -46,6 +46,6 @@ std::vector<int> GetBranchCounts(const Secondary& s);
 void AddBranchCtdsToBaseCtds(
     const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd);
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_BRANCH_H_

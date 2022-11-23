@@ -3,7 +3,7 @@
 
 #include "util/error.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_SEED);
@@ -35,4 +35,4 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o) {
   return str;
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

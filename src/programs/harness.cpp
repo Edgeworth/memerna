@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 
   verify(efn + fold + subopt + part == 1, "require exactly one program flag\n%s",
       args.Usage().c_str());
-  verify(args.Has(mrna::energy::OPT_SEED) + args.Has(mrna::energy::OPT_MEMERNA_DATA) == 1,
+  verify(args.Has(mrna::erg::OPT_SEED) + args.Has(mrna::erg::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
 
   auto package = mrna::bridge::RnaPackage::FromArgParse(args);

@@ -18,7 +18,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 TEST(EnergyTest, Helpers) {
   EXPECT_EQ(0, MaxNumContiguous(Primary::FromSeq("")));
@@ -44,4 +44,4 @@ TEST(EnergyTest, GetBranchCounts) {
       (std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}), GetBranchCounts(Secondary::FromDb("((()()))")));
 }
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg

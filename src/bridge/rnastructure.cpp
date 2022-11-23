@@ -93,8 +93,7 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-energy::EnergyResult RNAstructure::Efn(
-    const Primary& r, const Secondary& s, std::string* desc) const {
+erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
   const auto structure = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   std::stringstream sstr;

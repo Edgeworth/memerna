@@ -12,14 +12,15 @@ inline constexpr uint32_t T04_P1_MODEL_HASH = 0x768ab8e1;
 inline constexpr uint32_t T04_P2_MODEL_HASH = 0x3bc125da;
 
 // Make sure to use Range(0, NUM_TEST_MODELS) if making a parameterised test
-// with all models in g_em, since g_em is initialized at runtime.
+// with all models in test_ems, since test_ems is initialized at runtime.
 inline constexpr int NUM_TEST_MODELS = 5;
-inline energy::EnergyModelPtr g_em[NUM_TEST_MODELS];
+inline erg::EnergyModelPtr test_ems[NUM_TEST_MODELS];
+inline erg::t04::ModelPtr test_t04_ems[NUM_TEST_MODELS];
 
 #if ENERGY_PRECISION == 1
-inline energy::EnergyModelPtr t04_p1;
+inline erg::t04::ModelPtr t04_p1;
 #elif ENERGY_PRECISION == 2
-inline energy::EnergyModelPtr t04_p2;
+inline erg::t04::ModelPtr t04_p2;
 #endif
 
 }  // namespace mrna

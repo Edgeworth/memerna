@@ -8,7 +8,7 @@
 namespace mrna::ctx {
 
 void RegisterOpts(ArgParse* args) {
-  energy::RegisterOpts(args);
+  erg::RegisterOpts(args);
   subopt::RegisterOpts(args);
   args->RegisterOpt(OPT_DP_ALG);
   args->RegisterOpt(OPT_SUBOPT_ALG);

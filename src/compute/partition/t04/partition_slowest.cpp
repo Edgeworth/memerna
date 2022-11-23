@@ -18,7 +18,7 @@
 namespace mrna::part::t04 {
 
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
-    const Primary& r, const energy::t04::ModelPtr& initial_em) {
+    const Primary& r, const erg::t04::ModelPtr& initial_em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -27,7 +27,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
   em->cfg.bulge_states = false;
 
   const int N = static_cast<int>(r.size());
-  const energy::t04::Precomp pc(Primary(r), em);
+  const erg::t04::Precomp pc(Primary(r), em);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {

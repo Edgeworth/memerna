@@ -32,7 +32,7 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  energy::EnergyResult Efn(
+  erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
   [[nodiscard]] ctx::FoldResult Fold(const Primary& r) const override;
   [[nodiscard]] int Suboptimal(

@@ -42,7 +42,7 @@ struct Expand {
 
 class SuboptFastest {
  public:
-  SuboptFastest(Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptFastest(Primary r, erg::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -55,8 +55,8 @@ class SuboptFastest {
   };
 
   Primary r_;
-  energy::t04::ModelPtr em_;
-  energy::t04::Precomp pc_;
+  erg::t04::ModelPtr em_;
+  erg::t04::Precomp pc_;
   SuboptResult res_;
   DpArray dp_;
   ExtArray ext_;

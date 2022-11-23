@@ -124,6 +124,7 @@ set(MEMERNA_SOURCE
   src/compute/energy/energy.cpp src/compute/energy/energy.h
   src/compute/energy/t04/branch.cpp src/compute/energy/t04/branch.h
   src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
+  src/compute/energy/parse.cpp src/compute/energy/parse.h
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
   src/compute/energy/structure.cpp src/compute/energy/structure.h
   src/compute/mfe/mfe.h
@@ -168,7 +169,6 @@ set(TEST_SOURCE
   tests/compute/subopt/t04_test.cpp
   tests/compute/traceback/t04_test.cpp
   tests/model/base_test.cpp
-  tests/model/ctds_test.cpp
   tests/model/model_test.cpp
   tests/model/parsing_test.cpp
   tests/util/splaymap_test.cpp

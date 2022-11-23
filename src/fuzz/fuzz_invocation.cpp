@@ -31,7 +31,7 @@ const flt PROB_EP{0.0001};
 inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool prob_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 
-FuzzInvocation::FuzzInvocation(const Primary& r, energy::EnergyModelPtr em, const FuzzCfg& cfg)
+FuzzInvocation::FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg)
     : r_(r), em_(std::move(em)), cfg_(cfg) {}
 
 Error FuzzInvocation::Run() {
@@ -66,12 +66,12 @@ Error FuzzInvocation::CheckMfe() {
     ctx::Ctx ctx(em_, ctx::CtxCfg{.dp_alg = dp_alg});
     auto res = ctx.Fold(r_);
     // First compute with the CTDs that fold returned to check the energy.
-    mrna_ctd_efns.push_back(energy::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
+    mrna_ctd_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
 
     // Also check that the optimal CTD configuration has the same energy.
     // Note that it might not be the same, so we can't do an peqality check
     // of CTD structure.
-    mrna_opt_efns.push_back(energy::TotalEnergy(em_, r_, res.tb.s, nullptr).energy);
+    mrna_opt_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, nullptr).energy);
     mrna_res.emplace_back(std::move(res));
   }
 
@@ -205,7 +205,7 @@ Error FuzzInvocation::CheckSuboptResult(
   if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
-      auto suboptimal_efn = energy::TotalEnergy(em_, r_, sub.tb.s, &sub.tb.ctd);
+      auto suboptimal_efn = erg::TotalEnergy(em_, r_, sub.tb.s, &sub.tb.ctd);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
             sfmt("structure %d: energy %d != efn %d", i, sub.energy, suboptimal_efn.energy));
@@ -321,7 +321,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   // Also check that the optimal CTD configuration has the same energy.
   // Note that it might not be the same, so we can't do an peqality check
   // of CTD structure.
-  auto opt_efn = energy::TotalEnergy(em_, r_, fold.tb.s, nullptr).energy;
+  auto opt_efn = erg::TotalEnergy(em_, r_, fold.tb.s, nullptr).energy;
   if (opt_efn != fold.mfe.energy) {
     errors.push_back("mfe/efn energy mismatch:");
     errors.push_back(sfmt("  %d (opt efn) != mfe %d", opt_efn, fold.mfe.energy));

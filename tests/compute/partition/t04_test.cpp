@@ -1,11 +1,10 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/partition/partition.h"
-
 #include <iomanip>
 #include <string>
 
 #include "common_test.h"
 #include "compute/energy/energy.h"
+#include "compute/partition/partition.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
@@ -14,7 +13,7 @@ namespace mrna::part {
 
 class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
  public:
-  static PartResult Partition(const std::string& s, const energy::EnergyModelPtr& em) {
+  static PartResult Partition(const std::string& s, const erg::EnergyModelPtr& em) {
     return ctx::Ctx(std::move(em), ctx::CtxCfg{.part_alg = GetParam()})
         .Partition(Primary::FromSeq(s));
   }

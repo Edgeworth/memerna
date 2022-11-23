@@ -10,7 +10,7 @@
 
 namespace mrna::bridge {
 
-energy::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
+erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
   auto res = ctx_.Efn(r, s, nullptr, desc != nullptr);
   if (desc) {
     for (const auto& struc : res.struc->Description()) {

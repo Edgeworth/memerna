@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
-#include <cstdlib>
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -81,18 +81,17 @@ void DoInteractive(int r) {
   int val = 0;
   while (true) {
     std::cout << h.Describe() << "\n>";
-    if (!(std::cin >> op >> val)) break;
-    if (res == 2) {
-      auto op_res = DoOperation(op, val, &h, &s);
-      if (op_res == OpResult::INVALID)
-        std::cout << "Invalid input\n";
-      else if (op_res == OpResult::SUCCESS)
-        std::cout << "Operation successful.\n";
-      else
-        std::cout << "Operation failed.\n";
-    } else {
+    if (!(std::cin >> op >> val)) {
       std::cout << "Invalid input.\n";
+      break;
     }
+    auto op_res = DoOperation(op, val, &h, &s);
+    if (op_res == OpResult::INVALID)
+      std::cout << "Invalid input\n";
+    else if (op_res == OpResult::SUCCESS)
+      std::cout << "Operation successful.\n";
+    else
+      std::cout << "Operation failed.\n";
   }
 }
 
@@ -106,7 +105,8 @@ int main(int argc, char** argv) {
   args.RegisterOpt(OPT_RANGE);
   args.ParseOrExit(argc, argv);
 
-  std::cout << "Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n";
+  std::cout
+      << "Commands:\n Insert: i <val>\n Delete: d <val>\nSearch: s <val>\n Range: a <min> <max>\n";
   const bool afl = args.GetOr(mrna::OPT_AFL);
   const int r = args.Get<int>(OPT_RANGE);
   verify(!(afl && (r != -1)), "incompatible options");

@@ -19,7 +19,7 @@
 namespace mrna::subopt::t04 {
 
 SuboptSlowest::SuboptSlowest(
-    Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
+    Primary r, erg::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)), cfg_(cfg) {}
 
 int SuboptSlowest::Run(const SuboptCallback& fn) {

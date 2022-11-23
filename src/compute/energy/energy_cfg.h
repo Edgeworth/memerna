@@ -7,7 +7,7 @@
 
 #include "util/argparse.h"
 
-namespace mrna::energy {
+namespace mrna::erg {
 
 inline const Opt OPT_SEED =
     Opt(Opt::ARG).LongName("seed").Help("seed for random energy model for memerna");
@@ -17,10 +17,10 @@ inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
                                         .Default("./data/")
                                         .Help("data path for memerna data");
 inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
-                                         .LongName("energy-model")
-                                         .ShortName("em")
-                                         .Default("t04_p100")
-                                         .Help("energy model to use");
+                                        .LongName("energy-model")
+                                        .ShortName("em")
+                                        .Default("t04_p100")
+                                        .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
 inline const auto OPT_BULGE_STATES =
@@ -58,6 +58,6 @@ struct EnergyCfg {
 
 std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
 
-}  // namespace mrna::energy
+}  // namespace mrna::erg
 
 #endif  // COMPUTE_ENERGY_ENERGY_CFG_H_

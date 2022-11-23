@@ -7,7 +7,7 @@
 namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
-  energy::RegisterOpts(args);
+  erg::RegisterOpts(args);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);

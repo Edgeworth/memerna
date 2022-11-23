@@ -24,14 +24,14 @@
 
 namespace mrna::ctx {
 
-energy::EnergyResult Ctx::Efn(
+erg::EnergyResult Ctx::Efn(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
-  return energy::TotalEnergy(em(), r, s, given_ctd, build_structure);
+  return erg::TotalEnergy(em(), r, s, given_ctd, build_structure);
 }
 
 DpArray Ctx::ComputeMfe(const Primary& r) const {
   return std::visit(
-      [&](const energy::t04::ModelPtr& em) -> DpArray {
+      [&](const erg::t04::ModelPtr& em) -> DpArray {
         switch (cfg_.dp_alg) {
         case CtxCfg::DpAlg::SLOWEST: return mfe::t04::MfeSlowest(r, em);
         case CtxCfg::DpAlg::SLOW: return mfe::t04::MfeSlow(r, em);
@@ -45,7 +45,7 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
 
 std::tuple<ExtArray, Energy> Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
   return std::visit(
-      [&](const energy::t04::ModelPtr& em) -> std::tuple<ExtArray, Energy> {
+      [&](const erg::t04::ModelPtr& em) -> std::tuple<ExtArray, Energy> {
         auto ext = mfe::t04::MfeExterior(r, em, dp);
         auto energy = ext[0][EXT];
         return {std::move(ext), energy};
@@ -56,7 +56,7 @@ std::tuple<ExtArray, Energy> Ctx::ComputeMfeExterior(const Primary& r, const DpA
 tb::TracebackResult Ctx::ComputeTraceback(
     const Primary& r, const DpArray& dp, const ExtArray& ext) const {
   return std::visit(
-      [&](const energy::t04::ModelPtr& em) -> tb::TracebackResult {
+      [&](const erg::t04::ModelPtr& em) -> tb::TracebackResult {
         return tb::t04::Traceback(r, em, dp, ext);
       },
       em_);
@@ -99,7 +99,7 @@ int Ctx::Suboptimal(
   auto [ext, energy] = ComputeMfeExterior(r, dp);
 
   return std::visit(
-      [&, ext = std::move(ext)](const energy::t04::ModelPtr& em) mutable -> int {
+      [&, ext = std::move(ext)](const erg::t04::ModelPtr& em) mutable -> int {
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::SLOWEST:
           return subopt::t04::SuboptSlowest(Primary(r), em, std::move(dp), std::move(ext), cfg)
@@ -120,11 +120,11 @@ part::PartResult Ctx::Partition(const Primary& r) const {
 
   std::tuple<BoltzDpArray, BoltzExtArray> res;
   std::visit(
-      [&](const energy::t04::ModelPtr& em) {
+      [&](const erg::t04::ModelPtr& em) {
         switch (cfg_.part_alg) {
         case CtxCfg::PartAlg::SLOWEST: res = part::t04::PartitionSlowest(r, em); break;
         case CtxCfg::PartAlg::FASTEST:
-          res = part::t04::PartitionFastest(r, energy::t04::BoltzModel::Create(em));
+          res = part::t04::PartitionFastest(r, erg::t04::BoltzModel::Create(em));
           break;
         default: bug();
         }
@@ -144,7 +144,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
 }
 
 Ctx Ctx::FromArgParse(const ArgParse& args) {
-  return {energy::FromArgParse(args), CtxCfg::FromArgParse(args)};
+  return {erg::FromArgParse(args), CtxCfg::FromArgParse(args)};
 }
 
 }  // namespace mrna::ctx

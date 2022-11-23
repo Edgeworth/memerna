@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -11,7 +10,7 @@
 #include "compute/energy/energy.h"
 #include "model/base.h"
 
-namespace mrna::energy::t04 {
+namespace mrna::erg::t04 {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModelPtr bem) : r_(std::move(r)), bem_(std::move(bem)) {
   PrecomputeData();
@@ -88,4 +87,4 @@ void BoltzPrecomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>>(r_, bem(), -1.0);
 }
 
-}  // namespace mrna::energy::t04
+}  // namespace mrna::erg::t04

@@ -27,7 +27,7 @@ class FuzzHarness {
 
  private:
   mrna::ArgParse args_;
-  mrna::energy::EnergyModelPtr em_;
+  mrna::erg::EnergyModelPtr em_;
   mrna::fuzz::FuzzCfg cfg_;
   std::mt19937 e_;
 
