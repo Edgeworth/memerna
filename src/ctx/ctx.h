@@ -12,7 +12,7 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "compute/traceback/t04/traceback.h"
+#include "compute/traceback/traceback.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/primary.h"
@@ -47,7 +47,7 @@ class Ctx {
       const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
   [[nodiscard]] part::PartResult Partition(const Primary& r) const;
 
-  [[nodiscard]] const energy::EnergyModel& em() const { return *em_; }
+  [[nodiscard]] const energy::EnergyModelPtr& em() const { return *em_; }
 
   static Ctx FromArgParse(const ArgParse& args);
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/structure.h"
 #include "model/base.h"

@@ -13,8 +13,7 @@
 
 namespace mrna::energy::t04 {
 
-BoltzPrecomp::BoltzPrecomp(Primary r, BoltzEnergyModelPtr bem)
-    : r_(std::move(r)), bem_(std::move(bem)) {
+BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModelPtr bem) : r_(std::move(r)), bem_(std::move(bem)) {
   PrecomputeData();
 }
 
@@ -64,9 +63,8 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
     return bem().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
                              [r_[ien + 2]][r_[oen]];
 
-  static_assert(
-      TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
-  assert(toplen + botlen < EnergyModel::INITIATION_CACHE_SZ);
+  static_assert(TWOLOOP_MAX_SZ <= Model::INITIATION_CACHE_SZ, "initiation cache not large enough");
+  assert(toplen + botlen < Model::INITIATION_CACHE_SZ);
   BoltzEnergy energy = bem().internal_init[toplen + botlen] *
       std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM).Boltz();
 
