@@ -19,7 +19,11 @@ inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
 inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
                                         .LongName("energy-model")
                                         .ShortName("em")
-                                        .Default("t04_p100")
+#if ENERGY_PRECISION == 1
+                                        .Default("t04_p1")
+#elif ENERGY_PRECISION == 2
+                                        .Default("t04_p2")
+#endif
                                         .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS =
     mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");

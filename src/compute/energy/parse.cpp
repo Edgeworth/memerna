@@ -7,7 +7,7 @@ namespace mrna::erg {
 
 void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string energy;
   while (true) {
@@ -24,7 +24,7 @@ void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
 
 void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string energy;
   while (true) {
@@ -42,7 +42,7 @@ void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
 void Parse6MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4]) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string energy;
   while (true) {
@@ -64,7 +64,7 @@ void Parse6MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
 void Parse7MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4]) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string energy;
   while (true) {
@@ -87,7 +87,7 @@ void Parse7MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 
 void Parse8MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4][4]) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string energy;
   while (true) {
@@ -112,7 +112,7 @@ void Parse8MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]
 void ParseNMapFromFile(
     const std::string& filename, std::unordered_map<std::string, Energy>* output) {
   std::ifstream fp(filename);
-  verify(fp, "could not open file");
+  verify(fp, "could not open file: %s", filename.c_str());
 
   std::string name;
   std::string energy;
