@@ -161,11 +161,12 @@ set(MEMERNA_SOURCE
 set(TEST_SOURCE
   tests/common_test.h
   tests/compute/brute/brute_test.cpp
-  tests/compute/energy/t04/energy_test.cpp
-  tests/compute/mfe/t04/mfe_test.cpp
-  tests/compute/partition/t04/partition_test.cpp
-  tests/compute/subopt/t04/subopt_test.cpp
-  tests/compute/traceback/t04/traceback_test.cpp
+  tests/compute/energy/energy_test.cpp
+  tests/compute/energy/t04_test.cpp
+  tests/compute/mfe/t04_test.cpp
+  tests/compute/partition/t04_test.cpp
+  tests/compute/subopt/t04_test.cpp
+  tests/compute/traceback/t04_test.cpp
   tests/model/base_test.cpp
   tests/model/ctds_test.cpp
   tests/model/model_test.cpp

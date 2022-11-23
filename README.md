@@ -14,6 +14,7 @@ check symmetry for new terminal mismatch table
 - update data tables with higher precision energy, compare to RNAstructure
 
 - run IWYU
+- add google benchmark lib
 
 energy => erg
 

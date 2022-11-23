@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
   mrna::ArgParse args;
   mrna::brute::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
-  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
+  const auto em = mrna::energy::FromArgParse(args);
   auto cfg = mrna::brute::BruteCfg::FromArgParse(args);
   if (cfg.mfe) {
     cfg.subopt = true;
