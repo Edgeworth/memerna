@@ -17,11 +17,11 @@
 
 namespace mrna::brute {
 
-BruteForce::BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
+Brute::Brute(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
     : r_(r), em_(std::move(em)), bem_(energy::Boltz(em_)), cfg_(cfg), s_(r_.size()),
       ctd_(r_.size()) {}
 
-BruteResult BruteForce::Run() {
+BruteResult Brute::Run() {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
@@ -44,7 +44,7 @@ BruteResult BruteForce::Run() {
   return std::move(res_);
 }
 
-void BruteForce::Dfs(int idx) {
+void Brute::Dfs(int idx) {
   if (idx == static_cast<int>(pairs_.size())) {
     // Precompute whether things are multiloops or not.
     branch_count_ = energy::GetBranchCounts(s_);
@@ -75,12 +75,12 @@ void BruteForce::Dfs(int idx) {
   }
 }
 
-void BruteForce::AddAllCombinations(int idx) {
+void Brute::AddAllCombinations(int idx) {
   const int N = static_cast<int>(r_.size());
   // Base case
   if (idx == N) {
     if (cfg_.part) {
-      auto energy = energy::TotalEnergy(bem_->em(), r_, s_, &ctd_).energy;
+      auto energy = energy::TotalEnergy(energy::Underlying(bem_), r_, s_, &ctd_).energy;
       res_.part.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -89,7 +89,8 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = energy::SubEnergy(bem_->em(), r_, s_, &ctd_, i, s_[i]).energy;
+            Energy inside_energy =
+                energy::SubEnergy(energy::Underlying(bem_), r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -103,7 +104,7 @@ void BruteForce::AddAllCombinations(int idx) {
       }
     }
     if (cfg_.subopt) {
-      auto energy = energy::TotalEnergy(em, r_, s_, &ctd_).energy;
+      auto energy = energy::TotalEnergy(em_, r_, s_, &ctd_).energy;
       PruneInsertSubopt(energy);
     }
     return;
@@ -190,7 +191,7 @@ void BruteForce::AddAllCombinations(int idx) {
   ctd_[idx] = CTD_NA;
 }
 
-void BruteForce::PruneInsertSubopt(Energy e) {
+void Brute::PruneInsertSubopt(Energy e) {
   bool has_room = static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs;
   bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
   if (has_room || is_better)
@@ -208,7 +209,7 @@ void BruteForce::PruneInsertSubopt(Energy e) {
   }
 }
 
-BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool inside) {
+Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
   SubstructureId struc = {};  // Zero initialise.
   uint32_t b = 0;
@@ -227,12 +228,12 @@ BruteForce::SubstructureId BruteForce::WriteBits(int st, int en, int N, bool ins
   return struc;
 }
 
-BruteForce::SubstructureId BruteForce::BuildInsideStructure(int st, int en, int N) {
+Brute::SubstructureId Brute::BuildInsideStructure(int st, int en, int N) {
   // Don't include the ctd value at st, since that's for the outside.
   return WriteBits(st + 1, en, N, true);
 }
 
-BruteForce::SubstructureId BruteForce::BuildOutsideStructure(int st, int en, int N) {
+Brute::SubstructureId Brute::BuildOutsideStructure(int st, int en, int N) {
   // Don't include the ctd value at en, since that's for the inside.
   return WriteBits(st, en + 1, N, false);
 }

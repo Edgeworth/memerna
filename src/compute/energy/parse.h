@@ -29,7 +29,7 @@ void ParseVecFromFile(const std::string& filename, Energy (&output)[N]) {
   std::string energy;
   int idx = 0;
   while (f >> idx >> energy) {
-    verify(idx < N, "out of bounds index in %s", filename.c_str());
+    verify(idx >= 0 && idx < int(N), "out of bounds index in %s", filename.c_str());
     output[idx] = Energy::FromString(energy);
   }
   verify(f.eof(), "expected EOF");

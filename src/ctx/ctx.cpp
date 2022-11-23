@@ -14,6 +14,7 @@
 #include "compute/mfe/mfe.h"
 #include "compute/mfe/t04/mfe.h"
 #include "compute/partition/partition.h"
+#include "compute/partition/t04/partition.h"
 #include "compute/subopt/t04/subopt_fastest.h"
 #include "compute/subopt/t04/subopt_slowest.h"
 #include "compute/traceback/t04/traceback.h"
@@ -28,46 +29,47 @@ energy::EnergyResult Ctx::Efn(
   return energy::TotalEnergy(em(), r, s, given_ctd, build_structure);
 }
 
-DpArray Ctx::ComputeTables(const Primary& r) const {
-  switch (energy::Kind(em())) {
-  case energy::ModelKind::T04_LIKE:
-    switch (cfg_.dp_alg) {
-    case CtxCfg::DpAlg::SLOWEST: return mfe::t04::ComputeTablesSlowest(r, em_);
-    case CtxCfg::DpAlg::SLOW: return mfe::t04::ComputeTablesSlow(r, em_);
-    case CtxCfg::DpAlg::FASTEST: return mfe::t04::ComputeTablesFastest(r, em_);
-    case CtxCfg::DpAlg::LYNGSO: return mfe::t04::ComputeTablesLyngso(r, em_);
-    default: bug();
-    }
-    break;
-  default: bug();
-  }
+DpArray Ctx::ComputeMfe(const Primary& r) const {
+  return std::visit(
+      [&](const energy::t04::ModelPtr& em) -> DpArray {
+        switch (cfg_.dp_alg) {
+        case CtxCfg::DpAlg::SLOWEST: return mfe::t04::MfeSlowest(r, em);
+        case CtxCfg::DpAlg::SLOW: return mfe::t04::MfeSlow(r, em);
+        case CtxCfg::DpAlg::FASTEST: return mfe::t04::MfeFastest(r, em);
+        case CtxCfg::DpAlg::LYNGSO: return mfe::t04::MfeLyngso(r, em);
+        default: bug();
+        }
+      },
+      em_);
 }
 
-std::tuple<ExtArray, Energy> Ctx::ComputeExterior(const Primary& r, const DpArray& dp) const {
-  switch (energy::Kind(em())) {
-  case energy::ModelKind::T04_LIKE:
-    auto ext = mfe::t04::ComputeExterior(r, em(), dp);
-    return {ext, ext[0][EXT]};
-  default: bug();
-  }
+std::tuple<ExtArray, Energy> Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
+  return std::visit(
+      [&](const energy::t04::ModelPtr& em) -> std::tuple<ExtArray, Energy> {
+        auto ext = mfe::t04::MfeExterior(r, em, dp);
+        auto energy = ext[0][EXT];
+        return {std::move(ext), energy};
+      },
+      em_);
 }
 
 tb::TracebackResult Ctx::ComputeTraceback(
     const Primary& r, const DpArray& dp, const ExtArray& ext) const {
-  switch (energy::Kind(em())) {
-  case energy::ModelKind::T04_LIKE: return tb::t04::Traceback(r, em(), dp, ext); break;
-  default: bug();
-  }
+  return std::visit(
+      [&](const energy::t04::ModelPtr& em) -> tb::TracebackResult {
+        return tb::t04::Traceback(r, em, dp, ext);
+      },
+      em_);
 }
 
 ctx::FoldResult Ctx::Fold(const Primary& r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
-    auto subopt = brute::MfeBruteForce(r, em_);
+    auto subopt = brute::MfeBrute(r, em_);
     return {.mfe = {.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
-  auto dp = ComputeTables(r);
-  auto [ext, energy] = ComputeExterior(r, dp);
+  auto dp = ComputeMfe(r);
+  auto [ext, energy] = ComputeMfeExterior(r, dp);
   auto tb = ComputeTraceback(r, dp, ext);
   return ctx::FoldResult{
       .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
@@ -88,48 +90,46 @@ int Ctx::Suboptimal(
     const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO(3): handle cases other than max structures.
-    auto subopts = brute::SuboptimalBruteForce(r, em_, cfg);
+    auto subopts = brute::SuboptBrute(r, em_, cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
 
-  auto dp = ComputeTables(r);
-  auto [ext, energy] = ComputeExterior(r, dp);
+  auto dp = ComputeMfe(r);
+  auto [ext, energy] = ComputeMfeExterior(r, dp);
 
-  switch (energy::Kind(em())) {
-  case energy::ModelKind::T04_LIKE:
-    switch (cfg_.subopt_alg) {
-    case CtxCfg::SuboptAlg::SLOWEST:
-      return subopt::t04::SuboptimalSlowest(Primary(r), em_, std::move(dp), std::move(ext), cfg)
-          .Run(fn);
-    case CtxCfg::SuboptAlg::FASTEST:
-      return subopt::t04::SuboptimalFastest(Primary(r), em_, std::move(dp), std::move(ext), cfg)
-          .Run(fn);
-    default: bug();
-    }
-    break;
-  default: bug();
-  }
+  return std::visit(
+      [&, ext = std::move(ext)](const energy::t04::ModelPtr& em) mutable -> int {
+        switch (cfg_.subopt_alg) {
+        case CtxCfg::SuboptAlg::SLOWEST:
+          return subopt::t04::SuboptSlowest(Primary(r), em, std::move(dp), std::move(ext), cfg)
+              .Run(fn);
+        case CtxCfg::SuboptAlg::FASTEST:
+          return subopt::t04::SuboptFastest(Primary(r), em, std::move(dp), std::move(ext), cfg)
+              .Run(fn);
+        default: bug();
+        }
+      },
+      em_);
 }
 
 part::PartResult Ctx::Partition(const Primary& r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
-    return part::PartitionBruteForce(r, em_);
+    return brute::PartitionBrute(r, em_);
   }
 
   std::tuple<BoltzDpArray, BoltzExtArray> res;
-  switch (energy::Kind(em())) {
-  case energy::ModelKind::T04_LIKE:
-    switch (cfg_.part_alg) {
-    case CtxCfg::PartAlg::SLOWEST: res = part::PartitionSlowest(r, em_); break;
-    case CtxCfg::PartAlg::FASTEST:
-      res = part::PartitionFastest(r, energy::BoltzEnergyModel::Create(em_));
-      break;
-    default: bug();
-    }
-    break;
-  default: bug();
-  }
+  std::visit(
+      [&](const energy::t04::ModelPtr& em) {
+        switch (cfg_.part_alg) {
+        case CtxCfg::PartAlg::SLOWEST: res = part::t04::PartitionSlowest(r, em); break;
+        case CtxCfg::PartAlg::FASTEST:
+          res = part::t04::PartitionFastest(r, energy::t04::BoltzModel::Create(em));
+          break;
+        default: bug();
+        }
+      },
+      em_);
 
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
@@ -144,7 +144,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
 }
 
 Ctx Ctx::FromArgParse(const ArgParse& args) {
-  return {energy::EnergyModel::FromArgParse(args), CtxCfg::FromArgParse(args)};
+  return {energy::FromArgParse(args), CtxCfg::FromArgParse(args)};
 }
 
 }  // namespace mrna::ctx

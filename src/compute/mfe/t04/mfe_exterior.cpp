@@ -11,7 +11,7 @@
 
 namespace mrna::mfe::t04 {
 
-ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const DpArray& dp) {
+ExtArray MfeExterior(const Primary& r, const energy::t04::ModelPtr& em, const DpArray& dp) {
   const int N = static_cast<int>(r.size());
   auto ext = ExtArray(r.size() + 1, MAX_E);
 
@@ -27,10 +27,10 @@ ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const D
       const auto st1b = r[st + 1];
       const auto enb = r[en];
       const auto en1b = r[en - 1];
-      const auto base00 = dp[st][en][DP_P] + em.AuGuPenalty(stb, enb);
-      const auto base01 = dp[st][en - 1][DP_P] + em.AuGuPenalty(stb, en1b);
-      const auto base10 = dp[st + 1][en][DP_P] + em.AuGuPenalty(st1b, enb);
-      const auto base11 = dp[st + 1][en - 1][DP_P] + em.AuGuPenalty(st1b, en1b);
+      const auto base00 = dp[st][en][DP_P] + em->AuGuPenalty(stb, enb);
+      const auto base01 = dp[st][en - 1][DP_P] + em->AuGuPenalty(stb, en1b);
+      const auto base10 = dp[st + 1][en][DP_P] + em->AuGuPenalty(st1b, enb);
+      const auto base11 = dp[st + 1][en - 1][DP_P] + em->AuGuPenalty(st1b, en1b);
       Energy e = MAX_E;
 
       // (   )<   >
@@ -42,13 +42,13 @@ ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const D
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
 
       // (   )3<   > 3'
-      e = std::min(e, base01 + em.dangle3[en1b][enb][stb] + ext[en + 1][EXT]);
+      e = std::min(e, base01 + em->dangle3[en1b][enb][stb] + ext[en + 1][EXT]);
       // 5(   )<   > 5'
-      e = std::min(e, base10 + em.dangle5[enb][stb][st1b] + ext[en + 1][EXT]);
+      e = std::min(e, base10 + em->dangle5[enb][stb][st1b] + ext[en + 1][EXT]);
       // .(   ).<   > Terminal mismatch
-      e = std::min(e, base11 + em.terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT]);
+      e = std::min(e, base11 + em->terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT]);
       // .(   ).<(   ) > Left coax
-      val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
+      val = base11 + em->MismatchCoaxial(en1b, enb, stb, st1b);
       e = std::min(e, val + ext[en + 1][EXT_GU]);
       e = std::min(e, val + ext[en + 1][EXT_WC]);
 
@@ -56,12 +56,12 @@ ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const D
       e = std::min(e, base00 + ext[en + 1][EXT_RC]);
       // (   )<.( * ). > Right coax backward
       ext[st][EXT_RC] = std::min(
-          ext[st][EXT_RC], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
+          ext[st][EXT_RC], base11 + em->MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
 
       // (   )(<   ) > Flush coax
-      e = std::min(e, base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
+      e = std::min(e, base01 + em->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
       if (IsGu(enb))
-        e = std::min(e, base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU]);
+        e = std::min(e, base01 + em->stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU]);
 
       ext[st][EXT] = std::min(ext[st][EXT], e);
     }

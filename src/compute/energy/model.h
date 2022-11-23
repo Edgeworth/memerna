@@ -42,12 +42,17 @@ inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
   }
 }
 
+// Creates the Boltzmann energy model from the given energy model.
 inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   return std::visit([](const t04::ModelPtr& em) { return t04::BoltzModel::Create(em); }, em);
 }
 
-inline EnergyModelPtr Unboltz(const BoltzEnergyModelPtr& bem) {
-  return std::visit([](const t04::BoltzModelPtr& bem) { return bem->em(); }, em);
+// Returns the underlying non-Boltzmann energy model for the given Boltzmann
+// energy model. Note that this may be different to the original energy model,
+// i.e. em != BoltzUnderlying(Boltz(em)). For example, Boltzing an energy model turns
+// off bulge loop C state calculation.
+inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
+  return std::visit([](const auto& bem) { return bem->em(); }, bem);
 }
 
 inline ModelKind Kind(const EnergyModelPtr& model) {

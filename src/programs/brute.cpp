@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto res = mrna::brute::BruteForce(r, em, cfg).Run();
+  auto res = mrna::brute::Brute(r, em, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();

@@ -14,7 +14,7 @@
 
 namespace mrna::mfe::t04 {
 
-DpArray ComputeTablesFastest(const Primary& r, const energy::t04::ModelPtr& em) {
+DpArray MfeFastest(const Primary& r, const energy::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

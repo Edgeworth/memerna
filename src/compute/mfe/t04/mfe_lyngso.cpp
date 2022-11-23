@@ -14,7 +14,7 @@
 
 namespace mrna::mfe::t04 {
 
-DpArray ComputeTablesLyngo(const Primary& r, const energy::t04::ModelPtr& em) {
+DpArray MfeLyngso(const Primary& r, const energy::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
