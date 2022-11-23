@@ -1,4 +1,7 @@
 // Copyright 2022 E.
+#include "compute/energy/energy.h"
+
+#include <algorithm>
 #include <utility>
 
 #include "compute/energy/model.h"

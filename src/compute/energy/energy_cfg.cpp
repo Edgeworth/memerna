@@ -14,6 +14,10 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_CTD);
 }
 
+std::string ModelPathFromArgParse(const ArgParse& args) {
+  return args.Get(OPT_MEMERNA_DATA) + "/model/" + args.Get(OPT_ENERGY_MODEL);
+}
+
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   EnergyCfg cfg;
   args.MaybeSet(OPT_LONELY_PAIRS, &cfg.lonely_pairs);

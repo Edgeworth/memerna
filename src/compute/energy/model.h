@@ -1,3 +1,4 @@
+// Copyright 2022 E.
 #ifndef COMPUTE_ENERGY_MODEL_H_
 #define COMPUTE_ENERGY_MODEL_H_
 #include <memory>
