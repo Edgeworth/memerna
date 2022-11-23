@@ -9,7 +9,7 @@
 
 namespace mrna::part {
 
-BoltzExtArray Exterior(const Primary& r, const energy::t04::ModelPtr& em, const BoltzDpArray& dp) {
+BoltzExtArray Exterior(const Primary& r, const energy::t04::Model& em, const BoltzDpArray& dp) {
   const int N = static_cast<int>(r.size());
   auto ext = BoltzExtArray(r.size() + 1, 0);
 

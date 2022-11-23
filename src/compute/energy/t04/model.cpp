@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include "compute/energy/t04/model.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -33,15 +35,15 @@ void ParseMiscDataFromFile(const std::string& filename, Model* em) {
   std::ifstream f(filename);
   verify(f, "could not open file");
 
-#define READ_DATA(var)                                       \
-  do {                                                       \
-    while (1) {                                              \
-      auto line = sgetline(f);                               \
-      verify(line, "unexpected EOF or error");               \
-      if ((*line)[0] == '/' || (*line)[0] == '\n') continue; \
-      (var) = Energy::FromString(Trim(*line));               \
-      break;                                                 \
-    }                                                        \
+#define READ_DATA(var)                                  \
+  do {                                                  \
+    while (1) {                                         \
+      auto line = sgetline(f);                          \
+      verify(!line.empty(), "unexpected EOF or error"); \
+      if (line[0] == '/' || line[0] == '\n') continue;  \
+      (var) = Energy::FromString(Trim(line));           \
+      break;                                            \
+    }                                                   \
   } while (0)
 
   // Bulge loops.
@@ -77,7 +79,7 @@ void ParseMiscDataFromFile(const std::string& filename, Model* em) {
 
 }  // namespace
 
-EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
+ModelPtr Model::Random(uint_fast32_t seed) {
   auto em = Create();
   std::mt19937 eng(seed);
   std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
@@ -159,32 +161,32 @@ EnergyModelPtr EnergyModel::Random(uint_fast32_t seed) {
   return em;
 }
 
-EnergyModelPtr EnergyModel::FromDataDir(const std::string& data_dir) {
+ModelPtr Model::FromDataDir(const std::string& data_dir) {
   auto em = Create();
   // Stacking interaction data.
-  Parse2x2FromFile(data_dir + "/stacking.data", em->stack);
+  Parse4MapFromFile(data_dir + "/stacking.data", em->stack);
 
   // Terminal mismatch data.
-  Parse2x2FromFile(data_dir + "/terminal.data", em->terminal);
+  Parse4MapFromFile(data_dir + "/terminal.data", em->terminal);
 
   // Hairpin data.
-  ParseMapFromFile(data_dir + "/hairpin.data", &em->hairpin);
-  ParseInitiationEnergyFromFile(data_dir + "/hairpin_initiation.data", em->hairpin_init);
+  ParseNMapFromFile(data_dir + "/hairpin.data", &em->hairpin);
+  ParseVecFromFile(data_dir + "/hairpin_initiation.data", em->hairpin_init);
 
   // Bulge loop data.
-  ParseInitiationEnergyFromFile(data_dir + "/bulge_initiation.data", em->bulge_init);
+  ParseVecFromFile(data_dir + "/bulge_initiation.data", em->bulge_init);
 
   // Internal loop data.
-  ParseInitiationEnergyFromFile(data_dir + "/internal_initiation.data", em->internal_init);
-  ParseInternalLoop1x1FromFile(data_dir + "/internal_1x1.data", em.get());
-  ParseInternalLoop1x2FromFile(data_dir + "/internal_1x2.data", em.get());
-  ParseInternalLoop2x2FromFile(data_dir + "/internal_2x2.data", em.get());
-  Parse2x2FromFile(data_dir + "/internal_2x3_mismatch.data", em->internal_2x3_mismatch);
-  Parse2x2FromFile(data_dir + "/internal_other_mismatch.data", em->internal_other_mismatch);
+  ParseVecFromFile(data_dir + "/internal_initiation.data", em->internal_init);
+  Parse6MapFromFile(data_dir + "/internal_1x1.data", em.get());
+  Parse7MapFromFile(data_dir + "/internal_1x2.data", em.get());
+  Parse8MapFromFile(data_dir + "/internal_2x2.data", em.get());
+  Parse4MapFromFile(data_dir + "/internal_2x3_mismatch.data", em->internal_2x3_mismatch);
+  Parse4MapFromFile(data_dir + "/internal_other_mismatch.data", em->internal_other_mismatch);
 
   // Dangle data.
-  ParseDangleDataFromFile(data_dir + "/dangle3.data", em->dangle3);
-  ParseDangleDataFromFile(data_dir + "/dangle5.data", em->dangle5);
+  Parse3MapFromFile(data_dir + "/dangle3.data", em->dangle3);
+  Parse3MapFromFile(data_dir + "/dangle5.data", em->dangle5);
 
   // Other misc data.
   ParseMiscDataFromFile(data_dir + "/misc.data", em.get());
@@ -194,8 +196,8 @@ EnergyModelPtr EnergyModel::FromDataDir(const std::string& data_dir) {
   return em;
 }
 
-EnergyModelPtr EnergyModel::FromArgParse(const ArgParse& args) {
-  EnergyModelPtr em;
+ModelPtr Model::FromArgParse(const ArgParse& args) {
+  ModelPtr em;
   if (args.Has(OPT_SEED)) {
     em = Random(args.Get<uint_fast32_t>(OPT_SEED));
   } else {
@@ -220,7 +222,7 @@ EnergyModelPtr EnergyModel::FromArgParse(const ArgParse& args) {
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
 //   model).
-Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s) const {
+Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s) const {
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
@@ -292,7 +294,7 @@ Energy EnergyModel::Hairpin(const Primary& r, int st, int en, std::unique_ptr<St
 //    bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
 //    bonus from that.
-Energy EnergyModel::Bulge(
+Energy Model::Bulge(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
@@ -351,7 +353,7 @@ Energy EnergyModel::Bulge(
 // 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for
 // 2x3, and then
 //   rotate the rna by 180 degrees to look it up for 3x2.
-Energy EnergyModel::InternalLoop(
+Energy Model::InternalLoop(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
@@ -406,7 +408,7 @@ Energy EnergyModel::InternalLoop(
   return energy;
 }
 
-Energy EnergyModel::TwoLoop(
+Energy Model::TwoLoop(
     const Primary& r, int ost, int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
@@ -418,7 +420,7 @@ Energy EnergyModel::TwoLoop(
   return Bulge(r, ost, oen, ist, ien, s);
 }
 
-Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
+Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
     std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
     std::unique_ptr<Structure>* sstruc) const {
   const bool exterior_loop = s[st] != en;
@@ -511,7 +513,7 @@ Energy EnergyModel::MultiloopEnergy(const Primary& r, const Secondary& s, int st
   return energy;
 }
 
-Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
+Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
     bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
   assert(en >= st);
   const bool exterior_loop = s[st] != en;
@@ -548,10 +550,10 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
   for (auto i : branches) {
     if (struc) {
       std::unique_ptr<Structure> sstruc;
-      energy += SubstructureEnergyInternal(r, s, i, s[i], use_given_ctds, ctd, &sstruc);
+      energy += SubEnergyInternal(r, s, i, s[i], use_given_ctds, ctd, &sstruc);
       (*struc)->AddBranch(std::move(sstruc));
     } else {
-      energy += SubstructureEnergyInternal(r, s, i, s[i], use_given_ctds, ctd, nullptr);
+      energy += SubEnergyInternal(r, s, i, s[i], use_given_ctds, ctd, nullptr);
     }
   }
   if (struc) (*struc)->set_total_energy(energy);
@@ -559,21 +561,20 @@ Energy EnergyModel::SubstructureEnergyInternal(const Primary& r, const Secondary
   return energy;
 }
 
-EnergyResult EnergyModel::SubstructureEnergy(const Primary& r, const Secondary& s,
-    const Ctds* given_ctd, int st, int en, bool build_structure) const {
+EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
+    int en, bool build_structure) const {
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
   std::unique_ptr<Structure> struc;
-  auto energy = SubstructureEnergyInternal(
-      r, s, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
+  auto energy =
+      SubEnergyInternal(r, s, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
   return {energy, std::move(ctd), std::move(struc)};
 }
 
-EnergyResult EnergyModel::TotalEnergy(
+EnergyResult Model::TotalEnergy(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
-  auto res =
-      SubstructureEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
+  auto res = SubEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
   if (s[0] == static_cast<int>(r.size() - 1) && IsAuGuPair(r[0], r[s[0]])) {
     res.energy += augu_penalty;
     if (res.struc) {
@@ -585,7 +586,7 @@ EnergyResult EnergyModel::TotalEnergy(
   return res;
 }
 
-uint32_t EnergyModel::Checksum() const {
+uint32_t Model::Checksum() const {
   std::string data;
 
 // This isn't portable across machines with different endianness but I don't care.
@@ -642,7 +643,7 @@ uint32_t EnergyModel::Checksum() const {
   return Crc32(data);
 }
 
-bool EnergyModel::IsValid(std::string* reason) const {
+bool Model::IsValid(std::string* reason) const {
 #define CHECK_COND(cond, reason_str)                           \
   do {                                                         \
     if (!(cond)) {                                             \

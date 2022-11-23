@@ -30,6 +30,11 @@ std::string Conv(const T& s) {
   return ss.str();
 }
 
+inline std::string ToLower(std::string s) {
+  for (char& c : s) c = std::tolower(c);
+  return s;
+}
+
 std::string TrimLeft(const std::string& s);
 std::string TrimRight(const std::string& s);
 std::string Trim(const std::string& s);

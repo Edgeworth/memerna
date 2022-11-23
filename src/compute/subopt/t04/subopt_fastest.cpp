@@ -16,7 +16,7 @@
 namespace mrna::subopt::t04 {
 
 SuboptimalFastest::SuboptimalFastest(
-    Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
+    Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 

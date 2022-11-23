@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/energy.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
@@ -23,7 +22,6 @@ using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 // always have their value set to 2,  the exterior loop is treated as a
 // multiloop.
 std::vector<int> GetBranchCounts(const Secondary& s);
-
 
 // Per-base representation of CTDs:
 // An array the same length as the sequence, which contains CTD identifiers.

@@ -22,6 +22,9 @@
 
 namespace mrna::energy::t04 {
 
+class Model;
+using ModelPtr = std::shared_ptr<Model>;
+
 class Model {
  public:
   inline constexpr static int INITIATION_CACHE_SZ = 31;
@@ -154,8 +157,8 @@ class Model {
 
   // If (st, en) is not paired, treated as an exterior loop.
   // If |ctd| is non-null, use the given ctds.
-  EnergyResult SubstructureEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      int st, int en, bool build_structure = false) const;
+  EnergyResult SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
+      int en, bool build_structure = false) const;
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       bool build_structure = false) const;
 
@@ -166,7 +169,7 @@ class Model {
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 
-  Energy SubstructureEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
+  Energy SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
       bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 

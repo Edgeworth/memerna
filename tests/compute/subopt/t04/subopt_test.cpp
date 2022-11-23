@@ -19,7 +19,7 @@ namespace mrna::subopt {
 class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
  public:
   static std::vector<SuboptResult> Subopt(
-      const std::string& s, const energy::EnergyModelPtr& em, const std::vector<Energy>& energies) {
+      const std::string& s, const energy::t04::ModelPtr& em, const std::vector<Energy>& energies) {
     int n = static_cast<int>(energies.size());
     auto res = ctx::Ctx(em, ctx::CtxCfg{.subopt_alg = GetParam()})
                    .SuboptimalIntoVector(Primary::FromSeq(s), SuboptCfg{.strucs = n});

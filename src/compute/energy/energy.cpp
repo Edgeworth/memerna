@@ -1,8 +1,7 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/energy.h"
-
 #include <utility>
 
+#include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 
 namespace mrna::energy {

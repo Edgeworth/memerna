@@ -6,7 +6,7 @@
 #include <string>
 
 #include "compute/brute/brute_cfg.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/t04/traceback.h"
 #include "model/ctd.h"

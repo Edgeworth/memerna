@@ -10,7 +10,9 @@
 #include "compute/brute/alg.h"
 #include "compute/dp.h"
 #include "compute/energy/t04/boltz_model.h"
+#include "compute/energy/t04/model.h"
 #include "compute/mfe/mfe.h"
+#include "compute/mfe/t04/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/t04/subopt_fastest.h"
 #include "compute/subopt/t04/subopt_slowest.h"
@@ -23,15 +25,37 @@ namespace mrna::ctx {
 
 energy::EnergyResult Ctx::Efn(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
-  return em().TotalEnergy(r, s, given_ctd, build_structure);
+  return energy::TotalEnergy(em(), r, s, given_ctd, build_structure);
 }
 
 DpArray Ctx::ComputeTables(const Primary& r) const {
-  switch (cfg_.dp_alg) {
-  case CtxCfg::DpAlg::ZERO: return mfe::ComputeTables0(r, em_);
-  case CtxCfg::DpAlg::ONE: return mfe::ComputeTables1(r, em_);
-  case CtxCfg::DpAlg::TWO: return mfe::ComputeTables2(r, em_);
-  case CtxCfg::DpAlg::THREE: return mfe::ComputeTables3(r, em_);
+  switch (energy::Kind(em())) {
+  case energy::ModelKind::T04_LIKE:
+    switch (cfg_.dp_alg) {
+    case CtxCfg::DpAlg::SLOWEST: return mfe::t04::ComputeTablesSlowest(r, em_);
+    case CtxCfg::DpAlg::SLOW: return mfe::t04::ComputeTablesSlow(r, em_);
+    case CtxCfg::DpAlg::FASTEST: return mfe::t04::ComputeTablesFastest(r, em_);
+    case CtxCfg::DpAlg::LYNGSO: return mfe::t04::ComputeTablesLyngso(r, em_);
+    default: bug();
+    }
+    break;
+  default: bug();
+  }
+}
+
+std::tuple<ExtArray, Energy> Ctx::ComputeExterior(const Primary& r, const DpArray& dp) const {
+  switch (energy::Kind(em())) {
+  case energy::ModelKind::T04_LIKE:
+    auto ext = mfe::t04::ComputeExterior(r, em(), dp);
+    return {ext, ext[0][EXT]};
+  default: bug();
+  }
+}
+
+tb::TracebackResult Ctx::ComputeTraceback(
+    const Primary& r, const DpArray& dp, const ExtArray& ext) const {
+  switch (energy::Kind(em())) {
+  case energy::ModelKind::T04_LIKE: return tb::t04::Traceback(r, em(), dp, ext); break;
   default: bug();
   }
 }
@@ -43,9 +67,8 @@ ctx::FoldResult Ctx::Fold(const Primary& r) const {
   }
 
   auto dp = ComputeTables(r);
-  auto ext = mfe::ComputeExterior(r, em(), dp);
-  auto tb = tb::Traceback(r, em(), dp, ext);
-  auto energy = ext[0][EXT];
+  auto [ext, energy] = ComputeExterior(r, dp);
+  auto tb = ComputeTraceback(r, dp, ext);
   return ctx::FoldResult{
       .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
       .tb = std::move(tb),
@@ -71,25 +94,43 @@ int Ctx::Suboptimal(
   }
 
   auto dp = ComputeTables(r);
-  auto ext = mfe::ComputeExterior(r, em(), dp);
-  switch (cfg_.subopt_alg) {
-  case CtxCfg::SuboptAlg::ZERO:
-    return subopt::Suboptimal0(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
-  case CtxCfg::SuboptAlg::ONE:
-    return subopt::Suboptimal1(Primary(r), em_, std::move(dp), std::move(ext), cfg).Run(fn);
-  default: error("no such suboptimal algorithm %d", static_cast<int>(cfg_.subopt_alg));
+  auto [ext, energy] = ComputeExterior(r, dp);
+
+  switch (energy::Kind(em())) {
+  case energy::ModelKind::T04_LIKE:
+    switch (cfg_.subopt_alg) {
+    case CtxCfg::SuboptAlg::SLOWEST:
+      return subopt::t04::SuboptimalSlowest(Primary(r), em_, std::move(dp), std::move(ext), cfg)
+          .Run(fn);
+    case CtxCfg::SuboptAlg::FASTEST:
+      return subopt::t04::SuboptimalFastest(Primary(r), em_, std::move(dp), std::move(ext), cfg)
+          .Run(fn);
+    default: bug();
+    }
+    break;
+  default: bug();
   }
 }
 
 part::PartResult Ctx::Partition(const Primary& r) const {
-  std::tuple<BoltzDpArray, BoltzExtArray> res;
-  switch (cfg_.part_alg) {
-  case CtxCfg::PartAlg::ZERO: res = part::Partition0(r, em_); break;
-  case CtxCfg::PartAlg::ONE:
-    res = part::Partition1(r, energy::BoltzEnergyModel::Create(em_));
-    break;
-  case CtxCfg::PartAlg::BRUTE: return brute::PartitionBruteForce(r, em_);
+  if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
+    return part::PartitionBruteForce(r, em_);
   }
+
+  std::tuple<BoltzDpArray, BoltzExtArray> res;
+  switch (energy::Kind(em())) {
+  case energy::ModelKind::T04_LIKE:
+    switch (cfg_.part_alg) {
+    case CtxCfg::PartAlg::SLOWEST: res = part::PartitionSlowest(r, em_); break;
+    case CtxCfg::PartAlg::FASTEST:
+      res = part::PartitionFastest(r, energy::BoltzEnergyModel::Create(em_));
+      break;
+    default: bug();
+    }
+    break;
+  default: bug();
+  }
+
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);
   BoltzSums p(N, 0);

@@ -15,7 +15,7 @@
 namespace mrna::tb::t04 {
 
 TracebackResult Traceback(
-    const Primary& r, const energy::EnergyModel& em, const DpArray& dp, const ExtArray& ext) {
+    const Primary& r, const energy::t04::Model& em, const DpArray& dp, const ExtArray& ext) {
   const int N = static_cast<int>(r.size());
   TracebackResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;

@@ -39,7 +39,7 @@ int MaxNumContiguous(const Primary& r) {
 
 }  // namespace internal
 
-Precomp::Precomp(Primary r, EnergyModelPtr em) : r_(std::move(r)), em_(std::move(em)) {
+Precomp::Precomp(Primary r, ModelPtr em) : r_(std::move(r)), em_(std::move(em)) {
   PrecomputeData();
 }
 
@@ -60,9 +60,8 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
     return em().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
                             [r_[ien + 2]][r_[oen]];
 
-  static_assert(
-      TWOLOOP_MAX_SZ <= EnergyModel::INITIATION_CACHE_SZ, "initiation cache not large enough");
-  assert(toplen + botlen < EnergyModel::INITIATION_CACHE_SZ);
+  static_assert(TWOLOOP_MAX_SZ <= Model::INITIATION_CACHE_SZ, "initiation cache not large enough");
+  assert(toplen + botlen < Model::INITIATION_CACHE_SZ);
   Energy energy = em().internal_init[toplen + botlen] +
       std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM);
 

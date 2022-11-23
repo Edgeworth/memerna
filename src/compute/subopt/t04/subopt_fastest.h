@@ -42,7 +42,8 @@ struct Expand {
 
 class SuboptimalFastest {
  public:
-  SuboptimalFastest(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptimalFastest(
+      Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -55,8 +56,8 @@ class SuboptimalFastest {
   };
 
   Primary r_;
-  energy::EnergyModelPtr em_;
-  energy::Precomp pc_;
+  energy::t04::ModelPtr em_;
+  energy::t04::Precomp pc_;
   SuboptResult res_;
   DpArray dp_;
   ExtArray ext_;

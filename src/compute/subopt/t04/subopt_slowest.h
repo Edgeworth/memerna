@@ -18,7 +18,7 @@ namespace mrna::subopt::t04 {
 
 class SuboptimalSlowest {
  public:
-  SuboptimalSlowest(Primary r, energy::EnergyModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptimalSlowest(Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -36,7 +36,7 @@ class SuboptimalSlowest {
   };
 
   Primary r_;
-  energy::EnergyModelPtr em_;
+  energy::t04::ModelPtr em_;
   DpArray dp_;
   ExtArray ext_;
   SuboptCfg cfg_;

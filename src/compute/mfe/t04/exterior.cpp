@@ -3,6 +3,7 @@
 
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
+#include "compute/energy/t04/model.h"
 #include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/primary.h"
@@ -69,4 +70,4 @@ ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const D
   return ext;
 }
 
-}  // namespace mrna::mfe
+}  // namespace mrna::mfe::t04

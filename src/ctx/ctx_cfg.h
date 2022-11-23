@@ -11,18 +11,18 @@ namespace mrna::ctx {
 
 inline const Opt OPT_DP_ALG = Opt(Opt::ARG)
                                   .LongName("dp-alg")
-                                  .Default("2")
-                                  .Choice({"0", "1", "2", "3", "brute"})
+                                  .Default("fastest")
+                                  .Choice({"slowest", "slow", "fastest", "lyngso", "brute"})
                                   .Help("which algorithm for mfe folding");
 inline const Opt OPT_SUBOPT_ALG = Opt(Opt::ARG)
                                       .LongName("subopt-alg")
-                                      .Default("1")
-                                      .Choice({"0", "1", "brute"})
+                                      .Default("fastest")
+                                      .Choice({"slowest", "fastest", "brute"})
                                       .Help("which algorithm for suboptimal folding");
 inline const Opt OPT_PART_ALG = Opt(Opt::ARG)
                                     .LongName("part-alg")
-                                    .Default("1")
-                                    .Choice({"0", "1", "brute"})
+                                    .Default("fastest")
+                                    .Choice({"slowest", "fastest", "brute"})
                                     .Help("which algorithm for the partition function");
 
 void RegisterOpts(ArgParse* args);

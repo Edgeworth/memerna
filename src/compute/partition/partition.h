@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "compute/boltz_dp.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "model/constants.h"
 #include "model/primary.h"

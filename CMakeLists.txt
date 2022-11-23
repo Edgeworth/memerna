@@ -116,6 +116,7 @@ set(MEMERNA_SOURCE
   src/compute/brute/alg.cpp src/compute/brute/alg.h
   src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
   src/compute/dp.h
+  src/compute/energy/model.cpp src/compute/energy/model.h
   src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
   src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h
   src/compute/energy/branch.cpp src/compute/energy/branch.h
