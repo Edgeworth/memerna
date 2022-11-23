@@ -14,7 +14,7 @@
 namespace mrna::tb::t04 {
 
 TracebackResult Traceback(
-    const Primary& r, const energy::t04::Model& em, const DpArray& dp, const ExtArray& ext);
+    const Primary& r, const energy::t04::ModelPtr& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::tb::t04
 

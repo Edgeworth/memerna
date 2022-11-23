@@ -31,7 +31,7 @@ std::string Conv(const T& s) {
 }
 
 inline std::string ToLower(std::string s) {
-  for (char& c : s) c = std::tolower(c);
+  for (char& c : s) c = static_cast<char>(std::tolower(c));
   return s;
 }
 

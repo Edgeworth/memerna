@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_SUBOPT0_H_
-#define COMPUTE_SUBOPT_SUBOPT0_H_
+#ifndef COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
+#define COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
 
 #include <set>
 #include <vector>
@@ -16,9 +16,9 @@
 
 namespace mrna::subopt::t04 {
 
-class SuboptimalSlowest {
+class SuboptSlowest {
  public:
-  SuboptimalSlowest(Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptSlowest(Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -103,4 +103,4 @@ class SuboptimalSlowest {
 
 }  // namespace mrna::subopt::t04
 
-#endif  // COMPUTE_SUBOPT_SUBOPT0_H_
+#endif  // COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_

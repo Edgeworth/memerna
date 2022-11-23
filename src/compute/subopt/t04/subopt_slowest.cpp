@@ -18,11 +18,11 @@
 
 namespace mrna::subopt::t04 {
 
-SuboptimalSlowest::SuboptimalSlowest(
+SuboptSlowest::SuboptSlowest(
     Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), ext_(std::move(ext)), cfg_(cfg) {}
 
-int SuboptimalSlowest::Run(const SuboptCallback& fn) {
+int SuboptSlowest::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 

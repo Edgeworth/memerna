@@ -15,7 +15,9 @@
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
+#include "compute/energy/parse.h"
 #include "compute/energy/structure.h"
+#include "compute/energy/t04/branch.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/primary.h"
@@ -178,9 +180,9 @@ ModelPtr Model::FromDataDir(const std::string& data_dir) {
 
   // Internal loop data.
   ParseVecFromFile(data_dir + "/internal_initiation.data", em->internal_init);
-  Parse6MapFromFile(data_dir + "/internal_1x1.data", em.get());
-  Parse7MapFromFile(data_dir + "/internal_1x2.data", em.get());
-  Parse8MapFromFile(data_dir + "/internal_2x2.data", em.get());
+  Parse6MapFromFile(data_dir + "/internal_1x1.data", em->internal_1x1);
+  Parse7MapFromFile(data_dir + "/internal_1x2.data", em->internal_1x2);
+  Parse8MapFromFile(data_dir + "/internal_2x2.data", em->internal_2x2);
   Parse4MapFromFile(data_dir + "/internal_2x3_mismatch.data", em->internal_2x3_mismatch);
   Parse4MapFromFile(data_dir + "/internal_other_mismatch.data", em->internal_other_mismatch);
 

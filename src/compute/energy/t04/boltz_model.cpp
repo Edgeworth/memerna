@@ -20,10 +20,10 @@ void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
 
 }  // namespace
 
-BoltzModel::BoltzModel(const ModelPtr& em) : em_(*em) {
+BoltzModel::BoltzModel(const ModelPtr& em) : em_(em->Clone()) {
   // Force this to be false to not include bulge states for the partition
   // function.
-  em_.cfg.bulge_states = false;
+  em_->cfg.bulge_states = false;
 
 #define FILL_BOLTZ(name)                                                                  \
   static_assert(/* NOLINTNEXTLINE */                                                      \

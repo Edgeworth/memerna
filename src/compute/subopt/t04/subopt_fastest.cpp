@@ -15,12 +15,12 @@
 
 namespace mrna::subopt::t04 {
 
-SuboptimalFastest::SuboptimalFastest(
+SuboptFastest::SuboptFastest(
     Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 
-int SuboptimalFastest::Run(const SuboptCallback& fn) {
+int SuboptFastest::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, tb::TracebackResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
@@ -39,7 +39,7 @@ int SuboptimalFastest::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptimalFastest::RunInternal(
+std::pair<int, Energy> SuboptFastest::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -131,8 +131,7 @@ std::pair<int, Energy> SuboptimalFastest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expand> SuboptimalFastest::GenerateExpansions(
-    const Index& to_expand, Energy delta) const {
+std::vector<Expand> SuboptFastest::GenerateExpansions(const Index& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   int st = to_expand.st;
   int en = to_expand.en;

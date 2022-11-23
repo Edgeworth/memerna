@@ -40,10 +40,9 @@ struct Expand {
   bool operator<(const Expand& o) const { return energy < o.energy; }
 };
 
-class SuboptimalFastest {
+class SuboptFastest {
  public:
-  SuboptimalFastest(
-      Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
+  SuboptFastest(Primary r, energy::t04::ModelPtr em, DpArray dp, ExtArray ext, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 

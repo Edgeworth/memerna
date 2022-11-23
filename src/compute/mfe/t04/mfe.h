@@ -9,18 +9,18 @@
 namespace mrna::mfe::t04 {
 
 // Basic MFE folding.
-DpArray ComputeTablesSlowest(const Primary& r, const energy::t04::ModelPtr& em);
+DpArray MfeSlowest(const Primary& r, const energy::t04::ModelPtr& em);
 
 // Basic MFE folding.
-DpArray ComputeTablesSlow(const Primary& r, const energy::t04::ModelPtr& em);
+DpArray MfeSlow(const Primary& r, const energy::t04::ModelPtr& em);
 
 // Sparse folding.
-DpArray ComputeTablesFastest(const Primary& r, const energy::t04::ModelPtr& em);
+DpArray MfeFastest(const Primary& r, const energy::t04::ModelPtr& em);
 
 // Sparse folding with Lyngso's algorithm.
-DpArray ComputeTablesLyngo(const Primary& r, const energy::t04::ModelPtr& em);
+DpArray MfeLyngso(const Primary& r, const energy::t04::ModelPtr& em);
 
-ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const DpArray& dp);
+ExtArray MfeExterior(const Primary& r, const energy::t04::ModelPtr& em, const DpArray& dp);
 
 }  // namespace mrna::mfe::t04
 

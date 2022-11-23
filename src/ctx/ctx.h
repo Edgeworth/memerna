@@ -47,7 +47,7 @@ class Ctx {
       const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
   [[nodiscard]] part::PartResult Partition(const Primary& r) const;
 
-  [[nodiscard]] const energy::EnergyModelPtr& em() const { return *em_; }
+  [[nodiscard]] const energy::EnergyModelPtr& em() const { return em_; }
 
   static Ctx FromArgParse(const ArgParse& args);
 
@@ -55,9 +55,8 @@ class Ctx {
   energy::EnergyModelPtr em_;
   CtxCfg cfg_;
 
-  [[nodiscard]] DpArray ComputeTables(const Primary& r) const;
-  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeExterior(
-      const Primary& r, const DpArray& dp) const;
+  [[nodiscard]] DpArray ComputeMfe(const Primary& r) const;
+  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeMfeExterior(const Primary& r, const DpArray& dp) const;
   [[nodiscard]] tb::TracebackResult ComputeTraceback(
       const Primary& r, const DpArray& dp, const ExtArray& ext) const;
 };

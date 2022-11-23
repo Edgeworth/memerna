@@ -15,11 +15,7 @@ check symmetry for new terminal mismatch table
 
 - run IWYU
 
-6Map: internal_1x1
-7Map: internal_1x2
-8Map: internal_2x2
-dangledata: 3map
-initiation: 1Vec
+energy => erg
 
 ## s22 notes (impl)
 

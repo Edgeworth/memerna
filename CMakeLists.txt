@@ -127,13 +127,13 @@ set(MEMERNA_SOURCE
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
   src/compute/energy/structure.cpp src/compute/energy/structure.h
   src/compute/mfe/mfe.h
-  src/compute/mfe/t04/exterior.cpp
+  src/compute/mfe/t04/mfe_exterior.cpp
   src/compute/mfe/t04/mfe_slowest.cpp
   src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_fastest.cpp
   src/compute/mfe/t04/mfe_lyngso.cpp
   src/compute/partition/partition.cpp src/compute/partition/partition.h
-  src/compute/partition/t04/exterior.cpp
+  src/compute/partition/t04/partition_exterior.cpp
   src/compute/partition/t04/partition_slowest.cpp
   src/compute/partition/t04/partition_fastest.cpp
   src/compute/subopt/subopt_cfg.cpp src/compute/subopt/subopt_cfg.h

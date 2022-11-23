@@ -18,7 +18,8 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
     const Primary& r, const energy::t04::BoltzModelPtr& bem);
 
-BoltzExtArray Exterior(const Primary& r, const energy::t04::Model& em, const BoltzDpArray& dp);
+BoltzExtArray PartitionExterior(
+    const Primary& r, const energy::t04::ModelPtr& em, const BoltzDpArray& dp);
 
 }  // namespace mrna::part::t04
 

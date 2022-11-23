@@ -40,9 +40,9 @@ struct BruteResult {
   BoltzProbs prob;
 };
 
-class BruteForce {
+class Brute {
  public:
-  BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg);
+  Brute(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg);
 
   BruteResult Run();
 
