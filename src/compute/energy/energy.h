@@ -27,6 +27,8 @@ struct EnergyResult {
   std::unique_ptr<Structure> struc;  // May be nullptr if you didn't ask for a Structure.
 };
 
+int MaxNumContiguous(const Primary& r);
+
 }  // namespace mrna::energy
 
 #endif  // COMPUTE_ENERGY_ENERGY_H_

@@ -16,12 +16,6 @@
 
 namespace mrna::energy::t04 {
 
-namespace internal {
-
-int MaxNumContiguous(const Primary& r);
-
-}  // namespace internal
-
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
 // TODO(3): move this?

@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
         auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              std::cout << c.energy << ' ' << c.s.ToDb() << '\n';
+              std::cout << c.energy << ' ' << c.tb.s.ToDb() << '\n';
             },
             r, delta);
         std::cout << strucs << " suboptimal structures\n";

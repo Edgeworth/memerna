@@ -1,4 +1,5 @@
 // Copyright 2016 Eliot Courtney.
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,18 +21,18 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
-  const auto em = mrna::energy::EnergyModel::FromArgParse(args);
+  const auto em = mrna::energy::FromArgParse(args);
   const auto& rs = args.Pos(0);
   const auto& ss = args.Pos(1);
   mrna::energy::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
-    res = em->TotalEnergy(r, s, &ctd, true);
+    res = mrna::energy::TotalEnergy(em, r, s, &ctd, true);
     std::cout << res.energy << '\n';
     std::cout << res.ctd.ToString(s) << '\n';
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
-    res = em->TotalEnergy(r, s, nullptr, true);
+    res = mrna::energy::TotalEnergy(em, r, s, nullptr, true);
     std::cout << res.energy << '\n';
     std::cout << res.ctd.ToString(s) << '\n';
   }

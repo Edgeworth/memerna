@@ -20,25 +20,6 @@ Energy MinEnergy(const Energy* energy, std::size_t size) {
 
 }  // namespace
 
-namespace internal {
-
-int MaxNumContiguous(const Primary& r) {
-  int num_contig = 0;
-  int max_num_contig = 0;
-  Base prev = -1;
-  for (auto b : r) {
-    if (b == prev)
-      num_contig++;
-    else
-      num_contig = 1;
-    prev = b;
-    max_num_contig = std::max(max_num_contig, num_contig);
-  }
-  return max_num_contig;
-}
-
-}  // namespace internal
-
 Precomp::Precomp(Primary r, ModelPtr em) : r_(std::move(r)), em_(std::move(em)) {
   PrecomputeData();
 }
@@ -141,7 +122,7 @@ void Precomp::PrecomputeData() {
   const auto min_bulge_init =
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
 
-  Energy states_bonus = -E(R * T * log(internal::MaxNumContiguous(r_)));
+  Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
   Energy min_bulge = min_bulge_init + std::min(2 * em().augu_penalty, ZERO_E) + min_stack +
       std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);

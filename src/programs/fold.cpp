@@ -1,4 +1,5 @@
 // Copyright 2016 Eliot Courtney.
+#include <iostream>
 #include <string>
 
 #include "compute/mfe/mfe.h"

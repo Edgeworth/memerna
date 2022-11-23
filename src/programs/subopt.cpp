@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/subopt/subopt.h"
 
+#include <iostream>
 #include <string>
 
 #include "compute/subopt/subopt_cfg.h"
@@ -45,5 +46,5 @@ int main(int argc, char* argv[]) {
     }
   }
   int strucs = ctx.Suboptimal(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
-  std::cout << structs << " suboptimal structures\n";
+  std::cout << strucs << " suboptimal structures\n";
 }

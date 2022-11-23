@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   args.ParseOrExit(argc, argv);
 
   // TODO(0): deal with precision stuff.
-  mrna::t04 = mrna::energy::EnergyModel::FromArgParse(args);
+  mrna::t04 = mrna::energy::FromArgParse(args);
   verify(mrna::t04->Checksum() == mrna::T04_P1_MODEL_HASH, "Expected T04 model hash %d, got %d",
       mrna::T04_P1_MODEL_HASH, mrna::t04->Checksum());
 
