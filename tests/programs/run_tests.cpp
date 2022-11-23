@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "common_test.h"
-#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
+#include "compute/energy/model.h"
 #include "gtest/gtest.h"
 #include "util/argparse.h"
 #include "util/error.h"

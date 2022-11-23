@@ -7,6 +7,7 @@
 
 #include "compute/energy/branch.h"
 #include "compute/energy/energy.h"
+#include "compute/energy/t04/model.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"

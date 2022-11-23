@@ -173,7 +173,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
   }
 
   // Compute the exterior tables.
-  auto ext = Exterior(r, bem->em(), dp);
+  auto ext = mfe::t04::Exterior(r, bem->em(), dp);
 
   // Fill the left triangle.
   // The meaning of the tables changes here:

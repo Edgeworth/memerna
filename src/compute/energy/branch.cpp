@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "model/base.h"
 #include "model/energy.h"
 #include "model/primary.h"

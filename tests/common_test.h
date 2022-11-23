@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 
 namespace mrna {
 

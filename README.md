@@ -50,7 +50,7 @@ EnergyModel:
 option: add terminal stacking value, ignore for t04,t12. energymodel gets more and more parameters.
 option: subclasses + downcasting? + interface?; t22 . final on methods optimisation?
 option: use variant of shared_ptrs? <--- Choose this one
-brute force: needs CanPair, TotalEnergy, SubstructureEnergy -> variant visitation?
+brute force: needs CanPair, TotalEnergy, SubEnergy -> variant visitation?
 How to handle different algs between models? 0, 1, 2, etc. -> all share same enum.
 rename to fast, slow, slower, lyngso, etc?
 T04EnergyModel

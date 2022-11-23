@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "compute/dp.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
@@ -56,6 +56,10 @@ class Ctx {
   CtxCfg cfg_;
 
   [[nodiscard]] DpArray ComputeTables(const Primary& r) const;
+  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeExterior(
+      const Primary& r, const DpArray& dp) const;
+  [[nodiscard]] tb::TracebackResult ComputeTraceback(
+      const Primary& r, const DpArray& dp, const ExtArray& ext) const;
 };
 
 }  // namespace mrna::ctx

@@ -26,14 +26,14 @@ CtxCfg CtxCfg::FromArgParse(const ArgParse& args) {
 std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o) {
   std::string s;
   str >> s;
-  if (s == "0") {
-    o = CtxCfg::DpAlg::ZERO;
-  } else if (s == "1") {
-    o = CtxCfg::DpAlg::ONE;
-  } else if (s == "2") {
-    o = CtxCfg::DpAlg::TWO;
-  } else if (s == "3") {
-    o = CtxCfg::DpAlg::THREE;
+  if (s == "slowest") {
+    o = CtxCfg::DpAlg::SLOWEST;
+  } else if (s == "slow") {
+    o = CtxCfg::DpAlg::SLOW;
+  } else if (s == "fastest") {
+    o = CtxCfg::DpAlg::FASTEST;
+  } else if (s == "lyngso") {
+    o = CtxCfg::DpAlg::LYNGSO;
   } else if (s == "brute") {
     o = CtxCfg::DpAlg::BRUTE;
   } else {
@@ -45,10 +45,10 @@ std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o) {
 std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
   std::string s;
   str >> s;
-  if (s == "0") {
-    o = CtxCfg::SuboptAlg::ZERO;
-  } else if (s == "1") {
-    o = CtxCfg::SuboptAlg::ONE;
+  if (s == "slowest") {
+    o = CtxCfg::SuboptAlg::SLOWEST;
+  } else if (s == "fastest") {
+    o = CtxCfg::SuboptAlg::FASTEST;
   } else if (s == "brute") {
     o = CtxCfg::SuboptAlg::BRUTE;
   } else {
@@ -60,10 +60,10 @@ std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
 std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o) {
   std::string s;
   str >> s;
-  if (s == "0") {
-    o = CtxCfg::PartAlg::ZERO;
-  } else if (s == "1") {
-    o = CtxCfg::PartAlg::ONE;
+  if (s == "slowest") {
+    o = CtxCfg::PartAlg::SLOWEST;
+  } else if (s == "fastest") {
+    o = CtxCfg::PartAlg::FASTEST;
   } else if (s == "brute") {
     o = CtxCfg::PartAlg::BRUTE;
   } else {

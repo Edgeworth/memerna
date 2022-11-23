@@ -3,7 +3,7 @@
 #define COMPUTE_MFE_MFE_H_
 
 #include "compute/dp.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "model/constants.h"
 #include "model/primary.h"
 

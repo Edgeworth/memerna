@@ -14,12 +14,12 @@
 
 namespace mrna::mfe::t04 {
 
-DpArray ComputeTablesFastest(const Primary& r, const energy::EnergyModelPtr& em) {
+DpArray ComputeTablesFastest(const Primary& r, const energy::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const energy::Precomp pc(Primary(r), em);
+  const energy::t04::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1, MAX_E);
 
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];

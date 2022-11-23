@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "compute/energy/branch.h"
-#include "compute/energy/energy.h"
+#include "compute/energy/model.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
@@ -18,8 +18,8 @@
 namespace mrna::brute {
 
 BruteForce::BruteForce(const Primary& r, energy::EnergyModelPtr em, BruteCfg cfg)
-    : r_(r), em_(std::move(em)), bem_(energy::BoltzEnergyModel::Create(em_)), cfg_(cfg),
-      s_(r_.size()), ctd_(r_.size()) {}
+    : r_(r), em_(std::move(em)), bem_(energy::Boltz(em_)), cfg_(cfg), s_(r_.size()),
+      ctd_(r_.size()) {}
 
 BruteResult BruteForce::Run() {
   // Preconditions:
@@ -34,7 +34,7 @@ BruteResult BruteForce::Run() {
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
-      if (em_->CanPair(r_, st, en)) pairs_.emplace_back(st, en);
+      if (energy::CanPair(em_, r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
   Dfs(0);
@@ -80,7 +80,7 @@ void BruteForce::AddAllCombinations(int idx) {
   // Base case
   if (idx == N) {
     if (cfg_.part) {
-      auto energy = bem_->em().TotalEnergy(r_, s_, &ctd_).energy;
+      auto energy = energy::TotalEnergy(bem_->em(), r_, s_, &ctd_).energy;
       res_.part.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -89,7 +89,7 @@ void BruteForce::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = bem_->em().SubstructureEnergy(r_, s_, &ctd_, i, s_[i]).energy;
+            Energy inside_energy = energy::SubEnergy(bem_->em(), r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -103,7 +103,7 @@ void BruteForce::AddAllCombinations(int idx) {
       }
     }
     if (cfg_.subopt) {
-      auto energy = em_->TotalEnergy(r_, s_, &ctd_).energy;
+      auto energy = energy::TotalEnergy(em, r_, s_, &ctd_).energy;
       PruneInsertSubopt(energy);
     }
     return;

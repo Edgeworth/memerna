@@ -20,7 +20,7 @@ namespace mrna::mfe::t04 {
     }                                                                   \
   } while (0)
 
-DpArray ComputeTablesSlowest(const Primary& r, const energy::EnergyModelPtr& em) {
+DpArray ComputeTablesSlowest(const Primary& r, const energy::t04::ModelPtr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
