@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef COMPUTE_PARTITION_T04_PARTITION_H_
 #define COMPUTE_PARTITION_T04_PARTITION_H_
 

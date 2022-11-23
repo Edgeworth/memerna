@@ -1,4 +1,7 @@
+// Copyright 2022 Eliot Courtney.
 #include "compute/energy/parse.h"
+
+#include <string>
 
 namespace mrna::erg {
 

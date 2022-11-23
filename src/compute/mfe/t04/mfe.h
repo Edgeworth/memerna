@@ -1,5 +1,6 @@
-#ifndef COMPUTE_MFE_T04_ALG_H_
-#define COMPUTE_MFE_T04_ALG_H_
+// Copyright 2022 Eliot Courtney.
+#ifndef COMPUTE_MFE_T04_MFE_H_
+#define COMPUTE_MFE_T04_MFE_H_
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"
@@ -24,4 +25,4 @@ ExtArray MfeExterior(const Primary& r, const erg::t04::ModelPtr& em, const DpArr
 
 }  // namespace mrna::mfe::t04
 
-#endif  // COMPUTE_MFE_T04_ALG_H_
+#endif  // COMPUTE_MFE_T04_MFE_H_

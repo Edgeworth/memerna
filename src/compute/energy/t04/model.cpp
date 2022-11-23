@@ -202,7 +202,7 @@ ModelPtr Model::FromArgParse(const ArgParse& args) {
   if (args.Has(OPT_SEED)) {
     em = Random(args.Get<uint_fast32_t>(OPT_SEED));
   } else {
-    em = FromDataDir(args.Get(OPT_MEMERNA_DATA));
+    em = FromDataDir(ModelPathFromArgParse(args));
   }
   em->cfg = EnergyCfg::FromArgParse(args);
   return em;

@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMMON_TEST_H_
-#define COMMON_TEST_H_
+#ifndef TESTS_COMMON_TEST_H_
+#define TESTS_COMMON_TEST_H_
 
 #include <cstdint>
 
@@ -25,4 +25,4 @@ inline erg::t04::ModelPtr t04_p2;
 
 }  // namespace mrna
 
-#endif  // COMMON_TEST_H_
+#endif  // TESTS_COMMON_TEST_H_

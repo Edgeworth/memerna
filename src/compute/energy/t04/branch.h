@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef COMPUTE_ENERGY_T04_BRANCH_H_
 #define COMPUTE_ENERGY_T04_BRANCH_H_
 

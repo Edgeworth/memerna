@@ -33,6 +33,8 @@ inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
 
 void RegisterOpts(ArgParse* args);
 
+std::string ModelPathFromArgParse(const ArgParse& args);
+
 struct EnergyCfg {
   enum class Ctd {
     NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.

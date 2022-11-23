@@ -1,7 +1,9 @@
+// Copyright 2022 Eliot Courtney.
 #ifndef COMPUTE_ENERGY_PARSE_H_
 #define COMPUTE_ENERGY_PARSE_H_
 
 #include <fstream>
+#include <string>
 #include <unordered_map>
 
 #include "model/energy.h"

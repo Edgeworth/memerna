@@ -1,4 +1,8 @@
+// Copyright 2022 Eliot Courtney.
 #include "compute/energy/t04/branch.h"
+
+#include <algorithm>
+#include <tuple>
 
 #include "compute/energy/t04/model.h"
 

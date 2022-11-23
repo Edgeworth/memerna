@@ -14,8 +14,7 @@ namespace mrna::part {
 class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
  public:
   static PartResult Partition(const std::string& s, const erg::EnergyModelPtr& em) {
-    return ctx::Ctx(std::move(em), ctx::CtxCfg{.part_alg = GetParam()})
-        .Partition(Primary::FromSeq(s));
+    return ctx::Ctx(em, ctx::CtxCfg{.part_alg = GetParam()}).Partition(Primary::FromSeq(s));
   }
 };
 

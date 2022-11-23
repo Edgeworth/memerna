@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_SUBOPT1_H_
-#define COMPUTE_SUBOPT_SUBOPT1_H_
+#ifndef COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_
+#define COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_
 
 #include <algorithm>
 #include <cassert>
@@ -85,4 +85,4 @@ class SuboptFastest {
 
 }  // namespace mrna::subopt::t04
 
-#endif  // COMPUTE_SUBOPT_SUBOPT1_H_
+#endif  // COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_

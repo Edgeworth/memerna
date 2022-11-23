@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_BOLTZMANN_MODEL_H_
-#define COMPUTE_ENERGY_BOLTZMANN_MODEL_H_
+#ifndef COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
+#define COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
 
 #include <cassert>
 #include <memory>
@@ -100,4 +100,4 @@ class BoltzModel {
 
 }  // namespace mrna::erg::t04
 
-#endif  // COMPUTE_ENERGY_BOLTZMANN_MODEL_H_
+#endif  // COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
