@@ -43,9 +43,7 @@ class BoltzModel {
 
   BoltzModel() = delete;
 
-  static BoltzModelPtr Create(const EnergyModelPtr& em) {
-    return BoltzModelPtr(new BoltzModel(em));
-  }
+  static BoltzModelPtr Create(const ModelPtr& em) { return BoltzModelPtr(new BoltzModel(em)); }
 
   const Model& em() const { return em_; }
 
@@ -97,7 +95,7 @@ class BoltzModel {
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzModel(const EnergyModelPtr& em);
+  explicit BoltzModel(const ModelPtr& em);
 };
 
 }  // namespace mrna::energy::t04

@@ -9,7 +9,7 @@
 
 namespace mrna {
 
-std::string sgetline(FILE* fp);
+std::string sgetline(std::istream& is);
 
 std::string sfmt(const char* fmt, ...);
 

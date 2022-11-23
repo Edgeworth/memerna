@@ -125,7 +125,8 @@ set(MEMERNA_SOURCE
   src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
   src/compute/energy/structure.cpp src/compute/energy/structure.h
-  src/compute/mfe/mfe.cpp src/compute/mfe/mfe.h
+  src/compute/mfe/mfe.h
+  src/compute/mfe/t04/exterior.cpp
   src/compute/mfe/t04/mfe_slowest.cpp
   src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_fastest.cpp

@@ -1,17 +1,16 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/mfe/mfe.h"
-
 #include <algorithm>
 
 #include "compute/dp.h"
 #include "compute/energy/energy.h"
+#include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/primary.h"
 #include "util/array.h"
 
-namespace mrna::mfe {
+namespace mrna::mfe::t04 {
 
-ExtArray ComputeExterior(const Primary& r, const energy::EnergyModel& em, const DpArray& dp) {
+ExtArray ComputeExterior(const Primary& r, const energy::t04::Model& em, const DpArray& dp) {
   const int N = static_cast<int>(r.size());
   auto ext = ExtArray(r.size() + 1, MAX_E);
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "compute/energy/energy.h"
+#include "compute/energy/t04/model.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/primary.h"
@@ -67,14 +68,14 @@ class Precomp {
 
   Precomp(Primary r, EnergyModelPtr em);
 
-  [[nodiscard]] const EnergyModel& em() const { return *em_; }
+  [[nodiscard]] const Model& em() const { return *em_; }
 
   [[nodiscard]] Energy TwoLoop(int ost, int oen, int ist, int ien) const;
   [[nodiscard]] Energy Hairpin(int st, int en) const;
 
  private:
   Primary r_;
-  EnergyModelPtr em_;
+  ModelPtr em_;
 
   void PrecomputeData();
 };

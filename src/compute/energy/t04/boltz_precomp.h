@@ -17,17 +17,17 @@ struct BoltzPrecomp {
   BoltzEnergy augubranch[4][4]{};
   std::vector<HairpinPrecomp<BoltzEnergy>> hairpin;
 
-  BoltzPrecomp(Primary r, BoltzEnergyModelPtr bem);
+  BoltzPrecomp(Primary r, BoltzModelPtr bem);
 
-  [[nodiscard]] const EnergyModel& em() const { return bem_->em(); }
-  [[nodiscard]] const BoltzEnergyModel& bem() const { return *bem_; }
+  [[nodiscard]] const Model& em() const { return bem_->em(); }
+  [[nodiscard]] const BoltzModel& bem() const { return *bem_; }
 
   [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
   [[nodiscard]] BoltzEnergy TwoLoop(int ost, int oen, int ist, int ien) const;
 
  private:
   Primary r_;
-  BoltzEnergyModelPtr bem_;
+  BoltzModelPtr bem_;
 
   void PrecomputeData();
 };
