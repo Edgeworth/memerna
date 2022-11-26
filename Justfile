@@ -19,6 +19,10 @@ test:
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
     --compiler=clang --compiler=default
 
+  # Run benchmarks.
+  poetry run python -m rnapy.run build --bench --bench-output \
+    ./data/benchmark.json --kind=release --energy-precision=1
+
 fix:
   SETUPTOOLS_USE_DISTUTILS=stdlib pre-commit run --all-files
 

@@ -4,16 +4,12 @@
 
 check float bits, partition fn
 update tests based on precision , ifdefs
-pass data dir, separate energy model selection.
 
 check symmetry for new terminal mismatch table
 
 - Ensure precision for t*\_p*; look for instances of t04 in code and replace.
-- Support energy model selection
 
 - update data tables with higher precision energy, compare to RNAstructure
-
-- add google benchmark lib
 
 ## s22 notes (impl)
 
