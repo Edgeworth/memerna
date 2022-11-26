@@ -39,6 +39,7 @@ void RegisterOpts(ArgParse* args);
 
 std::string ModelPathFromArgParse(const ArgParse& args);
 std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model);
+std::string ModelPath(const std::string& data_dir, const std::string& model);
 
 struct EnergyCfg {
   enum class Ctd {

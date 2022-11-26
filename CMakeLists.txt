@@ -41,6 +41,7 @@ find_package(Sanitizers)
 find_package(Threads)
 find_package(MPFR)
 find_package(Boost)
+find_package(benchmark)
 
 # Fail loudly.
 # Note we don't support msan because it requires an instrumented libc++.
@@ -72,29 +73,8 @@ endif()
 
 # Enable tests.
 set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
-
-# Download and unpack googletest at configure time
-configure_file(cmake/DownloadGTest.cmake googletest-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-
-if(result)
-  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-
-if(result)
-  message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
-
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
-include(GoogleTest)
 enable_testing()
+find_package(GTest REQUIRED)
 
 # Apply compile definitions here so they only apply to memerna code.
 add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
@@ -160,7 +140,7 @@ set(MEMERNA_SOURCE
   src/util/string.cpp src/util/string.h
 )
 set(TEST_SOURCE
-  tests/common_test.h
+  tests/common_test.cpp tests/common_test.h
   tests/compute/brute/brute_test.cpp
   tests/compute/energy/energy_test.cpp
   tests/compute/energy/t04_test.cpp
@@ -172,6 +152,10 @@ set(TEST_SOURCE
   tests/model/model_test.cpp
   tests/model/parsing_test.cpp
   tests/util/splaymap_test.cpp
+)
+set(BENCHMARK_SOURCE
+  tests/common_test.cpp tests/common_test.h
+  tests/programs/run_benchmark.cpp
 )
 
 # Use RNAstructure if necessary
@@ -190,11 +174,13 @@ add_executable(fuzz src/programs/fuzz/fuzz.cpp)
 add_executable(fuzz_afl src/programs/fuzz/fuzz_afl.cpp)
 add_executable(harness src/programs/harness.cpp)
 add_executable(partition src/programs/partition.cpp)
+add_executable(run_benchmark ${BENCHMARK_SOURCE} tests/programs/run_benchmark.cpp)
 add_executable(run_tests ${TEST_SOURCE} tests/programs/run_tests.cpp)
 add_executable(splay_explorer tests/programs/splay_explorer.cpp)
 add_executable(subopt src/programs/subopt.cpp)
 
 target_include_directories(memerna PUBLIC src)
+target_include_directories(run_benchmark PRIVATE tests)
 target_include_directories(run_tests PRIVATE tests)
 
 target_link_libraries(brute PRIVATE memerna)
@@ -204,7 +190,8 @@ target_link_libraries(fuzz PRIVATE memerna)
 target_link_libraries(fuzz_afl PRIVATE memerna)
 target_link_libraries(harness PRIVATE memerna)
 target_link_libraries(partition PRIVATE memerna)
-target_link_libraries(run_tests PRIVATE memerna Threads::Threads gtest)
+target_link_libraries(run_benchmark PRIVATE memerna Threads::Threads benchmark::benchmark)
+target_link_libraries(run_tests PRIVATE memerna Threads::Threads GTest::gtest)
 target_link_libraries(splay_explorer PRIVATE memerna)
 target_link_libraries(subopt PRIVATE memerna)
 
@@ -248,6 +235,7 @@ add_sanitizers(fuzz)
 add_sanitizers(fuzz_afl)
 add_sanitizers(harness)
 add_sanitizers(partition)
+add_sanitizers(run_benchmark)
 add_sanitizers(run_tests)
 add_sanitizers(splay_explorer)
 add_sanitizers(subopt)
@@ -262,6 +250,7 @@ if(USE_IWYU)
   set_target_properties(fuzz_afl PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(harness PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
+  set_target_properties(run_benchmark PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")

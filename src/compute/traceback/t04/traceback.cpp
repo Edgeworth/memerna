@@ -4,16 +4,15 @@
 #include <algorithm>
 #include <memory>
 #include <stack>
-#include <compare>
 
 #include "compute/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
-#include "model/primary.h"
-#include "util/array.h"
 #include "model/ctd.h"
 #include "model/energy.h"
+#include "model/primary.h"
 #include "model/secondary.h"
+#include "util/array.h"
 
 namespace mrna::tb::t04 {
 

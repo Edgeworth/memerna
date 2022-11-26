@@ -6,16 +6,16 @@
 #include <utility>
 
 #include "compute/boltz_dp.h"
+#include "compute/energy/energy_cfg.h"
+#include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
 #include "compute/partition/partition.h"
 #include "compute/partition/t04/partition.h"
 #include "model/base.h"
 #include "model/constants.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "util/array.h"
-#include "compute/energy/energy_cfg.h"
-#include "compute/energy/t04/model.h"
-#include "model/energy.h"
 
 namespace mrna::part::t04 {
 

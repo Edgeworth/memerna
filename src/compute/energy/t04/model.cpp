@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <compare>
 #include <cstdlib>
 #include <fstream>
 #include <memory>
@@ -165,7 +164,7 @@ ModelPtr Model::Random(uint_fast32_t seed) {
   return em;
 }
 
-ModelPtr Model::FromDataDir(const std::string& data_dir) {
+ModelPtr Model::FromDir(const std::string& data_dir) {
   auto em = Create();
   // Stacking interaction data.
   Parse4MapFromFile(data_dir + "/stacking.data", em->stack);
@@ -205,7 +204,7 @@ ModelPtr Model::FromArgParse(const ArgParse& args) {
   if (args.Has(OPT_SEED)) {
     em = Random(args.Get<uint_fast32_t>(OPT_SEED));
   } else {
-    em = FromDataDir(ModelPathFromArgParse(args));
+    em = FromDir(ModelPathFromArgParse(args));
   }
   em->cfg = EnergyCfg::FromArgParse(args);
   return em;

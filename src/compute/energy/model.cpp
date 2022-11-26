@@ -1,8 +1,8 @@
 // Copyright 2022 E.
 #include "compute/energy/model.h"
 
-#include <string>
 #include <ostream>
+#include <string>
 
 #include "util/string.h"
 

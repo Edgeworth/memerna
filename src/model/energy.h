@@ -2,7 +2,6 @@
 #ifndef MODEL_ENERGY_H_
 #define MODEL_ENERGY_H_
 
-#include <compare>
 #include <cstdint>
 #include <iosfwd>
 #include <string>

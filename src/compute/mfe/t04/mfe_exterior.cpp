@@ -5,10 +5,10 @@
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"
 #include "model/base.h"
-#include "model/primary.h"
-#include "util/array.h"
 #include "model/constants.h"
 #include "model/energy.h"
+#include "model/primary.h"
+#include "util/array.h"
 
 namespace mrna::mfe::t04 {
 

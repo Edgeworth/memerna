@@ -7,9 +7,9 @@
 #include "compute/energy/branch.h"
 #include "compute/energy/t04/model.h"
 #include "model/ctd.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "model/energy.h"
 
 namespace mrna::erg::t04 {
 

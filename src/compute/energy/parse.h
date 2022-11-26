@@ -2,10 +2,10 @@
 #ifndef COMPUTE_ENERGY_PARSE_H_
 #define COMPUTE_ENERGY_PARSE_H_
 
+#include <cstddef>
 #include <fstream>
 #include <string>
 #include <unordered_map>
-#include <cstddef>
 
 #include "model/energy.h"
 #include "util/error.h"

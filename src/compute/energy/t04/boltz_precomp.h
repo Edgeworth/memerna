@@ -6,10 +6,10 @@
 #include <vector>
 
 #include "compute/energy/t04/boltz_model.h"
-#include "compute/energy/t04/precomp.h"
-#include "model/primary.h"
 #include "compute/energy/t04/model.h"
+#include "compute/energy/t04/precomp.h"
 #include "model/energy.h"
+#include "model/primary.h"
 
 namespace mrna::erg::t04 {
 

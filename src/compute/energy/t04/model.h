@@ -16,10 +16,10 @@
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
-#include "model/energy.h"
 
 namespace mrna::erg::t04 {
 
@@ -71,7 +71,7 @@ class Model {
   EnergyCfg cfg = {};
 
   static ModelPtr Create() { return ModelPtr(new Model); }
-  static ModelPtr FromDataDir(const std::string& data_dir);
+  static ModelPtr FromDir(const std::string& data_dir);
   static ModelPtr Random(uint_fast32_t seed);
   static ModelPtr FromArgParse(const ArgParse& args);
   inline ModelPtr Clone() const { return std::make_shared<Model>(*this); }

@@ -2,11 +2,11 @@
 #ifndef UTIL_STRING_H_
 #define UTIL_STRING_H_
 
+#include <cctype>
 #include <cstdarg>
 #include <cstdint>
 #include <sstream>
 #include <string>
-#include <cctype>
 
 namespace mrna {
 

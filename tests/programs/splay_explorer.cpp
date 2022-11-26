@@ -1,10 +1,10 @@
 // Copyright 2016 E.
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <set>
 #include <string>
 #include <vector>
-#include <cstdlib>
 
 #include "options.h"
 #include "util/argparse.h"
