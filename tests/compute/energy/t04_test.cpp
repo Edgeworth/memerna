@@ -245,34 +245,34 @@ TEST(T04P1ModelTest, Precomp) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST(T04P1ModelTest, T04Tests) {
-  auto em = t04p1;
+TEST(T04P2ModelTest, T04Tests) {
+  auto em = t04p2;
 
-  EXPECT_EQ(E(8.8), em->HairpinInitiation(87));
-  EXPECT_EQ(E(6.8), em->BulgeInitiation(57));
-  EXPECT_EQ(E(4.6), em->InternalLoopInitiation(67));
+  EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
+  EXPECT_EQ(E(6.79), em->BulgeInitiation(57));
+  EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
 
-  EXPECT_EQ(E(4.5), GetEnergy(em, "GCAAAGCC", "((...).)"));
-  EXPECT_EQ(E(5.7), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
-  EXPECT_EQ(E(5.5), GetEnergy(em, "UACAGA", "(....)"));
-  EXPECT_EQ(E(-0.6), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
-  EXPECT_EQ(E(8.0), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
-  EXPECT_EQ(E(9.5), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
-  EXPECT_EQ(E(7.7), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
-  EXPECT_EQ(E(7.4), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
-  EXPECT_EQ(E(17.3), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(E(18.2), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(E(17.6), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(E(13.1), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(E(-27.6),
+  EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
+  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(-0.64), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
+  EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
+  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(17.20), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(12.90), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-27.66),
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(E(17.9), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(17.60), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
-  EXPECT_EQ(E(3.7), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
-  EXPECT_EQ(E(-4.5), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
-  EXPECT_EQ(E(7.2), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+  EXPECT_EQ(E(3.63), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
+  EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
+  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
@@ -289,13 +289,13 @@ TEST(T04P2ModelTest, Precomp) {
   auto em = t04p2;
 
   const t04::Precomp pc(Primary::FromSeq("GGGGAAACCCC"), em);
-  EXPECT_EQ(E(-2.1 - 0.4 - 1.6), pc.min_mismatch_coax);
-  EXPECT_EQ(E(-3.4), pc.min_flush_coax);
-  EXPECT_EQ(E(-2.6), pc.min_twoloop_not_stack);
+  EXPECT_EQ(E(-2.10 - 0.40 - 1.60), pc.min_mismatch_coax);
+  EXPECT_EQ(E(-3.42), pc.min_flush_coax);
+  EXPECT_EQ(E(-2.60), pc.min_twoloop_not_stack);
 
-  Energy augubranch[4][4] = {{E(-0.6), E(-0.6), E(-0.6), E(0.5 - 0.6)},
-      {E(-0.6), E(-0.6), E(-0.6), E(-0.6)}, {E(-0.6), E(-0.6), E(-0.6), E(0.5 - 0.6)},
-      {E(0.5 - 0.6), E(-0.6), E(0.5 - 0.6), E(-0.6)}};
+  Energy augubranch[4][4] = {{E(-0.60), E(-0.60), E(-0.60), E(0.45 - 0.60)},
+      {E(-0.60), E(-0.60), E(-0.60), E(-0.60)}, {E(-0.60), E(-0.60), E(-0.60), E(0.45 - 0.60)},
+      {E(0.45 - 0.60), E(-0.60), E(0.45 - 0.60), E(-0.60)}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
