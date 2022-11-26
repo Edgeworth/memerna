@@ -54,20 +54,20 @@ same for subopt, partition etc
 
 Turner 1999 model (not implemented)
 
-Turner 2004 model (t04_p1, t04_p2):
+Turner 2004 model (t04p1, t04p2):
 
 - Adds coaxial stacking
 - Updates parameters for terminal mismatches, hairpin, bulge, internal, and multiloops.
 - Special stacks of length > 2 base pairs are not handled.
 - Internal loops are limited to size 30 in most implementations in memerna.
 
-Update in 2012 model (t12_p2):
+Update in 2012 model (t12p2):
 
 - GU penalty removed from AU/GU penalty
 - Stacking energy changed (for GU stacks, not WC)
 - See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
 
-Update in 2022 model (t22_p2):
+Update in 2022 model (t22p2):
 
 - AU penalty removed as well
 - stacking params updated
