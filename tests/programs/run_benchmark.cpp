@@ -1,3 +1,4 @@
+// Copyright 2022 E.
 #include <benchmark/benchmark.h>
 
 #include <ios>

@@ -124,7 +124,7 @@ repos:
           [
             --linelength=100,
             --verbose=0,
-            "--filter=-readability/todo,-readability/fn_size,-build/c++11,-build/include_subdir,-readability/casting",
+            "--filter=-readability/todo,-readability/fn_size,-build/c++11,-build/include_subdir,-readability/casting,-runtime/references",
             --root=src,
           ]
   - repo: local # using local clang-tidy because of bugs in pocc. uses .clang-tidy at top of repo
