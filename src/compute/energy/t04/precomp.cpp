@@ -119,14 +119,17 @@ void Precomp::PrecomputeData() {
               &em().internal_other_mismatch[0][0][0][0], sizeof(em().internal_other_mismatch)));
   const auto min_internal_init = MinEnergy(
       &em().internal_init[4], sizeof(em().internal_init) - 4 * sizeof(em().internal_init[0]));
-  min_internal = std::min(min_internal,
-      min_internal_init + std::min(2 * em().internal_augu_penalty, ZERO_E) + min_mismatch);
+
+  const auto min_internal_penalty = std::min(em().internal_au_penalty, em().internal_gu_penalty);
+  min_internal = std::min(
+      min_internal, min_internal_init + std::min(2 * min_internal_penalty, ZERO_E) + min_mismatch);
 
   const auto min_bulge_init =
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
 
+  const auto min_penalty = std::min(em().au_penalty, em().gu_penalty);
   Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
-  Energy min_bulge = min_bulge_init + std::min(2 * em().augu_penalty, ZERO_E) + min_stack +
+  Energy min_bulge = min_bulge_init + std::min(2 * min_penalty, ZERO_E) + min_stack +
       std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);
 

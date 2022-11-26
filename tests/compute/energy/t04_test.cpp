@@ -68,12 +68,11 @@ TEST_P(T04LikeModelTest, MultiloopEnergy) {
 TEST_P(T04LikeModelTest, NNDBHairpinLoopExamples) {
   auto em = test_t04_ems[GetParam()];
 
-  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          em->augu_penalty + em->terminal[A][A][A][U] + em->HairpinInitiation(6),
+  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
+          em->terminal[A][A][A][U] + em->HairpinInitiation(6),
       GetEnergy(kNNDBHairpin1));
-  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          em->augu_penalty + em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch +
-          em->HairpinInitiation(5),
+  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
+          em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch + em->HairpinInitiation(5),
       GetEnergy(kNNDBHairpin2));
 
   if (em->hairpin.contains("CCGAGG")) {
@@ -82,24 +81,24 @@ TEST_P(T04LikeModelTest, NNDBHairpinLoopExamples) {
         GetEnergy(kNNDBHairpin3));
   }
 
-  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          em->augu_penalty + em->terminal[A][C][C][U] + em->HairpinInitiation(6) +
-          em->hairpin_all_c_a * 6 + em->hairpin_all_c_b,
+  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
+          em->terminal[A][C][C][U] + em->HairpinInitiation(6) + em->hairpin_all_c_a * 6 +
+          em->hairpin_all_c_b,
       GetEnergy(kNNDBHairpin4));
-  EXPECT_EQ(em->stack[C][G][C][G] + em->stack[G][G][C][C] + em->stack[G][G][U][C] +
-          em->augu_penalty + em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch +
-          em->HairpinInitiation(5) + em->hairpin_special_gu_closure,
+  EXPECT_EQ(em->stack[C][G][C][G] + em->stack[G][G][C][C] + em->stack[G][G][U][C] + em->gu_penalty +
+          em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch + em->HairpinInitiation(5) +
+          em->hairpin_special_gu_closure,
       GetEnergy(kNNDBHairpin5));
 
   {
     const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin1)), em);
     EXPECT_EQ(
-        em->augu_penalty + em->terminal[A][A][A][U] + em->HairpinInitiation(6), pc.Hairpin(3, 10));
+        em->au_penalty + em->terminal[A][A][A][U] + em->HairpinInitiation(6), pc.Hairpin(3, 10));
   }
 
   {
     const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin2)), em);
-    EXPECT_EQ(em->augu_penalty + em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch +
+    EXPECT_EQ(em->au_penalty + em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch +
             em->HairpinInitiation(5),
         pc.Hairpin(3, 9));
   }
@@ -111,14 +110,14 @@ TEST_P(T04LikeModelTest, NNDBHairpinLoopExamples) {
 
   {
     const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin4)), em);
-    EXPECT_EQ(em->augu_penalty + em->terminal[A][C][C][U] + em->HairpinInitiation(6) +
+    EXPECT_EQ(em->au_penalty + em->terminal[A][C][C][U] + em->HairpinInitiation(6) +
             em->hairpin_all_c_a * 6 + em->hairpin_all_c_b,
         pc.Hairpin(3, 10));
   }
 
   {
     const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin5)), em);
-    EXPECT_EQ(em->augu_penalty + em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch +
+    EXPECT_EQ(em->gu_penalty + em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch +
             em->HairpinInitiation(5) + em->hairpin_special_gu_closure,
         pc.Hairpin(3, 9));
   }
@@ -133,7 +132,7 @@ TEST_P(T04LikeModelTest, NNDBBulgeLoopExamples) {
       GetEnergy(kNNDBBulge1));
 
   EXPECT_EQ(
-      em->stack[G][A][U][C] + em->augu_penalty + em->BulgeInitiation(3) + em->HairpinInitiation(3),
+      em->stack[G][A][U][C] + em->au_penalty + em->BulgeInitiation(3) + em->HairpinInitiation(3),
       GetEnergy(kNNDBBulge2));
 }
 
@@ -142,14 +141,14 @@ TEST_P(T04LikeModelTest, NNDBInternalLoopExamples) {
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(5) +
           std::min(em->internal_asym, NINIO_MAX_ASYM) + em->internal_2x3_mismatch[A][G][G][U] +
-          em->internal_2x3_mismatch[G][G][A][C] + em->internal_augu_penalty +
+          em->internal_2x3_mismatch[G][G][A][C] + em->internal_au_penalty +
           em->HairpinInitiation(3),
       GetEnergy(kNNDBInternal2x3));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] +
           em->internal_2x2[A][G][A][C][G][G][A][U] + em->HairpinInitiation(3),
       GetEnergy(kNNDBInternal2x2));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(6) +
-          std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->internal_augu_penalty +
+          std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->internal_au_penalty +
           em->HairpinInitiation(3),
       GetEnergy(kNNDBInternal1x5));
 }
@@ -157,21 +156,21 @@ TEST_P(T04LikeModelTest, NNDBInternalLoopExamples) {
 TEST_P(T04LikeModelTest, BaseCases) {
   auto em = test_t04_ems[GetParam()];
 
-  EXPECT_EQ(em->augu_penalty + em->stack[G][A][U][C] + em->hairpin_init[3],
+  EXPECT_EQ(em->au_penalty + em->stack[G][A][U][C] + em->hairpin_init[3],
       GetEnergy("GAAAAUC", "((...))"));
-  EXPECT_EQ(em->augu_penalty * 2 + em->stack[G][A][U][U] + em->hairpin_init[3],
+  EXPECT_EQ(em->au_penalty + em->gu_penalty + em->stack[G][A][U][U] + em->hairpin_init[3],
       GetEnergy("GAAAAUU", "((...))"));
-  EXPECT_EQ(em->augu_penalty * 2 + em->HairpinInitiation(3) +
+  EXPECT_EQ(em->au_penalty * 2 + em->HairpinInitiation(3) +
           std::min(ZERO_E,
               std::min(
                   em->terminal[U][A][A][A], std::min(em->dangle3[U][A][A], em->dangle5[U][A][A]))),
       GetEnergy("AAAAAUA", ".(...)."));
-  EXPECT_EQ(em->augu_penalty * 2 + em->HairpinInitiation(3), GetEnergy("AAAAU", "(...)"));
+  EXPECT_EQ(em->au_penalty * 2 + em->HairpinInitiation(3), GetEnergy("AAAAU", "(...)"));
   EXPECT_EQ(em->stack[G][C][G][C] + em->stack[C][U][A][G] + em->BulgeInitiation(1) +
           em->stack[U][G][C][A] + em->HairpinInitiation(3),
       GetEnergy(kBulge1));
   EXPECT_EQ(em->InternalLoopInitiation(5) + std::min(em->internal_asym, NINIO_MAX_ASYM) +
-          em->internal_augu_penalty + em->augu_penalty + em->internal_2x3_mismatch[A][G][A][U] +
+          em->internal_au_penalty + em->au_penalty + em->internal_2x3_mismatch[A][G][A][U] +
           em->internal_2x3_mismatch[C][A][A][G] + em->HairpinInitiation(3),
       GetEnergy(kInternal1));
 }
@@ -219,12 +218,12 @@ TEST(T04P1ModelTest, T04Tests) {
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          2 * em->augu_penalty + 2 * em->HairpinInitiation(3),
+          2 * em->au_penalty + 2 * em->HairpinInitiation(3),
       GetEnergy(em, "GUGAAACACAAAAUGA", ".((...))((...))."));
 
   // NNDB T99 Multiloop example
   EXPECT_EQ(em->stack[G][A][U][C] + em->terminal[C][G][A][G] + em->coax_mismatch_non_contiguous +
-          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->augu_penalty,
+          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->au_penalty,
       GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
 }
 
@@ -276,12 +275,12 @@ TEST(T04P2ModelTest, T04Tests) {
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          2 * em->augu_penalty + 2 * em->HairpinInitiation(3),
+          2 * em->au_penalty + 2 * em->HairpinInitiation(3),
       GetEnergy(em, "GUGAAACACAAAAUGA", ".((...))((...))."));
 
   // NNDB T99 Multiloop example
   EXPECT_EQ(em->stack[G][A][U][C] + em->terminal[C][G][A][G] + em->coax_mismatch_non_contiguous +
-          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->augu_penalty,
+          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->au_penalty,
       GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
 }
 

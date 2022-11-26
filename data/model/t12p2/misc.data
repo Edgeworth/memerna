@@ -30,8 +30,10 @@
 // 4. Internal loop data
 // Asymmetry coefficient
 0.6
-// AU/GU penalty
-0.7
+// AU penalty
+0.65
+// GU penalty
+0.0
 
 // 5. Multiloop hack model data
 // This is for the hacky T04 model described in the T04 paper. Doesn't include asymmetry.
@@ -41,5 +43,7 @@
 // b constant
 -0.6
 
-// 7. AU/GU penalty
-0.5
+// 7. AU penalty
+0.45
+// 8. GU penalty
+0.0

@@ -27,22 +27,47 @@ TEST(BaseTest, CanPair) {
 }
 
 TEST(BaseTest, IsAuGu) {
-  EXPECT_TRUE(IsAuGuPair(A, U));
-  EXPECT_TRUE(IsAuGuPair(U, A));
-  EXPECT_TRUE(IsAuGuPair(G, U));
-  EXPECT_TRUE(IsAuGuPair(U, G));
-  EXPECT_FALSE(IsAuGuPair(G, C));
-  EXPECT_FALSE(IsAuGuPair(C, G));
-  EXPECT_FALSE(IsAuGuPair(A, A));
-  EXPECT_FALSE(IsAuGuPair(C, C));
-  EXPECT_FALSE(IsAuGuPair(G, G));
-  EXPECT_FALSE(IsAuGuPair(U, U));
-  EXPECT_FALSE(IsAuGuPair(A, C));
-  EXPECT_FALSE(IsAuGuPair(C, A));
-  EXPECT_FALSE(IsAuGuPair(A, G));
-  EXPECT_FALSE(IsAuGuPair(G, A));
-  EXPECT_FALSE(IsAuGuPair(C, U));
-  EXPECT_FALSE(IsAuGuPair(U, C));
+  EXPECT_TRUE(IsAuPair(A, U));
+  EXPECT_TRUE(IsAuPair(U, A));
+  
+  EXPECT_TRUE(IsGuPair(G, U));
+  EXPECT_TRUE(IsGuPair(U, G));
+
+  EXPECT_FALSE(IsAuPair(G, C));
+  EXPECT_FALSE(IsGuPair(G, C));
+
+  EXPECT_FALSE(IsAuPair(C, G));
+  EXPECT_FALSE(IsGuPair(C, G));
+
+  EXPECT_FALSE(IsAuPair(A, A));
+  EXPECT_FALSE(IsGuPair(A, A));
+
+  EXPECT_FALSE(IsAuPair(C, C));
+  EXPECT_FALSE(IsGuPair(C, C));
+
+  EXPECT_FALSE(IsAuPair(G, G));
+  EXPECT_FALSE(IsGuPair(G, G));
+
+  EXPECT_FALSE(IsAuPair(U, U));
+  EXPECT_FALSE(IsGuPair(U, U));
+
+  EXPECT_FALSE(IsAuPair(A, C));
+  EXPECT_FALSE(IsGuPair(A, C));
+
+  EXPECT_FALSE(IsAuPair(C, A));
+  EXPECT_FALSE(IsGuPair(C, A));
+
+  EXPECT_FALSE(IsAuPair(A, G));
+  EXPECT_FALSE(IsGuPair(A, G));
+
+  EXPECT_FALSE(IsAuPair(G, A));
+  EXPECT_FALSE(IsGuPair(G, A));
+
+  EXPECT_FALSE(IsAuPair(C, U));
+  EXPECT_FALSE(IsGuPair(C, U));
+
+  EXPECT_FALSE(IsAuPair(U, C));
+  EXPECT_FALSE(IsGuPair(U, C));
 }
 
 }  // namespace mrna
