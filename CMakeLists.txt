@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.12)
 
 project(memerna VERSION 0.1 LANGUAGES CXX)
 
+# Supress warning messages about unused variables:
+set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
+
 # Options
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
