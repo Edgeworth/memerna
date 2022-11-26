@@ -1,3 +1,4 @@
+// Copyright 2022 Eliot Courtney.
 #include <benchmark/benchmark.h>
 
 #include <ios>

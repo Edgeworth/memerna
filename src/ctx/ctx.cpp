@@ -44,12 +44,11 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
       em_);
 }
 
-std::tuple<ExtArray, Energy> Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
+ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
   return std::visit(
-      [&](const erg::t04::ModelPtr& em) -> std::tuple<ExtArray, Energy> {
+      [&](const erg::t04::ModelPtr& em) -> ExtArray {
         auto ext = mfe::t04::MfeExterior(r, em, dp);
-        auto energy = ext[0][EXT];
-        return {std::move(ext), energy};
+        return ext;
       },
       em_);
 }
@@ -70,7 +69,8 @@ ctx::FoldResult Ctx::Fold(const Primary& r) const {
   }
 
   auto dp = ComputeMfe(r);
-  auto [ext, energy] = ComputeMfeExterior(r, dp);
+  auto ext = ComputeMfeExterior(r, dp);
+  auto energy = ext[0][EXT];
   auto tb = ComputeTraceback(r, dp, ext);
   return ctx::FoldResult{
       .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
@@ -97,7 +97,7 @@ int Ctx::Suboptimal(
   }
 
   auto dp = ComputeMfe(r);
-  auto [ext, energy] = ComputeMfeExterior(r, dp);
+  auto ext = ComputeMfeExterior(r, dp);
 
   return std::visit(
       [&, ext = std::move(ext)](const erg::t04::ModelPtr& em) mutable -> int {

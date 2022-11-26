@@ -58,8 +58,7 @@ class Ctx {
   CtxCfg cfg_;
 
   [[nodiscard]] DpArray ComputeMfe(const Primary& r) const;
-  [[nodiscard]] std::tuple<ExtArray, Energy> ComputeMfeExterior(
-      const Primary& r, const DpArray& dp) const;
+  [[nodiscard]] ExtArray ComputeMfeExterior(const Primary& r, const DpArray& dp) const;
   [[nodiscard]] tb::TracebackResult ComputeTraceback(
       const Primary& r, const DpArray& dp, const ExtArray& ext) const;
 };
