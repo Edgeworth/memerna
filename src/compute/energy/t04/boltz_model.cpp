@@ -43,7 +43,8 @@ BoltzModel::BoltzModel(const ModelPtr& em) : em_(em->Clone()) {
   FILL_BOLTZ(internal_2x3_mismatch);
   FILL_BOLTZ(internal_other_mismatch);
   FILL_BOLTZ(internal_asym);
-  FILL_BOLTZ(internal_augu_penalty);
+  FILL_BOLTZ(internal_au_penalty);
+  FILL_BOLTZ(internal_gu_penalty);
   FILL_BOLTZ(bulge_init);
   FILL_BOLTZ(bulge_special_c);
   FILL_BOLTZ(hairpin_init);
@@ -60,7 +61,8 @@ BoltzModel::BoltzModel(const ModelPtr& em) : em_(em->Clone()) {
   FILL_BOLTZ(coax_mismatch_non_contiguous);
   FILL_BOLTZ(coax_mismatch_wc_bonus);
   FILL_BOLTZ(coax_mismatch_gu_bonus);
-  FILL_BOLTZ(augu_penalty);
+  FILL_BOLTZ(au_penalty);
+  FILL_BOLTZ(gu_penalty);
 
   for (const auto& kv : em->hairpin) hairpin[kv.first] = kv.second.Boltz();
 #undef FILL_BOLTZ

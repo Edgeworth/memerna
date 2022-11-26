@@ -104,7 +104,7 @@ DEFINE_BENCHES(t04p1);
 
 DEFINE_BENCHES(t04p2);
 
-// TODO(0): Add benchmarks for other energy models.
+// NEWMODEL: Add new benches here.
 
 #endif
 

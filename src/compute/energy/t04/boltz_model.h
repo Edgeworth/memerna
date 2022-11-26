@@ -30,7 +30,8 @@ class BoltzModel {
   BoltzEnergy internal_2x3_mismatch[4][4][4][4]{};
   BoltzEnergy internal_other_mismatch[4][4][4][4]{};
   BoltzEnergy internal_asym{};
-  BoltzEnergy internal_augu_penalty{};
+  BoltzEnergy internal_au_penalty{};
+  BoltzEnergy internal_gu_penalty{};
   BoltzEnergy bulge_init[Model::INITIATION_CACHE_SZ]{};
   BoltzEnergy bulge_special_c{};
   BoltzEnergy hairpin_init[Model::INITIATION_CACHE_SZ]{};
@@ -41,7 +42,8 @@ class BoltzModel {
   BoltzEnergy dangle5[4][4][4]{};
   BoltzEnergy dangle3[4][4][4]{};
   BoltzEnergy coax_mismatch_non_contiguous{}, coax_mismatch_wc_bonus{}, coax_mismatch_gu_bonus{};
-  BoltzEnergy augu_penalty{};
+  BoltzEnergy au_penalty{};
+  BoltzEnergy gu_penalty{};
 
   BoltzModel() = delete;
 
@@ -51,12 +53,16 @@ class BoltzModel {
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? internal_augu_penalty : 1.0;
+    if (IsAuPair(stb, enb)) return internal_au_penalty;
+    if (IsGuPair(stb, enb)) return internal_gu_penalty;
+    return 1.0;
   }
 
   BoltzEnergy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? augu_penalty : 1.0;
+    if (IsAuPair(stb, enb)) return au_penalty;
+    if (IsGuPair(stb, enb)) return gu_penalty;
+    return 1.0;
   }
 
   BoltzEnergy MismatchCoaxial(

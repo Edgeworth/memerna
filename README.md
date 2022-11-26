@@ -7,9 +7,7 @@ update tests based on precision , ifdefs
 
 check symmetry for new terminal mismatch table
 
-- Ensure precision for t*\_p*; look for instances of t04 in code and replace.
-
-- update data tables with higher precision energy, compare to RNAstructure
+- t12p2, t22p2
 
 ## s22 notes (impl)
 
@@ -50,7 +48,7 @@ what about precomp?
 
 same for subopt, partition etc
 
-# s22 notes
+## Model notes
 
 Turner 1999 model (not implemented)
 

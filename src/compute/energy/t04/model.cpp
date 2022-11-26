@@ -66,14 +66,16 @@ void ParseMiscDataFromFile(const std::string& filename, Model* em) {
 
   // Internal loops.
   READ_DATA(em->internal_asym);
-  READ_DATA(em->internal_augu_penalty);
+  READ_DATA(em->internal_au_penalty);
+  READ_DATA(em->internal_gu_penalty);
 
   // Multiloop data.
   READ_DATA(em->multiloop_hack_a);
   READ_DATA(em->multiloop_hack_b);
 
   // AU/GU penalty
-  READ_DATA(em->augu_penalty);
+  READ_DATA(em->au_penalty);
+  READ_DATA(em->gu_penalty);
 #undef READ_DATA
 
   f >> std::ws;
@@ -105,7 +107,8 @@ ModelPtr Model::Random(uint_fast32_t seed) {
   RANDOMISE_DATA(em->internal_other_mismatch);
   // This needs to be non-negative for some optimisations.
   em->internal_asym = Energy::FromDouble(nonneg_energy_dist(eng));
-  RANDOMISE_DATA(em->internal_augu_penalty);
+  RANDOMISE_DATA(em->internal_au_penalty);
+  RANDOMISE_DATA(em->internal_gu_penalty);
   RANDOMISE_DATA(em->bulge_init);
   RANDOMISE_DATA(em->bulge_special_c);
   RANDOMISE_DATA(em->hairpin_init);
@@ -134,7 +137,8 @@ ModelPtr Model::Random(uint_fast32_t seed) {
   RANDOMISE_DATA(em->coax_mismatch_non_contiguous);
   RANDOMISE_DATA(em->coax_mismatch_wc_bonus);
   RANDOMISE_DATA(em->coax_mismatch_gu_bonus);
-  RANDOMISE_DATA(em->augu_penalty);
+  RANDOMISE_DATA(em->au_penalty);
+  RANDOMISE_DATA(em->gu_penalty);
 #undef RANDOMISE_DATA
 
   for (int a = 0; a < 4; ++a) {
@@ -243,9 +247,13 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
   Energy energy = HairpinInitiation(length);
   if (s) (*s)->AddNote("%de - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
-  if (IsAuGuPair(r[st], r[en])) {
-    if (s) (*s)->AddNote("%de - AU/GU penalty", augu_penalty);
-    energy += augu_penalty;
+  if (IsAuPair(r[st], r[en])) {
+    if (s) (*s)->AddNote("%de - AU penalty", au_penalty);
+    energy += au_penalty;
+  }
+  if (IsGuPair(r[st], r[en])) {
+    if (s) (*s)->AddNote("%de - GU penalty", gu_penalty);
+    energy += gu_penalty;
   }
 
   // T04 says hairpin loops with all C bases inside them are treated specially.
@@ -312,13 +320,21 @@ Energy Model::Bulge(
 
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
-    if (IsAuGuPair(r[ost], r[oen])) {
-      if (s) (*s)->AddNote("%de - outer AU/GU penalty", augu_penalty);
-      energy += augu_penalty;
+    if (IsAuPair(r[ost], r[oen])) {
+      if (s) (*s)->AddNote("%de - outer AU penalty", au_penalty);
+      energy += au_penalty;
     }
-    if (IsAuGuPair(r[ist], r[ien])) {
-      if (s) (*s)->AddNote("%de - inner AU/GU penalty", augu_penalty);
-      energy += augu_penalty;
+    if (IsGuPair(r[ost], r[oen])) {
+      if (s) (*s)->AddNote("%de - outer GU penalty", gu_penalty);
+      energy += gu_penalty;
+    }
+    if (IsAuPair(r[ist], r[ien])) {
+      if (s) (*s)->AddNote("%de - inner AU penalty", au_penalty);
+      energy += au_penalty;
+    }
+    if (IsGuPair(r[ist], r[ien])) {
+      if (s) (*s)->AddNote("%de - inner GU penalty", gu_penalty);
+      energy += gu_penalty;
     }
     return energy;
   }
@@ -378,13 +394,21 @@ Energy Model::InternalLoop(
   if (s) (*s)->AddNote("%de - initiation", energy);
 
   // Special AU/GU penalties.
-  if (IsAuGuPair(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("%de - outer AU/GU penalty", internal_augu_penalty);
-    energy += internal_augu_penalty;
+  if (IsAuPair(r[ost], r[oen])) {
+    if (s) (*s)->AddNote("%de - outer AU penalty", internal_au_penalty);
+    energy += internal_au_penalty;
   }
-  if (IsAuGuPair(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("%de - inner AU/GU penalty", internal_augu_penalty);
-    energy += internal_augu_penalty;
+  if (IsGuPair(r[ost], r[oen])) {
+    if (s) (*s)->AddNote("%de - outer GU penalty", internal_gu_penalty);
+    energy += internal_gu_penalty;
+  }
+  if (IsAuPair(r[ist], r[ien])) {
+    if (s) (*s)->AddNote("%de - inner AU penalty", internal_au_penalty);
+    energy += internal_au_penalty;
+  }
+  if (IsGuPair(r[ist], r[ien])) {
+    if (s) (*s)->AddNote("%de - inner GU penalty", internal_gu_penalty);
+    energy += internal_gu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
   const Energy asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
@@ -440,11 +464,15 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
   for (auto branch_st : *branches) {
     num_unpaired += s[branch_st] - branch_st + 1;
 
-    if (IsAuGuPair(r[branch_st], r[s[branch_st]])) {
+    if (IsAuPair(r[branch_st], r[s[branch_st]])) {
       if (struc)
-        struc->AddNote(
-            "%de - opening AU/GU penalty at %d %d", augu_penalty, branch_st, s[branch_st]);
-      energy += augu_penalty;
+        struc->AddNote("%de - opening AU penalty at %d %d", au_penalty, branch_st, s[branch_st]);
+      energy += au_penalty;
+    }
+    if (IsGuPair(r[branch_st], r[s[branch_st]])) {
+      if (struc)
+        struc->AddNote("%de - opening GU penalty at %d %d", gu_penalty, branch_st, s[branch_st]);
+      energy += gu_penalty;
     }
   }
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
@@ -461,9 +489,13 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
       AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
     }
   } else {
-    if (IsAuGuPair(r[st], r[en])) {
-      if (struc) struc->AddNote("%de - closing AU/GU penalty at %d %d", augu_penalty, st, en);
-      energy += augu_penalty;
+    if (IsAuPair(r[st], r[en])) {
+      if (struc) struc->AddNote("%de - closing AU penalty at %d %d", au_penalty, st, en);
+      energy += au_penalty;
+    }
+    if (IsGuPair(r[st], r[en])) {
+      if (struc) struc->AddNote("%de - closing GU penalty at %d %d", gu_penalty, st, en);
+      energy += gu_penalty;
     }
     Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1));
     if (struc) struc->AddNote("%de - initiation", initiation);
@@ -578,12 +610,20 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
 EnergyResult Model::TotalEnergy(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
   auto res = SubEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
-  if (s[0] == static_cast<int>(r.size() - 1) && IsAuGuPair(r[0], r[s[0]])) {
-    res.energy += augu_penalty;
+  if (s[0] == static_cast<int>(r.size() - 1) && IsAuPair(r[0], r[s[0]])) {
+    res.energy += au_penalty;
     if (res.struc) {
-      res.struc->AddNote("%de - top level AU/GU penalty", augu_penalty);
-      res.struc->set_self_energy(res.struc->self_energy() + augu_penalty);  // Gross.
-      res.struc->set_total_energy(res.struc->total_energy() + augu_penalty);  // Gross.
+      res.struc->AddNote("%de - top level AU penalty", au_penalty);
+      res.struc->set_self_energy(res.struc->self_energy() + au_penalty);  // Gross.
+      res.struc->set_total_energy(res.struc->total_energy() + au_penalty);  // Gross.
+    }
+  }
+  if (s[0] == static_cast<int>(r.size() - 1) && IsGuPair(r[0], r[s[0]])) {
+    res.energy += gu_penalty;
+    if (res.struc) {
+      res.struc->AddNote("%de - top level GU penalty", gu_penalty);
+      res.struc->set_self_energy(res.struc->self_energy() + gu_penalty);  // Gross.
+      res.struc->set_total_energy(res.struc->total_energy() + gu_penalty);  // Gross.
     }
   }
   return res;
@@ -608,7 +648,8 @@ uint32_t Model::Checksum() const {
   APPEND_DATA(internal_2x3_mismatch);
   APPEND_DATA(internal_other_mismatch);
   APPEND_DATA(internal_asym);
-  APPEND_DATA(internal_augu_penalty);
+  APPEND_DATA(internal_au_penalty);
+  APPEND_DATA(internal_gu_penalty);
   APPEND_DATA(bulge_init);
   APPEND_DATA(bulge_special_c);
   APPEND_DATA(hairpin_init);
@@ -634,7 +675,8 @@ uint32_t Model::Checksum() const {
   APPEND_DATA(coax_mismatch_non_contiguous);
   APPEND_DATA(coax_mismatch_wc_bonus);
   APPEND_DATA(coax_mismatch_gu_bonus);
-  APPEND_DATA(augu_penalty);
+  APPEND_DATA(au_penalty);
+  APPEND_DATA(gu_penalty);
 
   APPEND_DATA(HAIRPIN_MIN_SZ);
   APPEND_DATA(R);

@@ -43,7 +43,8 @@ class Model {
   Energy internal_2x3_mismatch[4][4][4][4] = {};
   Energy internal_other_mismatch[4][4][4][4] = {};
   Energy internal_asym = {};
-  Energy internal_augu_penalty = {};
+  Energy internal_au_penalty = {};
+  Energy internal_gu_penalty = {};
   // Bulge loop related:
   Energy bulge_init[INITIATION_CACHE_SZ] = {};
   Energy bulge_special_c = {};
@@ -66,7 +67,8 @@ class Model {
   Energy coax_mismatch_non_contiguous = {};
   Energy coax_mismatch_wc_bonus = {};
   Energy coax_mismatch_gu_bonus = {};
-  Energy augu_penalty = {};
+  Energy au_penalty = {};
+  Energy gu_penalty = {};
 
   EnergyCfg cfg = {};
 
@@ -114,12 +116,16 @@ class Model {
 
   Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? augu_penalty : ZERO_E;
+    if (IsAuPair(stb, enb)) return au_penalty;
+    if (IsGuPair(stb, enb)) return gu_penalty;
+    return ZERO_E;
   }
 
   Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
-    return IsAuGuPair(stb, enb) ? internal_augu_penalty : ZERO_E;
+    if (IsAuPair(stb, enb)) return internal_au_penalty;
+    if (IsGuPair(stb, enb)) return internal_gu_penalty;
+    return ZERO_E;
   }
 
   // We use the normal terminal mismatch parameters for the mismatch that is on
