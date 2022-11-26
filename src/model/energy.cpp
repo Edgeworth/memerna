@@ -56,7 +56,7 @@ std::string Energy::ToString() const {
 
 BoltzEnergy Energy::Boltz() const {
   if (*this >= CAP_E) return 0;
-  return exp(BoltzEnergy(ToDouble()) * (BoltzEnergy(-1) / BoltzEnergy(R * T)));
+  return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
 }
 
 std::istream& operator>>(std::istream& str, Energy& o) {

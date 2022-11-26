@@ -21,7 +21,7 @@ test:
 
   # Run benchmarks.
   poetry run python -m rnapy.run build --bench --bench-output \
-    ./data/benchmark.json --kind=release --energy-precision=1
+    ./data/benchmark.json --kind=release
 
 fix:
   SETUPTOOLS_USE_DISTUTILS=stdlib pre-commit run --all-files
