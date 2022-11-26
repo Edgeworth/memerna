@@ -6,6 +6,7 @@ project(memerna VERSION 0.1 LANGUAGES CXX)
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
+option(USE_LTO "Whether to build with LTO" CMAKE_OBJC_ANDROID_TOOLCHAIN_SUFFIX)
 set(FLOAT_BITS 64 CACHE STRING "Number of bits to use for floats.
     Valid values are 32, 64, 80, or any value if MPFR is enabled.")
 set(ENERGY_PRECISION 2 CACHE STRING
@@ -24,6 +25,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
+
+# Enable LTO
+if(USE_LTO)
+  include(CheckIPOSupported)
+  check_ipo_supported()
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 # Use include-what-you-use if it exists.
 if(USE_IWYU)

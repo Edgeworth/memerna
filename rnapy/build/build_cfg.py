@@ -65,6 +65,7 @@ class BuildCfg:
     mpfr: bool = False
     rnastructure: bool = False
     iwyu: bool = False
+    lto: bool = False
     float_bits: int = 64
     energy_precision: int = 2
 
@@ -80,15 +81,14 @@ class BuildCfg:
             ident += "-rnastructure"
         if self.iwyu:
             ident += "-iwyu"
+        if self.lto:
+            ident += "-lto"
         if self.env:
             ident += "-" + "-".join(f"{k}-{v}" for k, v in self.env.items())
         return ident
 
     def build_path(self) -> Path:
         return self.prefix / "memerna" / self.ident()
-
-    def model_path(self, model: str = "t04") -> Path:
-        return self.src / "data" / "model" / f"{model}"
 
     def is_afl(self) -> bool:
         return self.compiler in [Compiler.AFL_LTO, Compiler.AFL_FAST]
@@ -103,6 +103,7 @@ class BuildCfg:
             "USE_RNASTRUCTURE": "ON" if self.rnastructure else "OFF",
             "USE_MPFR": "ON" if self.mpfr else "OFF",
             "USE_IWYU": "ON" if self.iwyu else "OFF",
+            "USE_LTO": "ON" if self.lto else "OFF",
             "FLOAT_BITS": f"{self.float_bits}",
             "ENERGY_PRECISION": f"{self.energy_precision}",
         }

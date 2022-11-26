@@ -44,6 +44,11 @@ build_cfg_options = cloup.option_group(
         default=False,
         help="Whether to build with include-what-you-use",
     ),
+    cloup.option(
+        "--lto/--no-lto",
+        default=False,
+        help="Whether to build with LTO",
+    ),
     cloup.option("--rnastructure/--no-rnastructure", default=False),
     cloup.option("--mpfr/--no-mpfr", default=False),
     cloup.option("--float-bits", type=int, default=64),
@@ -60,6 +65,7 @@ def build_cfg_from_args(  # pylint: disable=too-many-arguments
     mpfr: bool,
     rnastructure: bool,
     iwyu: bool,
+    lto: bool,
     float_bits: int,
     energy_precision: int,
     **_kwargs: Any,
@@ -73,6 +79,7 @@ def build_cfg_from_args(  # pylint: disable=too-many-arguments
         mpfr=mpfr,
         rnastructure=rnastructure,
         iwyu=iwyu,
+        lto=lto,
         float_bits=float_bits,
         energy_precision=energy_precision,
     )
