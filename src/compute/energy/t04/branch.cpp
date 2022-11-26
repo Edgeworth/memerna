@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <compare>
 #include <tuple>
 #include <utility>
 #include <vector>

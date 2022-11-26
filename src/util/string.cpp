@@ -1,9 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/string.h"
 
-#include <cstdio>
 #include <cctype>
 #include <cstdarg>
+#include <cstdio>
 #include <memory>
 #include <stdexcept>
 

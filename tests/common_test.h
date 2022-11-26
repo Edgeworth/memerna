@@ -3,6 +3,7 @@
 #define TESTS_COMMON_TEST_H_
 
 #include <cstdint>
+#include <string>
 
 #include "compute/energy/model.h"
 
@@ -22,6 +23,8 @@ inline erg::t04::ModelPtr t04_p1;
 #elif ENERGY_PRECISION == 2
 inline erg::t04::ModelPtr t04_p2;
 #endif
+
+void InitTest(const std::string& data_dir);
 
 }  // namespace mrna
 

@@ -4,16 +4,15 @@
 
 #include <set>
 #include <vector>
-#include <compare>
 
 #include "compute/dp.h"
+#include "compute/energy/t04/model.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
-#include "model/ctd.h"
-#include "model/primary.h"
-#include "compute/energy/t04/model.h"
 #include "compute/traceback/traceback.h"
+#include "model/ctd.h"
 #include "model/energy.h"
+#include "model/primary.h"
 
 namespace mrna::subopt::t04 {
 

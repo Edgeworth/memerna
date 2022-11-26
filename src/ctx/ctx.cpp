@@ -3,10 +3,10 @@
 
 #include <cassert>
 #include <tuple>
-#include <utility>
-#include <vector>
 #include <type_traits>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/alg.h"

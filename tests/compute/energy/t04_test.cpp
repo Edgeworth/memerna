@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cmath>
 #include <deque>
@@ -15,7 +17,6 @@
 #include "compute/energy/t04/branch.h"
 #include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
-#include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"

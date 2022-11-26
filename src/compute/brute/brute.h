@@ -2,7 +2,6 @@
 #ifndef COMPUTE_BRUTE_BRUTE_H_
 #define COMPUTE_BRUTE_BRUTE_H_
 
-#include <compare>
 #include <cstdint>
 #include <set>
 #include <utility>
@@ -14,10 +13,10 @@
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "model/ctd.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/splaymap.h"
-#include "model/energy.h"
 
 namespace mrna::brute {
 

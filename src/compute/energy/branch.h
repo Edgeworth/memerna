@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "model/ctd.h"
-#include "model/secondary.h"
 #include "model/energy.h"
+#include "model/secondary.h"
 
 namespace mrna::erg {
 

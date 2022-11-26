@@ -1,6 +1,5 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
-#include <compare>
 #include <memory>
 #include <vector>
 

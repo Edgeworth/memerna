@@ -1,8 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/energy/parse.h"
 
-#include <string>
 #include <optional>
+#include <string>
 
 #include "model/base.h"
 

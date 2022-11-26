@@ -6,21 +6,21 @@
 #include <vector>
 
 #include "bridge/bridge.h"
+#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
+#include "compute/traceback/traceback.h"
 #include "ctx/ctx.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "options.h"
 #include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "compute/energy/energy.h"
-#include "compute/traceback/traceback.h"
-#include "model/energy.h"
 
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);

@@ -1,7 +1,8 @@
 // Copyright 2022 Eliot Courtney.
+#include <gtest/gtest.h>
+
 #include <memory>
 
-#include "gtest/gtest.h"
 #include "model/energy.h"
 
 namespace mrna {

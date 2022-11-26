@@ -5,8 +5,8 @@
 #include <limits>
 #include <memory>
 
-#include "util/argparse.h"
 #include "model/energy.h"
+#include "util/argparse.h"
 
 namespace mrna::subopt {
 

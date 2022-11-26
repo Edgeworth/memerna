@@ -19,7 +19,11 @@ std::string ModelPathFromArgParse(const ArgParse& args) {
 }
 
 std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model) {
-  return args.Get(OPT_MEMERNA_DATA) + "/model/" + model;
+  return ModelPath(args.Get(OPT_MEMERNA_DATA), model);
+}
+
+std::string ModelPath(const std::string& data_dir, const std::string& model) {
+  return data_dir + "/model/" + model;
 }
 
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {

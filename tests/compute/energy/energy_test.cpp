@@ -1,10 +1,11 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/energy/energy.h"
 
+#include <gtest/gtest.h>
+
 #include <vector>
 
 #include "compute/energy/branch.h"
-#include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 

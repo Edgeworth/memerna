@@ -4,16 +4,16 @@
 #include <string>
 #include <vector>
 
+#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/model.h"
 #include "compute/energy/structure.h"
 #include "model/ctd.h"
+#include "model/energy.h"
 #include "model/secondary.h"
 #include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "compute/energy/energy.h"
-#include "model/energy.h"
 
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);

@@ -14,6 +14,7 @@
 #include "model/primary.h"
 
 #ifdef USE_RNASTRUCTURE
+#include <memory>
 #include <utility>
 
 #include "bridge/rnastructure.h"
