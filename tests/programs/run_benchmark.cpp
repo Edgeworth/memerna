@@ -98,11 +98,11 @@ void Partition(benchmark::State& state, Args&&... arglist) {
 
 #if ENERGY_PRECISION == 1
 
-DEFINE_BENCHES(t04_p1);
+DEFINE_BENCHES(t04p1);
 
 #elif ENERGY_PRECISION == 2
 
-DEFINE_BENCHES(t04_p2);
+DEFINE_BENCHES(t04p2);
 
 // TODO(0): Add benchmarks for other energy models.
 

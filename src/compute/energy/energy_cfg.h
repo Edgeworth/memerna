@@ -20,9 +20,9 @@ inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
                                         .LongName("energy-model")
                                         .ShortName("em")
 #if ENERGY_PRECISION == 1
-                                        .Default("t04_p1")
+                                        .Default("t04p1")
 #elif ENERGY_PRECISION == 2
-                                        .Default("t04_p2")
+                                        .Default("t04p2")
 #endif
                                         .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS =

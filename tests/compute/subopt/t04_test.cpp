@@ -30,8 +30,8 @@ class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
 
 #if ENERGY_PRECISION == 1
 
-TEST_P(SuboptAlgTest, T04_P1) {
-  Subopt(t04_p1, "CCUCCGGG",
+TEST_P(SuboptAlgTest, T04P1) {
+  Subopt(t04p1, "CCUCCGGG",
       {
           E(-0.6),
           E(0.0),
@@ -44,7 +44,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(3.4),
           E(3.5),
       });
-  Subopt(t04_p1, "CGGAAACGG",
+  Subopt(t04p1, "CGGAAACGG",
       {
           E(-0.6),
           E(0.0),
@@ -56,7 +56,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(3.1),
           E(3.9),
       });
-  Subopt(t04_p1, "UGCAAAGCAA",
+  Subopt(t04p1, "UGCAAAGCAA",
       {
           E(-0.4),
           E(0.0),
@@ -69,7 +69,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(2.9),
           E(3.0),
       });
-  Subopt(t04_p1, "GGGGAAACCCC",
+  Subopt(t04p1, "GGGGAAACCCC",
       {
           E(-4.5),
           E(-4.3),
@@ -82,7 +82,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-1.5),
           E(-1.5),
       });
-  Subopt(t04_p1, "GGGGAAACCCC",
+  Subopt(t04p1, "GGGGAAACCCC",
       {
           E(-4.5),
           E(-4.3),
@@ -95,7 +95,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-1.5),
           E(-1.5),
       });
-  Subopt(t04_p1, "CUUAUAGUUAAGG",
+  Subopt(t04p1, "CUUAUAGUUAAGG",
       {
           E(-1.2),
           E(0.0),
@@ -108,7 +108,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(2.6),
           E(2.6),
       });
-  Subopt(t04_p1, "CCGAAGGGGCUGCGGCG",
+  Subopt(t04p1, "CCGAAGGGGCUGCGGCG",
       {
           E(-4.0),
           E(-2.4),
@@ -121,7 +121,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-1.4),
           E(-1.2),
       });
-  Subopt(t04_p1, "GCCAAGGCCCCACCCGGA",
+  Subopt(t04p1, "GCCAAGGCCCCACCCGGA",
       {
           E(-2.9),
           E(-2.1),
@@ -134,7 +134,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-0.6),
           E(-0.4),
       });
-  Subopt(t04_p1, "GGCCGAUGGCAGCGAUAGC",
+  Subopt(t04p1, "GGCCGAUGGCAGCGAUAGC",
       {
           E(-4.9),
           E(-3.1),
@@ -147,7 +147,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-1.4),
           E(-1.4),
       });
-  Subopt(t04_p1, "CUGAAACUGGAAACAGAAAUG",
+  Subopt(t04p1, "CUGAAACUGGAAACAGAAAUG",
       {
           E(-2.2),
           E(-2.2),
@@ -163,7 +163,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
 
   // Too slow for brute force:
   if (GetParam() == ctx::CtxCfg::SuboptAlg::BRUTE) return;
-  Subopt(t04_p1, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
+  Subopt(t04p1, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       {
           E(-5.1),
           E(-4.8),
@@ -176,7 +176,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-4.4),
           E(-4.3),
       });
-  Subopt(t04_p1, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU",
+  Subopt(t04p1, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU",
       {
           E(-13.3),
           E(-13.3),
@@ -189,7 +189,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-12.9),
           E(-12.9),
       });
-  Subopt(t04_p1, "AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC",
+  Subopt(t04p1, "AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC",
       {
           E(-5.7),
           E(-5.6),
@@ -202,7 +202,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.0),
           E(-4.9),
       });
-  Subopt(t04_p1, "ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG",
+  Subopt(t04p1, "ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG",
       {
           E(-12.1),
           E(-11.8),
@@ -215,7 +215,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-10.7),
           E(-10.7),
       });
-  Subopt(t04_p1, "CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG",
+  Subopt(t04p1, "CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG",
       {
           E(-7.4),
           E(-7.3),
@@ -228,7 +228,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.7),
           E(-5.7),
       });
-  Subopt(t04_p1, "CCCAACGGAGUAACUUAGCGAAUAGCAGGGG",
+  Subopt(t04p1, "CCCAACGGAGUAACUUAGCGAAUAGCAGGGG",
       {
           E(-3.2),
           E(-2.8),
@@ -241,7 +241,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-2.3),
           E(-2.2),
       });
-  Subopt(t04_p1, "CCGGGCCAGCCCGCUCCUACGGGGGGUC",
+  Subopt(t04p1, "CCGGGCCAGCCCGCUCCUACGGGGGGUC",
       {
           E(-12.0),
           E(-11.0),
@@ -254,7 +254,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-9.7),
           E(-9.6),
       });
-  Subopt(t04_p1, "CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG",
+  Subopt(t04p1, "CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG",
       {
           E(-7.4),
           E(-7.1),
@@ -267,7 +267,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.9),
           E(-5.8),
       });
-  Subopt(t04_p1, "CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC",
+  Subopt(t04p1, "CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC",
       {
           E(-3.0),
           E(-2.7),
@@ -280,7 +280,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-2.3),
           E(-2.2),
       });
-  Subopt(t04_p1, "CGCAGGGUCGGACCCGGGAGAACCGCGA",
+  Subopt(t04p1, "CGCAGGGUCGGACCCGGGAGAACCGCGA",
       {
           E(-6.5),
           E(-6.2),
@@ -293,7 +293,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.4),
           E(-5.2),
       });
-  Subopt(t04_p1, "CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA",
+  Subopt(t04p1, "CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA",
       {
           E(-6.0),
           E(-5.9),
@@ -306,7 +306,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.6),
           E(-5.6),
       });
-  Subopt(t04_p1, "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC",
+  Subopt(t04p1, "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC",
       {
           E(-12.2),
           E(-12.2),
@@ -319,7 +319,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-11.6),
           E(-11.6),
       });
-  Subopt(t04_p1, "GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC",
+  Subopt(t04p1, "GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC",
       {
           E(-3.9),
           E(-3.8),
@@ -332,7 +332,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-3.3),
           E(-3.3),
       });
-  Subopt(t04_p1, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC",
+  Subopt(t04p1, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC",
       {
           E(-6.7),
           E(-6.7),
@@ -345,7 +345,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-5.9),
           E(-5.9),
       });
-  Subopt(t04_p1, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
+  Subopt(t04p1, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
       {
           E(-27.6),
           E(-27.3),
@@ -358,7 +358,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-26.8),
           E(-26.8),
       });
-  Subopt(t04_p1, "GCGCCCCAGUCGACGCUGAGCUCCUCUGCU",
+  Subopt(t04p1, "GCGCCCCAGUCGACGCUGAGCUCCUCUGCU",
       {
           E(-5.3),
           E(-4.9),
@@ -371,7 +371,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-3.6),
           E(-3.6),
       });
-  Subopt(t04_p1, "GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG",
+  Subopt(t04p1, "GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG",
       {
           E(-15.7),
           E(-15.5),
@@ -384,7 +384,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-14.0),
           E(-14.0),
       });
-  Subopt(t04_p1, "GGCGCACGCGUUAGCCGGGGAUCCACAGUGC",
+  Subopt(t04p1, "GGCGCACGCGUUAGCCGGGGAUCCACAGUGC",
       {
           E(-4.4),
           E(-4.4),
@@ -397,7 +397,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-3.9),
           E(-3.9),
       });
-  Subopt(t04_p1, "GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG",
+  Subopt(t04p1, "GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG",
       {
           E(-2.9),
           E(-2.7),
@@ -410,7 +410,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-2.4),
           E(-2.3),
       });
-  Subopt(t04_p1, "UACCCUGUUCAGCAUUGGAAAUUUCCUGGG",
+  Subopt(t04p1, "UACCCUGUUCAGCAUUGGAAAUUUCCUGGG",
       {
           E(-2.3),
           E(-2.2),
@@ -423,7 +423,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-1.8),
           E(-1.8),
       });
-  Subopt(t04_p1, "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG",
+  Subopt(t04p1, "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG",
       {
           E(-8.0),
           E(-8.0),
@@ -436,7 +436,7 @@ TEST_P(SuboptAlgTest, T04_P1) {
           E(-7.5),
           E(-7.5),
       });
-  Subopt(t04_p1, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU",
+  Subopt(t04p1, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU",
       {
           E(-20.8),
           E(-20.8),

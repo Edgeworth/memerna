@@ -6,22 +6,22 @@ namespace mrna {
 void InitTest(const std::string& data_dir) {
 #if ENERGY_PRECISION == 1
 
-  mrna::t04_p1 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04_p1"));
-  verify(mrna::t04_p1->Checksum() == mrna::T04_P1_MODEL_HASH,
-      "Expected t04_p1 model hash %d, got %d", mrna::T04_P1_MODEL_HASH, mrna::t04_p1->Checksum());
+  mrna::t04p1 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04p1"));
+  verify(mrna::t04p1->Checksum() == mrna::T04P1_MODEL_HASH, "Expected t04p1 model hash %d, got %d",
+      mrna::T04P1_MODEL_HASH, mrna::t04p1->Checksum());
 
-  mrna::test_ems[0] = mrna::t04_p1;
-  mrna::test_t04_ems[0] = mrna::t04_p1;
+  mrna::test_ems[0] = mrna::t04p1;
+  mrna::test_t04_ems[0] = mrna::t04p1;
 
 #elif ENERGY_PRECISION == 2
 
   // TODO(0): support t12
-  mrna::t04_p2 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04_p2"));
-  verify(mrna::t04_p2->Checksum() == mrna::T04_P2_MODEL_HASH,
-      "Expected t04_p2 model hash %d, got %d", mrna::T04_P2_MODEL_HASH, mrna::t04_p2->Checksum());
+  mrna::t04p2 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04p2"));
+  verify(mrna::t04p2->Checksum() == mrna::T04P2_MODEL_HASH, "Expected t04p2 model hash %d, got %d",
+      mrna::T04P2_MODEL_HASH, mrna::t04p2->Checksum());
 
-  mrna::test_ems[0] = mrna::t04_p2;
-  mrna::test_t04_ems[0] = mrna::t04_p2;
+  mrna::test_ems[0] = mrna::t04p2;
+  mrna::test_t04_ems[0] = mrna::t04p2;
 
 #endif
 
