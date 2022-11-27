@@ -54,45 +54,53 @@ void Partition(benchmark::State& state, Args&&... arglist) {
 
 #define DEFINE_BENCHES(em)                                                                  \
   BENCHMARK_CAPTURE(Mfe, em##_slowest, &(em), ctx::CtxCfg::DpAlg::SLOWEST)                  \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Mfe, em##_fastest, &(em), ctx::CtxCfg::DpAlg::FASTEST)                  \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Subopt, em##_slowest_100strucs, &(em), ctx::CtxCfg::SuboptAlg::SLOWEST, \
       subopt::SuboptCfg{.strucs = 100})                                                     \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
   BENCHMARK_CAPTURE(Subopt, em##_slowest_delta, &(em), ctx::CtxCfg::SuboptAlg::SLOWEST,     \
       subopt::SuboptCfg{.delta = E(0.2)})                                                   \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Subopt, em##_fastest_100strucs, &(em), ctx::CtxCfg::SuboptAlg::FASTEST, \
       subopt::SuboptCfg{.strucs = 100})                                                     \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Subopt, em##_fastest_delta, &(em), ctx::CtxCfg::SuboptAlg::FASTEST,     \
       subopt::SuboptCfg{.delta = E(0.2)})                                                   \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Partition, em##_slowest, &(em), ctx::CtxCfg::PartAlg::SLOWEST)          \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond);                                                      \
                                                                                             \
   BENCHMARK_CAPTURE(Partition, em##_fastest, &(em), ctx::CtxCfg::PartAlg::FASTEST)          \
-      ->DenseRange(16, 129, 32)                                                             \
+      ->RangeMultiplier(2)                                                                  \
+      ->Range(16, 512)                                                                      \
       ->Complexity()                                                                        \
       ->Unit(benchmark::kMillisecond)
 

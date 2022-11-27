@@ -6,6 +6,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "model/constants.h"
 #include "util/float.h"
 
 namespace mrna {
@@ -19,27 +20,27 @@ struct __attribute__((packed, aligned(4))) Energy {
   static constexpr int FACTOR = powi(10, ENERGY_PRECISION);
   static constexpr int EXPONENT = ENERGY_PRECISION;
 
-  [[nodiscard]] static constexpr Energy FromRaw(int32_t v) { return Energy{.v = v}; }
+  [[nodiscard]] static constexpr Energy FromRaw(int32_t v) noexcept { return Energy{.v = v}; }
 
   // Converts a floating point energy value in kcal/mol to an integer energy value.
   [[nodiscard]] static Energy FromDouble(double energy);
   [[nodiscard]] static Energy FromString(const std::string& s);
 
-  [[nodiscard]] std::string ToString() const;
-  [[nodiscard]] double ToDouble() const { return v / static_cast<double>(FACTOR); }
-  [[nodiscard]] BoltzEnergy Boltz() const;
+  [[nodiscard]] std::string ToString() const noexcept;
+  [[nodiscard]] double ToDouble() const noexcept { return v / static_cast<double>(FACTOR); }
+  [[nodiscard]] BoltzEnergy Boltz() const noexcept;
 
-  constexpr auto operator<=>(const Energy&) const = default;
+  constexpr auto operator<=>(const Energy&) const noexcept = default;
 
-  constexpr Energy operator-() const { return FromRaw(-v); }
+  constexpr Energy operator-() const noexcept { return FromRaw(-v); }
 
-  constexpr Energy operator+(const Energy& o) const { return FromRaw(v + o.v); }
-  constexpr Energy operator+=(const Energy& o) {
+  constexpr Energy operator+(const Energy& o) const noexcept { return FromRaw(v + o.v); }
+  constexpr Energy operator+=(const Energy& o) noexcept {
     v += o.v;
     return *this;
   }
 
-  constexpr Energy operator-(const Energy& o) const { return FromRaw(v - o.v); }
+  constexpr Energy operator-(const Energy& o) const noexcept { return FromRaw(v - o.v); }
   constexpr Energy operator-=(const Energy& o) {
     v -= o.v;
     return *this;
@@ -48,11 +49,13 @@ struct __attribute__((packed, aligned(4))) Energy {
   int32_t v;
 };
 
-constexpr Energy operator*(const Energy& e, int o) { return Energy::FromRaw(e.v * o); }
-constexpr Energy operator*(int o, const Energy& e) { return Energy::FromRaw(e.v * o); }
+constexpr Energy operator*(const Energy& e, int o) noexcept { return Energy::FromRaw(e.v * o); }
+constexpr Energy operator*(int o, const Energy& e) noexcept { return Energy::FromRaw(e.v * o); }
 
 std::istream& operator>>(std::istream& str, Energy& o);
 std::ostream& operator<<(std::ostream& out, const Energy& o);
+
+[[nodiscard]] inline Energy E(double energy) noexcept { return Energy::FromDouble(energy); }
 
 // Don't change these values. Plays nice with memset.
 // Used for infinite/sentinel energy values, e.g. in DP tables.
@@ -63,7 +66,13 @@ inline constexpr Energy CAP_E = Energy::FromRaw(0x07070707);
 
 inline constexpr Energy ZERO_E = Energy::FromRaw(0);
 
-[[nodiscard]] inline Energy E(double energy) { return Energy::FromDouble(energy); }
+// Ninio maximum asymmetry.
+inline const Energy NINIO_MAX_ASYM = E(3.0);
+
+[[nodiscard]] inline BoltzEnergy Energy::Boltz() const noexcept {
+  if (*this >= CAP_E) return 0;
+  return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
+}
 
 }  // namespace mrna
 
