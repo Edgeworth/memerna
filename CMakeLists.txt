@@ -103,35 +103,37 @@ set(MEMERNA_SOURCE
   src/bridge/bridge.cpp src/bridge/bridge.h
   src/bridge/memerna.cpp src/bridge/memerna.h
   src/compute/boltz_dp.h
-  src/compute/brute/brute.cpp src/compute/brute/brute.h
   src/compute/brute/alg.cpp src/compute/brute/alg.h
   src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
+  src/compute/brute/brute.cpp src/compute/brute/brute.h
   src/compute/dp.h
-  src/compute/energy/model.cpp src/compute/energy/model.h
-  src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
-  src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h
   src/compute/energy/branch.cpp src/compute/energy/branch.h
   src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
+  src/compute/energy/model.cpp src/compute/energy/model.h
+  src/compute/energy/parse.cpp src/compute/energy/parse.h
+  src/compute/energy/structure.cpp src/compute/energy/structure.h
+  src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
+  src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h
   src/compute/energy/t04/branch.cpp src/compute/energy/t04/branch.h
   src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
-  src/compute/energy/parse.cpp src/compute/energy/parse.h
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
-  src/compute/energy/structure.cpp src/compute/energy/structure.h
+  src/compute/energy/t22/branch.cpp src/compute/energy/t22/branch.h
+  src/compute/energy/t22/model.cpp src/compute/energy/t22/model.h
   src/compute/mfe/mfe.h
   src/compute/mfe/t04/mfe_exterior.cpp
-  src/compute/mfe/t04/mfe_slowest.cpp
-  src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_fastest.cpp
   src/compute/mfe/t04/mfe_lyngso.cpp
+  src/compute/mfe/t04/mfe_slow.cpp
+  src/compute/mfe/t04/mfe_slowest.cpp
   src/compute/partition/partition.cpp src/compute/partition/partition.h
   src/compute/partition/t04/partition_exterior.cpp
-  src/compute/partition/t04/partition_slowest.cpp
   src/compute/partition/t04/partition_fastest.cpp
+  src/compute/partition/t04/partition_slowest.cpp
   src/compute/subopt/subopt_cfg.cpp src/compute/subopt/subopt_cfg.h
   src/compute/subopt/subopt.h
-  src/compute/subopt/t04/subopt_slowest.cpp src/compute/subopt/t04/subopt_slowest.h
   src/compute/subopt/t04/subopt_fastest.cpp src/compute/subopt/t04/subopt_fastest.h
+  src/compute/subopt/t04/subopt_slowest.cpp src/compute/subopt/t04/subopt_slowest.h
   src/compute/traceback/t04/traceback.cpp src/compute/traceback/t04/traceback.h
   src/ctx/ctx_cfg.cpp src/ctx/ctx_cfg.h
   src/ctx/ctx.cpp src/ctx/ctx.h
@@ -143,9 +145,9 @@ set(MEMERNA_SOURCE
   src/model/energy.cpp src/model/energy.h
   src/model/primary.cpp src/model/primary.h
   src/model/secondary.cpp src/model/secondary.h
-  src/util/argparse.cpp src/util/argparse.h
-  src/programs/print.cpp src/programs/print.h
   src/programs/fuzz/fuzz_harness.cpp src/programs/fuzz/fuzz_harness.h
+  src/programs/print.cpp src/programs/print.h
+  src/util/argparse.cpp src/util/argparse.h
   src/util/array.h
   src/util/splaymap.h
   src/util/string.cpp src/util/string.h
