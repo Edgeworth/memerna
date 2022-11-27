@@ -20,7 +20,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
     const Primary& r, const erg::t04::BoltzModelPtr& bem);
 
 BoltzExtArray PartitionExterior(
-    const Primary& r, const erg::t04::ModelPtr& em, const BoltzDpArray& dp);
+    const Primary& r, const erg::t04::Model& em, const BoltzDpArray& dp);
 
 }  // namespace mrna::part::t04
 

@@ -49,7 +49,7 @@ class BoltzModel {
 
   static BoltzModelPtr Create(const ModelPtr& em) { return BoltzModelPtr(new BoltzModel(em)); }
 
-  const ModelPtr& em() const { return em_; }
+  const Model& em() const { return em_; }
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -80,26 +80,26 @@ class BoltzModel {
   // TODO(2): Implement versions of Bulge, InternalLoop, TwoLoop, Hairpin with boltzmann baked in.
   BoltzEnergy Hairpin(
       const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const {
-    return em()->Hairpin(r, st, en, s).Boltz();
+    return em_.Hairpin(r, st, en, s).Boltz();
   }
 
   BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return em()->Bulge(r, ost, oen, ist, ien, s).Boltz();
+    return em_.Bulge(r, ost, oen, ist, ien, s).Boltz();
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return em()->InternalLoop(r, ost, oen, ist, ien, s).Boltz();
+    return em_.InternalLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
   BoltzEnergy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return em()->TwoLoop(r, ost, oen, ist, ien, s).Boltz();
+    return em_.TwoLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
  private:
-  ModelPtr em_;
+  Model em_;
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.

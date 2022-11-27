@@ -19,7 +19,7 @@ struct BoltzPrecomp {
 
   BoltzPrecomp(Primary r, BoltzModelPtr bem);
 
-  [[nodiscard]] const ModelPtr& em() const { return bem_->em(); }
+  [[nodiscard]] const Model& em() const { return bem_->em(); }
   [[nodiscard]] const BoltzModel& bem() const { return *bem_; }
 
   [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
