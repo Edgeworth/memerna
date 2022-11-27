@@ -2,12 +2,14 @@
 
 ## TODO:
 
+remove augu penalty from t22 special hairpins
+remove gu penalty from t12 special hairpins
+
+add terminal stacks to:
+
+
 check float bits, partition fn
 update tests based on precision , ifdefs
-
-check symmetry for new terminal mismatch table
-
-- t12p2, t22p2
 
 ## s22 notes (impl)
 
