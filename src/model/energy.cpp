@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <istream>
 
-#include "model/constants.h"
 #include "util/error.h"
 
 namespace mrna {
@@ -44,7 +43,7 @@ Energy Energy::FromString(const std::string& s) {
   return energy;
 }
 
-std::string Energy::ToString() const {
+std::string Energy::ToString() const noexcept {
   if (*this == MAX_E) return "MAX";
   if (*this == CAP_E) return "CAP";
   std::stringstream ss;
@@ -52,11 +51,6 @@ std::string Energy::ToString() const {
   const auto abs = std::abs(v);
   ss << sgn << abs / FACTOR << "." << std::setw(EXPONENT) << std::setfill('0') << abs % FACTOR;
   return ss.str();
-}
-
-BoltzEnergy Energy::Boltz() const {
-  if (*this >= CAP_E) return 0;
-  return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
 }
 
 std::istream& operator>>(std::istream& str, Energy& o) {
