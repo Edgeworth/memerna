@@ -58,8 +58,9 @@ inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
 // energy model. Note that this may be different to the original energy model,
 // i.e. em != BoltzUnderlying(Boltz(em)). For example, Boltzing an energy model turns
 // off bulge loop C state calculation.
+// This may create a new energy model, so it's expensive.
 inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
-  return std::visit([](const auto& bem) { return bem->em(); }, bem);
+  return std::visit([](const auto& bem) { return bem->em().Clone(); }, bem);
 }
 
 inline uint32_t Checksum(const EnergyModelPtr& em) {

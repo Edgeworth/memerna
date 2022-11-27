@@ -37,7 +37,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (bem->em()->CanPair(r, st, en)) {
+      if (bem->em().CanPair(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
@@ -193,7 +193,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      if (bem->em()->CanPair(r, en, st)) {
+      if (bem->em().CanPair(r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {

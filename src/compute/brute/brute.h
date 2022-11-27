@@ -62,6 +62,7 @@ class Brute {
   Primary r_;
   erg::EnergyModelPtr em_;
   erg::BoltzEnergyModelPtr bem_;
+  erg::EnergyModelPtr underlying_;
   BruteCfg cfg_;
 
   Secondary s_;

@@ -181,7 +181,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
   }
 
   // Compute the exterior tables.
-  auto ext = PartitionExterior(r, em, dp);
+  auto ext = PartitionExterior(r, *em, dp);
 
   // Fill the left triangle.
   // The meaning of the tables changes here:
