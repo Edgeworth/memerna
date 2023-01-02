@@ -6,7 +6,12 @@ remove augu penalty from t22 special hairpins
 remove gu penalty from t12 special hairpins
 
 add terminal stacks to:
+stacking:
+hairpins: what about ((...)) - need terminal stacks here?
+internal loops: ((..((...))..))
+bulge loops: ((((...)).))
 
+use inheritance to copy stuff from t04?
 
 check float bits, partition fn
 update tests based on precision , ifdefs
