@@ -27,6 +27,5 @@ fix:
   SETUPTOOLS_USE_DISTUTILS=stdlib pre-commit run --all-files
 
 update:
+  poetry up --latest
   pre-commit autoupdate
-  # Ray wants older protobuf and click. Remove when it updates.
-  poetryup --latest --exclude-name protobuf --exclude-name click
