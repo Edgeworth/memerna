@@ -26,7 +26,7 @@ viennarna = "^2.5.0a5"
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"
 mypy = "^0.991"
-prospector = "^1.8.3"
+prospector = "^1.8.4"
 poetry-plugin-up = "^0.2.1"
 
 [tool.mypy]

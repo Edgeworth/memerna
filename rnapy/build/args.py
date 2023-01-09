@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import cloup
+from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.build_cfg import BuildCfg
 from rnapy.build.build_cfg import BuildKind
 from rnapy.build.build_cfg import Compiler
@@ -55,6 +56,70 @@ build_cfg_options = cloup.option_group(
     cloup.option("--energy-precision", type=int, default=2),
 )
 
+afl_fuzz_cfg_options = cloup.option_group(
+    "afl-fuzz config options",
+    cloup.option(
+        "--max-len",
+        default=-1,
+        help="Max size of sequences to fuzz",
+    ),
+    cloup.option(
+        "--random-model/--no-random-model",
+        default=False,
+        help="Whether to use random model for energy",
+    ),
+    cloup.option(
+        "--brute-max",
+        default=22,
+        help="Max size of sequences to brute force",
+    ),
+    cloup.option(
+        "--mfe/--no-mfe",
+        default=False,
+        help="Whether to fuzz mfe",
+    ),
+    cloup.option(
+        "--mfe-rnastructure/--no-mfe-rnastructure",
+        default=False,
+        help="Whether to fuzz mfe with rnastructure",
+    ),
+    cloup.option(
+        "--mfe-table/--no-mfe-table",
+        default=False,
+        help="Whether to fuzz mfe with table",
+    ),
+    cloup.option(
+        "--subopt/--no-subopt",
+        default=False,
+        help="Whether to fuzz subopt",
+    ),
+    cloup.option(
+        "--subopt-rnastructure/--no-subopt-rnastructure",
+        default=False,
+        help="Whether to fuzz subopt with rnastructure",
+    ),
+    cloup.option(
+        "--subopt-strucs",
+        default=5000,
+        help="Maximum number of structures to generate for subopt",
+    ),
+    cloup.option(
+        "--subopt-delta",
+        default=0.6,
+        help="Maximum energy delta for subopt",
+    ),
+    cloup.option(
+        "--part/--no-part",
+        default=False,
+        help="Whether to fuzz partition function",
+    ),
+    cloup.option(
+        "--part-rnastructure/--no-part-rnastructure",
+        default=False,
+        help="Whether to fuzz partition function with rnastructure",
+    ),
+)
+
 
 def build_cfg_from_args(  # pylint: disable=too-many-arguments
     memerna_src_path: Path,
@@ -82,4 +147,37 @@ def build_cfg_from_args(  # pylint: disable=too-many-arguments
         lto=lto,
         float_bits=float_bits,
         energy_precision=energy_precision,
+    )
+
+
+def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
+    build_cfg: BuildCfg,
+    max_len: int = -1,
+    random_model: bool = False,
+    brute_max: int = 22,
+    mfe: bool = False,
+    mfe_rnastructure: bool = False,
+    mfe_table: bool = False,
+    subopt: bool = False,
+    subopt_rnastructure: bool = False,
+    subopt_strucs: int = 5000,
+    subopt_delta: float = 0.6,
+    part: bool = False,
+    part_rnastructure: bool = False,
+    **_kwargs: Any,
+) -> AflFuzzCfg:
+    return AflFuzzCfg(
+        build_cfg=build_cfg,
+        fuzz_max_len=max_len,
+        fuzz_random_model=random_model,
+        fuzz_brute_max=brute_max,
+        fuzz_mfe=mfe,
+        fuzz_mfe_rnastructure=mfe_rnastructure,
+        fuzz_mfe_table=mfe_table,
+        fuzz_subopt=subopt,
+        fuzz_subopt_rnastructure=subopt_rnastructure,
+        fuzz_subopt_strucs=subopt_strucs,
+        fuzz_subopt_delta=subopt_delta,
+        fuzz_part=part,
+        fuzz_part_rnastructure=part_rnastructure,
     )

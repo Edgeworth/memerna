@@ -44,7 +44,7 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
       if (em->CanPair(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
-        for (int ist = st + 1; ist < st + max_inter + 2; ++ist)  // TODO lyngso's ?
+        for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
             p += pc.TwoLoop(st, en, ist, ien).Boltz() * dp[ist][ien][PT_P];
         // Hairpin loops.
@@ -199,7 +199,6 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionSlowest(
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      // TODO: check pairs:
       if (em->CanPair(r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);

@@ -55,7 +55,7 @@ constexpr Energy operator*(int o, const Energy& e) noexcept { return Energy::Fro
 std::istream& operator>>(std::istream& str, Energy& o);
 std::ostream& operator<<(std::ostream& out, const Energy& o);
 
-[[nodiscard]] inline Energy E(double energy) noexcept { return Energy::FromDouble(energy); }
+[[nodiscard]] inline Energy E(double energy) { return Energy::FromDouble(energy); }
 
 // Don't change these values. Plays nice with memset.
 // Used for infinite/sentinel energy values, e.g. in DP tables.

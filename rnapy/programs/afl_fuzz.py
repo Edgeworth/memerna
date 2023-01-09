@@ -6,6 +6,8 @@ import click
 import cloup
 from rnapy.build.afl_fuzz import afl_fuzz_cfgs
 from rnapy.build.afl_fuzz import AflFuzzCfg
+from rnapy.build.args import afl_fuzz_cfg_options
+from rnapy.build.args import build_afl_fuzz_cfg_from_args
 from rnapy.build.args import build_cfg_from_args
 from rnapy.build.args import build_cfg_options
 from rnapy.util.command import run_shell
@@ -20,15 +22,11 @@ def run_fuzz(cfg: AflFuzzCfg) -> None:
 
 @cloup.command()
 @build_cfg_options
+@afl_fuzz_cfg_options
 @cloup.option(
     "--num-procs",
     default=multiprocessing.cpu_count() - 2,
     help="Number of fuzzing configurations to run.",
-)
-@cloup.option(
-    "--max-len",
-    default=-1,
-    help="Max size of sequences to fuzz",
 )
 def afl_fuzz(
     num_procs: int,
@@ -36,7 +34,8 @@ def afl_fuzz(
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfgs = afl_fuzz_cfgs(build_cfg, num_procs, max_len)
+    afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
+    cfgs = afl_fuzz_cfgs(afl_cfg, num_procs)
 
     for cfg in cfgs:
         cfg.build()

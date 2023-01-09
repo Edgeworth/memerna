@@ -6,7 +6,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-# TODO(0): Finish.
+# TODO(1): Finish.
 class MlmFF(Model):
     """Simple feed forward network, but does masked language model stuff."""
 

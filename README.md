@@ -69,6 +69,7 @@ Turner 2004 model (t04p1, t04p2):
 Update in 2012 model (t12p2):
 
 - GU penalty removed from AU/GU penalty
+ - GU 
 - Stacking energy changed (for GU stacks, not WC)
 - See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
 
@@ -78,6 +79,7 @@ Update in 2022 model (t22p2):
 - stacking params updated
 - sequence dependent parameters for terminal base pairs based on the penultimate
   pair
+- See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
 need to apply to all loop types - affects energy model, efn, exterior loop, mfe.
 
