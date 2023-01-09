@@ -28,13 +28,13 @@ class RnaPipeline:
         self.output_path = output_path
         self.cfg = cfg
 
-        # TODO(0): Inference without all this training infrastructure.
+        # TODO(2): Inference without all this training infrastructure.
         self.train_data = RnaDataset(num_struc=cfg.train_num_struc, cfg=cfg)
         self.valid_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
         self.test_data = RnaDataset(num_struc=cfg.valid_num_struc, cfg=cfg)
 
         model = cfg.model_class(cfg=cfg)
-        # TODO(0): Defaults for train config per model kind? e.g. checkpoint_interval
+        # TODO(1): Defaults for train config per model kind? e.g. checkpoint_interval
         train_cfg = TrainCfg(
             model_name="RnaPipeline",
             output_path=output_path,

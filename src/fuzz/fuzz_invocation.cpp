@@ -30,8 +30,8 @@
 namespace mrna::fuzz {
 
 const flt PROB_EP{0.0001};
-inline bool peq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
-inline bool prob_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
+inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
+inline bool part_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 
 FuzzInvocation::FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg)
     : r_(r), em_(std::move(em)), cfg_(cfg) {}
@@ -260,7 +260,7 @@ Error FuzzInvocation::CheckPartition() {
   }
 
   for (int i = 0; i < static_cast<int>(mrna_parts.size()); ++i) {
-    if (!peq(mrna_parts[i].part.q, mrna_parts[0].part.q)) {
+    if (!part_rel_eq(mrna_parts[i].part.q, mrna_parts[0].part.q)) {
       std::stringstream sstream;
       sstream << "q: memerna partition " << i << ": " << mrna_parts[i].part.q
               << " != " << mrna_parts[0].part.q
@@ -270,7 +270,7 @@ Error FuzzInvocation::CheckPartition() {
 
     for (int st = 0; st < N; ++st) {
       for (int en = 0; en < N; ++en) {
-        if (!peq(mrna_parts[i].part.p[st][en], mrna_parts[0].part.p[st][en])) {
+        if (!part_rel_eq(mrna_parts[i].part.p[st][en], mrna_parts[0].part.p[st][en])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
                   << mrna_parts[i].part.p[st][en] << " != " << mrna_parts[0].part.p[st][en]
@@ -279,7 +279,7 @@ Error FuzzInvocation::CheckPartition() {
           errors.push_back(sstream.str());
         }
 
-        if (!peq(mrna_parts[i].prob[st][en], mrna_parts[0].prob[st][en])) {
+        if (!part_rel_eq(mrna_parts[i].prob[st][en], mrna_parts[0].prob[st][en])) {
           std::stringstream sstream;
           sstream << "memerna " << i << " at " << st << " " << en << ": "
                   << mrna_parts[i].prob[st][en] << " != " << mrna_parts[0].prob[st][en]
@@ -368,27 +368,25 @@ Error FuzzInvocation::CheckPartitionRNAstructure() {
   Error errors;
   auto rstr_part = rstr_->Partition(r_);
   // Types for the partition function are meant to be a bit configurable, so use sstream here.
-  // TODO(1): uncomment; rnastructure q is 0 instead of 1?
-  // if (!part_eq(rstr_part.part.q, part_.part.q)) {
-  //   std::stringstream sstream;
-  //   sstream << "q: rnastructure partition " << rstr_part.part.q << " != memerna " << part_.part.q
-  //           << "; difference: " << rstr_part.part.q - part_.part.q;
-  //   errors.push_back(sstream.str());
-  // }
+  if (!part_rel_eq(rstr_part.part.q, part_.part.q)) {
+    std::stringstream sstream;
+    sstream << "q: rnastructure partition " << rstr_part.part.q << " != memerna " << part_.part.q
+            << "; difference: " << rstr_part.part.q - part_.part.q;
+    errors.push_back(sstream.str());
+  }
 
   for (int st = 0; st < N; ++st) {
     for (int en = 0; en < N; ++en) {
-      // TODO(1): uncomment when figure out what's going on with rnastructure
-      // auto rstr_p = std::max(rstr_part.part.p[st][en], flt());
-      // if (!part_eq(rstr_p, part_.part.p[st][en])) {
-      //   std::stringstream sstream;
-      //   sstream << "memerna " << st << " " << en << ": " << part_.part.p[st][en]
-      //           << " != rnastructure " << rstr_p
-      //           << "; difference: " << rstr_p - part_.part.p[st][en];
-      //   errors.push_back(sstream.str());
-      // }
+      auto rstr_p = std::max(rstr_part.part.p[st][en], flt());
+      if (!part_rel_eq(rstr_p, part_.part.p[st][en])) {
+        std::stringstream sstream;
+        sstream << "memerna " << st << " " << en << ": " << part_.part.p[st][en]
+                << " != rnastructure " << rstr_p
+                << "; difference: " << rstr_p - part_.part.p[st][en];
+        errors.push_back(sstream.str());
+      }
 
-      if (!prob_abs_eq(rstr_part.prob[st][en], part_.prob[st][en])) {
+      if (!part_abs_eq(rstr_part.prob[st][en], part_.prob[st][en])) {
         std::stringstream sstream;
         sstream << "memerna " << st << " " << en << ": " << part_.prob[st][en]
                 << " != rnastructure " << rstr_part.prob[st][en]

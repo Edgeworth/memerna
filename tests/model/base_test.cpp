@@ -29,7 +29,7 @@ TEST(BaseTest, CanPair) {
 TEST(BaseTest, IsAuGu) {
   EXPECT_TRUE(IsAuPair(A, U));
   EXPECT_TRUE(IsAuPair(U, A));
-  
+
   EXPECT_TRUE(IsGuPair(G, U));
   EXPECT_TRUE(IsGuPair(U, G));
 

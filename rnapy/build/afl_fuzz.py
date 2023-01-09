@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 import copy
+import dataclasses
 from dataclasses import dataclass
 from dataclasses import field
 from enum import Enum
@@ -52,7 +53,18 @@ class AflFuzzCfg:
     index: int = 0  # which fuzzer this is when running multiple fuzzers
 
     # Info for the actual fuzz_afl invocation:
-    max_len: int = -1
+    fuzz_max_len: int = -1
+    fuzz_random_model: bool = False
+    fuzz_brute_max: int = 22
+    fuzz_mfe: bool = False
+    fuzz_mfe_rnastructure: bool = False
+    fuzz_mfe_table: bool = False
+    fuzz_subopt: bool = False
+    fuzz_subopt_rnastructure: bool = False
+    fuzz_subopt_strucs: int = 5000
+    fuzz_subopt_delta: float = 0.6
+    fuzz_part: bool = False
+    fuzz_part_rnastructure: bool = False
 
     def __post_init__(self) -> None:
         if self.error():
@@ -119,8 +131,24 @@ class AflFuzzCfg:
         cmd = f"./{AFL_TARGET} "
         if self.build_cfg.rnastructure:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
-            # cmd += "--mfe-rnastructure "  # TODO(1): "--subopt-rnastructure --part-rnastructure "
-            cmd += f"--part-rnastructure --no-mfe --no-subopt --max-len {self.max_len} "
+            cmd += f"--max-len {self.fuzz_max_len}"
+            cmd += "--random-model" if self.fuzz_random_model else "--no-random-model"
+            cmd += f"--brute-max {self.fuzz_brute_max}"
+            cmd += "--mfe" if self.fuzz_mfe else "--no-mfe"
+            cmd += "--mfe-rnastructure" if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure"
+            cmd += "--mfe-table" if self.fuzz_mfe_table else "--no-mfe-table"
+            cmd += "--subopt" if self.fuzz_subopt else "--no-subopt"
+            cmd += (
+                "--subopt-rnastructure"
+                if self.fuzz_subopt_rnastructure
+                else "--no-subopt-rnastructure"
+            )
+            cmd += f"--subopt-strucs {self.fuzz_subopt_strucs}"
+            cmd += f"--subopt-delta {self.fuzz_subopt_delta}"
+            cmd += "--part" if self.fuzz_part else "--no-part-rnastructure"
+            cmd += (
+                "--part-rnastructure" if self.fuzz_part_rnastructure else "--no-part-rnastructure"
+            )
 
         return cmd
 
@@ -154,7 +182,7 @@ class AflFuzzCfg:
         return cmd
 
 
-def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int, max_len: int) -> list[AflFuzzCfg]:
+def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:
     """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
     # Constructs fuzzers in this order:
@@ -178,7 +206,7 @@ def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int, max_len: int) -> list[AflFu
     # Skip other configurations if RNAstructure is enabled because we don't
     # care about these kinds of issues in RNAstructure.
     # Also skip LAF, as it takes too long to compile.
-    if not build_cfg.rnastructure:
+    if not afl_cfg.build_cfg.rnastructure:
         kinds_args += [
             (AflFuzzKind.LAF, []),
             (AflFuzzKind.LAF, []),
@@ -205,18 +233,11 @@ def afl_fuzz_cfgs(build_cfg: BuildCfg, max_num: int, max_len: int) -> list[AflFu
     ]
 
     gen = zip(cycle(mopt_cycle), cycle(queue_cycle), cycle(power_cycle))
-    for mopt, queue, power in islice(gen, max_num):
+    for mopt, queue, power in islice(gen, max_num_procs):
         kinds_args.append((AflFuzzKind.REGULAR, mopt + queue + power))
 
     for i, (kind, extra_args) in enumerate(kinds_args):
-        cfgs.append(
-            AflFuzzCfg(
-                build_cfg=build_cfg,
-                kind=kind,
-                afl_args=extra_args,
-                max_len=max_len,
-                index=i,
-            ),
-        )
+        cfg = dataclasses.replace(afl_cfg, kind=kind, afl_args=extra_args, index=i)
+        cfgs.append(cfg)
 
-    return cfgs[:max_num]
+    return cfgs[:max_num_procs]
