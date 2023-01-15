@@ -129,6 +129,7 @@ set(MEMERNA_SOURCE
   src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_slowest.cpp
   src/compute/mfe/t04/mfe.h
+  src/compute/mfe/t22/mfe_exterior.cpp
   src/compute/mfe/t22/mfe_slowest.cpp
   src/compute/mfe/t22/mfe.h
   src/compute/partition/partition.cpp src/compute/partition/partition.h
