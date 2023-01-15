@@ -62,21 +62,24 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
 }
 
 ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
-  return std::visit(
-      [&](const erg::t04::ModelPtr& em) -> ExtArray {
-        auto ext = mfe::t04::MfeExterior(r, em, dp);
-        return ext;
-      },
-      em_);
+  auto vis = overloaded{
+      [&](const erg::t04::ModelPtr& em) -> ExtArray { return mfe::t04::MfeExterior(r, em, dp); },
+      [&](const erg::t22::ModelPtr& em) -> ExtArray { return mfe::t22::MfeExterior(r, em, dp); },
+  };
+  return std::visit(vis, em_);
 }
 
 tb::TracebackResult Ctx::ComputeTraceback(
     const Primary& r, const DpArray& dp, const ExtArray& ext) const {
-  return std::visit(
+  auto vis = overloaded{
       [&](const erg::t04::ModelPtr& em) -> tb::TracebackResult {
         return tb::t04::Traceback(r, em, dp, ext);
       },
-      em_);
+      [&](const erg::t22::ModelPtr& em) -> tb::TracebackResult {
+        return tb::t22::Traceback(r, em, dp, ext);
+      },
+  };
+  return std::visit(vis, em_);
 }
 
 ctx::FoldResult Ctx::Fold(const Primary& r) const {
@@ -116,7 +119,7 @@ int Ctx::Suboptimal(
   auto dp = ComputeMfe(r);
   auto ext = ComputeMfeExterior(r, dp);
 
-  return std::visit(
+  auto vis = overloaded{
       [&, ext = std::move(ext)](const erg::t04::ModelPtr& em) mutable -> int {
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::SLOWEST:
@@ -128,7 +131,9 @@ int Ctx::Suboptimal(
         default: bug();
         }
       },
-      em_);
+      [&, ext = std::move(ext)](const erg::t22::ModelPtr&) mutable -> int { bug(); },
+  };
+  return std::visit(vis, em_);
 }
 
 part::PartResult Ctx::Partition(const Primary& r) const {
@@ -137,7 +142,8 @@ part::PartResult Ctx::Partition(const Primary& r) const {
   }
 
   std::tuple<BoltzDpArray, BoltzExtArray> res;
-  std::visit(
+
+  auto vis = overloaded{
       [&](const erg::t04::ModelPtr& em) {
         switch (cfg_.part_alg) {
         case CtxCfg::PartAlg::SLOWEST: res = part::t04::PartitionSlowest(r, em); break;
@@ -147,7 +153,9 @@ part::PartResult Ctx::Partition(const Primary& r) const {
         default: bug();
         }
       },
-      em_);
+      [&](const erg::t22::ModelPtr&) { bug(); },
+  };
+  std::visit(vis, em_);
 
   const int N = static_cast<int>(r.size());
   auto [dp, ext] = std::move(res);

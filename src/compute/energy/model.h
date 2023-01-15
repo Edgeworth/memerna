@@ -51,8 +51,8 @@ inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
 // Creates the Boltzmann energy model from the given energy model.
 inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   auto vis = overloaded{
-      [](const t04::ModelPtr& em) { return t04::BoltzModel::Create(em); },
-      [](const t22::ModelPtr& em) { return t22::BoltzModel::Create(em); },
+      [](const t04::ModelPtr& em) -> BoltzEnergyModelPtr { return t04::BoltzModel::Create(em); },
+      [](const t22::ModelPtr& em) -> BoltzEnergyModelPtr { return t22::BoltzModel::Create(em); },
   };
   return std::visit(vis, em);
 }
@@ -63,7 +63,7 @@ inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
 // off bulge loop C state calculation.
 // This may create a new energy model, so it's expensive.
 inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
-  return std::visit([](const auto& bem) { return bem->em().Clone(); }, bem);
+  return std::visit([](const auto& bem) -> EnergyModelPtr { return bem->em().Clone(); }, bem);
 }
 
 inline uint32_t Checksum(const EnergyModelPtr& em) {
