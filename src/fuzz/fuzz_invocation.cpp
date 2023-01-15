@@ -43,7 +43,7 @@ Error FuzzInvocation::Run() {
 
   auto ret = std::move(errors_);
   errors_.clear();
-  Register(sfmt("Difference on len {} RNA {}:", r_.size(), r_.ToSeq()), std::move(ret));
+  Register(fmt::format("Difference on len {} RNA {}:", r_.size(), r_.ToSeq()), std::move(ret));
 
   return std::move(errors_);
 }
@@ -82,7 +82,7 @@ Error FuzzInvocation::CheckMfe() {
     if (mrna_res[0].mfe.energy != mrna_res[i].mfe.energy ||
         mrna_res[0].mfe.energy != mrna_ctd_efns[i] || mrna_res[0].mfe.energy != mrna_opt_efns[i]) {
       errors.push_back("mfe/efn energy mismatch:");
-      errors.push_back(sfmt("  alg {}: {} (dp) {} (ctd efn) {} (opt efn) != mfe {}", i,
+      errors.push_back(fmt::format("  alg {}: {} (dp) {} (ctd efn) {} (opt efn) != mfe {}", i,
           mrna_res[i].mfe.energy, mrna_ctd_efns[i], mrna_opt_efns[i], mrna_res[0].mfe.energy));
     }
   }
@@ -98,7 +98,7 @@ Error FuzzInvocation::CheckMfe() {
           // If meant to be infinity and not.
           if (((dp < CAP_E) != (dpi < CAP_E)) || (dp < CAP_E && dp != dpi)) {
             errors.push_back("dp mismatch:");
-            errors.push_back(sfmt("  dp {} at {} {} {}: {} != {}", i, st, en, a, dpi, dp));
+            errors.push_back(fmt::format("  dp {} at {} {} {}: {} != {}", i, st, en, a, dpi, dp));
           }
         }
       }
@@ -115,7 +115,7 @@ Error FuzzInvocation::CheckMfe() {
         // If meant to be infinity and not.
         if (((ext < CAP_E) != (exti < CAP_E)) || (ext < CAP_E && ext != exti)) {
           errors.push_back("ext mismatch:");
-          errors.push_back(sfmt("ext {} at {} {}: {} != {}", i, st, a, exti, ext));
+          errors.push_back(fmt::format("ext {} at {} {}: {} != {}", i, st, a, exti, ext));
         }
       }
     }
@@ -160,11 +160,11 @@ Error FuzzInvocation::CheckSubopt() {
 
   for (int cfg = 0; cfg < static_cast<int>(mrna.size()); ++cfg) {
     const auto& mrna_cfg = mrna[cfg];
-    auto desc = sfmt("subopt delta: {} strucs: {} sorted: {}", cfgs[cfg].delta, cfgs[cfg].strucs,
-        cfgs[cfg].sorted);
+    auto desc = fmt::format("subopt delta: {} strucs: {} sorted: {}", cfgs[cfg].delta,
+        cfgs[cfg].strucs, cfgs[cfg].sorted);
     for (int alg = 0; alg < static_cast<int>(mrna_cfg.size()); ++alg) {
-      Register(sfmt("alg {}, cfg: {}", alg, desc), CheckSuboptResult(mrna_cfg[alg], true));
-      Register(sfmt("alg {} vs alg 0, cfg: {}", alg, desc),
+      Register(fmt::format("alg {}, cfg: {}", alg, desc), CheckSuboptResult(mrna_cfg[alg], true));
+      Register(fmt::format("alg {} vs alg 0, cfg: {}", alg, desc),
           CheckSuboptResultPair(cfgs[cfg], mrna_cfg[0], mrna_cfg[alg]));
     }
   }
@@ -197,7 +197,7 @@ Error FuzzInvocation::CheckSuboptResult(
   // Check MFE.
   if (!subopt.empty() && fold_.mfe.energy != subopt[0].energy)
     errors.push_back(
-        sfmt("lowest structure energy {} != mfe {}", subopt[0].energy, fold_.mfe.energy));
+        fmt::format("lowest structure energy {} != mfe {}", subopt[0].energy, fold_.mfe.energy));
 
   // Check for duplicate structures.
   if (SuboptDuplicates(subopt)) errors.push_back("has duplicates");
@@ -210,7 +210,7 @@ Error FuzzInvocation::CheckSuboptResult(
       auto suboptimal_efn = erg::TotalEnergy(em_, r_, sub.tb.s, &sub.tb.ctd);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
-            sfmt("structure {}: energy {} != efn {}", i, sub.energy, suboptimal_efn.energy));
+            fmt::format("structure {}: energy {} != efn {}", i, sub.energy, suboptimal_efn.energy));
         break;
       }
 
@@ -218,7 +218,7 @@ Error FuzzInvocation::CheckSuboptResult(
       auto parsed = ParseSeqCtdString(r_.ToSeq(), sub.tb.ctd.ToString(sub.tb.s));
       if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
           std::get<Ctds>(parsed) != sub.tb.ctd) {
-        errors.push_back(sfmt("structure {}: bug in parsing code", i));
+        errors.push_back(fmt::format("structure {}: bug in parsing code", i));
         break;
       }
     }
@@ -231,7 +231,7 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
   Error errors;
   if (a.size() != b.size()) {
     errors.push_back(
-        sfmt("first has {} structures != second has {} structures", a.size(), b.size()));
+        fmt::format("first has {} structures != second has {} structures", a.size(), b.size()));
   } else {
     for (int i = 0; i < static_cast<int>(a.size()); ++i) {
       // If we were limited by number of structures and we are on the last energy value,
@@ -239,10 +239,12 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
       // that energy value into their result, so break.
       if (cfg.strucs == static_cast<int>(a.size()) && a[i].energy == a.back().energy) break;
       if (a[i].energy != b[i].energy)
-        errors.push_back(sfmt("structure {}: first {} != second {}", i, a[i].energy, b[i].energy));
-      if (a[i].tb.s != b[i].tb.s) errors.push_back(sfmt("structure {}: secondaries differ", i));
+        errors.push_back(
+            fmt::format("structure {}: first {} != second {}", i, a[i].energy, b[i].energy));
+      if (a[i].tb.s != b[i].tb.s)
+        errors.push_back(fmt::format("structure {}: secondaries differ", i));
       if (a[i].tb.ctd != b[i].tb.ctd)
-        errors.push_back(sfmt("structure {}: ctds differ", i, a[i].energy, b[i].energy));
+        errors.push_back(fmt::format("structure {}: ctds differ", i, a[i].energy, b[i].energy));
     }
   }
   return errors;
@@ -313,8 +315,8 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   // Check RNAstructure energies:
   if (fold_.mfe.energy != fold.mfe.energy || fold_.mfe.energy != efn.energy) {
     errors.push_back("mfe/efn energy mismatch:");
-    errors.push_back(
-        sfmt("  {} (dp), {} (efn) != mfe {}", fold.mfe.energy, efn.energy, fold_.mfe.energy));
+    errors.push_back(fmt::format(
+        "  {} (dp), {} (efn) != mfe {}", fold.mfe.energy, efn.energy, fold_.mfe.energy));
   }
 
   // Check RNAstructure produced structure:
@@ -326,7 +328,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   auto opt_efn = erg::TotalEnergy(em_, r_, fold.tb.s, nullptr).energy;
   if (opt_efn != fold.mfe.energy) {
     errors.push_back("mfe/efn energy mismatch:");
-    errors.push_back(sfmt("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));
+    errors.push_back(fmt::format("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));
   }
 
   // Check RNAstructure dp table:
@@ -339,7 +341,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
           if (((dp < CAP_E) != (rstr_eval < INFINITE_ENERGY - 1000) ||
                   (dp < CAP_E && dp != bridge::RNAstructure::ToEnergy(rstr_eval)))) {
             errors.push_back("dp mismatch:");
-            errors.push_back(sfmt("  dp at {} {} {}: {} != {}", st, en, a, rstr_eval, dp));
+            errors.push_back(fmt::format("  dp at {} {} {}: {} != {}", st, en, a, rstr_eval, dp));
           }
         }
       }

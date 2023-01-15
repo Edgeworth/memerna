@@ -65,8 +65,7 @@ int main(int argc, char* argv[]) {
     int64_t i = 0;
     mrna::Primary r(min_len);
     while (static_cast<int>(r.size()) <= max_len) {
-      if (++i % 1000 == 0)
-        fmt::print("Fuzzed {} RNA, current size: {}\n", i, r.size());
+      if (++i % 1000 == 0) fmt::print("Fuzzed {} RNA, current size: {}\n", i, r.size());
 
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();

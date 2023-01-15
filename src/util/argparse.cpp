@@ -23,7 +23,7 @@ std::string Opt::Desc() const {
   } else if (!ln.empty()) {
     desc += "--" + ln;
   }
-  if (has_default_) desc += sfmt(" [{}]", default_);
+  if (has_default_) desc += fmt::format(" [{}]", default_);
   if (!choices_.empty()) {
     desc += " (";
     for (auto iter = choices_.begin(); iter != choices_.end(); ++iter) {
@@ -68,7 +68,7 @@ std::string ArgParse::Usage() const {
   std::string usage = "Usage: \n";
   for (const auto& opt : opts_) {
     if (opt.hidden()) continue;
-    usage += sfmt("  {}\n", opt.Desc());
+    usage += fmt::format("  {}\n", opt.Desc());
   }
   return usage;
 }
@@ -85,11 +85,11 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     } else {
       auto& map = is_short ? shortname_ : longname_;
       auto iter = map.find(s);
-      if (iter == map.end()) return sfmt("unknown option {}", argv[i]);
+      if (iter == map.end()) return fmt::format("unknown option {}", argv[i]);
 
       const auto& opt = iter->second;
       if (opt.kind() == Opt::ARG) {
-        if (i + 1 == argc) return sfmt("missing argument for option {}", opt.Desc());
+        if (i + 1 == argc) return fmt::format("missing argument for option {}", opt.Desc());
         values_[opt] = argv[++i];
       } else {
         auto pair = FlagPair(opt);
@@ -101,9 +101,9 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   }
   for (const auto& opt : opts_) {
     bool has = Has(opt);
-    if (opt.required() && !has) return sfmt("missing required option {}", opt.Desc());
+    if (opt.required() && !has) return fmt::format("missing required option {}", opt.Desc());
     if (has && !opt.choices().empty() && !opt.choices().contains(Get(opt)))
-      return sfmt("unrecognised argument for option {}", opt.Desc());
+      return fmt::format("unrecognised argument for option {}", opt.Desc());
   }
   return "";
 }
