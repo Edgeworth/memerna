@@ -69,15 +69,18 @@ Turner 2004 model (t04p1, t04p2):
 Update in 2012 model (t12p2):
 
 - GU penalty removed from AU/GU penalty
- - GU 
-- Stacking energy changed (for GU stacks, not WC)
+- GU penalty removed from special hairpins, if closed by GU (none like this)
+- Removed 0.45 portion of GU penalty from internal loop GU penalty.
+- Stacking parameters changed (for GU stacks, not WC)
 - See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
 
 Update in 2022 model (t22p2):
 
 - AU penalty removed as well
-- stacking params updated
-- sequence dependent parameters for terminal base pairs based on the penultimate
+- AU penalty removed from special hairpins, if closed by AU
+- Removed 0.45 portion of AU penalty from internal loop AU penalty.
+- Stacking parameters changed
+- Sequence dependent parameters for terminal base pairs based on the penultimate
   pair
 - See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
