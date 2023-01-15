@@ -98,7 +98,7 @@ ModelPtr Model::Random(uint_fast32_t seed) {
   } while (0)
 
   RANDOMISE_DATA(em->stack);
-  RANDOMISE_DATA(em->terminal_stack);
+  RANDOMISE_DATA(em->penultimate_stack);
   RANDOMISE_DATA(em->terminal);
   RANDOMISE_DATA(em->internal_init);
   RANDOMISE_DATA(em->internal_1x1);
@@ -148,7 +148,7 @@ ModelPtr Model::Random(uint_fast32_t seed) {
         for (int d = 0; d < 4; ++d) {
           // Correct things to be 180 degree rotations if required.
           em->stack[c][d][a][b] = em->stack[a][b][c][d];
-          em->terminal_stack[c][d][a][b] = em->terminal_stack[a][b][c][d];
+          em->penultimate_stack[c][d][a][b] = em->penultimate_stack[a][b][c][d];
           for (int e = 0; e < 4; ++e) {
             for (int f = 0; f < 4; ++f) {
               em->internal_1x1[d][e][f][a][b][c] = em->internal_1x1[a][b][c][d][e][f];
@@ -176,7 +176,7 @@ ModelPtr Model::FromDir(const std::string& data_dir) {
   Parse4MapFromFile(data_dir + "/stacking.data", em->stack);
 
   // Terminal stacking data.
-  Parse4MapFromFile(data_dir + "/terminal_stacking.data", em->terminal_stack);
+  Parse4MapFromFile(data_dir + "/penultimate_stacking.data", em->penultimate_stack);
 
   // Terminal mismatch data.
   Parse4MapFromFile(data_dir + "/terminal.data", em->terminal);
@@ -634,66 +634,6 @@ EnergyResult Model::TotalEnergy(
   return res;
 }
 
-uint32_t Model::Checksum() const {
-  std::string data;
-
-// This isn't portable across machines with different endianness but I don't care.
-#define APPEND_DATA(d)                             \
-  do {                                             \
-    auto dp = reinterpret_cast<const char*>(&(d)); \
-    data.insert(data.end(), dp, dp + sizeof(d));   \
-  } while (0)
-
-  APPEND_DATA(stack);
-  APPEND_DATA(terminal_stack);
-  APPEND_DATA(terminal);
-  APPEND_DATA(internal_init);
-  APPEND_DATA(internal_1x1);
-  APPEND_DATA(internal_1x2);
-  APPEND_DATA(internal_2x2);
-  APPEND_DATA(internal_2x3_mismatch);
-  APPEND_DATA(internal_other_mismatch);
-  APPEND_DATA(internal_asym);
-  APPEND_DATA(internal_au_penalty);
-  APPEND_DATA(internal_gu_penalty);
-  APPEND_DATA(bulge_init);
-  APPEND_DATA(bulge_special_c);
-  APPEND_DATA(hairpin_init);
-  APPEND_DATA(hairpin_uu_ga_first_mismatch);
-  APPEND_DATA(hairpin_gg_first_mismatch);
-  APPEND_DATA(hairpin_special_gu_closure);
-  APPEND_DATA(hairpin_c3_loop);
-  APPEND_DATA(hairpin_all_c_a);
-  APPEND_DATA(hairpin_all_c_b);
-
-  // Order keys so the hash doesn't change depending on unordered_map's implementation.
-  std::vector<std::pair<std::string, Energy>> ordered_keys(hairpin.begin(), hairpin.end());
-  std::sort(ordered_keys.begin(), ordered_keys.end());
-  for (const auto& [k, e] : ordered_keys) {
-    data += k;
-    APPEND_DATA(e);
-  }
-
-  APPEND_DATA(multiloop_hack_a);
-  APPEND_DATA(multiloop_hack_b);
-  APPEND_DATA(dangle5);
-  APPEND_DATA(dangle3);
-  APPEND_DATA(coax_mismatch_non_contiguous);
-  APPEND_DATA(coax_mismatch_wc_bonus);
-  APPEND_DATA(coax_mismatch_gu_bonus);
-  APPEND_DATA(au_penalty);
-  APPEND_DATA(gu_penalty);
-
-  APPEND_DATA(HAIRPIN_MIN_SZ);
-  APPEND_DATA(R);
-  APPEND_DATA(T);
-  APPEND_DATA(NINIO_MAX_ASYM);
-  APPEND_DATA(TWOLOOP_MAX_SZ);
-#undef APPEND_DATA
-
-  return Crc32(data);
-}
-
 bool Model::IsValid(std::string* reason) const {
 #define CHECK_COND(cond, reason_str)                           \
   do {                                                         \
@@ -710,7 +650,7 @@ bool Model::IsValid(std::string* reason) const {
           // Expect 180 degree rotations to be the same.
           CHECK_COND(
               stack[a][b][c][d] == stack[c][d][a][b], "180 degree rotations should be the same");
-          CHECK_COND(terminal_stack[a][b][c][d] == terminal_stack[c][d][a][b],
+          CHECK_COND(penultimate_stack[a][b][c][d] == penultimate_stack[c][d][a][b],
               "180 degree rotations should be the same");
           CHECK_COND(internal_asym >= ZERO_E, "optimisations rely on this");
 

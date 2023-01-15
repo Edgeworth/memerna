@@ -36,8 +36,6 @@ std::string TrimLeft(const std::string& s);
 std::string TrimRight(const std::string& s);
 std::string Trim(const std::string& s);
 
-uint32_t Crc32(const std::string& data);
-
 }  // namespace mrna
 
 #endif  // UTIL_STRING_H_
