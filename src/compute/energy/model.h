@@ -66,10 +66,6 @@ inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
   return std::visit([](const auto& bem) -> EnergyModelPtr { return bem->em().Clone(); }, bem);
 }
 
-inline uint32_t Checksum(const EnergyModelPtr& em) {
-  return std::visit([&](const auto& em) -> uint32_t { return em->Checksum(); }, em);
-}
-
 inline ModelKind Kind(const EnergyModelPtr& em) {
   auto vis = overloaded{
       [](const t04::ModelPtr&) { return ModelKind::T04_LIKE; },
