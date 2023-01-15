@@ -157,6 +157,7 @@ set(TEST_SOURCE
   tests/compute/brute/brute_test.cpp
   tests/compute/energy/energy_test.cpp
   tests/compute/energy/t04_test.cpp
+  tests/compute/energy/t22_test.cpp
   tests/compute/mfe/t04_test.cpp
   tests/compute/partition/t04_test.cpp
   tests/compute/subopt/t04_test.cpp
