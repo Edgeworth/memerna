@@ -13,8 +13,6 @@ namespace mrna {
 
 namespace {
 
-constexpr int START_BUF_SIZE = 1024;
-constexpr int MAX_BUF_SIZE = 1024 * 1024;
 constexpr uint32_t CRC_MAGIC = 0xEDB88320;
 
 }  // namespace
@@ -23,28 +21,6 @@ std::string sgetline(std::istream& is) {
   std::string s;
   std::getline(is, s);
   return s;
-}
-
-// This is called by error handling code, so don't use verify etc in this.
-std::string sfmt(const char* fmt, ...) {
-  va_list l;
-  va_start(l, fmt);
-  std::string res = vsfmt(fmt, l);
-  va_end(l);
-  return res;
-}
-
-// This is called by error handling code, so don't use verify etc in this.
-std::string vsfmt(const char* fmt, va_list l) {
-  auto size = START_BUF_SIZE;
-  do {
-    auto buf = std::make_unique<char[]>(size);
-    const int res = vsnprintf(buf.get(), size, fmt, l);
-    if (res < 0) throw std::runtime_error("failed to vsnprintf");
-    if (res < size) return buf.get();
-    size *= 2;
-  } while (size < MAX_BUF_SIZE);
-  throw std::length_error("output of vsfmt would be too large");
 }
 
 std::string TrimLeft(const std::string& s) {

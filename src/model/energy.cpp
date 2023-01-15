@@ -13,7 +13,7 @@ namespace mrna {
 Energy Energy::FromDouble(double energy) {
   auto rounded = std::round(energy * Energy::FACTOR);
   auto res = Energy::FromRaw(static_cast<int32_t>(rounded));
-  verify(res < CAP_E, "energy value out of range: %f", energy);
+  verify(res < CAP_E, "energy value out of range: {}", energy);
   return res;
 }
 
@@ -26,20 +26,20 @@ Energy Energy::FromString(const std::string& s) {
   int sgn = ss.peek() == '-' ? -1 : 1;
   int hi = 0;
   int lo = 0;
-  verify(ss >> hi, "invalid energy: %s", s.c_str());
+  verify(ss >> hi, "invalid energy: {}", s);
   hi = std::abs(hi);
   if (!ss.eof()) {
-    verify(ss.get() == '.', "invalid energy: %s", s.c_str());
+    verify(ss.get() == '.', "invalid energy: {}", s);
     std::string decimal;
-    verify(ss >> decimal, "invalid energy: %s", s.c_str());
-    verify(decimal.size() <= Energy::EXPONENT, "invalid energy: %s", s.c_str());
+    verify(ss >> decimal, "invalid energy: {}", s);
+    verify(decimal.size() <= Energy::EXPONENT, "invalid energy: {}", s);
     decimal.resize(Energy::EXPONENT, '0');
     lo = std::stoi(decimal);
   }
-  verify(ss.eof(), "invalid energy: %s", s.c_str());
-  verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: %s", s.c_str());
+  verify(ss.eof(), "invalid energy: {}", s);
+  verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: {}", s);
   Energy energy = Energy::FromRaw(sgn * (hi * Energy::FACTOR + lo));
-  verify(energy < CAP_E, "energy out of range: %s", s.c_str());
+  verify(energy < CAP_E, "energy out of range: {}", s);
   return energy;
 }
 

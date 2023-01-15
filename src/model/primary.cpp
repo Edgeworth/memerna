@@ -20,7 +20,7 @@ Primary Primary::FromSeq(const std::string& s) {
   Primary r(s.size());
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     const auto base = CharToBase(s[i]);
-    verify(base.has_value(), "unexpected base %c", s[i]);
+    verify(base.has_value(), "unexpected base {}", s[i]);
     r[i] = *base;
   }
   return r;

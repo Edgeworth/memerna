@@ -176,7 +176,7 @@ class SplayMap {
 
   // Testing / visualisation methods.
   std::string Describe() {
-    std::string ans = sfmt("Tree with %zu nodes. Backing node size: %zu, root at index %d\n",
+    std::string ans = sfmt("Tree with {} nodes. Backing node size: {}, root at index {}\n",
         Size(), ns_.size(), root);
     for (const auto& s : DescribeInternal(root)) ans += s + "\n";
     return ans;

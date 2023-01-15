@@ -37,7 +37,7 @@ std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o) {
   } else if (s == "brute") {
     o = CtxCfg::DpAlg::BRUTE;
   } else {
-    error("unknown fold option %s", s.c_str());
+    error("unknown fold option {}", s);
   }
   return str;
 }
@@ -52,7 +52,7 @@ std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
   } else if (s == "brute") {
     o = CtxCfg::SuboptAlg::BRUTE;
   } else {
-    error("unknown suboptimal option %s", s.c_str());
+    error("unknown suboptimal option {}", s);
   }
   return str;
 }
@@ -67,7 +67,7 @@ std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o) {
   } else if (s == "brute") {
     o = CtxCfg::PartAlg::BRUTE;
   } else {
-    error("unknown partition option %s", s.c_str());
+    error("unknown partition option {}", s);
   }
   return str;
 }
