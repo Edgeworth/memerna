@@ -13,6 +13,8 @@
 
 namespace mrna::erg::t22 {
 
+// TODO(0): generalise this?
+
 Energy ComputeOptimalCtds(const Model& em, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd);
 

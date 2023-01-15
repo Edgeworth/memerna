@@ -9,16 +9,19 @@
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/energy/t04/model.h"
+#include "compute/energy/t22/boltz_model.h"
+#include "compute/energy/t22/model.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna::erg {
 
-using EnergyModelPtr = std::variant<t04::ModelPtr>;
-using BoltzEnergyModelPtr = std::variant<t04::BoltzModelPtr>;
+using EnergyModelPtr = std::variant<t04::ModelPtr, t22::ModelPtr>;
+using BoltzEnergyModelPtr = std::variant<t04::BoltzModelPtr, t22::BoltzModelPtr>;
 
 enum class ModelKind {
   T04_LIKE,
@@ -32,9 +35,7 @@ inline EnergyModelPtr FromArgParse(const ArgParse& args) {
   auto kind = args.Get<ModelKind>(OPT_ENERGY_MODEL);
   switch (kind) {
   case ModelKind::T04_LIKE: return t04::Model::FromArgParse(args);
-  case ModelKind::T22_LIKE:
-    // TODO(0): implement.
-    bug();
+  case ModelKind::T22_LIKE: return t22::Model::FromArgParse(args);
   default: bug();
   }
 }
@@ -42,16 +43,18 @@ inline EnergyModelPtr FromArgParse(const ArgParse& args) {
 inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
   switch (kind) {
   case ModelKind::T04_LIKE: return t04::Model::Random(seed);
-  case ModelKind::T22_LIKE:
-    // TODO(0): implement.
-    bug();
+  case ModelKind::T22_LIKE: return t22::Model::Random(seed);
   default: bug();
   }
 }
 
 // Creates the Boltzmann energy model from the given energy model.
 inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
-  return std::visit([](const t04::ModelPtr& em) { return t04::BoltzModel::Create(em); }, em);
+  auto vis = overloaded{
+      [](const t04::ModelPtr& em) { return t04::BoltzModel::Create(em); },
+      [](const t22::ModelPtr& em) { return t22::BoltzModel::Create(em); },
+  };
+  return std::visit(vis, em);
 }
 
 // Returns the underlying non-Boltzmann energy model for the given Boltzmann
@@ -68,7 +71,11 @@ inline uint32_t Checksum(const EnergyModelPtr& em) {
 }
 
 inline ModelKind Kind(const EnergyModelPtr& em) {
-  return std::visit([](const t04::ModelPtr&) { return ModelKind::T04_LIKE; }, em);
+  auto vis = overloaded{
+      [](const t04::ModelPtr&) { return ModelKind::T04_LIKE; },
+      [](const t22::ModelPtr&) { return ModelKind::T22_LIKE; },
+  };
+  return std::visit(vis, em);
 }
 
 inline bool CanPair(const EnergyModelPtr& em, const Primary& r, int st, int en) {

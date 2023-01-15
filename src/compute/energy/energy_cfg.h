@@ -26,7 +26,7 @@ inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
                                         .Choice({"t04p1"})
 #elif ENERGY_PRECISION == 2
                                         .Default("t04p2")
-                                        .Choice({"t04p2", "t12p2"})
+                                        .Choice({"t04p2", "t12p2", "t22p2"})
 #endif
                                         .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS =
