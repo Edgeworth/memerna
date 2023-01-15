@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "compute/energy/common/model.h"
 #include "compute/energy/common/t04_model_mixin.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
@@ -29,15 +30,9 @@ class Model;
 using ModelPtr = std::shared_ptr<Model>;
 
 // TODO(0): Implement.
-class Model : public T04ModelMixin {
+class Model : public ModelMixin<Model>, public T04ModelMixin {
  public:
   Energy penultimate_stack[4][4][4][4] = {};
-
-  static ModelPtr Create() { return ModelPtr(new Model); }
-  static ModelPtr FromDir(const std::string& data_dir);
-  static ModelPtr Random(uint_fast32_t seed);
-  static ModelPtr FromArgParse(const ArgParse& args);
-  inline ModelPtr Clone() const { return std::make_shared<Model>(*this); }
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
@@ -59,7 +54,14 @@ class Model : public T04ModelMixin {
 
   bool IsValid(std::string* reason = nullptr) const;
 
+ protected:
+  void LoadFromDir(const std::string& data_dir);
+
+  void LoadRandom(std::mt19937& eng);
+
  private:
+  friend class ModelMixin<Model>;
+
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 

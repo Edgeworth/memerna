@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
+#include <random>
 #include <string>
 #include <unordered_map>
 
@@ -25,7 +26,12 @@ namespace mrna::erg {
 
 class T04ModelMixin {
  public:
-  inline constexpr static int INITIATION_CACHE_SZ = 31;
+  static constexpr int INITIATION_CACHE_SZ = 31;
+  static constexpr double RAND_MIN_ENERGY = -10.0;
+  static constexpr double RAND_MAX_ENERGY = 10.0;
+  static constexpr int RAND_MAX_HAIRPIN_SZ = 8;
+  static constexpr int RAND_MAX_NUM_HAIRPIN = 50;
+
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
   Energy stack[4][4][4][4] = {};
@@ -146,6 +152,12 @@ class T04ModelMixin {
 
  protected:
   T04ModelMixin() = default;  // Prevent construction of this by itself.
+
+  void LoadFromDir(const std::string& data_dir);
+  void LoadRandom(std::mt19937& eng);
+
+ private:
+  void ParseMiscDataFromFile(const std::string& filename);
 };
 
 }  // namespace mrna::erg

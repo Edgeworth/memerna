@@ -13,9 +13,11 @@
 #include <vector>
 
 #include "compute/energy/common/branch.h"
+#include "compute/energy/common/model.h"
+#include "compute/energy/common/parse.h"
+#include "compute/energy/common/t04_model_mixin.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
-#include "compute/energy/parse.h"
 #include "compute/energy/structure.h"
 #include "compute/energy/t22/branch.h"
 #include "model/base.h"
@@ -27,197 +29,6 @@
 
 namespace mrna::erg::t22 {
 
-namespace {
-constexpr double RAND_MIN_ENERGY = -10.0;
-constexpr double RAND_MAX_ENERGY = 10.0;
-constexpr int RAND_MAX_HAIRPIN_SZ = 8;
-constexpr int RAND_MAX_NUM_HAIRPIN = 50;
-
-void ParseMiscDataFromFile(const std::string& filename, Model* em) {
-  std::ifstream f(filename);
-  verify(f, "could not open file");
-
-#define READ_DATA(var)                              \
-  do {                                              \
-    while (1) {                                     \
-      auto line = sgetline(f);                      \
-      verify(f, "unexpected EOF or error");         \
-      if (line.empty() || line[0] == '/') continue; \
-      (var) = Energy::FromString(Trim(line));       \
-      break;                                        \
-    }                                               \
-  } while (0)
-
-  // Bulge loops.
-  READ_DATA(em->bulge_special_c);
-
-  // Coaxial stacking.
-  READ_DATA(em->coax_mismatch_non_contiguous);
-  READ_DATA(em->coax_mismatch_wc_bonus);
-  READ_DATA(em->coax_mismatch_gu_bonus);
-
-  // Hairpin loops.
-  READ_DATA(em->hairpin_uu_ga_first_mismatch);
-  READ_DATA(em->hairpin_gg_first_mismatch);
-  READ_DATA(em->hairpin_special_gu_closure);
-  READ_DATA(em->hairpin_c3_loop);
-  READ_DATA(em->hairpin_all_c_a);
-  READ_DATA(em->hairpin_all_c_b);
-
-  // Internal loops.
-  READ_DATA(em->internal_asym);
-  READ_DATA(em->internal_au_penalty);
-  READ_DATA(em->internal_gu_penalty);
-
-  // Multiloop data.
-  READ_DATA(em->multiloop_hack_a);
-  READ_DATA(em->multiloop_hack_b);
-
-  // AU/GU penalty
-  READ_DATA(em->au_penalty);
-  READ_DATA(em->gu_penalty);
-#undef READ_DATA
-
-  f >> std::ws;
-  verify(f.eof(), "expected EOF");
-}
-
-}  // namespace
-
-ModelPtr Model::Random(uint_fast32_t seed) {
-  auto em = Create();
-  std::mt19937 eng(seed);
-  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  std::uniform_real_distribution<double> nonneg_energy_dist(0, RAND_MAX_ENERGY);
-#define RANDOMISE_DATA(d)                                      \
-  do {                                                         \
-    auto dp = reinterpret_cast<Energy*>(&(d));                 \
-    /* NOLINTNEXTLINE */                                       \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) \
-      dp[i] = Energy::FromDouble(energy_dist(eng));            \
-  } while (0)
-
-  RANDOMISE_DATA(em->stack);
-  RANDOMISE_DATA(em->penultimate_stack);
-  RANDOMISE_DATA(em->terminal);
-  RANDOMISE_DATA(em->internal_init);
-  RANDOMISE_DATA(em->internal_1x1);
-  RANDOMISE_DATA(em->internal_1x2);
-  RANDOMISE_DATA(em->internal_2x2);
-  RANDOMISE_DATA(em->internal_2x3_mismatch);
-  RANDOMISE_DATA(em->internal_other_mismatch);
-  // This needs to be non-negative for some optimisations.
-  em->internal_asym = Energy::FromDouble(nonneg_energy_dist(eng));
-  RANDOMISE_DATA(em->internal_au_penalty);
-  RANDOMISE_DATA(em->internal_gu_penalty);
-  RANDOMISE_DATA(em->bulge_init);
-  RANDOMISE_DATA(em->bulge_special_c);
-  RANDOMISE_DATA(em->hairpin_init);
-  RANDOMISE_DATA(em->hairpin_uu_ga_first_mismatch);
-  RANDOMISE_DATA(em->hairpin_gg_first_mismatch);
-  RANDOMISE_DATA(em->hairpin_special_gu_closure);
-  RANDOMISE_DATA(em->hairpin_c3_loop);
-  RANDOMISE_DATA(em->hairpin_all_c_a);
-  RANDOMISE_DATA(em->hairpin_all_c_b);
-
-  em->hairpin.clear();
-  std::uniform_int_distribution<int> hairpin_size_dist(HAIRPIN_MIN_SZ, RAND_MAX_HAIRPIN_SZ);
-  static_assert(HAIRPIN_MIN_SZ <= RAND_MAX_HAIRPIN_SZ,
-      "HAIRPIN_MIN_SZ > RAND_MAX_HAIRPIN does not make sense");
-  std::uniform_int_distribution<int> num_hairpin_dist(0, RAND_MAX_NUM_HAIRPIN);
-  int num_hairpin = num_hairpin_dist(eng);
-  for (int i = 0; i < num_hairpin; ++i) {
-    auto hairpin = Primary::Random(hairpin_size_dist(eng)).ToSeq();
-    em->hairpin[hairpin] = Energy::FromDouble(energy_dist(eng));
-  }
-
-  RANDOMISE_DATA(em->multiloop_hack_a);
-  RANDOMISE_DATA(em->multiloop_hack_b);
-  RANDOMISE_DATA(em->dangle5);
-  RANDOMISE_DATA(em->dangle3);
-  RANDOMISE_DATA(em->coax_mismatch_non_contiguous);
-  RANDOMISE_DATA(em->coax_mismatch_wc_bonus);
-  RANDOMISE_DATA(em->coax_mismatch_gu_bonus);
-  RANDOMISE_DATA(em->au_penalty);
-  RANDOMISE_DATA(em->gu_penalty);
-#undef RANDOMISE_DATA
-
-  for (int a = 0; a < 4; ++a) {
-    for (int b = 0; b < 4; ++b) {
-      for (int c = 0; c < 4; ++c) {
-        for (int d = 0; d < 4; ++d) {
-          // Correct things to be 180 degree rotations if required.
-          em->stack[c][d][a][b] = em->stack[a][b][c][d];
-          em->penultimate_stack[c][d][a][b] = em->penultimate_stack[a][b][c][d];
-          for (int e = 0; e < 4; ++e) {
-            for (int f = 0; f < 4; ++f) {
-              em->internal_1x1[d][e][f][a][b][c] = em->internal_1x1[a][b][c][d][e][f];
-              for (int g = 0; g < 4; ++g) {
-                for (int h = 0; h < 4; ++h) {
-                  em->internal_2x2[e][f][g][h][a][b][c][d] =
-                      em->internal_2x2[a][b][c][d][e][f][g][h];
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  std::string reason;
-  verify(em->IsValid(&reason), "invalid energy model: {}", reason);
-  return em;
-}
-
-ModelPtr Model::FromDir(const std::string& data_dir) {
-  auto em = Create();
-  // Stacking interaction data.
-  Parse4MapFromFile(data_dir + "/stacking.data", em->stack);
-
-  // Terminal stacking data.
-  Parse4MapFromFile(data_dir + "/penultimate_stacking.data", em->penultimate_stack);
-
-  // Terminal mismatch data.
-  Parse4MapFromFile(data_dir + "/terminal.data", em->terminal);
-
-  // Hairpin data.
-  ParseNMapFromFile(data_dir + "/hairpin.data", &em->hairpin);
-  ParseVecFromFile(data_dir + "/hairpin_initiation.data", em->hairpin_init);
-
-  // Bulge loop data.
-  ParseVecFromFile(data_dir + "/bulge_initiation.data", em->bulge_init);
-
-  // Internal loop data.
-  ParseVecFromFile(data_dir + "/internal_initiation.data", em->internal_init);
-  Parse6MapFromFile(data_dir + "/internal_1x1.data", em->internal_1x1);
-  Parse7MapFromFile(data_dir + "/internal_1x2.data", em->internal_1x2);
-  Parse8MapFromFile(data_dir + "/internal_2x2.data", em->internal_2x2);
-  Parse4MapFromFile(data_dir + "/internal_2x3_mismatch.data", em->internal_2x3_mismatch);
-  Parse4MapFromFile(data_dir + "/internal_other_mismatch.data", em->internal_other_mismatch);
-
-  // Dangle data.
-  Parse3MapFromFile(data_dir + "/dangle3.data", em->dangle3);
-  Parse3MapFromFile(data_dir + "/dangle5.data", em->dangle5);
-
-  // Other misc data.
-  ParseMiscDataFromFile(data_dir + "/misc.data", em.get());
-
-  std::string reason;
-  verify(em->IsValid(&reason), "invalid energy model: {}", reason);
-  return em;
-}
-
-ModelPtr Model::FromArgParse(const ArgParse& args) {
-  ModelPtr em;
-  if (args.Has(OPT_SEED)) {
-    em = Random(args.Get<uint_fast32_t>(OPT_SEED));
-  } else {
-    em = FromDir(ModelPathFromArgParse(args));
-  }
-  em->cfg = EnergyCfg::FromArgParse(args);
-  return em;
-}
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:
@@ -635,44 +446,42 @@ EnergyResult Model::TotalEnergy(
 }
 
 bool Model::IsValid(std::string* reason) const {
-#define CHECK_COND(cond, reason_str)                           \
-  do {                                                         \
-    if (!(cond)) {                                             \
-      if (reason) *reason = "expected " #cond ": " reason_str; \
-      return false;                                            \
-    }                                                          \
-  } while (0)
+  if (!T04ModelMixin::IsValid(reason)) return false;
 
   for (int a = 0; a < 4; ++a) {
     for (int b = 0; b < 4; ++b) {
       for (int c = 0; c < 4; ++c) {
         for (int d = 0; d < 4; ++d) {
           // Expect 180 degree rotations to be the same.
-          CHECK_COND(
-              stack[a][b][c][d] == stack[c][d][a][b], "180 degree rotations should be the same");
           CHECK_COND(penultimate_stack[a][b][c][d] == penultimate_stack[c][d][a][b],
               "180 degree rotations should be the same");
-          CHECK_COND(internal_asym >= ZERO_E, "optimisations rely on this");
-
-          for (int e = 0; e < 4; ++e) {
-            for (int f = 0; f < 4; ++f) {
-              CHECK_COND(internal_1x1[a][b][c][d][e][f] == internal_1x1[d][e][f][a][b][c],
-                  "180 degree rotations should be the same");
-              for (int g = 0; g < 4; ++g) {
-                for (int h = 0; h < 4; ++h) {
-                  CHECK_COND(
-                      internal_2x2[a][b][c][d][e][f][g][h] == internal_2x2[e][f][g][h][a][b][c][d],
-                      "180 degree rotations should be the same");
-                }
-              }
-            }
-          }
         }
       }
     }
   }
-#undef CHECK_COND
   return true;
+}
+
+void Model::LoadFromDir(const std::string& data_dir) {
+  T04ModelMixin::LoadFromDir(data_dir);
+  Parse4MapFromFile(data_dir + "/penultimate_stacking.data", penultimate_stack);
+}
+
+void Model::LoadRandom(std::mt19937& eng) {
+  T04ModelMixin::LoadRandom(eng);
+
+  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  RANDOMISE_DATA(penultimate_stack);
+  for (int a = 0; a < 4; ++a) {
+    for (int b = 0; b < 4; ++b) {
+      for (int c = 0; c < 4; ++c) {
+        for (int d = 0; d < 4; ++d) {
+          // Correct things to be 180 degree rotations if required.
+          penultimate_stack[c][d][a][b] = penultimate_stack[a][b][c][d];
+        }
+      }
+    }
+  }
 }
 
 }  // namespace mrna::erg::t22

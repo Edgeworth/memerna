@@ -108,11 +108,13 @@ set(MEMERNA_SOURCE
   src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
   src/compute/brute/brute.cpp src/compute/brute/brute.h
   src/compute/dp.h
+  src/compute/energy/common/model.h
   src/compute/energy/common/branch.cpp src/compute/energy/common/branch.h
+  src/compute/energy/common/t04_model_mixin.cpp src/compute/energy/common/t04_model_mixin.h
+  src/compute/energy/common/parse.cpp src/compute/energy/common/parse.h
   src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
   src/compute/energy/model.cpp src/compute/energy/model.h
-  src/compute/energy/parse.cpp src/compute/energy/parse.h
   src/compute/energy/structure.cpp src/compute/energy/structure.h
   src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
   src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h

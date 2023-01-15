@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/parse.h"
+#include "compute/energy/common/parse.h"
 
 #include <optional>
 #include <string>
