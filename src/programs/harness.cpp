@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include <fmt/core.h>
+
 #include <deque>
 #include <iostream>
 #include <memory>
@@ -67,7 +69,7 @@ int main(int argc, char* argv[]) {
       auto [r, s] = mrna::ParseSeqDb(seq, db);
       std::string desc;
       const auto res = package->Efn(r, s, args.GetOr(mrna::OPT_VERBOSE) ? &desc : nullptr);
-      std::cout << res.energy << '\n' << desc;
+      fmt::print("{}\n{}", res.energy, desc);
     }
   } else {
     while (true) {
@@ -86,19 +88,18 @@ int main(int argc, char* argv[]) {
         auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
         int strucs = package->Suboptimal(
             [](const mrna::subopt::SuboptResult& c) {
-              std::cout << c.energy << ' ' << c.tb.s.ToDb() << '\n';
+              fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
             },
             r, delta);
-        std::cout << strucs << " suboptimal structures\n";
+        fmt::print("{} suboptimal structures\n", strucs);
       } else if (fold) {
         const auto res = package->Fold(r);
-        std::cout << res.mfe.energy << '\n' << res.tb.s.ToDb() << '\n';
+        fmt::print("{}\n{}\n", res.mfe.energy, res.tb.s.ToDb());
       } else if (part) {
         auto res = package->Partition(r);
-        std::cout << "q: " << res.part.q << '\n';
-        std::cout << "p:\n";
+        fmt::print("q: {}\np:\n", res.part.q);
         PrintPartition(res.part);
-        std::cout << "\nprobabilities:\n";
+        fmt::print("\nprobabilities:\n");
         PrintBoltzProbs(res.prob);
       }
     }

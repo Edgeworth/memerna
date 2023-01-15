@@ -1,8 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/brute/brute.h"
 
+#include <fmt/core.h>
+
 #include <algorithm>
-#include <iostream>
 #include <string>
 
 #include "compute/brute/brute_cfg.h"
@@ -35,24 +36,24 @@ int main(int argc, char* argv[]) {
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
-    std::cout << mfe.energy << '\n';
-    std::cout << mfe.tb.s.ToDb() << '\n';
-    std::cout << mfe.tb.ctd.ToString(mfe.tb.s) << '\n';
+    fmt::print("{}\n", mfe.energy);
+    fmt::print("{}\n", mfe.tb.s.ToDb());
+    fmt::print("{}\n", mfe.tb.ctd.ToString(mfe.tb.s));
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
-      std::cout << s.energy << '\n';
-      std::cout << s.tb.s.ToDb() << '\n';
-      std::cout << s.tb.ctd.ToString(s.tb.s) << '\n';
+      fmt::print("{}\n", s.energy);
+      fmt::print("{}\n", s.tb.s.ToDb());
+      fmt::print("{}\n", s.tb.ctd.ToString(s.tb.s));
     }
   }
 
   if (args.GetOr(mrna::OPT_PART)) {
-    std::cout << "q: " << res.part.q << '\n';
-    std::cout << "p:\n";
+    fmt::print("q: {}\n", res.part.q);
+    fmt::print("p:\n");
     PrintPartition(res.part);
-    std::cout << "\nprobabilities:\n";
+    fmt::print("\nprobabilities:\n");
     PrintBoltzProbs(res.prob);
   }
 }

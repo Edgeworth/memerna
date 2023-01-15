@@ -1,7 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/subopt/subopt.h"
 
-#include <iostream>
+#include <fmt/core.h>
+
 #include <string>
 
 #include "compute/subopt/subopt_cfg.h"
@@ -37,14 +38,14 @@ int main(int argc, char* argv[]) {
   if (should_print) {
     if (ctd_data) {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        std::cout << c.energy << ' ' << c.tb.ctd.ToString(c.tb.s) << '\n';
+        fmt::print("{} {}\n", c.energy, c.tb.ctd.ToString(c.tb.s));
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
-        std::cout << c.energy << ' ' << c.tb.s.ToDb() << '\n';
+        fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
       };
     }
   }
   int strucs = ctx.Suboptimal(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
-  std::cout << strucs << " suboptimal structures\n";
+  fmt::print("{} suboptimal structures\n", strucs);
 }

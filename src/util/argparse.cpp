@@ -1,8 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/argparse.h"
 
+#include <fmt/core.h>
+
 #include <cstdlib>
-#include <iostream>
 
 #include "util/string.h"
 
@@ -112,7 +113,7 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    std::cerr << ret << '\n' << Usage() << '\n';
+    fmt::print(stderr, "{}\n{}\n", ret, Usage());
     std::exit(1);  // NOLINT
   }
 }

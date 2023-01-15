@@ -53,6 +53,7 @@ find_package(Threads)
 find_package(MPFR)
 find_package(Boost)
 find_package(benchmark)
+find_package(fmt)
 
 # Fail loudly.
 # Note we don't support msan because it requires an instrumented libc++.
@@ -197,6 +198,7 @@ target_include_directories(memerna PUBLIC src)
 target_include_directories(run_benchmark PRIVATE tests)
 target_include_directories(run_tests PRIVATE tests)
 
+target_link_libraries(memerna PRIVATE fmt::fmt)
 target_link_libraries(brute PRIVATE memerna)
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)

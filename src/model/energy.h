@@ -2,6 +2,8 @@
 #ifndef MODEL_ENERGY_H_
 #define MODEL_ENERGY_H_
 
+#include <fmt/ostream.h>
+
 #include <cstdint>
 #include <iosfwd>
 #include <string>
@@ -75,5 +77,8 @@ inline const Energy NINIO_MAX_ASYM = E(3.0);
 }
 
 }  // namespace mrna
+
+template <>
+struct fmt::formatter<mrna::Energy> : ostream_formatter {};
 
 #endif  // MODEL_ENERGY_H_

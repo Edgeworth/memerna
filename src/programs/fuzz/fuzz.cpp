@@ -1,8 +1,9 @@
 // Copyright 2016 Eliot Courtney.
+#include <fmt/core.h>
+
 #include <chrono>
 #include <cinttypes>
 #include <deque>
-#include <iostream>
 #include <random>
 #include <string>
 #include <utility>
@@ -52,33 +53,33 @@ int main(int argc, char* argv[]) {
   auto harness = FuzzHarness(std::move(args));
   if (!seq.empty()) {
     const auto r = mrna::Primary::FromSeq(seq);
-    std::cout << "Running single fuzz on " << seq << '\n';
+    fmt::print("Running single fuzz on {}\n", seq);
     auto invoc = harness.CreateInvocation(r);
     const auto res = invoc.Run();
     if (!res.empty()) {
-      for (const auto& s : res) std::cout << s << '\n';
-      std::cout << '\n';
+      for (const auto& s : res) fmt::print("{}\n", s);
+      fmt::print("\n");
     }
   } else if (enumerate) {
-    std::cout << "Exhaustive fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
+    fmt::print("Exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
     int64_t i = 0;
     mrna::Primary r(min_len);
     while (static_cast<int>(r.size()) <= max_len) {
       if (++i % 1000 == 0)
-        std::cout << "Fuzzed " << i << " RNA, current size: " << r.size() << '\n';
+        fmt::print("Fuzzed {} RNA, current size: {}\n", i, r.size());
 
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        for (const auto& s : res) std::cout << s << '\n';
-        std::cout << '\n';
+        for (const auto& s : res) fmt::print("{}\n", s);
+        fmt::print("\n");
       }
 
       r.Increment();
     }
-    std::cout << "Finished exhaustive fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
+    fmt::print("Finished exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
   } else {
-    std::cout << "Random fuzzing [" << min_len << ", " << max_len << "] len RNAs\n";
+    fmt::print("Random fuzzing [{}-{}] len RNAs", min_len, max_len);
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
     auto start_time = std::chrono::steady_clock::now();
     for (int64_t i = 0;; ++i) {
@@ -86,7 +87,7 @@ int main(int argc, char* argv[]) {
           std::chrono::duration_cast<std::chrono::seconds>(
               std::chrono::steady_clock::now() - start_time)
                   .count() > interval) {
-        std::cout << "Fuzzed " << i << " RNAs\n";
+        fmt::print("Fuzzed {} RNAs\n", i);
         start_time = std::chrono::steady_clock::now();
       }
       int len = len_dist(harness.e());
@@ -95,8 +96,8 @@ int main(int argc, char* argv[]) {
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        for (const auto& s : res) std::cout << s << '\n';
-        std::cout << '\n';
+        for (const auto& s : res) fmt::print("{}\n", s);
+        fmt::print("\n");
       }
     }
   }

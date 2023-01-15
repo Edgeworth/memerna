@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/string.h"
 
+#include <fmt/core.h>
+
 #include <cctype>
 #include <cstdarg>
 #include <cstdio>

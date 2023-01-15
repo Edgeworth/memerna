@@ -1,5 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#include <iostream>
+#include <fmt/core.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,17 +31,17 @@ int main(int argc, char* argv[]) {
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
     res = mrna::erg::TotalEnergy(em, r, s, &ctd, true);
-    std::cout << res.energy << '\n';
-    std::cout << res.ctd.ToString(s) << '\n';
+    fmt::print("{}\n", res.energy);
+    fmt::print("{}\n", res.ctd.ToString(s));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
     res = mrna::erg::TotalEnergy(em, r, s, nullptr, true);
-    std::cout << res.energy << '\n';
-    std::cout << res.ctd.ToString(s) << '\n';
+    fmt::print("{}\n", res.energy);
+    fmt::print("{}\n", res.ctd.ToString(s));
   }
 
   if (args.GetOr(mrna::OPT_VERBOSE)) {
     const auto descs = res.struc->Description();
-    for (const auto& desc : descs) std::cout << desc << '\n';
+    for (const auto& desc : descs) fmt::print("{}\n", desc);
   }
 }

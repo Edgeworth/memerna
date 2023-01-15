@@ -1,5 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#include <iostream>
+#include <fmt/core.h>
+
 #include <string>
 
 #include "compute/mfe/mfe.h"
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
   const auto res = ctx.Fold(mrna::Primary::FromSeq(args.Pos(0)));
 
-  std::cout << res.mfe.energy << '\n'
-            << res.tb.s.ToDb() << '\n'
-            << res.tb.ctd.ToString(res.tb.s) << '\n';
+  fmt::print("{}\n", res.mfe.energy);
+  fmt::print("{}\n", res.tb.s.ToDb());
+  fmt::print("{}\n", res.tb.ctd.ToString(res.tb.s));
 }

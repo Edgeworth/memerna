@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/partition/partition.h"
 
-#include <iostream>
+#include <fmt/core.h>
 
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
@@ -21,9 +21,8 @@ int main(int argc, char* argv[]) {
 
   auto ctx = mrna::ctx::Ctx::FromArgParse(args);
   auto res = ctx.Partition(r);
-  std::cout << "q: " << res.part.q << '\n';
-  std::cout << "p:\n";
+  fmt::print("q: {}\np:\n", res.part.q);
   PrintPartition(res.part);
-  std::cout << "\nprobabilities:\n";
+  fmt::print("\nprobabilities:\n");
   PrintBoltzProbs(res.prob);
 }
