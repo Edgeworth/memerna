@@ -4,7 +4,7 @@
 
 #include <deque>
 
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 #include "compute/energy/t04/model.h"
 #include "model/ctd.h"
 #include "model/energy.h"

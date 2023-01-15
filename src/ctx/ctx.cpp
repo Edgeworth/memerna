@@ -131,6 +131,7 @@ int Ctx::Suboptimal(
         default: bug();
         }
       },
+      // TODO(0): Implement suboptimal for t22.
       [&, ext = std::move(ext)](const erg::t22::ModelPtr&) mutable -> int { bug(); },
   };
   return std::visit(vis, em_);
@@ -153,6 +154,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
         default: bug();
         }
       },
+      // TODO(0): Implement partition for t22.
       [&](const erg::t22::ModelPtr&) { bug(); },
   };
   std::visit(vis, em_);

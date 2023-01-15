@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "util/error.h"

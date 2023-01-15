@@ -4,7 +4,7 @@
 #include <iterator>
 #include <utility>
 
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"

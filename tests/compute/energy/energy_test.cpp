@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 
