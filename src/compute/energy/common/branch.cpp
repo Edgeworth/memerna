@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 
 #include <cassert>
 #include <memory>

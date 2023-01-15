@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/branch.h"
+#include "compute/energy/common/branch.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/parse.h"

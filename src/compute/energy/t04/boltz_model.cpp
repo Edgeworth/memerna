@@ -2,19 +2,14 @@
 #include "compute/energy/t04/boltz_model.h"
 
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "compute/energy/energy_cfg.h"
+#include "util/util.h"
 
 namespace mrna::erg::t04 {
 
 namespace {
-
-template <typename T>
-constexpr auto Decay(T& a) {  // NOLINT
-  return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
-}
 
 void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
   for (int i = 0; i < elements; ++i) output[i] = input[i].Boltz();

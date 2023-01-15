@@ -108,7 +108,7 @@ set(MEMERNA_SOURCE
   src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
   src/compute/brute/brute.cpp src/compute/brute/brute.h
   src/compute/dp.h
-  src/compute/energy/branch.cpp src/compute/energy/branch.h
+  src/compute/energy/common/branch.cpp src/compute/energy/common/branch.h
   src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
   src/compute/energy/model.cpp src/compute/energy/model.h
