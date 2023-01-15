@@ -5,7 +5,7 @@ alias u := update
 default:
   @just --list
 
-test:
+test: bench
   # Check various build configurations and run tests. Good to run before push.
   # Uses :::+ to match mpfr-rnastructure and no-mpfr-no-rnastructure etc to
   # save some compilations.
@@ -19,6 +19,7 @@ test:
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
     --compiler=clang --compiler=default
 
+bench:
   # Run benchmarks.
   poetry run python -m rnapy.run build --bench --bench-output \
     ./data/benchmark.json --kind=release
