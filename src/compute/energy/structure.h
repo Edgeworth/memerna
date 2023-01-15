@@ -2,6 +2,8 @@
 #ifndef COMPUTE_ENERGY_STRUCTURE_H_
 #define COMPUTE_ENERGY_STRUCTURE_H_
 
+#include <fmt/core.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,8 +30,11 @@ class Structure {
 
   virtual ~Structure() = default;
 
-  // This is not a reference because of varargs.
-  void AddNote(std::string note, ...);
+  template <typename... T>
+  void AddNote(fmt::format_string<T...> note, T&&... args) {
+    notes_.push_back(fmt::vformat(note, fmt::make_format_args(args...)));
+  }
+
   [[nodiscard]] std::vector<std::string> Description(int nesting = 0) const;
   [[nodiscard]] virtual std::string ShortDesc() const = 0;
 

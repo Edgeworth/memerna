@@ -29,7 +29,7 @@ const char* CtdToName(Ctd ctd) {
 
 std::vector<std::string> Structure::Description(int nesting) const {
   std::vector<std::string> desc;
-  desc.push_back(sfmt("{} - {}", nesting, ShortDesc()));
+  desc.push_back(fmt::format("{} - {}", nesting, ShortDesc()));
   for (const auto& note : notes_) desc.push_back(" | " + note);
   for (int i = 0; i < static_cast<int>(branches_.size()); ++i)
     desc.push_back(" |-- " + BranchDesc(i));
@@ -40,19 +40,12 @@ std::vector<std::string> Structure::Description(int nesting) const {
   return desc;
 }
 
-void Structure::AddNote(std::string note, ...) {  // NOLINT
-  va_list l;
-  va_start(l, note);
-  notes_.push_back(vsfmt(note, l));
-  va_end(l);
-}
-
 std::string HairpinLoopStructure::ShortDesc() const {
-  return sfmt("Hairpin({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
+  return fmt::format("Hairpin({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
 }
 
 std::string TwoLoopStructure::ShortDesc() const {
-  return sfmt(
+  return fmt::format(
       "TwoLoop({}, {}, {}, {}) - {}e:{}e", ost_, oen_, ist_, ien_, total_energy(), self_energy());
 }
 
@@ -62,16 +55,16 @@ void TwoLoopStructure::AddBranch(std::unique_ptr<Structure> b) {
 }
 
 std::string MultiLoopStructure::ShortDesc() const {
-  return sfmt("MultiLoop({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
+  return fmt::format("MultiLoop({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
 }
 
 std::string MultiLoopStructure::BranchDesc(int idx) const {
-  return sfmt("{} - {}e - {}", branches_[idx]->ShortDesc(), branch_ctd_[idx].second,
+  return fmt::format("{} - {}e - {}", branches_[idx]->ShortDesc(), branch_ctd_[idx].second,
       CtdToName(branch_ctd_[idx].first));
 }
 
 std::string StackingStructure::ShortDesc() const {
-  return sfmt("Stacking({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
+  return fmt::format("Stacking({}, {}) - {}e:{}e", st_, en_, total_energy(), self_energy());
 }
 
 void StackingStructure::AddBranch(std::unique_ptr<Structure> b) {
