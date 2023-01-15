@@ -4,30 +4,15 @@
 #include <string>
 #include <utility>
 
+#include "compute/energy/common/boltz.h"
 #include "compute/energy/energy_cfg.h"
-#include "util/util.h"
 
 namespace mrna::erg::t04 {
-
-namespace {
-
-void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
-  for (int i = 0; i < elements; ++i) output[i] = input[i].Boltz();
-}
-
-}  // namespace
 
 BoltzModel::BoltzModel(const ModelPtr& em) : em_(*em) {
   // Force this to be false to not include bulge states for the partition
   // function.
   em_.cfg.bulge_states = false;
-
-#define FILL_BOLTZ(name)                                                                  \
-  static_assert(/* NOLINTNEXTLINE */                                                      \
-      sizeof(name) / sizeof(*Decay(name)) == sizeof(em->name) / sizeof(*Decay(em->name)), \
-      "BoltzModel does not match Model");                                                 \
-  /* NOLINTNEXTLINE */                                                                    \
-  FillBoltzArray(Decay(name), Decay(em->name), sizeof(name) / sizeof(*Decay(name)));
 
   FILL_BOLTZ(stack);
   FILL_BOLTZ(terminal);
@@ -60,7 +45,6 @@ BoltzModel::BoltzModel(const ModelPtr& em) : em_(*em) {
   FILL_BOLTZ(gu_penalty);
 
   for (const auto& kv : em->hairpin) hairpin[kv.first] = kv.second.Boltz();
-#undef FILL_BOLTZ
 }
 
 }  // namespace mrna::erg::t04

@@ -24,6 +24,7 @@ class BoltzModel {
  public:
   BoltzEnergy stack[4][4][4][4]{};
   BoltzEnergy terminal[4][4][4][4]{};
+  BoltzEnergy penultimate_stack[4][4][4][4]{};
   BoltzEnergy internal_init[Model::INITIATION_CACHE_SZ]{};
   BoltzEnergy internal_1x1[4][4][4][4][4][4]{};
   BoltzEnergy internal_1x2[4][4][4][4][4][4][4]{};
