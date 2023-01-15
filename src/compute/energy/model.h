@@ -48,6 +48,8 @@ inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
   }
 }
 
+// TODO(0): can simplify all these visits via ModelMixin.
+
 // Creates the Boltzmann energy model from the given energy model.
 inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   auto vis = overloaded{
