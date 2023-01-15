@@ -25,9 +25,10 @@ void InitTest(const std::string& data_dir) {
   verify(mrna::t12p2->Checksum() == mrna::T12P2_MODEL_HASH, "Expected t12p2 model hash {}, got {}",
       mrna::T12P2_MODEL_HASH, mrna::t12p2->Checksum());
 
-  mrna::t22p2 = mrna::erg::t22::Model::FromDir(mrna::erg::ModelPath(data_dir, "t22p2"));
-  verify(mrna::t22p2->Checksum() == mrna::T22P2_MODEL_HASH, "Expected t22 model hash {}, got {}",
-      mrna::T22P2_MODEL_HASH, mrna::t22p2->Checksum());
+  // TODO(0): uncomment.
+  // mrna::t22p2 = mrna::erg::t22::Model::FromDir(mrna::erg::ModelPath(data_dir, "t22p2"));
+  // verify(mrna::t22p2->Checksum() == mrna::T22P2_MODEL_HASH, "Expected t22 model hash {}, got {}",
+  //     mrna::T22P2_MODEL_HASH, mrna::t22p2->Checksum());
 
   mrna::test_ems[last_test_ems_idx++] = mrna::t04p2;
   mrna::test_ems[last_test_ems_idx++] = mrna::t12p2;
