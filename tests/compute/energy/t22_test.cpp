@@ -26,6 +26,10 @@
 
 namespace mrna::erg {
 
+Energy GetEnergy(const t22::ModelPtr& em, const std::string& r, const std::string& db) {
+  return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
+}
+
 class T22ModelTest : public testing::TestWithParam<int> {
  public:
   std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
@@ -44,10 +48,6 @@ class T22ModelTest : public testing::TestWithParam<int> {
 
   std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
   std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
-
-  static Energy GetEnergy(const std::string& r, const std::string& db) { return E(0); }
-
-  static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) { return E(0); }
 };
 
 TEST_P(T22ModelTest, MultiloopEnergy) {}
@@ -59,6 +59,22 @@ TEST_P(T22ModelTest, NNDBBulgeLoopExamples) {}
 TEST_P(T22ModelTest, NNDBInternalLoopExamples) {}
 
 TEST_P(T22ModelTest, BaseCases) {}
+
+#if ENERGY_PRECISION == 2
+
+TEST(T22P2ModelTest, T22Tests) {
+  auto em = t22p2;
+
+  EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
+  EXPECT_EQ(E(6.79), em->BulgeInitiation(57));
+  EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
+
+  // Example from https://doi.org/10.1093/nar/gkac261
+  EXPECT_EQ(E(0), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(0), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
+}
+
+#endif
 
 INSTANTIATE_TEST_SUITE_P(EnergyModelTests, T22ModelTest, testing::Range(0, NUM_TEST_MODELS));
 

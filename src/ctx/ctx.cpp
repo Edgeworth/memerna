@@ -13,12 +13,16 @@
 #include "compute/dp.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/energy/t04/model.h"
+#include "compute/energy/t22/boltz_model.h"
+#include "compute/energy/t22/model.h"
 #include "compute/mfe/t04/mfe.h"
+#include "compute/mfe/t22/mfe.h"
 #include "compute/partition/partition.h"
 #include "compute/partition/t04/partition.h"
 #include "compute/subopt/t04/subopt_fastest.h"
 #include "compute/subopt/t04/subopt_slowest.h"
 #include "compute/traceback/t04/traceback.h"
+#include "compute/traceback/t22/traceback.h"
 #include "model/primary.h"
 #include "util/array.h"
 #include "util/error.h"
@@ -31,7 +35,7 @@ erg::EnergyResult Ctx::Efn(
 }
 
 DpArray Ctx::ComputeMfe(const Primary& r) const {
-  return std::visit(
+  auto vis = overloaded{
       [&](const erg::t04::ModelPtr& em) -> DpArray {
         switch (cfg_.dp_alg) {
         case CtxCfg::DpAlg::SLOWEST: return mfe::t04::MfeSlowest(r, em);
@@ -41,6 +45,19 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
         default: bug();
         }
       },
+      [&](const erg::t22::ModelPtr& em) {
+        switch (cfg_.dp_alg) {
+        case CtxCfg::DpAlg::SLOWEST:
+        case CtxCfg::DpAlg::SLOW:
+        case CtxCfg::DpAlg::FASTEST:
+        case CtxCfg::DpAlg::LYNGSO: return mfe::t22::MfeSlowest(r, em);
+        default: bug();
+        }
+      },
+  };
+
+  return std::visit(vis,
+
       em_);
 }
 

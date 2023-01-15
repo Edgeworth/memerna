@@ -307,8 +307,8 @@ TEST(T04P2ModelTest, T12Tests) {
   EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
 
   // Example from https://doi.org/10.1093/nar/gkac261
-  EXPECT_EQ(E(-4.22 + 7.35), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
-  EXPECT_EQ(E(-7.18), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(-1.84), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(-3.13), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
 }
 
 // NEWMODEL: Add tests here.

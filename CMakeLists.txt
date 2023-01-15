@@ -119,6 +119,7 @@ set(MEMERNA_SOURCE
   src/compute/energy/t04/branch.cpp src/compute/energy/t04/branch.h
   src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
+  src/compute/energy/t22/boltz_model.cpp src/compute/energy/t22/boltz_model.h
   src/compute/energy/t22/branch.cpp src/compute/energy/t22/branch.h
   src/compute/energy/t22/model.cpp src/compute/energy/t22/model.h
   src/compute/mfe/mfe.h
@@ -127,15 +128,20 @@ set(MEMERNA_SOURCE
   src/compute/mfe/t04/mfe_lyngso.cpp
   src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_slowest.cpp
+  src/compute/mfe/t04/mfe.h
+  src/compute/mfe/t22/mfe_slowest.cpp
+  src/compute/mfe/t22/mfe.h
   src/compute/partition/partition.cpp src/compute/partition/partition.h
   src/compute/partition/t04/partition_exterior.cpp
   src/compute/partition/t04/partition_fastest.cpp
   src/compute/partition/t04/partition_slowest.cpp
+  src/compute/partition/t04/partition.h
   src/compute/subopt/subopt_cfg.cpp src/compute/subopt/subopt_cfg.h
   src/compute/subopt/subopt.h
   src/compute/subopt/t04/subopt_fastest.cpp src/compute/subopt/t04/subopt_fastest.h
   src/compute/subopt/t04/subopt_slowest.cpp src/compute/subopt/t04/subopt_slowest.h
   src/compute/traceback/t04/traceback.cpp src/compute/traceback/t04/traceback.h
+  src/compute/traceback/t22/traceback.cpp src/compute/traceback/t22/traceback.h
   src/ctx/ctx_cfg.cpp src/ctx/ctx_cfg.h
   src/ctx/ctx.cpp src/ctx/ctx.h
   src/fuzz/fuzz_cfg.cpp src/fuzz/fuzz_cfg.h
@@ -152,6 +158,7 @@ set(MEMERNA_SOURCE
   src/util/array.h
   src/util/splaymap.h
   src/util/string.cpp src/util/string.h
+  src/util/util.h
 )
 set(TEST_SOURCE
   tests/common_test.cpp tests/common_test.h
