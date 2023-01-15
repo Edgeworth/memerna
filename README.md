@@ -81,7 +81,7 @@ Update in 2022 model (t22p2):
 - Removed 0.45 portion of AU penalty from internal loop AU penalty.
 - Stacking parameters changed
 - Sequence dependent parameters for terminal base pairs based on the penultimate
-  pair
+  pair (penultimate_stacking.data)
 - See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
 need to apply to all loop types - affects energy model, efn, exterior loop, mfe.

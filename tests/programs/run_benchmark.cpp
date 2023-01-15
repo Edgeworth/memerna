@@ -111,6 +111,7 @@ DEFINE_BENCHES(t04p1);
 #elif ENERGY_PRECISION == 2
 
 DEFINE_BENCHES(t04p2);
+DEFINE_BENCHES(t12p2);
 
 // NEWMODEL: Add new benches here.
 

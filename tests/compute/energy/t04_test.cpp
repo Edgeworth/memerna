@@ -299,6 +299,18 @@ TEST(T04P2ModelTest, Precomp) {
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
 
+TEST(T04P2ModelTest, T12Tests) {
+  auto em = t12p2;
+
+  EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
+  EXPECT_EQ(E(6.79), em->BulgeInitiation(57));
+  EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
+
+  // Example from https://doi.org/10.1093/nar/gkac261
+  EXPECT_EQ(E(-4.22 + 7.35), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(-7.18), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
+}
+
 // NEWMODEL: Add tests here.
 
 #endif

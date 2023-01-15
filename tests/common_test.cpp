@@ -14,13 +14,16 @@ void InitTest(const std::string& data_dir) {
   mrna::test_t04_ems[0] = mrna::t04p1;
 
 #elif ENERGY_PRECISION == 2
-
-  // TODO(0): support t12
   mrna::t04p2 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04p2"));
   verify(mrna::t04p2->Checksum() == mrna::T04P2_MODEL_HASH, "Expected t04p2 model hash %d, got %d",
       mrna::T04P2_MODEL_HASH, mrna::t04p2->Checksum());
 
+  mrna::t12p2 = mrna::erg::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t12p2"));
+  verify(mrna::t12p2->Checksum() == mrna::T12P2_MODEL_HASH, "Expected t12p2 model hash %d, got %d",
+      mrna::T12P2_MODEL_HASH, mrna::t12p2->Checksum());
+
   mrna::test_ems[0] = mrna::t04p2;
+  mrna::test_ems[1] = mrna::t12p2;
   mrna::test_t04_ems[0] = mrna::t04p2;
 
 #endif
