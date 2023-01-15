@@ -27,14 +27,17 @@ class Model;
 
 using ModelPtr = std::shared_ptr<Model>;
 
+// TODO(0): Implement.
 class Model {
  public:
   inline constexpr static int INITIATION_CACHE_SZ = 31;
   // Stacking related:
   // Note that the order of indices is always from 5' to 3'.
   Energy stack[4][4][4][4] = {};
-  // Terminal stacking parameters specific to T22.
+  // Terminal stacking parameters.
   Energy terminal_stack[4][4][4][4] = {};
+  // Penultimate stacking parameters.
+  Energy penultimate_stack[4][4][4][4] = {};
   // Terminal mismatch:
   Energy terminal[4][4][4][4] = {};
   // Internal loop related:
