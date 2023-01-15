@@ -166,7 +166,7 @@ ModelPtr Model::Random(uint_fast32_t seed) {
   }
 
   std::string reason;
-  verify(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
+  verify(em->IsValid(&reason), "invalid energy model: {}", reason);
   return em;
 }
 
@@ -204,7 +204,7 @@ ModelPtr Model::FromDir(const std::string& data_dir) {
   ParseMiscDataFromFile(data_dir + "/misc.data", em.get());
 
   std::string reason;
-  verify(em->IsValid(&reason), "invalid energy model: %s", reason.c_str());
+  verify(em->IsValid(&reason), "invalid energy model: {}", reason);
   return em;
 }
 
@@ -250,14 +250,14 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
   const int length = en - st - 1;
   if (length < 3) return MAX_E;  // Disallowed by T22.
   Energy energy = HairpinInitiation(length);
-  if (s) (*s)->AddNote("%de - initiation", energy);
+  if (s) (*s)->AddNote("{}e - initiation", energy);
   // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
   if (IsAuPair(r[st], r[en])) {
-    if (s) (*s)->AddNote("%de - AU penalty", au_penalty);
+    if (s) (*s)->AddNote("{}e - AU penalty", au_penalty);
     energy += au_penalty;
   }
   if (IsGuPair(r[st], r[en])) {
-    if (s) (*s)->AddNote("%de - GU penalty", gu_penalty);
+    if (s) (*s)->AddNote("{}e - GU penalty", gu_penalty);
     energy += gu_penalty;
   }
 
@@ -269,30 +269,30 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
 
   if (length == 3) {
     if (all_c) {
-      if (s) (*s)->AddNote("%de - all C penalty (length 3)", hairpin_c3_loop);
+      if (s) (*s)->AddNote("{}e - all C penalty (length 3)", hairpin_c3_loop);
       energy += hairpin_c3_loop;
     }
     return energy;
   }
   const Base left = r[st + 1];
   const Base right = r[en - 1];
-  if (s) (*s)->AddNote("%de - terminal mismatch", terminal[r[st]][left][right][r[en]]);
+  if (s) (*s)->AddNote("{}e - terminal mismatch", terminal[r[st]][left][right][r[en]]);
   energy += terminal[r[st]][left][right][r[en]];
   if (IsPairOf(left, right, U_b, U_b) || IsPairOf(left, right, G_b, A_b)) {
-    if (s) (*s)->AddNote("%de - UU/GA first mismatch", hairpin_uu_ga_first_mismatch);
+    if (s) (*s)->AddNote("{}e - UU/GA first mismatch", hairpin_uu_ga_first_mismatch);
     energy += hairpin_uu_ga_first_mismatch;
   }
   if (IsPairOf(left, right, G_b, G_b)) {
-    if (s) (*s)->AddNote("%de - GG first mismatch", hairpin_gg_first_mismatch);
+    if (s) (*s)->AddNote("{}e - GG first mismatch", hairpin_gg_first_mismatch);
     energy += hairpin_gg_first_mismatch;
   }
   if (all_c) {
     Energy all_c_energy = hairpin_all_c_a * length + hairpin_all_c_b;
-    if (s) (*s)->AddNote("%de - all C penalty", all_c_energy);
+    if (s) (*s)->AddNote("{}e - all C penalty", all_c_energy);
     energy += all_c_energy;
   }
   if (IsPairOf(r[st], r[en], G_b, U_b) && st >= 2 && r[st - 1] == G && r[st - 2] == G) {
-    if (s) (*s)->AddNote("%de - special GU closure", hairpin_special_gu_closure);
+    if (s) (*s)->AddNote("{}e - special GU closure", hairpin_special_gu_closure);
     energy += hairpin_special_gu_closure;
   }
 
@@ -319,38 +319,38 @@ Energy Model::Bulge(
 
   if (s) {
     *s = std::make_unique<TwoLoopStructure>(ost, oen, ist, ien);
-    (*s)->AddNote("Bulge loop len %d", length);
-    (*s)->AddNote("%de - initiation", energy);
+    (*s)->AddNote("Bulge loop len {}", length);
+    (*s)->AddNote("{}e - initiation", energy);
   }
 
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
     if (IsAuPair(r[ost], r[oen])) {
-      if (s) (*s)->AddNote("%de - outer AU penalty", au_penalty);
+      if (s) (*s)->AddNote("{}e - outer AU penalty", au_penalty);
       energy += au_penalty;
     }
     if (IsGuPair(r[ost], r[oen])) {
-      if (s) (*s)->AddNote("%de - outer GU penalty", gu_penalty);
+      if (s) (*s)->AddNote("{}e - outer GU penalty", gu_penalty);
       energy += gu_penalty;
     }
     if (IsAuPair(r[ist], r[ien])) {
-      if (s) (*s)->AddNote("%de - inner AU penalty", au_penalty);
+      if (s) (*s)->AddNote("{}e - inner AU penalty", au_penalty);
       energy += au_penalty;
     }
     if (IsGuPair(r[ist], r[ien])) {
-      if (s) (*s)->AddNote("%de - inner GU penalty", gu_penalty);
+      if (s) (*s)->AddNote("{}e - inner GU penalty", gu_penalty);
       energy += gu_penalty;
     }
     return energy;
   }
   // Stacking energy.
   energy += stack[r[ost]][r[ist]][r[ien]][r[oen]];
-  if (s) (*s)->AddNote("%de - stacking", stack[r[ost]][r[ist]][r[ien]][r[oen]]);
+  if (s) (*s)->AddNote("{}e - stacking", stack[r[ost]][r[ist]][r[ien]][r[oen]]);
   int unpaired = ost + 1;
   if (ost + 1 == ist) unpaired = ien + 1;
   // Special C bulge.
   if (r[unpaired] == C && (r[unpaired - 1] == C || r[unpaired + 1] == C)) {
-    if (s) (*s)->AddNote("%de - special c bulge", bulge_special_c);
+    if (s) (*s)->AddNote("{}e - special c bulge", bulge_special_c);
     energy += bulge_special_c;
   }
 
@@ -360,7 +360,7 @@ Energy Model::Bulge(
     for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
     Energy states_bonus = -E(R * T * log(num_states));
-    if (s) (*s)->AddNote("%de - %d states bonus", states_bonus, num_states);
+    if (s) (*s)->AddNote("{}e - {} states bonus", states_bonus, num_states);
     energy += states_bonus;
   }
 
@@ -383,7 +383,7 @@ Energy Model::InternalLoop(
   const int botlen = oen - ien - 1;
   if (s) {
     *s = std::make_unique<TwoLoopStructure>(ost, oen, ist, ien);
-    (*s)->AddNote("%dx%d internal loop", toplen, botlen);
+    (*s)->AddNote("{}x{} internal loop", toplen, botlen);
   }
   if (toplen == 1 && botlen == 1)
     return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
@@ -396,28 +396,28 @@ Energy Model::InternalLoop(
                        [r[oen]];
 
   Energy energy = InternalLoopInitiation(toplen + botlen);
-  if (s) (*s)->AddNote("%de - initiation", energy);
+  if (s) (*s)->AddNote("{}e - initiation", energy);
 
   // Special AU/GU penalties.
   if (IsAuPair(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("%de - outer AU penalty", internal_au_penalty);
+    if (s) (*s)->AddNote("{}e - outer AU penalty", internal_au_penalty);
     energy += internal_au_penalty;
   }
   if (IsGuPair(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("%de - outer GU penalty", internal_gu_penalty);
+    if (s) (*s)->AddNote("{}e - outer GU penalty", internal_gu_penalty);
     energy += internal_gu_penalty;
   }
   if (IsAuPair(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("%de - inner AU penalty", internal_au_penalty);
+    if (s) (*s)->AddNote("{}e - inner AU penalty", internal_au_penalty);
     energy += internal_au_penalty;
   }
   if (IsGuPair(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("%de - inner GU penalty", internal_gu_penalty);
+    if (s) (*s)->AddNote("{}e - inner GU penalty", internal_gu_penalty);
     energy += internal_gu_penalty;
   }
   // Asymmetry term, limit with Ninio maximum asymmetry.
   const Energy asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
-  if (s) (*s)->AddNote("%de - asymmetry", asym);
+  if (s) (*s)->AddNote("{}e - asymmetry", asym);
   energy += asym;
 
   // Special mismatch parameters.
@@ -428,12 +428,12 @@ Energy Model::InternalLoop(
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     const Energy mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
         internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
-    if (s) (*s)->AddNote("%de - 2x3 mismatch params", mismatch);
+    if (s) (*s)->AddNote("{}e - 2x3 mismatch params", mismatch);
     energy += mismatch;
   } else if (toplen != 1 && botlen != 1) {
     const Energy mismatch = internal_other_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
         internal_other_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];
-    if (s) (*s)->AddNote("%de - other mismatch params", mismatch);
+    if (s) (*s)->AddNote("{}e - other mismatch params", mismatch);
     energy += mismatch;
   }
 
@@ -471,17 +471,17 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
 
     if (IsAuPair(r[branch_st], r[s[branch_st]])) {
       if (struc)
-        struc->AddNote("%de - opening AU penalty at %d %d", au_penalty, branch_st, s[branch_st]);
+        struc->AddNote("{}e - opening AU penalty at {} {}", au_penalty, branch_st, s[branch_st]);
       energy += au_penalty;
     }
     if (IsGuPair(r[branch_st], r[s[branch_st]])) {
       if (struc)
-        struc->AddNote("%de - opening GU penalty at %d %d", gu_penalty, branch_st, s[branch_st]);
+        struc->AddNote("{}e - opening GU penalty at {} {}", gu_penalty, branch_st, s[branch_st]);
       energy += gu_penalty;
     }
   }
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
-  if (struc) struc->AddNote("Unpaired: %d, Branches: %zu", num_unpaired, branches->size() + 1);
+  if (struc) struc->AddNote("Unpaired: {}, Branches: {}", num_unpaired, branches->size() + 1);
 
   BranchCtd branch_ctd;
   Energy ctd_energy = ZERO_E;
@@ -495,15 +495,15 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     }
   } else {
     if (IsAuPair(r[st], r[en])) {
-      if (struc) struc->AddNote("%de - closing AU penalty at %d %d", au_penalty, st, en);
+      if (struc) struc->AddNote("{}e - closing AU penalty at {} {}", au_penalty, st, en);
       energy += au_penalty;
     }
     if (IsGuPair(r[st], r[en])) {
-      if (struc) struc->AddNote("%de - closing GU penalty at %d %d", gu_penalty, st, en);
+      if (struc) struc->AddNote("{}e - closing GU penalty at {} {}", gu_penalty, st, en);
       energy += gu_penalty;
     }
     Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1));
-    if (struc) struc->AddNote("%de - initiation", initiation);
+    if (struc) struc->AddNote("{}e - initiation", initiation);
     energy += initiation;
 
     if (use_given_ctds) {
@@ -539,9 +539,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
   energy += ctd_energy;
 
   if (struc) {
-    struc->AddNote("%de - ctd", ctd_energy);
+    struc->AddNote("{}e - ctd", ctd_energy);
     if (!exterior_loop) {
-      struc->AddNote("%de - outer loop stacking - %s", branch_ctd[0].second,
+      struc->AddNote("{}e - outer loop stacking - {}", branch_ctd[0].second,
           erg::CtdToName(branch_ctd[0].first));
       branch_ctd.pop_front();
     }
@@ -618,7 +618,7 @@ EnergyResult Model::TotalEnergy(
   if (s[0] == static_cast<int>(r.size() - 1) && IsAuPair(r[0], r[s[0]])) {
     res.energy += au_penalty;
     if (res.struc) {
-      res.struc->AddNote("%de - top level AU penalty", au_penalty);
+      res.struc->AddNote("{}e - top level AU penalty", au_penalty);
       res.struc->set_self_energy(res.struc->self_energy() + au_penalty);  // Gross.
       res.struc->set_total_energy(res.struc->total_energy() + au_penalty);  // Gross.
     }
@@ -626,7 +626,7 @@ EnergyResult Model::TotalEnergy(
   if (s[0] == static_cast<int>(r.size() - 1) && IsGuPair(r[0], r[s[0]])) {
     res.energy += gu_penalty;
     if (res.struc) {
-      res.struc->AddNote("%de - top level GU penalty", gu_penalty);
+      res.struc->AddNote("{}e - top level GU penalty", gu_penalty);
       res.struc->set_self_energy(res.struc->self_energy() + gu_penalty);  // Gross.
       res.struc->set_total_energy(res.struc->total_energy() + gu_penalty);  // Gross.
     }

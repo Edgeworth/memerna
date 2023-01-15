@@ -43,7 +43,7 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o) {
   else if (s == "all")
     o = EnergyCfg::Ctd::ALL;
   else
-    error("Invalid CTD option %s", s.c_str());
+    error("Invalid CTD option {}", s);
   return str;
 }
 

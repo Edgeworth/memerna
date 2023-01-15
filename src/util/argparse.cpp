@@ -23,7 +23,7 @@ std::string Opt::Desc() const {
   } else if (!ln.empty()) {
     desc += "--" + ln;
   }
-  if (has_default_) desc += sfmt(" [%s]", default_.c_str());
+  if (has_default_) desc += sfmt(" [{}]", default_);
   if (!choices_.empty()) {
     desc += " (";
     for (auto iter = choices_.begin(); iter != choices_.end(); ++iter) {
@@ -40,19 +40,17 @@ std::string Opt::Desc() const {
 void ArgParse::RegisterOpt(const Opt& opt) {
   // Check if this conflicts with existing arguments.
   if (auto iter = longname_.find(opt.longname()); iter != longname_.end())
-    verify(opt == iter->second, "conflicting option registered with longname %s",
-        opt.longname().c_str());
+    verify(opt == iter->second, "conflicting option registered with longname {}", opt.longname());
   if (auto iter = shortname_.find(opt.shortname()); iter != shortname_.end())
-    verify(opt == iter->second, "conflicting option registered with shortname %s",
-        opt.shortname().c_str());
+    verify(opt == iter->second, "conflicting option registered with shortname {}", opt.shortname());
 
   // If opt is a flag and has a longname, add the inversion to longname_ map.
   bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
   std::string inverted_longname = "no-" + opt.longname();
   auto inverted_opt = Opt(opt).LongName(inverted_longname).Hidden();
   if (auto iter = longname_.find(inverted_longname); has_inversion && iter != longname_.end())
-    verify(inverted_opt == iter->second, "conflicting option registered with longname %s",
-        inverted_longname.c_str());
+    verify(inverted_opt == iter->second, "conflicting option registered with longname {}",
+        inverted_longname);
 
   verify(!opt.longname().empty() || !opt.shortname().empty(),
       "option must have either a shortname or a longname");
@@ -70,7 +68,7 @@ std::string ArgParse::Usage() const {
   std::string usage = "Usage: \n";
   for (const auto& opt : opts_) {
     if (opt.hidden()) continue;
-    usage += sfmt("  %s\n", opt.Desc().c_str());
+    usage += sfmt("  {}\n", opt.Desc());
   }
   return usage;
 }
@@ -87,11 +85,11 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     } else {
       auto& map = is_short ? shortname_ : longname_;
       auto iter = map.find(s);
-      if (iter == map.end()) return sfmt("unknown option %s", argv[i]);
+      if (iter == map.end()) return sfmt("unknown option {}", argv[i]);
 
       const auto& opt = iter->second;
       if (opt.kind() == Opt::ARG) {
-        if (i + 1 == argc) return sfmt("missing argument for option %s", opt.Desc().c_str());
+        if (i + 1 == argc) return sfmt("missing argument for option {}", opt.Desc());
         values_[opt] = argv[++i];
       } else {
         auto pair = FlagPair(opt);
@@ -103,9 +101,9 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   }
   for (const auto& opt : opts_) {
     bool has = Has(opt);
-    if (opt.required() && !has) return sfmt("missing required option %s", opt.Desc().c_str());
+    if (opt.required() && !has) return sfmt("missing required option {}", opt.Desc());
     if (has && !opt.choices().empty() && !opt.choices().contains(Get(opt)))
-      return sfmt("unrecognised argument for option %s", opt.Desc().c_str());
+      return sfmt("unrecognised argument for option {}", opt.Desc());
   }
   return "";
 }
@@ -121,13 +119,13 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
 const Opt& ArgParse::Lookup(const std::string& name) const {
   if (auto iter = longname_.find(name); iter != longname_.end()) return iter->second;  // NOLINT
   if (auto iter = shortname_.find(name); iter != shortname_.end()) return iter->second;  // NOLINT
-  error("unregistered argument %s", name.c_str());
+  error("unregistered argument {}", name);
 }
 
 bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }
 
 std::pair<Opt, Opt> ArgParse::FlagPair(const Opt& opt) const {
-  verify(opt.kind() == Opt::FLAG, "option %s is not a flag", opt.longname().c_str());
+  verify(opt.kind() == Opt::FLAG, "option {} is not a flag", opt.longname());
   if (opt.IsInverted()) return {Lookup(opt.longname().substr(3)), opt};
   return {opt, Lookup("no-" + opt.longname())};
 }

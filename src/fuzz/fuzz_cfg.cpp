@@ -22,16 +22,16 @@ void RegisterOpts(ArgParse* args) {
 
 std::string FuzzCfg::Desc() const {
   std::string desc;
-  desc += sfmt("brute_max: %d\n", brute_max);
-  desc += sfmt("mfe: %d\n", mfe);
-  desc += sfmt("mfe_rnastructure: %d\n", mfe_rnastructure);
-  desc += sfmt("mfe_table: %d\n", mfe_table);
-  desc += sfmt("subopt: %d\n", subopt);
-  desc += sfmt("subopt_rnastructure: %d\n", subopt_rnastructure);
-  desc += sfmt("subopt_max: %d\n", subopt_strucs);
-  desc += sfmt("subopt_delta: %d\n", subopt_delta);
-  desc += sfmt("part: %d\n", part);
-  desc += sfmt("part_rnastructure: %d\n", part_rnastructure);
+  desc += sfmt("brute_max: {}\n", brute_max);
+  desc += sfmt("mfe: {}\n", mfe);
+  desc += sfmt("mfe_rnastructure: {}\n", mfe_rnastructure);
+  desc += sfmt("mfe_table: {}\n", mfe_table);
+  desc += sfmt("subopt: {}\n", subopt);
+  desc += sfmt("subopt_rnastructure: {}\n", subopt_rnastructure);
+  desc += sfmt("subopt_max: {}\n", subopt_strucs);
+  desc += sfmt("subopt_delta: {}\n", subopt_delta);
+  desc += sfmt("part: {}\n", part);
+  desc += sfmt("part_rnastructure: {}\n", part_rnastructure);
   return desc;
 }
 

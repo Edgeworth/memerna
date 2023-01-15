@@ -42,10 +42,9 @@ int main(int argc, char* argv[]) {
   bool subopt = args.GetOr(mrna::OPT_SUBOPT);
   bool part = args.GetOr(mrna::OPT_PART);
 
-  verify(efn + fold + subopt + part == 1, "require exactly one program flag\n%s",
-      args.Usage().c_str());
+  verify(efn + fold + subopt + part == 1, "require exactly one program flag\n{}", args.Usage());
   verify(args.Has(mrna::erg::OPT_SEED) + args.Has(mrna::erg::OPT_MEMERNA_DATA) == 1,
-      "require exactly one seed or memerna-data flag\n%s", args.Usage().c_str());
+      "require exactly one seed or memerna-data flag\n{}", args.Usage());
 
   auto package = mrna::bridge::RnaPackage::FromArgParse(args);
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());

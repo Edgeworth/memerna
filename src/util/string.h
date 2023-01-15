@@ -12,10 +12,6 @@ namespace mrna {
 
 std::string sgetline(std::istream& is);
 
-std::string sfmt(const char* fmt, ...);
-
-std::string vsfmt(const char* fmt, va_list l);
-
 template <typename T>
 T Conv(const std::string& s) {
   T t;
