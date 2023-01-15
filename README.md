@@ -114,7 +114,7 @@ The rest of this document uses $MRNA to locate the memerna directory.
 Run git submodule init and git submodule update to pull in external dependencies.
 Memerna requires a modern C++ compiler that supports C++20.
 
-Install dependencies: gtest, google/benchmark
+Install dependencies: gtest, google/benchmark, fmt
 
 python -m rnapy.run build
 

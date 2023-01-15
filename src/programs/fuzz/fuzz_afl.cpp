@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
         auto invoc = harness.CreateInvocation(mrna::Primary::FromSeq(rs));
         const auto res = invoc.Run();
         if (!res.empty()) {
-          for (const auto& s : res) std::cout << s << '\n';
-          std::cout << '\n';
+          for (const auto& s : res) fmt::print("{}\n", s);
+          fmt::print("\n");
           abort();
         }
       } catch (const std::exception& e) {
