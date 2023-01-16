@@ -1,3 +1,4 @@
+// Copyright 2023 E.
 #ifndef COMPUTE_ENERGY_COMMON_MODEL_H_
 #define COMPUTE_ENERGY_COMMON_MODEL_H_
 

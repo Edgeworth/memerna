@@ -13,8 +13,8 @@
 
 #include "common_test.h"
 #include "compute/energy/common/branch.h"
+#include "compute/energy/common/t04like/branch.h"
 #include "compute/energy/energy.h"
-#include "compute/energy/t04/branch.h"
 #include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
 #include "model/base.h"

@@ -13,8 +13,8 @@
 
 #include "common_test.h"
 #include "compute/energy/common/branch.h"
+#include "compute/energy/common/t04like/branch.h"
 #include "compute/energy/energy.h"
-#include "compute/energy/t04/branch.h"
 #include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
 #include "model/base.h"
@@ -392,7 +392,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   auto ctd_test = std::get<1>(GetParam())(em);
   // Convert base representation to branch representation.
   BranchCtd computed_branch_ctd;
-  auto computed_energy = t04::AddBaseCtdsToBranchCtds(
+  auto computed_energy = AddBaseCtdsToBranchCtds(
       *em, ctd_test.r, ctd_test.s, ctd_test.ctd, ctd_test.branches, &computed_branch_ctd);
   Energy test_energy = ZERO_E;
   for (const auto& branch_ctd : ctd_test.branch_ctd) {
