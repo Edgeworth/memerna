@@ -94,7 +94,7 @@ class T04BoltzMixin {
   }
 
  protected:
-  T04BoltzMixin(const T& em_unshadow) : em_(em_unshadow) {
+  explicit T04BoltzMixin(const T& em_unshadow) : em_(em_unshadow) {
     // Force this to be false to not include bulge states for the partition
     // function.
     em_.cfg.bulge_states = false;

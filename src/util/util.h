@@ -1,3 +1,4 @@
+// Copyright 2023 E.
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 

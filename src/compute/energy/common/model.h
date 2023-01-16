@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <random>
+#include <string>
 
 #include "compute/energy/energy_cfg.h"
 #include "model/energy.h"
