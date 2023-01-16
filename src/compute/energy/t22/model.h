@@ -48,8 +48,6 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       bool build_structure = false) const;
 
-  bool IsValid(std::string* reason = nullptr) const;
-
  protected:
   void LoadFromDir(const std::string& data_dir);
 

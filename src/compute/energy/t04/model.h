@@ -45,8 +45,6 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       bool build_structure = false) const;
 
-  bool IsValid(std::string* reason = nullptr) const { return T04ModelMixin::IsValid(reason); }
-
  private:
   friend class ModelMixin<Model>;
 
