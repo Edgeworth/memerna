@@ -13,7 +13,7 @@
 namespace mrna::mfe::t22 {
 
 // TODO(0): Implement. Any way to generalise/pull out code?
-ExtArray MfeExterior(const Primary& r, const erg::t22::ModelPtr& em, const DpArray& dp) {
+ExtArray MfeExterior(const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp) {
   auto ext = ExtArray(r.size() + 1, MAX_E);
   bug();
   return ext;

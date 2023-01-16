@@ -25,10 +25,6 @@
 
 namespace mrna::erg::t04 {
 
-class Model;
-
-using ModelPtr = std::shared_ptr<Model>;
-
 class Model : public ModelMixin<Model>, public T04ModelMixin {
  public:
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;

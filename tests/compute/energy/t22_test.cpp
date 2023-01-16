@@ -26,7 +26,7 @@
 
 namespace mrna::erg {
 
-Energy GetEnergy(const t22::ModelPtr& em, const std::string& r, const std::string& db) {
+Energy GetEnergy(const t22::Model::Ptr& em, const std::string& r, const std::string& db) {
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
 }
 

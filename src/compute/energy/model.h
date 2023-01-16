@@ -20,8 +20,8 @@
 
 namespace mrna::erg {
 
-using EnergyModelPtr = std::variant<t04::ModelPtr, t22::ModelPtr>;
-using BoltzEnergyModelPtr = std::variant<t04::BoltzModelPtr, t22::BoltzModelPtr>;
+using EnergyModelPtr = std::variant<t04::Model::Ptr, t22::Model::Ptr>;
+using BoltzEnergyModelPtr = std::variant<t04::BoltzModel::Ptr, t22::BoltzModel::Ptr>;
 
 enum class ModelKind {
   T04_LIKE,
@@ -48,13 +48,11 @@ inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
   }
 }
 
-// TODO(0): can simplify all these visits via ModelMixin.
-
 // Creates the Boltzmann energy model from the given energy model.
 inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   auto vis = overloaded{
-      [](const t04::ModelPtr& em) -> BoltzEnergyModelPtr { return t04::BoltzModel::Create(em); },
-      [](const t22::ModelPtr& em) -> BoltzEnergyModelPtr { return t22::BoltzModel::Create(em); },
+      [](const t04::Model::Ptr& em) -> BoltzEnergyModelPtr { return t04::BoltzModel::Create(em); },
+      [](const t22::Model::Ptr& em) -> BoltzEnergyModelPtr { return t22::BoltzModel::Create(em); },
   };
   return std::visit(vis, em);
 }
@@ -70,8 +68,8 @@ inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
 
 inline ModelKind Kind(const EnergyModelPtr& em) {
   auto vis = overloaded{
-      [](const t04::ModelPtr&) { return ModelKind::T04_LIKE; },
-      [](const t22::ModelPtr&) { return ModelKind::T22_LIKE; },
+      [](const t04::Model::Ptr&) { return ModelKind::T04_LIKE; },
+      [](const t22::Model::Ptr&) { return ModelKind::T22_LIKE; },
   };
   return std::visit(vis, em);
 }

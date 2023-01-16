@@ -17,7 +17,7 @@ struct BoltzPrecomp {
   BoltzEnergy augubranch[4][4]{};
   std::vector<HairpinPrecomp<BoltzEnergy>> hairpin;
 
-  BoltzPrecomp(Primary r, BoltzModelPtr bem);
+  BoltzPrecomp(Primary r, BoltzModel::Ptr bem);
 
   [[nodiscard]] const Model& em() const { return bem_->em(); }
   [[nodiscard]] const BoltzModel& bem() const { return *bem_; }
@@ -27,7 +27,7 @@ struct BoltzPrecomp {
 
  private:
   Primary r_;
-  BoltzModelPtr bem_;
+  BoltzModel::Ptr bem_;
 
   void PrecomputeData();
 };

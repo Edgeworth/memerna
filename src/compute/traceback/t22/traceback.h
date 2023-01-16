@@ -10,7 +10,7 @@
 namespace mrna::tb::t22 {
 
 TracebackResult Traceback(
-    const Primary& r, const erg::t22::ModelPtr& em, const DpArray& dp, const ExtArray& ext);
+    const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::tb::t22
 

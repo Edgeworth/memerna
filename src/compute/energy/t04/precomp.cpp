@@ -23,7 +23,7 @@ Energy MinEnergy(const Energy* energy, std::size_t size) {
 
 }  // namespace
 
-Precomp::Precomp(Primary r, ModelPtr em) : r_(std::move(r)), em_(std::move(em)) {
+Precomp::Precomp(Primary r, Model::Ptr em) : r_(std::move(r)), em_(std::move(em)) {
   PrecomputeData();
 }
 

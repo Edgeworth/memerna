@@ -20,7 +20,7 @@
 namespace mrna::part::t04 {
 
 std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
-    const Primary& r, const erg::t04::BoltzModelPtr& bem) {
+    const Primary& r, const erg::t04::BoltzModel::Ptr& bem) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

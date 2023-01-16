@@ -26,7 +26,7 @@
 
 namespace mrna::erg {
 
-Energy GetEnergy(const t04::ModelPtr& em, const std::string& r, const std::string& db) {
+Energy GetEnergy(const t04::Model::Ptr& em, const std::string& r, const std::string& db) {
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
 }
 
@@ -315,34 +315,35 @@ TEST(T04P2ModelTest, T12Tests) {
 
 #endif
 
-std::function<CtdTest(const t04::ModelPtr&)> CTD_TESTS[] = {[](const t04::ModelPtr&) -> CtdTest {
-                                                              return {{}, {}, {}, {}, {}};
-                                                            },
-    [](const t04::ModelPtr&) -> CtdTest {
+std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
+    [](const t04::Model::Ptr&) -> CtdTest {
+      return {{}, {}, {}, {}, {}};
+    },
+    [](const t04::Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("A"), Secondary::FromDb("."), Ctds{CTD_NA}, {}, {}};
     },
-    [](const t04::ModelPtr&) -> CtdTest {
+    [](const t04::Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
     },
-    [](const t04::ModelPtr&) -> CtdTest {
+    [](const t04::Model::Ptr&) -> CtdTest {
       return {
           Primary::FromSeq("GUA"), Secondary::FromDb("..."), Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
-    [](const t04::ModelPtr&) -> CtdTest {
+    [](const t04::Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("GUAC"), Secondary::FromDb("...."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     // 3' dangle inside the branch.
-    [](const t04::ModelPtr& em) -> CtdTest {
+    [](const t04::Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAAC"), Secondary::FromDb("(...)"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE},
           {{CTD_3_DANGLE, em->dangle3[G][A][C]}}, {4}};
     },
-    [](const t04::ModelPtr&) -> CtdTest {
+    [](const t04::Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
     },
-    [](const t04::ModelPtr& em) -> CtdTest {
+    [](const t04::Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA,
@@ -352,7 +353,7 @@ std::function<CtdTest(const t04::ModelPtr&)> CTD_TESTS[] = {[](const t04::ModelP
               {CTD_RC_WITH_PREV, em->MismatchCoaxial(C, A, A, G)}},
           {0, 6, 20}};
     },
-    [](const t04::ModelPtr& em) -> CtdTest {
+    [](const t04::Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
@@ -362,7 +363,7 @@ std::function<CtdTest(const t04::ModelPtr&)> CTD_TESTS[] = {[](const t04::ModelP
               {CTD_FCOAX_WITH_PREV, em->stack[G][A][U][C]}, {CTD_5_DANGLE, em->dangle5[C][G][G]}},
           {18, 7, 13}};
     },
-    [](const t04::ModelPtr& em) -> CtdTest {
+    [](const t04::Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GGAAACGAAACC"), Secondary::FromDb("((...)(...))"),
           Ctds{CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
@@ -370,7 +371,7 @@ std::function<CtdTest(const t04::ModelPtr&)> CTD_TESTS[] = {[](const t04::ModelP
               {CTD_FCOAX_WITH_PREV, em->stack[G][G][C][C]}},
           {1, 6, 11}};
     },
-    [](const t04::ModelPtr& em) -> CtdTest {
+    [](const t04::Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("UUAGAAACGCAAAGAGGUCCAAAGA"),
           Secondary::FromDb("(..(...).(...).....(...))"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
@@ -383,9 +384,8 @@ std::function<CtdTest(const t04::ModelPtr&)> CTD_TESTS[] = {[](const t04::ModelP
           {24, 3, 9, 19}};
     }};
 
-class CtdsTest
-    : public testing::TestWithParam<std::tuple<int, std::function<CtdTest(const t04::ModelPtr&)>>> {
-};
+class CtdsTest : public testing::TestWithParam<
+                     std::tuple<int, std::function<CtdTest(const t04::Model::Ptr&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
   auto em = test_t04_ems[std::get<0>(GetParam())];

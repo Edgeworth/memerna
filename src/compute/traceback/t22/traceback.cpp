@@ -18,7 +18,7 @@ namespace mrna::tb::t22 {
 
 // TODO(0): Implement. Think if can generalise this.
 TracebackResult Traceback(
-    const Primary& r, const erg::t22::ModelPtr& em, const DpArray& dp, const ExtArray& ext) {
+    const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp, const ExtArray& ext) {
   bug();
   return TracebackResult{};
 }

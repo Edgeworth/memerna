@@ -12,7 +12,7 @@
 
 namespace mrna::mfe::t04 {
 
-ExtArray MfeExterior(const Primary& r, const erg::t04::ModelPtr& em, const DpArray& dp) {
+ExtArray MfeExterior(const Primary& r, const erg::t04::Model::Ptr& em, const DpArray& dp) {
   const int N = static_cast<int>(r.size());
   auto ext = ExtArray(r.size() + 1, MAX_E);
 

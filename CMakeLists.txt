@@ -111,6 +111,7 @@ set(MEMERNA_SOURCE
   src/compute/energy/common/model.h
   src/compute/energy/common/branch.cpp src/compute/energy/common/branch.h
   src/compute/energy/common/t04_model_mixin.cpp src/compute/energy/common/t04_model_mixin.h
+  src/compute/energy/common/t04_boltz_mixin.cpp src/compute/energy/common/t04_boltz_mixin.h
   src/compute/energy/common/parse.cpp src/compute/energy/common/parse.h
   src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
