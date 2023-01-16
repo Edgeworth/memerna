@@ -10,9 +10,9 @@
 
 namespace mrna::mfe::t22 {
 
-DpArray MfeSlowest(const Primary& r, const erg::t22::ModelPtr& em);
+DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em);
 
-ExtArray MfeExterior(const Primary& r, const erg::t22::ModelPtr& em, const DpArray& dp);
+ExtArray MfeExterior(const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp);
 
 }  // namespace mrna::mfe::t22
 

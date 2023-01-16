@@ -59,7 +59,7 @@ class Precomp {
 
   std::vector<HairpinPrecomp<Energy>> hairpin;
 
-  Precomp(Primary r, ModelPtr em);
+  Precomp(Primary r, Model::Ptr em);
 
   [[nodiscard]] const Model& em() const { return *em_; }
 
@@ -68,7 +68,7 @@ class Precomp {
 
  private:
   Primary r_;
-  ModelPtr em_;
+  Model::Ptr em_;
 
   void PrecomputeData();
 };

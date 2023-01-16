@@ -20,7 +20,7 @@ namespace mrna::mfe::t04 {
     }                                                                   \
   } while (0)
 
-DpArray MfeSlowest(const Primary& r, const erg::t04::ModelPtr& em) {
+DpArray MfeSlowest(const Primary& r, const erg::t04::Model::Ptr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

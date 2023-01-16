@@ -25,10 +25,6 @@
 
 namespace mrna::erg::t22 {
 
-class Model;
-
-using ModelPtr = std::shared_ptr<Model>;
-
 // TODO(0): Implement.
 class Model : public ModelMixin<Model>, public T04ModelMixin {
  public:

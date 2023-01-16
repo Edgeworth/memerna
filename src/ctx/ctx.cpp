@@ -36,7 +36,7 @@ erg::EnergyResult Ctx::Efn(
 
 DpArray Ctx::ComputeMfe(const Primary& r) const {
   auto vis = overloaded{
-      [&](const erg::t04::ModelPtr& em) -> DpArray {
+      [&](const erg::t04::Model::Ptr& em) -> DpArray {
         switch (cfg_.dp_alg) {
         case CtxCfg::DpAlg::SLOWEST: return mfe::t04::MfeSlowest(r, em);
         case CtxCfg::DpAlg::SLOW: return mfe::t04::MfeSlow(r, em);
@@ -45,7 +45,7 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
         default: bug();
         }
       },
-      [&](const erg::t22::ModelPtr& em) {
+      [&](const erg::t22::Model::Ptr& em) {
         switch (cfg_.dp_alg) {
         case CtxCfg::DpAlg::SLOWEST:
         case CtxCfg::DpAlg::SLOW:
@@ -63,8 +63,8 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
 
 ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
   auto vis = overloaded{
-      [&](const erg::t04::ModelPtr& em) -> ExtArray { return mfe::t04::MfeExterior(r, em, dp); },
-      [&](const erg::t22::ModelPtr& em) -> ExtArray { return mfe::t22::MfeExterior(r, em, dp); },
+      [&](const erg::t04::Model::Ptr& em) -> ExtArray { return mfe::t04::MfeExterior(r, em, dp); },
+      [&](const erg::t22::Model::Ptr& em) -> ExtArray { return mfe::t22::MfeExterior(r, em, dp); },
   };
   return std::visit(vis, em_);
 }
@@ -72,10 +72,10 @@ ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
 tb::TracebackResult Ctx::ComputeTraceback(
     const Primary& r, const DpArray& dp, const ExtArray& ext) const {
   auto vis = overloaded{
-      [&](const erg::t04::ModelPtr& em) -> tb::TracebackResult {
+      [&](const erg::t04::Model::Ptr& em) -> tb::TracebackResult {
         return tb::t04::Traceback(r, em, dp, ext);
       },
-      [&](const erg::t22::ModelPtr& em) -> tb::TracebackResult {
+      [&](const erg::t22::Model::Ptr& em) -> tb::TracebackResult {
         return tb::t22::Traceback(r, em, dp, ext);
       },
   };
@@ -120,7 +120,7 @@ int Ctx::Suboptimal(
   auto ext = ComputeMfeExterior(r, dp);
 
   auto vis = overloaded{
-      [&, ext = std::move(ext)](const erg::t04::ModelPtr& em) mutable -> int {
+      [&, ext = std::move(ext)](const erg::t04::Model::Ptr& em) mutable -> int {
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::SLOWEST:
           return subopt::t04::SuboptSlowest(Primary(r), em, std::move(dp), std::move(ext), cfg)
@@ -132,7 +132,7 @@ int Ctx::Suboptimal(
         }
       },
       // TODO(0): Implement suboptimal for t22.
-      [&, ext = std::move(ext)](const erg::t22::ModelPtr&) mutable -> int { bug(); },
+      [&, ext = std::move(ext)](const erg::t22::Model::Ptr&) mutable -> int { bug(); },
   };
   return std::visit(vis, em_);
 }
@@ -145,7 +145,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
   std::tuple<BoltzDpArray, BoltzExtArray> res;
 
   auto vis = overloaded{
-      [&](const erg::t04::ModelPtr& em) {
+      [&](const erg::t04::Model::Ptr& em) {
         switch (cfg_.part_alg) {
         case CtxCfg::PartAlg::SLOWEST: res = part::t04::PartitionSlowest(r, em); break;
         case CtxCfg::PartAlg::FASTEST:
@@ -155,7 +155,7 @@ part::PartResult Ctx::Partition(const Primary& r) const {
         }
       },
       // TODO(0): Implement partition for t22.
-      [&](const erg::t22::ModelPtr&) { bug(); },
+      [&](const erg::t22::Model::Ptr&) { bug(); },
   };
   std::visit(vis, em_);
 

@@ -32,11 +32,11 @@ namespace mrna::erg {
 template <typename T>
 class ModelMixin {
  public:
-  using ModelPtr = std::shared_ptr<T>;
+  using Ptr = std::shared_ptr<T>;
 
-  static ModelPtr Create() { return ModelPtr(new T); }
+  static Ptr Create() { return Ptr(new T); }
 
-  static ModelPtr FromDir(const std::string& data_dir) {
+  static Ptr FromDir(const std::string& data_dir) {
     auto em = Create();
     em->LoadFromDir(data_dir);
     std::string reason;
@@ -44,7 +44,7 @@ class ModelMixin {
     return em;
   }
 
-  static ModelPtr Random(uint_fast32_t seed) {
+  static Ptr Random(uint_fast32_t seed) {
     auto em = Create();
     std::mt19937 eng(seed);
     em->LoadRandom(eng);
@@ -53,8 +53,8 @@ class ModelMixin {
     return em;
   }
 
-  static ModelPtr FromArgParse(const ArgParse& args) {
-    ModelPtr em;
+  static Ptr FromArgParse(const ArgParse& args) {
+    Ptr em;
     if (args.Has(OPT_SEED)) {
       em = Random(args.Get<uint_fast32_t>(OPT_SEED));
     } else {
@@ -64,7 +64,7 @@ class ModelMixin {
     return em;
   }
 
-  inline ModelPtr Clone() const { return std::make_shared<T>(*reinterpret_cast<const T*>(this)); }
+  inline Ptr Clone() const { return std::make_shared<T>(*reinterpret_cast<const T*>(this)); }
 };
 
 }  // namespace mrna::erg

@@ -151,8 +151,6 @@ class T04ModelMixin {
   bool IsValid(std::string* reason = nullptr) const;
 
  protected:
-  T04ModelMixin() = default;  // Prevent construction of this by itself.
-
   void LoadFromDir(const std::string& data_dir);
   void LoadRandom(std::mt19937& eng);
 

@@ -13,7 +13,8 @@
 
 namespace mrna::erg::t04 {
 
-BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModelPtr bem) : r_(std::move(r)), bem_(std::move(bem)) {
+BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bem)
+    : r_(std::move(r)), bem_(std::move(bem)) {
   PrecomputeData();
 }
 

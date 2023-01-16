@@ -10,7 +10,7 @@
 namespace mrna::tb::t04 {
 
 TracebackResult Traceback(
-    const Primary& r, const erg::t04::ModelPtr& em, const DpArray& dp, const ExtArray& ext);
+    const Primary& r, const erg::t04::Model::Ptr& em, const DpArray& dp, const ExtArray& ext);
 
 }  // namespace mrna::tb::t04
 
