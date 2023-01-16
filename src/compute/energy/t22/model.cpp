@@ -445,23 +445,6 @@ EnergyResult Model::TotalEnergy(
   return res;
 }
 
-bool Model::IsValid(std::string* reason) const {
-  if (!T04ModelMixin::IsValid(reason)) return false;
-
-  for (int a = 0; a < 4; ++a) {
-    for (int b = 0; b < 4; ++b) {
-      for (int c = 0; c < 4; ++c) {
-        for (int d = 0; d < 4; ++d) {
-          // Expect 180 degree rotations to be the same.
-          CHECK_COND(penultimate_stack[a][b][c][d] == penultimate_stack[c][d][a][b],
-              "180 degree rotations should be the same");
-        }
-      }
-    }
-  }
-  return true;
-}
-
 void Model::LoadFromDir(const std::string& data_dir) {
   T04ModelMixin::LoadFromDir(data_dir);
   Parse4MapFromFile(data_dir + "/penultimate_stacking.data", penultimate_stack);
@@ -470,18 +453,10 @@ void Model::LoadFromDir(const std::string& data_dir) {
 void Model::LoadRandom(std::mt19937& eng) {
   T04ModelMixin::LoadRandom(eng);
 
+  // penultimate_stack is dependent on the direction, so 180 degree rotations
+  // don't have to be the same.
   std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   RANDOMISE_DATA(penultimate_stack);
-  for (int a = 0; a < 4; ++a) {
-    for (int b = 0; b < 4; ++b) {
-      for (int c = 0; c < 4; ++c) {
-        for (int d = 0; d < 4; ++d) {
-          // Correct things to be 180 degree rotations if required.
-          penultimate_stack[c][d][a][b] = penultimate_stack[a][b][c][d];
-        }
-      }
-    }
-  }
 }
 
 }  // namespace mrna::erg::t22

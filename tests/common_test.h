@@ -19,6 +19,7 @@ inline constexpr uint32_t T22P2_MODEL_HASH = 0xdbcc795b;
 inline constexpr int NUM_TEST_MODELS = 5;
 inline erg::EnergyModelPtr test_ems[NUM_TEST_MODELS];
 inline erg::t04::Model::Ptr test_t04_ems[NUM_TEST_MODELS];
+inline erg::t22::Model::Ptr test_t22_ems[NUM_TEST_MODELS];
 
 #if ENERGY_PRECISION == 1
 inline erg::t04::Model::Ptr t04p1;
