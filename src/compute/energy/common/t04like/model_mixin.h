@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_T04_MODEL_MIXIN_H_
-#define COMPUTE_ENERGY_COMMON_T04_MODEL_MIXIN_H_
+#ifndef COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_
+#define COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_
 
 #include <cassert>
 #include <cmath>
@@ -160,4 +160,4 @@ class T04ModelMixin {
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_COMMON_T04_MODEL_MIXIN_H_
+#endif  // COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_

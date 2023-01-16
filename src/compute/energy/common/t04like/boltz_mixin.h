@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_T04_BOLTZ_MIXIN_H_
-#define COMPUTE_ENERGY_COMMON_T04_BOLTZ_MIXIN_H_
+#ifndef COMPUTE_ENERGY_COMMON_T04LIKE_BOLTZ_MIXIN_H_
+#define COMPUTE_ENERGY_COMMON_T04LIKE_BOLTZ_MIXIN_H_
 
 #include <cassert>
 #include <memory>
@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 #include "compute/energy/common/boltz.h"
-#include "compute/energy/common/t04_model_mixin.h"
+#include "compute/energy/common/t04like/model_mixin.h"
 #include "compute/energy/structure.h"
 #include "compute/energy/t04/model.h"
 #include "model/base.h"
@@ -137,4 +137,4 @@ class T04BoltzMixin {
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_COMMON_T04_BOLTZ_MIXIN_H_
+#endif  // COMPUTE_ENERGY_COMMON_T04LIKE_BOLTZ_MIXIN_H_

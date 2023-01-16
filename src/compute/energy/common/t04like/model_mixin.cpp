@@ -1,5 +1,5 @@
 // Copyright 2023 Eliot Courtney.
-#include "compute/energy/common/t04_model_mixin.h"
+#include "compute/energy/common/t04like/model_mixin.h"
 
 #include "compute/energy/common/model.h"
 #include "compute/energy/common/parse.h"

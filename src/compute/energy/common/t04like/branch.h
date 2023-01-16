@@ -1,17 +1,21 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/t22/branch.h"
+#ifndef COMPUTE_ENERGY_COMMON_T04LIKE_BRANCH_H_
+#define COMPUTE_ENERGY_COMMON_T04LIKE_BRANCH_H_
 
 #include <algorithm>
-#include <cassert>
+#include <deque>
 #include <tuple>
 #include <utility>
 #include <vector>
 
-#include "compute/energy/t22/model.h"
-#include "model/base.h"
-#include "util/error.h"
+#include "compute/energy/common/branch.h"
+#include "compute/energy/t04/model.h"
+#include "model/ctd.h"
+#include "model/energy.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
-namespace mrna::erg::t22 {
+namespace mrna::erg {
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
 // This DP needs to be run four times. The series of branches is actually cyclic, and there are two
@@ -39,8 +43,10 @@ namespace mrna::erg::t22 {
     }                                                                                 \
   } while (0)
 
-Energy ComputeOptimalCtds(const Model& em, const Primary& r, const Secondary& s,
-    const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
+template <typename T>
+requires std::is_base_of_v<T04ModelMixin, T> Energy ComputeOptimalCtds(const T& em,
+    const Primary& r, const Secondary& s, const std::deque<int>& branches, bool use_first_lu,
+    BranchCtd* branch_ctd) {
   int N = static_cast<int>(branches.size());
   int RSZ = static_cast<int>(r.size());
   assert(branch_ctd->empty());
@@ -183,8 +189,12 @@ Energy ComputeOptimalCtds(const Model& em, const Primary& r, const Secondary& s,
 
 #undef UPDATE_CACHE
 
-Energy AddBaseCtdsToBranchCtds(const Model& em, const Primary& r, const Secondary& s,
-    const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd) {
+// Reads the per-base ctd representation from |ctd| for |branches| branches and
+// writes it in branch representation to |branch_ctd|.
+template <typename T>
+requires std::is_base_of_v<T04ModelMixin, T> Energy AddBaseCtdsToBranchCtds(const T& em,
+    const Primary& r, const Secondary& s, const Ctds& ctd, const std::deque<int>& branches,
+    BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = ZERO_E;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
@@ -250,4 +260,7 @@ Energy AddBaseCtdsToBranchCtds(const Model& em, const Primary& r, const Secondar
   }
   return total_energy;
 }
-}  // namespace mrna::erg::t22
+
+}  // namespace mrna::erg
+
+#endif  // COMPUTE_ENERGY_COMMON_T04LIKE_BRANCH_H_

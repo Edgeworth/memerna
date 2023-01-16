@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/common/t04_boltz_mixin.h"
+#include "compute/energy/common/t04like/boltz_mixin.h"
 #include "compute/energy/structure.h"
 #include "compute/energy/t22/model.h"
 #include "model/base.h"
