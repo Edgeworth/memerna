@@ -1,3 +1,4 @@
+// Copyright 2023 Eliot Courtney.
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 

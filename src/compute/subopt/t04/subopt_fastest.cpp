@@ -90,13 +90,13 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
       continue;  // Done.
     }
 
-    const auto& exp = exps[s.idx++];
-    DfsState ns = {0, exp.to_expand, false};
-    energy += exp.energy;
-    if (exp.to_expand.st == -1) {
+    const auto& ex = exps[s.idx++];
+    DfsState ns = {0, ex.to_expand, false};
+    energy += ex.energy;
+    if (ex.to_expand.st == -1) {
       // Can't have an unexpanded without a to_expand. Also can't set ctds or affect energy.
-      assert(exp.unexpanded.st == -1);
-      assert(exp.ctd0.idx == -1 && exp.ctd1.idx == -1);
+      assert(ex.unexpanded.st == -1);
+      assert(ex.ctd0.idx == -1 && ex.ctd1.idx == -1);
       // Use an unexpanded now, if one exists.
       if (unexpanded_.empty()) {
         // At a terminal state.
@@ -117,9 +117,9 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
 
     } else {
       // Apply child's modifications to the global state.
-      if (exp.ctd0.idx != -1) res_.tb.ctd[exp.ctd0.idx] = exp.ctd0.ctd;
-      if (exp.ctd1.idx != -1) res_.tb.ctd[exp.ctd1.idx] = exp.ctd1.ctd;
-      if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
+      if (ex.ctd0.idx != -1) res_.tb.ctd[ex.ctd0.idx] = ex.ctd0.ctd;
+      if (ex.ctd1.idx != -1) res_.tb.ctd[ex.ctd1.idx] = ex.ctd1.ctd;
+      if (ex.unexpanded.st != -1) unexpanded_.push_back(ex.unexpanded);
     }
     if (ns.expand.en != -1 && ns.expand.a == DP_P) {
       res_.tb.s[ns.expand.st] = ns.expand.en;

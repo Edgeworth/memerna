@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_BRANCH_H_
-#define COMPUTE_ENERGY_BRANCH_H_
+#ifndef COMPUTE_ENERGY_COMMON_BRANCH_H_
+#define COMPUTE_ENERGY_COMMON_BRANCH_H_
 
 #include <deque>
 #include <utility>
@@ -47,4 +47,4 @@ void AddBranchCtdsToBaseCtds(
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_BRANCH_H_
+#endif  // COMPUTE_ENERGY_COMMON_BRANCH_H_

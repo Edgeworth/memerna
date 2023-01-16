@@ -1,3 +1,4 @@
+// Copyright 2023 Eliot Courtney.
 #ifndef COMPUTE_ENERGY_COMMON_BOLTZ_H_
 #define COMPUTE_ENERGY_COMMON_BOLTZ_H_
 
