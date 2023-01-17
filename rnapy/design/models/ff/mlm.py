@@ -42,7 +42,7 @@ class MlmFF(Model):
         Returns:
             output tensor, shape (batch_size, seq_len, d_primary)
         """
-        # TODO: do masking.
+        # TODO(1): do masking.
 
         # Convert to one hot encoding: (batch_size, seq_len, d_emb)
         # TODO(0): undo db here, use masking? Or MLMFeedForward
