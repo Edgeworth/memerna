@@ -2,6 +2,11 @@
 
 ## TODO:
 
+when implemented go through all t22 test cases and check structure with -v
+
+- special internal loops need data tables modified to remove penalty; subtract 0.45 if AU/GU
+- need to do the same for t12?
+
 need to implement lonely pairs disabling properly for t22.
 
 add terminal stacks to:
@@ -42,6 +47,11 @@ Update in 2022 model (t22p2):
 - Stacking parameters changed
 - Sequence dependent parameters for terminal base pairs based on the penultimate
   pair (penultimate_stacking.data)
+  - Bulge loops of size 1 are continuous and don't have penultimate stacking
+    applied inside (same as AU/GU penalty rules).
+  - Coaxial stacks are not treated as continuous for penultimate stacking (same
+    as AU/GU penalty rules).
+  -
 - See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
 need to apply to all loop types - affects energy model, efn, exterior loop, mfe.
