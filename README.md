@@ -7,6 +7,15 @@ when implemented go through all t22 test cases and check structure with -v
 - special internal loops need data tables modified to remove penalty; subtract 0.45 if AU/GU
 - need to do the same for t12?
 
+internal_2x3_mismatch?
+
+questions about RNAstructure data tables:
+rna.helix_ends.dg: looks like it contains AU/GU penalties. Why?
+rna.stack.dg: Why not updated with new stacking parameters?
+rna.tstackh/i/i1n: Why different terminal mismatch data for hairpin loops etc?
+
+- shouldn't e.g. rna.tstackh be the same as rna.tstack?
+
 need to implement lonely pairs disabling properly for t22.
 
 add terminal stacks to:

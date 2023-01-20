@@ -15,6 +15,7 @@ from rnapy.programs.harness import harness
 from rnapy.programs.util.convert_format import convert_format
 from rnapy.programs.util.crop_image import crop_image
 from rnapy.programs.util.parse_rnastructure_datatables import parse_rnastructure_datatables
+from rnapy.programs.util.update_datatables import update_datatables
 
 CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,
@@ -37,7 +38,9 @@ def cli() -> None:
 
 cli.section("Analysis", compare_partition, harness, run_fold_perf, plot_fold_perf)
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
-cli.section("Conversion", convert_format, crop_image, parse_rnastructure_datatables)
+cli.section(
+    "Conversion", convert_format, crop_image, parse_rnastructure_datatables, update_datatables
+)
 cli.section("Design", design)
 
 if __name__ == "__main__":
