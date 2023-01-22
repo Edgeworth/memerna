@@ -54,7 +54,7 @@ class T22ModelTest : public testing::TestWithParam<int> {
   }
 
   static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
-    return test_t04_ems[GetParam()]
+    return test_t22_ems[GetParam()]
         ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr)
         .energy;
   }
@@ -209,13 +209,13 @@ TEST(T22P2ModelTest, T22Tests) {
   // Special internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
-  EXPECT_EQ(E(8.22 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCUU", "((.((...)).))"));
+  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCUU", "((.((...)).))"));
   // AU end on GU at 1, 5; GU end on AU at 2, 4
-  EXPECT_EQ(E(7.52 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCUUU", ".((.((...)).))."));
+  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCUUU", ".((.((...)).))."));
 
   // Special internal loop with lonely pairs:
-  EXPECT_EQ(E(8.80), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
-  EXPECT_EQ(E(8.10), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
+  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
 
   // Multiloop:
   EXPECT_EQ(E(23.70), GetEnergy(em, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)"));

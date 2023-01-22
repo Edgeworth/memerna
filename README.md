@@ -4,17 +4,14 @@
 
 when implemented go through all t22 test cases and check structure with -v
 
-- special internal loops need data tables modified to remove penalty; subtract 0.45 if AU/GU
+- special internal loops need data tables modified to remove penalty; subtract 0.45 if AU/GU or 0.5?
 - need to do the same for t12?
 
-internal_2x3_mismatch?
+internal loop / etc au/gu penalties: subtract 0.5 or 0.45?
 
 questions about RNAstructure data tables:
 rna.helix_ends.dg: looks like it contains AU/GU penalties. Why?
 rna.stack.dg: Why not updated with new stacking parameters?
-rna.tstackh/i/i1n: Why different terminal mismatch data for hairpin loops etc?
-
-- shouldn't e.g. rna.tstackh be the same as rna.tstack?
 
 need to implement lonely pairs disabling properly for t22.
 
@@ -60,13 +57,63 @@ Update in 2022 model (t22p2):
     applied inside (same as AU/GU penalty rules).
   - Coaxial stacks are not treated as continuous for penultimate stacking (same
     as AU/GU penalty rules).
-  -
 - See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
-need to apply to all loop types - affects energy model, efn, exterior loop, mfe.
+## Data table notes:
 
-- augu_penalty, internal_augu_penalty goes away;
-- add [4][4][4][4] table for terminal base pairs.
+- bulge_initiation.data:
+- dangle3.data:
+- dangle5.data:
+- hairpin.data:
+  Special hairpins. AU/GU penalties baked in.
+- hairpin_initiation.data:
+- internal_1x1.data:
+  1x1 special internal loops. AU/GU penalties baked in.
+- internal_1x2.data:
+  2x1 special internal loops. AU/GU penalties baked in.
+- internal_2x2.data:
+  2x2 special internal loops. AU/GU penalties baked in.
+- internal_2x3_mismatch.data:
+  2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
+- internal_initiation.data:
+- internal_other_mismatch.data:
+  Non 2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
+- misc.data:
+- stacking.data:
+- terminal.data:
+
+## RNAstructure data tables notes
+
+- rna.coaxial:
+- rna.coaxstack:
+- rna.cov:
+- rna.dangle:
+- rna.dynalignmiscloop:
+- rna.hexaloop:
+- rna.int11:
+  1x1 special internal loops. AU/GU penalties baked in.
+- rna.int21:
+  2x1 special internal loops. AU/GU penalties baked in.
+- rna.int22:
+  2x2 special internal loops. AU/GU penalties baked in.
+- rna.loop:
+- rna.miscloop:
+- rna.param_map:
+- rna.stack:
+- rna.tloop:
+- rna.triloop:
+- rna.tstack:
+- rna.tstackcoax:
+- rna.tstackh:
+  Hairpin loop terminal mismatch parameters.
+  AU/GU penalties and other special hairpin parameters baked in.
+- rna.tstacki:
+  Internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
+- rna.tstacki1n:
+  Bulge loop terminal mismatch parameters. AU/GU penalties baked in.
+- rna.tstacki23:
+  2x3 internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
+- rna.tstackm:
 
 ## Misc notes
 
