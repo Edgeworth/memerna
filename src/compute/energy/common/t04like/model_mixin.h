@@ -150,12 +150,32 @@ class T04ModelMixin {
 
   bool IsValid(std::string* reason = nullptr) const;
 
+  Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
+  Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
+      std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* sstruc = nullptr) const;
+
+  // If (st, en) is not paired, treated as an exterior loop.
+  // If |ctd| is non-null, use the given ctds.
+  EnergyResult SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
+      int en, bool build_structure = false) const;
+  EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+      bool build_structure = false) const;
+
  protected:
   void LoadFromDir(const std::string& data_dir);
   void LoadRandom(std::mt19937& eng);
 
  private:
   void ParseMiscDataFromFile(const std::string& filename);
+  Energy SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
+      bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
 }  // namespace mrna::erg
