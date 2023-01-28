@@ -13,6 +13,9 @@
 
 namespace mrna {
 
+// Stores a secondary structure as a vector of indices. The index at a position
+// is the position of the base it is paired with. If the base is not paired, the
+// index is -1.
 class Secondary {
  public:
   Secondary() = default;
