@@ -4,15 +4,20 @@
 
 #include <cassert>
 #include <cmath>
+#include <deque>
+#include <memory>
 #include <random>
 #include <string>
 #include <unordered_map>
 
 #include "compute/energy/energy_cfg.h"
+#include "compute/energy/structure.h"
 #include "model/base.h"
 #include "model/constants.h"
+#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna::erg {
 
@@ -66,14 +71,14 @@ class T04ModelMixin {
 
   EnergyCfg cfg = {};
 
-  inline bool CanPair(const Primary& r, int st, int en) const {
+  [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs) return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
         ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
             (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));
   }
 
-  Energy HairpinInitiation(int n) const {
+  [[nodiscard]] Energy HairpinInitiation(int n) const {
     assert(n >= 3);
     if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -82,7 +87,7 @@ class T04ModelMixin {
     return hairpin_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  Energy BulgeInitiation(int n) const {
+  [[nodiscard]] Energy BulgeInitiation(int n) const {
     assert(n >= 1);
     if (n < INITIATION_CACHE_SZ) return bulge_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -90,7 +95,7 @@ class T04ModelMixin {
     return bulge_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  Energy InternalLoopInitiation(int n) const {
+  [[nodiscard]] Energy InternalLoopInitiation(int n) const {
     assert(n >= 4);
     if (n < INITIATION_CACHE_SZ) return internal_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -98,18 +103,18 @@ class T04ModelMixin {
     return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
-  Energy MultiloopInitiation(int num_branches) const {
+  [[nodiscard]] Energy MultiloopInitiation(int num_branches) const {
     return multiloop_hack_a + num_branches * multiloop_hack_b;
   }
 
-  Energy AuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return au_penalty;
     if (IsGuPair(stb, enb)) return gu_penalty;
     return ZERO_E;
   }
 
-  Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return internal_au_penalty;
     if (IsGuPair(stb, enb)) return internal_gu_penalty;
@@ -128,7 +133,7 @@ class T04ModelMixin {
   // 1. A terminal mismatch is formed around the branch being straddled.
   // 2. An arbitrary bonus is added.
   // 2. An arbitrary bonus is added if the mismatch is Watson-Crick or GU.
-  Energy MismatchCoaxial(
+  [[nodiscard]] Energy MismatchCoaxial(
       Base five_top, Base mismatch_top, Base mismatch_bot, Base three_bot) const {
     assert(IsBase(five_top) && IsBase(mismatch_top) && IsBase(mismatch_bot) && IsBase(three_bot));
     Energy coax =
@@ -139,6 +144,17 @@ class T04ModelMixin {
       coax += coax_mismatch_gu_bonus;
     return coax;
   }
+
+  Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
+  Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
+      std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   bool IsValid(std::string* reason = nullptr) const;
 

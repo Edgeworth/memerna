@@ -3,6 +3,8 @@
 
 #include <fmt/core.h>
 
+#include <ios>
+
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/primary.h"

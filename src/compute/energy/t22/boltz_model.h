@@ -2,10 +2,10 @@
 #ifndef COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_
 #define COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_
 
+#include "compute/energy/common/model.h"
 #include "compute/energy/common/t04like/boltz_mixin.h"
 #include "compute/energy/t22/model.h"
 #include "model/energy.h"
-#include "compute/energy/common/model.h"
 
 namespace mrna::erg::t22 {
 

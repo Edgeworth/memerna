@@ -2,11 +2,11 @@
 #ifndef COMPUTE_BRUTE_BRUTE_H_
 #define COMPUTE_BRUTE_BRUTE_H_
 
+#include <compare>
 #include <cstdint>
 #include <set>
 #include <utility>
 #include <vector>
-#include <compare>
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/brute_cfg.h"

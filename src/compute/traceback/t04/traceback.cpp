@@ -2,6 +2,7 @@
 #include "compute/traceback/t04/traceback.h"
 
 #include <algorithm>
+#include <compare>
 #include <memory>
 #include <stack>
 
@@ -12,7 +13,6 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "util/array.h"
 
 namespace mrna::tb::t04 {
 

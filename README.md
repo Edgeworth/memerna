@@ -61,59 +61,59 @@ Update in 2022 model (t22p2):
 
 ## Data table notes:
 
-- bulge_initiation.data:
-- dangle3.data:
-- dangle5.data:
-- hairpin.data:
+- bulge_initiation.data
+- dangle3.data
+- dangle5.data
+- hairpin.data
   Special hairpins. AU/GU penalties baked in.
-- hairpin_initiation.data:
-- internal_1x1.data:
+- hairpin_initiation.data
+- internal_1x1.data
   1x1 special internal loops. AU/GU penalties baked in.
-- internal_1x2.data:
+- internal_1x2.data
   2x1 special internal loops. AU/GU penalties baked in.
-- internal_2x2.data:
+- internal_2x2.data
   2x2 special internal loops. AU/GU penalties baked in.
-- internal_2x3_mismatch.data:
+- internal_2x3_mismatch.data
   2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
-- internal_initiation.data:
-- internal_other_mismatch.data:
+- internal_initiation.data
+- internal_other_mismatch.data
   Non 2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
-- misc.data:
-- stacking.data:
-- terminal.data:
+- misc.data
+- stacking.data
+- terminal.data
 
 ## RNAstructure data tables notes
 
-- rna.coaxial:
-- rna.coaxstack:
-- rna.cov:
-- rna.dangle:
-- rna.dynalignmiscloop:
-- rna.hexaloop:
-- rna.int11:
+- rna.coaxial
+- rna.coaxstack
+- rna.cov
+- rna.dangle
+- rna.dynalignmiscloop
+- rna.hexaloop
+- rna.int11
   1x1 special internal loops. AU/GU penalties baked in.
-- rna.int21:
+- rna.int21
   2x1 special internal loops. AU/GU penalties baked in.
-- rna.int22:
+- rna.int22
   2x2 special internal loops. AU/GU penalties baked in.
-- rna.loop:
-- rna.miscloop:
-- rna.param_map:
-- rna.stack:
-- rna.tloop:
-- rna.triloop:
-- rna.tstack:
-- rna.tstackcoax:
-- rna.tstackh:
+- rna.loop
+- rna.miscloop
+- rna.param_map
+- rna.stack
+- rna.tloop
+- rna.triloop
+- rna.tstack
+- rna.tstackcoax
+- rna.tstackh
   Hairpin loop terminal mismatch parameters.
   AU/GU penalties and other special hairpin parameters baked in.
-- rna.tstacki:
+- rna.tstacki
   Internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
-- rna.tstacki1n:
+- rna.tstacki1n
   Bulge loop terminal mismatch parameters. AU/GU penalties baked in.
-- rna.tstacki23:
+- rna.tstacki23
   2x3 internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
-- rna.tstackm:
+- rna.tstackm
 
 ## Misc notes
 

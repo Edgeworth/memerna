@@ -1,8 +1,8 @@
 // Copyright 2016 E.
 #include <algorithm>
+#include <compare>
 #include <memory>
 #include <vector>
-#include <compare>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"

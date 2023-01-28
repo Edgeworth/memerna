@@ -44,9 +44,9 @@ namespace mrna::erg {
   } while (0)
 
 template <typename T>
-requires std::is_base_of_v<T04ModelMixin, T> Energy ComputeOptimalCtds(const T& em,
-    const Primary& r, const Secondary& s, const std::deque<int>& branches, bool use_first_lu,
-    BranchCtd* branch_ctd) {
+  requires std::is_base_of_v<T04ModelMixin, T>
+Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
+    const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
   int N = static_cast<int>(branches.size());
   int RSZ = static_cast<int>(r.size());
   assert(branch_ctd->empty());
@@ -192,9 +192,9 @@ requires std::is_base_of_v<T04ModelMixin, T> Energy ComputeOptimalCtds(const T& 
 // Reads the per-base ctd representation from |ctd| for |branches| branches and
 // writes it in branch representation to |branch_ctd|.
 template <typename T>
-requires std::is_base_of_v<T04ModelMixin, T> Energy AddBaseCtdsToBranchCtds(const T& em,
-    const Primary& r, const Secondary& s, const Ctds& ctd, const std::deque<int>& branches,
-    BranchCtd* branch_ctd) {
+  requires std::is_base_of_v<T04ModelMixin, T>
+Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s, const Ctds& ctd,
+    const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = ZERO_E;
   // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the

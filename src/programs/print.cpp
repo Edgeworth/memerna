@@ -3,8 +3,6 @@
 
 #include <fmt/core.h>
 
-#include <iomanip>
-
 void PrintBoltzProbs(const mrna::BoltzProbs& p) {
   const int N = static_cast<int>(p.size());
   for (int i = 0; i < N; ++i) {

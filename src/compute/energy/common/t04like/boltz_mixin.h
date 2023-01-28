@@ -18,7 +18,7 @@
 namespace mrna::erg {
 
 template <typename T>
-requires std::is_base_of_v<T04ModelMixin, T>
+  requires std::is_base_of_v<T04ModelMixin, T>
 class T04BoltzMixin {
  public:
   BoltzEnergy stack[4][4][4][4]{};

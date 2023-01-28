@@ -2,8 +2,10 @@
 #ifndef MODEL_ENERGY_H_
 #define MODEL_ENERGY_H_
 
+#include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#include <compare>
 #include <cstdint>
 #include <iosfwd>
 #include <string>

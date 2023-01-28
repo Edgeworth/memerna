@@ -2,15 +2,10 @@
 #include <gtest/gtest.h>
 
 #include <ios>
-#include <memory>
-#include <variant>
 
 #include "common_test.h"
 #include "compute/energy/energy_cfg.h"
-#include "compute/energy/model.h"
-#include "compute/energy/t04/model.h"
 #include "util/argparse.h"
-#include "util/error.h"
 
 int main(int argc, char** argv) {
   std::ios_base::sync_with_stdio(false);
