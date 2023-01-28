@@ -11,8 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "util/string.h"
-
 namespace mrna {
 
 template <typename Key, typename Value>

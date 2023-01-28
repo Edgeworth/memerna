@@ -13,7 +13,6 @@
 #include "compute/dp.h"
 #include "compute/energy/t04/boltz_model.h"
 #include "compute/energy/t04/model.h"
-#include "compute/energy/t22/boltz_model.h"
 #include "compute/energy/t22/model.h"
 #include "compute/mfe/t04/mfe.h"
 #include "compute/mfe/t22/mfe.h"
@@ -23,9 +22,11 @@
 #include "compute/subopt/t04/subopt_slowest.h"
 #include "compute/traceback/t04/traceback.h"
 #include "compute/traceback/t22/traceback.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "util/array.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna::ctx {
 

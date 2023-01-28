@@ -12,7 +12,6 @@
 
 namespace mrna::erg {
 
-
 void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]);
 
 void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]);

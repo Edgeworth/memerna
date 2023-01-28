@@ -1,8 +1,9 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/fuzz_cfg.h"
 
+#include <fmt/core.h>
+
 #include "compute/energy/energy_cfg.h"
-#include "util/string.h"
 
 namespace mrna::fuzz {
 

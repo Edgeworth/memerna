@@ -2,9 +2,9 @@
 #ifndef COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
 #define COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
 
+#include <compare>
 #include <set>
 #include <vector>
-#include <compare>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"

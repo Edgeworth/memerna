@@ -1,7 +1,4 @@
 // Copyright 2022 Eliot Courtney.
-#include <gtest/gtest.h>
-
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,6 +8,7 @@
 #include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
+#include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
 

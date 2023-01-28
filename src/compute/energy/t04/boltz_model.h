@@ -2,9 +2,9 @@
 #ifndef COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
 #define COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
 
+#include "compute/energy/common/model.h"
 #include "compute/energy/common/t04like/boltz_mixin.h"
 #include "compute/energy/t04/model.h"
-#include "compute/energy/common/model.h"
 
 namespace mrna::erg::t04 {
 

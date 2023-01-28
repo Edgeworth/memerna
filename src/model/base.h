@@ -31,6 +31,14 @@ inline constexpr bool IsPair(Base a, Base b) {
   return combined == (G_b | U_b) || combined == (G_b | C_b) || combined == (A_b | U_b);
 }
 
+// Returns if the opening and closing base pairs are considered to be continous.
+// This happens if they form a stack or a size one bulge loop.
+inline constexpr bool IsContinuous(int ost, int oen, int ist, int ien) {
+  assert(ost < oen && ist < ien && ost < ist && oen > ien && ost >= 0 && oen >= 0);
+  return (ost + 1 == ist && oen - 1 == ien) || (ost + 1 == ist && oen - 2 == ien) ||
+      (ost + 2 == ist && oen - 1 == ien);
+}
+
 inline constexpr bool IsAuPair(Base a, Base b) { return (a == A && b == U) || (a == U && b == A); }
 
 inline constexpr bool IsGuPair(Base a, Base b) { return (a == G && b == U) || (a == U && b == G); }

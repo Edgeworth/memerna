@@ -4,9 +4,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <compare>
 #include <utility>
 #include <vector>
-#include <compare>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"

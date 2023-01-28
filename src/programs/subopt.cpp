@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 
+#include <ios>
 #include <string>
 
 #include "compute/subopt/subopt_cfg.h"

@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <compare>
 #include <cstdlib>
 #include <utility>
-#include <compare>
 
 #include "compute/energy/energy.h"
 #include "model/constants.h"

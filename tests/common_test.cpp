@@ -1,6 +1,10 @@
 // Copyright 2022 Eliot Courtney.
 #include "common_test.h"
 
+#include <variant>
+
+#include "compute/energy/energy_cfg.h"
+
 namespace mrna {
 
 void InitTest(const std::string& data_dir) {

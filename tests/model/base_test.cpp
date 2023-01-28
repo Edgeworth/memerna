@@ -1,9 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include "model/base.h"
 
-#include <gtest/gtest.h>
-
 #include <string>
+
+#include "gtest/gtest.h"
 
 namespace mrna {
 

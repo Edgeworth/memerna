@@ -1,6 +1,4 @@
 // Copyright 2016 Eliot Courtney.
-#include <gtest/gtest.h>
-
 #include <string>
 
 #include "common_test.h"
@@ -8,6 +6,7 @@
 #include "compute/mfe/mfe.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
+#include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
 

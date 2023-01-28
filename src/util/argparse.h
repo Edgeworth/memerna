@@ -2,6 +2,7 @@
 #ifndef UTIL_ARGPARSE_H_
 #define UTIL_ARGPARSE_H_
 
+#include <compare>
 #include <cstddef>
 #include <map>
 #include <set>

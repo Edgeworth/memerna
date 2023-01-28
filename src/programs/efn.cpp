@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include <fmt/core.h>
 
+#include <ios>
 #include <memory>
 #include <string>
 #include <vector>

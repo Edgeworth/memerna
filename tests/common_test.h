@@ -6,6 +6,8 @@
 #include <string>
 
 #include "compute/energy/model.h"
+#include "compute/energy/t04/model.h"
+#include "compute/energy/t22/model.h"
 
 namespace mrna {
 

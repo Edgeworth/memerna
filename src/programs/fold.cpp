@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include <fmt/core.h>
 
+#include <algorithm>
+#include <ios>
 #include <string>
 
 #include "compute/mfe/mfe.h"

@@ -2,7 +2,6 @@
 #ifndef CTX_CTX_H_
 #define CTX_CTX_H_
 
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -16,7 +15,6 @@
 #include "compute/traceback/traceback.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"

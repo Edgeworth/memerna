@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
-#include <memory>
 #include <compare>
+#include <memory>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"

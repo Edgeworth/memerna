@@ -1,25 +1,17 @@
 // Copyright 2016 Eliot Courtney.
-#include <gtest/gtest.h>
-
 #include <algorithm>
 #include <cmath>
-#include <deque>
-#include <functional>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include <utility>
 
 #include "common_test.h"
-#include "compute/energy/common/branch.h"
-#include "compute/energy/common/t04like/branch.h"
 #include "compute/energy/energy.h"
-#include "compute/energy/t04/model.h"
-#include "compute/energy/t04/precomp.h"
+#include "compute/energy/t22/model.h"
+#include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
-#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"

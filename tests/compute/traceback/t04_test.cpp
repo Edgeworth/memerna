@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "common_test.h"
-
 namespace mrna::tb {
 
 class TracebackAlgTest : public testing::Test {};

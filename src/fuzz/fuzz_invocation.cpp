@@ -1,8 +1,10 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/fuzz_invocation.h"
 
+#include <fmt/core.h>
+
 #include <algorithm>
-#include <memory>
+#include <compare>
 #include <set>
 #include <sstream>
 #include <tuple>
@@ -23,9 +25,7 @@
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/secondary.h"
-#include "util/array.h"
 #include "util/float.h"
-#include "util/string.h"
 
 namespace mrna::fuzz {
 
