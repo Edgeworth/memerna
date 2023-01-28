@@ -2,7 +2,6 @@
 #include "compute/energy/common/branch.h"
 
 #include <cassert>
-#include <memory>
 #include <stack>
 #include <vector>
 

@@ -12,7 +12,6 @@
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
-#include "util/array.h"
 
 namespace mrna::subopt::t04 {
 

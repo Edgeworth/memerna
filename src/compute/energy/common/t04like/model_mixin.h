@@ -4,23 +4,15 @@
 
 #include <cassert>
 #include <cmath>
-#include <cstdint>
-#include <deque>
-#include <memory>
 #include <random>
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
-#include "compute/energy/structure.h"
 #include "model/base.h"
 #include "model/constants.h"
-#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "model/secondary.h"
-#include "util/argparse.h"
 
 namespace mrna::erg {
 

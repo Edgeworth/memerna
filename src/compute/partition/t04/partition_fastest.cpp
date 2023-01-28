@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <memory>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "compute/boltz_dp.h"
@@ -15,7 +14,6 @@
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "util/array.h"
 
 namespace mrna::part::t04 {
 

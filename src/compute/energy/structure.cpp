@@ -2,11 +2,8 @@
 #include "structure.h"
 
 #include <cassert>
-#include <cstdarg>
 #include <string>
 #include <vector>
-
-#include "util/string.h"
 
 namespace mrna::erg {
 
