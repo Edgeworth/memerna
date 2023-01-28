@@ -13,7 +13,6 @@
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/secondary.h"
-#include "util/array.h"
 #include "util/error.h"
 
 namespace mrna::subopt::t04 {

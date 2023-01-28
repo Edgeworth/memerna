@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
 #include <memory>
+#include <compare>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"
@@ -9,7 +10,6 @@
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "util/array.h"
 
 namespace mrna::mfe::t04 {
 

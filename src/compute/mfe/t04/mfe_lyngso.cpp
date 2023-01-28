@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <compare>
 
 #include "compute/dp.h"
 #include "compute/energy/t04/model.h"

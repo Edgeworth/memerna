@@ -6,6 +6,7 @@
 #include <set>
 #include <utility>
 #include <vector>
+#include <compare>
 
 #include "compute/boltz_dp.h"
 #include "compute/brute/brute_cfg.h"

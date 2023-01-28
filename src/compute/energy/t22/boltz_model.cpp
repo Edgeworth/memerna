@@ -1,11 +1,10 @@
 // Copyright 2023 Eliot Courtney.
 #include "compute/energy/t22/boltz_model.h"
 
-#include <string>
-#include <utility>
+#include <memory>
+#include <unordered_map>
 
 #include "compute/energy/common/boltz.h"
-#include "compute/energy/energy_cfg.h"
 
 namespace mrna::erg::t22 {
 

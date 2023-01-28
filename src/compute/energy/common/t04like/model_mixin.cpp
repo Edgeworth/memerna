@@ -1,9 +1,13 @@
 // Copyright 2023 Eliot Courtney.
 #include "compute/energy/common/t04like/model_mixin.h"
 
+#include <compare>
+#include <istream>
+
 #include "compute/energy/common/model.h"
 #include "compute/energy/common/parse.h"
-#include "compute/energy/common/t04like/branch.h"
+#include "util/error.h"
+#include "util/string.h"
 
 namespace mrna::erg {
 

@@ -12,7 +12,6 @@
 
 namespace mrna::erg {
 
-class T04ModelMixin;
 
 void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]);
 

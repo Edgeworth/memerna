@@ -5,8 +5,8 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
-#include <memory>
 #include <utility>
+#include <compare>
 
 #include "compute/energy/energy.h"
 #include "model/constants.h"

@@ -1,11 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "compute/energy/t04/boltz_model.h"
 
-#include <string>
-#include <utility>
-
-#include "compute/energy/common/boltz.h"
-#include "compute/energy/energy_cfg.h"
+#include <memory>
+#include <unordered_map>
 
 namespace mrna::erg::t04 {
 
