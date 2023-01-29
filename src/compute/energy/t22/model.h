@@ -48,8 +48,8 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
     auto inner = PenultimatePenalty(r, ist, ien);
     auto outer = PenultimatePenalty(r, oen, ost);
     if (s) {
-      if (s) (*s)->AddNote("{}e - inner penultimate penalty at ({}, {})", inner, ist, ien);
-      if (s) (*s)->AddNote("{}e - outer penultimate penalty at ({}, {})", outer, ost, oen);
+      (*s)->AddNote("{}e - inner penultimate penalty at ({}, {})", inner, ist, ien);
+      (*s)->AddNote("{}e - outer penultimate penalty at ({}, {})", outer, ost, oen);
     }
     return inner + outer;
   }

@@ -27,6 +27,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
 
+  if (!exterior_loop) stack_len++;
+
   // Look for branches inside.
   std::deque<int> branches;
   for (int i = st; i <= en; ++i) {
@@ -41,35 +43,30 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
+    energy += MultiloopEnergy(r, s, st, en, &branches, use_given_ctds, ctd, struc);
 
     // Current stack is terminated.
     energy += StackPenalty(r, st, en, stack_len, struc);
     stack_len = 0;
-
-    energy += MultiloopEnergy(r, s, st, en, &branches, use_given_ctds, ctd, struc);
   } else if (branches.empty()) {
     // Hairpin loop.
+    assert(en - st - 1 >= 3);
+    energy += Hairpin(r, st, en, struc);
 
     // Current stack is terminated.
     energy += StackPenalty(r, st, en, stack_len, struc);
     stack_len = 0;
-
-    assert(en - st - 1 >= 3);
-    energy += Hairpin(r, st, en, struc);
   } else {
     assert(branches.size() == 1);
     const int loop_st = branches.front();
     const int loop_en = s[branches.front()];
+    energy += TwoLoop(r, st, en, loop_st, loop_en, struc);
 
     // Current stack is terminated if it's not continuous, otherwise it's extended.
-    if (IsContinuous(st, en, loop_st, loop_en)) {
-      ++stack_len;
-    } else {
+    if (!IsContinuous(st, en, loop_st, loop_en)) {
       energy += StackPenalty(r, st, en, stack_len, struc);
       stack_len = 0;
     }
-
-    energy += TwoLoop(r, st, en, loop_st, loop_en, struc);
   }
 
   if (struc) (*struc)->set_self_energy(energy);
