@@ -28,8 +28,8 @@ Precomp::Precomp(Primary r, Model::Ptr em) : r_(std::move(r)), em_(std::move(em)
 }
 
 Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
-  int toplen = ist - ost - 1;
-  int botlen = oen - ien - 1;
+  const int toplen = ist - ost - 1;
+  const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return em().stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return em().Bulge(r_, ost, oen, ist, ien);
   if (toplen == 1 && botlen == 1)
@@ -63,17 +63,17 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
 }
 
 Energy Precomp::Hairpin(int st, int en) const {
-  int length = en - st - 1;
+  const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)
     return hairpin[st].special[length];
-  Base stb = r_[st];
-  Base st1b = r_[st + 1];
-  Base en1b = r_[en - 1];
-  Base enb = r_[en];
+  const Base stb = r_[st];
+  const Base st1b = r_[st + 1];
+  const Base en1b = r_[en - 1];
+  const Base enb = r_[en];
   Energy energy = em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb);
 
-  bool all_c = hairpin[st + 1].num_c >= length;
+  const bool all_c = hairpin[st + 1].num_c >= length;
 
   if (length == 3) {
     if (all_c) energy += em().hairpin_c3_loop;
@@ -128,8 +128,8 @@ void Precomp::PrecomputeData() {
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
 
   const auto min_penalty = std::min(em().au_penalty, em().gu_penalty);
-  Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
-  Energy min_bulge = min_bulge_init + std::min(2 * min_penalty, ZERO_E) + min_stack +
+  const Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
+  const Energy min_bulge = min_bulge_init + std::min(2 * min_penalty, ZERO_E) + min_stack +
       std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);
 

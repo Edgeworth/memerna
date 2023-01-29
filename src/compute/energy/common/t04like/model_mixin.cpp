@@ -501,7 +501,7 @@ void T04ModelMixin::LoadRandom(std::mt19937& eng) {
   static_assert(HAIRPIN_MIN_SZ <= RAND_MAX_HAIRPIN_SZ,
       "HAIRPIN_MIN_SZ > RAND_MAX_HAIRPIN does not make sense");
   std::uniform_int_distribution<int> num_hairpin_dist(0, RAND_MAX_NUM_HAIRPIN);
-  int num_hairpin = num_hairpin_dist(eng);
+  const int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
     auto hp = Primary::Random(hairpin_size_dist(eng)).ToSeq();
     hairpin[hp] = Energy::FromDouble(energy_dist(eng));

@@ -37,10 +37,10 @@ int main(int argc, char* argv[]) {
   args.RegisterOpt(mrna::OPT_PART);
   args.ParseOrExit(argc, argv);
 
-  bool efn = args.GetOr(mrna::OPT_EFN);
-  bool fold = args.GetOr(mrna::OPT_FOLD);
-  bool subopt = args.GetOr(mrna::OPT_SUBOPT);
-  bool part = args.GetOr(mrna::OPT_PART);
+  const bool efn = args.GetOr(mrna::OPT_EFN);
+  const bool fold = args.GetOr(mrna::OPT_FOLD);
+  const bool subopt = args.GetOr(mrna::OPT_SUBOPT);
+  const bool part = args.GetOr(mrna::OPT_PART);
 
   verify(efn + fold + subopt + part == 1, "require exactly one program flag\n{}", args.Usage());
   verify(args.Has(mrna::erg::OPT_SEED) + args.Has(mrna::erg::OPT_MEMERNA_DATA) == 1,

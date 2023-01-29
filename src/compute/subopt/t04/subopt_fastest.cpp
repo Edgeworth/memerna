@@ -133,9 +133,9 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
 
 std::vector<Expand> SuboptFastest::GenerateExpansions(const Index& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
-  int st = to_expand.st;
+  const int st = to_expand.st;
   int en = to_expand.en;
-  int a = to_expand.a;
+  const int a = to_expand.a;
   std::vector<Expand> exps;
   // Temporary variable to hold energy calculations.
   Energy energy = ZERO_E;
@@ -249,7 +249,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(const Index& to_expand, En
   // Normal stuff
   if (a == DP_P) {
     // Two loops.
-    int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+    const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
     for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
       for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
         energy = pc_.TwoLoop(st, en, ist, ien) + dp_[ist][ien][DP_P] - dp_[st][en][a];
@@ -276,10 +276,10 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(const Index& to_expand, En
     if (energy <= delta) exps.push_back({energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-      Base pl1b = r_[piv - 1];
-      Base plb = r_[piv];
-      Base prb = r_[piv + 1];
-      Base pr1b = r_[piv + 2];
+      const Base pl1b = r_[piv - 1];
+      const Base plb = r_[piv];
+      const Base prb = r_[piv + 1];
+      const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
       auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);

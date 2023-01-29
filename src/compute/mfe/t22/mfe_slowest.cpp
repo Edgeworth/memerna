@@ -8,7 +8,7 @@
 namespace mrna::mfe::t22 {
 
 // TODO(0): Implement. Any way to generalise/pull out code?
-DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em) {
+DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& /*em*/) {
   auto dp = DpArray(r.size() + 1, MAX_E);
   bug();
   return dp;

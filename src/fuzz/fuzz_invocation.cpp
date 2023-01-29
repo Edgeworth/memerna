@@ -65,7 +65,7 @@ Error FuzzInvocation::CheckMfe() {
   for (auto dp_alg : ctx::CtxCfg::DP_ALGS) {
     if (dp_alg == ctx::CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    ctx::Ctx ctx(em_, ctx::CtxCfg{.dp_alg = dp_alg});
+    const ctx::Ctx ctx(em_, ctx::CtxCfg{.dp_alg = dp_alg});
     auto res = ctx.Fold(r_);
     // First compute with the CTDs that fold returned to check the energy.
     mrna_ctd_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
@@ -149,7 +149,7 @@ Error FuzzInvocation::CheckSubopt() {
     for (auto subopt_alg : ctx::CtxCfg::SUBOPT_ALGS) {
       if (subopt_alg == ctx::CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      ctx::Ctx ctx(em_, ctx::CtxCfg{.subopt_alg = subopt_alg});
+      const ctx::Ctx ctx(em_, ctx::CtxCfg{.subopt_alg = subopt_alg});
       auto res = ctx.SuboptimalIntoVector(r_, cfg);
       // Sort them to make the sorted=false configurations comparable between
       // algoritms.
@@ -257,7 +257,7 @@ Error FuzzInvocation::CheckPartition() {
   for (auto part_alg : ctx::CtxCfg::PART_ALGS) {
     if (part_alg == ctx::CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    ctx::Ctx ctx(em_, ctx::CtxCfg{.part_alg = part_alg});
+    const ctx::Ctx ctx(em_, ctx::CtxCfg{.part_alg = part_alg});
     mrna_parts.emplace_back(ctx.Partition(r_));
   }
 

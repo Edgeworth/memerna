@@ -23,7 +23,7 @@ Energy Energy::FromString(const std::string& s) {
   if (s == "CAP") return CAP_E;
   // Check for a number.
   std::stringstream ss(s);
-  int sgn = ss.peek() == '-' ? -1 : 1;
+  const int sgn = ss.peek() == '-' ? -1 : 1;
   int hi = 0;
   int lo = 0;
   verify(ss >> hi, "invalid energy: {}", s);

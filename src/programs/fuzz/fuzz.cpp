@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
         fmt::print("Fuzzed {} RNAs\n", i);
         start_time = std::chrono::steady_clock::now();
       }
-      int len = len_dist(harness.e());
+      const int len = len_dist(harness.e());
       auto r = mrna::Primary::Random(len);
 
       auto invoc = harness.CreateInvocation(r);

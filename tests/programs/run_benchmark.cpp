@@ -19,7 +19,7 @@ namespace mrna {
 template <class... Args>
 void Mfe(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.dp_alg = std::get<1>(args)});
+  const ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.dp_alg = std::get<1>(args)});
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));
@@ -32,7 +32,7 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Subopt(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.subopt_alg = std::get<1>(args)});
+  const ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.subopt_alg = std::get<1>(args)});
   auto cfg = std::get<2>(args);
 
   for (auto _ : state) {
@@ -46,7 +46,7 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Partition(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.part_alg = std::get<1>(args)});
+  const ctx::Ctx ctx(*std::get<0>(args), ctx::CtxCfg{.part_alg = std::get<1>(args)});
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));

@@ -45,7 +45,7 @@ void ArgParse::RegisterOpt(const Opt& opt) {
     verify(opt == iter->second, "conflicting option registered with shortname {}", opt.shortname());
 
   // If opt is a flag and has a longname, add the inversion to longname_ map.
-  bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
+  const bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
   std::string inverted_longname = "no-" + opt.longname();
   auto inverted_opt = Opt(opt).LongName(inverted_longname).Hidden();
   if (auto iter = longname_.find(inverted_longname); has_inversion && iter != longname_.end())
@@ -76,9 +76,9 @@ std::string ArgParse::Usage() const {
 std::string ArgParse::Parse(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     const char* s = argv[i];
-    bool is_opt = s[0] == '-';
+    const bool is_opt = s[0] == '-';
     while (*s == '-') ++s;
-    bool is_short = s - argv[i] == 1;
+    const bool is_short = s - argv[i] == 1;
 
     if (!is_opt) {
       pos_.emplace_back(s);
@@ -93,14 +93,14 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
         values_[opt] = argv[++i];
       } else {
         auto pair = FlagPair(opt);
-        bool on = !opt.IsInverted();
+        const bool on = !opt.IsInverted();
         values_[pair.first] = Conv(on);
         values_[pair.second] = Conv(!on);
       }
     }
   }
   for (const auto& opt : opts_) {
-    bool has = Has(opt);
+    const bool has = Has(opt);
     if (opt.required() && !has) return fmt::format("missing required option {}", opt.Desc());
     if (has && !opt.choices().empty() && !opt.choices().contains(Get(opt)))
       return fmt::format("unrecognised argument for option {}", opt.Desc());

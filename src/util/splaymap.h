@@ -203,7 +203,7 @@ class SplayMap {
     std::vector<std::string> desc;
     desc.push_back(std::to_string(n.k));
     for (const auto& s : DescribeInternal(n.l)) desc.push_back("| " + s);
-    int idx = static_cast<int>(desc.size());
+    const int idx = static_cast<int>(desc.size());
     for (const auto& s : DescribeInternal(n.r)) desc.push_back("  " + s);
     desc[1][1] = '_';
     desc[idx][0] = '|';

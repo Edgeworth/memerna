@@ -102,7 +102,7 @@ ctx::FoldResult Ctx::Fold(const Primary& r) const {
 std::vector<subopt::SuboptResult> Ctx::SuboptimalIntoVector(
     const Primary& r, subopt::SuboptCfg cfg) const {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] int strucs = Suboptimal(
+  [[maybe_unused]] const int strucs = Suboptimal(
       r, [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); }, cfg);
   assert(strucs == static_cast<int>(subopts.size()));
   return subopts;

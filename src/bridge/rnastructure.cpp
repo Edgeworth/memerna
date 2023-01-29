@@ -47,8 +47,8 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO(2): Convert CTDs?
-    res.emplace_back(subopt::SuboptResult(RNAstructure::ToEnergy(struc.GetEnergy(i + 1)),
-        tb::TracebackResult(std::move(s_list[i]), Ctds())));
+    res.emplace_back(RNAstructure::ToEnergy(struc.GetEnergy(i + 1)),
+        tb::TracebackResult(std::move(s_list[i]), Ctds()));
   }
   return res;
 }
@@ -150,7 +150,7 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
   part.q = BoltzEnergy(exp(state.w5[N]));
   for (int i = 1; i <= N; ++i) {
     for (int j = i; j < N + i; ++j) {
-      int adjusted = j > N ? j - N - 1 : j - 1;
+      const int adjusted = j > N ? j - N - 1 : j - 1;
       part.p[i - 1][adjusted] = BoltzEnergy(exp(state.v.f(i, j)));
     }
   }
