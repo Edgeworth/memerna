@@ -1,8 +1,6 @@
 # Copyright 2023 Eliot Courtney.
-import itertools
 from pathlib import Path
-import re
-import sys
+
 import cloup
 
 AU_PENALTY = 0.45
@@ -10,7 +8,9 @@ GU_PENALTY = 0.45
 
 
 def update_internal_loop_end_penalties(
-    data: str, remove_au: bool = True, remove_gu: bool = True
+    data: str,
+    remove_au: bool = True,
+    remove_gu: bool = True,
 ) -> str:
     out = ""
     for line in data.splitlines():

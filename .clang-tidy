@@ -51,6 +51,7 @@ Checks: "*,
   -readability-identifier-length,
   -readability-magic-numbers,
   -readability-suspicious-call-argument,
+  -readability-simplify-boolean-expr,
   -hicpp-special-member-functions,
   -cppcoreguidelines-special-member-functions,
   -modernize-use-trailing-return-type"

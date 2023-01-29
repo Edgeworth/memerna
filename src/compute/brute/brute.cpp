@@ -88,7 +88,8 @@ void Brute::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            Energy inside_energy = erg::SubEnergy(underlying_, r_, s_, &ctd_, i, s_[i]).energy;
+            const Energy inside_energy =
+                erg::SubEnergy(underlying_, r_, s_, &ctd_, i, s_[i]).energy;
             if (inside_new) {
               res_.part.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -190,8 +191,8 @@ void Brute::AddAllCombinations(int idx) {
 }
 
 void Brute::PruneInsertSubopt(Energy e) {
-  bool has_room = static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs;
-  bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
+  const bool has_room = static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs;
+  const bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
   if (has_room || is_better)
     res_.subopts.insert(subopt::SuboptResult(e, tb::TracebackResult(Secondary(s_), Ctds(ctd_))));
 
@@ -216,10 +217,10 @@ Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
     if (!inside && i > st && i < en) continue;
     auto pack = uint16_t((uint32_t(s_[i]) & PT_MASK) << CTD_MAX_BITS | (ctd_[i] & CTD_MASK));
 
-    uint32_t byte = b / 16;
-    uint32_t bit = b & 15;
+    const uint32_t byte = b / 16;
+    const uint32_t bit = b & 15;
     struc.bits[byte] = uint16_t(struc.bits[byte] | (pack << bit));
-    uint32_t space = 16 - bit;
+    const uint32_t space = 16 - bit;
     if (space < CTD_MAX_BITS + PT_MAX_BITS)
       struc.bits[byte + 1] = uint16_t(struc.bits[byte + 1] | (pack >> space));
   }

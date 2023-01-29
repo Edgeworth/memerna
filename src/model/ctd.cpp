@@ -64,7 +64,7 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
   std::stack<int> stk;
   Secondary s(N);
   for (int i = 0; i < N; ++i) {
-    char c = ctd_str[i];
+    const char c = ctd_str[i];
     if (c == 'p' || c == 'n' || c == '[') {
       stk.push(i);
     } else if (c == 'P' || c == 'N' || c == ']') {
@@ -80,7 +80,7 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
   const std::string branch_characters = "nNpP[]";
   Ctds ctd(N);
   for (int i = 0; i < N; ++i) {
-    char c = ctd_str[i];
+    const char c = ctd_str[i];
     // Coaxial stacking handling.
     if (c == 'P' || c == 'p') {
       int prev = i - 1;
@@ -93,8 +93,8 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
       verify(prev >= 0 && s[prev] != -1 && (ctd_str[s[prev]] == 'n' || ctd_str[s[prev]] == 'N'),
           "invalid input");
       verify(ctd[i] == CTD_NA && ctd[s[prev]] == CTD_NA, "invalid input");
-      bool left_mismatch = s[prev] - 1 >= 0 && ctd_str[s[prev] - 1] == 'm';
-      bool right_mismatch = s[i] + 1 < N && ctd_str[s[i] + 1] == 'M';
+      const bool left_mismatch = s[prev] - 1 >= 0 && ctd_str[s[prev] - 1] == 'm';
+      const bool right_mismatch = s[i] + 1 < N && ctd_str[s[i] + 1] == 'M';
       verify(!mismatch || (left_mismatch ^ right_mismatch), "invalid input");
       if (mismatch) {
         if (left_mismatch) {
@@ -146,9 +146,9 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
   }
   // Add in the terminal mismatches.
   for (int i = 0; i < N; ++i) {
-    char c = ctd_str[i];
+    const char c = ctd_str[i];
     if (c == 'm') {
-      bool right_branch_viable =
+      const bool right_branch_viable =
           i + 1 < N && s[i + 1] != -1 && s[i + 1] + 1 < N && ctd_str[s[i + 1] + 1] == 'M';
       verify(right_branch_viable && ctd[i + 1] != CTD_NA, "invalid input");
       if (ctd[i + 1] == CTD_UNUSED) ctd[i + 1] = CTD_MISMATCH;

@@ -27,7 +27,7 @@ inline constexpr bool IsUnorderedOf(Base a, Base b, BaseMask basesA, BaseMask ba
 }
 
 inline constexpr bool IsPair(Base a, Base b) {
-  BaseMask combined = (1 << a) | (1 << b);
+  const BaseMask combined = (1 << a) | (1 << b);
   return combined == (G_b | U_b) || combined == (G_b | C_b) || combined == (A_b | U_b);
 }
 
@@ -44,7 +44,7 @@ inline constexpr bool IsAuPair(Base a, Base b) { return (a == A && b == U) || (a
 inline constexpr bool IsGuPair(Base a, Base b) { return (a == G && b == U) || (a == U && b == G); }
 
 inline constexpr bool IsWcPair(Base a, Base b) {
-  BaseMask combined = (1 << a) | (1 << b);
+  const BaseMask combined = (1 << a) | (1 << b);
   return combined == (A_b | U_b) || combined == (G_b | C_b);
 }
 

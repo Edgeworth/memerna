@@ -58,10 +58,10 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
         const auto outer_coax = bem->MismatchCoaxial(stb, st1b, en1b, enb);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          Base pl1b = r[piv - 1];
-          Base plb = r[piv];
-          Base prb = r[piv + 1];
-          Base pr1b = r[piv + 2];
+          const Base pl1b = r[piv - 1];
+          const Base plb = r[piv];
+          const Base prb = r[piv + 1];
+          const Base pr1b = r[piv + 2];
 
           // (.(   )   .) Left outer coax - P
           p += base_branch_cost * dp[st + 2][piv][PT_P] * dp[piv + 1][en - 2][PT_U] *
@@ -244,9 +244,9 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
             const int pl = FastMod(tpiv - 1, N);
             const int piv = FastMod(tpiv, N);
             const int pr = FastMod(tpiv + 1, N);
-            Base pl1b = r[pl];
-            Base plb = r[piv];
-            Base prb = r[pr];
+            const Base pl1b = r[pl];
+            const Base plb = r[piv];
+            const Base prb = r[pr];
             const bool left_formable = tpiv < N && tpiv - st - 2 >= HAIRPIN_MIN_SZ;
             const bool right_formable = tpiv >= N && en - piv - 2 >= HAIRPIN_MIN_SZ;
 
@@ -300,10 +300,10 @@ std::tuple<BoltzDpArray, BoltzExtArray> PartitionFastest(
           const int pr = FastMod(tpiv + 1, N);
           const int pr1 = FastMod(tpiv + 2, N);
           // Left block is: [st, piv], Right block is: [piv + 1, en].
-          Base pl1b = r[pl];
-          Base plb = r[piv];
-          Base prb = r[pr];
-          Base pr1b = r[pr1];
+          const Base pl1b = r[pl];
+          const Base plb = r[piv];
+          const Base prb = r[pr];
+          const Base pr1b = r[pr1];
           // When neither the left block nor the right block straddles the border
           // we don't get enclosing loops sometimes, so check against N - 1.
           const bool straddling = tpiv != (N - 1);

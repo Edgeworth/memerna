@@ -39,7 +39,11 @@ def cli() -> None:
 cli.section("Analysis", compare_partition, harness, run_fold_perf, plot_fold_perf)
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section(
-    "Conversion", convert_format, crop_image, parse_rnastructure_datatables, update_datatables
+    "Conversion",
+    convert_format,
+    crop_image,
+    parse_rnastructure_datatables,
+    update_datatables,
 )
 cli.section("Design", design)
 

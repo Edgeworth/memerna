@@ -23,9 +23,9 @@ TracebackResult Traceback(
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
-    int st = q.top().st;
+    const int st = q.top().st;
     int en = q.top().en;
-    int a = q.top().a;
+    const int a = q.top().a;
     q.pop();
 
     if (en == -1) {

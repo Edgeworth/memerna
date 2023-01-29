@@ -30,7 +30,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
   // Look for branches inside.
   std::deque<int> branches;
   for (int i = st; i <= en; ++i) {
-    int pair = s[i];
+    const int pair = s[i];
     assert(pair <= en && (pair == -1 || s[pair] == i));
     if ((i != st || pair != en) && (i != en || pair != st) && pair != -1) {
       branches.push_back(i);

@@ -66,10 +66,10 @@ DpArray MfeSlowest(const Primary& r, const erg::t04::Model::Ptr& em) {
 
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
-          Base pl1b = r[piv - 1];
-          Base plb = r[piv];
-          Base prb = r[piv + 1];
-          Base pr1b = r[piv + 2];
+          const Base pl1b = r[piv - 1];
+          const Base plb = r[piv];
+          const Base prb = r[piv + 1];
+          const Base pr1b = r[piv + 2];
           //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 

@@ -18,14 +18,14 @@ BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bem)
 }
 
 BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
-  int length = en - st - 1;
+  const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] > -1)
     return hairpin[st].special[length];
-  Base stb = r_[st];
-  Base st1b = r_[st + 1];
-  Base en1b = r_[en - 1];
-  Base enb = r_[en];
+  const Base stb = r_[st];
+  const Base st1b = r_[st + 1];
+  const Base en1b = r_[en - 1];
+  const Base enb = r_[en];
   BoltzEnergy energy = (em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb)).Boltz();
 
   const bool all_c = hairpin[st + 1].num_c >= length;

@@ -405,7 +405,7 @@ TEST_P(CtdsTest, BaseBranchBase) {
   EXPECT_EQ(test_energy, computed_energy);
   EXPECT_EQ(ctd_test.branch_ctd, computed_branch_ctd);
   // Convert back again and make sure it's the same.
-  Ctds prev_ctd = std::move(ctd_test.ctd);
+  const Ctds prev_ctd = std::move(ctd_test.ctd);
   ctd_test.ctd.reset(prev_ctd.size());
   AddBranchCtdsToBaseCtds(ctd_test.branches, computed_branch_ctd, &ctd_test.ctd);
   EXPECT_EQ(prev_ctd, ctd_test.ctd);

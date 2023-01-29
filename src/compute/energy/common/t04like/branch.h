@@ -47,8 +47,8 @@ template <typename T>
   requires std::is_base_of_v<T04ModelMixin, T>
 Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
-  int N = static_cast<int>(branches.size());
-  int RSZ = static_cast<int>(r.size());
+  const int N = static_cast<int>(branches.size());
+  const int RSZ = static_cast<int>(r.size());
   assert(branch_ctd->empty());
   // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return ZERO_E;
@@ -63,8 +63,8 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
           N + 1, std::make_tuple(false, -1, ZERO_E, CTD_NA))};
 
   cache[0][0] = cache[1][0] = ZERO_E;
-  int first_lui = branches[0] - 1;
-  int last_rui = s[branches[N - 1]] + 1;
+  const int first_lui = branches[0] - 1;
+  const int last_rui = s[branches[N - 1]] + 1;
 
   // Precompute data about the unpaired bases.
   std::vector<int> li(N);

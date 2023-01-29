@@ -18,7 +18,7 @@ class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
  public:
   static std::vector<SuboptResult> Subopt(
       const erg::EnergyModelPtr& em, const std::string& s, const std::vector<Energy>& energies) {
-    int n = static_cast<int>(energies.size());
+    const int n = static_cast<int>(energies.size());
     auto res = ctx::Ctx(em, ctx::CtxCfg{.subopt_alg = GetParam()})
                    .SuboptimalIntoVector(Primary::FromSeq(s), SuboptCfg{.strucs = n});
     for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);

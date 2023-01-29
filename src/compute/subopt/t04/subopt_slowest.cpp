@@ -51,9 +51,9 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
     auto to_expand = node.not_yet_expanded.back();
     node.not_yet_expanded.pop_back();
     node.history.push_back(to_expand);  // Add to history.
-    int st = to_expand.st;
+    const int st = to_expand.st;
     int en = to_expand.en;
-    int a = to_expand.a;
+    const int a = to_expand.a;
 
     // Initialise - we only make small modifications to it.
     curnode_ = node.copy();
@@ -64,7 +64,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
     if (en == -1) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
-      Energy base_energy = node.res.energy - ext_[st][a];
+      const Energy base_energy = node.res.energy - ext_[st][a];
       if (a == EXT) {
         // Base case: do nothing.
         if (st == N)
@@ -152,7 +152,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
     }
 
     // Subtract the minimum energy of the contribution at this node.
-    Energy base_energy = node.res.energy - dp_[st][en][a];
+    const Energy base_energy = node.res.energy - dp_[st][en][a];
     // Declare the usual base aliases.
     const auto stb = r_[st];
     const auto st1b = r_[st + 1];
@@ -167,7 +167,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       curnode_.res.tb.s[en] = st;
 
       // Two loops.
-      int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+      const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
       for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
         for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
           energy = base_energy + em_->TwoLoop(r_, st, en, ist, ien) + dp_[ist][ien][DP_P];
@@ -195,10 +195,10 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
 
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-        Base pl1b = r_[piv - 1];
-        Base plb = r_[piv];
-        Base prb = r_[piv + 1];
-        Base pr1b = r_[piv + 2];
+        const Base pl1b = r_[piv - 1];
+        const Base plb = r_[piv];
+        const Base prb = r_[piv + 1];
+        const Base pr1b = r_[piv + 2];
 
         // (.(   )   .) Left outer coax - P
         auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);

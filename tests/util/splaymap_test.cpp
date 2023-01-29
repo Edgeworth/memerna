@@ -86,7 +86,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       break;
     case 2: {
       // Insert case
-      int val = val_dist(eng);
+      const int val = val_dist(eng);
       if (s.contains(val))
         EXPECT_FALSE(h.Insert(val, val));
       else
