@@ -166,11 +166,11 @@ TEST(T22P2ModelTest, T22Tests) {
   EXPECT_EQ(E(2.45), GetEnergy(em, "ACAGUGCU", "(......)"));
   EXPECT_EQ(E(1.75), GetEnergy(em, "AAACAGUGCUUU", "..(......).."));
 
-  // Special hairpin with helix affected by penultimate stack on one side only:
-  // GU end on AU
-  EXPECT_EQ(E(1.85 - 0.31), GetEnergy(em, "GACAGUGCUU", "((......))"));
-  // GU end on AU
-  EXPECT_EQ(E(1.15 - 0.31), GetEnergy(em, "AGACAGUGCUUU", ".((......))."));
+  // Special hairpins:
+  // GU end on AU at 0; AU end on GU at 1
+  EXPECT_EQ(E(1.85 - 0.31 - 0.71), GetEnergy(em, "GACAGUGCUU", "((......))"));
+  // GU end on AU at 1; AU end on GU at 2
+  EXPECT_EQ(E(1.15 - 0.31 - 0.71), GetEnergy(em, "AGACAGUGCUUU", ".((......))."));
 
   // Single nuc bulge loop - treated as continuous.
   // AU end on GU at 0, 4
