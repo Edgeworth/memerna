@@ -112,8 +112,10 @@ EnergyResult Model::TotalEnergy(
       if (res.struc) res.struc->AddNote("{}e - top level GU penalty", gu_penalty);
     }
     res.energy += extra_energy;
-    res.struc->set_self_energy(res.struc->self_energy() + extra_energy);
-    res.struc->set_total_energy(res.struc->total_energy() + extra_energy);
+    if (res.struc) {
+      res.struc->set_self_energy(res.struc->self_energy() + extra_energy);
+      res.struc->set_total_energy(res.struc->total_energy() + extra_energy);
+    }
   }
 
   return res;
