@@ -21,13 +21,11 @@
 
 namespace mrna::erg::t22 {
 
-Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en, int stack_len,
-    bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
+Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en, int stack_st,
+    int stack_en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
   assert(en >= st);
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
-
-  if (!exterior_loop) stack_len++;
 
   // Look for branches inside.
   std::deque<int> branches;
@@ -41,21 +39,26 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
     }
   }
 
+  bool continuous = false;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
     energy += MultiloopEnergy(r, s, st, en, &branches, use_given_ctds, ctd, struc);
 
     // Current stack is terminated.
-    energy += StackPenalty(r, st, en, stack_len, struc);
-    stack_len = 0;
+    if (stack_st != -1 && stack_st != st)
+      energy += StackPenalty(r, s, stack_st, stack_en, st, en, struc);
+    stack_st = -1;
+    stack_en = -1;
   } else if (branches.empty()) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
     energy += Hairpin(r, st, en, struc);
 
     // Current stack is terminated.
-    energy += StackPenalty(r, st, en, stack_len, struc);
-    stack_len = 0;
+    if (stack_st != -1 && stack_st != st)
+      energy += StackPenalty(r, s, stack_st, stack_en, st, en, struc);
+    stack_st = -1;
+    stack_en = -1;
   } else {
     assert(branches.size() == 1);
     const int loop_st = branches.front();
@@ -64,20 +67,26 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 
     // Current stack is terminated if it's not continuous, otherwise it's extended.
     if (!IsContinuous(st, en, loop_st, loop_en)) {
-      energy += StackPenalty(r, st, en, stack_len, struc);
-      stack_len = 0;
+      if (stack_st != -1 && stack_st != st)
+        energy += StackPenalty(r, s, stack_st, stack_en, st, en, struc);
+      stack_st = -1;
+      stack_en = -1;
+    } else {
+      continuous = true;
     }
   }
 
   if (struc) (*struc)->set_self_energy(energy);
   // Add energy from children.
   for (auto i : branches) {
+    int nst = continuous ? stack_st : i;
+    int nen = continuous ? stack_en : s[i];
     if (struc) {
       std::unique_ptr<Structure> sstruc;
-      energy += SubEnergyInternal(r, s, i, s[i], stack_len, use_given_ctds, ctd, &sstruc);
+      energy += SubEnergyInternal(r, s, i, s[i], nst, nen, use_given_ctds, ctd, &sstruc);
       (*struc)->AddBranch(std::move(sstruc));
     } else {
-      energy += SubEnergyInternal(r, s, i, s[i], stack_len, use_given_ctds, ctd, nullptr);
+      energy += SubEnergyInternal(r, s, i, s[i], nst, nen, use_given_ctds, ctd, nullptr);
     }
   }
   if (struc) (*struc)->set_total_energy(energy);
@@ -92,9 +101,13 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
+  const bool exterior_loop = s[st] != en;
+  int stack_st = exterior_loop ? -1 : st;
+  int stack_en = exterior_loop ? -1 : en;
+
   std::unique_ptr<Structure> struc;
   auto energy = SubEnergyInternal(
-      r, s, st, en, /*stack_len=*/0, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
+      r, s, st, en, stack_st, stack_en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
   return {energy, std::move(ctd), std::move(struc)};
 }
 

@@ -69,6 +69,7 @@ Update in 2022 model (t22p2):
 - hairpin_initiation.data
 - internal_1x1.data
   1x1 special internal loops. AU/GU penalties baked in.
+  N.B. internal loops are never treated as continuous.
 - internal_1x2.data
   2x1 special internal loops. AU/GU penalties baked in.
 - internal_2x2.data
