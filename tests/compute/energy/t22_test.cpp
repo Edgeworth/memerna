@@ -61,25 +61,30 @@ TEST_P(T22ModelTest, NNDBHairpinLoopExamples) {
   auto em = test_t22_ems[GetParam()];
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
-          em->terminal[A][A][A][U] + em->HairpinInitiation(6),
+          em->terminal[A][A][A][U] + em->HairpinInitiation(6) + em->penultimate_stack[C][A][U][G] +
+          em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBHairpin1));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
-          em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch + em->HairpinInitiation(5),
+          em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch + em->HairpinInitiation(5) +
+          em->penultimate_stack[C][A][U][G] + em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBHairpin2));
 
   if (em->hairpin.contains("CCGAGG")) {
     EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][C][G][G] +
-            em->hairpin["CCGAGG"],
+            em->hairpin["CCGAGG"] + em->penultimate_stack[C][C][G][G] +
+            em->penultimate_stack[U][G][C][A],
         GetEnergy(kNNDBHairpin3));
   }
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
           em->terminal[A][C][C][U] + em->HairpinInitiation(6) + em->hairpin_all_c_a * 6 +
-          em->hairpin_all_c_b,
+          em->hairpin_all_c_b + em->penultimate_stack[C][A][U][G] +
+          em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBHairpin4));
   EXPECT_EQ(em->stack[C][G][C][G] + em->stack[G][G][C][C] + em->stack[G][G][U][C] + em->gu_penalty +
           em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch + em->HairpinInitiation(5) +
-          em->hairpin_special_gu_closure,
+          em->hairpin_special_gu_closure + em->penultimate_stack[G][G][U][C] +
+          em->penultimate_stack[C][G][C][G],
       GetEnergy(kNNDBHairpin5));
 }
 
@@ -88,11 +93,12 @@ TEST_P(T22ModelTest, NNDBBulgeLoopExamples) {
 
   EXPECT_EQ(em->stack[G][C][G][C] + em->stack[C][C][G][G] + em->BulgeInitiation(1) +
           em->bulge_special_c + em->stack[C][G][C][G] + em->HairpinInitiation(3) -
-          E(R * T * log(3)),
+          E(R * T * log(3)) + em->penultimate_stack[C][G][C][G] + em->penultimate_stack[G][C][G][C],
       GetEnergy(kNNDBBulge1));
 
-  EXPECT_EQ(
-      em->stack[G][A][U][C] + em->au_penalty + em->BulgeInitiation(3) + em->HairpinInitiation(3),
+  EXPECT_EQ(em->stack[G][A][U][C] + em->au_penalty + em->BulgeInitiation(3) +
+          em->HairpinInitiation(3) + em->penultimate_stack[U][C][G][A] +
+          em->penultimate_stack[G][A][U][C],
       GetEnergy(kNNDBBulge2));
 }
 
@@ -102,23 +108,31 @@ TEST_P(T22ModelTest, NNDBInternalLoopExamples) {
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(5) +
           std::min(em->internal_asym, NINIO_MAX_ASYM) + em->internal_2x3_mismatch[A][G][G][U] +
           em->internal_2x3_mismatch[G][G][A][C] + em->internal_au_penalty +
-          em->HairpinInitiation(3),
+          em->HairpinInitiation(3) + em->penultimate_stack[C][G][C][G] +
+          em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][A][U][G] +
+          em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal2x3));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] +
-          em->internal_2x2[A][G][A][C][G][G][A][U] + em->HairpinInitiation(3),
+          em->internal_2x2[A][G][A][C][G][G][A][U] + em->HairpinInitiation(3) +
+          em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][G][C][G] +
+          em->penultimate_stack[C][A][U][G] + em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal2x2));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(6) +
           std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->internal_au_penalty +
-          em->HairpinInitiation(3),
+          em->HairpinInitiation(3) + em->penultimate_stack[C][G][C][G] +
+          em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][A][U][G] +
+          em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal1x5));
 }
 
 TEST_P(T22ModelTest, BaseCases) {
   auto em = test_t22_ems[GetParam()];
 
-  EXPECT_EQ(em->au_penalty + em->stack[G][A][U][C] + em->hairpin_init[3],
+  EXPECT_EQ(em->au_penalty + em->stack[G][A][U][C] + em->hairpin_init[3] +
+          em->penultimate_stack[G][A][U][C] + em->penultimate_stack[U][C][G][A],
       GetEnergy("GAAAAUC", "((...))"));
-  EXPECT_EQ(em->au_penalty + em->gu_penalty + em->stack[G][A][U][U] + em->hairpin_init[3],
+  EXPECT_EQ(em->au_penalty + em->gu_penalty + em->stack[G][A][U][U] + em->hairpin_init[3] +
+          em->penultimate_stack[G][A][U][U] + em->penultimate_stack[U][U][G][A],
       GetEnergy("GAAAAUU", "((...))"));
   EXPECT_EQ(em->au_penalty * 2 + em->HairpinInitiation(3) +
           std::min(ZERO_E,
@@ -127,7 +141,8 @@ TEST_P(T22ModelTest, BaseCases) {
       GetEnergy("AAAAAUA", ".(...)."));
   EXPECT_EQ(em->au_penalty * 2 + em->HairpinInitiation(3), GetEnergy("AAAAU", "(...)"));
   EXPECT_EQ(em->stack[G][C][G][C] + em->stack[C][U][A][G] + em->BulgeInitiation(1) +
-          em->stack[U][G][C][A] + em->HairpinInitiation(3),
+          em->stack[U][G][C][A] + em->HairpinInitiation(3) + em->penultimate_stack[U][G][C][A] +
+          em->penultimate_stack[G][C][G][C],
       GetEnergy(kBulge1));
   EXPECT_EQ(em->InternalLoopInitiation(5) + std::min(em->internal_asym, NINIO_MAX_ASYM) +
           em->internal_au_penalty + em->au_penalty + em->internal_2x3_mismatch[A][G][A][U] +
@@ -178,6 +193,24 @@ TEST(T22P2ModelTest, T22Tests) {
   // AU end on GU at 1, 5
   EXPECT_EQ(E(7.72 - 0.71 * 2), GetEnergy(em, "GAGCGAAAAUUUUU", ".((.((...))))."));
 
+  // Single nuc bulge, continuous single on outer:
+  // GU end on GU at 0; AU end on GU at 3
+  EXPECT_EQ(E(8.40 - 0.74 - 0.71), GetEnergy(em, "GCGAAAAUUU", "(.((...)))"));
+  // GU end on GU at 1; AU end on GU at 4
+  EXPECT_EQ(E(7.70 - 0.74 - 0.71), GetEnergy(em, "GGCGAAAAUUUU", ".(.((...)))."));
+
+  // Single nuc bulge, continuous single on inner:
+  // AU end on GU at 0, 4
+  EXPECT_EQ(E(8.62 - 0.71 * 2), GetEnergy(em, "AGCAAAAUUU", "((.(...)))"));
+  // AU end on GU at 1, 5
+  EXPECT_EQ(E(7.92 - 0.71 * 2), GetEnergy(em, "GAGCAAAAUUUU", ".((.(...)))."));
+
+  // Single nuc bulge, continuous single on both:
+  // GU end on AU at 0; AU end on GU at 2
+  EXPECT_EQ(E(8.60 - 0.31 - 0.71), GetEnergy(em, "GCAAAAUU", "(.(...))"));
+  // GU end on AU at 1; AU end on GU at 3
+  EXPECT_EQ(E(7.90 - 0.31 - 0.71), GetEnergy(em, "GGCAAAAUUU", ".(.(...))."));
+
   // Multi nuc bulge loop:
   // AU end on GU at 0, 5; GU end on AU at 1, 4
   EXPECT_EQ(E(7.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGCCGAAAAUUUU", "((..((...))))"));
@@ -198,16 +231,18 @@ TEST(T22P2ModelTest, T22Tests) {
   EXPECT_EQ(E(9.60), GetEnergy(em, "AAACCCUCCCU", "(.(...)...)"));
   EXPECT_EQ(E(8.90), GetEnergy(em, "AAAACCCUCCCUU", ".(.(...)...)."));
 
-  // Special internal loop with helix affected by penultimate stack on external
+  // Special 1x1 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
   EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCUU", "((.((...)).))"));
   // AU end on GU at 1, 5; GU end on AU at 2, 4
   EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCUUU", ".((.((...)).))."));
 
-  // Special internal loop with lonely pairs:
+  // Special 1x1 internal loop with lonely pairs:
   EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
   EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
+
+  // TODO(0): Test 1x2, 2x2.
 
   // Multiloop:
   EXPECT_EQ(E(23.70), GetEnergy(em, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)"));

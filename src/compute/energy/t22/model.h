@@ -30,27 +30,29 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       bool build_structure = false) const;
 
-  // Computes the penultimate penalty for the closing base pair at (st, en),
-  // assuming that (st-1, en+1) is paired. This computes the penultimate penalty
-  // facing inwards. To compute for facing outwards, reverse st and en.
-  [[nodiscard]] constexpr Energy PenultimatePenalty(const Primary& r, int st, int en) const {
-    assert(st > 0 && en < static_cast<int>(r.size()) - 1);
-    return penultimate_stack[r[st - 1]][r[st]][r[en]][r[en + 1]];
-  }
-
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
-  [[nodiscard]] constexpr Energy StackPenalty(
-      const Primary& r, int ist, int ien, int len, std::unique_ptr<Structure>* s = nullptr) const {
-    assert(len >= 0);
-    if (len <= 1) return ZERO_E;
-    int ost = ist - len + 1;
-    int oen = ien + len - 1;
-    auto inner = PenultimatePenalty(r, ist, ien);
-    auto outer = PenultimatePenalty(r, oen, ost);
-    if (s) {
-      (*s)->AddNote("{}e - inner penultimate penalty at ({}, {})", inner, ist, ien);
-      (*s)->AddNote("{}e - outer penultimate penalty at ({}, {})", outer, ost, oen);
+  // Handles bulge loops.
+  [[nodiscard]] constexpr Energy StackPenalty(const Primary& r, const Secondary& s, int ost,
+      int oen, int ist, int ien, std::unique_ptr<Structure>* struc = nullptr) const {
+    assert(ost >= 0 && oen < static_cast<int>(r.size()));
+    assert(ist > 0 && ien < static_cast<int>(r.size()) - 1);
+    assert(ist > ost && ien < oen);
+    // Check for single unpaired bases to treat as continuous.
+    int ost_next = s[ost + 1] == -1 ? ost + 2 : ost + 1;
+    int oen_prev = s[oen - 1] == -1 ? oen - 2 : oen - 1;
+    assert(ost_next - ost + oen - oen_prev < 4);
+
+    int ist_prev = s[ist - 1] == -1 ? ist - 2 : ist - 1;
+    int ien_next = s[ien + 1] == -1 ? ien + 2 : ien + 1;
+    assert(ist - ist_prev + ien_next - ien < 4);
+
+    auto inner = penultimate_stack[r[ist_prev]][r[ist]][r[ien]][r[ien_next]];
+    auto outer = penultimate_stack[r[oen_prev]][r[oen]][r[ost]][r[ost_next]];
+    if (struc) {
+      (*struc)->AddNote("{}e - inner penultimate penalty at ({}, {})", inner, ist, ien);
+      (*struc)->AddNote("{}e - outer penultimate penalty at ({}, {})", outer, ost, oen);
     }
+
     return inner + outer;
   }
 
@@ -65,8 +67,8 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 
-  Energy SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en, int stack_len,
-      bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
+  Energy SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en, int stack_st,
+      int stack_en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
 }  // namespace mrna::erg::t22
