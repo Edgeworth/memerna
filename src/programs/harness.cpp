@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "bridge/bridge.h"
-#include "compute/energy/energy_cfg.h"
 #include "compute/mfe/mfe.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "ctx/ctx.h"
 #include "model/energy.h"

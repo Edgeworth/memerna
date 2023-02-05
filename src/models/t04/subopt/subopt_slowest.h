@@ -6,14 +6,14 @@
 #include <set>
 #include <vector>
 
-#include "compute/mfe/t04/dp.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::subopt {
 

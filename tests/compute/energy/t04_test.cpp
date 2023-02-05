@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "common_test.h"
-#include "compute/energy/common/branch.h"
 #include "compute/energy/t04/branch.h"
 #include "compute/energy/t04/precomp.h"
 #include "gtest/gtest.h"
@@ -21,6 +20,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/common/branch.h"
 #include "models/t04/energy/model.h"
 
 namespace mrna::erg {

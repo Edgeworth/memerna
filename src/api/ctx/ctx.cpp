@@ -8,12 +8,10 @@
 #include <variant>
 #include <vector>
 
+#include "api/part.h"
 #include "compute/brute/alg.h"
-#include "compute/energy/t22/model.h"
-#include "compute/mfe/t04/dp.h"
 #include "compute/mfe/t04/mfe.h"
 #include "compute/mfe/t22/mfe.h"
-#include "compute/partition/partition.h"
 #include "compute/subopt/t04/subopt_fastest.h"
 #include "compute/subopt/t04/subopt_slowest.h"
 #include "compute/traceback/t04/traceback.h"
@@ -22,8 +20,10 @@
 #include "model/primary.h"
 #include "models/t04/energy/boltz_model.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 #include "models/t04/part/part.h"
 #include "models/t04/part/partition.h"
+#include "models/t22/energy/model.h"
 #include "util/array.h"
 #include "util/error.h"
 #include "util/util.h"

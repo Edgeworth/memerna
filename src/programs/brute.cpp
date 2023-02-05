@@ -7,9 +7,9 @@
 #include <ios>
 #include <string>
 
+#include "api/energy/model.h"
+#include "api/subopt/subopt_cfg.h"
 #include "compute/brute/brute_cfg.h"
-#include "compute/energy/model.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "model/ctd.h"
 #include "model/secondary.h"

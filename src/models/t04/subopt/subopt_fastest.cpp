@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/subopt/subopt.h"
+#include "api/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/base.h"
 #include "model/constants.h"

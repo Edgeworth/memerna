@@ -5,9 +5,9 @@
 
 #include <vector>
 
-#include "compute/energy/common/branch.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/common/branch.h"
 
 namespace mrna::erg {
 

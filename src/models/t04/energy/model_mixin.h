@@ -10,7 +10,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "compute/energy/energy_cfg.h"
+#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -69,7 +69,7 @@ class T04ModelMixin {
   Energy au_penalty = {};
   Energy gu_penalty = {};
 
-  EnergyCfg cfg = {};
+  mrna::erg::EnergyCfg cfg = {};
 
   [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs) return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);

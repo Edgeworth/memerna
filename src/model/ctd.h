@@ -5,11 +5,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <initializer_list>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 
@@ -35,6 +37,27 @@ enum Ctd : uint8_t {
 
 const char* CtdToName(Ctd ctd);
 
+// Branch representation of CTDs:
+//
+// A CTDs used with reference to a list of branch indices. Depending on which
+// side of the branch's index is used, it refers to the branch as an outer loop
+// or an inner loop. By convention, if there is an outer loop, it comes first
+// (not last), but it does not matter to these functions. Outer loops are
+// represented by branch indices referring to the right side of the loop (i.e.
+// s[branch] < branch).
+using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
+
+// Per-base representation of CTDs:
+//
+// An array the same length as the sequence, which contains CTD identifiers.
+// For each base-pair at a branch, we store a CTD identifier or nothing.
+// Since there are two locations per base-pair, we can store up to two things.
+// At the index of the right side of a branch, we store the CTD identifier
+// for this branch for when it is an outer loop (i.e. closing a multiloop).
+// At the index of the left side, we store the CTD identifier for this branch
+// for when it is inside a multiloop. This is because in this situation
+// ((...).(...))(...), the first loop can coaxially stack twice, one when it is
+// an outer loop, and the other with the loop on the far right.
 class Ctds {
  public:
   Ctds() = default;

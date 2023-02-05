@@ -4,14 +4,14 @@
 #include <iterator>
 #include <utility>
 
-#include "compute/energy/common/branch.h"
-#include "compute/energy/model.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
+#include "api/energy/model.h"
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "model/constants.h"
 #include "model/energy.h"
+#include "models/common/branch.h"
 #include "util/error.h"
 
 namespace mrna::md::brute {

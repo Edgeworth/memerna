@@ -6,16 +6,16 @@
 
 #include "compute/energy/t04/precomp.h"
 #include "compute/mfe/mfe.h"
-#include "compute/mfe/t04/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::mfe {
 
-void MfeFastest(const Primary& r, const erg::t04::Model::Ptr& em, DpState& state) {
+void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

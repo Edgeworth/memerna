@@ -1,5 +1,5 @@
 // Copyright 2022 E.
-#include "compute/energy/model.h"
+#include "api/energy/model.h"
 
 #include <ostream>
 #include <string>

@@ -2,10 +2,10 @@
 #ifndef COMPUTE_TRACEBACK_T04_TRACEBACK_H_
 #define COMPUTE_TRACEBACK_T04_TRACEBACK_H_
 
-#include "compute/mfe/t04/dp.h"
 #include "compute/traceback/traceback.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::trace {
 

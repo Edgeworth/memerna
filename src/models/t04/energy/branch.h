@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/common/branch.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/common/branch.h"
 #include "models/t04/energy/model.h"
 
 namespace mrna::md::t04::erg {

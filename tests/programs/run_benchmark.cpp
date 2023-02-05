@@ -5,9 +5,9 @@
 #include <tuple>
 #include <utility>
 
+#include "api/energy/energy_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "common_test.h"
-#include "compute/energy/energy_cfg.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/energy.h"

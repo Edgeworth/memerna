@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include "api/part.h"
+#include "api/subopt/subopt.h"
 #include "bridge/bridge.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
 #include "ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"

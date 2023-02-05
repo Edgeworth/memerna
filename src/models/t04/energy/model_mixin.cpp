@@ -9,15 +9,15 @@
 #include <optional>
 #include <utility>
 
-#include "compute/energy/common/branch.h"
+#include "api/energy/energy_cfg.h"
 #include "compute/energy/common/parse.h"
-#include "compute/energy/energy_cfg.h"
 #include "compute/energy/t04/branch.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/structure.h"
+#include "models/common/branch.h"
 #include "models/common/model.h"
 #include "util/error.h"
 #include "util/string.h"
