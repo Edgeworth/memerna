@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/energy.h"
+#include "model/energy.h"
 
 #include <gtest/gtest.h>
 

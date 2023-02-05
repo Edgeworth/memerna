@@ -10,6 +10,23 @@
 
 namespace mrna {
 
+const char* CtdToName(Ctd ctd) {
+  switch (ctd) {
+  case CTD_NA: return "n/a";
+  case CTD_UNUSED: return "unused";
+  case CTD_3_DANGLE: return "3' dangle";
+  case CTD_5_DANGLE: return "5' dangle";
+  case CTD_MISMATCH: return "terminal mismatch";
+  case CTD_LCOAX_WITH_NEXT: return "left mismatch coax with next";
+  case CTD_LCOAX_WITH_PREV: return "left mismatch coax with prev";
+  case CTD_RC_WITH_NEXT: return "right mismatch coax with next";
+  case CTD_RC_WITH_PREV: return "right mismatch coax with prev";
+  case CTD_FCOAX_WITH_NEXT: return "flush coax with next";
+  case CTD_FCOAX_WITH_PREV: return "flush coax with prev";
+  default: bug();
+  }
+}
+
 std::string Ctds::ToString(const Secondary& s) const {
   std::string str(s.size(), '.');
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {

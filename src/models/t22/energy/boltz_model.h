@@ -1,0 +1,28 @@
+// Copyright 2023 Eliot Courtney.
+#ifndef COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_
+#define COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_
+
+#include "compute/energy/t04/boltz_mixin.h"
+#include "compute/energy/t22/model.h"
+#include "model/energy.h"
+#include "models/common/model.h"
+
+namespace mrna::md::t22::erg {
+
+class BoltzModel : public ModelMixin<BoltzModel>, public t04::T04BoltzMixin<Model> {
+ public:
+  BoltzEnergy penultimate_stack[4][4][4][4]{};
+
+  static BoltzModel::Ptr Create(const Model::Ptr& em) {
+    return BoltzModel::Ptr(new BoltzModel(em));
+  }
+
+ private:
+  // This is private to prevent construction on the stack, since this structure
+  // can be very large if arbitrary precision floats are enabled.
+  explicit BoltzModel(const Model::Ptr& em);
+};
+
+}  // namespace mrna::md::t22::erg
+
+#endif  // COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_

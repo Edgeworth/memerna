@@ -33,6 +33,8 @@ enum Ctd : uint8_t {
   CTD_SIZE
 };
 
+const char* CtdToName(Ctd ctd);
+
 class Ctds {
  public:
   Ctds() = default;

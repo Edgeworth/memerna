@@ -3,7 +3,7 @@
 #define PROGRAMS_PRINT_H_
 
 #include "compute/partition/partition.h"
-#include "compute/partition/t04/dp.h"
+#include "models/t04/part/part.h"
 
 void PrintBoltzProbs(const mrna::BoltzProbs& p);
 
