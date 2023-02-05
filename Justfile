@@ -28,6 +28,6 @@ fix:
   SETUPTOOLS_USE_DISTUTILS=stdlib pre-commit run --all-files
 
 update:
-  poetry shell poetry up --latest
+  poetry run poetry up --latest
   poetry update
   pre-commit autoupdate
