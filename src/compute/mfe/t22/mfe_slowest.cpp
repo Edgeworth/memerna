@@ -8,7 +8,7 @@
 namespace mrna::mfe::t22 {
 
 // TODO(0): Implement. Any way to generalise/pull out code?
-DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em) {
+std::tuple<t04::DpArray, Array3D>  MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   const int N = static_cast<int>(r.size());

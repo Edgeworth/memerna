@@ -7,7 +7,7 @@
 #include "model/energy.h"
 #include "util/array.h"
 
-namespace mrna {
+namespace mrna::part::t04 {
 
 // DP arrays
 enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RC, PT_SIZE };
@@ -29,11 +29,6 @@ enum : int8_t {
 
 using BoltzExtArray = Array1D1S<BoltzEnergy, PTEXT_SIZE>;
 
-// Holds the Boltzmann sums used in the partition function.ss
-using BoltzSums = Array2D<BoltzEnergy>;
-
-using BoltzProbs = Array2D<BoltzEnergy>;
-
-}  // namespace mrna
+}  // namespace mrna::part::t04
 
 #endif  // COMPUTE_PARTITION_T04_DP_H_

@@ -3,11 +3,19 @@
 #define COMPUTE_PARTITION_PARTITION_H_
 
 #include <cassert>
+#include <variant>
 
 #include "compute/partition/t04/dp.h"
 #include "model/energy.h"
 
 namespace mrna::part {
+
+// Holds the Boltzmann sums used in the partition function.
+using BoltzSums = Array2D<BoltzEnergy>;
+
+using BoltzProbs = Array2D<BoltzEnergy>;
+
+using DpState = std::variant<t04::DpState>;
 
 struct Part {
   BoltzSums p;
@@ -17,8 +25,7 @@ struct Part {
 };
 
 struct PartResult {
-  BoltzDpArray dp;
-  BoltzExtArray ext;
+  DpState dp;
   Part part;
   BoltzProbs prob;
 };

@@ -9,9 +9,10 @@
 
 namespace mrna::mfe {
 
+using DpState = std::variant<t04::DpState>;
+
 struct MfeResult {
-  DpArray dp;
-  ExtArray ext;
+  DpState dp;
   Energy energy = ZERO_E;
 };
 
