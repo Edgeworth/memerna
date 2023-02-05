@@ -4,7 +4,7 @@
 #include <tuple>
 #include <utility>
 
-#include "compute/partition/partition.h"
+#include "api/part.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

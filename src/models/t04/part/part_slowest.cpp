@@ -4,9 +4,9 @@
 #include <tuple>
 #include <utility>
 
-#include "compute/energy/energy_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/part.h"
 #include "compute/energy/t04/precomp.h"
-#include "compute/partition/partition.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

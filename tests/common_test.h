@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <string>
 
-#include "compute/energy/model.h"
-#include "compute/energy/t22/model.h"
+#include "api/energy/model.h"
 #include "models/t04/energy/model.h"
+#include "models/t22/energy/model.h"
 
 namespace mrna {
 

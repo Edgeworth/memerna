@@ -5,15 +5,15 @@
 #include <iosfwd>
 #include <variant>
 
-#include "compute/energy/energy_cfg.h"
-#include "compute/energy/t22/boltz_model.h"
-#include "compute/energy/t22/model.h"
+#include "api/energy/energy_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "models/t04/energy/boltz_model.h"
 #include "models/t04/energy/model.h"
+#include "models/t22/energy/boltz_model.h"
+#include "models/t22/energy/model.h"
 #include "util/argparse.h"
 #include "util/error.h"
 #include "util/util.h"

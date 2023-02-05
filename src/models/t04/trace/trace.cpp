@@ -4,7 +4,6 @@
 #include <memory>
 #include <stack>
 
-#include "compute/mfe/t04/dp.h"
 #include "compute/traceback/t04/traceback.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -12,6 +11,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::trace {
 

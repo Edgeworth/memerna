@@ -4,8 +4,8 @@
 #include <set>
 #include <utility>
 
+#include "api/subopt/subopt_cfg.h"
 #include "compute/brute/brute.h"
-#include "compute/subopt/subopt_cfg.h"
 
 namespace mrna::md::brute {
 

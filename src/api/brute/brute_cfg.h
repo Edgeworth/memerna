@@ -2,7 +2,7 @@
 #ifndef COMPUTE_BRUTE_BRUTE_CFG_H_
 #define COMPUTE_BRUTE_BRUTE_CFG_H_
 
-#include "compute/subopt/subopt_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "util/argparse.h"
 
 namespace mrna::brute {

@@ -5,18 +5,18 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/model.h"
+#include "api/energy/model.h"
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "compute/mfe/mfe.h"
-#include "compute/mfe/t04/dp.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/t04/mfe/dp.h"
 #include "util/argparse.h"
 
 namespace mrna {

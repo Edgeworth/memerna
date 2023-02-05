@@ -2,10 +2,10 @@
 #include <string>
 #include <vector>
 
+#include "api/energy/model.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "common_test.h"
-#include "compute/energy/model.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"

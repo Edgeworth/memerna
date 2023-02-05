@@ -1,5 +1,5 @@
 // Copyright 2023 Eliot Courtney.
-#include "compute/energy/t22/boltz_model.h"
+#include "models/t22/energy/boltz_model.h"
 
 #include <memory>
 #include <unordered_map>

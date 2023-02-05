@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "compute/energy/common/branch.h"
 #include "model/ctd.h"
 #include "model/energy.h"
+#include "models/common/branch.h"
 #include "util/error.h"
 
 namespace mrna {

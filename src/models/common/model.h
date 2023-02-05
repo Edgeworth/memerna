@@ -6,7 +6,7 @@
 #include <random>
 #include <string>
 
-#include "compute/energy/energy_cfg.h"
+#include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
 #include "util/util.h"

@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/energy_cfg.h"
+#include "api/energy/energy_cfg.h"
 
 #include "util/error.h"
 

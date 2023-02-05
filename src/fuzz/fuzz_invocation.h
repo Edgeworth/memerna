@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "compute/energy/model.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
+#include "api/energy/model.h"
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"

@@ -1,8 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include <string>
 
+#include "api/energy/model.h"
 #include "common_test.h"
-#include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"

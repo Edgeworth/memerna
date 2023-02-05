@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/energy/t22/model.h"
+#include "models/t22/energy/model.h"
 
 #include <fmt/core.h>
 

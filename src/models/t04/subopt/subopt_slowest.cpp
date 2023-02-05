@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/subopt/subopt.h"
+#include "api/subopt/subopt.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/secondary.h"

@@ -4,11 +4,11 @@
 
 #include <utility>
 
-#include "compute/energy/model.h"
-#include "compute/mfe/t04/dp.h"
+#include "api/energy/model.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::trace {
 

@@ -1,10 +1,9 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/partition/partition.h"
-
 #include <fmt/core.h>
 
 #include <ios>
 
+#include "api/part.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/primary.h"

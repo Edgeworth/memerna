@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "compute/energy/energy_cfg.h"
-#include "compute/energy/model.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/model.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/secondary.h"

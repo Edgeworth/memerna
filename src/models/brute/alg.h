@@ -1,13 +1,13 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_BRUTE_ALG_H_
-#define COMPUTE_BRUTE_ALG_H_
+#ifndef MODELS_BRUTE_ALG_H_
+#define MODELS_BRUTE_ALG_H_
 
 #include <vector>
 
-#include "compute/energy/model.h"
-#include "compute/partition/partition.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
+#include "api/energy/model.h"
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "model/primary.h"
 
 namespace mrna::md::brute {
@@ -21,4 +21,4 @@ std::vector<subopt::SuboptResult> SuboptBrute(
 
 }  // namespace mrna::md::brute
 
-#endif  // COMPUTE_BRUTE_ALG_H_
+#endif  // MODELS_BRUTE_ALG_H_

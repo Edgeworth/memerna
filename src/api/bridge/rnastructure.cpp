@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "compute/subopt/subopt.h"
+#include "api/subopt/subopt.h"
 #include "compute/traceback/traceback.h"
 #include "model/structure.h"
 #include "rnastructure_bridge/include/stochastic.h"

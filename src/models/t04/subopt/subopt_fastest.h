@@ -8,13 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "compute/energy/t04/precomp.h"
-#include "compute/mfe/t04/dp.h"
-#include "compute/subopt/subopt.h"
-#include "compute/subopt/subopt_cfg.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 #include "util/splaymap.h"
 
 namespace mrna::md::t04::subopt {

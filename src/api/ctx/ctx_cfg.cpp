@@ -1,8 +1,8 @@
 // Copyright 2021 Eliot Courtney.
 #include "ctx/ctx_cfg.h"
 
-#include "compute/energy/energy_cfg.h"
-#include "compute/subopt/subopt_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "util/error.h"
 
 namespace mrna {

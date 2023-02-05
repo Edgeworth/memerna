@@ -1,9 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include <string>
 
+#include "api/energy/model.h"
+#include "api/part.h"
 #include "common_test.h"
-#include "compute/energy/model.h"
-#include "compute/partition/partition.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "gtest/gtest.h"

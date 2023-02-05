@@ -1,12 +1,12 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/subopt/subopt.h"
+#include "api/subopt/subopt.h"
 
 #include <fmt/core.h>
 
 #include <ios>
 #include <string>
 
-#include "compute/subopt/subopt_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"

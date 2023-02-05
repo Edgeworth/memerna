@@ -2,10 +2,10 @@
 #ifndef COMPUTE_MFE_T04_MFE_H_
 #define COMPUTE_MFE_T04_MFE_H_
 
-#include "compute/mfe/t04/dp.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::mfe {
 

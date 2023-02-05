@@ -3,8 +3,8 @@
 
 #include <ios>
 
+#include "api/energy/energy_cfg.h"
 #include "common_test.h"
-#include "compute/energy/energy_cfg.h"
 #include "util/argparse.h"
 
 int main(int argc, char** argv) {
