@@ -11,7 +11,7 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -23,7 +23,7 @@ namespace mrna {
 
 struct FoldResult {
   mfe::MfeResult mfe;
-  tb::TraceResult tb;
+  trace::TraceResult tb;
 };
 
 class Ctx {
@@ -57,7 +57,7 @@ class Ctx {
 
   [[nodiscard]] DpArray ComputeMfe(const Primary& r) const;
   [[nodiscard]] ExtArray ComputeMfeExterior(const Primary& r, const DpArray& dp) const;
-  [[nodiscard]] tb::TraceResult ComputeTraceback(
+  [[nodiscard]] trace::TraceResult ComputeTraceback(
       const Primary& r, const DpArray& dp, const ExtArray& ext) const;
 };
 

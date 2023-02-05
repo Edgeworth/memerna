@@ -6,10 +6,10 @@
 #include <utility>
 #include <vector>
 
+#include "api/bridge/bridge.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "bridge/bridge.h"
-#include "ctx/ctx.h"
+#include "api/ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"

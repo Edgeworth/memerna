@@ -10,13 +10,13 @@
 #include <string>
 #include <utility>
 
-#include "compute/energy/common/parse.h"
 #include "model/base.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/structure.h"
 #include "models/common/model.h"
+#include "models/common/parse.h"
 #include "models/t04/energy/model_mixin.h"
 
 namespace mrna::md::t22::erg {

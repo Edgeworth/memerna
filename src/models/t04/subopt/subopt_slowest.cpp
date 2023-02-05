@@ -32,7 +32,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert({.not_yet_expanded = {{0, -1, EXT}},
       .history{},
-      .res = SuboptResult(ext_[0][EXT], tb::TraceResult(Secondary(N), Ctds(N)))});
+      .res = SuboptResult(ext_[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
     node = std::move(q_.extract(q_.begin()).value());

@@ -7,8 +7,8 @@
 
 #include "api/mfe.h"
 #include "api/trace.h"
-#include "ctx/ctx.h"
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx.h"
+#include "api/ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"

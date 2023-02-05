@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "bridge/bridge.h"
+#include "api/bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"

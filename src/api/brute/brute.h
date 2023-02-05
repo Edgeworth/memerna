@@ -1,7 +1,20 @@
 #ifndef API_BRUTE_H_
 #define API_BRUTE_H_
 
-namespace mrna {
+#include <set>
+
+#include "api/part.h"
+#include "api/subopt/subopt.h"
+
+namespace mrna::brute {
+
+struct SuboptCmp {
+  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+    // Kept in a multiset, so this is just used for ordering, not deduplication.
+    // There should be no duplicates added anyway. Single comparison to keep it fast.
+    return a.energy < b.energy;
+  }
+};
 
 struct BruteResult {
   // Suboptimal structures:
@@ -10,9 +23,9 @@ struct BruteResult {
 
   // Partition function:
   part::Part part;
-  BoltzProbs prob;
+  part::BoltzProbs prob;
 };
 
-}
+}  // namespace mrna::brute
 
 #endif  // API_BRUTE_H_

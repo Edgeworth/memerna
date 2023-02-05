@@ -3,7 +3,7 @@
 #include <memory>
 #include <utility>
 
-#include "bridge/bridge.h"
+#include "api/bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"
 #include "programs/fuzz/fuzz_harness.h"
 #include "util/argparse.h"

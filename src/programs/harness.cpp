@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "api/bridge/bridge.h"
 #include "api/energy/energy_cfg.h"
 #include "api/mfe.h"
 #include "api/options.h"
@@ -14,8 +15,7 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
-#include "bridge/bridge.h"
-#include "ctx/ctx.h"
+#include "api/ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"

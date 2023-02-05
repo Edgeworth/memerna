@@ -9,7 +9,7 @@
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "ctx/ctx.h"
+#include "api/ctx/ctx.h"
 #include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"
 

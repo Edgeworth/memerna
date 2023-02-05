@@ -48,7 +48,7 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
     // TODO(2): Convert CTDs?
     res.emplace_back(RNAstructure::ToEnergy(struc.GetEnergy(i + 1)),
-        tb::TraceResult(std::move(s_list[i]), Ctds()));
+        trace::TraceResult(std::move(s_list[i]), Ctds()));
   }
   return res;
 }
@@ -123,7 +123,7 @@ ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_st
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
   // TODO(2): convert dp tables, ext, ctds?, delete this function and move all to Fold.
   return {.mfe = {.dp{}, .ext{}, .energy = ToEnergy(structure->GetEnergy(1))},
-      .tb = tb::TraceResult(StructureToSecondary(*structure), Ctds())};
+      .tb = trace::TraceResult(StructureToSecondary(*structure), Ctds())};
 }
 
 int RNAstructure::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {

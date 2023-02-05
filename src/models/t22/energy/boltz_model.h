@@ -9,7 +9,7 @@
 
 namespace mrna::md::t22::erg {
 
-class BoltzModel : public ModelMixin<BoltzModel>, public t04::T04BoltzMixin<Model> {
+class BoltzModel : public ModelMixin<BoltzModel>, public t04::erg::T04BoltzMixin<Model> {
  public:
   BoltzEnergy penultimate_stack[4][4][4][4]{};
 
