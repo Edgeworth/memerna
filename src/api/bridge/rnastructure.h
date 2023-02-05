@@ -7,11 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "api/bridge/bridge.h"
 #include "api/energy/model.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "bridge/bridge.h"
-#include "ctx/ctx.h"
+#include "api/ctx/ctx.h"
 #include "model/constants.h"
 #include "model/secondary.h"
 #include "rnastructure_bridge/include/algorithm.h"

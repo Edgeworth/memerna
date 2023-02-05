@@ -57,12 +57,12 @@ class ModelMixin {
 
   static Ptr FromArgParse(const ArgParse& args) {
     Ptr em;
-    if (args.Has(OPT_SEED)) {
-      em = Random(args.Get<uint_fast32_t>(OPT_SEED));
+    if (args.Has(erg::OPT_SEED)) {
+      em = Random(args.Get<uint_fast32_t>(erg::OPT_SEED));
     } else {
-      em = FromDir(ModelPathFromArgParse(args));
+      em = FromDir(erg::ModelPathFromArgParse(args));
     }
-    em->cfg = EnergyCfg::FromArgParse(args);
+    em->cfg = erg::EnergyCfg::FromArgParse(args);
     return em;
   }
 

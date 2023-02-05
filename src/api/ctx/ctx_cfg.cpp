@@ -1,5 +1,5 @@
 // Copyright 2021 Eliot Courtney.
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx_cfg.h"
 
 #include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt_cfg.h"

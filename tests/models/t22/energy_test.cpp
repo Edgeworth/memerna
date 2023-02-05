@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include "model/energy.h"
+
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -10,14 +12,13 @@
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "models/t22/energy/model.h"
 
-namespace mrna::erg {
+namespace mrna::md::t22::erg {
 
-Energy GetEnergy(const t22::Model::Ptr& em, const std::string& r, const std::string& db) {
+Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& db) {
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
 }
 
@@ -292,4 +293,4 @@ TEST(T22P2ModelTest, T22Tests) {
 
 INSTANTIATE_TEST_SUITE_P(EnergyModelTests, T22ModelTest, testing::Range(0, NUM_TEST_MODELS));
 
-}  // namespace mrna::erg
+}  // namespace mrna::md::t22::erg

@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
-#define COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
+#ifndef MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
+#define MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
 
 #include <compare>
 #include <set>
@@ -17,9 +17,25 @@
 
 namespace mrna::md::t04::subopt {
 
+using mfe::Index;
+using mfe::IndexCtd;
+using mrna::subopt::SuboptCallback;
+using mrna::subopt::SuboptCfg;
+using mrna::subopt::SuboptResult;
+using mfe::DP_P;
+using mfe::DP_U;
+using mfe::DP_U2;
+using mfe::DP_U_GU;
+using mfe::DP_U_RC;
+using mfe::DP_U_WC;
+using mfe::EXT;
+using mfe::EXT_GU;
+using mfe::EXT_RC;
+using mfe::EXT_WC;
+
 class SuboptSlowest {
  public:
-  SuboptSlowest(Primary r, erg::t04::Model::Ptr em, mfe::t04::DpState dp, SuboptCfg cfg);
+  SuboptSlowest(Primary r, erg::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -37,9 +53,8 @@ class SuboptSlowest {
   };
 
   Primary r_;
-  erg::t04::Model::Ptr em_;
-  DpArray dp_;
-  ExtArray ext_;
+  erg::Model::Ptr em_;
+  mfe::DpState dp_;
   SuboptCfg cfg_;
 
   // This node is where we build intermediate results to be pushed onto the queue.
@@ -104,4 +119,4 @@ class SuboptSlowest {
 
 }  // namespace mrna::md::t04::subopt
 
-#endif  // COMPUTE_SUBOPT_T04_SUBOPT_SLOWEST_H_
+#endif  // MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_

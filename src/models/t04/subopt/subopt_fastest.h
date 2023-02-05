@@ -21,6 +21,19 @@ namespace mrna::md::t04::subopt {
 
 using mfe::Index;
 using mfe::IndexCtd;
+using mrna::subopt::SuboptCallback;
+using mrna::subopt::SuboptCfg;
+using mrna::subopt::SuboptResult;
+using mfe::DP_P;
+using mfe::DP_U;
+using mfe::DP_U2;
+using mfe::DP_U_GU;
+using mfe::DP_U_RC;
+using mfe::DP_U_WC;
+using mfe::EXT;
+using mfe::EXT_GU;
+using mfe::EXT_RC;
+using mfe::EXT_WC;
 
 struct Expand {
   Expand() = delete;
@@ -46,9 +59,9 @@ struct Expand {
 
 class SuboptFastest {
  public:
-  SuboptFastest(Primary r, erg::Model::Ptr em, mfe::DpState dp, subopt::SuboptCfg cfg);
+  SuboptFastest(Primary r, erg::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg);
 
-  int Run(const subopt::SuboptCallback& fn);
+  int Run(const SuboptCallback& fn);
 
  private:
   struct DfsState {
@@ -61,16 +74,16 @@ class SuboptFastest {
   Primary r_;
   erg::Model::Ptr em_;
   erg::Precomp pc_;
-  subopt::SuboptResult res_;
+  SuboptResult res_;
   mfe::DpState dp_;
-  subopt::SuboptCfg cfg_;
+  SuboptCfg cfg_;
 
   SplayMap<Index, std::vector<Expand>> cache_;
   std::vector<DfsState> q_;
   std::vector<Index> unexpanded_;
 
   std::pair<int, Energy> RunInternal(
-      const subopt::SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {

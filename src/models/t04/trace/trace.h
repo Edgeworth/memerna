@@ -9,6 +9,8 @@
 
 namespace mrna::md::t04::trace {
 
+using mrna::trace::TraceResult;
+
 TraceResult Traceback(const Primary& r, const erg::t04::Model::Ptr& em, const mfe::DpState& state);
 
 }  // namespace mrna::md::t04::trace

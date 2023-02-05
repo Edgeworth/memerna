@@ -1,8 +1,8 @@
 // Copyright 2016 Eliot Courtney.
-#include "bridge/bridge.h"
+#include "api/bridge/bridge.h"
 
 #include "bridge/memerna.h"
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx_cfg.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE

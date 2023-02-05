@@ -5,13 +5,13 @@
 
 #include "api/energy/model.h"
 #include "common_test.h"
-#include "ctx/ctx.h"
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx.h"
+#include "api/ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
 
-namespace mrna::mfe {
+namespace mrna::md::t04::mfe {
 
 class T04MfeTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
  public:
@@ -112,4 +112,4 @@ TEST_P(T04MfeTest, T04P2) {
 
 INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T04MfeTest, testing::ValuesIn(ctx::CtxCfg::DP_ALGS));
 
-}  // namespace mrna::mfe
+}  // namespace mrna::md::t04::mfe

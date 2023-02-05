@@ -21,14 +21,6 @@
 
 namespace mrna::md::brute {
 
-struct SuboptCmp {
-  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
-    // Kept in a multiset, so this is just used for ordering, not deduplication.
-    // There should be no duplicates added anyway. Single comparison to keep it fast.
-    return a.energy < b.energy;
-  }
-};
-
 class Brute {
  public:
   Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg);
@@ -54,11 +46,11 @@ class Brute {
   erg::EnergyModelPtr em_;
   erg::BoltzEnergyModelPtr bem_;
   erg::EnergyModelPtr underlying_;
-  BruteCfg cfg_;
+  brute::BruteCfg cfg_;
 
   Secondary s_;
   Ctds ctd_;
-  BruteResult res_{};
+  brute::BruteResult res_{};
   std::vector<std::pair<int, int>> pairs_;  // Holds all possible base pairs to try.
   std::vector<int> branch_count_;  // Number of sibling branches.
 

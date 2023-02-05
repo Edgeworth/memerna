@@ -13,12 +13,11 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 #include "models/t04/part/part.h"
-#include "models/t04/part/partition.h"
 #include "util/util.h"
 
 namespace mrna::md::t04::part {
 
-void PartitionSlowest(const Primary& r, const erg::t04::Model::Ptr& initial_em, PartState& state) {
+void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -27,7 +26,7 @@ void PartitionSlowest(const Primary& r, const erg::t04::Model::Ptr& initial_em, 
   em->cfg.bulge_states = false;
 
   const int N = static_cast<int>(r.size());
-  const erg::t04::Precomp pc(Primary(r), em);
+  const erg::Precomp pc(Primary(r), em);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {
@@ -179,7 +178,8 @@ void PartitionSlowest(const Primary& r, const erg::t04::Model::Ptr& initial_em, 
   }
 
   // Compute the exterior tables.
-  auto ext = PartitionExterior(r, *em, dp);
+  PartitionExterior(r, *em, state);
+  const auto& ext = state.ext;
 
   // Fill the left triangle.
   // The meaning of the tables changes here:

@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "ctx/ctx.h"
+#include "api/ctx/ctx.h"
 
 #include <cassert>
 #include <tuple>
@@ -70,13 +70,13 @@ ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
   return std::visit(vis, em_);
 }
 
-tb::TraceResult Ctx::ComputeTraceback(
+trace::TraceResult Ctx::ComputeTraceback(
     const Primary& r, const DpArray& dp, const ExtArray& ext) const {
   auto vis = overloaded{
-      [&](const erg::t04::Model::Ptr& em) -> tb::TraceResult {
+      [&](const erg::t04::Model::Ptr& em) -> trace::TraceResult {
         return tb::t04::Traceback(r, em, dp, ext);
       },
-      [&](const erg::t22::Model::Ptr& em) -> tb::TraceResult {
+      [&](const erg::t22::Model::Ptr& em) -> trace::TraceResult {
         return tb::t22::Traceback(r, em, dp, ext);
       },
   };

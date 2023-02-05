@@ -15,13 +15,12 @@
 
 namespace mrna::md::t04::subopt {
 
-SuboptFastest::SuboptFastest(
-    Primary r, erg::t04::Model::Ptr em, DpArray dp, ExtArray ext, SuboptCfg cfg)
+SuboptFastest::SuboptFastest(Primary r, erg::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)),
       ext_(std::move(ext)), cfg_(cfg) {}
 
 int SuboptFastest::Run(const SuboptCallback& fn) {
-  res_ = SuboptResult(ZERO_E, tb::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
+  res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 

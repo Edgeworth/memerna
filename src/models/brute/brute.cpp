@@ -1,5 +1,5 @@
 // Copyright 2021 Eliot Courtney.
-#include "api/brute/brute.h"
+#include "models/brute/brute.h"
 
 #include <iterator>
 #include <utility>
@@ -16,11 +16,11 @@
 
 namespace mrna::md::brute {
 
-Brute::Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg)
+Brute::Brute(const Primary& r, erg::EnergyModelPtr em, brute::BruteCfg cfg)
     : r_(r), em_(std::move(em)), bem_(erg::Boltz(em_)), underlying_(erg::Underlying(bem_)),
       cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
 
-BruteResult Brute::Run() {
+brute::BruteResult Brute::Run() {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
@@ -46,7 +46,7 @@ BruteResult Brute::Run() {
 void Brute::Dfs(int idx) {
   if (idx == static_cast<int>(pairs_.size())) {
     // Precompute whether things are multiloops or not.
-    branch_count_ = erg::GetBranchCounts(s_);
+    branch_count_ = GetBranchCounts(s_);
     AddAllCombinations(0);
     return;
   }
@@ -194,7 +194,7 @@ void Brute::PruneInsertSubopt(Energy e) {
   const bool has_room = static_cast<int>(res_.subopts.size()) < cfg_.subopt_cfg.strucs;
   const bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
   if (has_room || is_better)
-    res_.subopts.insert(subopt::SuboptResult(e, tb::TraceResult(Secondary(s_), Ctds(ctd_))));
+    res_.subopts.insert(subopt::SuboptResult(e, trace::TraceResult(Secondary(s_), Ctds(ctd_))));
 
   // Prune values that exceed the number of structures:
   if (static_cast<int>(res_.subopts.size()) > cfg_.subopt_cfg.strucs)

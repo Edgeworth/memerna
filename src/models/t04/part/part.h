@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_PARTITION_T04_PARTITION_H_
-#define COMPUTE_PARTITION_T04_PARTITION_H_
+#ifndef MODELS_T04_PART_PART_H_
+#define MODELS_T04_PART_PART_H_
 
 #include <cassert>
 #include <tuple>
@@ -9,7 +9,6 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/boltz_model.h"
-#include "models/t04/part/part.h"
 #include "util/array.h"
 
 namespace mrna::md::t04::part {
@@ -39,12 +38,12 @@ struct PartState {
   BoltzExtArray ext;
 };
 
-void PartitionSlowest(const Primary& r, const erg::t04::Model::Ptr& em, PartState& state);
+void PartitionSlowest(const Primary& r, const erg::Model::Ptr& em, PartState& state);
 
-void PartitionFastest(const Primary& r, const erg::t04::BoltzModel::Ptr& bem, PartState& state);
+void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartState& state);
 
-void PartitionExterior(const Primary& r, const erg::t04::Model& em, PartState& state);
+void PartitionExterior(const Primary& r, const erg::Model& em, PartState& state);
 
 }  // namespace mrna::md::t04::part
 
-#endif  // COMPUTE_PARTITION_T04_PARTITION_H_
+#endif  // MODELS_T04_PART_PART_H_

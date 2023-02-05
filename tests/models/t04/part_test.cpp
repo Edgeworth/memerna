@@ -1,16 +1,17 @@
 // Copyright 2022 Eliot Courtney.
+#include "api/part.h"
+
 #include <string>
 
 #include "api/energy/model.h"
-#include "api/part.h"
 #include "common_test.h"
-#include "ctx/ctx.h"
-#include "ctx/ctx_cfg.h"
+#include "api/ctx/ctx.h"
+#include "api/ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "util/float.h"
 
-namespace mrna::part {
+namespace mrna::md::t04::part {
 
 class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
  public:
@@ -131,4 +132,4 @@ TEST_P(PartAlgTest, T04P2) {
 
 INSTANTIATE_TEST_SUITE_P(PartAlgTest, PartAlgTest, testing::ValuesIn(ctx::CtxCfg::PART_ALGS));
 
-}  // namespace mrna::part
+}  // namespace mrna::md::t04::part

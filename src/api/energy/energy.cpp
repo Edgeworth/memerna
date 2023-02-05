@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "model/energy.h"
+#include "api/energy/energy.h"
 
 #include <algorithm>
 #include <utility>

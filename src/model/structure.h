@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_STRUCTURE_H_
-#define COMPUTE_ENERGY_STRUCTURE_H_
+#ifndef MODEL_STRUCTURE_H_
+#define MODEL_STRUCTURE_H_
 
 #include <fmt/core.h>
 
@@ -104,4 +104,4 @@ class StackingStructure : public Structure {
 
 }  // namespace mrna
 
-#endif  // COMPUTE_ENERGY_STRUCTURE_H_
+#endif  // MODEL_STRUCTURE_H_

@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace mrna::tb {
+namespace mrna::md::t04::trace {
 
 class TracebackAlgTest : public testing::Test {};
 
@@ -11,4 +11,4 @@ TEST_F(TracebackAlgTest, Basic) {
   // TODO(2): write tests
 }
 
-}  // namespace mrna::tb
+}  // namespace mrna::md::t04::trace

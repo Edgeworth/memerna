@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include "model/energy.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -11,21 +13,20 @@
 #include <utility>
 
 #include "common_test.h"
-#include "compute/energy/t04/branch.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "models/common/branch.h"
+#include "models/t04/energy/branch.h"
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 
-namespace mrna::erg {
+namespace mrna::md::t04::erg {
 
-Energy GetEnergy(const t04::Model::Ptr& em, const std::string& r, const std::string& db) {
+Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& db) {
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
 }
 
@@ -90,32 +91,32 @@ TEST_P(T04ModelTest, NNDBHairpinLoopExamples) {
       GetEnergy(kNNDBHairpin5));
 
   {
-    const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin1)), em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin1)), em);
     EXPECT_EQ(
         em->au_penalty + em->terminal[A][A][A][U] + em->HairpinInitiation(6), pc.Hairpin(3, 10));
   }
 
   {
-    const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin2)), em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin2)), em);
     EXPECT_EQ(em->au_penalty + em->terminal[A][G][G][U] + em->hairpin_gg_first_mismatch +
             em->HairpinInitiation(5),
         pc.Hairpin(3, 9));
   }
 
   if (em->hairpin.contains("CCGAGG")) {
-    const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin3)), em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin3)), em);
     EXPECT_EQ(em->hairpin["CCGAGG"], pc.Hairpin(3, 8));
   }
 
   {
-    const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin4)), em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin4)), em);
     EXPECT_EQ(em->au_penalty + em->terminal[A][C][C][U] + em->HairpinInitiation(6) +
             em->hairpin_all_c_a * 6 + em->hairpin_all_c_b,
         pc.Hairpin(3, 10));
   }
 
   {
-    const t04::Precomp pc(Primary(std::get<Primary>(kNNDBHairpin5)), em);
+    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin5)), em);
     EXPECT_EQ(em->gu_penalty + em->terminal[G][G][G][U] + em->hairpin_gg_first_mismatch +
             em->HairpinInitiation(5) + em->hairpin_special_gu_closure,
         pc.Hairpin(3, 9));
@@ -229,7 +230,7 @@ TEST(T04P1ModelTest, T04Tests) {
 TEST(T04P1ModelTest, Precomp) {
   auto em = t04p1;
 
-  const t04::Precomp pc(Primary::FromSeq("GGGGAAACCCC"), em);
+  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), em);
   EXPECT_EQ(E(-2.1 - 0.4 - 1.6), pc.min_mismatch_coax);
   EXPECT_EQ(E(-3.4), pc.min_flush_coax);
   EXPECT_EQ(E(-2.6), pc.min_twoloop_not_stack);
@@ -286,7 +287,7 @@ TEST(T04P2ModelTest, T04Tests) {
 TEST(T04P2ModelTest, Precomp) {
   auto em = t04p2;
 
-  const t04::Precomp pc(Primary::FromSeq("GGGGAAACCCC"), em);
+  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), em);
   EXPECT_EQ(E(-2.10 - 0.40 - 1.60), pc.min_mismatch_coax);
   EXPECT_EQ(E(-3.42), pc.min_flush_coax);
   EXPECT_EQ(E(-2.60), pc.min_twoloop_not_stack);
@@ -314,35 +315,34 @@ TEST(T04P2ModelTest, T12Tests) {
 
 #endif
 
-std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
-    [](const t04::Model::Ptr&) -> CtdTest {
-      return {{}, {}, {}, {}, {}};
-    },
-    [](const t04::Model::Ptr&) -> CtdTest {
+std::function<CtdTest(const Model::Ptr&)> CTD_TESTS[] = {[](const Model::Ptr&) -> CtdTest {
+                                                           return {{}, {}, {}, {}, {}};
+                                                         },
+    [](const Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("A"), Secondary::FromDb("."), Ctds{CTD_NA}, {}, {}};
     },
-    [](const t04::Model::Ptr&) -> CtdTest {
+    [](const Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
     },
-    [](const t04::Model::Ptr&) -> CtdTest {
+    [](const Model::Ptr&) -> CtdTest {
       return {
           Primary::FromSeq("GUA"), Secondary::FromDb("..."), Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
-    [](const t04::Model::Ptr&) -> CtdTest {
+    [](const Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("GUAC"), Secondary::FromDb("...."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA}, {}, {}};
     },
     // 3' dangle inside the branch.
-    [](const t04::Model::Ptr& em) -> CtdTest {
+    [](const Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAAC"), Secondary::FromDb("(...)"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE},
           {{CTD_3_DANGLE, em->dangle3[G][A][C]}}, {4}};
     },
-    [](const t04::Model::Ptr&) -> CtdTest {
+    [](const Model::Ptr&) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
     },
-    [](const t04::Model::Ptr& em) -> CtdTest {
+    [](const Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA,
@@ -352,7 +352,7 @@ std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
               {CTD_RC_WITH_PREV, em->MismatchCoaxial(C, A, A, G)}},
           {0, 6, 20}};
     },
-    [](const t04::Model::Ptr& em) -> CtdTest {
+    [](const Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
           Secondary::FromDb("(...).((...).(...)).(...)."),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
@@ -362,7 +362,7 @@ std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
               {CTD_FCOAX_WITH_PREV, em->stack[G][A][U][C]}, {CTD_5_DANGLE, em->dangle5[C][G][G]}},
           {18, 7, 13}};
     },
-    [](const t04::Model::Ptr& em) -> CtdTest {
+    [](const Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("GGAAACGAAACC"), Secondary::FromDb("((...)(...))"),
           Ctds{CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
@@ -370,7 +370,7 @@ std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
               {CTD_FCOAX_WITH_PREV, em->stack[G][G][C][C]}},
           {1, 6, 11}};
     },
-    [](const t04::Model::Ptr& em) -> CtdTest {
+    [](const Model::Ptr& em) -> CtdTest {
       return {Primary::FromSeq("UUAGAAACGCAAAGAGGUCCAAAGA"),
           Secondary::FromDb("(..(...).(...).....(...))"),
           Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
@@ -383,8 +383,8 @@ std::function<CtdTest(const t04::Model::Ptr&)> CTD_TESTS[] = {
           {24, 3, 9, 19}};
     }};
 
-class CtdsTest : public testing::TestWithParam<
-                     std::tuple<int, std::function<CtdTest(const t04::Model::Ptr&)>>> {};
+class CtdsTest
+    : public testing::TestWithParam<std::tuple<int, std::function<CtdTest(const Model::Ptr&)>>> {};
 
 TEST_P(CtdsTest, BaseBranchBase) {
   auto em = test_t04_ems[std::get<0>(GetParam())];
@@ -413,4 +413,4 @@ TEST_P(CtdsTest, BaseBranchBase) {
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
     testing::Combine(testing::Range(0, NUM_TEST_MODELS), testing::ValuesIn(CTD_TESTS)));
 
-}  // namespace mrna::erg
+}  // namespace mrna::md::t04::erg
