@@ -20,7 +20,7 @@ namespace mrna::bridge {
 // Note that only one energy model can be loaded at a time.
 class Memerna : public RnaPackage {
  public:
-  explicit Memerna(ctx::Ctx ctx) : ctx_(std::move(ctx)) {}
+  explicit Memerna(Ctx ctx) : ctx_(std::move(ctx)) {}
   ~Memerna() override = default;
 
   Memerna(Memerna&& o) = default;
@@ -41,7 +41,7 @@ class Memerna : public RnaPackage {
   static Memerna FromArgParse(const ArgParse& args);
 
  private:
-  ctx::Ctx ctx_;
+  Ctx ctx_;
 };
 
 }  // namespace mrna::bridge

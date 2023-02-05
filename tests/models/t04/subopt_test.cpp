@@ -15,12 +15,12 @@
 
 namespace mrna::md::t04 {
 
-class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
+class SuboptAlgTest : public testing::TestWithParam<CtxCfg::SuboptAlg> {
  public:
   static std::vector<SuboptResult> Subopt(
       const erg::EnergyModelPtr& em, const std::string& s, const std::vector<Energy>& energies) {
     const int n = static_cast<int>(energies.size());
-    auto res = ctx::Ctx(em, ctx::CtxCfg{.subopt_alg = GetParam()})
+    auto res = Ctx(em, CtxCfg{.subopt_alg = GetParam()})
                    .SuboptimalIntoVector(Primary::FromSeq(s), SuboptCfg{.strucs = n});
     for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
     return res;
@@ -161,7 +161,7 @@ TEST_P(SuboptAlgTest, T04P1) {
       });
 
   // Too slow for brute force:
-  if (GetParam() == ctx::CtxCfg::SuboptAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::SuboptAlg::BRUTE) return;
   Subopt(t04p1, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       {
           E(-5.1),
@@ -584,7 +584,7 @@ TEST_P(SuboptAlgTest, T04P2) {
       });
 
   // Too slow for brute force:
-  if (GetParam() == ctx::CtxCfg::SuboptAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::SuboptAlg::BRUTE) return;
   Subopt(t04p2, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       {
           E(-5.25),
@@ -877,6 +877,6 @@ TEST_P(SuboptAlgTest, T04P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(SuboptAlgTest, SuboptAlgTest, testing::ValuesIn(ctx::CtxCfg::SUBOPT_ALGS));
+INSTANTIATE_TEST_SUITE_P(SuboptAlgTest, SuboptAlgTest, testing::ValuesIn(CtxCfg::SUBOPT_ALGS));
 
 }  // namespace mrna::md::t04

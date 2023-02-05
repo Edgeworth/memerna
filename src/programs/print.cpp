@@ -3,7 +3,7 @@
 
 #include <fmt/core.h>
 
-void PrintBoltzProbs(const mrna::BoltzProbs& p) {
+void PrintBoltzProbs(const mrna::part::BoltzProbs& p) {
   const int N = static_cast<int>(p.size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {

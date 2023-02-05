@@ -3,20 +3,20 @@
 
 #include <string>
 
-#include "api/energy/model.h"
-#include "common_test.h"
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/model.h"
+#include "common_test.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
 
 namespace mrna::mfe {
 
-class T22MfeTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
+class T22MfeTest : public testing::TestWithParam<CtxCfg::DpAlg> {
  public:
   static Energy Mfe(const erg::EnergyModelPtr& em, const std::string& s) {
-    return ctx::Ctx(em, ctx::CtxCfg{.dp_alg = GetParam()}).Fold(Primary::FromSeq(s)).mfe.energy;
+    return Ctx(em, CtxCfg{.dp_alg = GetParam()}).Fold(Primary::FromSeq(s)).mfe.energy;
   }
 };
 
@@ -33,7 +33,7 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(E(-2.19), Mfe(t22p2, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (GetParam() == ctx::CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
   EXPECT_EQ(E(-5.25), Mfe(t22p2, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   EXPECT_EQ(E(-13.47),
       Mfe(t22p2, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
@@ -61,6 +61,6 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(E(-20.82), Mfe(t22p2, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 }
 
-INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T22MfeTest, testing::ValuesIn(ctx::CtxCfg::DP_ALGS));
+INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T22MfeTest, testing::ValuesIn(CtxCfg::DP_ALGS));
 
 }  // namespace mrna::mfe

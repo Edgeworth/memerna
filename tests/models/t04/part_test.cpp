@@ -13,10 +13,10 @@
 
 namespace mrna::md::t04 {
 
-class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
+class PartAlgTest : public testing::TestWithParam<CtxCfg::PartAlg> {
  public:
-  static PartResult Partition(const std::string& s, const erg::EnergyModelPtr& em) {
-    return ctx::Ctx(em, ctx::CtxCfg{.part_alg = GetParam()}).Partition(Primary::FromSeq(s));
+  static part::PartResult Partition(const std::string& s, const erg::EnergyModelPtr& em) {
+    return Ctx(em, CtxCfg{.part_alg = GetParam()}).Partition(Primary::FromSeq(s));
   }
 };
 
@@ -34,7 +34,7 @@ TEST_P(PartAlgTest, T04P1) {
   EXPECT_TRUE(rel_eq(94.3008892348, Partition("CUGAAACUGGAAACAGAAAUG", t04p1).part.q));
 
   // Too slow for brute force:
-  if (GetParam() == ctx::CtxCfg::PartAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::PartAlg::BRUTE) return;
   EXPECT_TRUE(rel_eq(573963557.833, Partition("CCGGGCCAGCCCGCUCCUACGGGGGGUC", t04p1).part.q));
   EXPECT_TRUE(rel_eq(226979.219097, Partition("CGCAGGGUCGGACCCGGGAGAACCGCGA", t04p1).part.q));
   EXPECT_TRUE(rel_eq(812.38352375, Partition("UACCCUGUUCAGCAUUGGAAAUUUCCUGGG", t04p1).part.q));
@@ -87,7 +87,7 @@ TEST_P(PartAlgTest, T04P2) {
   EXPECT_TRUE(rel_eq(93.019535283, Partition("CUGAAACUGGAAACAGAAAUG", t04p2).part.q));
 
   // Too slow for brute force:
-  if (GetParam() == ctx::CtxCfg::PartAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::PartAlg::BRUTE) return;
   EXPECT_TRUE(rel_eq(493466463.46, Partition("CCGGGCCAGCCCGCUCCUACGGGGGGUC", t04p2).part.q));
   EXPECT_TRUE(rel_eq(195295.14577, Partition("CGCAGGGUCGGACCCGGGAGAACCGCGA", t04p2).part.q));
   EXPECT_TRUE(rel_eq(778.887013804, Partition("UACCCUGUUCAGCAUUGGAAAUUUCCUGGG", t04p2).part.q));
@@ -130,6 +130,6 @@ TEST_P(PartAlgTest, T04P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(PartAlgTest, PartAlgTest, testing::ValuesIn(ctx::CtxCfg::PART_ALGS));
+INSTANTIATE_TEST_SUITE_P(PartAlgTest, PartAlgTest, testing::ValuesIn(CtxCfg::PART_ALGS));
 
 }  // namespace mrna::md::t04

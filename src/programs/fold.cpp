@@ -5,10 +5,10 @@
 #include <ios>
 #include <string>
 
-#include "api/mfe.h"
-#include "api/trace.h"
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/mfe.h"
+#include "api/trace.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -19,11 +19,11 @@
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::api::RegisterOpts(&args);
+  mrna::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
-  auto ctx = mrna::api::Ctx::FromArgParse(args);
+  auto ctx = mrna::Ctx::FromArgParse(args);
   const auto res = ctx.Fold(mrna::Primary::FromSeq(args.Pos(0)));
 
   fmt::print("{}\n", res.mfe.energy);

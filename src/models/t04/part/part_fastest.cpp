@@ -17,12 +17,12 @@
 
 namespace mrna::md::t04 {
 
-void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartState& state) {
+void PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const erg::BoltzPrecomp bpc(Primary(r), bem);
+  const BoltzPrecomp bpc(Primary(r), bem);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {
@@ -172,7 +172,8 @@ void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartSta
   }
 
   // Compute the exterior tables.
-  auto ext = PartitionExterior(r, bem->em(), state);
+  PartitionExterior(r, bem->em(), state);
+  const auto& ext = state.ext;
 
   // Fill the left triangle.
   // The meaning of the tables changes here:
@@ -475,8 +476,6 @@ void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartSta
       dp[st][en][PT_U_RC] = rcoax;
     }
   }
-
-  return {std::move(dp), std::move(ext)};
 }
 
 }  // namespace mrna::md::t04

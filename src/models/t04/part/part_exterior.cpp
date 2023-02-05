@@ -9,9 +9,10 @@
 namespace mrna::md::t04 {
 
 void PartitionExterior(
-    const Primary& r, const erg::Model& em, const BoltzDpArray& dp, PartState& state) {
+    const Primary& r, const Model& em, const BoltzDpArray& dp, PartState& state) {
   const int N = static_cast<int>(r.size());
-  auto ext = BoltzExtArray(r.size() + 1, 0);
+  state.ext = BoltzExtArray(r.size() + 1, 0);
+  auto& ext = state.ext;
 
   ext[N][PTEXT_R] = 1;
   for (int st = N - 1; st >= 0; --st) {
@@ -120,8 +121,6 @@ void PartitionExterior(
             base10 * em.stack[stb][st1b][enb][GuPair(stb)].Boltz() * ext[st][PTEXT_L_GU];
     }
   }
-
-  return ext;
 }
 
 }  // namespace mrna::md::t04

@@ -35,8 +35,6 @@ std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(
 
 part::PartResult Memerna::Partition(const Primary& r) const { return ctx_.Partition(r); }
 
-Memerna Memerna::FromArgParse(const ArgParse& args) {
-  return Memerna(ctx::Ctx::FromArgParse(args));
-}
+Memerna Memerna::FromArgParse(const ArgParse& args) { return Memerna(Ctx::FromArgParse(args)); }
 
 }  // namespace mrna::bridge

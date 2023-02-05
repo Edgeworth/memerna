@@ -17,7 +17,7 @@
 
 namespace mrna::md::t04 {
 
-void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartState& state) {
+void PartitionSlowest(const Primary& r, const Model::Ptr& initial_em, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -26,7 +26,7 @@ void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartS
   em->cfg.bulge_states = false;
 
   const int N = static_cast<int>(r.size());
-  const erg::Precomp pc(Primary(r), em);
+  const Precomp pc(Primary(r), em);
   auto dp = BoltzDpArray(r.size() + 1, 0);
 
   for (int st = N - 1; st >= 0; --st) {
@@ -495,8 +495,6 @@ void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartS
       dp[st][en][PT_U_RC] = rcoax;
     }
   }
-
-  return {std::move(dp), std::move(ext)};
 }
 
 }  // namespace mrna::md::t04

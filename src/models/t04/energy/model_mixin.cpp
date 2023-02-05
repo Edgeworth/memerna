@@ -350,7 +350,7 @@ Energy T04ModelMixin::MultiloopEnergy(const Primary& r, const Secondary& s, int 
     struc->AddNote("{}e - ctd", ctd_energy);
     if (!exterior_loop) {
       struc->AddNote(
-          "{}e - outer loop - {}", branch_ctd[0].second, erg::CtdToName(branch_ctd[0].first));
+          "{}e - outer loop - {}", branch_ctd[0].second, CtdToName(branch_ctd[0].first));
       branch_ctd.pop_front();
     }
     for (const auto& [c, e] : branch_ctd) struc->AddCtd(c, e);

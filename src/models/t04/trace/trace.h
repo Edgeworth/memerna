@@ -11,7 +11,7 @@ namespace mrna::md::t04 {
 
 using trace::TraceResult;
 
-TraceResult Traceback(const Primary& r, const erg::t04::Model::Ptr& em, const mfe::DpState& state);
+TraceResult Traceback(const Primary& r, const t04::Model::Ptr& em, const DpState& state);
 
 }  // namespace mrna::md::t04
 

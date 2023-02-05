@@ -16,11 +16,11 @@
 
 namespace mrna::md::brute {
 
-Brute::Brute(const Primary& r, erg::EnergyModelPtr em, brute::BruteCfg cfg)
+Brute::Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg)
     : r_(r), em_(std::move(em)), bem_(erg::Boltz(em_)), underlying_(erg::Underlying(bem_)),
       cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
 
-brute::BruteResult Brute::Run() {
+BruteResult Brute::Run() {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
@@ -28,7 +28,7 @@ brute::BruteResult Brute::Run() {
     // Plus one to N, since -1 takes up a spot.
     verify(r_.size() + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.part.q = 0;
-    res_.part.p = BoltzSums(r_.size(), 0);
+    res_.part.p = part::BoltzSums(r_.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {

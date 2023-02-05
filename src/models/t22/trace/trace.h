@@ -4,8 +4,8 @@
 
 #include "api/trace.h"
 #include "model/primary.h"
-#include "models/t04/mfe/dp.h"
 #include "models/t22/energy/model.h"
+#include "models/t22/mfe/mfe.h"
 
 namespace mrna::md::t22 {
 

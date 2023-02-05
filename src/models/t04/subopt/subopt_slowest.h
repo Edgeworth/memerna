@@ -23,7 +23,7 @@ using mrna::subopt::SuboptResult;
 
 class SuboptSlowest {
  public:
-  SuboptSlowest(Primary r, erg::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg);
+  SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -41,8 +41,8 @@ class SuboptSlowest {
   };
 
   Primary r_;
-  erg::Model::Ptr em_;
-  mfe::DpState dp_;
+  Model::Ptr em_;
+  DpState dp_;
   SuboptCfg cfg_;
 
   // This node is where we build intermediate results to be pushed onto the queue.

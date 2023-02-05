@@ -61,10 +61,10 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<FoldResult> mrna_res;
   std::vector<Energy> mrna_ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
-  for (auto dp_alg : ctx::CtxCfg::DP_ALGS) {
-    if (dp_alg == ctx::CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
+  for (auto dp_alg : CtxCfg::DP_ALGS) {
+    if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    const ctx::Ctx ctx(em_, ctx::CtxCfg{.dp_alg = dp_alg});
+    const Ctx ctx(em_, CtxCfg{.dp_alg = dp_alg});
     auto res = ctx.Fold(r_);
     // First compute with the CTDs that fold returned to check the energy.
     mrna_ctd_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
@@ -145,10 +145,10 @@ Error FuzzInvocation::CheckSubopt() {
   std::vector<std::vector<std::vector<subopt::SuboptResult>>> mrna;
   for (auto cfg : cfgs) {
     mrna.emplace_back();
-    for (auto subopt_alg : ctx::CtxCfg::SUBOPT_ALGS) {
-      if (subopt_alg == ctx::CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
+    for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
+      if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      const ctx::Ctx ctx(em_, ctx::CtxCfg{.subopt_alg = subopt_alg});
+      const Ctx ctx(em_, CtxCfg{.subopt_alg = subopt_alg});
       auto res = ctx.SuboptimalIntoVector(r_, cfg);
       // Sort them to make the sorted=false configurations comparable between
       // algoritms.
@@ -253,10 +253,10 @@ Error FuzzInvocation::CheckPartition() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   std::vector<part::PartResult> mrna_parts;
-  for (auto part_alg : ctx::CtxCfg::PART_ALGS) {
-    if (part_alg == ctx::CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
+  for (auto part_alg : CtxCfg::PART_ALGS) {
+    if (part_alg == CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    const ctx::Ctx ctx(em_, ctx::CtxCfg{.part_alg = part_alg});
+    const Ctx ctx(em_, CtxCfg{.part_alg = part_alg});
     mrna_parts.emplace_back(ctx.Partition(r_));
   }
 
