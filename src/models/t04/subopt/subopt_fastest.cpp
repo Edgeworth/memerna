@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/subopt/t04/subopt_fastest.h"
+#include "models/t04/subopt/subopt_fastest.h"
 
 #include <algorithm>
 #include <memory>
@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "api/subopt/subopt.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"

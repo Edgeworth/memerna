@@ -4,13 +4,12 @@
 #include <memory>
 #include <vector>
 
-#include "compute/energy/t04/precomp.h"
-#include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 
 namespace mrna::md::t04::mfe {
@@ -20,7 +19,7 @@ void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const erg::t04::Precomp pc(Primary(r), em);
+  const erg::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1, MAX_E);
 
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];

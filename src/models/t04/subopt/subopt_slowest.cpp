@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/subopt/t04/subopt_slowest.h"
+#include "models/t04/subopt/subopt_slowest.h"
 
 #include <algorithm>
 #include <cassert>

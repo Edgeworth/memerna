@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_MODEL_H_
-#define COMPUTE_ENERGY_MODEL_H_
+#ifndef API_ENERGY_MODEL_H_
+#define API_ENERGY_MODEL_H_
 #include <cstdint>
 #include <iosfwd>
 #include <variant>
@@ -92,4 +92,4 @@ inline EnergyResult SubEnergy(const EnergyModelPtr& em, const Primary& r, const 
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_MODEL_H_
+#endif  // API_ENERGY_MODEL_H_

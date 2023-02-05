@@ -1,10 +1,11 @@
 // Copyright 2023 Eliot Courtney.
+#include "models/t22/trace/trace.h"
+
 #include <algorithm>
 #include <compare>
 #include <memory>
 #include <stack>
 
-#include "compute/traceback/t22/traceback.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -15,9 +16,21 @@
 
 namespace mrna::md::t22::trace {
 
+using t04::mfe::DP_P;
+using t04::mfe::DP_U;
+using t04::mfe::DP_U2;
+using t04::mfe::DP_U_GU;
+using t04::mfe::DP_U_RC;
+using t04::mfe::DP_U_WC;
+using t04::mfe::EXT;
+using t04::mfe::EXT_GU;
+using t04::mfe::EXT_RC;
+using t04::mfe::EXT_WC;
+using t04::mfe::Index;
+using t04::mfe::IndexCtd;
+
 // TODO(0): Implement. Think if can generalise this.
-TraceResult Traceback(
-    const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp, const ExtArray& ext) {
+TraceResult Traceback(const Primary& r, const erg::Model::Ptr& em, const mfe::DpState& state) {
   const int N = static_cast<int>(r.size());
   TraceResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;

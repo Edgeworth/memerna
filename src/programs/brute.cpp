@@ -1,5 +1,5 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/brute/brute.h"
+#include "api/brute/brute.h"
 
 #include <fmt/core.h>
 
@@ -7,13 +7,13 @@
 #include <ios>
 #include <string>
 
+#include "api/brute/brute_cfg.h"
 #include "api/energy/model.h"
+#include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/brute/brute_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
-#include "options.h"
 #include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"

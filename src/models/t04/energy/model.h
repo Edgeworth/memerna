@@ -1,9 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T04_MODEL_H_
-#define COMPUTE_ENERGY_T04_MODEL_H_
+#ifndef MODELS_T04_ENERGY_MODEL_H_
+#define MODELS_T04_ENERGY_MODEL_H_
 
 #include <memory>
 
+#include "api/energy/energy.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -13,6 +14,8 @@
 #include "models/t04/energy/model_mixin.h"
 
 namespace mrna::md::t04::erg {
+
+using mrna::erg::EnergyResult;
 
 class Model : public ModelMixin<Model>, public T04ModelMixin {
  public:
@@ -33,4 +36,4 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
 
 }  // namespace mrna::md::t04::erg
 
-#endif  // COMPUTE_ENERGY_T04_MODEL_H_
+#endif  // MODELS_T04_ENERGY_MODEL_H_

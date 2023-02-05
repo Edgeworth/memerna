@@ -8,11 +8,11 @@
 
 #include "api/energy/energy_cfg.h"
 #include "api/energy/model.h"
+#include "api/options.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/secondary.h"
 #include "model/structure.h"
-#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
 

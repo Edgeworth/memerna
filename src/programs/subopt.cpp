@@ -6,13 +6,13 @@
 #include <ios>
 #include <string>
 
+#include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"
 

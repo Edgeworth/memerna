@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
-#define COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
+#ifndef MODELS_T04_ENERGY_BOLTZ_MODEL_H_
+#define MODELS_T04_ENERGY_BOLTZ_MODEL_H_
 
 #include "models/common/model.h"
 #include "models/t04/energy/boltz_mixin.h"
@@ -24,4 +24,4 @@ class BoltzModel : public ModelMixin<BoltzModel>, public T04BoltzMixin<Model> {
 
 }  // namespace mrna::md::t04::erg
 
-#endif  // COMPUTE_ENERGY_T04_BOLTZ_MODEL_H_
+#endif  // MODELS_T04_ENERGY_BOLTZ_MODEL_H_

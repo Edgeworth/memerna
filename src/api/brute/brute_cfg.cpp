@@ -1,7 +1,7 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/brute/brute_cfg.h"
+#include "api/brute/brute_cfg.h"
 
-#include "options.h"
+#include "api/options.h"
 
 namespace mrna::brute {
 

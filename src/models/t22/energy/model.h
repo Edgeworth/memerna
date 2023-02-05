@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T22_MODEL_H_
-#define COMPUTE_ENERGY_T22_MODEL_H_
+#ifndef MODELS_T22_ENERGY_MODEL_H_
+#define MODELS_T22_ENERGY_MODEL_H_
 
 #include <fmt/core.h>
 
@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 
+#include "api/energy/energy.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -19,7 +20,9 @@
 
 namespace mrna::md::t22::erg {
 
-class Model : public ModelMixin<Model>, public t04::T04ModelMixin {
+using mrna::erg::EnergyResult;
+
+class Model : public ModelMixin<Model>, public t04::erg::T04ModelMixin {
  public:
   Energy penultimate_stack[4][4][4][4] = {};
 
@@ -71,4 +74,4 @@ class Model : public ModelMixin<Model>, public t04::T04ModelMixin {
 
 }  // namespace mrna::md::t22::erg
 
-#endif  // COMPUTE_ENERGY_T22_MODEL_H_
+#endif  // MODELS_T22_ENERGY_MODEL_H_

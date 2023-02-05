@@ -1,10 +1,11 @@
 // Copyright 2016 Eliot Courtney.
+#include "models/t04/trace/trace.h"
+
 #include <algorithm>
 #include <compare>
 #include <memory>
 #include <stack>
 
-#include "compute/traceback/t04/traceback.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -15,8 +16,21 @@
 
 namespace mrna::md::t04::trace {
 
+using t04::mfe::DP_P;
+using t04::mfe::DP_U;
+using t04::mfe::DP_U2;
+using t04::mfe::DP_U_GU;
+using t04::mfe::DP_U_RC;
+using t04::mfe::DP_U_WC;
+using t04::mfe::EXT;
+using t04::mfe::EXT_GU;
+using t04::mfe::EXT_RC;
+using t04::mfe::EXT_WC;
+using t04::mfe::Index;
+using t04::mfe::IndexCtd;
+
 TraceResult Traceback(
-    const Primary& r, const erg::t04::Model::Ptr& em, const DpArray& dp, const ExtArray& ext) {
+    const Primary& r, const erg::Model::Ptr& em, const mfe::DpState& state) {
   const int N = static_cast<int>(r.size());
   TraceResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;

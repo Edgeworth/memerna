@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_
-#define COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_
+#ifndef MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+#define MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
 
 #include <algorithm>
 #include <cassert>
@@ -10,14 +10,17 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/energy/t04/precomp.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 #include "util/splaymap.h"
 
 namespace mrna::md::t04::subopt {
+
+using mfe::Index;
+using mfe::IndexCtd;
 
 struct Expand {
   Expand() = delete;
@@ -43,9 +46,9 @@ struct Expand {
 
 class SuboptFastest {
  public:
-  SuboptFastest(Primary r, erg::t04::Model::Ptr em, mfe::t04::DpState dp, SuboptCfg cfg);
+  SuboptFastest(Primary r, erg::Model::Ptr em, mfe::DpState dp, subopt::SuboptCfg cfg);
 
-  int Run(const SuboptCallback& fn);
+  int Run(const subopt::SuboptCallback& fn);
 
  private:
   struct DfsState {
@@ -56,18 +59,18 @@ class SuboptFastest {
   };
 
   Primary r_;
-  erg::t04::Model::Ptr em_;
-  erg::t04::Precomp pc_;
-  SuboptResult res_;
-  mfe::t04::DpState dp_;
-  SuboptCfg cfg_;
+  erg::Model::Ptr em_;
+  erg::Precomp pc_;
+  subopt::SuboptResult res_;
+  mfe::DpState dp_;
+  subopt::SuboptCfg cfg_;
 
   SplayMap<Index, std::vector<Expand>> cache_;
   std::vector<DfsState> q_;
   std::vector<Index> unexpanded_;
 
   std::pair<int, Energy> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+      const subopt::SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expand>& GetExpansion(const Index& to_expand) {
     if (!cache_.Find(to_expand)) {
@@ -85,4 +88,4 @@ class SuboptFastest {
 
 }  // namespace mrna::md::t04::subopt
 
-#endif  // COMPUTE_SUBOPT_T04_SUBOPT_FASTEST_H_
+#endif  // MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_

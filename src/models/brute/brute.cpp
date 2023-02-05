@@ -1,5 +1,5 @@
 // Copyright 2021 Eliot Courtney.
-#include "compute/brute/brute.h"
+#include "api/brute/brute.h"
 
 #include <iterator>
 #include <utility>
@@ -8,7 +8,7 @@
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "models/common/branch.h"

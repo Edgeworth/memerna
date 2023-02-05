@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "api/energy/model.h"
+#include "api/mfe.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/mfe/mfe.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/constants.h"

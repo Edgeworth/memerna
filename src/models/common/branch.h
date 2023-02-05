@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_BRANCH_H_
-#define COMPUTE_ENERGY_COMMON_BRANCH_H_
+#ifndef MODELS_COMMON_BRANCH_H_
+#define MODELS_COMMON_BRANCH_H_
 
 #include <deque>
 #include <utility>
@@ -29,4 +29,4 @@ int MaxNumContiguous(const Primary& r);
 
 }  // namespace mrna::md
 
-#endif  // COMPUTE_ENERGY_COMMON_BRANCH_H_
+#endif  // MODELS_COMMON_BRANCH_H_

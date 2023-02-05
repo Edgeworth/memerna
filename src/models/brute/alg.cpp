@@ -1,11 +1,11 @@
 // Copyright 2022 Eliot Courtney.
-#include "compute/brute/alg.h"
+#include "models/brute/alg.h"
 
 #include <set>
 #include <utility>
 
+#include "api/brute/brute.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/brute/brute.h"
 
 namespace mrna::md::brute {
 

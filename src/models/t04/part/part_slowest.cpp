@@ -6,12 +6,12 @@
 
 #include "api/energy/energy_cfg.h"
 #include "api/part.h"
-#include "compute/energy/t04/precomp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 #include "models/t04/part/part.h"
 #include "models/t04/part/partition.h"
 #include "util/util.h"
