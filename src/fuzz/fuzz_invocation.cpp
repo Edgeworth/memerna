@@ -10,12 +10,10 @@
 #include <tuple>
 #include <utility>
 
-#include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
 #include "compute/mfe/t04/dp.h"
 #include "compute/partition/partition.h"
-#include "compute/partition/t04/dp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"
@@ -25,6 +23,7 @@
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/secondary.h"
+#include "models/t04/part/part.h"
 #include "util/float.h"
 
 namespace mrna::fuzz {

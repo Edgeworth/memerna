@@ -19,11 +19,11 @@
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::ctx::RegisterOpts(&args);
+  mrna::api::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
-  auto ctx = mrna::ctx::Ctx::FromArgParse(args);
+  auto ctx = mrna::api::Ctx::FromArgParse(args);
   const auto res = ctx.Fold(mrna::Primary::FromSeq(args.Pos(0)));
 
   fmt::print("{}\n", res.mfe.energy);

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "bridge/bridge.h"
-#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/mfe/mfe.h"
 #include "compute/partition/partition.h"

@@ -23,14 +23,14 @@ inline const auto OPT_CTD_OUTPUT =
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::ctx::RegisterOpts(&args);
+  mrna::api::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_QUIET);
   args.RegisterOpt(OPT_CTD_OUTPUT);
   args.ParseOrExit(argc, argv);
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
-  auto ctx = mrna::ctx::Ctx::FromArgParse(args);
+  auto ctx = mrna::api::Ctx::FromArgParse(args);
   const bool should_print = !args.GetOr(mrna::OPT_QUIET);
   const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
   const auto cfg = mrna::subopt::SuboptCfg::FromArgParse(args);

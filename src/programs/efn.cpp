@@ -6,13 +6,12 @@
 #include <string>
 #include <vector>
 
-#include "compute/energy/energy.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/model.h"
-#include "compute/energy/structure.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/secondary.h"
+#include "model/structure.h"
 #include "options.h"
 #include "util/argparse.h"
 #include "util/error.h"

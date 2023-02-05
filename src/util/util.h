@@ -19,6 +19,13 @@ constexpr auto Decay(T& a) {  // NOLINT
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 
+// Only works with [0, 2N).
+inline int FastMod(int a, int m) {
+  assert(a < 2 * m);
+  if (a >= m) return a - m;
+  return a;
+}
+
 }  // namespace mrna
 
 #endif  // UTIL_UTIL_H_

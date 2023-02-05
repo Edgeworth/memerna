@@ -7,7 +7,6 @@
 #include <unordered_map>
 
 #include "common_test.h"
-#include "compute/energy/energy.h"
 #include "compute/energy/t22/model.h"
 #include "gtest/gtest.h"
 #include "model/base.h"

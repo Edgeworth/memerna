@@ -101,65 +101,116 @@ endif()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
-  src/bridge/bridge.cpp src/bridge/bridge.h
-  src/bridge/memerna.cpp src/bridge/memerna.h
-  src/compute/brute/alg.cpp src/compute/brute/alg.h
-  src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
-  src/compute/brute/brute.cpp src/compute/brute/brute.h
-  src/compute/energy/common/branch.cpp src/compute/energy/common/branch.h
-  src/compute/energy/common/model.h
-  src/compute/energy/common/parse.cpp src/compute/energy/common/parse.h
-  src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
-  src/compute/energy/energy.cpp src/compute/energy/energy.h
-  src/compute/energy/model.cpp src/compute/energy/model.h
-  src/compute/energy/structure.cpp src/compute/energy/structure.h
-  src/compute/energy/t04/boltz_mixin.h
-  src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
-  src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h
-  src/compute/energy/t04/branch.h
-  src/compute/energy/t04/model_mixin.cpp src/compute/energy/t04/model_mixin.h
-  src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
-  src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
-  src/compute/energy/t22/boltz_model.cpp src/compute/energy/t22/boltz_model.h
-  src/compute/energy/t22/model.cpp src/compute/energy/t22/model.h
-  src/compute/mfe/mfe.h
-  src/compute/mfe/t04/dp.h
-  src/compute/mfe/t04/mfe_fastest.cpp
-  src/compute/mfe/t04/mfe_lyngso.cpp
-  src/compute/mfe/t04/mfe_slow.cpp
-  src/compute/mfe/t04/mfe_slowest.cpp
-  src/compute/mfe/t04/mfe.h
-  src/compute/mfe/t22/mfe_slowest.cpp
-  src/compute/mfe/t22/mfe.h
-  src/compute/partition/partition.cpp src/compute/partition/partition.h
-  src/compute/partition/t04/dp.h
-  src/compute/partition/t04/partition_exterior.cpp
-  src/compute/partition/t04/partition_fastest.cpp
-  src/compute/partition/t04/partition_slowest.cpp
-  src/compute/partition/t04/partition.h
-  src/compute/subopt/subopt_cfg.cpp src/compute/subopt/subopt_cfg.h
-  src/compute/subopt/subopt.h
-  src/compute/subopt/t04/subopt_fastest.cpp src/compute/subopt/t04/subopt_fastest.h
-  src/compute/subopt/t04/subopt_slowest.cpp src/compute/subopt/t04/subopt_slowest.h
-  src/compute/traceback/t04/traceback.cpp src/compute/traceback/t04/traceback.h
-  src/compute/traceback/t22/traceback.cpp src/compute/traceback/t22/traceback.h
-  src/ctx/ctx_cfg.cpp src/ctx/ctx_cfg.h
-  src/ctx/ctx.cpp src/ctx/ctx.h
-  src/fuzz/fuzz_cfg.cpp src/fuzz/fuzz_cfg.h
-  src/fuzz/fuzz_invocation.cpp src/fuzz/fuzz_invocation.h
-  src/model/base.cpp src/model/base.h
+  src/model/energy.h
+  src/model/energy.cpp
+  src/model/structure.cpp
+  src/model/primary.cpp
+  src/model/ctd.cpp
+  src/model/primary.h
+  src/model/base.cpp
+  src/model/secondary.h
+  src/model/structure.h
+  src/model/ctd.h
+  src/model/secondary.cpp
   src/model/constants.h
-  src/model/ctd.cpp src/model/ctd.h
-  src/model/energy.cpp src/model/energy.h
-  src/model/primary.cpp src/model/primary.h
-  src/model/secondary.cpp src/model/secondary.h
-  src/programs/fuzz/fuzz_harness.cpp src/programs/fuzz/fuzz_harness.h
-  src/programs/print.cpp src/programs/print.h
-  src/util/argparse.cpp src/util/argparse.h
+  src/model/base.h
+  src/models/t22/energy/model.h
+  src/models/t22/energy/boltz_model.h
+  src/models/t22/energy/boltz_model.cpp
+  src/models/t22/energy/model.cpp
+  src/models/t22/trace/trace.h
+  src/models/t22/trace/trace.cpp
+  src/models/t22/mfe/mfe.h
+  src/models/t22/mfe/mfe_slowest.cpp
+  src/models/t04/energy/model.h
+  src/models/t04/energy/boltz_model.h
+  src/models/t04/energy/boltz_mixin.h
+  src/models/t04/energy/model_mixin.cpp
+  src/models/t04/energy/precomp.h
+  src/models/t04/energy/boltz_precomp.h
+  src/models/t04/energy/boltz_precomp.cpp
+  src/models/t04/energy/precomp.cpp
+  src/models/t04/energy/boltz_model.cpp
+  src/models/t04/energy/model_mixin.h
+  src/models/t04/energy/branch.h
+  src/models/t04/energy/model.cpp
+  src/models/t04/subopt/subopt_slowest.cpp
+  src/models/t04/subopt/subopt_fastest.cpp
+  src/models/t04/subopt/subopt_slowest.h
+  src/models/t04/subopt/subopt_fastest.h
+  src/models/t04/trace/trace.h
+  src/models/t04/trace/trace.cpp
+  src/models/t04/part/part.h
+  src/models/t04/part/part_fastest.cpp
+  src/models/t04/part/part_slowest.cpp
+  src/models/t04/part/part_exterior.cpp
+  src/models/t04/mfe/mfe_lyngso.cpp
+  src/models/t04/mfe/mfe_slow.cpp
+  src/models/t04/mfe/mfe_fastest.cpp
+  src/models/t04/mfe/mfe.h
+  src/models/t04/mfe/dp.h
+  src/models/t04/mfe/mfe_slowest.cpp
+  src/models/brute/alg.cpp
+  src/models/brute/brute.cpp
+  src/models/brute/brute.h
+  src/models/brute/alg.h
+  src/models/common/model.h
+  src/models/common/parse.h
+  src/models/common/branch.cpp
+  src/models/common/boltz.h
+  src/models/common/parse.cpp
+  src/models/common/branch.h
+  src/fuzz/fuzz_cfg.h
+  src/fuzz/fuzz_cfg.cpp
+  src/fuzz/fuzz_invocation.h
+  src/fuzz/fuzz_invocation.cpp
+  src/programs/efn.cpp
+  src/programs/harness.cpp
+  src/programs/brute.cpp
+  src/programs/fuzz/fuzz_harness.h
+  src/programs/fuzz/fuzz_afl.cpp
+  src/programs/fuzz/fuzz_harness.cpp
+  src/programs/fuzz/fuzz.cpp
+  src/programs/fold.cpp
+  src/programs/print.cpp
+  src/programs/subopt.cpp
+  src/programs/print.h
+  src/programs/partition.cpp
+  src/util/argparse.cpp
+  src/util/string.cpp
+  src/util/string.h
+  src/util/error.h
   src/util/array.h
+  src/util/float.h
   src/util/splaymap.h
-  src/util/string.cpp src/util/string.h
   src/util/util.h
+  src/util/argparse.h
+  src/api/energy/model.h
+  src/api/energy/energy.h
+  src/api/energy/energy.cpp
+  src/api/energy/energy_cfg.h
+  src/api/energy/energy_cfg.cpp
+  src/api/energy/model.cpp
+  src/api/trace.h
+  src/api/brute/brute.h
+  src/api/brute/brute_cfg.cpp
+  src/api/brute/brute_cfg.h
+  src/api/part.h
+  src/api/mfe.h
+  src/api/subopt/subopt_cfg.cpp
+  src/api/subopt/subopt_cfg.h
+  src/api/subopt/subopt.h
+  src/api/options.h
+  src/api/ctx/ctx.cpp
+  src/api/ctx/ctx_cfg.cpp
+  src/api/ctx/ctx.h
+  src/api/ctx/ctx_cfg.h
+  src/api/bridge/bridge.h
+  src/api/bridge/memerna.h
+  src/api/bridge/memerna.cpp
+  src/api/bridge/bridge.cpp
+  src/api/bridge/rnastructure.h
+  src/api/bridge/rnastructure.cpp
 )
 set(TEST_SOURCE
   tests/common_test.cpp tests/common_test.h
@@ -185,7 +236,7 @@ set(BENCHMARK_SOURCE
 # Use RNAstructure if necessary
 if(USE_RNASTRUCTURE)
   set(MEMERNA_SOURCE ${MEMERNA_SOURCE}
-    src/bridge/rnastructure.cpp src/bridge/rnastructure.h
+    src/api/bridge/rnastructure.cpp src/api/bridge/rnastructure.h
   )
 endif()
 

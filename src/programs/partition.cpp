@@ -15,13 +15,13 @@
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::ctx::RegisterOpts(&args);
+  mrna::api::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
 
-  auto ctx = mrna::ctx::Ctx::FromArgParse(args);
+  auto ctx = mrna::api::Ctx::FromArgParse(args);
   auto res = ctx.Partition(r);
   fmt::print("q: {}\np:\n", res.part.q);
   PrintPartition(res.part);
