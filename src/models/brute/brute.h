@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "api/brute/brute_cfg.h"
 #include "api/energy/model.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "compute/brute/brute_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"

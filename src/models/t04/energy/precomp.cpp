@@ -1,5 +1,5 @@
 // Copyright 2016 E.
-#include "compute/energy/t04/precomp.h"
+#include "models/t04/energy/precomp.h"
 
 #include <algorithm>
 #include <cassert>

@@ -5,11 +5,11 @@
 #include <memory>
 #include <vector>
 
-#include "compute/energy/t04/precomp.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/boltz_model.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 
 namespace mrna::md::t04::erg {
 

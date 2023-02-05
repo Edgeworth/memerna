@@ -4,13 +4,12 @@
 #include <memory>
 #include <vector>
 
-#include "compute/energy/t04/precomp.h"
-#include "compute/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 #include "util/array.h"
 
@@ -21,7 +20,7 @@ void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const erg::t04::Precomp pc(Primary(r), em);
+  const erg::Precomp pc(Primary(r), em);
   auto dp = DpArray(r.size() + 1, MAX_E);
 
   // See ComputeTables2 for comments - it is mostly the same.
@@ -74,7 +73,7 @@ void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
 
         // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have
         // special energies.
-        static_assert(erg::t04::Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
+        static_assert(erg::Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
             "need initiation cached up to TWOLOOP_MAX_SZ");
         auto base_internal_loop = em->InternalLoopAuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {

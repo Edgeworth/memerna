@@ -12,7 +12,6 @@
 
 #include "common_test.h"
 #include "compute/energy/t04/branch.h"
-#include "compute/energy/t04/precomp.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -22,6 +21,7 @@
 #include "model/secondary.h"
 #include "models/common/branch.h"
 #include "models/t04/energy/model.h"
+#include "models/t04/energy/precomp.h"
 
 namespace mrna::erg {
 

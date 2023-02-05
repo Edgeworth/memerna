@@ -8,7 +8,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"

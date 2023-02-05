@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "api/subopt/subopt.h"
-#include "compute/traceback/traceback.h"
+#include "api/trace.h"
 #include "model/structure.h"
 #include "rnastructure_bridge/include/stochastic.h"
 #include "util/error.h"

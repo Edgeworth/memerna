@@ -213,24 +213,25 @@ set(MEMERNA_SOURCE
   src/api/bridge/rnastructure.cpp
 )
 set(TEST_SOURCE
-  tests/common_test.cpp tests/common_test.h
-  tests/compute/brute/brute_test.cpp
-  tests/compute/energy/energy_test.cpp
-  tests/compute/energy/t04_test.cpp
-  tests/compute/energy/t22_test.cpp
-  tests/compute/mfe/t04_test.cpp
-  tests/compute/mfe/t22_test.cpp
-  tests/compute/partition/t04_test.cpp
-  tests/compute/subopt/t04_test.cpp
-  tests/compute/traceback/t04_test.cpp
+  tests/common_test.cpp
+  tests/common_test.h
   tests/model/base_test.cpp
   tests/model/model_test.cpp
   tests/model/parsing_test.cpp
+  tests/models/brute/brute_test.cpp
+  tests/models/energy_test.cpp
+  tests/models/t04/energy_test.cpp
+  tests/models/t04/mfe_test.cpp
+  tests/models/t04/part_test.cpp
+  tests/models/t04/subopt_test.cpp
+  tests/models/t04/trace_test.cpp
+  tests/models/t22/energy_test.cpp
+  tests/models/t22/mfe_test.cpp
+  tests/programs/splay_explorer.cpp
   tests/util/splaymap_test.cpp
 )
 set(BENCHMARK_SOURCE
   tests/common_test.cpp tests/common_test.h
-  tests/programs/run_benchmark.cpp
 )
 
 # Use RNAstructure if necessary

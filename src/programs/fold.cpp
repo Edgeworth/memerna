@@ -5,8 +5,8 @@
 #include <ios>
 #include <string>
 
-#include "compute/mfe/mfe.h"
-#include "compute/traceback/traceback.h"
+#include "api/mfe.h"
+#include "api/trace.h"
 #include "ctx/ctx.h"
 #include "ctx/ctx_cfg.h"
 #include "model/ctd.h"
