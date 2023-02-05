@@ -11,7 +11,7 @@
 #include "util/argparse.h"
 
 #ifdef USE_RNASTRUCTURE
-#include "bridge/rnastructure.h"
+#include "api/bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
 // Energy model options:

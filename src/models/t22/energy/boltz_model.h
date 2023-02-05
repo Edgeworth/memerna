@@ -7,9 +7,9 @@
 #include "models/t04/energy/boltz_mixin.h"
 #include "models/t22/energy/model.h"
 
-namespace mrna::md::t22::erg {
+namespace mrna::md::t22 {
 
-class BoltzModel : public ModelMixin<BoltzModel>, public t04::erg::T04BoltzMixin<Model> {
+class BoltzModel : public ModelMixin<BoltzModel>, public t04::T04BoltzMixin<Model> {
  public:
   BoltzEnergy penultimate_stack[4][4][4][4]{};
 
@@ -23,6 +23,6 @@ class BoltzModel : public ModelMixin<BoltzModel>, public t04::erg::T04BoltzMixin
   explicit BoltzModel(const Model::Ptr& em);
 };
 
-}  // namespace mrna::md::t22::erg
+}  // namespace mrna::md::t22
 
 #endif  // COMPUTE_ENERGY_T22_BOLTZ_MODEL_H_

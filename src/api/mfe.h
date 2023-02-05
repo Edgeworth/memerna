@@ -9,7 +9,7 @@
 
 namespace mrna::mfe {
 
-using DpState = std::variant<md::t04::mfe::DpState>;
+using DpState = std::variant<md::t04::DpState>;
 
 struct MfeResult {
   DpState dp;

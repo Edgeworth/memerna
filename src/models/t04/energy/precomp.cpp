@@ -11,7 +11,7 @@
 #include "model/constants.h"
 #include "model/energy.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 namespace {
 
@@ -136,4 +136,4 @@ void Precomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>>(r_, em(), MAX_E);
 }
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

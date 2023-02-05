@@ -3,15 +3,15 @@
 
 #include <string>
 
-#include "api/energy/model.h"
-#include "common_test.h"
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/model.h"
+#include "common_test.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "util/float.h"
 
-namespace mrna::md::t04::part {
+namespace mrna::md::t04 {
 
 class PartAlgTest : public testing::TestWithParam<ctx::CtxCfg::PartAlg> {
  public:
@@ -132,4 +132,4 @@ TEST_P(PartAlgTest, T04P2) {
 
 INSTANTIATE_TEST_SUITE_P(PartAlgTest, PartAlgTest, testing::ValuesIn(ctx::CtxCfg::PART_ALGS));
 
-}  // namespace mrna::md::t04::part
+}  // namespace mrna::md::t04

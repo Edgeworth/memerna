@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "api/energy/energy_cfg.h"
-#include "models/t04/energy/branch.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -19,10 +18,11 @@
 #include "models/common/branch.h"
 #include "models/common/model.h"
 #include "models/common/parse.h"
+#include "models/t04/energy/branch.h"
 #include "util/error.h"
 #include "util/string.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
@@ -539,4 +539,4 @@ void T04ModelMixin::LoadRandom(std::mt19937& eng) {
   }
 }
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

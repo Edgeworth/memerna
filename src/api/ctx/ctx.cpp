@@ -35,7 +35,7 @@ erg::EnergyResult Ctx::Efn(
   return erg::TotalEnergy(em(), r, s, given_ctd, build_structure);
 }
 
-DpArray Ctx::ComputeMfe(const Primary& r) const {
+void Ctx::ComputeMfe(const Primary& r, mfe::DpState& state) const {
   auto vis = overloaded{
       [&](const erg::t04::Model::Ptr& em) -> DpArray {
         switch (cfg_.dp_alg) {
@@ -62,7 +62,7 @@ DpArray Ctx::ComputeMfe(const Primary& r) const {
       em_);
 }
 
-ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
+void Ctx::ComputeMfeExterior(const Primary& r, mfe::DpState& state) const {
   auto vis = overloaded{
       [&](const erg::t04::Model::Ptr& em) -> ExtArray { return mfe::t04::MfeExterior(r, em, dp); },
       [&](const erg::t22::Model::Ptr& em) -> ExtArray { return mfe::t22::MfeExterior(r, em, dp); },
@@ -70,8 +70,7 @@ ExtArray Ctx::ComputeMfeExterior(const Primary& r, const DpArray& dp) const {
   return std::visit(vis, em_);
 }
 
-trace::TraceResult Ctx::ComputeTraceback(
-    const Primary& r, const DpArray& dp, const ExtArray& ext) const {
+trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& state) const {
   auto vis = overloaded{
       [&](const erg::t04::Model::Ptr& em) -> trace::TraceResult {
         return tb::t04::Traceback(r, em, dp, ext);
@@ -83,7 +82,7 @@ trace::TraceResult Ctx::ComputeTraceback(
   return std::visit(vis, em_);
 }
 
-ctx::FoldResult Ctx::Fold(const Primary& r) const {
+FoldResult Ctx::Fold(const Primary& r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
     auto subopt = brute::MfeBrute(r, em_);
     return {.mfe = {.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
@@ -93,7 +92,7 @@ ctx::FoldResult Ctx::Fold(const Primary& r) const {
   auto ext = ComputeMfeExterior(r, dp);
   auto energy = ext[0][EXT];
   auto tb = ComputeTraceback(r, dp, ext);
-  return ctx::FoldResult{
+  return FoldResult{
       .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
       .tb = std::move(tb),
   };

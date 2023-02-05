@@ -15,7 +15,7 @@ using BoltzSums = Array2D<BoltzEnergy>;
 
 using BoltzProbs = Array2D<BoltzEnergy>;
 
-using PartState = std::variant<md::t04::part::PartState>;
+using PartState = std::variant<md::t04::PartState>;
 
 struct Part {
   BoltzSums p;

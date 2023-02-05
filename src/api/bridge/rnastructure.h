@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "api/bridge/bridge.h"
+#include "api/ctx/ctx.h"
 #include "api/energy/model.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "api/ctx/ctx.h"
 #include "model/constants.h"
 #include "model/secondary.h"
 #include "rnastructure_bridge/include/algorithm.h"
@@ -34,7 +34,7 @@ class RNAstructure : public RnaPackage {
 
   erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  [[nodiscard]] ctx::FoldResult Fold(const Primary& r) const override;
+  [[nodiscard]] FoldResult Fold(const Primary& r) const override;
   [[nodiscard]] int Suboptimal(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
@@ -46,7 +46,7 @@ class RNAstructure : public RnaPackage {
       const Primary& r, int num_samples) const;
 
   // TODO(2): Can be replaced by Fold now?
-  ctx::FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
+  FoldResult FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const;
 
   static RNAstructure FromArgParse(const ArgParse& args);
 

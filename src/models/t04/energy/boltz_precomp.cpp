@@ -10,7 +10,7 @@
 #include "model/base.h"
 #include "model/constants.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bem)
     : r_(std::move(r)), bem_(std::move(bem)) {
@@ -88,4 +88,4 @@ void BoltzPrecomp::PrecomputeData() {
   hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>>(r_, bem(), -1.0);
 }
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

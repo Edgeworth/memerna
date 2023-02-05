@@ -5,22 +5,23 @@
 #include "models/t22/energy/model.h"
 #include "util/error.h"
 
-namespace mrna::md::t22::mfe {
+namespace mrna::md::t22 {
 
-using t04::mfe::DP_P;
-using t04::mfe::DP_U;
-using t04::mfe::DP_U2;
-using t04::mfe::DP_U_GU;
-using t04::mfe::DP_U_RC;
-using t04::mfe::DP_U_WC;
-using t04::mfe::DpArray;
+using t04::DP_P;
+using t04::DP_U;
+using t04::DP_U2;
+using t04::DP_U_GU;
+using t04::DP_U_RC;
+using t04::DP_U_WC;
+using t04::DpArray;
 
 // TODO(0): Implement. Any way to generalise/pull out code?
-void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   const int N = static_cast<int>(r.size());
-  auto dp = DpArray(r.size() + 1, MAX_E);
+  state.t04.dp = DpArray(r.size() + 1, MAX_E);
+  auto& dp = state.t04.dp;
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -191,4 +192,4 @@ void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
   return dp;
 }
 
-}  // namespace mrna::md::t22::mfe
+}  // namespace mrna::md::t22

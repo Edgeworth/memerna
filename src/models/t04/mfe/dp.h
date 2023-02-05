@@ -9,7 +9,7 @@
 #include "model/energy.h"
 #include "util/array.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 // DP arrays
 enum : int8_t {
@@ -178,6 +178,6 @@ struct DpState {
   ExtArray ext;
 };
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_MFE_DP_H_

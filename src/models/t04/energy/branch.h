@@ -15,7 +15,7 @@
 #include "models/common/branch.h"
 #include "models/t04/energy/model.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 // Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
 // This DP needs to be run four times. The series of branches is actually cyclic, and there are two
@@ -261,6 +261,6 @@ Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s
   return total_energy;
 }
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // COMPUTE_ENERGY_T04_BRANCH_H_

@@ -17,23 +17,11 @@
 #include "models/t04/mfe/dp.h"
 #include "util/splaymap.h"
 
-namespace mrna::md::t04::subopt {
+namespace mrna::md::t04 {
 
-using mfe::Index;
-using mfe::IndexCtd;
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
-using mfe::DP_P;
-using mfe::DP_U;
-using mfe::DP_U2;
-using mfe::DP_U_GU;
-using mfe::DP_U_RC;
-using mfe::DP_U_WC;
-using mfe::EXT;
-using mfe::EXT_GU;
-using mfe::EXT_RC;
-using mfe::EXT_WC;
 
 struct Expand {
   Expand() = delete;
@@ -99,6 +87,6 @@ class SuboptFastest {
   [[nodiscard]] std::vector<Expand> GenerateExpansions(const Index& to_expand, Energy delta) const;
 };
 
-}  // namespace mrna::md::t04::subopt
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_

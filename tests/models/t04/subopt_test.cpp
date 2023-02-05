@@ -4,16 +4,16 @@
 #include <string>
 #include <vector>
 
+#include "api/ctx/ctx.h"
+#include "api/ctx/ctx_cfg.h"
 #include "api/energy/model.h"
 #include "api/subopt/subopt_cfg.h"
 #include "common_test.h"
-#include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
 
-namespace mrna::md::t04::subopt {
+namespace mrna::md::t04 {
 
 class SuboptAlgTest : public testing::TestWithParam<ctx::CtxCfg::SuboptAlg> {
  public:
@@ -879,4 +879,4 @@ TEST_P(SuboptAlgTest, T04P2) {
 
 INSTANTIATE_TEST_SUITE_P(SuboptAlgTest, SuboptAlgTest, testing::ValuesIn(ctx::CtxCfg::SUBOPT_ALGS));
 
-}  // namespace mrna::md::t04::subopt
+}  // namespace mrna::md::t04

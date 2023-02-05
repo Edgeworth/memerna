@@ -14,24 +14,25 @@
 #include "model/secondary.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t22::trace {
+namespace mrna::md::t22 {
 
-using t04::mfe::DP_P;
-using t04::mfe::DP_U;
-using t04::mfe::DP_U2;
-using t04::mfe::DP_U_GU;
-using t04::mfe::DP_U_RC;
-using t04::mfe::DP_U_WC;
-using t04::mfe::EXT;
-using t04::mfe::EXT_GU;
-using t04::mfe::EXT_RC;
-using t04::mfe::EXT_WC;
-using t04::mfe::Index;
-using t04::mfe::IndexCtd;
+using t04::DP_P;
+using t04::DP_U;
+using t04::DP_U2;
+using t04::DP_U_GU;
+using t04::DP_U_RC;
+using t04::DP_U_WC;
+using t04::EXT;
+using t04::EXT_GU;
+using t04::EXT_RC;
+using t04::EXT_WC;
+using t04::Index;
+using t04::IndexCtd;
 
 // TODO(0): Implement. Think if can generalise this.
 TraceResult Traceback(const Primary& r, const erg::Model::Ptr& em, const mfe::DpState& state) {
   const int N = static_cast<int>(r.size());
+  const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;
   q.emplace(0, -1, EXT);
@@ -413,4 +414,4 @@ TraceResult Traceback(const Primary& r, const erg::Model::Ptr& em, const mfe::Dp
   return res;
 }
 
-}  // namespace mrna::md::t22::trace
+}  // namespace mrna::md::t22

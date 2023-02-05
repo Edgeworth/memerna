@@ -15,7 +15,7 @@
 #include "models/t04/part/part.h"
 #include "util/util.h"
 
-namespace mrna::md::t04::part {
+namespace mrna::md::t04 {
 
 void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartState& state) {
   static_assert(
@@ -499,4 +499,4 @@ void PartitionSlowest(const Primary& r, const erg::Model::Ptr& initial_em, PartS
   return {std::move(dp), std::move(ext)};
 }
 
-}  // namespace mrna::md::t04::part
+}  // namespace mrna::md::t04

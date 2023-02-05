@@ -11,7 +11,7 @@
 #include "models/t04/energy/boltz_model.h"
 #include "util/array.h"
 
-namespace mrna::md::t04::part {
+namespace mrna::md::t04 {
 
 // DP arrays
 enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RC, PT_SIZE };
@@ -44,6 +44,6 @@ void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartSta
 
 void PartitionExterior(const Primary& r, const erg::Model& em, PartState& state);
 
-}  // namespace mrna::md::t04::part
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_PART_PART_H_

@@ -18,11 +18,11 @@
 #include "models/common/model.h"
 #include "models/t04/energy/model_mixin.h"
 
-namespace mrna::md::t22::erg {
+namespace mrna::md::t22 {
 
 using mrna::erg::EnergyResult;
 
-class Model : public ModelMixin<Model>, public t04::erg::T04ModelMixin {
+class Model : public ModelMixin<Model>, public t04::T04ModelMixin {
  public:
   Energy penultimate_stack[4][4][4][4] = {};
 
@@ -72,6 +72,6 @@ class Model : public ModelMixin<Model>, public t04::erg::T04ModelMixin {
       int stack_en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
-}  // namespace mrna::md::t22::erg
+}  // namespace mrna::md::t22
 
 #endif  // MODELS_T22_ENERGY_MODEL_H_

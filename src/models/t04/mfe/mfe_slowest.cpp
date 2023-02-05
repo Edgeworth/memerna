@@ -10,7 +10,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 #define UPDATE_CACHE(a, value)                                          \
   do {                                                                  \
@@ -25,7 +25,8 @@ void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  auto dp = DpArray(r.size() + 1, MAX_E);
+  state.dp = DpArray(r.size() + 1, MAX_E);
+  auto& dp = state.dp;
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -172,10 +173,8 @@ void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       }
     }
   }
-
-  return dp;
 }
 
 #undef UPDATE_CACHE
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04

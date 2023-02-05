@@ -7,7 +7,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 // Basic MFE folding.
 void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state);
@@ -25,7 +25,8 @@ template <typename T>
   requires std::is_base_of_v<erg::T04ModelMixin, T>
 void MfeExterior(const Primary& r, const T& em, DpState& state) {
   const int N = static_cast<int>(r.size());
-  auto ext = ExtArray(r.size() + 1, MAX_E);
+  state.ext = ExtArray(r.size() + 1, MAX_E);
+  auto& [dp, ext] = state;
 
   // Exterior loop calculation. There can be no paired base on ext[en].
   ext[N][EXT] = ZERO_E;
@@ -78,14 +79,12 @@ void MfeExterior(const Primary& r, const T& em, DpState& state) {
       ext[st][EXT] = std::min(ext[st][EXT], e);
     }
   }
-
-  return ext;
 }
 
-inline ExtArray MfeExterior(const Primary& r, const erg::Model::Ptr& em, const DpArray& dp) {
-  return MfeExterior(r, *em, dp);
+inline void MfeExterior(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+  MfeExterior(r, *em, state);
 }
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04
 
 #endif  // COMPUTE_MFE_T04_MFE_H_

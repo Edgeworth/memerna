@@ -24,7 +24,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& db) {
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
@@ -413,4 +413,4 @@ TEST_P(CtdsTest, BaseBranchBase) {
 INSTANTIATE_TEST_SUITE_P(CtdsTest, CtdsTest,
     testing::Combine(testing::Range(0, NUM_TEST_MODELS), testing::ValuesIn(CTD_TESTS)));
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

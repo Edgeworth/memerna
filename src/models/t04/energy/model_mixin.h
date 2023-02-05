@@ -19,7 +19,7 @@
 #include "model/secondary.h"
 #include "model/structure.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 class T04ModelMixin {
  public:
@@ -166,6 +166,6 @@ class T04ModelMixin {
   void ParseMiscDataFromFile(const std::string& filename);
 };
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // COMPUTE_ENERGY_T04_MODEL_MIXIN_H_

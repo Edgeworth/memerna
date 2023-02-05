@@ -13,7 +13,7 @@
 #include "models/common/model.h"
 #include "models/t04/energy/model_mixin.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 using mrna::erg::EnergyResult;
 
@@ -34,6 +34,6 @@ class Model : public ModelMixin<Model>, public T04ModelMixin {
       bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_ENERGY_MODEL_H_

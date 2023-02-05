@@ -11,7 +11,7 @@
 #include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 void MfeSlow(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
   static_assert(
@@ -19,7 +19,8 @@ void MfeSlow(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
 
   const int N = static_cast<int>(r.size());
   const erg::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1, MAX_E);
+  state.dp = DpArray(r.size() + 1, MAX_E);
+  auto& dp = state.dp;
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -172,8 +173,6 @@ void MfeSlow(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       dp[st][en][DP_U_RC] = rcoax_min;
     }
   }
-
-  return dp;
 }
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04

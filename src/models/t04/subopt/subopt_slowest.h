@@ -15,23 +15,11 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t04::subopt {
+namespace mrna::md::t04 {
 
-using mfe::Index;
-using mfe::IndexCtd;
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
-using mfe::DP_P;
-using mfe::DP_U;
-using mfe::DP_U2;
-using mfe::DP_U_GU;
-using mfe::DP_U_RC;
-using mfe::DP_U_WC;
-using mfe::EXT;
-using mfe::EXT_GU;
-using mfe::EXT_RC;
-using mfe::EXT_WC;
 
 class SuboptSlowest {
  public:
@@ -63,7 +51,7 @@ class SuboptSlowest {
   std::multiset<Node> q_;
 
   void PruneInsert(const Node& node, std::multiset<Node>* prune) {
-    if (node.res.energy <= ext_[0][EXT] + cfg_.delta) {
+    if (node.res.energy <= dp_.ext[0][EXT] + cfg_.delta) {
       if (static_cast<int>(prune->size()) >= cfg_.strucs &&
           (--prune->end())->res.energy > node.res.energy)
         prune->erase(--prune->end());
@@ -117,6 +105,6 @@ class SuboptSlowest {
   }
 };
 
-}  // namespace mrna::md::t04::subopt
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_

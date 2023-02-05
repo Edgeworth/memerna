@@ -19,7 +19,7 @@
 #include "models/common/parse.h"
 #include "models/t04/energy/model_mixin.h"
 
-namespace mrna::md::t22::erg {
+namespace mrna::md::t22 {
 
 Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en, int stack_st,
     int stack_en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
@@ -148,4 +148,4 @@ void Model::LoadRandom(std::mt19937& eng) {
   RANDOMISE_DATA(penultimate_stack);
 }
 
-}  // namespace mrna::md::t22::erg
+}  // namespace mrna::md::t22

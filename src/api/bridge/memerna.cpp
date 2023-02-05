@@ -1,5 +1,5 @@
 // Copyright 2016 E.
-#include "bridge/memerna.h"
+#include "api/bridge/memerna.h"
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@ erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string
   return res;
 }
 
-ctx::FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r); }
+FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r); }
 
 int Memerna::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
   return ctx_.Suboptimal(r, fn, {.delta = delta, .sorted = true});
