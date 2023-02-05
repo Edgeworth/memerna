@@ -10,19 +10,19 @@
 namespace mrna::md::t04 {
 
 // Basic MFE folding.
-void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state);
+void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
 
 // Basic MFE folding.
-void MfeSlow(const Primary& r, const erg::Model::Ptr& em, DpState& state);
+void MfeSlow(const Primary& r, const Model::Ptr& em, DpState& state);
 
 // Sparse folding.
-void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state);
+void MfeFastest(const Primary& r, const Model::Ptr& em, DpState& state);
 
 // Sparse folding with Lyngso's algorithm.
-void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state);
+void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state);
 
 template <typename T>
-  requires std::is_base_of_v<erg::T04ModelMixin, T>
+  requires std::is_base_of_v<T04ModelMixin, T>
 void MfeExterior(const Primary& r, const T& em, DpState& state) {
   const int N = static_cast<int>(r.size());
   state.ext = ExtArray(r.size() + 1, MAX_E);
@@ -81,7 +81,7 @@ void MfeExterior(const Primary& r, const T& em, DpState& state) {
   }
 }
 
-inline void MfeExterior(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+inline void MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
   MfeExterior(r, *em, state);
 }
 

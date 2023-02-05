@@ -15,12 +15,12 @@
 
 namespace mrna::md::t04 {
 
-void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const erg::Precomp pc(Primary(r), em);
+  const Precomp pc(Primary(r), em);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
 
@@ -74,7 +74,7 @@ void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
 
         // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have
         // special energies.
-        static_assert(erg::Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
+        static_assert(Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
             "need initiation cached up to TWOLOOP_MAX_SZ");
         auto base_internal_loop = em->InternalLoopAuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {

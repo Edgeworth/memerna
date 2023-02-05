@@ -38,11 +38,11 @@ struct PartState {
   BoltzExtArray ext;
 };
 
-void PartitionSlowest(const Primary& r, const erg::Model::Ptr& em, PartState& state);
+void PartitionSlowest(const Primary& r, const Model::Ptr& em, PartState& state);
 
-void PartitionFastest(const Primary& r, const erg::BoltzModel::Ptr& bem, PartState& state);
+void PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state);
 
-void PartitionExterior(const Primary& r, const erg::Model& em, PartState& state);
+void PartitionExterior(const Primary& r, const Model& em, PartState& state);
 
 }  // namespace mrna::md::t04
 

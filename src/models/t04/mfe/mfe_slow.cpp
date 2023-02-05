@@ -13,12 +13,12 @@
 
 namespace mrna::md::t04 {
 
-void MfeSlow(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+void MfeSlow(const Primary& r, const Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   const int N = static_cast<int>(r.size());
-  const erg::Precomp pc(Primary(r), em);
+  const Precomp pc(Primary(r), em);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
 

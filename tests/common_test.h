@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef TESTS_COMMON_TEST_H_
-#define TESTS_COMMON_TEST_H_
+#ifndef COMMON_TEST_H_
+#define COMMON_TEST_H_
 
 #include <cstdint>
 #include <string>
@@ -20,15 +20,15 @@ inline constexpr uint32_t T22P2_MODEL_HASH = 0xdbcc795b;
 // with all models in test_ems, since test_ems is initialized at runtime.
 inline constexpr int NUM_TEST_MODELS = 5;
 inline erg::EnergyModelPtr test_ems[NUM_TEST_MODELS];
-inline erg::t04::Model::Ptr test_t04_ems[NUM_TEST_MODELS];
-inline erg::t22::Model::Ptr test_t22_ems[NUM_TEST_MODELS];
+inline md::t04::Model::Ptr test_t04_ems[NUM_TEST_MODELS];
+inline md::t22::Model::Ptr test_t22_ems[NUM_TEST_MODELS];
 
 #if ENERGY_PRECISION == 1
-inline erg::t04::Model::Ptr t04p1;
+inline md::t04::Model::Ptr t04p1;
 #elif ENERGY_PRECISION == 2
-inline erg::t04::Model::Ptr t04p2;
-inline erg::t04::Model::Ptr t12p2;
-inline erg::t22::Model::Ptr t22p2;
+inline md::t04::Model::Ptr t04p2;
+inline md::t04::Model::Ptr t12p2;
+inline md::t22::Model::Ptr t22p2;
 
 // NEWMODEL: Add here.
 
@@ -38,4 +38,4 @@ void InitTest(const std::string& data_dir);
 
 }  // namespace mrna
 
-#endif  // TESTS_COMMON_TEST_H_
+#endif  // COMMON_TEST_H_

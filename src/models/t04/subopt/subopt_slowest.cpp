@@ -17,7 +17,7 @@
 
 namespace mrna::md::t04 {
 
-SuboptSlowest::SuboptSlowest(Primary r, erg::t04::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg)
+SuboptSlowest::SuboptSlowest(Primary r, t04::Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptSlowest::Run(const SuboptCallback& fn) {

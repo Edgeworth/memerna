@@ -6,6 +6,7 @@
 
 #include "api/brute/brute.h"
 #include "api/subopt/subopt_cfg.h"
+#include "models/brute/brute.h"
 
 namespace mrna::md::brute {
 

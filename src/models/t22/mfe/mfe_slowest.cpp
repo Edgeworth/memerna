@@ -1,8 +1,8 @@
 // Copyright 2023 Eliot Courtney.
 #include "model/energy.h"
 #include "model/primary.h"
-#include "models/t04/mfe/dp.h"
 #include "models/t22/energy/model.h"
+#include "models/t22/mfe/mfe.h"
 #include "util/error.h"
 
 namespace mrna::md::t22 {

@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_BRUTE_BRUTE_H_
-#define COMPUTE_BRUTE_BRUTE_H_
+#ifndef MODELS_BRUTE_BRUTE_H_
+#define MODELS_BRUTE_BRUTE_H_
 
 #include <compare>
 #include <cstdint>
@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/brute/brute.h"
 #include "api/brute/brute_cfg.h"
 #include "api/energy/model.h"
 #include "api/part.h"
@@ -20,6 +21,9 @@
 #include "util/splaymap.h"
 
 namespace mrna::md::brute {
+
+using mrna::brute::BruteCfg;
+using mrna::brute::BruteResult;
 
 class Brute {
  public:
@@ -46,11 +50,11 @@ class Brute {
   erg::EnergyModelPtr em_;
   erg::BoltzEnergyModelPtr bem_;
   erg::EnergyModelPtr underlying_;
-  brute::BruteCfg cfg_;
+  BruteCfg cfg_;
 
   Secondary s_;
   Ctds ctd_;
-  brute::BruteResult res_{};
+  BruteResult res_{};
   std::vector<std::pair<int, int>> pairs_;  // Holds all possible base pairs to try.
   std::vector<int> branch_count_;  // Number of sibling branches.
 
@@ -68,4 +72,4 @@ class Brute {
 
 }  // namespace mrna::md::brute
 
-#endif  // COMPUTE_BRUTE_BRUTE_H_
+#endif  // MODELS_BRUTE_BRUTE_H_

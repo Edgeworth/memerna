@@ -5,7 +5,7 @@
 #include "api/part.h"
 #include "models/t04/part/part.h"
 
-void PrintBoltzProbs(const mrna::BoltzProbs& p);
+void PrintBoltzProbs(const mrna::part::BoltzProbs& p);
 
 void PrintPartition(const mrna::part::Part& p);
 

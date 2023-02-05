@@ -20,7 +20,7 @@ namespace mrna::md::t04 {
     }                                                                   \
   } while (0)
 
-void MfeSlowest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
+void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

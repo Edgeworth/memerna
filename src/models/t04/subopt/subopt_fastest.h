@@ -47,7 +47,7 @@ struct Expand {
 
 class SuboptFastest {
  public:
-  SuboptFastest(Primary r, erg::Model::Ptr em, mfe::DpState dp, SuboptCfg cfg);
+  SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -60,10 +60,10 @@ class SuboptFastest {
   };
 
   Primary r_;
-  erg::Model::Ptr em_;
-  erg::Precomp pc_;
+  Model::Ptr em_;
+  Precomp pc_;
   SuboptResult res_;
-  mfe::DpState dp_;
+  DpState dp_;
   SuboptCfg cfg_;
 
   SplayMap<Index, std::vector<Expand>> cache_;
