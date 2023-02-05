@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-#include "compute/boltz_dp.h"
+#include "compute/partition/t04/dp.h"
 #include "model/energy.h"
 
 namespace mrna::part {

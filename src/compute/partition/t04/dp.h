@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_BOLTZ_DP_H_
-#define COMPUTE_BOLTZ_DP_H_
+#ifndef COMPUTE_PARTITION_T04_DP_H_
+#define COMPUTE_PARTITION_T04_DP_H_
 
 #include "model/base.h"
 #include "model/ctd.h"
@@ -36,4 +36,4 @@ using BoltzProbs = Array2D<BoltzEnergy>;
 
 }  // namespace mrna
 
-#endif  // COMPUTE_BOLTZ_DP_H_
+#endif  // COMPUTE_PARTITION_T04_DP_H_

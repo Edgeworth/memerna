@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#include "compute/boltz_dp.h"
 #include "compute/energy/t04/model.h"
+#include "compute/partition/t04/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

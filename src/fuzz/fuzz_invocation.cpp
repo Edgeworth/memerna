@@ -10,12 +10,12 @@
 #include <tuple>
 #include <utility>
 
-#include "compute/boltz_dp.h"
-#include "compute/dp.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/model.h"
 #include "compute/mfe/mfe.h"
+#include "compute/mfe/t04/dp.h"
 #include "compute/partition/partition.h"
+#include "compute/partition/t04/dp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"

@@ -1,5 +1,5 @@
 // Copyright 2023 Eliot Courtney.
-#include "compute/energy/common/t04like/model_mixin.h"
+#include "compute/energy/t04/model_mixin.h"
 
 #include <fmt/core.h>
 
@@ -12,9 +12,9 @@
 #include "compute/energy/common/branch.h"
 #include "compute/energy/common/model.h"
 #include "compute/energy/common/parse.h"
-#include "compute/energy/common/t04like/branch.h"
 #include "compute/energy/energy_cfg.h"
 #include "compute/energy/structure.h"
+#include "compute/energy/t04/branch.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -22,7 +22,7 @@
 #include "util/error.h"
 #include "util/string.h"
 
-namespace mrna::erg {
+namespace mrna::erg::t04 {
 
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
@@ -40,8 +40,7 @@ namespace mrna::erg {
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
 //   model).
-Energy T04ModelMixin::Hairpin(
-    const Primary& r, int st, int en, std::unique_ptr<Structure>* s) const {
+Energy T04ModelMixin::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s) const {
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
@@ -539,4 +538,4 @@ void T04ModelMixin::LoadRandom(std::mt19937& eng) {
   }
 }
 
-}  // namespace mrna::erg
+}  // namespace mrna::erg::t04

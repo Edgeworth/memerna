@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_
-#define COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_
+#ifndef COMPUTE_ENERGY_T04_MODEL_MIXIN_H_
+#define COMPUTE_ENERGY_T04_MODEL_MIXIN_H_
 
 #include <cassert>
 #include <cmath>
@@ -19,7 +19,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 
-namespace mrna::erg {
+namespace mrna::erg::t04 {
 
 class T04ModelMixin {
  public:
@@ -166,6 +166,6 @@ class T04ModelMixin {
   void ParseMiscDataFromFile(const std::string& filename);
 };
 
-}  // namespace mrna::erg
+}  // namespace mrna::erg::t04
 
-#endif  // COMPUTE_ENERGY_COMMON_T04LIKE_MODEL_MIXIN_H_
+#endif  // COMPUTE_ENERGY_T04_MODEL_MIXIN_H_

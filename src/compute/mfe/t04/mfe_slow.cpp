@@ -3,9 +3,9 @@
 #include <compare>
 #include <memory>
 
-#include "compute/dp.h"
 #include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
+#include "compute/mfe/t04/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -35,7 +35,7 @@ DpArray MfeSlow(const Primary& r, const erg::t04::Model::Ptr& em) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-            if (dp[ist][ien][DP_P] < CAP_E)
+            if (dp[ist][ien][DP_P] < CAP_E)  // Skip evaluating TwoLoop if not computed.
               p_min = std::min(p_min, pc.TwoLoop(st, en, ist, ien) + dp[ist][ien][DP_P]);
           }
         }

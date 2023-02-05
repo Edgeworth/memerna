@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "compute/partition/partition.h"
 
-#include "compute/boltz_dp.h"
+#include "compute/partition/t04/dp.h"
 
 namespace mrna::part {
 

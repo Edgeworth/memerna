@@ -12,7 +12,7 @@
 
 namespace mrna::mfe {
 
-class MfeAlgTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
+class T04MfeTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
  public:
   static Energy Mfe(const erg::EnergyModelPtr& em, const std::string& s) {
     return ctx::Ctx(em, ctx::CtxCfg{.dp_alg = GetParam()}).Fold(Primary::FromSeq(s)).mfe.energy;
@@ -21,7 +21,7 @@ class MfeAlgTest : public testing::TestWithParam<ctx::CtxCfg::DpAlg> {
 
 #if ENERGY_PRECISION == 1
 
-TEST_P(MfeAlgTest, T04P1) {
+TEST_P(T04MfeTest, T04P1) {
   // Fast enough for brute force:
   EXPECT_EQ(E(-0.6), Mfe(t04p1, "CCUCCGGG"));
   EXPECT_EQ(E(-0.6), Mfe(t04p1, "CGGAAACGG"));
@@ -64,7 +64,7 @@ TEST_P(MfeAlgTest, T04P1) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST_P(MfeAlgTest, T04P2) {
+TEST_P(T04MfeTest, T04P2) {
   // Fast enough for brute force:
   EXPECT_EQ(E(-0.56), Mfe(t04p2, "CCUCCGGG"));
   EXPECT_EQ(E(-0.56), Mfe(t04p2, "CGGAAACGG"));
@@ -109,6 +109,6 @@ TEST_P(MfeAlgTest, T04P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(FoldAlgTest, MfeAlgTest, testing::ValuesIn(ctx::CtxCfg::DP_ALGS));
+INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T04MfeTest, testing::ValuesIn(ctx::CtxCfg::DP_ALGS));
 
 }  // namespace mrna::mfe

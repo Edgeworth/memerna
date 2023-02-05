@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#include "compute/dp.h"
 #include "compute/energy/t22/model.h"
+#include "compute/mfe/t04/dp.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "util/error.h"
@@ -26,28 +26,8 @@ DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em) {
       if (em->CanPair(r, st, en)) {
         Energy p_min = MAX_E;
 
-        // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
-        // TODO: need to find the best bulge loop to avoid extra factor of N. accumulate min for
-        // bulge.
-        // TODO: paired means start a new stack here. so need to use unpaired, for placing multi
-        // loop??
-        // TODO: unpaired may have a paired at st, en actually, so need to make sure this
-        // doesn't happen.
-
-        {
-          const int max_stack = en - st - HAIRPIN_MIN_SZ - 3;
-          Energy stack_energy = em->penultimate_stack[en1b][enb][stb][st1b];
-          Energy best_bulge = ZERO_E;
-          for (int ist = st + 1; ist < st + max_stack + 2; ++ist) {
-            int ien = ;
-            stack_energy += em->stack[stb][r[ist]][r[ien]][enb];
-            // TODO: i think DP_U here is broken.
-            if (dp[ist][ien][DP_U] < CAP_E)
-              p_min = std::min(p_min,
-                  stack_energy + em->penultimate_stack[r[ist - 1]][r[ist]][r[ien]][r[ien + 1]] +
-                      dp[ist][ien][DP_U]);
-          }
-        }
+        // TODO: use stem length dp. We could also use a DP with state (st, en)
+        // which would work for affine functions of stems.
 
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {

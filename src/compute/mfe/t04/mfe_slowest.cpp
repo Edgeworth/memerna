@@ -3,8 +3,8 @@
 #include <compare>
 #include <memory>
 
-#include "compute/dp.h"
 #include "compute/energy/t04/model.h"
+#include "compute/mfe/t04/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

@@ -1,6 +1,6 @@
 // Copyright 2021 Eliot Courtney.
-#ifndef COMPUTE_DP_H_
-#define COMPUTE_DP_H_
+#ifndef COMPUTE_MFE_T04_DP_H_
+#define COMPUTE_MFE_T04_DP_H_
 
 #include <cassert>
 
@@ -14,7 +14,7 @@ namespace mrna {
 // DP arrays
 enum : int8_t {
   DP_P,  // For the paired array.
-  DP_U,  // For the unpaired array.
+  DP_U,  // For the unpaired array. Contains at least one branch. First and last base may be paired.
   DP_U2,  // Contains at least two branches.
   DP_U_WC,  // Unpaired but must start with a branch not in a CTD that is not GU.
   DP_U_GU,  // Unpaired but must start with a branch not in a CTD that is GU.
@@ -170,4 +170,4 @@ struct IndexCtd {
 
 }  // namespace mrna
 
-#endif  // COMPUTE_DP_H_
+#endif  // COMPUTE_MFE_T04_DP_H_

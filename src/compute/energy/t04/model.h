@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "compute/energy/common/model.h"
-#include "compute/energy/common/t04like/model_mixin.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/structure.h"
+#include "compute/energy/t04/model_mixin.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
