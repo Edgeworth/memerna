@@ -23,6 +23,8 @@ bulge loops: ((((...)).))
 
 check float bits, partition fn
 
+switch to pytorch 2.0 in march
+
 ## Model notes
 
 Turner 1999 model (not implemented)
