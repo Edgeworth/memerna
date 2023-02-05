@@ -103,38 +103,36 @@ endif()
 set(MEMERNA_SOURCE
   src/bridge/bridge.cpp src/bridge/bridge.h
   src/bridge/memerna.cpp src/bridge/memerna.h
-  src/compute/boltz_dp.h
   src/compute/brute/alg.cpp src/compute/brute/alg.h
   src/compute/brute/brute_cfg.cpp src/compute/brute/brute_cfg.h
   src/compute/brute/brute.cpp src/compute/brute/brute.h
-  src/compute/dp.h
   src/compute/energy/common/branch.cpp src/compute/energy/common/branch.h
   src/compute/energy/common/model.h
   src/compute/energy/common/parse.cpp src/compute/energy/common/parse.h
-  src/compute/energy/common/t04like/boltz_mixin.h
-  src/compute/energy/common/t04like/branch.h
-  src/compute/energy/common/t04like/model_mixin.cpp src/compute/energy/common/t04like/model_mixin.h
   src/compute/energy/energy_cfg.cpp src/compute/energy/energy_cfg.h
   src/compute/energy/energy.cpp src/compute/energy/energy.h
   src/compute/energy/model.cpp src/compute/energy/model.h
   src/compute/energy/structure.cpp src/compute/energy/structure.h
+  src/compute/energy/t04/boltz_mixin.h
   src/compute/energy/t04/boltz_model.cpp src/compute/energy/t04/boltz_model.h
   src/compute/energy/t04/boltz_precomp.cpp src/compute/energy/t04/boltz_precomp.h
+  src/compute/energy/t04/branch.h
+  src/compute/energy/t04/model_mixin.cpp src/compute/energy/t04/model_mixin.h
   src/compute/energy/t04/model.cpp src/compute/energy/t04/model.h
   src/compute/energy/t04/precomp.cpp src/compute/energy/t04/precomp.h
   src/compute/energy/t22/boltz_model.cpp src/compute/energy/t22/boltz_model.h
   src/compute/energy/t22/model.cpp src/compute/energy/t22/model.h
   src/compute/mfe/mfe.h
-  src/compute/mfe/t04/mfe_exterior.cpp
+  src/compute/mfe/t04/dp.h
   src/compute/mfe/t04/mfe_fastest.cpp
   src/compute/mfe/t04/mfe_lyngso.cpp
   src/compute/mfe/t04/mfe_slow.cpp
   src/compute/mfe/t04/mfe_slowest.cpp
   src/compute/mfe/t04/mfe.h
-  src/compute/mfe/t22/mfe_exterior.cpp
   src/compute/mfe/t22/mfe_slowest.cpp
   src/compute/mfe/t22/mfe.h
   src/compute/partition/partition.cpp src/compute/partition/partition.h
+  src/compute/partition/t04/dp.h
   src/compute/partition/t04/partition_exterior.cpp
   src/compute/partition/t04/partition_fastest.cpp
   src/compute/partition/t04/partition_slowest.cpp
@@ -170,6 +168,7 @@ set(TEST_SOURCE
   tests/compute/energy/t04_test.cpp
   tests/compute/energy/t22_test.cpp
   tests/compute/mfe/t04_test.cpp
+  tests/compute/mfe/t22_test.cpp
   tests/compute/partition/t04_test.cpp
   tests/compute/subopt/t04_test.cpp
   tests/compute/traceback/t04_test.cpp

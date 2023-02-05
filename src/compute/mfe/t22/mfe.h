@@ -3,8 +3,9 @@
 #ifndef COMPUTE_MFE_T22_MFE_H_
 #define COMPUTE_MFE_T22_MFE_H_
 
-#include "compute/dp.h"
 #include "compute/energy/t22/model.h"
+#include "compute/mfe/t04/dp.h"
+#include "compute/mfe/t04/mfe.h"
 #include "model/constants.h"
 #include "model/primary.h"
 
@@ -12,7 +13,9 @@ namespace mrna::mfe::t22 {
 
 DpArray MfeSlowest(const Primary& r, const erg::t22::Model::Ptr& em);
 
-ExtArray MfeExterior(const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp);
+inline ExtArray MfeExterior(const Primary& r, const erg::t22::Model::Ptr& em, const DpArray& dp) {
+  return t04::MfeExterior(r, *em, dp);
+}
 
 }  // namespace mrna::mfe::t22
 

@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "compute/boltz_dp.h"
 #include "compute/brute/brute_cfg.h"
 #include "compute/energy/model.h"
 #include "compute/partition/partition.h"
+#include "compute/partition/t04/dp.h"
 #include "compute/subopt/subopt.h"
 #include "model/ctd.h"
 #include "model/energy.h"

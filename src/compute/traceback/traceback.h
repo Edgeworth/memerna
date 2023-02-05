@@ -4,8 +4,8 @@
 
 #include <utility>
 
-#include "compute/dp.h"
 #include "compute/energy/model.h"
+#include "compute/mfe/t04/dp.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"

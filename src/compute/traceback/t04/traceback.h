@@ -2,8 +2,8 @@
 #ifndef COMPUTE_TRACEBACK_T04_TRACEBACK_H_
 #define COMPUTE_TRACEBACK_T04_TRACEBACK_H_
 
-#include "compute/dp.h"
 #include "compute/energy/t04/model.h"
+#include "compute/mfe/t04/dp.h"
 #include "compute/traceback/traceback.h"
 #include "model/primary.h"
 

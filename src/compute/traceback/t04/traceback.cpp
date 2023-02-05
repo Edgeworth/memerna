@@ -6,7 +6,7 @@
 #include <memory>
 #include <stack>
 
-#include "compute/dp.h"
+#include "compute/mfe/t04/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"

@@ -5,9 +5,9 @@
 #include <cassert>
 #include <tuple>
 
-#include "compute/boltz_dp.h"
 #include "compute/energy/energy.h"
 #include "compute/energy/t04/boltz_model.h"
+#include "compute/partition/t04/dp.h"
 #include "model/constants.h"
 #include "model/primary.h"
 

@@ -6,8 +6,8 @@
 #include <set>
 #include <vector>
 
-#include "compute/dp.h"
 #include "compute/energy/t04/model.h"
+#include "compute/mfe/t04/dp.h"
 #include "compute/subopt/subopt.h"
 #include "compute/subopt/subopt_cfg.h"
 #include "compute/traceback/traceback.h"

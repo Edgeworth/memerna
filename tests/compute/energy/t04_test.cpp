@@ -12,8 +12,8 @@
 
 #include "common_test.h"
 #include "compute/energy/common/branch.h"
-#include "compute/energy/common/t04like/branch.h"
 #include "compute/energy/energy.h"
+#include "compute/energy/t04/branch.h"
 #include "compute/energy/t04/model.h"
 #include "compute/energy/t04/precomp.h"
 #include "gtest/gtest.h"
@@ -30,7 +30,7 @@ Energy GetEnergy(const t04::Model::Ptr& em, const std::string& r, const std::str
   return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
 }
 
-class T04LikeModelTest : public testing::TestWithParam<int> {
+class T04ModelTest : public testing::TestWithParam<int> {
  public:
   std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
   std::tuple<Primary, Secondary> kNNDBHairpin2 = ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");
@@ -60,12 +60,12 @@ class T04LikeModelTest : public testing::TestWithParam<int> {
   }
 };
 
-TEST_P(T04LikeModelTest, MultiloopEnergy) {
+TEST_P(T04ModelTest, MultiloopEnergy) {
   auto em = test_t04_ems[GetParam()];
   EXPECT_EQ(em->multiloop_hack_a + 4 * em->multiloop_hack_b, em->MultiloopInitiation(4));
 }
 
-TEST_P(T04LikeModelTest, NNDBHairpinLoopExamples) {
+TEST_P(T04ModelTest, NNDBHairpinLoopExamples) {
   auto em = test_t04_ems[GetParam()];
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] + em->au_penalty +
@@ -123,7 +123,7 @@ TEST_P(T04LikeModelTest, NNDBHairpinLoopExamples) {
   }
 }
 
-TEST_P(T04LikeModelTest, NNDBBulgeLoopExamples) {
+TEST_P(T04ModelTest, NNDBBulgeLoopExamples) {
   auto em = test_t04_ems[GetParam()];
 
   EXPECT_EQ(em->stack[G][C][G][C] + em->stack[C][C][G][G] + em->BulgeInitiation(1) +
@@ -136,7 +136,7 @@ TEST_P(T04LikeModelTest, NNDBBulgeLoopExamples) {
       GetEnergy(kNNDBBulge2));
 }
 
-TEST_P(T04LikeModelTest, NNDBInternalLoopExamples) {
+TEST_P(T04ModelTest, NNDBInternalLoopExamples) {
   auto em = test_t04_ems[GetParam()];
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(5) +
@@ -153,7 +153,7 @@ TEST_P(T04LikeModelTest, NNDBInternalLoopExamples) {
       GetEnergy(kNNDBInternal1x5));
 }
 
-TEST_P(T04LikeModelTest, BaseCases) {
+TEST_P(T04ModelTest, BaseCases) {
   auto em = test_t04_ems[GetParam()];
 
   EXPECT_EQ(em->au_penalty + em->stack[G][A][U][C] + em->hairpin_init[3],
@@ -175,7 +175,7 @@ TEST_P(T04LikeModelTest, BaseCases) {
       GetEnergy(kInternal1));
 }
 
-INSTANTIATE_TEST_SUITE_P(EnergyModelTests, T04LikeModelTest, testing::Range(0, NUM_TEST_MODELS));
+INSTANTIATE_TEST_SUITE_P(EnergyModelTests, T04ModelTest, testing::Range(0, NUM_TEST_MODELS));
 
 struct CtdTest {
   Primary r;
