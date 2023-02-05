@@ -1,12 +1,12 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/bridge.h"
 
-#include "bridge/memerna.h"
+#include "api/bridge/memerna.h"
 #include "api/ctx/ctx_cfg.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE
-#include "bridge/rnastructure.h"
+#include "api/bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
 namespace mrna::bridge {

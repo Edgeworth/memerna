@@ -13,7 +13,7 @@
 #include "models/t04/mfe/dp.h"
 #include "util/array.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
   static_assert(
@@ -21,7 +21,8 @@ void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
 
   const int N = static_cast<int>(r.size());
   const erg::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1, MAX_E);
+  state.dp = DpArray(r.size() + 1, MAX_E);
+  auto& dp = state.dp;
 
   // See ComputeTables2 for comments - it is mostly the same.
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
@@ -329,8 +330,6 @@ void MfeLyngso(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
       }
     }
   }
-
-  return dp;
 }
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04

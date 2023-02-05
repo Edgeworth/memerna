@@ -4,8 +4,8 @@
 #include <memory>
 #include <unordered_map>
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 BoltzModel::BoltzModel(const Model::Ptr& em) : T04BoltzMixin(*em) {}
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

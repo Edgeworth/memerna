@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "api/bridge/bridge.h"
+#include "api/ctx/ctx.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "api/ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -31,7 +31,7 @@ class Memerna : public RnaPackage {
 
   erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  [[nodiscard]] ctx::FoldResult Fold(const Primary& r) const override;
+  [[nodiscard]] FoldResult Fold(const Primary& r) const override;
   [[nodiscard]] int Suboptimal(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(

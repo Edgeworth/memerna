@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 
+#include "api/ctx/ctx.h"
 #include "api/energy/model.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/ctx/ctx.h"
 #include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"
 
@@ -17,7 +17,7 @@
 #include <memory>
 #include <utility>
 
-#include "bridge/rnastructure.h"
+#include "api/bridge/rnastructure.h"
 #endif  // USE_RNASTRUCTURE
 
 namespace mrna::fuzz {
@@ -39,7 +39,7 @@ class FuzzInvocation {
   erg::EnergyModelPtr em_;
   FuzzCfg cfg_;
 
-  ctx::FoldResult fold_{};
+  FoldResult fold_{};
   std::vector<subopt::SuboptResult> subopt_{};
   part::PartResult part_{};
   Error errors_;

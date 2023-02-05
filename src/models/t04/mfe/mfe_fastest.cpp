@@ -12,7 +12,7 @@
 #include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 
-namespace mrna::md::t04::mfe {
+namespace mrna::md::t04 {
 
 void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
   static_assert(
@@ -20,7 +20,8 @@ void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
 
   const int N = static_cast<int>(r.size());
   const erg::Precomp pc(Primary(r), em);
-  auto dp = DpArray(r.size() + 1, MAX_E);
+  state.dp = DpArray(r.size() + 1, MAX_E);
+  auto& dp = state.dp;
 
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
   for (auto& i : p_cand_en) i.resize(r.size());
@@ -276,8 +277,6 @@ void MfeFastest(const Primary& r, const erg::Model::Ptr& em, DpState& state) {
         p_cand_en[CAND_EN_P_RFC][en].push_back({prfcoax_base, st});
     }
   }
-
-  return dp;
 }
 
-}  // namespace mrna::md::t04::mfe
+}  // namespace mrna::md::t04

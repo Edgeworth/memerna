@@ -11,7 +11,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 struct BoltzPrecomp {
   BoltzEnergy augubranch[4][4]{};
@@ -32,6 +32,6 @@ struct BoltzPrecomp {
   void PrecomputeData();
 };
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // COMPUTE_ENERGY_T04_BOLTZ_PRECOMP_H_

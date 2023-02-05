@@ -6,7 +6,7 @@
 #include "models/t04/energy/boltz_mixin.h"
 #include "models/t04/energy/model.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 class BoltzModel : public ModelMixin<BoltzModel>, public T04BoltzMixin<Model> {
  public:
@@ -22,6 +22,6 @@ class BoltzModel : public ModelMixin<BoltzModel>, public T04BoltzMixin<Model> {
   explicit BoltzModel(const Model::Ptr& em);
 };
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_ENERGY_BOLTZ_MODEL_H_

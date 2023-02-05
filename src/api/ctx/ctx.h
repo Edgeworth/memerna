@@ -1,17 +1,17 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef CTX_CTX_H_
-#define CTX_CTX_H_
+#ifndef API_CTX_CTX_H_
+#define API_CTX_CTX_H_
 
 #include <utility>
 #include <vector>
 
+#include "api/ctx/ctx_cfg.h"
 #include "api/energy/model.h"
 #include "api/mfe.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
-#include "api/ctx/ctx_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -55,12 +55,11 @@ class Ctx {
   erg::EnergyModelPtr em_;
   CtxCfg cfg_;
 
-  [[nodiscard]] DpArray ComputeMfe(const Primary& r) const;
-  [[nodiscard]] ExtArray ComputeMfeExterior(const Primary& r, const DpArray& dp) const;
-  [[nodiscard]] trace::TraceResult ComputeTraceback(
-      const Primary& r, const DpArray& dp, const ExtArray& ext) const;
+  void ComputeMfe(const Primary& r, mfe::DpState& state) const;
+  void ComputeMfeExterior(const Primary& r, mfe::DpState& state) const;
+  [[nodiscard]] trace::TraceResult ComputeTraceback(const Primary& r, const mfe::DpState& dp) const;
 };
 
 }  // namespace mrna
 
-#endif  // CTX_CTX_H_
+#endif  // API_CTX_CTX_H_

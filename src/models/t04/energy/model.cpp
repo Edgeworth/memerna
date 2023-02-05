@@ -14,7 +14,7 @@
 #include "model/primary.h"
 #include "model/structure.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, int en,
     bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
@@ -99,4 +99,4 @@ EnergyResult Model::TotalEnergy(
   return res;
 }
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04

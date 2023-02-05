@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "api/ctx/ctx.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
-#include "api/ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -37,7 +37,7 @@ class RnaPackage {
 
   virtual erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
-  [[nodiscard]] virtual ctx::FoldResult Fold(const Primary& r) const = 0;
+  [[nodiscard]] virtual FoldResult Fold(const Primary& r) const = 0;
   [[nodiscard]] virtual int Suboptimal(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const = 0;
   [[nodiscard]] virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(

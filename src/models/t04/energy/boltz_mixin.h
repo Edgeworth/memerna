@@ -15,7 +15,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/model_mixin.h"
 
-namespace mrna::md::t04::erg {
+namespace mrna::md::t04 {
 
 template <typename T>
   requires std::is_base_of_v<T04ModelMixin, T>
@@ -135,6 +135,6 @@ class T04BoltzMixin {
   T em_;
 };
 
-}  // namespace mrna::md::t04::erg
+}  // namespace mrna::md::t04
 
 #endif  // MODELS_T04_ENERGY_BOLTZ_MIXIN_H_

@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "bridge/rnastructure.h"
+#include "api/bridge/rnastructure.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -103,12 +103,12 @@ erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, std::s
   return {ToEnergy(structure->GetEnergy(1)), Ctds(), nullptr};
 }
 
-ctx::FoldResult RNAstructure::Fold(const Primary& r) const {
+FoldResult RNAstructure::Fold(const Primary& r) const {
   dp_state_t state;
   return FoldAndDpTable(r, &state);
 }
 
-ctx::FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
+FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) const {
   const auto structure = LoadStructure(r);
   constexpr auto num_tracebacks = 1;  // Number of structures to return. We just want one.
   constexpr auto percent_sort = 0;

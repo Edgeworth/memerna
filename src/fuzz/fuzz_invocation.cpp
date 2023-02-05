@@ -10,14 +10,14 @@
 #include <tuple>
 #include <utility>
 
+#include "api/ctx/ctx.h"
+#include "api/ctx/ctx_cfg.h"
 #include "api/energy/model.h"
 #include "api/mfe.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
-#include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -58,7 +58,7 @@ Error FuzzInvocation::CheckMfe() {
   Error errors;
 
   // Run memerna folds.
-  std::vector<ctx::FoldResult> mrna_res;
+  std::vector<FoldResult> mrna_res;
   std::vector<Energy> mrna_ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
   for (auto dp_alg : ctx::CtxCfg::DP_ALGS) {

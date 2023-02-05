@@ -6,7 +6,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/part/part.h"
 
-namespace mrna::md::t04::part {
+namespace mrna::md::t04 {
 
 void PartitionExterior(
     const Primary& r, const erg::Model& em, const BoltzDpArray& dp, PartState& state) {
@@ -124,4 +124,4 @@ void PartitionExterior(
   return ext;
 }
 
-}  // namespace mrna::md::t04::part
+}  // namespace mrna::md::t04
