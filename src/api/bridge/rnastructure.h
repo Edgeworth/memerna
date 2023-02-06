@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef BRIDGE_RNASTRUCTURE_H_
-#define BRIDGE_RNASTRUCTURE_H_
+#ifndef API_BRIDGE_RNASTRUCTURE_H_
+#define API_BRIDGE_RNASTRUCTURE_H_
 
 #include <memory>
 #include <string>
@@ -69,4 +69,4 @@ class RNAstructure : public RnaPackage {
 
 }  // namespace mrna::bridge
 
-#endif  // BRIDGE_RNASTRUCTURE_H_
+#endif  // API_BRIDGE_RNASTRUCTURE_H_

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "api/bridge/bridge.h"
+#include "api/ctx/ctx.h"
 #include "api/energy/energy_cfg.h"
 #include "api/mfe.h"
 #include "api/options.h"
@@ -15,7 +16,6 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
-#include "api/ctx/ctx.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -96,9 +96,9 @@ int main(int argc, char* argv[]) {
       } else if (part) {
         auto res = package->Partition(r);
         fmt::print("q: {}\np:\n", res.part.q);
-        PrintPartition(res.part);
+        PrintPartition(res.part.p);
         fmt::print("\nprobabilities:\n");
-        PrintBoltzProbs(res.prob);
+        PrintBoltzProbs(res.part.prob);
       }
     }
   }

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto res = ctx.Partition(r);
   fmt::print("q: {}\np:\n", res.part.q);
-  PrintPartition(res.part);
+  PrintPartition(res.part.prob);
   fmt::print("\nprobabilities:\n");
-  PrintBoltzProbs(res.prob);
+  PrintBoltzProbs(res.part.prob);
 }

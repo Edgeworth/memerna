@@ -105,8 +105,6 @@ set(MEMERNA_SOURCE
   src/api/bridge/bridge.h
   src/api/bridge/memerna.cpp
   src/api/bridge/memerna.h
-  src/api/bridge/rnastructure.cpp
-  src/api/bridge/rnastructure.h
   src/api/brute/brute_cfg.cpp
   src/api/brute/brute_cfg.h
   src/api/ctx/ctx_cfg.cpp
@@ -227,7 +225,6 @@ set(TEST_SOURCE
   tests/models/t04/trace_test.cpp
   tests/models/t22/energy_test.cpp
   tests/models/t22/mfe_test.cpp
-  tests/programs/splay_explorer.cpp
   tests/util/splaymap_test.cpp
 )
 set(BENCHMARK_SOURCE
