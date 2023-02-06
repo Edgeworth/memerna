@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_SUBOPT_SUBOPT_H_
-#define COMPUTE_SUBOPT_SUBOPT_H_
+#ifndef API_SUBOPT_SUBOPT_H_
+#define API_SUBOPT_SUBOPT_H_
 
 #include <functional>
 #include <utility>
@@ -32,4 +32,4 @@ using SuboptCallback = std::function<void(const SuboptResult&)>;
 
 }  // namespace mrna::subopt
 
-#endif  // COMPUTE_SUBOPT_SUBOPT_H_
+#endif  // API_SUBOPT_SUBOPT_H_

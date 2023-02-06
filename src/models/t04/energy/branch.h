@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T04_BRANCH_H_
-#define COMPUTE_ENERGY_T04_BRANCH_H_
+#ifndef MODELS_T04_ENERGY_BRANCH_H_
+#define MODELS_T04_ENERGY_BRANCH_H_
 
 #include <algorithm>
 #include <deque>
@@ -263,4 +263,4 @@ Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s
 
 }  // namespace mrna::md::t04
 
-#endif  // COMPUTE_ENERGY_T04_BRANCH_H_
+#endif  // MODELS_T04_ENERGY_BRANCH_H_

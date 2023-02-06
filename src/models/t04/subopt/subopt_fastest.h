@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <compare>
+#include <functional>
 #include <utility>
 #include <vector>
 

@@ -1,13 +1,12 @@
 // Copyright 2016 Eliot Courtney.
 #include <algorithm>
 #include <memory>
-#include <tuple>
 #include <utility>
 
-#include "api/part.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
+#include "model/part.h"
 #include "model/primary.h"
 #include "models/t04/energy/boltz_model.h"
 #include "models/t04/energy/boltz_precomp.h"

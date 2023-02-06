@@ -12,6 +12,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "models/t04/mfe/dp.h"
 #include "models/t22/mfe/mfe.h"
 
 namespace mrna::md::t22 {

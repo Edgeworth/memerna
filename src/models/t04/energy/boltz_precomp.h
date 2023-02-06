@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T04_BOLTZ_PRECOMP_H_
-#define COMPUTE_ENERGY_T04_BOLTZ_PRECOMP_H_
+#ifndef MODELS_T04_ENERGY_BOLTZ_PRECOMP_H_
+#define MODELS_T04_ENERGY_BOLTZ_PRECOMP_H_
 
 #include <memory>
 #include <vector>
@@ -34,4 +34,4 @@ struct BoltzPrecomp {
 
 }  // namespace mrna::md::t04
 
-#endif  // COMPUTE_ENERGY_T04_BOLTZ_PRECOMP_H_
+#endif  // MODELS_T04_ENERGY_BOLTZ_PRECOMP_H_

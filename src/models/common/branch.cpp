@@ -1,9 +1,13 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/common/branch.h"
 
+#include <algorithm>
 #include <cassert>
 #include <stack>
+#include <utility>
 #include <vector>
+
+#include "model/base.h"
 
 namespace mrna::md {
 

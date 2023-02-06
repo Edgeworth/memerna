@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/model.h"
 #include "api/options.h"

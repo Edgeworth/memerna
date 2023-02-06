@@ -1,9 +1,11 @@
 // Copyright 2021 Eliot Courtney.
 #include "models/brute/brute.h"
 
+#include <algorithm>
 #include <iterator>
 #include <utility>
 
+#include "api/energy/energy.h"
 #include "api/energy/model.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"

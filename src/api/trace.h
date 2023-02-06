@@ -1,6 +1,6 @@
 // Copyright 2021 Eliot Courtney.
-#ifndef MODELS_TRACE_TRACE_H_
-#define MODELS_TRACE_TRACE_H_
+#ifndef API_TRACE_H_
+#define API_TRACE_H_
 
 #include <utility>
 
@@ -32,4 +32,4 @@ struct TraceResult {
 
 }  // namespace mrna::trace
 
-#endif  // MODELS_TRACE_TRACE_H_
+#endif  // API_TRACE_H_

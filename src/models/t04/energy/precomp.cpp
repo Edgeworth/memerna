@@ -10,6 +10,7 @@
 
 #include "model/constants.h"
 #include "model/energy.h"
+#include "models/common/branch.h"
 
 namespace mrna::md::t04 {
 

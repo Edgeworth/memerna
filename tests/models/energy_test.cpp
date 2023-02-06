@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "models/common/branch.h"

@@ -2,8 +2,7 @@
 #ifndef PROGRAMS_PRINT_H_
 #define PROGRAMS_PRINT_H_
 
-#include "api/part.h"
-#include "models/t04/part/part.h"
+#include "model/part.h"
 
 void PrintBoltzProbs(const mrna::BoltzProbs& p);
 

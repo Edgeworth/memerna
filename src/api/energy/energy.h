@@ -1,16 +1,15 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_ENERGY_H_
-#define COMPUTE_ENERGY_ENERGY_H_
+#ifndef API_ENERGY_ENERGY_H_
+#define API_ENERGY_ENERGY_H_
 
 #include <memory>
 
 #include "model/ctd.h"
 #include "model/energy.h"
-#include "model/primary.h"
 
 namespace mrna {
 class Structure;
-}
+}  // namespace mrna
 
 namespace mrna::erg {
 
@@ -31,4 +30,4 @@ struct EnergyResult {
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_ENERGY_H_
+#endif  // API_ENERGY_ENERGY_H_

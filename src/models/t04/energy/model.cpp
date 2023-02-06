@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <memory>

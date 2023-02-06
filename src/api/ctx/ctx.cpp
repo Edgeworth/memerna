@@ -1,9 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/ctx/ctx.h"
 
+#include <algorithm>
 #include <cassert>
-#include <tuple>
-#include <type_traits>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -25,7 +24,6 @@
 #include "models/t22/energy/model.h"
 #include "models/t22/mfe/mfe.h"
 #include "models/t22/trace/trace.h"
-#include "util/array.h"
 #include "util/error.h"
 #include "util/util.h"
 
@@ -149,7 +147,7 @@ int Ctx::Suboptimal(
   ComputeMfeExterior(r, dp);
 
   auto vis = overloaded{
-      [&, dp = std::move(dp)](const md::t04::Model::Ptr& em) mutable -> int {
+      [&](const md::t04::Model::Ptr& em) mutable -> int {
         auto state = std::get<md::t04::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::SLOWEST:
@@ -160,7 +158,7 @@ int Ctx::Suboptimal(
         }
       },
       // TODO(2): Implement suboptimal for t22.
-      [&, dp = std::move(dp)](const md::t22::Model::Ptr&) mutable -> int { bug(); },
+      [&](const md::t22::Model::Ptr&) mutable -> int { bug(); },
   };
   return std::visit(vis, em_);
 }

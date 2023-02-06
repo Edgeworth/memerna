@@ -13,12 +13,12 @@ using BoltzProbs = Array2D<BoltzEnergy>;
 
 struct Part {
  public:
-  constexpr Part() = default;
-  constexpr Part(BoltzSums p, BoltzEnergy q, BoltzProbs prob)
+  Part() = default;
+  Part(BoltzSums p, BoltzEnergy q, BoltzProbs prob)
       : p(std::move(p)), q(q), prob(std::move(prob)) {}
-  constexpr Part(BoltzSums p, BoltzEnergy q) : p(std::move(p)), q(q), prob(Prob(p, q)) {}
+  Part(BoltzSums p_, BoltzEnergy q_) : p(std::move(p_)), q(q_), prob(Prob(p, q)) {}
 
-  [[nodiscard]] static constexpr BoltzProbs Prob(const BoltzSums& p, const BoltzEnergy& q) {
+  [[nodiscard]] static BoltzProbs Prob(const BoltzSums& p, const BoltzEnergy& q) {
     const int N = static_cast<int>(p.size());
     BoltzProbs prob(N, 0);
     for (int i = 0; i < N; ++i)
@@ -26,9 +26,7 @@ struct Part {
     return prob;
   }
 
-  constexpr void RecomputeProb() {
-    prob = Prob(p, q);
-  }
+  void RecomputeProb() { prob = Prob(p, q); }
 
   BoltzSums p;
   BoltzEnergy q{};

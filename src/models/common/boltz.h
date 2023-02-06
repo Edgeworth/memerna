@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_BOLTZ_H_
-#define COMPUTE_ENERGY_COMMON_BOLTZ_H_
+#ifndef MODELS_COMMON_BOLTZ_H_
+#define MODELS_COMMON_BOLTZ_H_
 
 #include "model/energy.h"
 #include "util/util.h"
@@ -20,4 +20,4 @@ inline void FillBoltzArray(BoltzEnergy* output, const Energy* input, int element
 
 }  // namespace mrna::md
 
-#endif  // COMPUTE_ENERGY_COMMON_BOLTZ_H_
+#endif  // MODELS_COMMON_BOLTZ_H_

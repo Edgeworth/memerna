@@ -1,6 +1,6 @@
 // Copyright 2021 Eliot Courtney.
-#ifndef COMPUTE_TRACEBACK_T04_TRACEBACK_H_
-#define COMPUTE_TRACEBACK_T04_TRACEBACK_H_
+#ifndef MODELS_T04_TRACE_TRACE_H_
+#define MODELS_T04_TRACE_TRACE_H_
 
 #include "api/trace.h"
 #include "model/primary.h"
@@ -15,4 +15,4 @@ TraceResult Traceback(const Primary& r, const t04::Model::Ptr& em, const DpState
 
 }  // namespace mrna::md::t04
 
-#endif  // COMPUTE_TRACEBACK_T04_TRACEBACK_H_
+#endif  // MODELS_T04_TRACE_TRACE_H_

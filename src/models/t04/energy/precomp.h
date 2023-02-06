@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_T04_PRECOMP_H_
-#define COMPUTE_ENERGY_T04_PRECOMP_H_
+#ifndef MODELS_T04_ENERGY_PRECOMP_H_
+#define MODELS_T04_ENERGY_PRECOMP_H_
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -75,4 +75,4 @@ class Precomp {
 
 }  // namespace mrna::md::t04
 
-#endif  // COMPUTE_ENERGY_T04_PRECOMP_H_
+#endif  // MODELS_T04_ENERGY_PRECOMP_H_

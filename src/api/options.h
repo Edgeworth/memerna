@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef OPTIONS_H_
-#define OPTIONS_H_
+#ifndef API_OPTIONS_H_
+#define API_OPTIONS_H_
 
 #include "util/argparse.h"
 
@@ -19,4 +19,4 @@ inline const Opt OPT_PART = Opt(Opt::FLAG).LongName("part").ShortName("p").Help(
 
 }  // namespace mrna
 
-#endif  // OPTIONS_H_
+#endif  // API_OPTIONS_H_

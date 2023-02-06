@@ -39,12 +39,12 @@ class Model : public ModelMixin<Model>, public t04::T04ModelMixin {
     assert(ist > 0 && ien < static_cast<int>(r.size()) - 1);
     assert(ist > ost && ien < oen);
     // Check for single unpaired bases to treat as continuous.
-    int ost_next = s[ost + 1] == -1 ? ost + 2 : ost + 1;
-    int oen_prev = s[oen - 1] == -1 ? oen - 2 : oen - 1;
+    const int ost_next = s[ost + 1] == -1 ? ost + 2 : ost + 1;
+    const int oen_prev = s[oen - 1] == -1 ? oen - 2 : oen - 1;
     assert(ost_next - ost + oen - oen_prev < 4);
 
-    int ist_prev = s[ist - 1] == -1 ? ist - 2 : ist - 1;
-    int ien_next = s[ien + 1] == -1 ? ien + 2 : ien + 1;
+    const int ist_prev = s[ist - 1] == -1 ? ist - 2 : ist - 1;
+    const int ien_next = s[ien + 1] == -1 ? ien + 2 : ien + 1;
     assert(ist - ist_prev + ien_next - ien < 4);
 
     auto inner = penultimate_stack[r[ist_prev]][r[ist]][r[ien]][r[ien_next]];

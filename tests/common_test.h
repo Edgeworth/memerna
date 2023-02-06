@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMMON_TEST_H_
-#define COMMON_TEST_H_
+#ifndef TESTS_COMMON_TEST_H_
+#define TESTS_COMMON_TEST_H_
 
 #include <cstdint>
 #include <string>
@@ -38,4 +38,4 @@ void InitTest(const std::string& data_dir);
 
 }  // namespace mrna
 
-#endif  // COMMON_TEST_H_
+#endif  // TESTS_COMMON_TEST_H_

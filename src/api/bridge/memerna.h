@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef BRIDGE_MEMERNA_H_
-#define BRIDGE_MEMERNA_H_
+#ifndef API_BRIDGE_MEMERNA_H_
+#define API_BRIDGE_MEMERNA_H_
 
 #include <string>
 #include <utility>
@@ -8,6 +8,7 @@
 
 #include "api/bridge/bridge.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy.h"
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "model/energy.h"
@@ -46,4 +47,4 @@ class Memerna : public RnaPackage {
 
 }  // namespace mrna::bridge
 
-#endif  // BRIDGE_MEMERNA_H_
+#endif  // API_BRIDGE_MEMERNA_H_

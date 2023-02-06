@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 
+#include <cstdio>
 #include <cstdlib>
 
 #include "util/string.h"

@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_ENERGY_CFG_H_
-#define COMPUTE_ENERGY_ENERGY_CFG_H_
+#ifndef API_ENERGY_ENERGY_CFG_H_
+#define API_ENERGY_ENERGY_CFG_H_
 
 #include <iosfwd>
 #include <string>
@@ -72,4 +72,4 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
 
 }  // namespace mrna::erg
 
-#endif  // COMPUTE_ENERGY_ENERGY_CFG_H_
+#endif  // API_ENERGY_ENERGY_CFG_H_

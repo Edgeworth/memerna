@@ -2,10 +2,8 @@
 #ifndef API_PART_H_
 #define API_PART_H_
 
-#include <cassert>
 #include <variant>
 
-#include "model/energy.h"
 #include "model/part.h"
 #include "models/t04/part/part.h"
 

@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_ENERGY_COMMON_PARSE_H_
-#define COMPUTE_ENERGY_COMMON_PARSE_H_
+#ifndef MODELS_COMMON_PARSE_H_
+#define MODELS_COMMON_PARSE_H_
 
 #include <cstddef>
 #include <fstream>
@@ -41,4 +41,4 @@ void ParseVecFromFile(const std::string& filename, Energy (&output)[N]) {
 
 }  // namespace mrna::md
 
-#endif  // COMPUTE_ENERGY_COMMON_PARSE_H_
+#endif  // MODELS_COMMON_PARSE_H_

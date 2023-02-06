@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_BRUTE_BRUTE_CFG_H_
-#define COMPUTE_BRUTE_BRUTE_CFG_H_
+#ifndef API_BRUTE_BRUTE_CFG_H_
+#define API_BRUTE_BRUTE_CFG_H_
 
 #include "api/subopt/subopt_cfg.h"
 #include "util/argparse.h"
@@ -21,4 +21,4 @@ struct BruteCfg {
 
 }  // namespace mrna::brute
 
-#endif  // COMPUTE_BRUTE_BRUTE_CFG_H_
+#endif  // API_BRUTE_BRUTE_CFG_H_
