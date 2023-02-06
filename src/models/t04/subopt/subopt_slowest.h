@@ -3,6 +3,7 @@
 #define MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
 
 #include <compare>
+#include <functional>
 #include <set>
 #include <vector>
 

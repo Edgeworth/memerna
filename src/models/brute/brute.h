@@ -10,13 +10,12 @@
 
 #include "api/brute/brute_cfg.h"
 #include "api/energy/model.h"
-#include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "model/ctd.h"
 #include "model/energy.h"
+#include "model/part.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "models/t04/part/part.h"
 #include "util/splaymap.h"
 
 namespace mrna::md::brute {

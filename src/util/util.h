@@ -2,6 +2,7 @@
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 
+#include <cassert>
 #include <type_traits>
 
 namespace mrna {

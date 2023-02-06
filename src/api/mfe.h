@@ -2,9 +2,9 @@
 #ifndef API_MFE_H_
 #define API_MFE_H_
 
-#include "api/energy/model.h"
-#include "model/constants.h"
-#include "model/primary.h"
+#include <variant>
+
+#include "model/energy.h"
 #include "models/t04/mfe/dp.h"
 #include "models/t22/mfe/mfe.h"
 

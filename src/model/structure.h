@@ -4,6 +4,7 @@
 
 #include <fmt/core.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -11,7 +12,6 @@
 
 #include "model/ctd.h"
 #include "model/energy.h"
-#include "models/common/branch.h"
 #include "util/error.h"
 
 namespace mrna {

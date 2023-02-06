@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <compare>
+#include <cstdlib>
 #include <istream>
 #include <optional>
 #include <utility>
@@ -349,8 +350,7 @@ Energy T04ModelMixin::MultiloopEnergy(const Primary& r, const Secondary& s, int 
   if (struc) {
     struc->AddNote("{}e - ctd", ctd_energy);
     if (!exterior_loop) {
-      struc->AddNote(
-          "{}e - outer loop - {}", branch_ctd[0].second, CtdToName(branch_ctd[0].first));
+      struc->AddNote("{}e - outer loop - {}", branch_ctd[0].second, CtdToName(branch_ctd[0].first));
       branch_ctd.pop_front();
     }
     for (const auto& [c, e] : branch_ctd) struc->AddCtd(c, e);

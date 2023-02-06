@@ -69,23 +69,29 @@ inline bool rel_eq(flt a, flt b, flt rel = EP) {
 
 #ifdef USE_MPFR
 
+#include <fmt/format.h>
+
+template <typename T>
+concept FltConvertible = boost::multiprecision::is_number<T>::value ||
+    boost::multiprecision::is_number_expression<T>::value;
+
 namespace fmt {
-template <>
-struct formatter<::mrna::flt> {
+template <FltConvertible T>
+struct formatter<T> {
  private:
   detail::dynamic_format_specs<char> specs_;
 
  public:
   constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
     using handler_type = detail::dynamic_specs_handler<format_parse_context>;
-    auto type = detail::type_constant<::mrna::flt, char>::value;
+    auto type = detail::type_constant<T, char>::value;
     auto checker = detail::specs_checker<handler_type>(handler_type(specs_, ctx), type);
     auto end = detail::parse_format_specs(ctx.begin(), ctx.end(), checker);
     return end;
   }
 
   template <class FormatContext>
-  auto format(const ::mrna::flt& c, FormatContext& ctx) -> decltype(ctx.out()) {
+  auto format(const T& c, FormatContext& ctx) -> decltype(ctx.out()) {
     std::stringstream out;
     detail::handle_dynamic_spec<detail::precision_checker>(
         specs_.precision, specs_.precision_ref, ctx);

@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "api/energy/energy.h"
 #include "common_test.h"
 #include "gtest/gtest.h"
 #include "model/base.h"

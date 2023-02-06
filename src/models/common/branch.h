@@ -3,11 +3,10 @@
 #define MODELS_COMMON_BRANCH_H_
 
 #include <deque>
-#include <utility>
 #include <vector>
 
 #include "model/ctd.h"
-#include "model/energy.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 
 namespace mrna::md {

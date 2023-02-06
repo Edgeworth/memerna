@@ -1,11 +1,8 @@
 // Copyright 2022 E.
 #include "api/energy/energy.h"
 
-#include <algorithm>
 #include <utility>
-#include <vector>
 
-#include "model/base.h"
 #include "model/structure.h"
 
 namespace mrna::erg {

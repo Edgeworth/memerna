@@ -6,6 +6,7 @@
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/part.h"
+#include "model/part.h"
 #include "model/primary.h"
 #include "programs/print.h"
 #include "util/argparse.h"

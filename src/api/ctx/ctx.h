@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/energy.h"
 #include "api/energy/model.h"
 #include "api/mfe.h"
 #include "api/part.h"
@@ -16,7 +17,6 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "models/t04/mfe/dp.h"
 #include "util/argparse.h"
 
 namespace mrna {

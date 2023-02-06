@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <memory>
@@ -79,8 +80,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
   if (struc) (*struc)->set_self_energy(energy);
   // Add energy from children.
   for (auto i : branches) {
-    int nst = continuous ? stack_st : i;
-    int nen = continuous ? stack_en : s[i];
+    const int nst = continuous ? stack_st : i;
+    const int nen = continuous ? stack_en : s[i];
     if (struc) {
       std::unique_ptr<Structure> sstruc;
       energy += SubEnergyInternal(r, s, i, s[i], nst, nen, use_given_ctds, ctd, &sstruc);
@@ -102,8 +103,8 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
   const bool exterior_loop = s[st] != en;
-  int stack_st = exterior_loop ? -1 : st;
-  int stack_en = exterior_loop ? -1 : en;
+  const int stack_st = exterior_loop ? -1 : st;
+  const int stack_en = exterior_loop ? -1 : en;
 
   std::unique_ptr<Structure> struc;
   auto energy = SubEnergyInternal(
