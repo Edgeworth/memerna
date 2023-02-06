@@ -121,8 +121,7 @@ FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) 
   constexpr auto disable_coax = false;
   dynamic(structure.get(), data_.get(), num_tracebacks, percent_sort, window, progress, energy_only,
       save_file, max_twoloop, mfe_structure_only, !use_lyngso_, disable_coax, dp_state);
-  // TODO(2): convert dp tables, ext, ctds?, delete this function and move all to Fold.
-  return {.mfe = {.dp{}, .ext{}, .energy = ToEnergy(structure->GetEnergy(1))},
+  return {.mfe = {.dp{}, .energy = ToEnergy(structure->GetEnergy(1))},
       .tb = trace::TraceResult(StructureToSecondary(*structure), Ctds())};
 }
 
@@ -145,17 +144,17 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
   auto state = RunPartition(structure.get(), data_.get());
   const int N = static_cast<int>(r.size());
 
-  part::Part part = {BoltzSums(N, 0), 0};
   // RNAstructure partition values are stored in natural log space.
-  part.q = BoltzEnergy(exp(state.w5[N]));
+  auto p = BoltzSums(N, 0);
+  auto q = BoltzEnergy(exp(state.w5[N]));
   for (int i = 1; i <= N; ++i) {
     for (int j = i; j < N + i; ++j) {
       const int adjusted = j > N ? j - N - 1 : j - 1;
-      part.p[i - 1][adjusted] = BoltzEnergy(exp(state.v.f(i, j)));
+      p[i - 1][adjusted] = BoltzEnergy(exp(state.v.f(i, j)));
     }
   }
 
-  BoltzProbs prob(N, 0);
+  auto prob = BoltzProbs(N, 0);
   for (int i = 0; i < N; ++i) {
     for (int j = i; j < N; ++j) {
       prob[i][j] = BoltzEnergy(calculateprobability(i + 1, j + 1, &state.v, state.w5.get(),
@@ -163,8 +162,7 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
           state.fce.get()));
     }
   }
-  // TODO(2): Convert tables?
-  return {.dp{}, .ext{}, .part{std::move(part)}, .prob{std::move(prob)}};
+  return {.state{}, .part{std::move(p), q, std::move(prob)}};
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::StochasticSampleIntoVector(

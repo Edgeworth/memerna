@@ -1,5 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#include "api/brute/brute.h"
+
+#include "models/brute/brute.h"
 
 #include <fmt/core.h>
 
@@ -33,7 +34,7 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto res = mrna::brute::Brute(r, em, cfg).Run();
+  auto res = mrna::md::brute::Brute(r, em, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
@@ -53,8 +54,8 @@ int main(int argc, char* argv[]) {
   if (args.GetOr(mrna::OPT_PART)) {
     fmt::print("q: {}\n", res.part.q);
     fmt::print("p:\n");
-    PrintPartition(res.part);
+    PrintPartition(res.part.p);
     fmt::print("\nprobabilities:\n");
-    PrintBoltzProbs(res.prob);
+    PrintBoltzProbs(res.part.prob);
   }
 }

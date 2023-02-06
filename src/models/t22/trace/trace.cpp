@@ -27,14 +27,13 @@ using t04::EXT_GU;
 using t04::EXT_RC;
 using t04::EXT_WC;
 using t04::Index;
-using t04::IndexCtd;
 
 // TODO(0): Implement. Think if can generalise this.
 TraceResult Traceback(const Primary& r, const Model::Ptr& em, const DpState& state) {
   const int N = static_cast<int>(r.size());
   const auto& [t04state, stack] = state;
   const auto& [dp, ext] = t04state;
-  
+
   TraceResult res((Secondary(N)), Ctds(N));
   std::stack<Index> q;
   q.emplace(0, -1, EXT);

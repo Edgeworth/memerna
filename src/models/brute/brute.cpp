@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "api/energy/model.h"
-#include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace.h"
@@ -28,7 +27,7 @@ BruteResult Brute::Run() {
     // Plus one to N, since -1 takes up a spot.
     verify(r_.size() + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.part.q = 0;
-    res_.part.p = part::BoltzSums(r_.size(), 0);
+    res_.part.p = BoltzSums(r_.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
@@ -38,7 +37,7 @@ BruteResult Brute::Run() {
   }
   Dfs(0);
 
-  if (cfg_.part) res_.prob = res_.part.Prob();
+  if (cfg_.part) res_.part.RecomputeProb();
 
   return std::move(res_);
 }

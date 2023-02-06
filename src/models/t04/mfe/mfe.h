@@ -1,6 +1,6 @@
 // Copyright 2022 Eliot Courtney.
-#ifndef COMPUTE_MFE_T04_MFE_H_
-#define COMPUTE_MFE_T04_MFE_H_
+#ifndef MODELS_T04_MFE_MFE_H_
+#define MODELS_T04_MFE_MFE_H_
 
 #include "model/constants.h"
 #include "model/primary.h"
@@ -23,7 +23,7 @@ void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state);
 
 template <typename T>
   requires std::is_base_of_v<T04ModelMixin, T>
-void MfeExterior(const Primary& r, const T& em, DpState& state) {
+Energy MfeExterior(const Primary& r, const T& em, DpState& state) {
   const int N = static_cast<int>(r.size());
   state.ext = ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state;
@@ -79,12 +79,14 @@ void MfeExterior(const Primary& r, const T& em, DpState& state) {
       ext[st][EXT] = std::min(ext[st][EXT], e);
     }
   }
+
+  return ext[0][EXT];
 }
 
-inline void MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
-  MfeExterior(r, *em, state);
+inline Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
+  return MfeExterior(r, *em, state);
 }
 
 }  // namespace mrna::md::t04
 
-#endif  // COMPUTE_MFE_T04_MFE_H_
+#endif  // MODELS_T04_MFE_MFE_H_

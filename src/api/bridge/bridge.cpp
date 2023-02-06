@@ -12,7 +12,7 @@
 namespace mrna::bridge {
 
 void RegisterOpts(ArgParse* args) {
-  ctx::RegisterOpts(args);
+  ::mrna::RegisterOpts(args);
   args->RegisterOpt(OPT_USE_RNASTRUCTURE);
   args->RegisterOpt(OPT_RNASTRUCTURE_DATA);
   args->RegisterOpt(OPT_USE_MEMERNA);

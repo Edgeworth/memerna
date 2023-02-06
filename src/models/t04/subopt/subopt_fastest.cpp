@@ -16,8 +16,7 @@
 namespace mrna::md::t04 {
 
 SuboptFastest::SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_),
-      dp_(std::move(dp)), dp_.ext(std::move(ext)), cfg_(cfg) {}
+    : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptFastest::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));

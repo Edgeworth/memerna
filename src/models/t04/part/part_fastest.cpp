@@ -17,7 +17,7 @@
 
 namespace mrna::md::t04 {
 
-void PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state) {
+Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -476,6 +476,12 @@ void PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
       dp[st][en][PT_U_RC] = rcoax;
     }
   }
+
+  BoltzSums p(N, 0);
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j < N; ++j) p[i][j] = dp[i][j][PT_P];
+
+  return {std::move(p), ext[0][PTEXT_R]};
 }
 
 }  // namespace mrna::md::t04

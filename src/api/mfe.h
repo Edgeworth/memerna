@@ -1,15 +1,17 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef COMPUTE_MFE_MFE_H_
-#define COMPUTE_MFE_MFE_H_
+#ifndef API_MFE_H_
+#define API_MFE_H_
 
 #include "api/energy/model.h"
 #include "model/constants.h"
 #include "model/primary.h"
 #include "models/t04/mfe/dp.h"
+#include "models/t22/mfe/mfe.h"
 
 namespace mrna::mfe {
 
-using DpState = std::variant<md::t04::DpState>;
+// Monostate if there is no DP state supported/used, like with RNAstructure.
+using DpState = std::variant<std::monostate, md::t04::DpState, md::t22::DpState>;
 
 struct MfeResult {
   DpState dp;
@@ -18,4 +20,4 @@ struct MfeResult {
 
 }  // namespace mrna::mfe
 
-#endif  // COMPUTE_MFE_MFE_H_
+#endif  // API_MFE_H_

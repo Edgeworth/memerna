@@ -4,7 +4,6 @@
 #include <set>
 #include <utility>
 
-#include "api/brute/brute.h"
 #include "api/subopt/subopt_cfg.h"
 #include "models/brute/brute.h"
 
@@ -17,7 +16,7 @@ subopt::SuboptResult MfeBrute(const Primary& r, erg::EnergyModelPtr em) {
 part::PartResult PartitionBrute(const Primary& r, erg::EnergyModelPtr em) {
   // TODO(2): Allow lonely pairs for the partition function
   auto res = Brute(r, std::move(em), {.part = true}).Run();
-  return {.dp{}, .ext{}, .part = std::move(res.part), .prob = std::move(res.prob)};
+  return {.state{}, .part = std::move(res.part)};
 }
 
 std::vector<subopt::SuboptResult> SuboptBrute(

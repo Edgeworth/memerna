@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "api/brute/brute.h"
 #include "api/brute/brute_cfg.h"
 #include "api/energy/model.h"
 #include "api/part.h"
@@ -23,7 +22,23 @@
 namespace mrna::md::brute {
 
 using mrna::brute::BruteCfg;
-using mrna::brute::BruteResult;
+
+struct SuboptCmp {
+  bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
+    // Kept in a multiset, so this is just used for ordering, not deduplication.
+    // There should be no duplicates added anyway. Single comparison to keep it fast.
+    return a.energy < b.energy;
+  }
+};
+
+struct BruteResult {
+  // Suboptimal structures:
+  // TODO(2): use splayset here?
+  std::multiset<subopt::SuboptResult, SuboptCmp> subopts;
+
+  // Partition function:
+  Part part;
+};
 
 class Brute {
  public:
