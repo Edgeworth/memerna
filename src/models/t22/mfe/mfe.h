@@ -20,8 +20,8 @@ struct DpState {
 
 void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
 
-inline void MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
-  t04::MfeExterior(r, *em, state.t04);
+inline Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
+  return t04::MfeExterior(r, *em, state.t04);
 }
 
 }  // namespace mrna::md::t22

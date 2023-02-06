@@ -8,8 +8,10 @@
 #include <variant>
 #include <vector>
 
+#include "api/mfe.h"
 #include "api/part.h"
 #include "model/energy.h"
+#include "model/part.h"
 #include "model/primary.h"
 #include "models/brute/alg.h"
 #include "models/t04/energy/boltz_model.h"
@@ -17,7 +19,6 @@
 #include "models/t04/mfe/dp.h"
 #include "models/t04/mfe/mfe.h"
 #include "models/t04/part/part.h"
-#include "models/t04/part/partition.h"
 #include "models/t04/subopt/subopt_fastest.h"
 #include "models/t04/subopt/subopt_slowest.h"
 #include "models/t04/trace/trace.h"
@@ -28,55 +29,82 @@
 #include "util/error.h"
 #include "util/util.h"
 
-namespace mrna::api {
+namespace mrna {
+
+namespace {
+
+mfe::DpState CreateDpState(const erg::EnergyModelPtr& em) {
+  auto vis = overloaded{
+      [&](const md::t04::Model::Ptr&) -> mfe::DpState { return md::t04::DpState{}; },
+      [&](const md::t22::Model::Ptr&) -> mfe::DpState { return md::t22::DpState{}; },
+  };
+  return std::visit(vis, em);
+}
+
+part::PartState CreatePartState(const erg::EnergyModelPtr& em) {
+  auto vis = overloaded{
+      [&](const md::t04::Model::Ptr&) -> part::PartState { return md::t04::PartState{}; },
+      [&](const md::t22::Model::Ptr&) -> part::PartState { bug(); },
+  };
+  return std::visit(vis, em);
+}
+
+}  // namespace
 
 erg::EnergyResult Ctx::Efn(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
   return erg::TotalEnergy(em(), r, s, given_ctd, build_structure);
 }
 
-void Ctx::ComputeMfe(const Primary& r, mfe::DpState& state) const {
+void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
   auto vis = overloaded{
-      [&](const erg::t04::Model::Ptr& em) -> DpArray {
+      [&](const md::t04::Model::Ptr& em) {
+        auto& state = std::get<md::t04::DpState>(dp);
         switch (cfg_.dp_alg) {
-        case CtxCfg::DpAlg::SLOWEST: return mfe::t04::MfeSlowest(r, em);
-        case CtxCfg::DpAlg::SLOW: return mfe::t04::MfeSlow(r, em);
-        case CtxCfg::DpAlg::FASTEST: return mfe::t04::MfeFastest(r, em);
-        case CtxCfg::DpAlg::LYNGSO: return mfe::t04::MfeLyngso(r, em);
+        case CtxCfg::DpAlg::SLOWEST: md::t04::MfeSlowest(r, em, state); break;
+        case CtxCfg::DpAlg::SLOW: md::t04::MfeSlow(r, em, state); break;
+        case CtxCfg::DpAlg::FASTEST: md::t04::MfeFastest(r, em, state); break;
+        case CtxCfg::DpAlg::LYNGSO: md::t04::MfeLyngso(r, em, state); break;
         default: bug();
         }
       },
-      [&](const erg::t22::Model::Ptr& em) {
+      [&](const md::t22::Model::Ptr& em) {
+        auto& state = std::get<md::t22::DpState>(dp);
         switch (cfg_.dp_alg) {
         case CtxCfg::DpAlg::SLOWEST:
         case CtxCfg::DpAlg::SLOW:
         case CtxCfg::DpAlg::FASTEST:
-        case CtxCfg::DpAlg::LYNGSO: return mfe::t22::MfeSlowest(r, em);
+        case CtxCfg::DpAlg::LYNGSO: md::t22::MfeSlowest(r, em, state); break;
         default: bug();
         }
       },
   };
-
-  return std::visit(vis,
-
-      em_);
+  std::visit(vis, em_);
 }
 
-void Ctx::ComputeMfeExterior(const Primary& r, mfe::DpState& state) const {
+Energy Ctx::ComputeMfeExterior(const Primary& r, mfe::DpState& dp) const {
   auto vis = overloaded{
-      [&](const erg::t04::Model::Ptr& em) -> ExtArray { return mfe::t04::MfeExterior(r, em, dp); },
-      [&](const erg::t22::Model::Ptr& em) -> ExtArray { return mfe::t22::MfeExterior(r, em, dp); },
+      [&](const md::t04::Model::Ptr& em) {
+        auto& state = std::get<md::t04::DpState>(dp);
+        return md::t04::MfeExterior(r, em, state);
+      },
+      [&](const md::t22::Model::Ptr& em) {
+        auto& state = std::get<md::t22::DpState>(dp);
+        return md::t22::MfeExterior(r, em, state);
+      },
   };
   return std::visit(vis, em_);
 }
 
-trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& state) const {
+trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& dp) const {
   auto vis = overloaded{
-      [&](const erg::t04::Model::Ptr& em) -> trace::TraceResult {
-        return tb::t04::Traceback(r, em, dp, ext);
+      [&](const md::t04::Model::Ptr& em) -> trace::TraceResult {
+        const auto& state = std::get<md::t04::DpState>(dp);
+        return md::t04::Traceback(r, em, state);
       },
-      [&](const erg::t22::Model::Ptr& em) -> trace::TraceResult {
-        return tb::t22::Traceback(r, em, dp, ext);
+      [&](const md::t22::Model::Ptr& em) -> trace::TraceResult {
+        const auto& state = std::get<md::t22::DpState>(dp);
+        return md::t22::Traceback(r, em, state);
       },
   };
   return std::visit(vis, em_);
@@ -84,16 +112,16 @@ trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& s
 
 FoldResult Ctx::Fold(const Primary& r) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
-    auto subopt = brute::MfeBrute(r, em_);
-    return {.mfe = {.dp{}, .ext{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
+    auto subopt = md::brute::MfeBrute(r, em_);
+    return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
-  auto dp = ComputeMfe(r);
-  auto ext = ComputeMfeExterior(r, dp);
-  auto energy = ext[0][EXT];
-  auto tb = ComputeTraceback(r, dp, ext);
+  mfe::DpState dp;
+  ComputeMfe(r, dp);
+  auto energy = ComputeMfeExterior(r, dp);
+  auto tb = ComputeTraceback(r, dp);
   return FoldResult{
-      .mfe = {.dp = std::move(dp), .ext = std::move(ext), .energy = energy},
+      .mfe = {.dp = std::move(dp), .energy = energy},
       .tb = std::move(tb),
   };
 }
@@ -111,68 +139,59 @@ int Ctx::Suboptimal(
     const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO(3): handle cases other than max structures.
-    auto subopts = brute::SuboptBrute(r, em_, cfg);
+    auto subopts = md::brute::SuboptBrute(r, em_, cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
 
-  auto dp = ComputeMfe(r);
-  auto ext = ComputeMfeExterior(r, dp);
+  mfe::DpState dp = CreateDpState(em_);
+  ComputeMfe(r, dp);
+  ComputeMfeExterior(r, dp);
 
   auto vis = overloaded{
-      [&, ext = std::move(ext)](const erg::t04::Model::Ptr& em) mutable -> int {
+      [&, dp = std::move(dp)](const md::t04::Model::Ptr& em) mutable -> int {
+        auto state = std::get<md::t04::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::SLOWEST:
-          return subopt::t04::SuboptSlowest(Primary(r), em, std::move(dp), std::move(ext), cfg)
-              .Run(fn);
+          return md::t04::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::FASTEST:
-          return subopt::t04::SuboptFastest(Primary(r), em, std::move(dp), std::move(ext), cfg)
-              .Run(fn);
+          return md::t04::SuboptFastest(Primary(r), em, std::move(state), cfg).Run(fn);
         default: bug();
         }
       },
       // TODO(2): Implement suboptimal for t22.
-      [&, ext = std::move(ext)](const erg::t22::Model::Ptr&) mutable -> int { bug(); },
+      [&, dp = std::move(dp)](const md::t22::Model::Ptr&) mutable -> int { bug(); },
   };
   return std::visit(vis, em_);
 }
 
 part::PartResult Ctx::Partition(const Primary& r) const {
   if (cfg_.part_alg == CtxCfg::PartAlg::BRUTE) {
-    return brute::PartitionBrute(r, em_);
+    return md::brute::PartitionBrute(r, em_);
   }
 
-  std::tuple<BoltzDpArray, BoltzExtArray> res;
+  part::PartState dp = CreatePartState(em_);
 
   auto vis = overloaded{
-      [&](const erg::t04::Model::Ptr& em) {
+      [&](const md::t04::Model::Ptr& em) -> Part {
+        auto state = std::get<md::t04::PartState>(std::move(dp));
         switch (cfg_.part_alg) {
-        case CtxCfg::PartAlg::SLOWEST: res = part::t04::PartitionSlowest(r, em); break;
+        case CtxCfg::PartAlg::SLOWEST: return md::t04::PartitionSlowest(r, em, state);
         case CtxCfg::PartAlg::FASTEST:
-          res = part::t04::PartitionFastest(r, erg::t04::BoltzModel::Create(em));
-          break;
+          return md::t04::PartitionFastest(r, md::t04::BoltzModel::Create(em), state);
         default: bug();
         }
       },
       // TODO(2): Implement partition for t22.
-      [&](const erg::t22::Model::Ptr&) { bug(); },
+      [&](const md::t22::Model::Ptr&) -> Part { bug(); },
   };
-  std::visit(vis, em_);
+  auto part = std::visit(vis, em_);
 
-  const int N = static_cast<int>(r.size());
-  auto [dp, ext] = std::move(res);
-  BoltzSums p(N, 0);
-  for (int i = 0; i < N; ++i)
-    for (int j = 0; j < N; ++j) p[i][j] = dp[i][j][PT_P];
-
-  part::Part part{std::move(p), ext[0][PTEXT_R]};
-  auto prob = part.Prob();
-  return part::PartResult{
-      .dp = std::move(dp), .ext = std::move(ext), .part = std::move(part), .prob = std::move(prob)};
+  return part::PartResult{.state = std::move(dp), .part = std::move(part)};
 }
 
 Ctx Ctx::FromArgParse(const ArgParse& args) {
   return {erg::FromArgParse(args), CtxCfg::FromArgParse(args)};
 }
 
-}  // namespace mrna::api
+}  // namespace mrna

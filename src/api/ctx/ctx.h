@@ -55,8 +55,8 @@ class Ctx {
   erg::EnergyModelPtr em_;
   CtxCfg cfg_;
 
-  void ComputeMfe(const Primary& r, mfe::DpState& state) const;
-  void ComputeMfeExterior(const Primary& r, mfe::DpState& state) const;
+  void ComputeMfe(const Primary& r, mfe::DpState& dp) const;
+  Energy ComputeMfeExterior(const Primary& r, mfe::DpState& dp) const;
   [[nodiscard]] trace::TraceResult ComputeTraceback(const Primary& r, const mfe::DpState& dp) const;
 };
 

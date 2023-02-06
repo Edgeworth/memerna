@@ -7,6 +7,7 @@
 
 #include "model/constants.h"
 #include "model/energy.h"
+#include "model/part.h"
 #include "model/primary.h"
 #include "models/t04/energy/boltz_model.h"
 #include "util/array.h"
@@ -38,9 +39,9 @@ struct PartState {
   BoltzExtArray ext;
 };
 
-void PartitionSlowest(const Primary& r, const Model::Ptr& em, PartState& state);
+Part PartitionSlowest(const Primary& r, const Model::Ptr& em, PartState& state);
 
-void PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state);
+Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state);
 
 void PartitionExterior(const Primary& r, const Model& em, PartState& state);
 

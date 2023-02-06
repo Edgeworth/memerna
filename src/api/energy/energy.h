@@ -8,9 +8,11 @@
 #include "model/energy.h"
 #include "model/primary.h"
 
-namespace mrna::erg {
-
+namespace mrna {
 class Structure;
+}
+
+namespace mrna::erg {
 
 struct EnergyResult {
   EnergyResult() = default;

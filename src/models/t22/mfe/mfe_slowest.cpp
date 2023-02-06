@@ -188,8 +188,6 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
       dp[st][en][DP_U_RC] = rcoax_min;
     }
   }
-
-  return dp;
 }
 
 }  // namespace mrna::md::t22

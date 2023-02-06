@@ -28,6 +28,14 @@
 
 namespace mrna::fuzz {
 
+using md::t04::DP_P;
+using md::t04::DP_SIZE;
+using md::t04::DP_U;
+using md::t04::DP_U2;
+using md::t04::DP_U_GU;
+using md::t04::DP_U_RC;
+using md::t04::DP_U_WC;
+
 const flt PROB_EP{0.0001};
 inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool part_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
