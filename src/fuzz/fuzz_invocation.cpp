@@ -25,20 +25,80 @@
 #include "models/t04/mfe/dp.h"
 #include "models/t04/part/part.h"
 #include "util/float.h"
+#include "util/util.h"
 
 namespace mrna::fuzz {
 
 using md::t04::DP_P;
 using md::t04::DP_SIZE;
 using md::t04::DP_U;
-using md::t04::DP_U2;
-using md::t04::DP_U_GU;
-using md::t04::DP_U_RC;
-using md::t04::DP_U_WC;
+using md::t04::EXT_SIZE;
+
+namespace {
 
 const flt PROB_EP{0.0001};
-inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 inline bool part_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
+inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
+
+void ComparePart(const Part& got, const Part& want, const std::string& name_got, Error& errors) {
+  const int N = static_cast<int>(want.p.size());
+  if (!part_rel_eq(got.q, want.q)) {
+    errors.push_back(
+        fmt::format("{} q: {} != {}; difference: {}", name_got, got.q, want.q, got.q - want.q));
+  }
+
+  for (int st = 0; st < N; ++st) {
+    for (int en = 0; en < N; ++en) {
+      if (!part_rel_eq(got.p[st][en], want.p[st][en])) {
+        errors.push_back(fmt::format("{} p at [{}, {}]: {} != {}; difference: {}", name_got, st, en,
+            got.p[st][en], want.p[st][en], got.p[st][en] - want.p[st][en]));
+      }
+
+      if (!part_rel_eq(got.prob[st][en], want.prob[st][en])) {
+        errors.push_back(fmt::format("{} prob at [{}, {}]: {} != {}; difference: {}", name_got, st,
+            en, got.prob[st][en], want.prob[st][en], got.prob[st][en] - want.prob[st][en]));
+      }
+    }
+  }
+}
+
+void CompareT04DpState(const md::t04::DpState& got, const md::t04::DpState& want,
+    const std::string& name_got, Error& errors) {
+  if (got.dp.empty()) return;  // Brute force doesn't generate tables.
+
+  const int N = static_cast<int>(want.dp.size());
+  // Check dp tables:
+  for (int st = N - 1; st >= 0; --st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      for (int a = 0; a < DP_SIZE; ++a) {
+        auto dp = want.dp[st][en][a];
+
+        auto dpi = got.dp[st][en][a];
+        // If meant to be infinity and not.
+        if (((dp < CAP_E) != (dpi < CAP_E)) || (dp < CAP_E && dp != dpi)) {
+          errors.push_back("dp mismatch:");
+          errors.push_back(
+              fmt::format("  dp {} at {} {} {}: {} != {}", name_got, st, en, a, dpi, dp));
+        }
+      }
+    }
+  }
+
+  // Check ext tables:
+  for (int st = 0; st < N; ++st) {
+    for (int a = 0; a < EXT_SIZE; ++a) {
+      auto ext = want.ext[st][a];
+      auto exti = got.ext[st][a];
+      // If meant to be infinity and not.
+      if (((ext < CAP_E) != (exti < CAP_E)) || (ext < CAP_E && ext != exti)) {
+        errors.push_back("ext mismatch:");
+        errors.push_back(fmt::format("ext {} at {} {}: {} != {}", name_got, st, a, exti, ext));
+      }
+    }
+  }
+}
+
+}  // namespace
 
 FuzzInvocation::FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg)
     : r_(r), em_(std::move(em)), cfg_(cfg) {}
@@ -92,40 +152,15 @@ Error FuzzInvocation::CheckMfe() {
       errors.push_back(fmt::format("  alg {}: {} (dp) {} (ctd efn) {} (opt efn) != mfe {}", i,
           mrna_res[i].mfe.energy, mrna_ctd_efns[i], mrna_opt_efns[i], mrna_res[0].mfe.energy));
     }
-  }
 
-  // Check dp tables:
-  for (int st = N - 1; st >= 0; --st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (int a = 0; a < DP_SIZE; ++a) {
-        auto dp = mrna_res[0].mfe.dp[st][en][a];
-        for (int i = 0; i < static_cast<int>(mrna_res.size()); ++i) {
-          if (mrna_res[i].mfe.dp.empty()) continue;  // Brute force doesn't generate tables.
-          auto dpi = mrna_res[i].mfe.dp[st][en][a];
-          // If meant to be infinity and not.
-          if (((dp < CAP_E) != (dpi < CAP_E)) || (dp < CAP_E && dp != dpi)) {
-            errors.push_back("dp mismatch:");
-            errors.push_back(fmt::format("  dp {} at {} {} {}: {} != {}", i, st, en, a, dpi, dp));
-          }
-        }
-      }
-    }
-  }
-
-  // Check ext tables:
-  for (int st = 0; st < N; ++st) {
-    for (int a = 0; a < EXT_SIZE; ++a) {
-      auto ext = mrna_res[0].mfe.ext[st][a];
-      for (int i = 0; i < static_cast<int>(mrna_res.size()); ++i) {
-        if (mrna_res[i].mfe.ext.empty()) continue;  // Brute force doesn't generate tables.
-        auto exti = mrna_res[i].mfe.ext[st][a];
-        // If meant to be infinity and not.
-        if (((ext < CAP_E) != (exti < CAP_E)) || (ext < CAP_E && ext != exti)) {
-          errors.push_back("ext mismatch:");
-          errors.push_back(fmt::format("ext {} at {} {}: {} != {}", i, st, a, exti, ext));
-        }
-      }
-    }
+    auto vis = overloaded{
+        [&](const md::t04::DpState& got) {
+          CompareT04DpState(got, std::get<md::t04::DpState>(mrna_res[0].mfe.dp),
+              fmt::format("mrna[{}]", i), errors);
+        },
+        [&](const auto&) { bug(); },
+    };
+    std::visit(vis, mrna_res[i].mfe.dp);
   }
 
   fold_ = std::move(mrna_res[0]);
@@ -268,39 +303,8 @@ Error FuzzInvocation::CheckPartition() {
     mrna_parts.emplace_back(ctx.Partition(r_));
   }
 
-  for (int i = 0; i < static_cast<int>(mrna_parts.size()); ++i) {
-    if (!part_rel_eq(mrna_parts[i].part.q, mrna_parts[0].part.q)) {
-      std::stringstream sstream;
-      sstream << "q: memerna partition " << i << ": " << mrna_parts[i].part.q
-              << " != " << mrna_parts[0].part.q
-              << "; difference: " << mrna_parts[i].part.q - mrna_parts[0].part.q;
-      errors.push_back(sstream.str());
-    }
-
-    for (int st = 0; st < N; ++st) {
-      for (int en = 0; en < N; ++en) {
-        if (!part_rel_eq(mrna_parts[i].part.p[st][en], mrna_parts[0].part.p[st][en])) {
-          std::stringstream sstream;
-          sstream << "memerna " << i << " at " << st << " " << en << ": "
-                  << mrna_parts[i].part.p[st][en] << " != " << mrna_parts[0].part.p[st][en]
-                  << "; difference: "
-                  << mrna_parts[i].part.p[st][en] - mrna_parts[0].part.p[st][en];
-          errors.push_back(sstream.str());
-        }
-
-        if (!part_rel_eq(mrna_parts[i].prob[st][en], mrna_parts[0].prob[st][en])) {
-          std::stringstream sstream;
-          sstream << "memerna " << i << " at " << st << " " << en << ": "
-                  << mrna_parts[i].prob[st][en] << " != " << mrna_parts[0].prob[st][en]
-                  << "; difference: " << mrna_parts[i].prob[st][en] - mrna_parts[0].prob[st][en];
-          errors.push_back(sstream.str());
-        }
-      }
-    }
-
-    // TODO(2): Check probability tables
-    // TODO(2): Check DP and ext tables? - not for brute force
-  }
+  for (int i = 0; i < static_cast<int>(mrna_parts.size()); ++i)
+    ComparePart(mrna_parts[i].part, mrna_parts[0].part, fmt::format("memerna[{}]", i), errors);
 
   part_ = std::move(mrna_parts[0]);
 
@@ -338,22 +342,30 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
     errors.push_back(fmt::format("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));
   }
 
-  // Check RNAstructure dp table:
-  for (int st = N - 1; st >= 0; --st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (int a = 0; a < DP_SIZE; ++a) {
-        auto dp = fold_.mfe.dp[st][en][a];
-        if (a == DP_P || a == DP_U) {
-          auto rstr_eval = a == DP_P ? rstr_dp.v.f(st + 1, en + 1) : rstr_dp.w.f(st + 1, en + 1);
-          if (((dp < CAP_E) != (rstr_eval < INFINITE_ENERGY - 1000) ||
-                  (dp < CAP_E && dp != bridge::RNAstructure::ToEnergy(rstr_eval)))) {
-            errors.push_back("dp mismatch:");
-            errors.push_back(fmt::format("  dp at {} {} {}: {} != {}", st, en, a, rstr_eval, dp));
+  auto vis = overloaded{
+      [&](const md::t04::DpState& want) {
+        // Check RNAstructure dp table:
+        for (int st = N - 1; st >= 0; --st) {
+          for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+            for (int a = 0; a < DP_SIZE; ++a) {
+              auto dp = want.dp[st][en][a];
+              if (a == DP_P || a == DP_U) {
+                auto rstr_eval =
+                    a == DP_P ? rstr_dp.v.f(st + 1, en + 1) : rstr_dp.w.f(st + 1, en + 1);
+                if (((dp < CAP_E) != (rstr_eval < INFINITE_ENERGY - 1000) ||
+                        (dp < CAP_E && dp != bridge::RNAstructure::ToEnergy(rstr_eval)))) {
+                  errors.push_back("dp mismatch:");
+                  errors.push_back(
+                      fmt::format("  dp at {} {} {}: {} != {}", st, en, a, rstr_eval, dp));
+                }
+              }
+            }
           }
         }
-      }
-    }
-  }
+      },
+      [&](const auto&) { bug(); },
+  };
+  std::visit(vis, fold_.mfe.dp);
 
   // TODO(2): Check RNAstructure ext table.
   return errors;
@@ -373,37 +385,10 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
 }
 
 Error FuzzInvocation::CheckPartitionRNAstructure() {
-  const int N = static_cast<int>(r_.size());
   Error errors;
   auto rstr_part = rstr_->Partition(r_);
-  // Types for the partition function are meant to be a bit configurable, so use sstream here.
-  if (!part_rel_eq(rstr_part.part.q, part_.part.q)) {
-    std::stringstream sstream;
-    sstream << "q: rnastructure partition " << rstr_part.part.q << " != memerna " << part_.part.q
-            << "; difference: " << rstr_part.part.q - part_.part.q;
-    errors.push_back(sstream.str());
-  }
 
-  for (int st = 0; st < N; ++st) {
-    for (int en = 0; en < N; ++en) {
-      auto rstr_p = std::max(rstr_part.part.p[st][en], flt());
-      if (!part_rel_eq(rstr_p, part_.part.p[st][en])) {
-        std::stringstream sstream;
-        sstream << "memerna " << st << " " << en << ": " << part_.part.p[st][en]
-                << " != rnastructure " << rstr_p
-                << "; difference: " << rstr_p - part_.part.p[st][en];
-        errors.push_back(sstream.str());
-      }
-
-      if (!part_abs_eq(rstr_part.prob[st][en], part_.prob[st][en])) {
-        std::stringstream sstream;
-        sstream << "memerna " << st << " " << en << ": " << part_.prob[st][en]
-                << " != rnastructure " << rstr_part.prob[st][en]
-                << "; difference: " << rstr_part.prob[st][en] - part_.prob[st][en];
-        errors.push_back(sstream.str());
-      }
-    }
-  }
+  ComparePart(rstr_part.part, part_.part, "rnastructure", errors);
 
   return errors;
 }

@@ -8,9 +8,9 @@
 
 namespace mrna::md::t04 {
 
-void PartitionExterior(
-    const Primary& r, const Model& em, const BoltzDpArray& dp, PartState& state) {
+void PartitionExterior(const Primary& r, const Model& em, PartState& state) {
   const int N = static_cast<int>(r.size());
+  auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);
   auto& ext = state.ext;
 

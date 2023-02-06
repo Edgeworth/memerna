@@ -17,11 +17,11 @@ namespace mrna::md::t04 {
 
 class SuboptAlgTest : public testing::TestWithParam<CtxCfg::SuboptAlg> {
  public:
-  static std::vector<SuboptResult> Subopt(
+  static std::vector<subopt::SuboptResult> Subopt(
       const erg::EnergyModelPtr& em, const std::string& s, const std::vector<Energy>& energies) {
     const int n = static_cast<int>(energies.size());
     auto res = Ctx(em, CtxCfg{.subopt_alg = GetParam()})
-                   .SuboptimalIntoVector(Primary::FromSeq(s), SuboptCfg{.strucs = n});
+                   .SuboptimalIntoVector(Primary::FromSeq(s), subopt::SuboptCfg{.strucs = n});
     for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
     return res;
   }

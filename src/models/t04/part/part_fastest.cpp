@@ -23,7 +23,8 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bem);
-  auto dp = BoltzDpArray(r.size() + 1, 0);
+  state.dp = BoltzDpArray(r.size() + 1, 0);
+  auto& dp = state.dp;
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {

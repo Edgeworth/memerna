@@ -7,6 +7,6 @@
 
 void PrintBoltzProbs(const mrna::BoltzProbs& p);
 
-void PrintPartition(const mrna::Part& p);
+void PrintPartition(const mrna::BoltzSums& p);
 
 #endif  // PROGRAMS_PRINT_H_

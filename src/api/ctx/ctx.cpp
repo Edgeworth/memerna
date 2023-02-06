@@ -116,7 +116,7 @@ FoldResult Ctx::Fold(const Primary& r) const {
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
-  mfe::DpState dp;
+  mfe::DpState dp = CreateDpState(em_);
   ComputeMfe(r, dp);
   auto energy = ComputeMfeExterior(r, dp);
   auto tb = ComputeTraceback(r, dp);
