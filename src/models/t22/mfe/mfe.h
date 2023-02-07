@@ -14,8 +14,8 @@ namespace mrna::md::t22 {
 struct DpState {
   // T04 state is reused.
   t04::DpState t04;
-  // DP for stack length.
-  Array3D<Energy> stack;
+  // DP for penultimate stack length.
+  Array3D<Energy> penult;
 };
 
 void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
