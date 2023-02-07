@@ -27,7 +27,9 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
   const int N = static_cast<int>(r.size());
   state.t04.dp = DpArray(r.size() + 1, MAX_E);
+  state.penult = Array3D(r.size() + 1, MAX_E);
   auto& dp = state.t04.dp;
+  auto& penult = state.penult;
 
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -41,8 +43,46 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
       if (em->CanPair(r, st, en)) {
         Energy p_min = MAX_E;
 
-        // TODO: use stem length dp. We could also use a DP with state (st, en)
-        // which would work for affine functions of stems.
+        {
+          const int max_stack = en - st - HAIRPIN_MIN_SZ;
+          // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
+          const Energy bulge_left = em->Bulge(r, st, en, st + 2, en - 1);
+          const Energy bulge_right = em->Bulge(r, st, en, st + 1, en - 2);
+          const Energy augu_penalty = em->AuGuPenalty(stb, enb);
+
+          // Base case of length 1 is not exactly possible, but to simplify the
+          // implementation it contains the penultimate penalty assuming this is
+          // the ending inner pair, if (st, en) can pair.
+          if (st > 0 && en < N - 1) {
+            // Can either continue by breaking the stack, or by ending with a hairpin.
+            const auto best_continuation =
+                std::min(dp[st + 1][en - 1][DP_U], em->Hairpin(r, st + 1, en - 1));
+            penult[st][en][1] = em->penultimate_stack[r[st - 1]][stb][enb][r[en + 1]] +
+                augu_penalty + best_continuation;
+          }
+
+          // Try stems with a specific length.
+          for (int length = 2; 2 * length < max_stack; ++length) {
+            // Update our DP at (st, en) - no bulge:
+            auto none =
+                penult[st + 1][en - 1][length - 1] + em->stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
+            penult[st][en][length] = std::min(penult[st][en][length], none);
+            // Left bulge:
+            auto left = penult[st + 2][en - 1][length - 1] + bulge_left;
+            penult[st][en][length] = std::min(penult[st][en][length], left);
+            // Right bulge:
+            auto right = penult[st + 1][en - 2][length - 1] + bulge_right;
+            penult[st][en][length] = std::min(penult[st][en][length], right);
+
+            // Try each of the bulges for the paired array.
+            p_min =
+                std::min(p_min, none + em->penultimate_stack[en1b][enb][stb][st1b] + augu_penalty);
+            p_min =
+                std::min(p_min, left + em->penultimate_stack[en1b][enb][stb][st2b] + augu_penalty);
+            p_min =
+                std::min(p_min, right + em->penultimate_stack[en2b][enb][stb][st1b] + augu_penalty);
+          }
+        }
 
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
