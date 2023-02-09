@@ -27,36 +27,18 @@ struct MfeInternal {
   const Model& em;
   int N;
   t04::DpArray& dp;
+  Array2D<Energy>& nostack;
   Array3D<Energy>& penult;
 
   MfeInternal(const Primary& r_, const Model::Ptr& em_, DpState& state_)
-      : r(r_), em(*em_), N(static_cast<int>(r_.size())), dp(state_.t04.dp), penult(state_.penult) {}
-
-  // Computes ending a length 2 stack whose last two base pairs were (st, en)
-  // and (nst, nen).
-  Energy ComputeTwoStack(int st, int en, int nst, int nen) {
-    // Can either continue by adding a multiloop, adding a internal
-    // loop, or ending with a hairpin.
-    auto best = std::min(
-        dp[nst + 1][nen - 1][DP_U2] + em.AuGuPenalty(r[nst], r[nen]), em.Hairpin(r, nst, nen));
-    // fmt::print("{} {} {}\n", dp[nst + 1][nen - 1][DP_U2] + em.AuGuPenalty(r[nst], r[nen]),
-    //  em.Hairpin(r, nst, nen), best);
-
-    const int max_inter = std::min(TWOLOOP_MAX_SZ, nen - nst - HAIRPIN_MIN_SZ - 3);
-    for (int ist = nst + 1; ist < nst + max_inter + 2; ++ist) {
-      for (int ien = nen - max_inter + ist - nst - 2; ien < nen; ++ien) {
-        if (dp[ist][ien][DP_P] < CAP_E && ist - nst + nen - ien > 3)
-          best = std::min(best, em.TwoLoop(r, nst, nen, ist, ien) + dp[ist][ien][DP_P]);
-      }
-    }
-    // fmt::print("{}\n", best);
-    return best + em.penultimate_stack[r[st]][r[nst]][r[nen]][r[en]];
-  }
+      : r(r_), em(*em_), N(static_cast<int>(r_.size())), dp(state_.t04.dp), nostack(state_.nostack),
+        penult(state_.penult) {}
 
   void Compute() {
     static_assert(
         HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
     dp = t04::DpArray(r.size() + 1, MAX_E);
+    nostack = Array2D(r.size() + 1, MAX_E);
     penult = Array3D(r.size() + 1, MAX_E);
 
     for (int st = N - 1; st >= 0; --st) {
@@ -69,63 +51,82 @@ struct MfeInternal {
         const Base en2b = r[en - 2];
 
         if (em.CanPair(r, st, en)) {
-          Energy p_min = MAX_E;
+          Energy stack_min = MAX_E;
 
           {
             const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
             // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
             const Energy bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
             const Energy bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
-            const Energy augu_penalty = em.AuGuPenalty(stb, enb);
-
-            // Since we can pair at (st, en), ending a stack here is okay.
-            penult[st][en][1] = ZERO_E;
+            const Energy outer_penalty = em.AuGuPenalty(stb, enb);
 
             // Try stems with a specific length.
             for (int length = 2; 2 * length <= max_stack; ++length) {
               // Update our DP at (st, en) - no bulge:
-              auto none =
-                  penult[st + 1][en - 1][length - 1] + em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
-              // Try ending the stack without a bulge loop.
-              if (length == 2) none += ComputeTwoStack(st, en, st + 1, en - 1);
-              penult[st][en][length] = std::min(penult[st][en][length], none);
+              if (em.CanPair(r, st + 1, en - 1)) {
+                auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
+                // Try ending the stack without a bulge loop.
+                if (length == 2) {
+                  none += nostack[st + 1][en - 1] + em.AuGuPenalty(r[st + 1], r[en - 1]) +
+                      em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
+                } else {
+                  none += penult[st + 1][en - 1][length - 1];
+                }
+                penult[st][en][length] = std::min(penult[st][en][length], none);
+                stack_min = std::min(
+                    stack_min, none + em.penultimate_stack[en1b][enb][stb][st1b] + outer_penalty);
+              }
 
               // Left bulge:
-              auto left = penult[st + 2][en - 1][length - 1] + bulge_left;
-              // Try ending the stack without a bulge loop.
-              if (length == 2) left += ComputeTwoStack(st, en, st + 2, en - 1);
-              penult[st][en][length] = std::min(penult[st][en][length], left);
+              if (em.CanPair(r, st + 2, en - 1)) {
+                auto left = bulge_left;
+                // Try ending the stack without a bulge loop.
+                if (length == 2) {
+                  left += nostack[st + 2][en - 1] + em.AuGuPenalty(r[st + 2], r[en - 1]) +
+                      em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]];
+                } else {
+                  left += penult[st + 2][en - 1][length - 1];
+                }
+                penult[st][en][length] = std::min(penult[st][en][length], left);
+                stack_min = std::min(
+                    stack_min, left + em.penultimate_stack[en1b][enb][stb][st2b] + outer_penalty);
+              }
 
               // Right bulge:
-              auto right = penult[st + 1][en - 2][length - 1] + bulge_right;
-              if (length == 2) right += ComputeTwoStack(st, en, st + 1, en - 2);
-              penult[st][en][length] = std::min(penult[st][en][length], right);
+              if (em.CanPair(r, st + 1, en - 2)) {
+                auto right = bulge_right;
+                if (length == 2) {
+                  right += nostack[st + 1][en - 2] + em.AuGuPenalty(r[st + 1], r[en - 2]) +
+                      em.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]];
+                } else {
+                  right += penult[st + 1][en - 2][length - 1];
+                }
+                penult[st][en][length] = std::min(penult[st][en][length], right);
+
+                stack_min = std::min(
+                    stack_min, right + em.penultimate_stack[en2b][enb][stb][st1b] + outer_penalty);
+              }
 
               // fmt::print("{} {} {}\n",
               // none + em.penultimate_stack[en1b][enb][stb][st1b] + augu_penalty,
               // left + em.penultimate_stack[en1b][enb][stb][st2b] + augu_penalty,
               // right + em.penultimate_stack[en2b][enb][stb][st1b] + augu_penalty);
-
-              // Try each of the bulges for the paired array.
-              p_min =
-                  std::min(p_min, none + em.penultimate_stack[en1b][enb][stb][st1b] + augu_penalty);
-              p_min =
-                  std::min(p_min, left + em.penultimate_stack[en1b][enb][stb][st2b] + augu_penalty);
-              p_min = std::min(
-                  p_min, right + em.penultimate_stack[en2b][enb][stb][st1b] + augu_penalty);
             }
           }
+
+          Energy nostack_min = MAX_E;
 
           const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
           for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
             for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
               // Try all internal loops. We don't check stacks or 1 nuc bulge loops.
               if (dp[ist][ien][DP_P] < CAP_E && ist - st + en - ien > 3)
-                p_min = std::min(p_min, em.TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P]);
+                nostack_min =
+                    std::min(nostack_min, em.TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P]);
             }
           }
           // Hairpin loops.
-          p_min = std::min(p_min, em.Hairpin(r, st, en));
+          nostack_min = std::min(nostack_min, em.Hairpin(r, st, en));
 
           // Multiloops. Look at range [st + 1, en - 1].
           // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
@@ -133,15 +134,15 @@ struct MfeInternal {
               em.AuGuPenalty(stb, enb) + em.multiloop_hack_a + em.multiloop_hack_b;
 
           // (<   ><   >)
-          p_min = std::min(p_min, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
+          nostack_min = std::min(nostack_min, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
           // (3<   ><   >) 3'
-          p_min = std::min(
-              p_min, base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb]);
+          nostack_min = std::min(nostack_min,
+              base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb]);
           // (<   ><   >5) 5'
-          p_min = std::min(
-              p_min, base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb]);
+          nostack_min = std::min(nostack_min,
+              base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb]);
           // (.<   ><   >.) Terminal mismatch
-          p_min = std::min(p_min,
+          nostack_min = std::min(nostack_min,
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb]);
 
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -155,39 +156,40 @@ struct MfeInternal {
 
             // (.(   )   .) Left outer coax - P
             const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
                     em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);
             // (.   (   ).) Right outer coax
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
                     em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax);
 
             // (.(   ).   ) Left inner coax
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
                     em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                     em.MismatchCoaxial(pl1b, plb, st1b, st2b));
             // (   .(   ).) Right inner coax
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
                     em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                     em.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
             // ((   )   ) Left flush coax
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 1][piv][DP_P] + em.multiloop_hack_b +
                     em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
                     em.stack[stb][st1b][plb][enb]);
             // (   (   )) Right flush coax
-            p_min = std::min(p_min,
+            nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
                     em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
                     em.stack[stb][prb][en1b][enb]);
           }
 
           // fmt::print("p[{}][{}] = {}\n", st, en, p_min);
-          dp[st][en][DP_P] = p_min;
+          dp[st][en][DP_P] = std::min(stack_min, nostack_min);
+          nostack[st][en] = nostack_min;
         }
         Energy u_min = MAX_E;
         Energy u2_min = MAX_E;
