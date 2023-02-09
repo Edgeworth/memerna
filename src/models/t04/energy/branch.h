@@ -250,7 +250,9 @@ Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s
       // All these cases will be handled in the next branch (PREV).
       continue;
     default:
-      error("unexpected CTD value {} at index {}", ctd[branch], branch);  // Should never happen
+      // Should never happen
+      error("unexpected CTD value {} at index {}, primary: {}, secondary: {}, ctds: {}",
+          ctd[branch], branch, r.ToSeq(), s.ToDb(), ctd.ToString(s));
     }
     branch_ctd->emplace_back(ctd[branch], energy);
     total_energy += energy;

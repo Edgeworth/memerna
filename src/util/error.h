@@ -11,7 +11,7 @@
 // Like assert, but can't be disabled.
 #define verify(expr, ...)                                                   \
   do {                                                                      \
-    if (!(expr)) {                                                          \
+    if (!(expr)) [[unlikely]] {                                             \
       auto msg = ::fmt::format("{}:{}: ", __func__, __LINE__);              \
       msg += ::fmt::format(__VA_ARGS__);                                    \
       msg += '\n';                                                          \
@@ -23,7 +23,7 @@
 // Like assert, but can't be disabled.
 #define verify(expr, ...)                                      \
   do {                                                         \
-    if (!(expr)) {                                             \
+    if (!(expr)) [[unlikely]] {                                \
       auto msg = ::fmt::format("{}:{}: ", __func__, __LINE__); \
       msg += ::fmt::format(__VA_ARGS__);                       \
       msg += '\n';                                             \

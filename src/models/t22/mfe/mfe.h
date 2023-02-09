@@ -16,7 +16,10 @@ namespace mrna::md::t22 {
 struct DpState {
   // T04 state is reused.
   t04::DpState t04;
-  // DP for penultimate stack length.
+  // DP for holding the best answer given (st, en) is paired but we can't
+  // start a stack of length 2 or more from here.
+  Array2D<Energy> nostack;
+  // DP for computing the best stack of a given length.
   Array3D<Energy> penult;
 };
 
@@ -32,8 +35,18 @@ struct PenultimateIndex {
   constexpr auto operator<=>(const PenultimateIndex&) const = default;
 };
 
+struct NoStackIndex {
+  int16_t st, en;
+
+  NoStackIndex(int st_, int en_) : st(int16_t(st_)), en(int16_t(en_)) {
+    assert(st_ == st && en_ == en);
+  }
+
+  constexpr auto operator<=>(const NoStackIndex&) const = default;
+};
+
 // Index into the DP tables.
-using Index = std::variant<t04::Index, PenultimateIndex>;
+using Index = std::variant<t04::Index, NoStackIndex, PenultimateIndex>;
 
 void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
 
