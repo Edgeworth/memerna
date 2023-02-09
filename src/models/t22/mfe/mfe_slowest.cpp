@@ -44,7 +44,7 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
         Energy p_min = MAX_E;
 
         {
-          const int max_stack = en - st - HAIRPIN_MIN_SZ;
+          const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
           // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
           const Energy bulge_left = em->Bulge(r, st, en, st + 2, en - 1);
           const Energy bulge_right = em->Bulge(r, st, en, st + 1, en - 2);
@@ -54,15 +54,25 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
           // implementation it contains the penultimate penalty assuming this is
           // the ending inner pair, if (st, en) can pair.
           if (st > 0 && en < N - 1) {
-            // Can either continue by breaking the stack, or by ending with a hairpin.
-            const auto best_continuation =
-                std::min(dp[st + 1][en - 1][DP_U], em->Hairpin(r, st + 1, en - 1));
-            penult[st][en][1] = em->penultimate_stack[r[st - 1]][stb][enb][r[en + 1]] +
-                augu_penalty + best_continuation;
+            // Can either continue by adding a multiloop, adding a internal
+            // loop, or ending with a hairpin.
+            auto best = std::min(dp[st + 1][en - 1][DP_U2] + augu_penalty, em->Hairpin(r, st, en));
+
+            const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
+            for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
+              for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
+                // Try all internal loops. We don't check stacks or 1 nuc bulge loops.
+                if (dp[ist][ien][DP_P] < CAP_E && ist - st + en - ien > 3)
+                  best = std::min(best, em->TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P]);
+              }
+            }
+
+            penult[st][en][1] = std::min(
+                penult[st][en][1], em->penultimate_stack[r[st - 1]][stb][enb][r[en + 1]] + best);
           }
 
           // Try stems with a specific length.
-          for (int length = 2; 2 * length < max_stack; ++length) {
+          for (int length = 2; 2 * length <= max_stack; ++length) {
             // Update our DP at (st, en) - no bulge:
             auto none =
                 penult[st + 1][en - 1][length - 1] + em->stack[r[st]][r[st + 1]][r[en - 1]][r[en]];

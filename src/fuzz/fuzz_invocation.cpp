@@ -38,8 +38,8 @@ using md::t04::EXT_SIZE;
 
 namespace {
 
-const flt PROB_EP{0.0001};
-inline bool part_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
+// const flt PROB_EP{0.0001};
+// inline bool part_abs_eq(BoltzEnergy a, BoltzEnergy b) { return abs_eq(a, b, PROB_EP); }
 inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP); }
 
 void ComparePart(const Part& got, const Part& want, const std::string& name_got, Error& errors) {
@@ -165,6 +165,12 @@ Error FuzzInvocation::CheckMfe() {
           CompareT04DpState(got, std::get<md::t04::DpState>(mrna_res[0].mfe.dp),
               fmt::format("mrna[{}]", i), errors);
         },
+        [&](const md::t22::DpState& got) {
+          CompareT04DpState(got.t04, std::get<md::t22::DpState>(mrna_res[0].mfe.dp).t04,
+              fmt::format("mrna[{}]", i), errors);
+          // TODO(2): test got.penult.
+        },
+        [&](const std::monostate&) {},
         [&](const auto&) { bug(); },
     };
     std::visit(vis, mrna_res[i].mfe.dp);

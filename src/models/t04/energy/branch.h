@@ -249,7 +249,8 @@ Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s
     case CTD_FCOAX_WITH_NEXT:
       // All these cases will be handled in the next branch (PREV).
       continue;
-    default: bug();  // Should never happen
+    default:
+      error("unexpected CTD value {} at index {}", ctd[branch], branch);  // Should never happen
     }
     branch_ctd->emplace_back(ctd[branch], energy);
     total_energy += energy;
