@@ -69,6 +69,11 @@ afl_fuzz_cfg_options = cloup.option_group(
         help="Whether to use random model for energy",
     ),
     cloup.option(
+        "--energy-model",
+        default="t04p1",
+        help="Which type of energy model to use",
+    ),
+    cloup.option(
         "--brute-max",
         default=22,
         help="Max size of sequences to brute force",
@@ -154,6 +159,7 @@ def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
     build_cfg: BuildCfg,
     max_len: int = -1,
     random_model: bool = False,
+    energy_model: str = "t04p1",
     brute_max: int = 22,
     mfe: bool = False,
     mfe_rnastructure: bool = False,
@@ -170,6 +176,7 @@ def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
         build_cfg=build_cfg,
         fuzz_max_len=max_len,
         fuzz_random_model=random_model,
+        fuzz_energy_model=energy_model,
         fuzz_brute_max=brute_max,
         fuzz_mfe=mfe,
         fuzz_mfe_rnastructure=mfe_rnastructure,

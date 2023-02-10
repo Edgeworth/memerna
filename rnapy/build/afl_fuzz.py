@@ -55,6 +55,7 @@ class AflFuzzCfg:
     # Info for the actual fuzz_afl invocation:
     fuzz_max_len: int = -1
     fuzz_random_model: bool = False
+    fuzz_energy_model: str = "t04p1"
     fuzz_brute_max: int = 22
     fuzz_mfe: bool = False
     fuzz_mfe_rnastructure: bool = False
@@ -133,6 +134,7 @@ class AflFuzzCfg:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
             cmd += f"--max-len {self.fuzz_max_len}"
             cmd += "--random-model" if self.fuzz_random_model else "--no-random-model"
+            cmd += f"--energy-model {self.fuzz_energy_model}"
             cmd += f"--brute-max {self.fuzz_brute_max}"
             cmd += "--mfe" if self.fuzz_mfe else "--no-mfe"
             cmd += "--mfe-rnastructure" if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure"
