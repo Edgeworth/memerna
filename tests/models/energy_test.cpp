@@ -1,8 +1,6 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/energy.h"
 
-#include <gtest/gtest.h>
-
 #include <vector>
 
 #include "gtest/gtest.h"
