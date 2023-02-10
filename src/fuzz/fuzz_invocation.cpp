@@ -45,13 +45,8 @@ inline bool part_rel_eq(BoltzEnergy a, BoltzEnergy b) { return rel_eq(a, b, EP);
 void ComparePart(const Part& got, const Part& want, const std::string& name_got, Error& errors) {
   const int N = static_cast<int>(want.p.size());
   if (!part_rel_eq(got.q, want.q)) {
-    // TODO(0): what's happening here for mpfr.
-    auto a = got.q - want.q;
-    // typedef typename decltype(a)::something_made_up X;
-    errors.push_back(fmt::format(" {}", a));
-    errors.push_back(fmt::format(" {} {} {}", got.q, want.q, a));
-    // errors.push_back(
-    //     fmt::format("{} q: {} != {}; difference: {}", name_got, got.q, want.q, got.q - want.q));
+    errors.push_back(
+        fmt::format("{} q: {} != {}; difference: {}", name_got, got.q, want.q, got.q - want.q));
   }
 
   for (int st = 0; st < N; ++st) {
