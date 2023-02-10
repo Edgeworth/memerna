@@ -26,9 +26,11 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg);
+  FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg, uint_fast32_t seed);
 
   Error Run();
+
+  [[nodiscard]] uint_fast32_t seed() const { return seed_; }
 
 #ifdef USE_RNASTRUCTURE
   void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
@@ -38,6 +40,7 @@ class FuzzInvocation {
   Primary r_;
   erg::EnergyModelPtr em_;
   FuzzCfg cfg_;
+  uint_fast32_t seed_;
 
   FoldResult fold_{};
   std::vector<subopt::SuboptResult> subopt_{};

@@ -21,11 +21,13 @@ FuzzHarness::FuzzHarness(mrna::ArgParse args)
 }
 
 mrna::fuzz::FuzzInvocation FuzzHarness::CreateInvocation(const mrna::Primary& r) {
-  mrna::fuzz::FuzzInvocation invoc(r, em_, cfg_);
-  if (args_.GetOr(OPT_RANDOM_MODEL))
+  mrna::fuzz::FuzzInvocation invoc(r, em_, cfg_, 0);
+  if (args_.GetOr(OPT_RANDOM_MODEL)) {
+    uint_fast32_t seed = e_();
     invoc = mrna::fuzz::FuzzInvocation(r,
-        mrna::erg::Random(args_.Get<mrna::erg::ModelKind>(mrna::erg::OPT_ENERGY_MODEL), e_()),
-        cfg_);
+        mrna::erg::Random(args_.Get<mrna::erg::ModelKind>(mrna::erg::OPT_ENERGY_MODEL), seed), cfg_,
+        seed);
+  }
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE

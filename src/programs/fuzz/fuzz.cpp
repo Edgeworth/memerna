@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
   const auto enumerate = args.Has(OPT_ENUMERATE);
+  const auto random_model = args.Has(OPT_RANDOM_MODEL);
   int min_len = 0;
   int max_len = 0;
   std::string seq;
@@ -96,6 +97,7 @@ int main(int argc, char* argv[]) {
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
+        if (random_model) fmt::print("Random model seed: {}\n", invoc.seed());
         for (const auto& s : res) fmt::print("{}\n", s);
         fmt::print("\n");
       }
