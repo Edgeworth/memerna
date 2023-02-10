@@ -102,8 +102,9 @@ void CompareT04DpState(const md::t04::DpState& got, const md::t04::DpState& want
 
 }  // namespace
 
-FuzzInvocation::FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg)
-    : r_(r), em_(std::move(em)), cfg_(cfg) {}
+FuzzInvocation::FuzzInvocation(
+    const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg, uint_fast32_t seed)
+    : r_(r), em_(std::move(em)), cfg_(cfg), seed_(seed) {}
 
 Error FuzzInvocation::Run() {
   if (cfg_.mfe) Register("mfe:", CheckMfe());
