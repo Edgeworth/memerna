@@ -171,6 +171,18 @@ Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto
 python -m rnapy.run afl-fuzz --help
 ```
 
+For example, try this command line:
+
+```
+python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
+  --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --random-model
+```
+
+Checking progress:
+```
+afl-whatsup -s $PREFIX/memerna-afl/*/afl
+```
+
 Reproducing a crash:
 
 ```

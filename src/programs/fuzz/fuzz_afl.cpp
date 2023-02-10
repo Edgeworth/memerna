@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     std::string rs;
     while (ss >> rs) {
       try {
-        if (max_len > 0 && rs.size() > max_len) rs.resize(max_len);
+        if (max_len > 0 && static_cast<int>(rs.size()) > max_len) rs.resize(max_len);
         auto invoc = harness.CreateInvocation(mrna::Primary::FromSeq(rs));
         const auto res = invoc.Run();
         if (!res.empty()) {

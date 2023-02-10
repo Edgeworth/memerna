@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
       fmt::print("\n");
     }
   } else if (enumerate) {
-    fmt::print("Exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
+    fmt::print("Exhaustive fuzzing [{}-{}] len RNAs\n", min_len, max_len);
     int64_t i = 0;
     mrna::Primary r(min_len);
     while (static_cast<int>(r.size()) <= max_len) {
@@ -78,9 +78,9 @@ int main(int argc, char* argv[]) {
 
       r.Increment();
     }
-    fmt::print("Finished exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
+    fmt::print("Finished exhaustive fuzzing [{}-{}] len RNAs\n", min_len, max_len);
   } else {
-    fmt::print("Random fuzzing [{}-{}] len RNAs", min_len, max_len);
+    fmt::print("Random fuzzing [{}-{}] len RNAs\n", min_len, max_len);
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
     auto start_time = std::chrono::steady_clock::now();
     for (int64_t i = 0;; ++i) {
