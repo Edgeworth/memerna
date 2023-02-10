@@ -8,6 +8,7 @@ from itertools import cycle
 from itertools import islice
 from pathlib import Path
 import shutil
+import sys
 
 import click
 from rnapy.build.build_cfg import BuildCfg
@@ -76,6 +77,10 @@ class AflFuzzCfg:
         self.build_cfg = copy.deepcopy(self.build_cfg)
         self.build_cfg.env.update(self.kind.env())
 
+        # Remove mutually exclusive env vars.
+        if self.kind == AflFuzzKind.ASAN:
+            del self.build_cfg.env["AFL_HARDEN"]
+
     def error(self) -> str:
         if not self.build_cfg.is_afl():
             return "Fuzzing only supported for AFL configurations."
@@ -132,25 +137,24 @@ class AflFuzzCfg:
         cmd = f"./{AFL_TARGET} "
         if self.build_cfg.rnastructure:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
-            cmd += f"--max-len {self.fuzz_max_len}"
-            cmd += "--random-model" if self.fuzz_random_model else "--no-random-model"
-            cmd += f"--energy-model {self.fuzz_energy_model}"
-            cmd += f"--brute-max {self.fuzz_brute_max}"
-            cmd += "--mfe" if self.fuzz_mfe else "--no-mfe"
-            cmd += "--mfe-rnastructure" if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure"
-            cmd += "--mfe-table" if self.fuzz_mfe_table else "--no-mfe-table"
-            cmd += "--subopt" if self.fuzz_subopt else "--no-subopt"
-            cmd += (
-                "--subopt-rnastructure"
-                if self.fuzz_subopt_rnastructure
-                else "--no-subopt-rnastructure"
-            )
-            cmd += f"--subopt-strucs {self.fuzz_subopt_strucs}"
-            cmd += f"--subopt-delta {self.fuzz_subopt_delta}"
-            cmd += "--part" if self.fuzz_part else "--no-part-rnastructure"
-            cmd += (
-                "--part-rnastructure" if self.fuzz_part_rnastructure else "--no-part-rnastructure"
-            )
+        cmd += f"--memerna-data {self.build_cfg.src / 'data'} "
+        cmd += f"--max-len {self.fuzz_max_len} "
+        cmd += "--random-model " if self.fuzz_random_model else "--no-random-model "
+        cmd += f"--energy-model {self.fuzz_energy_model} "
+        cmd += f"--brute-max {self.fuzz_brute_max} "
+        cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
+        cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "
+        cmd += "--mfe-table " if self.fuzz_mfe_table else "--no-mfe-table "
+        cmd += "--subopt " if self.fuzz_subopt else "--no-subopt "
+        cmd += (
+            "--subopt-rnastructure "
+            if self.fuzz_subopt_rnastructure
+            else "--no-subopt-rnastructure "
+        )
+        cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
+        cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
+        cmd += "--part " if self.fuzz_part else "--no-part-rnastructure "
+        cmd += "--part-rnastructure " if self.fuzz_part_rnastructure else "--no-part-rnastructure "
 
         return cmd
 
@@ -188,17 +192,15 @@ def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:
     """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
     # Constructs fuzzers in this order:
-    # 0: Regular fuzzer - the main fuzzer.
-    # 1: LAF fuzzer.
-    # 2: LAF fuzzer.
-    # 3: LAF fuzzer.
-    # 4: CMPLOG fuzzer.
-    # 5: CMPLOG fuzzer with -l AT transformations.
-    # 6: ASAN fuzzer.
-    # 7: UBSAN fuzzer.
-    # 8: TSAN fuzzer.
-    # 9: CFISAN fuzzer.
-    # 10: Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
+    # Regular fuzzer - the main fuzzer.
+    # CMPLOG fuzzer.
+    # CMPLOG fuzzer with -l AT transformations.
+    # ASAN fuzzer.
+    # UBSAN fuzzer.
+    # TSAN fuzzer.
+    # CFISAN fuzzer.
+    # Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
+    # Note: LAF is disabled since it seems to cause heisenbugs.
     kinds_args: list[tuple[AflFuzzKind, list[str]]] = [
         (AflFuzzKind.REGULAR, []),
         (AflFuzzKind.CMPLOG, []),
@@ -210,9 +212,6 @@ def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:
     # Also skip LAF, as it takes too long to compile.
     if not afl_cfg.build_cfg.rnastructure:
         kinds_args += [
-            (AflFuzzKind.LAF, []),
-            (AflFuzzKind.LAF, []),
-            (AflFuzzKind.LAF, []),
             (AflFuzzKind.ASAN, []),
             (AflFuzzKind.UBSAN, []),
             (AflFuzzKind.TSAN, []),

@@ -177,14 +177,13 @@ struct TracebackInternal {
       const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
       const Energy bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
       const Energy bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
-      const Energy outer_penalty = em.AuGuPenalty(stb, enb);
 
       for (int length = 2; 2 * length <= max_stack; ++length) {
         // fmt::print("length = {}, {}\n", length, dp[st][en][DP_P]);
         auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
-            em.penultimate_stack[en1b][enb][stb][st1b] + outer_penalty;
+            em.penultimate_stack[en1b][enb][stb][st1b];
         if (length == 2 &&
-            none + nostack[st + 1][en - 1] + em.AuGuPenalty(r[st + 1], r[en - 1]) +
+            none + nostack[st + 1][en - 1] +
                     em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
                 dp[st][en][DP_P]) {
           q.emplace(NoStackIndex(st + 1, en - 1));
@@ -195,9 +194,9 @@ struct TracebackInternal {
           return true;
         }
 
-        auto left = bulge_left + em.penultimate_stack[en1b][enb][stb][st2b] + outer_penalty;
+        auto left = bulge_left + em.penultimate_stack[en1b][enb][stb][st2b];
         if (length == 2 &&
-            left + nostack[st + 2][en - 1] + em.AuGuPenalty(r[st + 2], r[en - 1]) +
+            left + nostack[st + 2][en - 1] +
                     em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
                 dp[st][en][DP_P]) {
           q.emplace(NoStackIndex(st + 2, en - 1));
@@ -208,9 +207,9 @@ struct TracebackInternal {
           return true;
         }
 
-        auto right = bulge_right + em.penultimate_stack[en2b][enb][stb][st1b] + outer_penalty;
+        auto right = bulge_right + em.penultimate_stack[en2b][enb][stb][st1b];
         if (length == 2 &&
-            right + nostack[st + 1][en - 2] + em.AuGuPenalty(r[st + 1], r[en - 2]) +
+            right + nostack[st + 1][en - 2] +
                     em.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
                 dp[st][en][DP_P]) {
           q.emplace(NoStackIndex(st + 1, en - 2));
@@ -481,8 +480,7 @@ struct TracebackInternal {
 
     auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
     if (length == 2 &&
-        none + nostack[st + 1][en - 1] + em.AuGuPenalty(r[st + 1], r[en - 1]) +
-                em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
+        none + nostack[st + 1][en - 1] + em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {
       q.emplace(NoStackIndex(st + 1, en - 1));
       return true;
@@ -494,8 +492,7 @@ struct TracebackInternal {
 
     auto left = bulge_left;
     if (length == 2 &&
-        left + nostack[st + 2][en - 1] + em.AuGuPenalty(r[st + 2], r[en - 1]) +
-                em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
+        left + nostack[st + 2][en - 1] + em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {
       q.emplace(NoStackIndex(st + 2, en - 1));
       return true;
@@ -507,7 +504,7 @@ struct TracebackInternal {
 
     auto right = bulge_right;
     if (length == 2 &&
-        right + nostack[st + 1][en - 2] + em.AuGuPenalty(r[st + 1], r[en - 2]) +
+        right + nostack[st + 1][en - 2] +
                 em.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
             penult[st][en][length]) {
       q.emplace(NoStackIndex(st + 1, en - 2));

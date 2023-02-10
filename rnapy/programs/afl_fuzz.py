@@ -16,8 +16,9 @@ from rnapy.util.util import fn_args
 
 def run_fuzz(cfg: AflFuzzCfg) -> None:
     cmd = cfg.afl_fuzz_cmd()
-    click.echo(f"Running fuzz {cmd}")
-    run_shell(cmd, cwd=cfg.bin_path())
+    cwd = cfg.bin_path()
+    click.echo(f"Running fuzz {cmd} in {cwd}")
+    run_shell(cmd, cwd=cwd)
 
 
 @cloup.command()
