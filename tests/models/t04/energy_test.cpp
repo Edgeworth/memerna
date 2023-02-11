@@ -133,7 +133,8 @@ TEST_P(T04ModelTest, NNDBInternalLoopExamples) {
           em->HairpinInitiation(3),
       GetEnergy(kNNDBInternal2x3));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] +
-          em->internal_2x2[A][G][A][C][G][G][A][U] + em->HairpinInitiation(3),
+          em->internal_2x2[A][G][A][C][G][G][A][U] + em->internal_au_penalty +
+          em->HairpinInitiation(3),
       GetEnergy(kNNDBInternal2x2));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(6) +
           std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->internal_au_penalty +
