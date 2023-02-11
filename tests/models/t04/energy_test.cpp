@@ -241,27 +241,27 @@ TEST(T04P2ModelTest, T04P2) {
   EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
 
   EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
-  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
-  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
-  EXPECT_EQ(E(-0.64), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(5.71), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.50), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(-0.59), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(8.00), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
   EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
   EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
-  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
-  EXPECT_EQ(E(17.20), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(E(12.90), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(E(-27.66),
+  EXPECT_EQ(E(7.45), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(17.30), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(18.25), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.60), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(13.10), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-27.41),
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(E(17.60), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-43.45), GetEnergy(em, k16sHSapiens3));
+  EXPECT_EQ(E(17.90), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(-42.75), GetEnergy(em, k16sHSapiens3));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.63), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
   EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
-  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+  EXPECT_EQ(E(7.20), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
@@ -282,9 +282,9 @@ TEST(T04P2ModelTest, Precomp) {
   EXPECT_EQ(E(-3.42), pc.min_flush_coax);
   EXPECT_EQ(E(-2.60), pc.min_twoloop_not_stack);
 
-  Energy augubranch[4][4] = {{E(-0.60), E(-0.60), E(-0.60), E(0.45 - 0.60)},
-      {E(-0.60), E(-0.60), E(-0.60), E(-0.60)}, {E(-0.60), E(-0.60), E(-0.60), E(0.45 - 0.60)},
-      {E(0.45 - 0.60), E(-0.60), E(0.45 - 0.60), E(-0.60)}};
+  Energy augubranch[4][4] = {{E(-0.60), E(-0.60), E(-0.60), E(0.50 - 0.60)},
+      {E(-0.60), E(-0.60), E(-0.60), E(-0.60)}, {E(-0.60), E(-0.60), E(-0.60), E(0.50 - 0.60)},
+      {E(0.50 - 0.60), E(-0.60), E(0.50 - 0.60), E(-0.60)}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
@@ -297,31 +297,31 @@ TEST(T04P2ModelTest, T12P2) {
   EXPECT_EQ(E(4.57), em->InternalLoopInitiation(67));
 
   // Example from https://doi.org/10.1093/nar/gkac261
-  EXPECT_EQ(E(-1.84), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
-  EXPECT_EQ(E(-3.13), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(-1.74), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
+  EXPECT_EQ(E(-3.08), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
 
   EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
-  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
-  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(5.71), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.50), GetEnergy(em, "UACAGA", "(....)"));
   EXPECT_EQ(E(-1.36), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(8.00), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
   EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
   EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
-  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(7.45), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
   EXPECT_EQ(E(16.30), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(E(12.00), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(E(-28.39),
+  EXPECT_EQ(E(18.25), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.60), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(12.10), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-28.29),
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(E(15.80), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-41.96), GetEnergy(em, k16sHSapiens3));
+  EXPECT_EQ(E(15.90), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(-41.46), GetEnergy(em, k16sHSapiens3));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(2.52), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
   EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
-  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+  EXPECT_EQ(E(7.20), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +

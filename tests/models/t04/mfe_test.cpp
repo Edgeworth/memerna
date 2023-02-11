@@ -116,11 +116,11 @@ TEST_P(T04MfeTest, T04P2) {
   EXPECT_EQ(ans, Mfe(em, "CCUCCGGG"));
   ans = {E(-0.56), "[[....]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGGAAACGG"));
-  ans = {E(-0.48), "[[[...]]]3"};
+  ans = {E(-0.43), "[[[...]]]3"};
   EXPECT_EQ(ans, Mfe(em, "UGCAAAGCAA"));
   ans = {E(-4.38), "[[[[...]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GGGGAAACCCC"));
-  ans = {E(-1.29), "[[[[....]]]]3"};
+  ans = {E(-1.24), "[[[[....]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CUUAUAGUUAAGG"));
   ans = {E(-3.94), "n[....]]p[....]]."};
   EXPECT_EQ(ans, Mfe(em, "CCGAAGGGGCUGCGGCG"));
@@ -133,54 +133,54 @@ TEST_P(T04MfeTest, T04P2) {
 
   // Too slow for brute force:
   if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
-  ans = {E(-5.25), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
+  ans = {E(-5.05), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
-  ans = {E(-13.47), "....n[[[[...]]]]]p[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]].."};
+  ans = {E(-13.32), "....n[[[[...]]]]]p[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]].."};
   EXPECT_EQ(
       ans, Mfe(em, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
-  ans = {E(-5.69), "...m[[[[[[....]]]3mn[[.....]]]MP]]M"};
+  ans = {E(-5.59), "...m[[[[[[....]]]3mn[[.....]]]MP]]M"};
   EXPECT_EQ(ans, Mfe(em, "AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC"));
-  ans = {E(-12.08), "m[[[[[3n[....]]mp[[[[.......]]]]]M]]]]]M."};
+  ans = {E(-12.03), "m[[[[[3n[....]]mp[[[[.......]]]]]M]]]]]M."};
   EXPECT_EQ(ans, Mfe(em, "ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG"));
-  ans = {E(-7.33), ".....5[[[[........[[[[[......]]]]]..]]]]"};
+  ans = {E(-7.28), ".....5[[[[........[[[[[......]]]]]..]]]]"};
   EXPECT_EQ(ans, Mfe(em, "CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG"));
-  ans = {E(-3.14), "[[[3...n[[...]]]mp[.....]]M]]]3"};
+  ans = {E(-3.09), "[[[3...n[[...]]]mp[.....]]M]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CCCAACGGAGUAACUUAGCGAAUAGCAGGGG"));
   ans = {E(-11.90), ".n[[[....]]]]p[[[....]]]]..."};
   EXPECT_EQ(ans, Mfe(em, "CCGGGCCAGCCCGCUCCUACGGGGGGUC"));
-  ans = {E(-7.45), "[[[[M..[[[......]]]3n[[....]]]mP]]]"};
+  ans = {E(-7.35), "[[[[M..[[[......]]]3n[[....]]]mP]]]"};
   EXPECT_EQ(ans, Mfe(em, "CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG"));
-  ans = {E(-2.97), "[[[[[[...]]]3...mn[....]]MP]]3."};
+  ans = {E(-2.87), "[[[[[[...]]]3...mn[....]]MP]]3."};
   EXPECT_EQ(ans, Mfe(em, "CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC"));
-  ans = {E(-6.41), "[[[3n[[[...]]]]p[.....]]]]]3"};
+  ans = {E(-6.36), "[[[3n[[[...]]]]p[.....]]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCAGGGUCGGACCCGGGAGAACCGCGA"));
-  ans = {E(-6.07), ".[[[[..[[[[....]]]].........]]]]3"};
+  ans = {E(-5.97), ".[[[[..[[[[....]]]].........]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA"));
-  ans = {E(-12.04), "...[[[[[M...[[.[[.[[[.....]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
+  ans = {E(-11.99), "...[[[[[M...[[.[[.[[[.....]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC"));
-  ans = {E(-4.10), "[[[3..n[[[........]]]]p[[[[....]]]]]..........]]]3"};
+  ans = {E(-3.95), "[[[3..n[[[........]]]]p[[[[....]]]]]..........]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC"));
-  ans = {E(-6.73), "..m[[[[[[.....]]]]]]M..[[....]]3"};
+  ans = {E(-6.68), "..m[[[[[[.....]]]]]]M..[[....]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC"));
   ans = {
-      E(-27.66), "[[[[[[[[[[[.[[...[[[[....]]]]..]].]]]3mn[[[..[[[[....]]]]...]]]]MP]]]]]]]3..."};
+      E(-27.41), "[[[[[[[[[[[.[[...[[[[....]]]]..]].]]]3mn[[[..[[[[....]]]]...]]]]MP]]]]]]]3..."};
   EXPECT_EQ(ans,
       Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA"));
-  ans = {E(-5.35), "......n[[[....]]]]p[[......]]]"};
+  ans = {E(-5.25), "......n[[[....]]]]p[[......]]]"};
   EXPECT_EQ(ans, Mfe(em, "GCGCCCCAGUCGACGCUGAGCUCCUCUGCU"));
-  ans = {E(-15.70), "[[[3....n[[[[[[[[[....]]]]...]]]]]]p[[....]]].]]]3"};
+  ans = {E(-15.65), "[[[3....n[[[[[[[[[....]]]]...]]]]]]p[[....]]].]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG"));
   ans = {E(-4.42), ".[[[[3.n[....]]mp[....]]M..]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GGCGCACGCGUUAGCCGGGGAUCCACAGUGC"));
-  ans = {E(-3.06), "[[[3n[[[....]]]]mp[[.....]]]M..]]]3"};
+  ans = {E(-2.91), "[[[3n[[[....]]]]mp[[.....]]]M..]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG"));
-  ans = {E(-2.30), ".5[[[[[[...]]]3mn[[....]]]MP]]"};
+  ans = {E(-2.15), ".5[[[[[[...]]]3mn[[....]]]MP]]"};
   EXPECT_EQ(ans, Mfe(em, "UACCCUGUUCAGCAUUGGAAAUUUCCUGGG"));
-  ans = {E(-8.12), "m[[[[[[[[....]]]3n[[...]]]P]]]]M"};
+  ans = {E(-8.07), "m[[[[[[[[....]]]3n[[...]]]P]]]]M"};
   EXPECT_EQ(ans, Mfe(em, "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG"));
-  ans = {E(-20.82), "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3..."};
+  ans = {E(-20.62), "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3..."};
   EXPECT_EQ(ans, Mfe(em, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
-  ans = {E(-89.99),
+  ans = {E(-89.29),
       "......m[[...[[[[[[[[............[[..[[[[[[[M..m[[[[........]]]]M.......[[[[[[n[[[[...[[.[[[."
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]3...........n[[[[[.."
@@ -196,11 +196,11 @@ TEST_P(T04MfeTest, T12P2) {
   EXPECT_EQ(ans, Mfe(em, "CCUCCGGG"));
   ans = {E(-0.56), "[[....]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGGAAACGG"));
-  ans = {E(-0.48), "[[[...]]]3"};
+  ans = {E(-0.43), "[[[...]]]3"};
   EXPECT_EQ(ans, Mfe(em, "UGCAAAGCAA"));
   ans = {E(-4.38), "[[[[...]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GGGGAAACCCC"));
-  ans = {E(-1.29), "[[[[....]]]]3"};
+  ans = {E(-1.24), "[[[[....]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CUUAUAGUUAAGG"));
   ans = {E(-3.94), "n[....]]p[....]]."};
   EXPECT_EQ(ans, Mfe(em, "CCGAAGGGGCUGCGGCG"));
@@ -213,54 +213,54 @@ TEST_P(T04MfeTest, T12P2) {
 
   // Too slow for brute force:
   if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
-  ans = {E(-5.34), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
+  ans = {E(-5.19), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
-  ans = {E(-13.09), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
+  ans = {E(-12.94), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
   EXPECT_EQ(
       ans, Mfe(em, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
-  ans = {E(-5.69), "...m[[[[[[....]]]3mn[[.....]]]MP]]M"};
+  ans = {E(-5.59), "...m[[[[[[....]]]3mn[[.....]]]MP]]M"};
   EXPECT_EQ(ans, Mfe(em, "AAAUUCCGCUUGACAGCUCGCCACAACGGCAGGAC"));
-  ans = {E(-12.08), "m[[[[[3n[....]]mp[[[[.......]]]]]M]]]]]M."};
+  ans = {E(-12.03), "m[[[[[3n[....]]mp[[[[.......]]]]]M]]]]]M."};
   EXPECT_EQ(ans, Mfe(em, "ACCGUCAGCUACCGCCGACUAUACUCUUUAGUCAGACGGGG"));
-  ans = {E(-7.33), ".....5[[[[........[[[[[......]]]]]..]]]]"};
+  ans = {E(-7.28), ".....5[[[[........[[[[[......]]]]]..]]]]"};
   EXPECT_EQ(ans, Mfe(em, "CACACUCCCGCAAAUGCCGAGUAUCAGAUUACUCCCCGGG"));
   ans = {E(-2.83), "[[[3...n[[...]]]mp[.....]]M]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CCCAACGGAGUAACUUAGCGAAUAGCAGGGG"));
   ans = {E(-11.83), ".n[[[....]]]]p[[[....]]]]..."};
   EXPECT_EQ(ans, Mfe(em, "CCGGGCCAGCCCGCUCCUACGGGGGGUC"));
-  ans = {E(-7.54), "[[[[M..[[[......]]]3n[[....]]]mP]]]"};
+  ans = {E(-7.49), "[[[[M..[[[......]]]3n[[....]]]mP]]]"};
   EXPECT_EQ(ans, Mfe(em, "CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG"));
   ans = {E(-3.18), "........m[[[.....[[....]]..]]]M"};
   EXPECT_EQ(ans, Mfe(em, "CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC"));
-  ans = {E(-6.41), "[[[3n[[[...]]]]p[.....]]]]]3"};
+  ans = {E(-6.36), "[[[3n[[[...]]]]p[.....]]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCAGGGUCGGACCCGGGAGAACCGCGA"));
   ans = {E(-5.93), "m[[[...]]]M.....[[[[[....]]..]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA"));
-  ans = {E(-12.10), "...[[[[[M...[[.[[.[[[[...]]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
+  ans = {E(-12.05), "...[[[[[M...[[.[[.[[[[...]]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC"));
-  ans = {E(-4.10), "[[[3..n[[[........]]]]p[[[[....]]]]]..........]]]3"};
+  ans = {E(-3.95), "[[[3..n[[[........]]]]p[[[[....]]]]]..........]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC"));
-  ans = {E(-5.98), "..m[[[[[[.....]]]]]]M..[[....]]3"};
+  ans = {E(-5.93), "..m[[[[[[.....]]]]]]M..[[....]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC"));
   ans = {
-      E(-28.39), "[[[[[[[[[[[.[[...[[[[....]]]]..]].]]]3mn[[[..[[[[....]]]]...]]]]MP]]]]]]]3..."};
+      E(-28.29), "[[[[[[[[[[[.[[...[[[[....]]]]..]].]]]3mn[[[..[[[[....]]]]...]]]]MP]]]]]]]3..."};
   EXPECT_EQ(ans,
       Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA"));
-  ans = {E(-5.44), "......n[[[....]]]]p[[......]]]"};
+  ans = {E(-5.39), "......n[[[....]]]]p[[......]]]"};
   EXPECT_EQ(ans, Mfe(em, "GCGCCCCAGUCGACGCUGAGCUCCUCUGCU"));
-  ans = {E(-15.11), "[[[3....n[[[[[[[[[....]]]]...]]]]]]p[[....]]].]]]3"};
+  ans = {E(-15.06), "[[[3....n[[[[[[[[[....]]]]...]]]]]]p[[....]]].]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GGCACAUACUGGGACAACAUUCGUUGGGUUCCCGGGUCGAACGGCAGCCG"));
   ans = {E(-4.18), "[[[..........]]]3.............."};
   EXPECT_EQ(ans, Mfe(em, "GGCGCACGCGUUAGCCGGGGAUCCACAGUGC"));
-  ans = {E(-3.35), "[[[3n[[[....]]]]mp[[.....]]]M..]]]3"};
+  ans = {E(-3.25), "[[[3n[[[....]]]]mp[[.....]]]M..]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GUCAUGCACUACUGCGAUUCAUACGGAAACAGACG"));
-  ans = {E(-2.39), ".5[[[[[[...]]]3mn[[....]]]MP]]"};
+  ans = {E(-2.29), ".5[[[[[[...]]]3mn[[....]]]MP]]"};
   EXPECT_EQ(ans, Mfe(em, "UACCCUGUUCAGCAUUGGAAAUUUCCUGGG"));
   ans = {E(-8.53), "[[[[[[[[[....]]]3n[[...]]]P]]]]]"};
   EXPECT_EQ(ans, Mfe(em, "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG"));
-  ans = {E(-20.14), "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3..."};
+  ans = {E(-19.99), "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3..."};
   EXPECT_EQ(ans, Mfe(em, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
-  ans = {E(-89.54),
+  ans = {E(-89.99),
       "......m[[...[[[[[[[[............[[..[[[[[[[M..m[[[[........]]]]M.......[[[[[[n[[[[...[[.[[[."
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]3...........n[[[[[.."
