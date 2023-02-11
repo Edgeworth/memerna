@@ -7,6 +7,30 @@
 
 namespace mrna {
 
+std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
+std::tuple<Primary, Secondary> kNNDBHairpin2 = ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");
+std::tuple<Primary, Secondary> kNNDBHairpin3 = ParseSeqDb("CACCCGAGGGUG", "((((....))))");
+std::tuple<Primary, Secondary> kNNDBHairpin4 = ParseSeqDb("CACACCCCCCUGUG", "((((......))))");
+std::tuple<Primary, Secondary> kNNDBHairpin5 = ParseSeqDb("CGGGGGAAGUCCG", "((((.....))))");
+std::tuple<Primary, Secondary> kNNDBBulge1 = ParseSeqDb("GCCCGAAACGGC", "(((.(...))))");
+std::tuple<Primary, Secondary> kNNDBBulge2 = ParseSeqDb("GAACAGAAACUC", "((...(...)))");
+std::tuple<Primary, Secondary> kNNDBInternal2x3 =
+    ParseSeqDb("CAGACGAAACGGAGUG", "((..((...))...))");
+std::tuple<Primary, Secondary> kNNDBInternal1x5 =
+    ParseSeqDb("CAGCGAAACGGAAAGUG", "((.((...)).....))");
+std::tuple<Primary, Secondary> kNNDBInternal2x2 = ParseSeqDb("CAGACGAAACGGAUG", "((..((...))..))");
+std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
+std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
+std::tuple<Primary, Secondary> k16sHSapiens3 =
+    ParseSeqDb("AAGGACCUGGCGGUGCUUCAUAUCCCUCUAGAGGAGCCUGUUCUGUAAUCGAUAAACCCCGAUCAACCUCACCACCUCUUGCU"
+               "CAGCCUAUAUACCGCCAUCUUCAGCAAACCCUGAUGAAGGCUACAAAGUAAGCGCAAGUACCCACGUAAAGACGUUAGGUCAA"
+               "GGUGUAGCCCAUGAGGUGGCAAGAAAUGGGCUACAUUUUCUACCCCAGAAAACUACGAUAGCCCUUAUGAAACUUAAGGGUCG"
+               "AAGGUGGAUUUAGCAGUAAACUAAGAGUAGAGUGCUUAGUUGAACAGGGCCCUGAAGCGCGUACAC",
+        ".......(((((.(((((((...((..((((((.((((((((((...((((........))))........(((((((.......((.(("
+        "((..((((((.(.(..((..(((((.....))).......))..)).....(((....)))...).).).)))...))))))))....))"
+        ")))))..)).)))))))).)...((((.....)))).....(..(.(((((((.......))))))).)..).....))))).....((("
+        "((((.........)))))))......))...)))))))))).)).");
+
 void InitTest(const std::string& data_dir) {
   int last_test_ems_idx = 0;
   int last_test_t04_ems_idx = 0;

@@ -19,29 +19,16 @@
 
 namespace mrna::md::t22 {
 
+Energy GetEnergy(const Model::Ptr& em, const std::tuple<Primary, Secondary>& s) {
+  return em->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr).energy;
+}
+
 Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& db) {
-  return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
+  return GetEnergy(em, {Primary::FromSeq(r), Secondary::FromDb(db)});
 }
 
 class T22ModelTest : public testing::TestWithParam<int> {
  public:
-  std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin2 = ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin3 = ParseSeqDb("CACCCGAGGGUG", "((((....))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin4 = ParseSeqDb("CACACCCCCCUGUG", "((((......))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin5 = ParseSeqDb("CGGGGGAAGUCCG", "((((.....))))");
-  std::tuple<Primary, Secondary> kNNDBBulge1 = ParseSeqDb("GCCCGAAACGGC", "(((.(...))))");
-  std::tuple<Primary, Secondary> kNNDBBulge2 = ParseSeqDb("GAACAGAAACUC", "((...(...)))");
-  std::tuple<Primary, Secondary> kNNDBInternal2x3 =
-      ParseSeqDb("CAGACGAAACGGAGUG", "((..((...))...))");
-  std::tuple<Primary, Secondary> kNNDBInternal1x5 =
-      ParseSeqDb("CAGCGAAACGGAAAGUG", "((.((...)).....))");
-  std::tuple<Primary, Secondary> kNNDBInternal2x2 =
-      ParseSeqDb("CAGACGAAACGGAUG", "((..((...))..))");
-
-  std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
-  std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
-
   static Energy GetEnergy(const std::string& r, const std::string& db) {
     return GetEnergy({Primary::FromSeq(r), Secondary::FromDb(db)});
   }
@@ -153,7 +140,7 @@ TEST_P(T22ModelTest, BaseCases) {
 
 #if ENERGY_PRECISION == 2
 
-TEST(T22P2ModelTest, T22Tests) {
+TEST(T22P2ModelTest, T22P2) {
   auto em = t22p2;
 
   EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
@@ -243,7 +230,27 @@ TEST(T22P2ModelTest, T22Tests) {
   EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
   EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
 
-  // TODO(0): Test 1x2, 2x2.
+  // Special 1x2 internal loop with helix affected by penultimate stack on external
+  // sides only:
+  // AU end on GU at 0, 4; GU end on AU at 1, 3
+  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCCUU", "((.((...))..))"));
+  // AU end on GU at 1, 5; GU end on AU at 2, 4
+  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCCUUU", ".((.((...))..))."));
+
+  // Special 1x2 internal loop with lonely pairs:
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUCAU", "(.(...)..)"));
+  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUCAUU", ".(.(...)..)."));
+
+  // Special 2x2 internal loop with helix affected by penultimate stack on external
+  // sides only:
+  // AU end on GU at 0, 5; GU end on AU at 1, 4
+  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGGACCCUUCCUU", "((..((...))..))"));
+  // AU end on GU at 1, 6; GU end on AU at 2, 5
+  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGGACCCUUCCUUU", ".((..((...))..))."));
+
+  // Special 2x2 internal loop with lonely pairs:
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AAAACCCUAAU", "(..(...)..)"));
+  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAAACCCUAAUU", ".(..(...)..)."));
 
   // Multiloop:
   EXPECT_EQ(E(23.70), GetEnergy(em, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)"));
@@ -288,6 +295,39 @@ TEST(T22P2ModelTest, T22Tests) {
   // Mismatch mediated coax stack with lonely pairs:
   // Not counted as continuous, so no penultimate stacking.
   EXPECT_EQ(E(10.60), GetEnergy(em, "AGCCCUAACCCUU", ".(...).(...)."));
+
+  // Other tests:
+  EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
+  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(-0.64), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
+  EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
+  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(17.20), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(12.90), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-27.66),
+      GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
+          "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
+  EXPECT_EQ(E(17.60), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(17.9), GetEnergy(em, k16sHSapiens3));
+
+  EXPECT_EQ(E(3.63), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
+  EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
+  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+
+  // NNDB flush coax
+  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
+          2 * em->au_penalty + 2 * em->HairpinInitiation(3),
+      GetEnergy(em, "GUGAAACACAAAAUGA", ".((...))((...))."));
+
+  // NNDB T99 Multiloop example
+  EXPECT_EQ(em->stack[G][A][U][C] + em->terminal[C][G][A][G] + em->coax_mismatch_non_contiguous +
+          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->au_penalty,
+      GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
 }
 
 #endif

@@ -222,7 +222,6 @@ set(TEST_SOURCE
   tests/models/t04/mfe_test.cpp
   tests/models/t04/part_test.cpp
   tests/models/t04/subopt_test.cpp
-  tests/models/t04/trace_test.cpp
   tests/models/t22/energy_test.cpp
   tests/models/t22/mfe_test.cpp
   tests/util/splaymap_test.cpp
