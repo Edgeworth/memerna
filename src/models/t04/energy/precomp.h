@@ -17,7 +17,6 @@ namespace mrna::md::t04 {
 
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
-// TODO(3): move this?
 // This is templated because the partition function wants to use it with a different type.
 template <typename T>
 struct HairpinPrecomp {
@@ -29,17 +28,23 @@ struct HairpinPrecomp {
   int num_c{0};
 };
 
-// TODO(3): move this?
-template <typename HairpinPrecomp, typename EM>
+template <typename HairpinPrecomp, bool is_boltz, typename EM>
 std::vector<HairpinPrecomp> PrecomputeHairpin(const Primary& r, const EM& em, auto init) {
   std::vector<HairpinPrecomp> pc(r.size(), HairpinPrecomp(init));
   std::string rna_str = r.ToSeq();
   for (const auto& hairpinpair : em.hairpin) {
     const auto& str = hairpinpair.first;
     verify(str.size() - 2 <= MAX_SPECIAL_HAIRPIN_SZ, "need to increase MAX_SPECIAL_HAIRPIN_SZ");
+    auto energy = hairpinpair.second;
+    auto augu = em.AuGuPenalty(CharToBase(*str.begin()).value(), CharToBase(*str.rbegin()).value());
+    if constexpr (is_boltz)
+      energy *= augu;
+    else
+      energy += augu;
+
     auto pos = rna_str.find(str, 0);
     while (pos != std::string::npos) {
-      pc[pos].special[str.size() - 2] = hairpinpair.second;
+      pc[pos].special[str.size() - 2] = energy;
       pos = rna_str.find(str, pos + 1);
     }
   }

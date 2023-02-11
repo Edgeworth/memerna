@@ -51,21 +51,28 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return bem().stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return bem().Bulge(r_, ost, oen, ist, ien);
+
+  BoltzEnergy energy = bem().AuGuPenalty(r_[ost], r_[oen]) * bem().AuGuPenalty(r_[ist], r_[ien]);
+
   if (toplen == 1 && botlen == 1)
-    return bem().internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
+    return energy *
+        bem().internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
   if (toplen == 1 && botlen == 2)
-    return bem()
-        .internal_1x2[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[ien + 2]][r_[oen]];
+    return energy *
+        bem().internal_1x2[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[ien + 2]]
+                          [r_[oen]];
   if (toplen == 2 && botlen == 1)
-    return bem()
-        .internal_1x2[r_[ien]][r_[ien + 1]][r_[oen]][r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]];
+    return energy *
+        bem().internal_1x2[r_[ien]][r_[ien + 1]][r_[oen]][r_[ost]][r_[ost + 1]][r_[ost + 2]]
+                          [r_[ist]];
   if (toplen == 2 && botlen == 2)
-    return bem().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
-                             [r_[ien + 2]][r_[oen]];
+    return energy *
+        bem().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
+                          [r_[ien + 2]][r_[oen]];
 
   static_assert(TWOLOOP_MAX_SZ <= Model::INITIATION_CACHE_SZ, "initiation cache not large enough");
   assert(toplen + botlen < Model::INITIATION_CACHE_SZ);
-  BoltzEnergy energy = bem().internal_init[toplen + botlen] *
+  energy *= bem().internal_init[toplen + botlen] *
       std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM).Boltz();
 
   energy *= bem().InternalLoopAuGuPenalty(r_[ost], r_[oen]);
@@ -85,7 +92,7 @@ void BoltzPrecomp::PrecomputeData() {
   for (Base i = 0; i < 4; ++i)
     for (Base j = 0; j < 4; ++j)
       augubranch[i][j] = bem().multiloop_hack_b * bem().AuGuPenalty(i, j);
-  hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>>(r_, bem(), -1.0);
+  hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>, /*is_boltz=*/true>(r_, bem(), -1.0);
 }
 
 }  // namespace mrna::md::t04

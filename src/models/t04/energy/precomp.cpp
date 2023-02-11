@@ -33,21 +33,29 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return em().stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return em().Bulge(r_, ost, oen, ist, ien);
+
+  Energy energy = ZERO_E;
+  energy += em().AuGuPenalty(r_[ost], r_[oen]);
+  energy += em().AuGuPenalty(r_[ist], r_[ien]);
+
   if (toplen == 1 && botlen == 1)
-    return em().internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
+    return energy + em().internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
   if (toplen == 1 && botlen == 2)
-    return em()
-        .internal_1x2[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[ien + 2]][r_[oen]];
+    return energy +
+        em().internal_1x2[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[ien + 2]]
+                         [r_[oen]];
   if (toplen == 2 && botlen == 1)
-    return em()
-        .internal_1x2[r_[ien]][r_[ien + 1]][r_[oen]][r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]];
+    return energy +
+        em().internal_1x2[r_[ien]][r_[ien + 1]][r_[oen]][r_[ost]][r_[ost + 1]][r_[ost + 2]]
+                         [r_[ist]];
   if (toplen == 2 && botlen == 2)
-    return em().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
-                            [r_[ien + 2]][r_[oen]];
+    return energy +
+        em().internal_2x2[r_[ost]][r_[ost + 1]][r_[ost + 2]][r_[ist]][r_[ien]][r_[ien + 1]]
+                         [r_[ien + 2]][r_[oen]];
 
   static_assert(TWOLOOP_MAX_SZ <= Model::INITIATION_CACHE_SZ, "initiation cache not large enough");
   assert(toplen + botlen < Model::INITIATION_CACHE_SZ);
-  Energy energy = em().internal_init[toplen + botlen] +
+  energy += em().internal_init[toplen + botlen] +
       std::min(std::abs(toplen - botlen) * em().internal_asym, NINIO_MAX_ASYM);
 
   energy += em().InternalLoopAuGuPenalty(r_[ost], r_[oen]);
@@ -66,14 +74,16 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
 Energy Precomp::Hairpin(int st, int en) const {
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
+
+  // AU/GU penalty baked into precomputed special table.
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)
     return hairpin[st].special[length];
+
   const Base stb = r_[st];
   const Base st1b = r_[st + 1];
   const Base en1b = r_[en - 1];
   const Base enb = r_[en];
   Energy energy = em().HairpinInitiation(length) + em().AuGuPenalty(stb, enb);
-
   const bool all_c = hairpin[st + 1].num_c >= length;
 
   if (length == 3) {
@@ -111,6 +121,7 @@ void Precomp::PrecomputeData() {
       min_internal, MinEnergy(&em().internal_1x2[0][0][0][0][0][0][0], sizeof(em().internal_1x2)));
   min_internal = std::min(min_internal,
       MinEnergy(&em().internal_2x2[0][0][0][0][0][0][0][0], sizeof(em().internal_2x2)));
+
   verify(em().internal_asym >= ZERO_E,
       "min_internal optimisation does not work for negative asymmetry penalties");
   const auto min_mismatch = 2 *
@@ -121,20 +132,23 @@ void Precomp::PrecomputeData() {
   const auto min_internal_init = MinEnergy(
       &em().internal_init[4], sizeof(em().internal_init) - 4 * sizeof(em().internal_init[0]));
 
-  const auto min_internal_penalty = std::min(em().internal_au_penalty, em().internal_gu_penalty);
-  min_internal = std::min(
-      min_internal, min_internal_init + std::min(2 * min_internal_penalty, ZERO_E) + min_mismatch);
+  // Current implementation needs regular AU/GU for special internal loops.
+  const auto min_internal_penalty =
+      std::min(2 * std::min(em().internal_au_penalty, em().internal_gu_penalty), ZERO_E);
+  const auto min_penalty = std::min(2 * std::min(em().au_penalty, em().gu_penalty), ZERO_E);
+
+  min_internal = std::min(min_internal + min_penalty,
+      min_internal_init + min_penalty + min_internal_penalty + min_mismatch);
 
   const auto min_bulge_init =
       MinEnergy(&em().bulge_init[1], sizeof(em().bulge_init) - sizeof(em().bulge_init[0]));
 
-  const auto min_penalty = std::min(em().au_penalty, em().gu_penalty);
   const Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
-  const Energy min_bulge = min_bulge_init + std::min(2 * min_penalty, ZERO_E) + min_stack +
+  const Energy min_bulge = min_bulge_init + min_penalty + min_stack +
       std::min(em().bulge_special_c, ZERO_E) + states_bonus;
   min_twoloop_not_stack = std::min(min_bulge, min_internal);
 
-  hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>>(r_, em(), MAX_E);
+  hairpin = PrecomputeHairpin<HairpinPrecomp<Energy>, /*is_boltz=*/false>(r_, em(), MAX_E);
 }
 
 }  // namespace mrna::md::t04

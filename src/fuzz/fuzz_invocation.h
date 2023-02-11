@@ -42,7 +42,7 @@ class FuzzInvocation {
   FuzzCfg cfg_;
   uint_fast32_t seed_;
 
-  FoldResult fold_{};
+  std::optional<FoldResult> fold_;
   std::vector<subopt::SuboptResult> subopt_{};
   part::PartResult part_{};
   Error errors_;
@@ -56,6 +56,8 @@ class FuzzInvocation {
 #endif  // USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
+
+  void EnsureFoldResult();
 
   Error CheckMfe();
 

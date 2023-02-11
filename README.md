@@ -160,34 +160,68 @@ Run from $MRNA/run_tests after building.
 
 ### Fuzzing
 
+Fuzzing against RNAstructure
+
+```
+python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
+# Just MFE:
+./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
+# Partition and subopt are supported, but fuzzing shows differences instantly.
+```
+
+### Fuzzing with afl-fuzz
+
 Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
 
 ```
+
 python -m rnapy.run afl-fuzz --help
+
 ```
 
 For example, try this command line:
 
 ```
+
 python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
-  --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --random-model
+ --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --random-model
+
+```
+
+To fuzz everything:
+
+```
+
+python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
+ --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
+ --subopt --subopt-rnastructure --num-procs 1 --max-len 500 --random-model
+
 ```
 
 Checking progress:
 
 ```
-afl-whatsup -s $PREFIX/memerna-afl/*/afl
+
+afl-whatsup -s $PREFIX/memerna-afl/\*/afl
+
 ```
 
 Reproducing a crash:
 
 ```
-cat ./afl/default/crashes/<crash>  | ./fuzz --afl ...
+
+cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
+
 ```
 
 Minimising test cases:
 
 ```
+
 python -m rnapy.run afl-fuzz-min <crash-file>
+
+```
+
+```
 
 ```
