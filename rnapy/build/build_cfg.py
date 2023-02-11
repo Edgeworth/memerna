@@ -66,7 +66,7 @@ class BuildCfg:
     rnastructure: bool = False
     iwyu: bool = False
     lto: bool = False
-    float_bits: int = 64
+    float_precision: int = 15
     energy_precision: int = 2
 
     def ident(self) -> str:
@@ -75,7 +75,7 @@ class BuildCfg:
             ident += f"-{self.sanitizer}"
         if self.mpfr:
             ident += "-mpfr"
-        ident += f"-{self.float_bits}"
+        ident += f"-{self.float_precision}"
         ident += f"-p{self.energy_precision}"
         if self.rnastructure:
             ident += "-rnastructure"
@@ -104,7 +104,7 @@ class BuildCfg:
             "USE_MPFR": "ON" if self.mpfr else "OFF",
             "USE_IWYU": "ON" if self.iwyu else "OFF",
             "USE_LTO": "ON" if self.lto else "OFF",
-            "FLOAT_BITS": f"{self.float_bits}",
+            "FLOAT_PRECISION": f"{self.float_precision}",
             "ENERGY_PRECISION": f"{self.energy_precision}",
         }
         defs.update(self.sanitizer.cmake_defs())

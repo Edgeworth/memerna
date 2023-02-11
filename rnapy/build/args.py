@@ -52,7 +52,7 @@ build_cfg_options = cloup.option_group(
     ),
     cloup.option("--rnastructure/--no-rnastructure", default=False),
     cloup.option("--mpfr/--no-mpfr", default=False),
-    cloup.option("--float-bits", type=int, default=64),
+    cloup.option("--float-precision", type=int, default=15),
     cloup.option("--energy-precision", type=int, default=2),
 )
 
@@ -136,7 +136,7 @@ def build_cfg_from_args(  # pylint: disable=too-many-arguments
     rnastructure: bool,
     iwyu: bool,
     lto: bool,
-    float_bits: int,
+    float_precision: int,
     energy_precision: int,
     **_kwargs: Any,
 ) -> BuildCfg:
@@ -150,7 +150,7 @@ def build_cfg_from_args(  # pylint: disable=too-many-arguments
         rnastructure=rnastructure,
         iwyu=iwyu,
         lto=lto,
-        float_bits=float_bits,
+        float_precision=float_precision,
         energy_precision=energy_precision,
     )
 

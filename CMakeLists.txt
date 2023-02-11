@@ -10,8 +10,8 @@ option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 option(USE_LTO "Whether to build with LTO" CMAKE_OBJC_ANDROID_TOOLCHAIN_SUFFIX)
-set(FLOAT_BITS 64 CACHE STRING "Number of bits to use for floats.
-    Valid values are 32, 64, 80, or any value if MPFR is enabled.")
+set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for floats.
+    Valid values are 6 (float32), 15 (float64), 18 (float80), or any value if MPFR is enabled.")
 set(ENERGY_PRECISION 2 CACHE STRING
   "Number of decimal places to use for energy calculations")
 
@@ -293,8 +293,8 @@ if(USE_RNASTRUCTURE)
   target_link_libraries(memerna PUBLIC rnastructure_bridge)
 endif()
 
-# Set float bits
-target_compile_definitions(memerna PUBLIC FLOAT_BITS=${FLOAT_BITS})
+# Set float precision
+target_compile_definitions(memerna PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
 
 # Set energy precision
 target_compile_definitions(memerna PUBLIC ENERGY_PRECISION=${ENERGY_PRECISION})

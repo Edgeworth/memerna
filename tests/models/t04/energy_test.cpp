@@ -198,7 +198,7 @@ TEST(T04P1ModelTest, T04P1) {
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(17.9), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(17.9), GetEnergy(em, k16sHSapiens3));
+  EXPECT_EQ(E(-43.1), GetEnergy(em, k16sHSapiens3));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.7), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));

@@ -14,7 +14,7 @@ test:
   parallel --progress --halt soon,fail=1 --jobs 8 poetry run python -m rnapy.run \
     build --test {} ">" /dev/null ::: \
     --kind=debug --kind=relwithdebinfo ::: --sanitizer=asan \
-    --sanitizer=tsan --sanitizer=ubsan ::: --float-bits=64 --float-bits=80 :::+ \
+    --sanitizer=tsan --sanitizer=ubsan ::: --float-precision=15 --float-precision=18 :::+ \
     --energy-precision=1 --energy-precision=2 :::+ \
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
     --compiler=clang --compiler=default
