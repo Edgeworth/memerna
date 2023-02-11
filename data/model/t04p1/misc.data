@@ -30,9 +30,9 @@
 // 4. Internal loop data
 // Asymmetry coefficient
 0.6
-// AU penalty
+// Internal loop AU penalty - note includes 0.5 AU/GU
 0.7
-// GU penalty
+// Internal loop GU penalty - note includes 0.5 AU/GU
 0.7
 
 // 5. Multiloop hack model data

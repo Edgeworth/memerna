@@ -3,8 +3,8 @@ from pathlib import Path
 
 import cloup
 
-AU_PENALTY = 0.45
-GU_PENALTY = 0.45
+AU_PENALTY = 0.50
+GU_PENALTY = 0.50
 
 
 def update_internal_loop_end_penalties(

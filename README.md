@@ -56,20 +56,20 @@ Update in 2022 model (t22p2):
 - dangle3.data
 - dangle5.data
 - hairpin.data
-  Special hairpins. AU/GU penalties baked in.
+  Special hairpins. AU/GU penalties NOT baked in.
 - hairpin_initiation.data
 - internal_1x1.data
-  1x1 special internal loops. AU/GU penalties baked in.
+  1x1 special internal loops. AU/GU penalties NOT baked in.
   N.B. internal loops are never treated as continuous.
 - internal_1x2.data
-  2x1 special internal loops. AU/GU penalties baked in.
+  2x1 special internal loops. AU/GU penalties NOT baked in.
 - internal_2x2.data
-  2x2 special internal loops. AU/GU penalties baked in.
+  2x2 special internal loops. AU/GU penalties NOT baked in.
 - internal_2x3_mismatch.data
-  2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
+  2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
 - internal_initiation.data
 - internal_other_mismatch.data
-  Non 2x3 internal loop terminal mismatch parameters. AU/GU not baked in.
+  Non 2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
 - misc.data
 - stacking.data
 - terminal.data
