@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef TESTS_COMMON_TEST_H_
-#define TESTS_COMMON_TEST_H_
+#ifndef COMMON_TEST_H_
+#define COMMON_TEST_H_
 
 #include <cstdint>
 #include <string>
@@ -15,6 +15,20 @@ inline constexpr uint32_t T04P1_MODEL_HASH = 0x443cf312;
 inline constexpr uint32_t T04P2_MODEL_HASH = 0xdfdf6e87;
 inline constexpr uint32_t T12P2_MODEL_HASH = 0xdbcc795b;
 inline constexpr uint32_t T22P2_MODEL_HASH = 0xdbcc795b;
+
+extern std::tuple<Primary, Secondary> kNNDBHairpin1;
+extern std::tuple<Primary, Secondary> kNNDBHairpin2;
+extern std::tuple<Primary, Secondary> kNNDBHairpin3;
+extern std::tuple<Primary, Secondary> kNNDBHairpin4;
+extern std::tuple<Primary, Secondary> kNNDBHairpin5;
+extern std::tuple<Primary, Secondary> kNNDBBulge1;
+extern std::tuple<Primary, Secondary> kNNDBBulge2;
+extern std::tuple<Primary, Secondary> kNNDBInternal2x3;
+extern std::tuple<Primary, Secondary> kNNDBInternal1x5;
+extern std::tuple<Primary, Secondary> kNNDBInternal2x2;
+extern std::tuple<Primary, Secondary> kBulge1;
+extern std::tuple<Primary, Secondary> kInternal1;
+extern std::tuple<Primary, Secondary> k16sHSapiens3;
 
 // Make sure to use Range(0, NUM_TEST_MODELS) if making a parameterised test
 // with all models in test_ems, since test_ems is initialized at runtime.
@@ -38,4 +52,4 @@ void InitTest(const std::string& data_dir);
 
 }  // namespace mrna
 
-#endif  // TESTS_COMMON_TEST_H_
+#endif  // COMMON_TEST_H_

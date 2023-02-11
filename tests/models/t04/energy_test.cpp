@@ -27,29 +27,16 @@
 
 namespace mrna::md::t04 {
 
+Energy GetEnergy(const Model::Ptr& em, const std::tuple<Primary, Secondary>& s) {
+  return em->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr).energy;
+}
+
 Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& db) {
-  return em->TotalEnergy(Primary::FromSeq(r), Secondary::FromDb(db), nullptr).energy;
+  return GetEnergy(em, {Primary::FromSeq(r), Secondary::FromDb(db)});
 }
 
 class T04ModelTest : public testing::TestWithParam<int> {
  public:
-  std::tuple<Primary, Secondary> kNNDBHairpin1 = ParseSeqDb("CACAAAAAAAUGUG", "((((......))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin2 = ParseSeqDb("CACAGGAAGUGUG", "((((.....))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin3 = ParseSeqDb("CACCCGAGGGUG", "((((....))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin4 = ParseSeqDb("CACACCCCCCUGUG", "((((......))))");
-  std::tuple<Primary, Secondary> kNNDBHairpin5 = ParseSeqDb("CGGGGGAAGUCCG", "((((.....))))");
-  std::tuple<Primary, Secondary> kNNDBBulge1 = ParseSeqDb("GCCCGAAACGGC", "(((.(...))))");
-  std::tuple<Primary, Secondary> kNNDBBulge2 = ParseSeqDb("GAACAGAAACUC", "((...(...)))");
-  std::tuple<Primary, Secondary> kNNDBInternal2x3 =
-      ParseSeqDb("CAGACGAAACGGAGUG", "((..((...))...))");
-  std::tuple<Primary, Secondary> kNNDBInternal1x5 =
-      ParseSeqDb("CAGCGAAACGGAAAGUG", "((.((...)).....))");
-  std::tuple<Primary, Secondary> kNNDBInternal2x2 =
-      ParseSeqDb("CAGACGAAACGGAUG", "((..((...))..))");
-
-  std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
-  std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
-
   static Energy GetEnergy(const std::string& r, const std::string& db) {
     return GetEnergy({Primary::FromSeq(r), Secondary::FromDb(db)});
   }
@@ -188,7 +175,7 @@ struct CtdTest {
 
 #if ENERGY_PRECISION == 1
 
-TEST(T04P1ModelTest, T04Tests) {
+TEST(T04P1ModelTest, T04P1) {
   auto em = t04p1;
 
   EXPECT_EQ(E(8.8), em->HairpinInitiation(87));
@@ -211,6 +198,7 @@ TEST(T04P1ModelTest, T04Tests) {
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(17.9), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(17.9), GetEnergy(em, k16sHSapiens3));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.7), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
@@ -245,7 +233,7 @@ TEST(T04P1ModelTest, Precomp) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST(T04P2ModelTest, T04Tests) {
+TEST(T04P2ModelTest, T04P2) {
   auto em = t04p2;
 
   EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
@@ -268,6 +256,7 @@ TEST(T04P2ModelTest, T04Tests) {
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(17.60), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(-43.45), GetEnergy(em, k16sHSapiens3));
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.63), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
@@ -300,7 +289,7 @@ TEST(T04P2ModelTest, Precomp) {
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
 
-TEST(T04P2ModelTest, T12Tests) {
+TEST(T04P2ModelTest, T12P2) {
   auto em = t12p2;
 
   EXPECT_EQ(E(8.85), em->HairpinInitiation(87));
@@ -310,6 +299,39 @@ TEST(T04P2ModelTest, T12Tests) {
   // Example from https://doi.org/10.1093/nar/gkac261
   EXPECT_EQ(E(-1.84), GetEnergy(em, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
   EXPECT_EQ(E(-3.13), GetEnergy(em, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))"));
+
+  EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
+  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(-1.36), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
+  EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
+  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(16.30), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(12.00), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-28.39),
+      GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
+          "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
+  EXPECT_EQ(E(15.80), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(-41.96), GetEnergy(em, k16sHSapiens3));
+
+  // Special stacking - this is not implemented. TODO(4): Implement this?
+  EXPECT_EQ(E(2.52), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
+  EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
+  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+
+  // NNDB flush coax
+  EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
+          2 * em->au_penalty + 2 * em->HairpinInitiation(3),
+      GetEnergy(em, "GUGAAACACAAAAUGA", ".((...))((...))."));
+
+  // NNDB T99 Multiloop example
+  EXPECT_EQ(em->stack[G][A][U][C] + em->terminal[C][G][A][G] + em->coax_mismatch_non_contiguous +
+          3 * em->HairpinInitiation(3) + em->MultiloopInitiation(4) + 2 * em->au_penalty,
+      GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
 }
 
 // NEWMODEL: Add tests here.
