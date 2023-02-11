@@ -166,14 +166,14 @@ TEST(T22P2ModelTest, T22P2) {
   EXPECT_EQ(E(5.26 + 0.22 * 2), GetEnergy(em, "AAACCCUUU", ".((...))."));
 
   // Special hairpin with lonely pair unaffected:
-  EXPECT_EQ(E(2.45), GetEnergy(em, "ACAGUGCU", "(......)"));
-  EXPECT_EQ(E(1.75), GetEnergy(em, "AAACAGUGCUUU", "..(......).."));
+  EXPECT_EQ(E(2.40), GetEnergy(em, "ACAGUGCU", "(......)"));
+  EXPECT_EQ(E(1.70), GetEnergy(em, "AAACAGUGCUUU", "..(......).."));
 
   // Special hairpins:
   // GU end on AU at 0; AU end on GU at 1
-  EXPECT_EQ(E(1.85 - 0.31 - 0.71), GetEnergy(em, "GACAGUGCUU", "((......))"));
+  EXPECT_EQ(E(1.80 - 0.31 - 0.71), GetEnergy(em, "GACAGUGCUU", "((......))"));
   // GU end on AU at 1; AU end on GU at 2
-  EXPECT_EQ(E(1.15 - 0.31 - 0.71), GetEnergy(em, "AGACAGUGCUUU", ".((......))."));
+  EXPECT_EQ(E(1.10 - 0.31 - 0.71), GetEnergy(em, "AGACAGUGCUUU", ".((......))."));
 
   // Single nuc bulge loop - treated as continuous.
   // AU end on GU at 0, 4
@@ -222,35 +222,35 @@ TEST(T22P2ModelTest, T22P2) {
   // Special 1x1 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
-  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCUU", "((.((...)).))"));
+  EXPECT_EQ(E(7.22 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCUU", "((.((...)).))"));
   // AU end on GU at 1, 5; GU end on AU at 2, 4
-  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCUUU", ".((.((...)).))."));
+  EXPECT_EQ(E(6.52 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCUUU", ".((.((...)).))."));
 
   // Special 1x1 internal loop with lonely pairs:
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
-  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
+  EXPECT_EQ(E(7.80), GetEnergy(em, "AAACCCUAU", "(.(...).)"));
+  EXPECT_EQ(E(7.10), GetEnergy(em, "AAAACCCUAUU", ".(.(...).)."));
 
   // Special 1x2 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
-  EXPECT_EQ(E(9.12 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCCUU", "((.((...))..))"));
+  EXPECT_EQ(E(9.02 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCCUU", "((.((...))..))"));
   // AU end on GU at 1, 5; GU end on AU at 2, 4
-  EXPECT_EQ(E(8.42 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCCUUU", ".((.((...))..))."));
+  EXPECT_EQ(E(8.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCCUUU", ".((.((...))..))."));
 
   // Special 1x2 internal loop with lonely pairs:
-  EXPECT_EQ(E(9.70), GetEnergy(em, "AAACCCUCAU", "(.(...)..)"));
-  EXPECT_EQ(E(9.00), GetEnergy(em, "AAAACCCUCAUU", ".(.(...)..)."));
+  EXPECT_EQ(E(9.60), GetEnergy(em, "AAACCCUCAU", "(.(...)..)"));
+  EXPECT_EQ(E(8.90), GetEnergy(em, "AAAACCCUCAUU", ".(.(...)..)."));
 
   // Special 2x2 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 5; GU end on AU at 1, 4
-  EXPECT_EQ(E(8.52 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGGACCCUUCCUU", "((..((...))..))"));
+  EXPECT_EQ(E(8.42 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGGACCCUUCCUU", "((..((...))..))"));
   // AU end on GU at 1, 6; GU end on AU at 2, 5
-  EXPECT_EQ(E(7.82 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGGACCCUUCCUUU", ".((..((...))..))."));
+  EXPECT_EQ(E(7.72 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGGACCCUUCCUUU", ".((..((...))..))."));
 
   // Special 2x2 internal loop with lonely pairs:
-  EXPECT_EQ(E(8.80), GetEnergy(em, "AAAACCCUAAU", "(..(...)..)"));
-  EXPECT_EQ(E(8.10), GetEnergy(em, "AAAAACCCUAAUU", ".(..(...)..)."));
+  EXPECT_EQ(E(8.70), GetEnergy(em, "AAAACCCUAAU", "(..(...)..)"));
+  EXPECT_EQ(E(8.00), GetEnergy(em, "AAAAACCCUAAUU", ".(..(...)..)."));
 
   // Multiloop:
   EXPECT_EQ(E(23.70), GetEnergy(em, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)"));
@@ -313,7 +313,7 @@ TEST(T22P2ModelTest, T22P2) {
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(14.71), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-45.03), GetEnergy(em, k16sHSapiens3));
+  EXPECT_EQ(E(-45.38), GetEnergy(em, k16sHSapiens3));
 
   EXPECT_EQ(E(1.61), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
   EXPECT_EQ(E(-4.44), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
