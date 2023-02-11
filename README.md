@@ -2,26 +2,15 @@
 
 ## TODO:
 
-when implemented go through all t22 test cases and check structure with -v
-
-- special internal loops need data tables modified to remove penalty; subtract 0.45 if AU/GU or 0.5?
-- need to do the same for t12?
-
-internal loop / etc au/gu penalties: subtract 0.5 or 0.45?
-
 questions about RNAstructure data tables:
 rna.helix_ends.dg: looks like it contains AU/GU penalties. Why?
 rna.stack.dg: Why not updated with new stacking parameters?
 
+update data tables, move au/gu completely out.
+fuzz again with rnastructure
+add 0.1.0 version
+
 need to implement lonely pairs disabling properly for t22.
-
-add terminal stacks to:
-stacking:
-hairpins: what about ((...)) - need terminal stacks here?
-internal loops: ((..((...))..))
-bulge loops: ((((...)).))
-
-check float bits, partition fn
 
 switch to pytorch 2.0 in march
 
@@ -51,7 +40,7 @@ Update in 2022 model (t22p2):
 - AU penalty removed as well
 - AU penalty removed from special hairpins, if closed by AU
 - Lonely pairs implemented fully correctly.
-- Removed 0.45 portion of AU penalty from internal loop AU penalty.
+- Removed 0.5 (not 0.45) portion of AU penalty from internal loop AU penalty.
 - Stacking parameters changed
 - Sequence dependent parameters for terminal base pairs based on the penultimate
   pair (penultimate_stacking.data)
@@ -179,6 +168,7 @@ python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
 ```
 
 Checking progress:
+
 ```
 afl-whatsup -s $PREFIX/memerna-afl/*/afl
 ```

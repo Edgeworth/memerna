@@ -30,16 +30,23 @@ constexpr int powi(int base, int exp) {
 }
 
 #ifdef USE_MPFR
-using flt = boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_BITS>>;
+
+using flt =
+    boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_PRECISION>>;
+
+// Stringify to ensure
+#define FLT(x) static_cast<flt>(#x)
+
 #else
-#if FLOAT_BITS == 32
+
+#if FLOAT_PRECISION == 6
 using flt = float;
-#elif FLOAT_BITS == 64
+#elif FLOAT_PRECISION == 15
 using flt = double;
-#elif FLOAT_BITS == 80
+#elif FLOAT_PRECISION == 18
 using flt = long double;
 #else
-static_assert(false, "unknown float bits")
+static_assert(false, "unknown float precision");
 #endif
 
 // Redefinitions to use std:: for long double support, but also to keep
@@ -47,13 +54,16 @@ static_assert(false, "unknown float bits")
 inline flt fabs(flt v) { return std::abs(v); }
 inline flt exp(flt v) { return std::exp(v); }
 
+// Just pass through for built in types. Make literals long doubles.
+#define FLT(x) static_cast<flt>(x##l)
+
 #endif  // USE_MPFR
 
-#if FLOAT_BITS == 32
+#if FLOAT_PRECISION == 6
 inline const flt EP{1e-3};
-#elif FLOAT_BITS == 64
+#elif FLOAT_PRECISION == 15
 inline const flt EP{1e-6};
-#elif FLOAT_BITS == 80
+#elif FLOAT_PRECISION == 18
 inline const flt EP{1e-8};
 #else
 inline const flt EP{1e-30};

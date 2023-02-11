@@ -11,11 +11,12 @@
 
 namespace mrna {
 
-#define EXPECT_REL_EQ(a, b)                                        \
-  do {                                                             \
-    auto acopy = (a);                                              \
-    auto bcopy = (b);                                              \
-    EXPECT_TRUE(rel_eq(acopy, bcopy)) << acopy << " != " << bcopy; \
+#define EXPECT_REL_EQ(a, b)                                                    \
+  do {                                                                         \
+    auto acopy = (a);                                                          \
+    auto bcopy = (b);                                                          \
+    EXPECT_TRUE(rel_eq(acopy, bcopy))                                          \
+        << std::setprecision(FLOAT_PRECISION + 1) << acopy << " != " << bcopy; \
   } while (0)
 
 inline constexpr uint32_t T04P1_MODEL_HASH = 0x443cf312;
