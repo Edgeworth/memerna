@@ -116,7 +116,8 @@ DEFINE_BENCHES(t04p1);
 
 DEFINE_BENCHES(t04p2);
 DEFINE_BENCHES(t12p2);
-DEFINE_BENCHES(t22p2);
+// TODO(2): Uncomment when partition+subopt are implemented.
+// DEFINE_BENCHES(t22p2);
 
 // NEWMODEL: Add new benches here.
 

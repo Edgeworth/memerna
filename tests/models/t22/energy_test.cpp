@@ -95,19 +95,19 @@ TEST_P(T22ModelTest, NNDBInternalLoopExamples) {
 
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(5) +
           std::min(em->internal_asym, NINIO_MAX_ASYM) + em->internal_2x3_mismatch[A][G][G][U] +
-          em->internal_2x3_mismatch[G][G][A][C] + em->internal_au_penalty +
+          em->internal_2x3_mismatch[G][G][A][C] + em->au_penalty + em->internal_au_penalty +
           em->HairpinInitiation(3) + em->penultimate_stack[C][G][C][G] +
           em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][A][U][G] +
           em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal2x3));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] +
-          em->internal_2x2[A][G][A][C][G][G][A][U] + em->HairpinInitiation(3) +
+          em->internal_2x2[A][G][A][C][G][G][A][U] + em->au_penalty + em->HairpinInitiation(3) +
           em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][G][C][G] +
           em->penultimate_stack[C][A][U][G] + em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal2x2));
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[C][G][C][G] + em->InternalLoopInitiation(6) +
-          std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->internal_au_penalty +
-          em->HairpinInitiation(3) + em->penultimate_stack[C][G][C][G] +
+          std::min(4 * em->internal_asym, NINIO_MAX_ASYM) + em->au_penalty +
+          em->internal_au_penalty + em->HairpinInitiation(3) + em->penultimate_stack[C][G][C][G] +
           em->penultimate_stack[C][G][C][G] + em->penultimate_stack[C][A][U][G] +
           em->penultimate_stack[U][G][C][A],
       GetEnergy(kNNDBInternal1x5));
@@ -133,7 +133,7 @@ TEST_P(T22ModelTest, BaseCases) {
           em->penultimate_stack[G][C][G][C],
       GetEnergy(kBulge1));
   EXPECT_EQ(em->InternalLoopInitiation(5) + std::min(em->internal_asym, NINIO_MAX_ASYM) +
-          em->internal_au_penalty + em->au_penalty + em->internal_2x3_mismatch[A][G][A][U] +
+          em->internal_au_penalty + em->au_penalty * 2 + em->internal_2x3_mismatch[A][G][A][U] +
           em->internal_2x3_mismatch[C][A][A][G] + em->HairpinInitiation(3),
       GetEnergy(kInternal1));
 }

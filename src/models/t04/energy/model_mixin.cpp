@@ -69,8 +69,10 @@ Energy T04ModelMixin::Hairpin(
   // Subtract two for the initiating base pair.
   const int length = en - st - 1;
   if (length < 3) return MAX_E;  // Disallowed by T04.
-  energy += HairpinInitiation(length);
-  if (s) (*s)->AddNote("{}e - initiation", energy);
+
+  const auto initiation = HairpinInitiation(length);
+  energy += initiation;
+  if (s) (*s)->AddNote("{}e - initiation", initiation);
   // T04 says hairpin loops with all C bases inside them are treated specially.
   bool all_c = true;
   for (int i = st + 1; i <= en - 1; ++i) {
@@ -198,22 +200,22 @@ Energy T04ModelMixin::InternalLoop(
 
   Energy energy = ZERO_E;
 
-  // Special AU/GU penalties.
+  // AU/GU penalties.
   if (IsAuPair(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("{}e - outer AU penalty", internal_au_penalty);
-    energy += internal_au_penalty;
+    if (s) (*s)->AddNote("{}e - outer AU penalty", au_penalty);
+    energy += au_penalty;
   }
   if (IsGuPair(r[ost], r[oen])) {
-    if (s) (*s)->AddNote("{}e - outer GU penalty", internal_gu_penalty);
-    energy += internal_gu_penalty;
+    if (s) (*s)->AddNote("{}e - outer GU penalty", gu_penalty);
+    energy += gu_penalty;
   }
   if (IsAuPair(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("{}e - inner AU penalty", internal_au_penalty);
-    energy += internal_au_penalty;
+    if (s) (*s)->AddNote("{}e - inner AU penalty", au_penalty);
+    energy += au_penalty;
   }
   if (IsGuPair(r[ist], r[ien])) {
-    if (s) (*s)->AddNote("{}e - inner GU penalty", internal_gu_penalty);
-    energy += internal_gu_penalty;
+    if (s) (*s)->AddNote("{}e - inner GU penalty", gu_penalty);
+    energy += gu_penalty;
   }
 
   if (toplen == 1 && botlen == 1)
@@ -229,19 +231,37 @@ Energy T04ModelMixin::InternalLoop(
         internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
                     [r[oen]];
 
-  energy += InternalLoopInitiation(toplen + botlen);
-  if (s) (*s)->AddNote("{}e - initiation", energy);
+  // Internal loop extra AU/GU penalties.
+  if (IsAuPair(r[ost], r[oen])) {
+    if (s) (*s)->AddNote("{}e - outer internal loop AU penalty", internal_au_penalty);
+    energy += internal_au_penalty;
+  }
+  if (IsGuPair(r[ost], r[oen])) {
+    if (s) (*s)->AddNote("{}e - outer internal loop GU penalty", internal_gu_penalty);
+    energy += internal_gu_penalty;
+  }
+  if (IsAuPair(r[ist], r[ien])) {
+    if (s) (*s)->AddNote("{}e - inner internal loop AU penalty", internal_au_penalty);
+    energy += internal_au_penalty;
+  }
+  if (IsGuPair(r[ist], r[ien])) {
+    if (s) (*s)->AddNote("{}e - inner internal loop GU penalty", internal_gu_penalty);
+    energy += internal_gu_penalty;
+  }
+
+  const auto initiation = InternalLoopInitiation(toplen + botlen);
+  energy += initiation;
+  if (s) (*s)->AddNote("{}e - initiation", initiation);
 
   // Asymmetry term, limit with Ninio maximum asymmetry.
   const Energy asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("{}e - asymmetry", asym);
   energy += asym;
 
-  // Special mismatch parameters.
-  // To flip an RNA, we flip it vertically and horizontally (180 degree rotation).
-  // It turns out that the accesses for 2x3 and 3x2 both touch the same array locations, just which
-  // side is
-  // on the left / right is flipped.
+  // Special mismatch parameters. To flip an RNA, we flip it vertically and
+  // horizontally (180 degree rotation). It turns out that the accesses for 2x3
+  // and 3x2 both touch the same array locations, just which side is on the left
+  // / right is flipped.
   if ((toplen == 2 && botlen == 3) || (toplen == 3 && botlen == 2)) {
     const Energy mismatch = internal_2x3_mismatch[r[ost]][r[ost + 1]][r[oen - 1]][r[oen]] +
         internal_2x3_mismatch[r[ien]][r[ien + 1]][r[ist - 1]][r[ist]];

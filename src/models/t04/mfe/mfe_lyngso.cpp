@@ -52,10 +52,12 @@ void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state) {
         auto val = std::min(l * em->internal_asym, NINIO_MAX_ASYM) + em->internal_init[l];
         lyngso[st][en][l] = std::min(lyngso[st][en][l],
             em->InternalLoopAuGuPenalty(r[st + l + 1], en1b) +
+                em->AuGuPenalty(r[st + l + 1], en1b) +
                 em->internal_other_mismatch[en1b][enb][r[st + l]][r[st + l + 1]] + val +
                 dp[st + l + 1][en - 1][DP_P]);
         lyngso[st][en][l] = std::min(lyngso[st][en][l],
             em->InternalLoopAuGuPenalty(st1b, r[en - l - 1]) +
+                em->AuGuPenalty(st1b, r[en - l - 1]) +
                 em->internal_other_mismatch[r[en - l - 1]][r[en - l]][stb][st1b] + val +
                 dp[st + 1][en - l - 1][DP_P]);
       }
@@ -76,29 +78,35 @@ void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state) {
         // special energies.
         static_assert(Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
             "need initiation cached up to TWOLOOP_MAX_SZ");
-        auto base_internal_loop = em->InternalLoopAuGuPenalty(stb, enb);
+        auto base_internal_loop = em->InternalLoopAuGuPenalty(stb, enb) + em->AuGuPenalty(stb, enb);
         for (int isz = 4; isz <= max_inter; ++isz) {
           auto val = base_internal_loop + em->internal_init[isz] +
               std::min((isz - 2) * em->internal_asym, NINIO_MAX_ASYM);
           mins[DP_P] = std::min(mins[DP_P],
-              val + em->InternalLoopAuGuPenalty(r[st + isz], en2b) + dp[st + isz][en - 2][DP_P]);
+              val + em->InternalLoopAuGuPenalty(r[st + isz], en2b) +
+                  em->AuGuPenalty(r[st + isz], en2b) + dp[st + isz][en - 2][DP_P]);
           mins[DP_P] = std::min(mins[DP_P],
-              val + em->InternalLoopAuGuPenalty(st2b, r[en - isz]) + dp[st + 2][en - isz][DP_P]);
+              val + em->InternalLoopAuGuPenalty(st2b, r[en - isz]) +
+                  em->AuGuPenalty(st2b, r[en - isz]) + dp[st + 2][en - isz][DP_P]);
         }
 
         // Internal loop cases. Since we require HAIRPIN_MIN_SZ >= 3 and initialise arr to MAX_E, we
         // don't need ifs
         // here.
         mins[DP_P] = std::min(mins[DP_P],
-            em->internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + dp[st + 2][en - 2][DP_P]);
+            em->internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + em->AuGuPenalty(stb, enb) +
+                em->AuGuPenalty(st2b, en2b) + dp[st + 2][en - 2][DP_P]);
         mins[DP_P] = std::min(mins[DP_P],
             em->internal_1x2[stb][st1b][st2b][r[en - 3]][en2b][en1b][enb] +
+                em->AuGuPenalty(stb, enb) + em->AuGuPenalty(st2b, r[en - 3]) +
                 dp[st + 2][en - 3][DP_P]);
         mins[DP_P] = std::min(mins[DP_P],
             em->internal_1x2[en2b][en1b][enb][stb][st1b][st2b][r[st + 3]] +
+                em->AuGuPenalty(en2b, r[st + 3]) + em->AuGuPenalty(enb, stb) +
                 dp[st + 3][en - 2][DP_P]);
         mins[DP_P] = std::min(mins[DP_P],
             em->internal_2x2[stb][st1b][st2b][r[st + 3]][r[en - 3]][en2b][en1b][enb] +
+                em->AuGuPenalty(stb, enb) + em->AuGuPenalty(r[st + 3], r[en - 3]) +
                 dp[st + 3][en - 3][DP_P]);
 
         // 2x3 and 3x2 loops
@@ -107,10 +115,12 @@ void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state) {
             em->internal_2x3_mismatch[stb][st1b][en1b][enb];
         mins[DP_P] = std::min(mins[DP_P],
             two_by_three + em->InternalLoopAuGuPenalty(r[st + 3], r[en - 4]) +
+                em->AuGuPenalty(r[st + 3], r[en - 4]) +
                 em->internal_2x3_mismatch[r[en - 4]][r[en - 3]][st2b][r[st + 3]] +
                 dp[st + 3][en - 4][DP_P]);
         mins[DP_P] = std::min(mins[DP_P],
             two_by_three + em->InternalLoopAuGuPenalty(r[st + 4], r[en - 3]) +
+                em->AuGuPenalty(r[st + 4], r[en - 3]) +
                 em->internal_2x3_mismatch[r[en - 3]][r[en - 2]][r[st + 3]][r[st + 4]] +
                 dp[st + 4][en - 3][DP_P]);
 
