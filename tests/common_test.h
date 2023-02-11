@@ -11,6 +11,13 @@
 
 namespace mrna {
 
+#define EXPECT_REL_EQ(a, b)                                        \
+  do {                                                             \
+    auto acopy = (a);                                              \
+    auto bcopy = (b);                                              \
+    EXPECT_TRUE(rel_eq(acopy, bcopy)) << acopy << " != " << bcopy; \
+  } while (0)
+
 inline constexpr uint32_t T04P1_MODEL_HASH = 0x443cf312;
 inline constexpr uint32_t T04P2_MODEL_HASH = 0xdfdf6e87;
 inline constexpr uint32_t T12P2_MODEL_HASH = 0xdbcc795b;

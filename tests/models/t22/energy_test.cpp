@@ -233,24 +233,24 @@ TEST(T22P2ModelTest, T22P2) {
   // Special 1x2 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
-  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCCUU", "((.((...))..))"));
+  EXPECT_EQ(E(9.12 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGACCCUUCCUU", "((.((...))..))"));
   // AU end on GU at 1, 5; GU end on AU at 2, 4
-  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCCUUU", ".((.((...))..))."));
+  EXPECT_EQ(E(8.42 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGACCCUUCCUUU", ".((.((...))..))."));
 
   // Special 1x2 internal loop with lonely pairs:
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AAACCCUCAU", "(.(...)..)"));
-  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAACCCUCAUU", ".(.(...)..)."));
+  EXPECT_EQ(E(9.70), GetEnergy(em, "AAACCCUCAU", "(.(...)..)"));
+  EXPECT_EQ(E(9.00), GetEnergy(em, "AAAACCCUCAUU", ".(.(...)..)."));
 
   // Special 2x2 internal loop with helix affected by penultimate stack on external
   // sides only:
   // AU end on GU at 0, 5; GU end on AU at 1, 4
-  EXPECT_EQ(E(7.32 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGGACCCUUCCUU", "((..((...))..))"));
+  EXPECT_EQ(E(8.52 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "AGGGGACCCUUCCUU", "((..((...))..))"));
   // AU end on GU at 1, 6; GU end on AU at 2, 5
-  EXPECT_EQ(E(6.62 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGGACCCUUCCUUU", ".((..((...))..))."));
+  EXPECT_EQ(E(7.82 - 0.71 * 2 - 0.31 * 2), GetEnergy(em, "GAGGGGACCCUUCCUUU", ".((..((...))..))."));
 
   // Special 2x2 internal loop with lonely pairs:
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AAAACCCUAAU", "(..(...)..)"));
-  EXPECT_EQ(E(7.20), GetEnergy(em, "AAAAACCCUAAUU", ".(..(...)..)."));
+  EXPECT_EQ(E(8.80), GetEnergy(em, "AAAACCCUAAU", "(..(...)..)"));
+  EXPECT_EQ(E(8.10), GetEnergy(em, "AAAAACCCUAAUU", ".(..(...)..)."));
 
   // Multiloop:
   EXPECT_EQ(E(23.70), GetEnergy(em, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)"));
@@ -297,31 +297,33 @@ TEST(T22P2ModelTest, T22P2) {
   EXPECT_EQ(E(10.60), GetEnergy(em, "AGCCCUAACCCUU", ".(...).(...)."));
 
   // Other tests:
-  EXPECT_EQ(E(4.45), GetEnergy(em, "GCAAAGCC", "((...).)"));
-  EXPECT_EQ(E(5.66), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
-  EXPECT_EQ(E(5.40), GetEnergy(em, "UACAGA", "(....)"));
-  EXPECT_EQ(E(-0.64), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
-  EXPECT_EQ(E(7.90), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
+  EXPECT_EQ(E(4.41), GetEnergy(em, "GCAAAGCC", "((...).)"));
+  EXPECT_EQ(E(5.69), GetEnergy(em, "CCCAAAAUG", ".(.(...))"));
+  EXPECT_EQ(E(4.50), GetEnergy(em, "UACAGA", "(....)"));
+  EXPECT_EQ(E(-1.25), GetEnergy(em, "AGGGUCAUCCG", ".(((...)))."));
+  EXPECT_EQ(E(7.00), GetEnergy(em, "AGAGAAACAAAU", "(..(...)...)"));
   EXPECT_EQ(E(9.50), GetEnergy(em, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)"));
   EXPECT_EQ(E(7.70), GetEnergy(em, "CCCGAAACAG", "(..(...).)"));
-  EXPECT_EQ(E(7.40), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
-  EXPECT_EQ(E(17.20), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
-  EXPECT_EQ(E(18.15), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
-  EXPECT_EQ(E(17.40), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
-  EXPECT_EQ(E(12.90), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
-  EXPECT_EQ(E(-27.66),
+  EXPECT_EQ(E(7.32), GetEnergy(em, "GACAGAAACGCUGAAUC", "((..(...)......))"));
+  EXPECT_EQ(E(16.30), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))"));
+  EXPECT_EQ(E(17.18), GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
+  EXPECT_EQ(E(15.60), GetEnergy(em, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)"));
+  EXPECT_EQ(E(11.10), GetEnergy(em, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)"));
+  EXPECT_EQ(E(-29.04),
       GetEnergy(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
-  EXPECT_EQ(E(17.60), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(17.9), GetEnergy(em, k16sHSapiens3));
+  EXPECT_EQ(E(14.71), GetEnergy(em, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
+  EXPECT_EQ(E(-45.03), GetEnergy(em, k16sHSapiens3));
 
-  EXPECT_EQ(E(3.63), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
-  EXPECT_EQ(E(-4.38), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
-  EXPECT_EQ(E(7.10), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
+  EXPECT_EQ(E(1.61), GetEnergy(em, "GGUCAAAGGUC", "((((...))))"));
+  EXPECT_EQ(E(-4.44), GetEnergy(em, "GGGGAAACCCC", "((((...))))"));
+  EXPECT_EQ(E(6.20), GetEnergy(em, "UGACAAAGGCGA", "(..(...)...)"));
 
   // NNDB flush coax
   EXPECT_EQ(em->stack[C][A][U][G] + em->stack[A][C][G][U] + em->stack[C][A][U][G] +
-          2 * em->au_penalty + 2 * em->HairpinInitiation(3),
+          2 * em->au_penalty + 2 * em->HairpinInitiation(3) + em->penultimate_stack[U][G][C][A] +
+          em->penultimate_stack[C][A][U][G] + em->penultimate_stack[C][A][U][G] +
+          em->penultimate_stack[U][G][C][A],
       GetEnergy(em, "GUGAAACACAAAAUGA", ".((...))((...))."));
 
   // NNDB T99 Multiloop example
