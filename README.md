@@ -81,7 +81,10 @@ Update in 2022 model (t22p2):
 - rna.cov
 - rna.dangle
 - rna.dynalignmiscloop
+- rna.helix_ends
+  Table for terminal end penalties (e.g. AU/GU penalties).
 - rna.hexaloop
+  Special hairpin loops of length 6. AU/GU penalties baked in.
 - rna.int11
   1x1 special internal loops. AU/GU penalties baked in.
 - rna.int21
@@ -92,8 +95,11 @@ Update in 2022 model (t22p2):
 - rna.miscloop
 - rna.param_map
 - rna.stack
+  Stacking parameters for helices.
 - rna.tloop
+  Special hairpin loops of length 4. AU/GU penalties baked in.
 - rna.triloop
+  Special hairpin loops of length 3. AU/GU penalties baked in.
 - rna.tstack
 - rna.tstackcoax
 - rna.tstackh

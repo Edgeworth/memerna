@@ -46,20 +46,9 @@ Energy T04ModelMixin::Hairpin(
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
-  std::string seq;
-  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]).value();
-  const auto iter = hairpin.find(seq);
-  if (iter != hairpin.end()) {
-    if (s) (*s)->AddNote("special hairpin");
-    return iter->second;
-  }
+  Energy energy = ZERO_E;
 
-  // Subtract two for the initiating base pair.
-  const int length = en - st - 1;
-  if (length < 3) return MAX_E;  // Disallowed by T04.
-  Energy energy = HairpinInitiation(length);
-  if (s) (*s)->AddNote("{}e - initiation", energy);
-  // Apply AU penalty if necessary (N.B. not for special hairpin sequences).
+  // Apply AU penalty if necessary.
   if (IsAuPair(r[st], r[en])) {
     if (s) (*s)->AddNote("{}e - AU penalty", au_penalty);
     energy += au_penalty;
@@ -69,6 +58,19 @@ Energy T04ModelMixin::Hairpin(
     energy += gu_penalty;
   }
 
+  std::string seq;
+  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]).value();
+  const auto iter = hairpin.find(seq);
+  if (iter != hairpin.end()) {
+    if (s) (*s)->AddNote("special hairpin");
+    return energy + iter->second;
+  }
+
+  // Subtract two for the initiating base pair.
+  const int length = en - st - 1;
+  if (length < 3) return MAX_E;  // Disallowed by T04.
+  energy += HairpinInitiation(length);
+  if (s) (*s)->AddNote("{}e - initiation", energy);
   // T04 says hairpin loops with all C bases inside them are treated specially.
   bool all_c = true;
   for (int i = st + 1; i <= en - 1; ++i) {
@@ -194,18 +196,7 @@ Energy T04ModelMixin::InternalLoop(
     (*s)->AddNote("{}x{} internal loop", toplen, botlen);
   }
 
-  if (toplen == 1 && botlen == 1)
-    return internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
-  if (toplen == 1 && botlen == 2)
-    return internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
-  if (toplen == 2 && botlen == 1)
-    return internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
-  if (toplen == 2 && botlen == 2)
-    return internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
-                       [r[oen]];
-
-  Energy energy = InternalLoopInitiation(toplen + botlen);
-  if (s) (*s)->AddNote("{}e - initiation", energy);
+  Energy energy = ZERO_E;
 
   // Special AU/GU penalties.
   if (IsAuPair(r[ost], r[oen])) {
@@ -224,6 +215,23 @@ Energy T04ModelMixin::InternalLoop(
     if (s) (*s)->AddNote("{}e - inner GU penalty", internal_gu_penalty);
     energy += internal_gu_penalty;
   }
+
+  if (toplen == 1 && botlen == 1)
+    return energy + internal_1x1[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[oen]];
+  if (toplen == 1 && botlen == 2)
+    return energy +
+        internal_1x2[r[ost]][r[ost + 1]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]][r[oen]];
+  if (toplen == 2 && botlen == 1)
+    return energy +
+        internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
+  if (toplen == 2 && botlen == 2)
+    return energy +
+        internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
+                    [r[oen]];
+
+  energy += InternalLoopInitiation(toplen + botlen);
+  if (s) (*s)->AddNote("{}e - initiation", energy);
+
   // Asymmetry term, limit with Ninio maximum asymmetry.
   const Energy asym = std::min(std::abs(toplen - botlen) * internal_asym, NINIO_MAX_ASYM);
   if (s) (*s)->AddNote("{}e - asymmetry", asym);
