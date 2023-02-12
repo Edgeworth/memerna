@@ -18,6 +18,8 @@ class MemeRna(RnaPackage):
             args.append("--lonely-pairs")
         else:
             args.append("--no-lonely-pairs")
+        if cfg.model:
+            args += ["--energy-model", f"{cfg.model}"]
         args += ["--ctd", f"{cfg.ctd}"]
         return args
 

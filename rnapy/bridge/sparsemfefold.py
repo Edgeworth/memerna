@@ -18,6 +18,8 @@ class SparseMfeFold(RnaPackage):
             raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
+        if cfg.model is not None:
+            raise NotImplementedError("SparseMFEFold energy model configuration not supported")
 
     def name(self) -> str:
         return "SparseMFEFold"

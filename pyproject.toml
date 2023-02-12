@@ -12,17 +12,18 @@ click = "^8.1.3"
 click-params = "^0.4.0"
 click_log = "^0.4.0"
 cloup = "^2.0.0.post1"
+libtmux = "^0.21.0"
 pandas = "^1.5.3"
 protobuf = "3.20.1"
 python = "~3.10"
 python-dotenv = "^0.21.1"
 ray = "^2.2.0"
+scipy = "^1.10.0"
 seaborn = "^0.12.2"
 statsmodels = "^0.13.5"
 torch = {url = "https://download.pytorch.org/whl/cu117/torch-1.13.1%2Bcu117-cp310-cp310-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.1"
 viennarna = "^2.5.0a5"
-libtmux = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"
@@ -71,6 +72,7 @@ module = [
   "seaborn.*",
   "statsmodels.*",
   "click_params.*",
+  "scipy.*",
 ]
 
 [tool.black]

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import matplotlib as mpl
 import pandas as pd
+from scipy.stats import ttest_rel
 from rnapy.analysis.metrics import Dataset
 from rnapy.analysis.plot.plots import Column
 from rnapy.analysis.plot.plots import plot_mean_log_quantity
@@ -16,15 +17,10 @@ from rnapy.util.format import human_size
 class FoldAccuracyPlotter:
     COLS: dict[str, Column] = {
         "name": Column(idx="name", name="Name"),
-        "length": Column(idx="length", name="Length (nuc)"),
-        "real_sec": Column(idx="real_sec", name="Wall time (s)"),
-        "user_sec": Column(idx="user_sec", name="User time (s)"),
-        "sys_sec": Column(idx="sys_sec", name="Sys time (s)"),
-        "maxrss_bytes": Column(
-            idx="maxrss_bytes",
-            name="Maximum RSS (B)",
-            formatter=mpl.ticker.FuncFormatter(lambda x, pos: human_size(x, False)),
-        ),
+        "family": Column(idx="family", name="Family"),
+        "sensitivity": Column(idx="sensitivity", name="Sensitivity"),
+        "ppv": Column(idx="ppv", name="Positive predictive value"),
+        "f1": Column(idx="f1", name="F1 score"),
     }
     input_dir: Path
     output_dir: Path
@@ -51,17 +47,38 @@ class FoldAccuracyPlotter:
             f = plot_mean_quantity(ds, self.COLS["length"], self.COLS[y])
             save_figure(f, self._path(ds, y))
 
+    def _get_parent_rnas(self, df: pd.DataFrame) -> list[str]:
+        domained = df[df["name"].str.contains("domain", case=False)]["name"].tolist()
+        parents = set()
+        for name in domained:
+            parent = "_".join(name.split("_")[:-1])
+            assert parent in df["name"].values
+            parents.add(parent)
+
+        return list(parents)
+
     def run(self) -> None:
         datasets = self._load_datasets()
-        # Plot quantities
         for ds in datasets.values():
-            if "large" in ds.name:
-                ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
-            self._plot_quantity(ds)
-        # Plot log graphs
+            print(f"Dataset: {ds.name}")
+            for did in ds:
+                df = ds[did]
+                parents = self._get_parent_rnas(df)
+                df = df[~df["name"].isin(parents)]
+                # # print summary of ds
+                # # group by family
+                gp = df.groupby("family")
+                print(f"dataset {ds.name} program {did}")
+                print(f"{gp['f1'].mean()}")
 
-        combined_ds = reduce(lambda a, b: a.concat(b), datasets.values())
-        print(combined_ds)
-        for y in ["real_sec", "maxrss_bytes"]:
-            f = plot_mean_log_quantity(combined_ds, self.COLS["length"], self.COLS[y])
-            save_figure(f, self._path(combined_ds, f"{y}_log"))
+            print("paired t-tests:")
+            df1 = ds["memerna-t04p2"].groupby("family")
+            df2 = ds["memerna-t22p2"].groupby("family")
+            for family, _ in df1:
+                f1 = df1.get_group(family)["f1"]
+                f2 = df2.get_group(family)["f1"]
+                t_statistic, p_value = ttest_rel(f1, f2)
+                print(f"Family {family}: t-statistic={t_statistic}, p-value={p_value}")
+        # Plot quantities
+        # for ds in datasets.values():
+        #     self._plot_quantity(ds)
