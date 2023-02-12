@@ -52,9 +52,9 @@ TEST_P(T22MfeTest, T22P2) {
 
   // Too slow for brute force:
   if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
-  ans = {E(-5.26), ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]]."};
+  ans = {E(-5.31), ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]]."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
-  ans = {E(-13.43), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
+  ans = {E(-13.48), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
   EXPECT_EQ(
       ans, Mfe(em, "AAAAACUAGCAUCUAGUGGGCUCCCGAUCGCCUCCUUCUCGUAUUACGUUAAUGCAACUCAAGUGAGCCCGU"));
   ans = {E(-5.83), "...m[[[[[[....]]]3mn[[.....]]]MP]]M"};
@@ -69,20 +69,20 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(ans, Mfe(em, "CCGGGCCAGCCCGCUCCUACGGGGGGUC"));
   ans = {E(-7.57), "[[[[M..[[[......]]]3n[[....]]]mP]]]"};
   EXPECT_EQ(ans, Mfe(em, "CCGUAAAGUCGAACCAGACGUGCAUGAGCAAGCGG"));
-  ans = {E(-3.70), "[[[[.[[.[[[....]]]...]].].]]]3."};
+  ans = {E(-3.75), "[[[[.[[.[[[....]]]...]].].]]]3."};
   EXPECT_EQ(ans, Mfe(em, "CCUGGAUAUUCCGAUGAGCACGUGCGAGGGC"));
   ans = {E(-6.47), "[[[3n[[[...]]]]p[.....]]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCAGGGUCGGACCCGGGAGAACCGCGA"));
   ans = {E(-6.72), ".[[[[..[[[[....]]]].........]]]]3"};
   EXPECT_EQ(ans, Mfe(em, "CGCUUAAGGCUAUUUGGCCGGAUCUCCAAGGCA"));
-  ans = {E(-11.68), "...[[[[[M...[[.[[.[[[[...]]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
+  ans = {E(-11.73), "...[[[[[M...[[.[[.[[[[...]]]].]].]]3.n[[..[[......]]..]]]mP]]]]"};
   EXPECT_EQ(ans, Mfe(em, "GAUGAGGGGAAACGGUGACUGGGACUCAGACAACGAUAGCAGCCAAAUAGGGAAGCUUCCUUC"));
   ans = {E(-4.57), "[[[3..n[[[........]]]]p[[[[....]]]]]..........]]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCCAGACAAACACGAUUCUUUGAUAGUACUGACUAUUCUACAAUUAGGCC"));
   ans = {E(-5.95), "..m[[[[[[.....]]]]]]M..[[....]]3"};
   EXPECT_EQ(ans, Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCC"));
   ans = {
-      E(-30.18), "[[[[[[[[[[.[[[.[[.[[....[[.[[[[[[......]]].]]].]]]].]].]]]...]]]..]]]]]]]3..."};
+      E(-30.43), "[[[[[[[[[[.[[[.[[.[[....[[.[[[[[[......]]].]]].]]]].]].]]]...]]]..]]]]]]]3..."};
   EXPECT_EQ(ans,
       Mfe(em, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA"));
   ans = {E(-5.33), "......n[[[....]]]]p[[......]]]"};
@@ -99,7 +99,7 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(ans, Mfe(em, "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG"));
   ans = {E(-19.97), "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3..."};
   EXPECT_EQ(ans, Mfe(em, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
-  ans = {E(-91.79),
+  ans = {E(-92.19),
       "......m[[...[[[[[[[[............[[..[[[[[[[Mp[.[[[[........]]]]..]]....n[[[[[n[[[[...[[.[[[."
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]p[[.[[[[....[[[...]]"

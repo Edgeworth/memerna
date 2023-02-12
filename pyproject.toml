@@ -22,6 +22,7 @@ statsmodels = "^0.13.5"
 torch = {url = "https://download.pytorch.org/whl/cu117/torch-1.13.1%2Bcu117-cp310-cp310-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.1"
 viennarna = "^2.5.0a5"
+libtmux = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.12.0"

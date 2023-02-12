@@ -30,13 +30,13 @@ int main(int argc, char* argv[]) {
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
   args.RegisterOpt(OPT_PRINT_INTERVAL);
-  args.RegisterOpt(OPT_RANDOM_MODEL);
+  args.RegisterOpt(OPT_RANDOM_MODELS);
   args.RegisterOpt(OPT_ENUMERATE);
   args.ParseOrExit(argc, argv);
 
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
   const auto enumerate = args.Has(OPT_ENUMERATE);
-  const auto random_model = args.Has(OPT_RANDOM_MODEL);
+  const auto random_models = args.Has(OPT_RANDOM_MODELS);
   int min_len = 0;
   int max_len = 0;
   std::string seq;
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        if (random_model) fmt::print("Random model seed: {}\n", invoc.seed());
+        if (random_models) fmt::print("Random model seed: {}\n", invoc.seed());
         for (const auto& s : res) fmt::print("{}\n", s);
         fmt::print("\n");
       }
