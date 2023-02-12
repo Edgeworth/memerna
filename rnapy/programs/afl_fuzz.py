@@ -1,18 +1,17 @@
 # Copyright 2022 Eliot Courtney.
 import multiprocessing
+import shlex
 from typing import Any
 
 import click
 import cloup
 import libtmux
-import shlex
 from rnapy.build.afl_fuzz import afl_fuzz_cfgs
 from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.args import afl_fuzz_cfg_options
 from rnapy.build.args import build_afl_fuzz_cfg_from_args
 from rnapy.build.args import build_cfg_from_args
 from rnapy.build.args import build_cfg_options
-from rnapy.util.command import run_shell
 from rnapy.util.util import fn_args
 
 

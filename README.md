@@ -174,54 +174,48 @@ python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precisio
 Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
 
 ```
-
 python -m rnapy.run afl-fuzz --help
-
 ```
 
 For example, try this command line:
 
 ```
-
-python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
+python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --seed 1234
-
 ```
 
 To fuzz everything:
 
 ```
-
-python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
+python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
- --subopt --subopt-rnastructure --num-procs 1 --max-len 500 --seed 1234
+ --subopt --subopt-rnastructure --num-procs 28 --max-len 100 \
+ --energy-model t04p2 --energy-precision 1
+```
 
+Fuzz memerna only, with faster settings:
+
+```
+python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+ --mfe --mfe-table --subopt --num-procs 28 --max-len 100 --seed 1234 \
+ --energy-model t04p2 --subopt-strucs 100 --subopt-delta 0.2 \
+ --energy-precision 2
 ```
 
 Checking progress:
 
 ```
-
 afl-whatsup -s $PREFIX/memerna-afl/\*/afl
-
 ```
 
 Reproducing a crash:
 
 ```
-
 cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
-
 ```
 
 Minimising test cases:
 
 ```
-
 python -m rnapy.run afl-fuzz-min <crash-file>
-
-```
-
-```
-
 ```

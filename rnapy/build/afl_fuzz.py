@@ -8,7 +8,6 @@ from itertools import cycle
 from itertools import islice
 from pathlib import Path
 import shutil
-import sys
 
 import click
 from rnapy.build.build_cfg import BuildCfg
