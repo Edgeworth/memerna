@@ -167,7 +167,6 @@ struct TracebackInternal {
     const auto enb = r[en];
     const auto en1b = r[en - 1];
     const auto en2b = r[en - 2];
-    // fmt::print("ComputePairedOrNoStack = {}, {}, {}\n", st, en, is_nostack);
 
     // It's paired, so add it to the folding.
     res.s[st] = en;
@@ -179,7 +178,6 @@ struct TracebackInternal {
       const Energy bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
 
       for (int length = 2; 2 * length <= max_stack; ++length) {
-        // fmt::print("length = {}, {}\n", length, dp[st][en][DP_P]);
         auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
             em.penultimate_stack[en1b][enb][stb][st1b];
         if (length == 2 &&
@@ -473,7 +471,6 @@ struct TracebackInternal {
     // It's paired, so add it to the folding.
     res.s[st] = en;
     res.s[en] = st;
-    // fmt::print("penult: {} {} {} {}\n", st, en, length, penult[st][en][length]);
 
     const auto bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
     const auto bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
@@ -528,12 +525,6 @@ struct TracebackInternal {
         int st = idx.st;
         int en = idx.en;
         int a = idx.a;
-        // fmt::print("t04idx: st={}, en={}, a={}\n", st, en, a);
-        if (en == -1) {
-          // fmt::print("  ext: {}\n", ext[st][EXT]);
-        } else {
-          // fmt::print("  dp: {}\n", dp[st][en][a]);
-        }
         if (en == -1) {
           ComputeExt(st, en, a);
         } else {

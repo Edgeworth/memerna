@@ -53,8 +53,6 @@ struct MfeInternal {
         if (em.CanPair(r, st, en)) {
           Energy stack_min = MAX_E;
 
-          // fmt::print("st: {}, en: {}\n", st, en);
-
           {
             const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
             // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
@@ -68,12 +66,8 @@ struct MfeInternal {
                 auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
                 // Try ending the stack without a bulge loop.
                 if (length == 2) {
-                  // fmt::print("  {} {} {} {}\n", none, nostack[st + 1][en - 1],
-                  // em.AuGuPenalty(r[st + 1], r[en - 1]),
-                  // em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]]);
                   none += nostack[st + 1][en - 1] +
                       em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
-                  // fmt::print("  {} {}\n", none, em.penultimate_stack[en1b][enb][stb][st1b]);
                 } else {
                   none += penult[st + 1][en - 1][length - 1];
                 }
@@ -186,8 +180,6 @@ struct MfeInternal {
 
           dp[st][en][DP_P] = std::min(stack_min, nostack_min);
           nostack[st][en] = nostack_min;
-          // fmt::print("p[{}][{}] = {}\n", st, en, dp[st][en][DP_P]);
-          // fmt::print("nostack[{}][{}] = {}\n", st, en, nostack[st][en]);
         }
         Energy u_min = MAX_E;
         Energy u2_min = MAX_E;
