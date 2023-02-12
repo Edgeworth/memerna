@@ -73,7 +73,7 @@ class FoldAccuracyPlotter:
 
             print("paired t-tests:")
             df1 = ds["memerna-t04p2"].groupby("family")
-            df2 = ds["memerna-t22p2"].groupby("family")
+            df2 = ds["memerna-t04p2-lonely"].groupby("family")
             for family, _ in df1:
                 f1 = df1.get_group(family)["f1"]
                 f2 = df2.get_group(family)["f1"]

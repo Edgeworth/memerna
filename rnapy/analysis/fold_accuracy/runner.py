@@ -28,8 +28,14 @@ class FoldAccuracyRunner:
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [
-            (memerna, EnergyCfg(model="t04p2"), memerna.name() + "-t04p2"),
-            (memerna, EnergyCfg(model="t22p2"), memerna.name() + "-t22p2"),
+            # (memerna, EnergyCfg(model="t04p1"), memerna.name() + "-t04p1"),
+            (
+                memerna,
+                EnergyCfg(model="t04p2", lonely_pairs=True),
+                memerna.name() + "-t04p2-lonely",
+            ),
+            # (memerna, EnergyCfg(model="t04p2"), memerna.name() + "-t04p2"),
+            # (memerna, EnergyCfg(model="t22p2"), memerna.name() + "-t22p2"),
         ]
 
     @staticmethod
