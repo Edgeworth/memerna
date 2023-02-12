@@ -5,6 +5,7 @@ from typing import Any
 import click
 import cloup
 import libtmux
+import shlex
 from rnapy.build.afl_fuzz import afl_fuzz_cfgs
 from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.args import afl_fuzz_cfg_options
@@ -15,11 +16,17 @@ from rnapy.util.command import run_shell
 from rnapy.util.util import fn_args
 
 
-def run_fuzz(cfg: AflFuzzCfg, session: libtmux.Session) -> None:
+def run_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
+    cfg.build()
     cmd = cfg.afl_fuzz_cmd()
     cwd = cfg.bin_path()
     click.echo(f"Running fuzz {cmd} in {cwd}")
-    run_shell(cmd, cwd=cwd)
+
+    # Run in given tmux window:
+    pane = window.attached_pane
+    assert pane
+    pane.send_keys(f"cd {shlex.quote(str(cwd))}", enter=True, suppress_history=True)
+    pane.send_keys(cmd, enter=True, suppress_history=True)
 
 
 @cloup.command()
@@ -39,14 +46,11 @@ def afl_fuzz(
     afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
     cfgs = afl_fuzz_cfgs(afl_cfg, num_procs)
 
-    for cfg in cfgs:
-        cfg.build()
-
     # Use libtmux to set up a session with a random name.
     try:
         server = libtmux.Server()
         session_name = "afl_fuzz"
-        session = server.new_session(session_name)
+        session = server.new_session(session_name, kill_session=True)
         windows = []
         for i in range(len(cfgs)):
             window = session.new_window(attach=False, window_name=f"window_{i}")
@@ -55,6 +59,7 @@ def afl_fuzz(
         with multiprocessing.Pool(len(cfgs)) as pool:
             pool.starmap(run_fuzz, zip(cfgs, windows))
 
+        click.echo("Attaching session")
         session.attach_session()
     except Exception:
         click.echo("Error occurred, killing session")

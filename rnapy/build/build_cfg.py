@@ -123,4 +123,8 @@ class BuildCfg:
         if not path.exists():
             self._generate_cmake()
         if build:
-            run_shell(f"make -j$(($(nproc)-1)) {' '.join(targets)}", cwd=path, extra_env=self.env)
+            run_shell(
+                f"make -j $(($(nproc)-1)) -l $(($(nproc)-1)) {' '.join(targets)}",
+                cwd=path,
+                extra_env=self.env,
+            )
