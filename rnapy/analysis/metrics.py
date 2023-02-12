@@ -47,7 +47,7 @@ class RnaAccuracy:
     ppv: float
     sensitivity: float
 
-    def fscore(self) -> float:
+    def f1_score(self) -> float:
         fscore = 2.0 * self.sensitivity * self.ppv
         if fscore != 0:
             fscore /= self.ppv + self.sensitivity
@@ -72,6 +72,6 @@ class RnaAccuracy:
 
     def __str__(self) -> str:
         return (
-            f"F-Score: {self.fscore:.2f} - PPV: {self.ppv:.2f}"
+            f"F1-Score: {self.f1_score:.2f} - PPV: {self.ppv:.2f}"
             f" - Sensitivity: {self.sensitivity:.2f}"
         )

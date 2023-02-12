@@ -3,6 +3,7 @@ from pathlib import Path
 
 import click
 import pandas as pd
+from rnapy.analysis.metrics import RnaAccuracy
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
@@ -27,14 +28,13 @@ class FoldAccuracyRunner:
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [
-            (memerna, EnergyCfg(), memerna.name()),
-            (rnastructure, EnergyCfg(), rnastructure.name()),
-            (viennarna, EnergyCfg(), viennarna.name() + "-d3-noLP"),
-            (viennarna, EnergyCfg(ctd=CtdCfg.D2), viennarna.name() + "-d2-noLP"),
-            (viennarna, EnergyCfg(lonely_pairs=True), viennarna.name() + "-d3"),
-            (viennarna, EnergyCfg(lonely_pairs=True, ctd=CtdCfg.D2), viennarna.name() + "-d2"),
-            (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE), sparsemfefold.name()),
+            (memerna, EnergyCfg(model="t04p2"), memerna.name() + "-t04p2"),
+            (memerna, EnergyCfg(model="t22p2"), memerna.name() + "-t22p2"),
         ]
+
+    @staticmethod
+    def extract_family(name: str) -> str:
+        return name.split("_")[0]
 
     def run(self) -> None:
         for program, cfg, name in self.programs:
@@ -44,25 +44,24 @@ class FoldAccuracyRunner:
             assert not output_path.exists(), f"Output path {output_path} already exists"
 
             for rna_idx, rna in enumerate(self.memevault):
-                click.echo(f"Running {program} on {rna_idx} {rna.name}")
-                for run_idx in range(self.BENCHMARK_NUM_TRIES):
-                    _, res = program.fold(rna, cfg)
-                    df = pd.DataFrame(
-                        {
-                            "name": rna.name,
-                            "run_idx": run_idx,
-                            "length": len(rna),
-                            "maxrss_bytes": res.maxrss_bytes,
-                            "user_sec": res.user_sec,
-                            "sys_sec": res.sys_sec,
-                            "real_sec": res.real_sec,
-                        },
-                        index=[0],
-                    )
-                    df.to_csv(
-                        output_path,
-                        mode="a",
-                        header=not output_path.exists(),
-                        index=False,
-                        float_format="%g",
-                    )
+                click.echo(f"Running {name} on {rna_idx} {rna.name}")
+                assert rna.name
+                pred, _ = program.fold(rna, cfg)
+                accuracy = RnaAccuracy.from_rna(rna, pred)
+                df = pd.DataFrame(
+                    {
+                        "name": rna.name,
+                        "family": self.extract_family(rna.name),
+                        "ppv": accuracy.ppv,
+                        "sensitivity": accuracy.sensitivity,
+                        "f1": accuracy.f1_score(),
+                    },
+                    index=[0],
+                )
+                df.to_csv(
+                    output_path,
+                    mode="a",
+                    header=not output_path.exists(),
+                    index=False,
+                    float_format="%g",
+                )

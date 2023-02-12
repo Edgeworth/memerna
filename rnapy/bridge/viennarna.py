@@ -30,6 +30,8 @@ class ViennaRna(RnaPackage):
             )
         if cfg.ctd == CtdCfg.ALL:
             args.append("-d3")
+        if cfg.model is not None:
+            raise NotImplementedError("ViennaRNA energy model configuration not supported")
         return args
 
     def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:

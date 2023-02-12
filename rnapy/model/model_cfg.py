@@ -17,6 +17,8 @@ class CtdCfg(str, Enum):
 class EnergyCfg:
     lonely_pairs: bool = False
     ctd: CtdCfg = CtdCfg.ALL
+    # Program specific energy model option.
+    model: str | None = None
 
 
 @dataclass

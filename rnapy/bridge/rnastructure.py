@@ -23,6 +23,8 @@ class RNAstructure(RnaPackage):
             raise NotImplementedError("RNAstructure does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("RNAstructure does not support turning off CTDs")
+        if cfg.model is not None:
+            raise NotImplementedError("RNAstructure energy model configuration not supported")
 
     def check_subopt_cfg(self, cfg: SuboptCfg) -> None:
         if cfg.delta is None:
