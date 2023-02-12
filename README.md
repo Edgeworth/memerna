@@ -184,7 +184,7 @@ For example, try this command line:
 ```
 
 python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
- --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --random-model
+ --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --seed 1234
 
 ```
 
@@ -194,7 +194,7 @@ To fuzz everything:
 
 python -m rnapy.run afl-fuzz --kind relwithdebinfo --compiler afl-lto \
  --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
- --subopt --subopt-rnastructure --num-procs 1 --max-len 500 --random-model
+ --subopt --subopt-rnastructure --num-procs 1 --max-len 500 --seed 1234
 
 ```
 
