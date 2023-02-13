@@ -9,7 +9,7 @@ from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.model.model_cfg import EnergyCfg
 
 
@@ -36,8 +36,12 @@ class FoldPerfRunner:
             (rnastructure, EnergyCfg(), rnastructure.name()),
             (viennarna, EnergyCfg(), viennarna.name() + "-d3-noLP"),
             (viennarna, EnergyCfg(ctd=CtdCfg.D2), viennarna.name() + "-d2-noLP"),
-            (viennarna, EnergyCfg(lonely_pairs=True), viennarna.name() + "-d3"),
-            (viennarna, EnergyCfg(lonely_pairs=True, ctd=CtdCfg.D2), viennarna.name() + "-d2"),
+            (viennarna, EnergyCfg(lonely_pairs=LonelyPairs.HEURISTIC), viennarna.name() + "-d3"),
+            (
+                viennarna,
+                EnergyCfg(lonely_pairs=LonelyPairs.HEURISTIC, ctd=CtdCfg.D2),
+                viennarna.name() + "-d2",
+            ),
             (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE), sparsemfefold.name()),
         ]
 

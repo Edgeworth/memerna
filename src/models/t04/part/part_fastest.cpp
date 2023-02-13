@@ -20,6 +20,11 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
+  verify(bem->em().cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+      "fully disallowing lonely pairs is not supported in this energy model");
+  verify(bem->em().cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+      "only full CTDs are supported in this energy model");
+
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bem);
   state.dp = BoltzDpArray(r.size() + 1, 0);

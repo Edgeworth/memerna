@@ -19,11 +19,6 @@ namespace mrna {
         << std::setprecision(FLOAT_PRECISION + 1) << acopy << " != " << bcopy; \
   } while (0)
 
-inline constexpr uint32_t T04P1_MODEL_HASH = 0x443cf312;
-inline constexpr uint32_t T04P2_MODEL_HASH = 0xdfdf6e87;
-inline constexpr uint32_t T12P2_MODEL_HASH = 0xdbcc795b;
-inline constexpr uint32_t T22P2_MODEL_HASH = 0xdbcc795b;
-
 extern std::tuple<Primary, Secondary> kNNDBHairpin1;
 extern std::tuple<Primary, Secondary> kNNDBHairpin2;
 extern std::tuple<Primary, Secondary> kNNDBHairpin3;

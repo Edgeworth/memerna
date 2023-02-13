@@ -10,6 +10,12 @@ namespace mrna::md::t04 {
 
 void PartitionExterior(const Primary& r, const Model& em, PartState& state) {
   const int N = static_cast<int>(r.size());
+
+  verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+      "fully disallowing lonely pairs is not supported in this energy model");
+  verify(
+      em.cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);
   auto& ext = state.ext;

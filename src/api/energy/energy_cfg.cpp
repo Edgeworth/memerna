@@ -33,6 +33,20 @@ EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   return cfg;
 }
 
+std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o) {
+  std::string s;
+  str >> s;
+  if (s == "off")
+    o = EnergyCfg::LonelyPairs::OFF;
+  else if (s == "heuristic")
+    o = EnergyCfg::LonelyPairs::HEURISTIC;
+  else if (s == "on")
+    o = EnergyCfg::LonelyPairs::ON;
+  else
+    error("Invalid CTD option {}", s);
+  return str;
+}
+
 std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o) {
   std::string s;
   str >> s;

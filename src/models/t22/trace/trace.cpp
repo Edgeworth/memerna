@@ -515,6 +515,11 @@ struct TracebackInternal {
   }
 
   TraceResult Compute() {
+    verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+        "fully disallowing lonely pairs is not supported in this energy model");
+    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+        "only full CTDs are supported in this energy model");
+
     q.emplace(t04::Index(0, -1, EXT));
     while (!q.empty()) {
       auto idx_all = q.top();

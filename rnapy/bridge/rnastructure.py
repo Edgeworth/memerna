@@ -5,7 +5,7 @@ import re
 import tempfile
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.model.model_cfg import EnergyCfg
 from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
@@ -19,7 +19,7 @@ class RNAstructure(RnaPackage):
         self.env["DATAPATH"] = str(self.path / "data_tables")
 
     def check_energy_cfg(self, cfg: EnergyCfg) -> None:
-        if cfg.lonely_pairs:
+        if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
             raise NotImplementedError("RNAstructure does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("RNAstructure does not support turning off CTDs")
