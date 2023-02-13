@@ -5,6 +5,12 @@ from decimal import Decimal
 from enum import Enum
 
 
+class LonelyPairs(str, Enum):
+    OFF = "off"
+    HEURISTIC = "heuristic"
+    ON = "on"
+
+
 class CtdCfg(str, Enum):
     NONE = "none"  #  Do not use CTDs in efn, folding, subopt, partition, etc.
     D2 = "d2"  #  Same as ViennaRNA d2 in efn, folding, subopt, partition, etc.
@@ -15,7 +21,7 @@ class CtdCfg(str, Enum):
 
 @dataclass
 class EnergyCfg:
-    lonely_pairs: bool = False
+    lonely_pairs: LonelyPairs = LonelyPairs.HEURISTIC
     ctd: CtdCfg = CtdCfg.ALL
     # Program specific energy model option.
     model: str | None = None

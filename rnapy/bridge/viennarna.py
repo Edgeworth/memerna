@@ -5,7 +5,7 @@ import re
 import tempfile
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.model.model_cfg import EnergyCfg
 from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
@@ -18,8 +18,16 @@ from rnapy.util.command import CmdResult
 class ViennaRna(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
-        if not cfg.lonely_pairs:
-            args.append("--noLP")
+
+        match cfg.lonely_pairs:
+            case LonelyPairs.OFF:
+                args.append("--noLP")
+            case LonelyPairs.HEURISTIC:
+                pass
+            case LonelyPairs.ON:
+                raise NotImplementedError(
+                    "ViennaRNA does not support non-heuristic disallowing of lonely pairs",
+                )
         if cfg.ctd == CtdCfg.NONE:
             args.append("-d0")
         if cfg.ctd == CtdCfg.D2:

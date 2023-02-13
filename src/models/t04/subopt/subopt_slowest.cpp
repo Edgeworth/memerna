@@ -24,6 +24,11 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
 
+  verify(em_->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+      "fully disallowing lonely pairs is not supported in this energy model");
+  verify(em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+      "only full CTDs are supported in this energy model");
+
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
   // just one of them. Fully expanding one of them means there will be no duplicates in the tree.
   // Cull the ones not inside the window or when we have more than |max_structures|.

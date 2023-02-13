@@ -14,13 +14,11 @@ from rnapy.util.command import CmdResult
 class MemeRna(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
-        if cfg.lonely_pairs:
-            args.append("--lonely-pairs")
-        else:
-            args.append("--no-lonely-pairs")
+
         if cfg.model:
             args += ["--energy-model", f"{cfg.model}"]
         args += ["--ctd", f"{cfg.ctd}"]
+        args += ["--lonely-pairs", f"{cfg.lonely_pairs}"]
         return args
 
     def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:

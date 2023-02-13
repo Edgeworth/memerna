@@ -26,11 +26,14 @@ inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
                                         .Choice({"t04p1"})
 #elif ENERGY_PRECISION == 2
                                         .Default("t04p2")
-                                        .Choice({"t04p2", "t12p2", "t22p2"})
+                                        .Choice({"t04p2", "t04p2full", "t12p2", "t22p2"})
 #endif
                                         .Help("energy model to use");
-inline const auto OPT_LONELY_PAIRS =
-    mrna::Opt(Opt::FLAG).LongName("lonely-pairs").Default(false).Help("allow lonely pairs");
+inline const auto OPT_LONELY_PAIRS = mrna::Opt(Opt::ARG)
+                                         .LongName("lonely-pairs")
+                                         .Choice({"off", "heuristic", "on"})
+                                         .Default("heuristic")
+                                         .Help("allow lonely pairs");
 inline const auto OPT_BULGE_STATES =
     mrna::Opt(Opt::FLAG).LongName("bulge-states").Default(true).Help("count bulge states bonus");
 inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
@@ -46,6 +49,12 @@ std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model
 std::string ModelPath(const std::string& data_dir, const std::string& model);
 
 struct EnergyCfg {
+  enum class LonelyPairs {
+    OFF,  // Do not allow lonely pairs.
+    HEURISTIC,  // Use a heuristic to disallow lonely pairs (RNAstructure default behaviour).
+    ON,  //  Allow lonely pairs.
+  };
+
   enum class Ctd {
     NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
     D2,  // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
@@ -54,7 +63,7 @@ struct EnergyCfg {
   };
 
   // Whether to allow lonely pairs in folding, subopt, partition, etc.
-  bool lonely_pairs = false;
+  LonelyPairs lonely_pairs = LonelyPairs::HEURISTIC;
 
   // Use |bulge_states| to include bonuses for bulge loop states. This is used
   // for minimum free energy like calculations. For partition function like
@@ -68,6 +77,7 @@ struct EnergyCfg {
   static EnergyCfg FromArgParse(const ArgParse& args);
 };
 
+std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o);
 std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
 
 }  // namespace mrna::erg

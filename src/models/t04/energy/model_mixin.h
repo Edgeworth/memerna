@@ -72,7 +72,8 @@ class T04ModelMixin {
   mrna::erg::EnergyCfg cfg = {};
 
   [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
-    if (cfg.lonely_pairs) return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
+    if (cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
+      return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
         ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
             (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));

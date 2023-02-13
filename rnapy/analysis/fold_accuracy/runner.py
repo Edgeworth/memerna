@@ -10,7 +10,7 @@ from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.model.model_cfg import EnergyCfg
 
 
@@ -31,7 +31,7 @@ class FoldAccuracyRunner:
             # (memerna, EnergyCfg(model="t04p1"), memerna.name() + "-t04p1"),
             (
                 memerna,
-                EnergyCfg(model="t04p2", lonely_pairs=True),
+                EnergyCfg(model="t04p2", lonely_pairs=LonelyPairs.ON),
                 memerna.name() + "-t04p2-lonely",
             ),
             # (memerna, EnergyCfg(model="t04p2"), memerna.name() + "-t04p2"),

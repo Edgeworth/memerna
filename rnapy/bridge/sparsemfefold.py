@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.model.model_cfg import EnergyCfg
 from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
@@ -14,7 +14,7 @@ from rnapy.util.command import CmdResult
 @dataclass
 class SparseMfeFold(RnaPackage):
     def _check_energy_cfg(self, cfg: EnergyCfg) -> None:
-        if cfg.lonely_pairs:  # TODO(3): Check this.
+        if cfg.lonely_pairs != LonelyPairs.HEURISTIC:  # TODO(3): Check this.
             raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")

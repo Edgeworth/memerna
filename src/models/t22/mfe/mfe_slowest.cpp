@@ -37,6 +37,12 @@ struct MfeInternal {
   void Compute() {
     static_assert(
         HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
+
+    verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+        "fully disallowing lonely pairs is not supported in this energy model");
+    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+        "only full CTDs are supported in this energy model");
+
     dp = t04::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);
     penult = Array3D(r.size() + 1, MAX_E);
