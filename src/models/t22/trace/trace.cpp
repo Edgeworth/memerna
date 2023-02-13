@@ -1,6 +1,8 @@
 // Copyright 2023 Eliot Courtney.
 #include "models/t22/trace/trace.h"
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <compare>
 #include <memory>
@@ -519,6 +521,8 @@ struct TracebackInternal {
         "fully disallowing lonely pairs is not supported in this energy model");
     verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
         "only full CTDs are supported in this energy model");
+
+    spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
 
     q.emplace(t04::Index(0, -1, EXT));
     while (!q.empty()) {

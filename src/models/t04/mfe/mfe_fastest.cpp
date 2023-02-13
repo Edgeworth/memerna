@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <compare>
 #include <memory>
@@ -22,6 +24,8 @@ void MfeFastest(const Primary& r, const Model::Ptr& em, DpState& state) {
       "fully disallowing lonely pairs is not supported in this energy model");
   verify(
       em->cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+
+  spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), em);

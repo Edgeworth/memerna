@@ -1,4 +1,6 @@
 // Copyright 2023 Eliot Courtney.
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <compare>
 #include <memory>
@@ -42,6 +44,8 @@ struct MfeInternal {
         "fully disallowing lonely pairs is not supported in this energy model");
     verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
         "only full CTDs are supported in this energy model");
+
+    spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
 
     dp = t04::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);

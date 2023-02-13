@@ -2,6 +2,8 @@
 #ifndef API_ENERGY_ENERGY_CFG_H_
 #define API_ENERGY_ENERGY_CFG_H_
 
+#include <fmt/ostream.h>
+
 #include <iosfwd>
 #include <string>
 
@@ -77,9 +79,16 @@ struct EnergyCfg {
   static EnergyCfg FromArgParse(const ArgParse& args);
 };
 
+std::ostream& operator<<(std::ostream& str, const EnergyCfg& o);
+std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o);
+std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o);
+
 std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o);
 std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
 
 }  // namespace mrna::erg
+
+template <>
+struct fmt::formatter<mrna::erg::EnergyCfg> : ostream_formatter {};
 
 #endif  // API_ENERGY_ENERGY_CFG_H_

@@ -138,7 +138,7 @@ class ArgParse {
   T Get(const Opt& opt) const {
     if (auto iter = values_.find(opt); iter != values_.end())
       return Conv<T>(iter->second);  // NOLINT
-    error("missing option {}", opt.Desc());
+    fatal("missing option {}", opt.Desc());
     return {};
   }
 

@@ -59,7 +59,7 @@ class HairpinLoopStructure : public Structure {
  public:
   HairpinLoopStructure(int st, int en) : st_(st), en_(en) {}
 
-  void AddBranch(std::unique_ptr<Structure> /*b*/) override { error("invalid operation"); }
+  void AddBranch(std::unique_ptr<Structure> /*b*/) override { fatal("invalid operation"); }
   [[nodiscard]] std::string ShortDesc() const override;
 
  private:

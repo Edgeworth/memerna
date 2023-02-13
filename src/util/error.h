@@ -32,12 +32,12 @@
   } while (0)
 #endif
 
-#define error(...)              \
+#define fatal(...)              \
   do {                          \
     verify(false, __VA_ARGS__); \
     __builtin_unreachable();    \
   } while (0)
 
-#define bug() error("bug")
+#define bug() fatal("bug")
 
 #endif  // UTIL_ERROR_H_

@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -24,6 +26,8 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
       "fully disallowing lonely pairs is not supported in this energy model");
   verify(bem->em().cfg.ctd == erg::EnergyCfg::Ctd::ALL,
       "only full CTDs are supported in this energy model");
+
+  spdlog::debug("t04 {} with cfg {}", __func__, bem->em().cfg);
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bem);

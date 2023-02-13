@@ -17,7 +17,7 @@ std::istream& operator>>(std::istream& is, ModelKind& kind) {
   else if (s == "t04p2full" || s == "t22p2")
     kind = ModelKind::T22_LIKE;
   else
-    error("Invalid energy model {}", s);
+    fatal("Invalid energy model {}", s);
   return is;
 }
 

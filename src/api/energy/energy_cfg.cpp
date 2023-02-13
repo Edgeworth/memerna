@@ -33,6 +33,30 @@ EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   return cfg;
 }
 
+std::ostream& operator<<(std::ostream& str, const EnergyCfg& o) {
+  return str << "EnergyCfg{"
+             << "lonely_pairs=" << o.lonely_pairs << ", ctd=" << o.ctd
+             << ", bulge_states=" << o.bulge_states << "}";
+}
+
+std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o) {
+  switch (o) {
+  case EnergyCfg::LonelyPairs::OFF: return str << "off";
+  case EnergyCfg::LonelyPairs::HEURISTIC: return str << "heuristic";
+  case EnergyCfg::LonelyPairs::ON: return str << "on";
+  default: bug();
+  }
+}
+
+std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o) {
+  switch (o) {
+  case EnergyCfg::Ctd::NONE: return str << "none";
+  case EnergyCfg::Ctd::NO_COAX: return str << "no_coax";
+  case EnergyCfg::Ctd::ALL: return str << "all";
+  default: bug();
+  }
+}
+
 std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o) {
   std::string s;
   str >> s;
@@ -43,7 +67,7 @@ std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o) {
   else if (s == "on")
     o = EnergyCfg::LonelyPairs::ON;
   else
-    error("Invalid CTD option {}", s);
+    fatal("Invalid CTD option {}", s);
   return str;
 }
 
@@ -57,7 +81,7 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o) {
   else if (s == "all")
     o = EnergyCfg::Ctd::ALL;
   else
-    error("Invalid CTD option {}", s);
+    fatal("Invalid CTD option {}", s);
   return str;
 }
 

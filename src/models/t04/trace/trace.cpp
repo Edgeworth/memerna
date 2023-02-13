@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/t04/trace/trace.h"
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <compare>
 #include <memory>
@@ -23,6 +25,8 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& em, const DpState& sta
       "fully disallowing lonely pairs is not supported in this energy model");
   verify(
       em->cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+
+  spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));

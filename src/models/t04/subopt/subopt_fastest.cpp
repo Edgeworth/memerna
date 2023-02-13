@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/t04/subopt/subopt_fastest.h"
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -27,6 +29,8 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
       "fully disallowing lonely pairs is not supported in this energy model");
   verify(em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL,
       "only full CTDs are supported in this energy model");
+
+  spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES) {

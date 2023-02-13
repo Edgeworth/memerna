@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "api/options.h"
+#include "spdlog/spdlog.h"
 #include "util/string.h"
 
 namespace mrna {
@@ -110,17 +112,22 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 }
 
 void ArgParse::ParseOrExit(int argc, char** argv) {
+  RegisterOpt(OPT_VERBOSE);
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    fmt::print(stderr, "{}\n{}\n", ret, Usage());
+    spdlog::critical("{}\n{}\n", ret, Usage());
     std::exit(1);  // NOLINT
+  }
+
+  if (Has(OPT_VERBOSE)) {
+    spdlog::set_level(spdlog::level::debug);
   }
 }
 
 const Opt& ArgParse::Lookup(const std::string& name) const {
   if (auto iter = longname_.find(name); iter != longname_.end()) return iter->second;  // NOLINT
   if (auto iter = shortname_.find(name); iter != shortname_.end()) return iter->second;  // NOLINT
-  error("unregistered argument {}", name);
+  fatal("unregistered argument {}", name);
 }
 
 bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }

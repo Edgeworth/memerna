@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     verify(min_len > 0, "invalid min length");
     verify(max_len >= min_len, "invalid max len");
   } else {
-    error("require min and max length or a sequence");
+    fatal("require min and max length or a sequence");
   }
 
   auto harness = FuzzHarness(std::move(args));

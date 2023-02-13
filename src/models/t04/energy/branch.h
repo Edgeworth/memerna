@@ -251,7 +251,7 @@ Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s
       continue;
     default:
       // Should never happen
-      error("unexpected CTD value {} at index {}, primary: {}, secondary: {}, ctds: {}",
+      fatal("unexpected CTD value {} at index {}, primary: {}, secondary: {}, ctds: {}",
           ctd[branch], branch, r.ToSeq(), s.ToDb(), ctd.ToString(s));
     }
     branch_ctd->emplace_back(ctd[branch], energy);
