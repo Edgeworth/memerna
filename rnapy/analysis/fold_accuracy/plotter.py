@@ -70,10 +70,11 @@ class FoldAccuracyPlotter:
                 gp = df.groupby("family")
                 print(f"dataset {ds.name} program {did}")
                 print(f"{gp['f1'].mean()}")
+                print(f"{gp['f1'].mean().mean()}")
 
             print("paired t-tests:")
             df1 = ds["memerna-t04p2"].groupby("family")
-            df2 = ds["memerna-t04p2-lonely"].groupby("family")
+            df2 = ds["memerna-t04p2-no-coax"].groupby("family")
             for family, _ in df1:
                 f1 = df1.get_group(family)["f1"]
                 f2 = df2.get_group(family)["f1"]

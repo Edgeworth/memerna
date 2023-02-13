@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o) {
 std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o) {
   switch (o) {
   case EnergyCfg::Ctd::NONE: return str << "none";
-  case EnergyCfg::Ctd::NO_COAX: return str << "no_coax";
+  case EnergyCfg::Ctd::NO_COAX: return str << "no-coax";
   case EnergyCfg::Ctd::ALL: return str << "all";
   default: bug();
   }
@@ -76,7 +76,7 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o) {
   str >> s;
   if (s == "none")
     o = EnergyCfg::Ctd::NONE;
-  else if (s == "no_coax")
+  else if (s == "no-coax")
     o = EnergyCfg::Ctd::NO_COAX;
   else if (s == "all")
     o = EnergyCfg::Ctd::ALL;

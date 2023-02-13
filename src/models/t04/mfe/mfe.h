@@ -25,6 +25,12 @@ template <typename T>
   requires std::is_base_of_v<T04ModelMixin, T>
 Energy MfeExterior(const Primary& r, const T& em, DpState& state) {
   const int N = static_cast<int>(r.size());
+
+  verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
+      "fully disallowing lonely pairs is not supported in this energy model");
+  verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX,
+      "only full CTDs are supported in this energy model");
+
   state.ext = ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state;
 
@@ -60,21 +66,24 @@ Energy MfeExterior(const Primary& r, const T& em, DpState& state) {
       e = std::min(e, base10 + em.dangle5[enb][stb][st1b] + ext[en + 1][EXT]);
       // .(   ).<   > Terminal mismatch
       e = std::min(e, base11 + em.terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT]);
-      // .(   ).<(   ) > Left coax
-      val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
-      e = std::min(e, val + ext[en + 1][EXT_GU]);
-      e = std::min(e, val + ext[en + 1][EXT_WC]);
 
-      // (   )<.(   ). > Right coax forward
-      e = std::min(e, base00 + ext[en + 1][EXT_RC]);
-      // (   )<.( * ). > Right coax backward
-      ext[st][EXT_RC] = std::min(
-          ext[st][EXT_RC], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
+      if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+        // .(   ).<(   ) > Left coax
+        val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
+        e = std::min(e, val + ext[en + 1][EXT_GU]);
+        e = std::min(e, val + ext[en + 1][EXT_WC]);
 
-      // (   )(<   ) > Flush coax
-      e = std::min(e, base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
-      if (IsGu(enb))
-        e = std::min(e, base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU]);
+        // (   )<.(   ). > Right coax forward
+        e = std::min(e, base00 + ext[en + 1][EXT_RC]);
+        // (   )<.( * ). > Right coax backward
+        ext[st][EXT_RC] = std::min(
+            ext[st][EXT_RC], base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
+
+        // (   )(<   ) > Flush coax
+        e = std::min(e, base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
+        if (IsGu(enb))
+          e = std::min(e, base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU]);
+      }
 
       ext[st][EXT] = std::min(ext[st][EXT], e);
     }

@@ -5,6 +5,7 @@
 #include <compare>
 #include <memory>
 
+#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -42,7 +43,7 @@ struct MfeInternal {
 
     verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
         "fully disallowing lonely pairs is not supported in this energy model");
-    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX,
         "only full CTDs are supported in this energy model");
 
     spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
@@ -146,46 +147,48 @@ struct MfeInternal {
           nostack_min = std::min(nostack_min,
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb]);
 
-          for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-            // Paired coaxial stacking cases:
-            const Base pl1b = r[piv - 1];
-            const Base plb = r[piv];
-            const Base prb = r[piv + 1];
-            const Base pr1b = r[piv + 2];
-            //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
-            // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
+          if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+            for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
+              // Paired coaxial stacking cases:
+              const Base pl1b = r[piv - 1];
+              const Base plb = r[piv];
+              const Base prb = r[piv + 1];
+              const Base pr1b = r[piv + 2];
+              //   (   .   (   .   .   .   )   .   |   .   (   .   .   .   )   .   )
+              // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
-            // (.(   )   .) Left outer coax - P
-            const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
-                    em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);
-            // (.   (   ).) Right outer coax
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
-                    em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax);
+              // (.(   )   .) Left outer coax - P
+              const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
+                      em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);
+              // (.   (   ).) Right outer coax
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
+                      em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax);
 
-            // (.(   ).   ) Left inner coax
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
-                    em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-                    em.MismatchCoaxial(pl1b, plb, st1b, st2b));
-            // (   .(   ).) Right inner coax
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
-                    em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-                    em.MismatchCoaxial(en2b, en1b, prb, pr1b));
+              // (.(   ).   ) Left inner coax
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
+                      em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
+                      em.MismatchCoaxial(pl1b, plb, st1b, st2b));
+              // (   .(   ).) Right inner coax
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
+                      em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
+                      em.MismatchCoaxial(en2b, en1b, prb, pr1b));
 
-            // ((   )   ) Left flush coax
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 1][piv][DP_P] + em.multiloop_hack_b +
-                    em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
-                    em.stack[stb][st1b][plb][enb]);
-            // (   (   )) Right flush coax
-            nostack_min = std::min(nostack_min,
-                base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
-                    em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
-                    em.stack[stb][prb][en1b][enb]);
+              // ((   )   ) Left flush coax
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 1][piv][DP_P] + em.multiloop_hack_b +
+                      em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
+                      em.stack[stb][st1b][plb][enb]);
+              // (   (   )) Right flush coax
+              nostack_min = std::min(nostack_min,
+                  base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
+                      em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
+                      em.stack[stb][prb][en1b][enb]);
+            }
           }
 
           dp[st][en][DP_P] = std::min(stack_min, nostack_min);
@@ -238,27 +241,29 @@ struct MfeInternal {
           u_min = std::min(u_min, base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired);
           u2_min =
               std::min(u2_min, base11 + em.terminal[pl1b][pb][stb][st1b] + dp[piv + 1][en][DP_U]);
-          // .(   ).<(   ) > Left coax - U
-          val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) +
-              std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
-          u_min = std::min(u_min, val);
-          u2_min = std::min(u2_min, val);
-
-          // (   )<.(   ). > Right coax forward and backward
-          val = base00 + dp[piv + 1][en][DP_U_RC];
-          u_min = std::min(u_min, val);
-          u2_min = std::min(u2_min, val);
-          rcoax_min = std::min(
-              rcoax_min, base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
-
-          // (   )(<   ) > Flush coax - U
-          val = base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
-          u_min = std::min(u_min, val);
-          u2_min = std::min(u2_min, val);
-          if (IsGu(pb)) {
-            val = base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
+          if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+            // .(   ).<(   ) > Left coax - U
+            val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) +
+                std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
             u_min = std::min(u_min, val);
             u2_min = std::min(u2_min, val);
+
+            // (   )<.(   ). > Right coax forward and backward
+            val = base00 + dp[piv + 1][en][DP_U_RC];
+            u_min = std::min(u_min, val);
+            u2_min = std::min(u2_min, val);
+            rcoax_min = std::min(
+                rcoax_min, base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired);
+
+            // (   )(<   ) > Flush coax - U
+            val = base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
+            u_min = std::min(u_min, val);
+            u2_min = std::min(u2_min, val);
+            if (IsGu(pb)) {
+              val = base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
+              u_min = std::min(u_min, val);
+              u2_min = std::min(u2_min, val);
+            }
           }
         }
 
