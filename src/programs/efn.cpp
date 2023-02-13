@@ -17,11 +17,14 @@
 #include "util/argparse.h"
 #include "util/error.h"
 
+inline const mrna::Opt OPT_DETAIL =
+    mrna::Opt(mrna::Opt::FLAG).LongName("detail").ShortName("d").Help("detailed structure output");
+
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::erg::RegisterOpts(&args);
-  args.RegisterOpt(mrna::OPT_VERBOSE);
+  args.RegisterOpt(OPT_DETAIL);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
@@ -41,7 +44,7 @@ int main(int argc, char* argv[]) {
     fmt::print("{}\n", res.ctd.ToString(s));
   }
 
-  if (args.GetOr(mrna::OPT_VERBOSE)) {
+  if (args.GetOr(OPT_DETAIL)) {
     const auto descs = res.struc->Description();
     for (const auto& desc : descs) fmt::print("{}\n", desc);
   }

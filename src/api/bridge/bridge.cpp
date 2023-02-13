@@ -25,7 +25,7 @@ std::unique_ptr<RnaPackage> RnaPackage::FromArgParse(const ArgParse& args) {
 #ifdef USE_RNASTRUCTURE
     return std::unique_ptr<RnaPackage>(new RNAstructure(RNAstructure::FromArgParse(args)));
 #else
-    error("not compiled with RNAstructure");
+    fatal("not compiled with RNAstructure");
 #endif  // USE_RNASTRUCTURE
 
   } else {
