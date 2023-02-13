@@ -67,7 +67,7 @@ struct TracebackInternal {
       const auto base11 = dp[st + 1][en - 1][DP_P] + em.AuGuPenalty(st1b, en1b);
 
       // (   )<.( * ). > Right coax backward
-      if (a == EXT_RC) {
+      if (a == EXT_RC && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // Don't set CTDs here since they will have already been set.
         if (base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT] ==
             ext[st][EXT_RC]) {
@@ -114,7 +114,7 @@ struct TracebackInternal {
         return true;
       }
 
-      if (en < N - 1) {
+      if (en < N - 1 && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // .(   ).<(   ) > Left coax  x
         val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b);
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
@@ -267,78 +267,80 @@ struct TracebackInternal {
       return true;
     }
 
-    for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
-      const Base pl1b = r[piv - 1];
-      const Base plb = r[piv];
-      const Base prb = r[piv + 1];
-      const Base pr1b = r[piv + 2];
+    if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+      for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
+        const Base pl1b = r[piv - 1];
+        const Base plb = r[piv];
+        const Base prb = r[piv + 1];
+        const Base pr1b = r[piv + 2];
 
-      // (.(   )   .) Left outer coax - P
-      const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
-      if (base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
-              em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
-          target) {
-        res.ctd[en] = CTD_LCOAX_WITH_NEXT;
-        res.ctd[st + 2] = CTD_LCOAX_WITH_PREV;
-        q.emplace(t04::Index(st + 2, piv, DP_P));
-        q.emplace(t04::Index(piv + 1, en - 2, DP_U));
-        return true;
-      }
-      // (.   (   ).) Right outer coax
-      if (base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
-              em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
-          target) {
-        res.ctd[en] = CTD_RC_WITH_PREV;
-        res.ctd[piv + 1] = CTD_RC_WITH_NEXT;
-        q.emplace(t04::Index(st + 2, piv, DP_U));
-        q.emplace(t04::Index(piv + 1, en - 2, DP_P));
-        return true;
-      }
+        // (.(   )   .) Left outer coax - P
+        const auto outer_coax = em.MismatchCoaxial(stb, st1b, en1b, enb);
+        if (base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
+                em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
+            target) {
+          res.ctd[en] = CTD_LCOAX_WITH_NEXT;
+          res.ctd[st + 2] = CTD_LCOAX_WITH_PREV;
+          q.emplace(t04::Index(st + 2, piv, DP_P));
+          q.emplace(t04::Index(piv + 1, en - 2, DP_U));
+          return true;
+        }
+        // (.   (   ).) Right outer coax
+        if (base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
+                em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
+            target) {
+          res.ctd[en] = CTD_RC_WITH_PREV;
+          res.ctd[piv + 1] = CTD_RC_WITH_NEXT;
+          q.emplace(t04::Index(st + 2, piv, DP_U));
+          q.emplace(t04::Index(piv + 1, en - 2, DP_P));
+          return true;
+        }
 
-      // (.(   ).   ) Left inner coax
-      if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
-              em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-              em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
-          target) {
-        res.ctd[en] = CTD_RC_WITH_NEXT;
-        res.ctd[st + 2] = CTD_RC_WITH_PREV;
-        q.emplace(t04::Index(st + 2, piv - 1, DP_P));
-        q.emplace(t04::Index(piv + 1, en - 1, DP_U));
-        return true;
-      }
-      // (   .(   ).) Right inner coax
-      if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
-              em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-              em.MismatchCoaxial(en2b, en1b, prb, pr1b) ==
-          target) {
-        res.ctd[en] = CTD_LCOAX_WITH_PREV;
-        res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
-        q.emplace(t04::Index(st + 1, piv, DP_U));
-        q.emplace(t04::Index(piv + 2, en - 2, DP_P));
-        return true;
-      }
+        // (.(   ).   ) Left inner coax
+        if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + em.multiloop_hack_b +
+                em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
+                em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
+            target) {
+          res.ctd[en] = CTD_RC_WITH_NEXT;
+          res.ctd[st + 2] = CTD_RC_WITH_PREV;
+          q.emplace(t04::Index(st + 2, piv - 1, DP_P));
+          q.emplace(t04::Index(piv + 1, en - 1, DP_U));
+          return true;
+        }
+        // (   .(   ).) Right inner coax
+        if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
+                em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
+                em.MismatchCoaxial(en2b, en1b, prb, pr1b) ==
+            target) {
+          res.ctd[en] = CTD_LCOAX_WITH_PREV;
+          res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
+          q.emplace(t04::Index(st + 1, piv, DP_U));
+          q.emplace(t04::Index(piv + 2, en - 2, DP_P));
+          return true;
+        }
 
-      // ((   )   ) Left flush coax
-      if (base_branch_cost + dp[st + 1][piv][DP_P] + em.multiloop_hack_b +
-              em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
-              em.stack[stb][st1b][plb][enb] ==
-          target) {
-        res.ctd[en] = CTD_FCOAX_WITH_NEXT;
-        res.ctd[st + 1] = CTD_FCOAX_WITH_PREV;
-        q.emplace(t04::Index(st + 1, piv, DP_P));
-        q.emplace(t04::Index(piv + 1, en - 1, DP_U));
-        return true;
-      }
-      // (   (   )) Right flush coax
-      if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
-              em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
-              em.stack[stb][prb][en1b][enb] ==
-          target) {
-        res.ctd[en] = CTD_FCOAX_WITH_PREV;
-        res.ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
-        q.emplace(t04::Index(st + 1, piv, DP_U));
-        q.emplace(t04::Index(piv + 1, en - 1, DP_P));
-        return true;
+        // ((   )   ) Left flush coax
+        if (base_branch_cost + dp[st + 1][piv][DP_P] + em.multiloop_hack_b +
+                em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
+                em.stack[stb][st1b][plb][enb] ==
+            target) {
+          res.ctd[en] = CTD_FCOAX_WITH_NEXT;
+          res.ctd[st + 1] = CTD_FCOAX_WITH_PREV;
+          q.emplace(t04::Index(st + 1, piv, DP_P));
+          q.emplace(t04::Index(piv + 1, en - 1, DP_U));
+          return true;
+        }
+        // (   (   )) Right flush coax
+        if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
+                em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
+                em.stack[stb][prb][en1b][enb] ==
+            target) {
+          res.ctd[en] = CTD_FCOAX_WITH_PREV;
+          res.ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
+          q.emplace(t04::Index(st + 1, piv, DP_U));
+          q.emplace(t04::Index(piv + 1, en - 1, DP_P));
+          return true;
+        }
       }
     }
 
@@ -375,17 +377,19 @@ struct TracebackInternal {
       auto right_unpaired = dp[piv + 1][en][DP_U];
       if (a != DP_U2) right_unpaired = std::min(right_unpaired, ZERO_E);
 
-      // Check a == U_RC:
-      // (   )<.( ** ). > Right coax backward
-      if (a == DP_U_RC) {
-        if (base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
-            dp[st][en][DP_U_RC]) {
-          // Ctds were already set from the recurrence that called this.
-          q.emplace(t04::Index(st + 1, piv - 1, DP_P));
-          if (right_unpaired != ZERO_E) q.emplace(t04::Index(piv + 1, en, DP_U));
-          return true;
+      if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+        // Check a == U_RC:
+        // (   )<.( ** ). > Right coax backward
+        if (a == DP_U_RC) {
+          if (base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
+              dp[st][en][DP_U_RC]) {
+            // Ctds were already set from the recurrence that called this.
+            q.emplace(t04::Index(st + 1, piv - 1, DP_P));
+            if (right_unpaired != ZERO_E) q.emplace(t04::Index(piv + 1, en, DP_U));
+            return true;
+          }
+          continue;
         }
-        continue;
       }
 
       // (   )<   > - U, U2, U_WC?, U_GU?
@@ -423,47 +427,50 @@ struct TracebackInternal {
         if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(t04::Index(piv + 1, en, DP_U));
         return true;
       }
-      // .(   ).<(   ) > Left coax - U, U2
-      auto val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b);
-      if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
-        res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-        res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
-        q.emplace(t04::Index(st + 1, piv - 1, DP_P));
-        q.emplace(t04::Index(piv + 1, en, DP_U_WC));
-        return true;
-      }
-      if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
-        res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
-        res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
-        q.emplace(t04::Index(st + 1, piv - 1, DP_P));
-        q.emplace(t04::Index(piv + 1, en, DP_U_GU));
-        return true;
-      }
 
-      // (   )<.(   ). > Right coax forward - U, U2
-      if (base00 + dp[piv + 1][en][DP_U_RC] == dp[st][en][a]) {
-        res.ctd[st] = CTD_RC_WITH_NEXT;
-        res.ctd[piv + 2] = CTD_RC_WITH_PREV;
-        q.emplace(t04::Index(st, piv, DP_P));
-        q.emplace(t04::Index(piv + 1, en, DP_U_RC));
-        return true;
-      }
+      if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
+        // .(   ).<(   ) > Left coax - U, U2
+        auto val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b);
+        if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
+          res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
+          q.emplace(t04::Index(st + 1, piv - 1, DP_P));
+          q.emplace(t04::Index(piv + 1, en, DP_U_WC));
+          return true;
+        }
+        if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
+          res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
+          res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
+          q.emplace(t04::Index(st + 1, piv - 1, DP_P));
+          q.emplace(t04::Index(piv + 1, en, DP_U_GU));
+          return true;
+        }
 
-      // (   )(<   ) > Flush coax - U, U2
-      if (base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
-        res.ctd[st] = CTD_FCOAX_WITH_NEXT;
-        res.ctd[piv] = CTD_FCOAX_WITH_PREV;
-        q.emplace(t04::Index(st, piv - 1, DP_P));
-        q.emplace(t04::Index(piv, en, DP_U_WC));
-        return true;
-      }
-      if ((IsGu(pb)) &&
-          base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
-        res.ctd[st] = CTD_FCOAX_WITH_NEXT;
-        res.ctd[piv] = CTD_FCOAX_WITH_PREV;
-        q.emplace(t04::Index(st, piv - 1, DP_P));
-        q.emplace(t04::Index(piv, en, DP_U_GU));
-        return true;
+        // (   )<.(   ). > Right coax forward - U, U2
+        if (base00 + dp[piv + 1][en][DP_U_RC] == dp[st][en][a]) {
+          res.ctd[st] = CTD_RC_WITH_NEXT;
+          res.ctd[piv + 2] = CTD_RC_WITH_PREV;
+          q.emplace(t04::Index(st, piv, DP_P));
+          q.emplace(t04::Index(piv + 1, en, DP_U_RC));
+          return true;
+        }
+
+        // (   )(<   ) > Flush coax - U, U2
+        if (base01 + em.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
+          res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+          res.ctd[piv] = CTD_FCOAX_WITH_PREV;
+          q.emplace(t04::Index(st, piv - 1, DP_P));
+          q.emplace(t04::Index(piv, en, DP_U_WC));
+          return true;
+        }
+        if ((IsGu(pb)) &&
+            base01 + em.stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
+          res.ctd[st] = CTD_FCOAX_WITH_NEXT;
+          res.ctd[piv] = CTD_FCOAX_WITH_PREV;
+          q.emplace(t04::Index(st, piv - 1, DP_P));
+          q.emplace(t04::Index(piv, en, DP_U_GU));
+          return true;
+        }
       }
     }
     return false;
@@ -519,7 +526,7 @@ struct TracebackInternal {
   TraceResult Compute() {
     verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
         "fully disallowing lonely pairs is not supported in this energy model");
-    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL,
+    verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX,
         "only full CTDs are supported in this energy model");
 
     spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
