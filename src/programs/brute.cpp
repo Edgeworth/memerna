@@ -12,7 +12,7 @@
 #include "api/energy/model.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "programs/print.h"

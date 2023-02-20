@@ -18,7 +18,7 @@
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -125,7 +125,7 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
 }
 
 void FuzzInvocation::EnsureFoldResult() {
-  if (!fold_) fold_ = Ctx(em_, CtxCfg{}).Fold(r_);
+  if (!fold_) fold_ = Ctx(em_, CtxCfg{}).Fold(r_, {});
 }
 
 Error FuzzInvocation::CheckMfe() {
@@ -140,7 +140,7 @@ Error FuzzInvocation::CheckMfe() {
     if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
 
     const Ctx ctx(em_, CtxCfg{.dp_alg = dp_alg});
-    auto res = ctx.Fold(r_);
+    auto res = ctx.Fold(r_, {});
     // First compute with the CTDs that fold returned to check the energy.
     mrna_ctd_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
 

@@ -5,7 +5,7 @@
 #include <functional>
 #include <utility>
 
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/energy.h"
 
 namespace mrna::subopt {

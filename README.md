@@ -2,15 +2,10 @@
 
 ## TODO:
 
-questions about RNAstructure data tables:
-rna.helix_ends.dg: looks like it contains AU/GU penalties. Why?
-rna.stack.dg: Why not updated with new stacking parameters?
-
-update data tables, move au/gu completely out.
-fuzz again with rnastructure
 add 0.1.0 version
 
 need to implement lonely pairs disabling properly for t22.
+implement no ctds, d2
 
 switch to pytorch 2.0 in march
 

@@ -22,7 +22,7 @@ erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string
   return res;
 }
 
-FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r); }
+FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r, {}); }
 
 int Memerna::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
   return ctx_.Suboptimal(r, fn, {.delta = delta, .sorted = true});

@@ -25,10 +25,9 @@ struct DpState {
 
 // Use int16_t here to save memory.
 struct PenultimateIndex {
-  int16_t st, en, len;
+  Index st, en, len;
 
-  PenultimateIndex(int st_, int en_, int len_)
-      : st(int16_t(st_)), en(int16_t(en_)), len(int16_t(len_)) {
+  PenultimateIndex(int st_, int en_, int len_) : st(Index(st_)), en(Index(en_)), len(Index(len_)) {
     assert(st_ == st && en_ == en && len == len_);
   }
 
@@ -36,9 +35,9 @@ struct PenultimateIndex {
 };
 
 struct NoStackIndex {
-  int16_t st, en;
+  Index st, en;
 
-  NoStackIndex(int st_, int en_) : st(int16_t(st_)), en(int16_t(en_)) {
+  NoStackIndex(int st_, int en_) : st(Index(st_)), en(Index(en_)) {
     assert(st_ == st && en_ == en);
   }
 
@@ -46,7 +45,7 @@ struct NoStackIndex {
 };
 
 // Index into the DP tables.
-using Index = std::variant<t04::Index, NoStackIndex, PenultimateIndex>;
+using DpIndex = std::variant<t04::DpIndex, NoStackIndex, PenultimateIndex>;
 
 void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
 

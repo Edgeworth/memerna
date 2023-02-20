@@ -61,30 +61,30 @@ using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 // an outer loop, and the other with the loop on the far right.
 class Ctds {
  public:
-  Ctds() = default;
-  ~Ctds() = default;
-  explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
-  explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
+  constexpr Ctds() = default;
+  constexpr  ~Ctds() = default;
+  constexpr explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
+  constexpr explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
 
-  Ctds(Ctds&&) = default;
-  Ctds& operator=(Ctds&&) = default;
+  constexpr Ctds(Ctds&&) = default;
+  constexpr Ctds& operator=(Ctds&&) = default;
 
   // Allow copies explicitly using the constructor.
-  explicit Ctds(const Ctds&) = default;
-  Ctds& operator=(const Ctds&) = delete;
+  constexpr explicit Ctds(const Ctds&) = default;
+  constexpr Ctds& operator=(const Ctds&) = delete;
 
   constexpr auto operator<=>(const Ctds&) const = default;
 
-  Ctd& operator[](std::size_t pos) { return data_[pos]; }
-  const Ctd& operator[](std::size_t pos) const { return data_[pos]; }
+  constexpr Ctd& operator[](std::size_t pos) { return data_[pos]; }
+  constexpr const Ctd& operator[](std::size_t pos) const { return data_[pos]; }
 
-  [[nodiscard]] auto begin() const noexcept { return data_.begin(); }
-  [[nodiscard]] auto end() const noexcept { return data_.end(); }
+  [[nodiscard]] constexpr auto begin() const noexcept { return data_.begin(); }
+  [[nodiscard]] constexpr auto end() const noexcept { return data_.end(); }
 
-  [[nodiscard]] auto cbegin() const noexcept { return data_.cbegin(); }
-  [[nodiscard]] auto cend() const noexcept { return data_.cend(); }
+  [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
+  [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] std::size_t size() const { return data_.size(); }
+  [[nodiscard]] constexpr std::size_t size() const { return data_.size(); }
 
   void reset(std::size_t size) {
     data_.resize(size);
@@ -96,6 +96,26 @@ class Ctds {
 
  private:
   std::vector<Ctd> data_;
+};
+
+// Describes a CTD at a particular index.
+struct IndexCtd {
+  IndexCtd() = default;
+  IndexCtd(int idx_, Ctd ctd_) : idx(Index(idx_)), ctd(ctd_) { assert(idx_ == idx); }
+
+  [[nodiscard]] constexpr bool IsValid() const { return idx >= 0; }
+
+  constexpr void Apply(Ctds& ctds) const {
+    assert(idx >= 0);
+    ctds[idx] = ctd;
+  }
+
+  constexpr void MaybeApply(Ctds& ctds) const {
+    if (IsValid()) Apply(ctds);
+  }
+
+  Index idx{-1};
+  Ctd ctd{CTD_NA};
 };
 
 std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(

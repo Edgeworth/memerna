@@ -12,7 +12,8 @@
 #include "api/part.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
+#include "api/trace/trace_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -40,7 +41,7 @@ class Ctx {
 
   erg::EnergyResult Efn(const Primary& r, const Secondary& s, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const;
-  [[nodiscard]] FoldResult Fold(const Primary& r) const;
+  [[nodiscard]] FoldResult Fold(const Primary& r, const trace::TraceCfg& cfg) const;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
       const Primary& r, subopt::SuboptCfg cfg) const;
   [[nodiscard]] int Suboptimal(
@@ -57,7 +58,8 @@ class Ctx {
 
   void ComputeMfe(const Primary& r, mfe::DpState& dp) const;
   Energy ComputeMfeExterior(const Primary& r, mfe::DpState& dp) const;
-  [[nodiscard]] trace::TraceResult ComputeTraceback(const Primary& r, const mfe::DpState& dp) const;
+  [[nodiscard]] trace::TraceResult ComputeTraceback(
+      const Primary& r, const trace::TraceCfg& cfg, const mfe::DpState& dp) const;
 };
 
 }  // namespace mrna

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "api/subopt/subopt.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -138,7 +138,8 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expand> SuboptFastest::GenerateExpansions(const Index& to_expand, Energy delta) const {
+std::vector<Expand> SuboptFastest::GenerateExpansions(
+    const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;
   int en = to_expand.en;

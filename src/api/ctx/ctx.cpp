@@ -9,6 +9,7 @@
 
 #include "api/mfe.h"
 #include "api/part.h"
+#include "api/trace/trace_cfg.h"
 #include "model/energy.h"
 #include "model/part.h"
 #include "model/primary.h"
@@ -94,21 +95,22 @@ Energy Ctx::ComputeMfeExterior(const Primary& r, mfe::DpState& dp) const {
   return std::visit(vis, em_);
 }
 
-trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& dp) const {
+trace::TraceResult Ctx::ComputeTraceback(
+    const Primary& r, const trace::TraceCfg& cfg, const mfe::DpState& dp) const {
   auto vis = overloaded{
       [&](const md::t04::Model::Ptr& em) -> trace::TraceResult {
         const auto& state = std::get<md::t04::DpState>(dp);
-        return md::t04::Traceback(r, em, state);
+        return md::t04::Traceback(r, em, cfg, state);
       },
       [&](const md::t22::Model::Ptr& em) -> trace::TraceResult {
         const auto& state = std::get<md::t22::DpState>(dp);
-        return md::t22::Traceback(r, em, state);
+        return md::t22::Traceback(r, em, cfg, state);
       },
   };
   return std::visit(vis, em_);
 }
 
-FoldResult Ctx::Fold(const Primary& r) const {
+FoldResult Ctx::Fold(const Primary& r, const trace::TraceCfg& cfg) const {
   if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
     auto subopt = md::brute::MfeBrute(r, em_);
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
@@ -117,7 +119,7 @@ FoldResult Ctx::Fold(const Primary& r) const {
   mfe::DpState dp = CreateDpState(em_);
   ComputeMfe(r, dp);
   auto energy = ComputeMfeExterior(r, dp);
-  auto tb = ComputeTraceback(r, dp);
+  auto tb = ComputeTraceback(r, cfg, dp);
   return FoldResult{
       .mfe = {.dp = std::move(dp), .energy = energy},
       .tb = std::move(tb),

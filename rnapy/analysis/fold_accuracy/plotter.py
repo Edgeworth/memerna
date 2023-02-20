@@ -57,29 +57,40 @@ class FoldAccuracyPlotter:
 
         return list(parents)
 
+    def _filter_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        parents = self._get_parent_rnas(df)
+        df = df.copy()
+        df = df[~df["name"].isin(parents)]
+        return df
+
     def run(self) -> None:
         datasets = self._load_datasets()
         for ds in datasets.values():
             print(f"Dataset: {ds.name}")
             for did in ds:
-                df = ds[did]
-                parents = self._get_parent_rnas(df)
-                df = df[~df["name"].isin(parents)]
-                # # print summary of ds
-                # # group by family
+                df = self._filter_df(ds[did])
+                # parents = self._get_parent_rnas(df)
+                # df = df[~df["name"].isin(parents)]
                 gp = df.groupby("family")
                 print(f"dataset {ds.name} program {did}")
+                print(f"{gp['ppv'].mean()}")
+                print(f"{gp['ppv'].mean().mean()}")
+                print(f"{gp['sensitivity'].mean()}")
+                print(f"{gp['sensitivity'].mean().mean()}")
                 print(f"{gp['f1'].mean()}")
                 print(f"{gp['f1'].mean().mean()}")
+                print()
 
-            print("paired t-tests:")
-            df1 = ds["memerna-t04p2"].groupby("family")
-            df2 = ds["memerna-t04p2-no-coax"].groupby("family")
-            for family, _ in df1:
-                f1 = df1.get_group(family)["f1"]
-                f2 = df2.get_group(family)["f1"]
-                t_statistic, p_value = ttest_rel(f1, f2)
-                print(f"Family {family}: t-statistic={t_statistic}, p-value={p_value}")
+            df1 = self._filter_df(ds["memerna-t04p2"]).groupby("family")
+            df2 = self._filter_df(ds["memerna-t22p2"]).groupby("family")
+            for col in ["ppv", "sensitivity", "f1"]:
+                print(f"paired t-tests for {col}:")
+                for family, _ in df1:
+                    d1 = df1.get_group(family)[col]
+                    d2 = df2.get_group(family)[col]
+                    t_statistic, p_value = ttest_rel(d1, d2)
+                    print(f"Family {family}: t-statistic={t_statistic}, p-value={p_value}")
+                print()
         # Plot quantities
         # for ds in datasets.values():
         #     self._plot_quantity(ds)

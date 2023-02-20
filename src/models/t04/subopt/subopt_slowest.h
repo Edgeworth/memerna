@@ -9,7 +9,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -32,8 +32,8 @@ class SuboptSlowest {
   struct Node {
     // State should be fully defined by |not_yet_expanded|, |history|, and |ctd| which denote
     // what it has done so far, and what it can do from now.
-    std::vector<Index> not_yet_expanded;
-    std::vector<Index> history;
+    std::vector<DpIndex> not_yet_expanded;
+    std::vector<DpIndex> history;
     SuboptResult res;  // Stores the minimum energy this state could have.
 
     [[nodiscard]] Node copy() const { return Node{not_yet_expanded, history, SuboptResult(res)}; }
@@ -68,21 +68,21 @@ class SuboptSlowest {
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
-  void Expand(Energy energy, Index nye) {
+  void Expand(Energy energy, DpIndex nye) {
     curnode_.not_yet_expanded.push_back(nye);
     curnode_.res.energy = energy;
     PruneInsert(curnode_, &q_);
     curnode_.not_yet_expanded.pop_back();
   }
 
-  void Expand(Energy energy, Index nye, IndexCtd ctd_idx) {
+  void Expand(Energy energy, DpIndex nye, IndexCtd ctd_idx) {
     curnode_.res.tb.ctd[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye);
     curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
   // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
-  void Expand(Energy energy, Index nye0, Index nye1) {
+  void Expand(Energy energy, DpIndex nye0, DpIndex nye1) {
     curnode_.not_yet_expanded.push_back(nye0);
     curnode_.not_yet_expanded.push_back(nye1);
     curnode_.res.energy = energy;
@@ -91,13 +91,13 @@ class SuboptSlowest {
     curnode_.not_yet_expanded.pop_back();
   }
 
-  void Expand(Energy energy, Index nye0, Index nye1, IndexCtd ctd_idx) {
+  void Expand(Energy energy, DpIndex nye0, DpIndex nye1, IndexCtd ctd_idx) {
     curnode_.res.tb.ctd[ctd_idx.idx] = ctd_idx.ctd;
     Expand(energy, nye0, nye1);
     curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
-  void Expand(Energy energy, Index nye0, Index nye1, IndexCtd ctd_idx0, IndexCtd ctd_idx1) {
+  void Expand(Energy energy, DpIndex nye0, DpIndex nye1, IndexCtd ctd_idx0, IndexCtd ctd_idx1) {
     curnode_.res.tb.ctd[ctd_idx0.idx] = ctd_idx0.ctd;
     curnode_.res.tb.ctd[ctd_idx1.idx] = ctd_idx1.ctd;
     Expand(energy, nye0, nye1);
