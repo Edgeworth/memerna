@@ -20,7 +20,7 @@ class T04MfeTest : public testing::TestWithParam<CtxCfg::DpAlg> {
   }
 
   static std::tuple<Energy, std::string> Mfe(const erg::EnergyModelPtr& em, const Primary& r) {
-    auto res = Ctx(em, CtxCfg{.dp_alg = GetParam()}).Fold(r);
+    auto res = Ctx(em, CtxCfg{.dp_alg = GetParam()}).Fold(r, {});
     return {res.mfe.energy, res.tb.ctd.ToString(res.tb.s)};
   }
 };

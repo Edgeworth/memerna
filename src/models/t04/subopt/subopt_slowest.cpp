@@ -24,7 +24,7 @@ SuboptSlowest::SuboptSlowest(Primary r, t04::Model::Ptr em, DpState dp, SuboptCf
 
 int SuboptSlowest::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
-  verify(N < std::numeric_limits<int16_t>::max(), "RNA too long for suboptimal folding");
+  verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
 
   verify(em_->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
       "fully disallowing lonely pairs is not supported in this energy model");

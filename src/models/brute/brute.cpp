@@ -9,7 +9,7 @@
 #include "api/energy/model.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace.h"
+#include "api/trace/trace.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "models/common/branch.h"

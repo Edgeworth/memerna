@@ -11,6 +11,10 @@ namespace mrna {
 using Base = uint8_t;
 using BaseMask = uint32_t;
 
+// Used to index into RNA primary and secondary structures.
+// Use int16_t here to save memory.
+using Index = int16_t;
+
 // Don't ever change these values.
 constexpr Base A = 0, C = 1, G = 2, U = 3, MAX_BASE = 4, MIN_BASE = 0;
 

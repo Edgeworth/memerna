@@ -23,7 +23,7 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));
-    benchmark::DoNotOptimize(ctx.Fold(r));
+    benchmark::DoNotOptimize(ctx.Fold(r, {}));
     benchmark::ClobberMemory();
   }
   state.SetComplexityN(state.range(0));

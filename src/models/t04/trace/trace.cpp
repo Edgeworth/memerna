@@ -18,19 +18,21 @@
 
 namespace mrna::md::t04 {
 
-TraceResult Traceback(const Primary& r, const Model::Ptr& em, const DpState& state) {
+TraceResult Traceback(
+    const Primary& r, const Model::Ptr& em, const trace::TraceCfg& cfg, const DpState& state) {
   const int N = static_cast<int>(r.size());
 
   verify(em->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
       "fully disallowing lonely pairs is not supported in this energy model");
   verify(
       em->cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+  verify(!cfg.random, "random traceback is not supported in this energy model");
 
   spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
-  std::stack<Index> q;
+  std::stack<DpIndex> q;
   q.emplace(0, -1, EXT);
   while (!q.empty()) {
     const int st = q.top().st;

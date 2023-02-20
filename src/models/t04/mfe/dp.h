@@ -147,25 +147,15 @@ enum : int8_t {
 };
 
 // Index into the DP tables.
-// Use int16_t here to save memory.
-struct Index {
-  int16_t st{-1}, en{-1}, a{-1};
+struct DpIndex {
+  Index st{-1}, en{-1}, a{-1};
 
-  Index() = default;
-  Index(int st_, int en_, int a_) : st(int16_t(st_)), en(int16_t(en_)), a(int16_t(a_)) {
+  DpIndex() = default;
+  DpIndex(int st_, int en_, int a_) : st(Index(st_)), en(Index(en_)), a(Index(a_)) {
     assert(st_ == st && en_ == en && a == a_);
   }
 
-  constexpr auto operator<=>(const Index&) const = default;
-};
-
-// Describes a CTD at a particular index.
-struct IndexCtd {
-  IndexCtd() = default;
-  IndexCtd(int idx_, Ctd ctd_) : idx(int16_t(idx_)), ctd(ctd_) { assert(idx_ == idx); }
-
-  int16_t idx{-1};
-  Ctd ctd{CTD_NA};
+  constexpr auto operator<=>(const DpIndex&) const = default;
 };
 
 struct Cand {

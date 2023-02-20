@@ -59,6 +59,30 @@ class Secondary {
   std::vector<int> data_;
 };
 
+struct Pair {
+  Index st = -1;
+  Index en = -1;
+
+  constexpr Pair() = default;
+  constexpr Pair(int st_, int en_) : st(Index(st_)), en(Index(en_)) {
+    assert(st_ == st);
+    assert(en_ == en);
+  }
+
+  [[nodiscard]] constexpr bool IsValid() const { return st != -1; }
+
+  constexpr void Apply(Secondary& s) const {
+    assert(st >= 0);
+    assert(en >= 0);
+    s[st] = en;
+    s[en] = st;
+  }
+
+  constexpr void MaybeApply(Secondary& s) const {
+    if (IsValid()) Apply(s);
+  }
+};
+
 std::tuple<Primary, Secondary> ParseSeqDb(
     const std::string& prim_str, const std::string& pairs_str);
 

@@ -124,7 +124,9 @@ set(MEMERNA_SOURCE
   src/api/subopt/subopt_cfg.cpp
   src/api/subopt/subopt_cfg.h
   src/api/subopt/subopt.h
-  src/api/trace.h
+  src/api/trace/trace.h
+  src/api/trace/trace_cfg.h
+  src/api/trace/trace_cfg.cpp
   src/fuzz/fuzz_cfg.cpp
   src/fuzz/fuzz_cfg.h
   src/fuzz/fuzz_invocation.cpp
