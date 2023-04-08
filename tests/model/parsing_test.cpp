@@ -97,6 +97,18 @@ class ParsingTest : public testing::Test {
   const Ctds kCtd15{CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString15 = "[m[...]Mm[...]M]";
+
+  const Primary kPrimary16 = Primary::FromSeq("AUACGUUGGUGCUAAAAA");
+  const Secondary kSecondary16{-1, 16, -1, 7, -1, -1, -1, 3, -1, -1, 14, -1, -1, -1, 10, -1, 1, -1};
+  const Ctds kCtd16{CTD_NA, CTD_MISMATCH, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_MISMATCH, CTD_NA};
+  const std::string kCtdString16 = "m[M[...]..[...]m]M";
+
+  const Primary kPrimary17 = Primary::FromSeq("AUACGUUGGUGCUAAAAA");
+  const Secondary kSecondary17{-1, 16, -1, 7, -1, -1, -1, 3, -1, -1, 14, -1, -1, -1, 10, -1, 1, -1};
+  const Ctds kCtd17{CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE, CTD_NA};
+  const std::string kCtdString17 = ".[3[...]..[...].]3";
 };
 
 TEST_F(ParsingTest, SecondaryCtdToCtdString) {
@@ -115,6 +127,8 @@ TEST_F(ParsingTest, SecondaryCtdToCtdString) {
   EXPECT_EQ(kCtdString13, kCtd13.ToString(kSecondary13));
   EXPECT_EQ(kCtdString14, kCtd14.ToString(kSecondary14));
   EXPECT_EQ(kCtdString15, kCtd15.ToString(kSecondary15));
+  EXPECT_EQ(kCtdString16, kCtd16.ToString(kSecondary16));
+  EXPECT_EQ(kCtdString17, kCtd17.ToString(kSecondary17));
 }
 
 TEST_F(ParsingTest, ParseCtd) {
@@ -148,6 +162,10 @@ TEST_F(ParsingTest, ParseCtd) {
       ParseSeqCtdString(kPrimary14.ToSeq(), kCtdString14));
   EXPECT_EQ(std::make_tuple(kPrimary15, kSecondary15, kCtd15),
       ParseSeqCtdString(kPrimary15.ToSeq(), kCtdString15));
+  EXPECT_EQ(std::make_tuple(kPrimary16, kSecondary16, kCtd16),
+      ParseSeqCtdString(kPrimary16.ToSeq(), kCtdString16));
+  EXPECT_EQ(std::make_tuple(kPrimary17, kSecondary17, kCtd17),
+      ParseSeqCtdString(kPrimary17.ToSeq(), kCtdString17));
 }
 
 TEST_F(ParsingTest, IsCtdString) {
@@ -166,6 +184,8 @@ TEST_F(ParsingTest, IsCtdString) {
   EXPECT_TRUE(Ctds::IsCtdString(kCtdString13));
   EXPECT_TRUE(Ctds::IsCtdString(kCtdString14));
   EXPECT_TRUE(Ctds::IsCtdString(kCtdString15));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString16));
+  EXPECT_TRUE(Ctds::IsCtdString(kCtdString17));
   EXPECT_FALSE(Ctds::IsCtdString("(...)"));
   EXPECT_FALSE(Ctds::IsCtdString("((...))"));
 }
