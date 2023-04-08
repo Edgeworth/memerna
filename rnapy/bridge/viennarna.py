@@ -5,8 +5,9 @@ import re
 import tempfile
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg, LonelyPairs
+from rnapy.model.model_cfg import CtdCfg
 from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import LonelyPairs
 from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.parse.sequence import db_to_secondary
@@ -28,16 +29,17 @@ class ViennaRna(RnaPackage):
                 raise NotImplementedError(
                     "ViennaRNA does not support non-heuristic disallowing of lonely pairs",
                 )
-        if cfg.ctd == CtdCfg.NONE:
-            args.append("-d0")
-        if cfg.ctd == CtdCfg.D2:
-            args.append("-d2")
-        if cfg.ctd == CtdCfg.NO_COAX:
-            raise NotImplementedError(
-                "ViennaRNA does not support CTDs with no coaxial stacking",
-            )
-        if cfg.ctd == CtdCfg.ALL:
-            args.append("-d3")
+        match cfg.ctd:
+            case CtdCfg.NONE:
+                args.append("-d0")
+            case CtdCfg.D2:
+                args.append("-d2")
+            case CtdCfg.NO_COAX:
+                raise NotImplementedError(
+                    "ViennaRNA does not support CTDs with no coaxial stacking",
+                )
+            case CtdCfg.ALL:
+                args.append("-d3")
         if cfg.model is not None:
             raise NotImplementedError("ViennaRNA energy model configuration not supported")
         return args

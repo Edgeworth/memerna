@@ -6,6 +6,7 @@ import cloup
 from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
 from rnapy.analysis.fold_perf.runner import FoldPerfRunner
 from rnapy.bridge.args import bridge_options
+from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
@@ -28,6 +29,7 @@ def run_fold_perf(
     dataset: str,
     output_dir: Path,
     memerna: MemeRna,
+    linearfold: LinearFold,
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
     sparsemfefold: SparseMfeFold,
@@ -38,6 +40,7 @@ def run_fold_perf(
         memevault,
         output_dir,
         memerna,
+        linearfold,
         rnastructure,
         viennarna,
         sparsemfefold,

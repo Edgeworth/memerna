@@ -4,6 +4,7 @@ from typing import Any
 
 import click
 import cloup
+from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
@@ -19,6 +20,16 @@ def validate_memerna(
     if value is None:
         return None
     return MemeRna(value)
+
+
+def validate_linearfold(
+    _ctx: click.Context,
+    _param: click.Parameter,
+    value: Path | None,
+) -> LinearFold | None:
+    if value is None:
+        return None
+    return LinearFold(value)
 
 
 def validate_rnastructure(
@@ -71,6 +82,14 @@ bridge_options = cloup.option_group(
         type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
         callback=validate_memerna,
         help="path to memerna build directory",
+    ),
+    cloup.option(
+        "--linearfold-path",
+        "linearfold",
+        envvar="LINEARFOLD",
+        show_envvar=True,
+        callback=validate_linearfold,
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     ),
     cloup.option(
         "--rnastructure-path",

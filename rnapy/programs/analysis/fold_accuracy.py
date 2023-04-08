@@ -7,9 +7,6 @@ from rnapy.analysis.fold_accuracy.plotter import FoldAccuracyPlotter
 from rnapy.analysis.fold_accuracy.runner import FoldAccuracyRunner
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.memerna import MemeRna
-from rnapy.bridge.rnastructure import RNAstructure
-from rnapy.bridge.sparsemfefold import SparseMfeFold
-from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.args import memevault_options
 from rnapy.data.memevault import MemeVault
 

@@ -62,7 +62,7 @@ using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 class Ctds {
  public:
   constexpr Ctds() = default;
-  constexpr  ~Ctds() = default;
+  constexpr ~Ctds() = default;
   constexpr explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
   constexpr explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
 

@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 from rnapy.programs.afl_fuzz import afl_fuzz
 from rnapy.programs.afl_fuzz_min import afl_fuzz_min
 from rnapy.programs.analysis.compare_partition import compare_partition
-from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy, run_fold_accuracy
+from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy
+from rnapy.programs.analysis.fold_accuracy import run_fold_accuracy
 from rnapy.programs.analysis.fold_perf import plot_fold_perf
 from rnapy.programs.analysis.fold_perf import run_fold_perf
 from rnapy.programs.build import build
