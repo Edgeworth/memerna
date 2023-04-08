@@ -1,13 +1,13 @@
 # memerna
 
-## TODO:
+## TODO
 
 add 0.1.0 version
 
 need to implement lonely pairs disabling properly for t22.
 implement no ctds, d2
 
-switch to pytorch 2.0 in march
+switch to pytorch 2.0 in march; update to use pytorch 2.0 features.
 
 ## Model notes
 
@@ -117,13 +117,14 @@ In all cases where an ordering of base_t p is used (e.g. data tables), it will b
 Optionally, it can be useful to set the following variables, for example in
 a .env file (used by rnapy):
 
-```
+```bash
 MRNA=...
 MEMEVAULT=${MRNA}/rnapy/data/memevault.db
 MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
 RNASTRUCTURE=${HOME}/...
 SPARSEMFEFOLD=${HOME}/...
 VIENNARNA=${HOME}/...
+LINEARFOLD=${HOME}/...
 ```
 
 ### Building
@@ -157,7 +158,7 @@ Run from $MRNA/run_tests after building.
 
 Fuzzing against RNAstructure
 
-```
+```bash
 python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
 ./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
@@ -168,20 +169,20 @@ python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precisio
 
 Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
 
-```
+```bash
 python -m rnapy.run afl-fuzz --help
 ```
 
 For example, try this command line:
 
-```
+```bash
 python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --seed 1234
 ```
 
 To fuzz everything:
 
-```
+```bash
 python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
  --subopt --subopt-rnastructure --num-procs 28 --max-len 100 \
@@ -190,7 +191,7 @@ python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
 
 Fuzz memerna only, with faster settings:
 
-```
+```bash
 python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --mfe-table --subopt --num-procs 28 --max-len 100 --seed 1234 \
  --energy-model t04p2 --subopt-strucs 100 --subopt-delta 0.2 \
@@ -199,18 +200,18 @@ python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
 
 Checking progress:
 
-```
+```bash
 afl-whatsup -s $PREFIX/memerna-afl/\*/afl
 ```
 
 Reproducing a crash:
 
-```
+```bash
 cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
 ```
 
 Minimising test cases:
 
-```
+```bash
 python -m rnapy.run afl-fuzz-min <crash-file>
 ```
