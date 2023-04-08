@@ -4,8 +4,9 @@ from typing import Any
 
 from click_params import DECIMAL
 import cloup
-from rnapy.model.model_cfg import CtdCfg, LonelyPairs
+from rnapy.model.model_cfg import CtdCfg
 from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import LonelyPairs
 from rnapy.model.model_cfg import SuboptCfg
 
 energy_options = cloup.option_group(
@@ -25,7 +26,7 @@ energy_options = cloup.option_group(
 
 
 def energy_cfg_from_args(
-    lonely_pairs: LonelyPairs, ctd: CtdCfg, model: str | None, **_kwargs: Any
+    lonely_pairs: LonelyPairs, ctd: CtdCfg, model: str | None, **_kwargs: Any,
 ) -> EnergyCfg:
     return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, model=model)
 

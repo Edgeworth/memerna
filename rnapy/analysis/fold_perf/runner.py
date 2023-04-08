@@ -3,14 +3,16 @@ from pathlib import Path
 
 import click
 import pandas as pd
+from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg, LonelyPairs
+from rnapy.model.model_cfg import CtdCfg
 from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import LonelyPairs
 
 
 class FoldPerfRunner:
@@ -25,6 +27,7 @@ class FoldPerfRunner:
         memevault: MemeVault,
         output_dir: Path,
         memerna: MemeRna,
+        linearfold: LinearFold,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
         sparsemfefold: SparseMfeFold,
@@ -33,6 +36,7 @@ class FoldPerfRunner:
         self.output_dir = output_dir
         self.programs = [
             (memerna, EnergyCfg(), memerna.name()),
+            (linearfold, EnergyCfg(ctd=CtdCfg.D2), linearfold.name()),
             (rnastructure, EnergyCfg(), rnastructure.name()),
             (viennarna, EnergyCfg(), viennarna.name() + "-d3-noLP"),
             (viennarna, EnergyCfg(ctd=CtdCfg.D2), viennarna.name() + "-d2-noLP"),

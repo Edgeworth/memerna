@@ -1,4 +1,4 @@
-# Copyright 2022 Eliot Courtney.
+# Copyright 2023 Eliot Courtney.
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -13,31 +13,45 @@ from rnapy.util.command import CmdResult
 
 
 @dataclass
-class SparseMfeFold(RnaPackage):
-    def _check_energy_cfg(self, cfg: EnergyCfg) -> None:
-        if cfg.lonely_pairs != LonelyPairs.HEURISTIC:  # TODO(3): Check this.
-            raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
-        if cfg.ctd != CtdCfg.NONE:
-            raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
+class LinearFold(RnaPackage):
+    def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
+        args = []
+
+        if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
+            raise NotImplementedError("LinearFold does not support turning on lonely pairs")
+
+        match cfg.ctd:
+            case CtdCfg.NONE:
+                args.append("-d0")
+            case CtdCfg.D2:
+                args.append("-d2")
+            case CtdCfg.NO_COAX:
+                raise NotImplementedError(
+                    "LinearFold does not support CTDs with no coaxial stacking",
+                )
+            case CtdCfg.ALL:
+                raise NotImplementedError("LinearFold does not support all CTDs")
+
         if cfg.model is not None:
-            raise NotImplementedError("SparseMFEFold energy model configuration not supported")
+            raise NotImplementedError("LinearFold energy model configuration not supported")
+        return args
 
     def name(self) -> str:
-        return "SparseMFEFold"
+        return "LinearFold"
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         raise NotImplementedError
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
-        self._check_energy_cfg(cfg)
-        res = self._run_cmd("./src/SparseMFEFold", inp=rna.r)
+        args = self._energy_cfg_args(cfg)
+        res = self._run_cmd("./linearfold", *args, "-V", inp=rna.r)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
         predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
-        raise NotImplementedError("SparseMFEFold does not support partition")
+        raise NotImplementedError
 
     def subopt(
         self,
@@ -45,7 +59,7 @@ class SparseMfeFold(RnaPackage):
         energy_cfg: EnergyCfg,
         subopt_cfg: SuboptCfg,
     ) -> tuple[list[Rna], CmdResult]:
-        raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
+        raise NotImplementedError
 
     def __str__(self) -> str:
-        return "SparseMFEFold"
+        return "LinearFold"

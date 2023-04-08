@@ -179,7 +179,7 @@ def parse_rnastructure_58_datatables(inp: Path, out: Path) -> None:
 def parse_6_2x2_file(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
-    for i in range(5, len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(5, len(lines)):
         if not re.search(r"5' --> 3'", lines[i]):
             continue
         t3prime = re.findall(r"[GUAC]", lines[i + 1])[0]
@@ -202,7 +202,7 @@ def parse_6_terminal(data: str) -> str:
 def parse_6_1x1_internal_loop(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
-    for i in range(10, len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(10, len(lines)):
         if not re.search(r"5' --> 3'", lines[i]):
             continue
         t3prime = re.findall(r"[GUAC]", lines[i + 2])
@@ -219,7 +219,7 @@ def parse_6_1x1_internal_loop(data: str) -> str:
 def parse_6_1x2_internal_loop(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
-    for i in range(10, len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(10, len(lines)):
         if not re.search(r"5' --> 3'", lines[i]):
             continue
         t3prime = re.findall(r"[GUAC]", lines[i + 2])

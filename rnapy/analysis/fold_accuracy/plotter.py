@@ -1,17 +1,13 @@
 # Copyright 2023 Eliot Courtney.
-from functools import reduce
 from pathlib import Path
 
-import matplotlib as mpl
 import pandas as pd
-from scipy.stats import ttest_rel
 from rnapy.analysis.metrics import Dataset
 from rnapy.analysis.plot.plots import Column
-from rnapy.analysis.plot.plots import plot_mean_log_quantity
 from rnapy.analysis.plot.plots import plot_mean_quantity
 from rnapy.analysis.plot.util import save_figure
 from rnapy.analysis.plot.util import set_style
-from rnapy.util.format import human_size
+from scipy.stats import ttest_rel
 
 
 class FoldAccuracyPlotter:

@@ -5,8 +5,9 @@ import re
 import tempfile
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg, LonelyPairs
+from rnapy.model.model_cfg import CtdCfg
 from rnapy.model.model_cfg import EnergyCfg
+from rnapy.model.model_cfg import LonelyPairs
 from rnapy.model.model_cfg import SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
