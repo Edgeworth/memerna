@@ -1,3 +1,4 @@
+set positional-arguments
 alias t := test
 alias f := fix
 alias u := update
