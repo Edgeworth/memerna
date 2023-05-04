@@ -15,13 +15,13 @@ cloup = "^2.0.0.post1"
 libtmux = "^0.21.1"
 pandas = "^2.0.0"
 protobuf = "3.20.1"
-python = "~3.10"
+python = "~3.11"
 python-dotenv = "^1.0.0"
 ray = "^2.3.1"
 scipy = "^1.10.1"
 seaborn = "^0.12.2"
 statsmodels = "^0.13.5"
-torch = {url = "https://download.pytorch.org/whl/cpu-cxx11-abi/torch-2.0.0%2Bcpu.cxx11.abi-cp310-cp310-linux_x86_64.whl"}
+torch = {url = "https://download.pytorch.org/whl/cu118/torch-2.0.1%2Bcu118-cp311-cp311-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.1"
 viennarna = "^2.5.0a5"
 
@@ -56,7 +56,7 @@ warn_unused_ignores = true
 show_error_codes = true
 
 # Set python version.
-python_version = '3.10'
+python_version = '3.11'
 
 # No type hints for torchvision.
 [[tool.mypy.overrides]]
@@ -77,7 +77,7 @@ module = [
 
 [tool.black]
 line-length = 100
-target-version = ['py310']
+target-version = ['py311']
 
 [tool.pylint.format]
 max-line-length = 100

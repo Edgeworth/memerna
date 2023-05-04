@@ -11,8 +11,10 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
+from rnapy.design.harness.trainer_protocol import TrainerProtocol
 
-class Trainer:
+
+class Trainer(TrainerProtocol):
     train_loader: DataLoader
     valid_loader: DataLoader
 

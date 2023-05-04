@@ -31,7 +31,7 @@ repos:
     rev: v3.3.1
     hooks:
       - id: pyupgrade
-        args: [--py310-plus]
+        args: [--py311-plus]
   - repo: https://github.com/asottile/add-trailing-comma
     rev: v2.4.0
     hooks:
@@ -45,7 +45,7 @@ repos:
     rev: 1.13.0
     hooks:
       - id: blacken-docs
-        args: [--line-length=100, -t=py310]
+        args: [--line-length=100, -t=py311]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.2.0
     hooks:
