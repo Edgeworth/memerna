@@ -1,5 +1,7 @@
 # Copyright 2022 Eliot Courtney.
+import hashlib
 import inspect
+import json
 from typing import Any
 
 
@@ -30,3 +32,15 @@ def human_size(num_bytes: int, binary: bool = True) -> str:
             return f"{float_fmt(v)} {unit}"
         v /= base
     return f"{float_fmt(v)} {units[-1]}"
+
+
+def stable_hash(val: Any) -> int:
+    val = json.dumps(
+        val,
+        ensure_ascii=False,
+        sort_keys=True,
+        indent=None,
+        separators=(",", ":"),
+    )
+    val = hashlib.md5(val.encode("utf-8")).digest()
+    return int.from_bytes(val, "big")

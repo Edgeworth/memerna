@@ -45,7 +45,7 @@ Update in 2022 model (t22p2):
     as AU/GU penalty rules).
 - See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
 
-## Data table notes:
+## Data table notes
 
 - bulge_initiation.data
 - dangle3.data
