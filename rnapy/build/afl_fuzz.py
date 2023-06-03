@@ -3,7 +3,7 @@ import copy
 import dataclasses
 from dataclasses import dataclass
 from dataclasses import field
-from enum import Enum
+from enum import StrEnum
 from itertools import cycle
 from itertools import islice
 from pathlib import Path
@@ -19,7 +19,7 @@ AFL_TARGET = "fuzz_afl"
 AFL_DATA = Path("data") / "aflplusplus" / AFL_TARGET
 
 
-class AflFuzzKind(str, Enum):
+class AflFuzzKind(StrEnum):
     REGULAR = "regular"
     ASAN = "asan"
     UBSAN = "ubsan"

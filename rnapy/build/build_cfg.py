@@ -1,7 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
 from dataclasses import field
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 import shutil
 
@@ -9,7 +9,7 @@ import click
 from rnapy.util.command import run_shell
 
 
-class Compiler(str, Enum):
+class Compiler(StrEnum):
     DEFAULT = "default"
     GCC = "gcc"
     CLANG = "clang"
@@ -30,7 +30,7 @@ class Compiler(str, Enum):
         raise ValueError(f"Unknown compiler {self}")
 
 
-class Sanitizer(str, Enum):
+class Sanitizer(StrEnum):
     NONE = "none"
     ASAN = "asan"
     TSAN = "tsan"
@@ -48,7 +48,7 @@ class Sanitizer(str, Enum):
         raise ValueError(f"Unknown sanitizer {self}")
 
 
-class BuildKind(str, Enum):
+class BuildKind(StrEnum):
     DEBUG = "debug"
     RELEASE = "release"
     RELWITHDEBINFO = "relwithdebinfo"
