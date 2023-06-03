@@ -26,7 +26,8 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg, uint_fast32_t seed);
+  FuzzInvocation(const Primary& r, std::vector<erg::EnergyModelPtr> ems, const FuzzCfg& cfg,
+      uint_fast32_t seed);
 
   Error Run();
 
@@ -38,13 +39,15 @@ class FuzzInvocation {
 
  private:
   Primary r_;
-  erg::EnergyModelPtr em_;
+  std::vector<erg::EnergyModelPtr> ems_;
   FuzzCfg cfg_;
   uint_fast32_t seed_;
 
+  // Store assumed to be correct answers for each problem type:
   std::optional<FoldResult> fold_;
   std::vector<subopt::SuboptResult> subopt_{};
   part::PartResult part_{};
+
   Error errors_;
 
 #ifdef USE_RNASTRUCTURE

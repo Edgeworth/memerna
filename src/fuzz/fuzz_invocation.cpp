@@ -103,8 +103,10 @@ void CompareT04DpState(const md::t04::DpState& got, const md::t04::DpState& want
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(
-    const Primary& r, erg::EnergyModelPtr em, const FuzzCfg& cfg, uint_fast32_t seed)
-    : r_(r), em_(std::move(em)), cfg_(cfg), seed_(seed) {}
+    const Primary& r, std::vector<erg::EnergyModelPtr> ems, const FuzzCfg& cfg, uint_fast32_t seed)
+    : r_(r), ems_(std::move(ems)), cfg_(cfg), seed_(seed) {
+  verify(!ems_.empty(), "must provide at least one energy model to fuzz");
+}
 
 Error FuzzInvocation::Run() {
   if (cfg_.mfe) Register("mfe:", CheckMfe());
@@ -125,7 +127,7 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
 }
 
 void FuzzInvocation::EnsureFoldResult() {
-  if (!fold_) fold_ = Ctx(em_, CtxCfg{}).Fold(r_, {});
+  if (!fold_) fold_ = Ctx(ems_[0], CtxCfg{}).Fold(r_, {});
 }
 
 Error FuzzInvocation::CheckMfe() {
@@ -136,19 +138,21 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<FoldResult> mrna_res;
   std::vector<Energy> mrna_ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
-  for (auto dp_alg : CtxCfg::DP_ALGS) {
-    if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
+  for (auto& em : ems_) {
+    for (auto dp_alg : CtxCfg::DP_ALGS) {
+      if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    const Ctx ctx(em_, CtxCfg{.dp_alg = dp_alg});
-    auto res = ctx.Fold(r_, {});
-    // First compute with the CTDs that fold returned to check the energy.
-    mrna_ctd_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, &res.tb.ctd).energy);
+      const Ctx ctx(em, CtxCfg{.dp_alg = dp_alg});
+      auto res = ctx.Fold(r_, {});
+      // First compute with the CTDs that fold returned to check the energy.
+      mrna_ctd_efns.push_back(erg::TotalEnergy(em, r_, res.tb.s, &res.tb.ctd).energy);
 
-    // Also check that the optimal CTD configuration has the same energy.
-    // Note that it might not be the same, so we can't do an peqality check
-    // of CTD structure.
-    mrna_opt_efns.push_back(erg::TotalEnergy(em_, r_, res.tb.s, nullptr).energy);
-    mrna_res.emplace_back(std::move(res));
+      // Also check that the optimal CTD configuration has the same energy.
+      // Note that it might not be the same, so we can't do an peqality check
+      // of CTD structure.
+      mrna_opt_efns.push_back(erg::TotalEnergy(em, r_, res.tb.s, nullptr).energy);
+      mrna_res.emplace_back(std::move(res));
+    }
   }
 
   // Check memerna energies compared to themselves and to efn.
@@ -203,17 +207,19 @@ Error FuzzInvocation::CheckSubopt() {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
   std::vector<std::vector<std::vector<subopt::SuboptResult>>> mrna;
-  for (auto cfg : cfgs) {
-    mrna.emplace_back();
-    for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
-      if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
+  for (auto& em : ems_) {
+    for (auto cfg : cfgs) {
+      mrna.emplace_back();
+      for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
+        if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      const Ctx ctx(em_, CtxCfg{.subopt_alg = subopt_alg});
-      auto res = ctx.SuboptimalIntoVector(r_, cfg);
-      // Sort them to make the sorted=false configurations comparable between
-      // algoritms.
-      std::sort(res.begin(), res.end());
-      mrna.back().push_back(std::move(res));
+        const Ctx ctx(em, CtxCfg{.subopt_alg = subopt_alg});
+        auto res = ctx.SuboptimalIntoVector(r_, cfg);
+        // Sort them to make the sorted=false configurations comparable between
+        // algoritms.
+        std::sort(res.begin(), res.end());
+        mrna.back().push_back(std::move(res));
+      }
     }
   }
 
@@ -268,7 +274,7 @@ Error FuzzInvocation::CheckSuboptResult(
   if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
-      auto suboptimal_efn = erg::TotalEnergy(em_, r_, sub.tb.s, &sub.tb.ctd);
+      auto suboptimal_efn = erg::TotalEnergy(ems_[0], r_, sub.tb.s, &sub.tb.ctd);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
             fmt::format("structure {}: energy {} != efn {}", i, sub.energy, suboptimal_efn.energy));
@@ -315,11 +321,13 @@ Error FuzzInvocation::CheckPartition() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   std::vector<part::PartResult> mrna_parts;
-  for (auto part_alg : CtxCfg::PART_ALGS) {
-    if (part_alg == CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
+  for (auto& em : ems_) {
+    for (auto part_alg : CtxCfg::PART_ALGS) {
+      if (part_alg == CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
 
-    const Ctx ctx(em_, CtxCfg{.part_alg = part_alg});
-    mrna_parts.emplace_back(ctx.Partition(r_));
+      const Ctx ctx(em, CtxCfg{.part_alg = part_alg});
+      mrna_parts.emplace_back(ctx.Partition(r_));
+    }
   }
 
   for (int i = 0; i < static_cast<int>(mrna_parts.size()); ++i)
@@ -357,7 +365,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   // Also check that the optimal CTD configuration has the same energy.
   // Note that it might not be the same, so we can't do an peqality check
   // of CTD structure.
-  auto opt_efn = erg::TotalEnergy(em_, r_, fold.tb.s, nullptr).energy;
+  auto opt_efn = erg::TotalEnergy(ems_[0], r_, fold.tb.s, nullptr).energy;
   if (opt_efn != fold.mfe.energy) {
     errors.push_back("mfe/efn energy mismatch:");
     errors.push_back(fmt::format("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));
