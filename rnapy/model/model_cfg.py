@@ -2,16 +2,16 @@
 # These classes mirror the Cfg structs used in memerna.
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
 
 
-class LonelyPairs(str, Enum):
+class LonelyPairs(StrEnum):
     OFF = "off"
     HEURISTIC = "heuristic"
     ON = "on"
 
 
-class CtdCfg(str, Enum):
+class CtdCfg(StrEnum):
     NONE = "none"  #  Do not use CTDs in efn, folding, subopt, partition, etc.
     D2 = "d2"  #  Same as ViennaRNA d2 in efn, folding, subopt, partition, etc.
     #  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.

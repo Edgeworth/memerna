@@ -9,7 +9,7 @@ set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
-option(USE_LTO "Whether to build with LTO" CMAKE_OBJC_ANDROID_TOOLCHAIN_SUFFIX)
+option(USE_LTO "Whether to build with LTO" OFF)
 set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for floats.
     Valid values are 6 (float32), 15 (float64), 18 (float80), or any value if MPFR is enabled.")
 set(ENERGY_PRECISION 2 CACHE STRING
