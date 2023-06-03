@@ -155,14 +155,12 @@ set(MEMERNA_SOURCE
   src/models/common/model.h
   src/models/common/parse.cpp
   src/models/common/parse.h
-  src/models/t04/energy/boltz_mixin.h
   src/models/t04/energy/boltz_model.cpp
   src/models/t04/energy/boltz_model.h
   src/models/t04/energy/boltz_precomp.cpp
   src/models/t04/energy/boltz_precomp.h
+  src/models/t04/energy/parse.h
   src/models/t04/energy/branch.h
-  src/models/t04/energy/model_mixin.cpp
-  src/models/t04/energy/model_mixin.h
   src/models/t04/energy/model.cpp
   src/models/t04/energy/model.h
   src/models/t04/energy/precomp.cpp

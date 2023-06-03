@@ -26,7 +26,10 @@ energy_options = cloup.option_group(
 
 
 def energy_cfg_from_args(
-    lonely_pairs: LonelyPairs, ctd: CtdCfg, model: str | None, **_kwargs: Any,
+    lonely_pairs: LonelyPairs,
+    ctd: CtdCfg,
+    model: str | None,
+    **_kwargs: Any,
 ) -> EnergyCfg:
     return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, model=model)
 
