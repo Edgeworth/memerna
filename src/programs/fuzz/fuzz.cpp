@@ -25,7 +25,7 @@ inline const auto OPT_ENUMERATE =
     mrna::Opt(mrna::Opt::FLAG).LongName("enumerate").Help("enumerate all sequences");
 
 int main(int argc, char* argv[]) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(OPT_PRINT_INTERVAL);

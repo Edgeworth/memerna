@@ -155,6 +155,23 @@ Error FuzzInvocation::CheckMfe() {
     }
   }
 
+  md::t04::DpState* t04dp = nullptr;
+  auto vis_t04dp = overloaded{
+      [&](md::t04::DpState& got) -> md::t04::DpState* { return &got; },
+      [&](md::t22::DpState& got) -> md::t04::DpState* { return &got.t04; },
+      [&](const std::monostate&) -> md::t04::DpState* { return nullptr; },
+      [&](const auto&) -> md::t04::DpState* {
+        bug();
+        return nullptr;
+      },
+  };
+
+  // Find first dp table that exists.
+  for (auto& res : mrna_res) {
+    t04dp = std::visit(vis_t04dp, res.mfe.dp);
+    if (t04dp) break;
+  }
+
   // Check memerna energies compared to themselves and to efn.
   for (int i = 0; i < static_cast<int>(mrna_res.size()); ++i) {
     if (mrna_res[0].mfe.energy != mrna_res[i].mfe.energy ||
@@ -164,15 +181,13 @@ Error FuzzInvocation::CheckMfe() {
           mrna_res[i].mfe.energy, mrna_ctd_efns[i], mrna_opt_efns[i], mrna_res[0].mfe.energy));
     }
 
-    if (cfg_.mfe_table) {
+    if (cfg_.mfe_table && t04dp) {
       auto vis = overloaded{
           [&](const md::t04::DpState& got) {
-            CompareT04DpState(got, std::get<md::t04::DpState>(mrna_res[0].mfe.dp),
-                fmt::format("mrna[{}]", i), errors);
+            CompareT04DpState(got, *t04dp, fmt::format("mrna[{}]", i), errors);
           },
           [&](const md::t22::DpState& got) {
-            CompareT04DpState(got.t04, std::get<md::t22::DpState>(mrna_res[0].mfe.dp).t04,
-                fmt::format("mrna[{}]", i), errors);
+            CompareT04DpState(got.t04, *t04dp, fmt::format("mrna[{}]", i), errors);
             // TODO(2): test got.penult.
           },
           [&](const std::monostate&) {},

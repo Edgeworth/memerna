@@ -26,7 +26,7 @@
 #include "util/error.h"
 
 int main(int argc, char* argv[]) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   mrna::bridge::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_VERBOSE);

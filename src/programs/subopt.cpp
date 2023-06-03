@@ -21,7 +21,7 @@ inline const auto OPT_CTD_OUTPUT =
     mrna::Opt(mrna::Opt::FLAG).LongName("ctd-output").Help("if we should output CTD data");
 
 int main(int argc, char* argv[]) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   mrna::RegisterOpts(&args);
   args.RegisterOpt(mrna::OPT_QUIET);

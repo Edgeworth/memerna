@@ -20,7 +20,7 @@ inline const auto OPT_MAX_LEN = mrna::Opt(mrna::Opt::ARG)
                                     .Default(-1);
 
 int main(int argc, char* argv[]) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(OPT_MAX_LEN);
