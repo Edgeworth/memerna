@@ -25,8 +25,7 @@ FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r) {
   uint_fast32_t seed = e_();
   MaybeLoadModels(seed);
 
-  // TODO(0): support multiple models here
-  FuzzInvocation invoc(r, ems_[0], cfg_, 0);
+  FuzzInvocation invoc(r, ems_, cfg_, 0);
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE
@@ -43,7 +42,8 @@ void FuzzHarness::MaybeLoadModels(uint_fast32_t seed) {
   }
 }
 
-erg::EnergyModelPtr FuzzHarness::LoadModel(const std::string& model_name, uint_fast32_t seed) const {
+erg::EnergyModelPtr FuzzHarness::LoadModel(
+    const std::string& model_name, uint_fast32_t seed) const {
   if (cfg_.random_models) {
     auto kind = Conv<erg::ModelKind>(model_name);
     return erg::Random(kind, seed);
