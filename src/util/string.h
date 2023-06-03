@@ -2,6 +2,7 @@
 #ifndef UTIL_STRING_H_
 #define UTIL_STRING_H_
 
+#include <cstdint>
 #include <string>
 
 namespace mrna {
