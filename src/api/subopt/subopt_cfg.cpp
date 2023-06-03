@@ -2,11 +2,12 @@
 #include "api/subopt/subopt_cfg.h"
 
 #include "api/energy/energy_cfg.h"
+#include "api/energy/model.h"
 
 namespace mrna::subopt {
 
 void RegisterOpts(ArgParse* args) {
-  erg::RegisterOpts(args);
+  erg::RegisterOptsEnergyModel(args);
   args->RegisterOpt(OPT_SUBOPT_DELTA);
   args->RegisterOpt(OPT_SUBOPT_MAX);
   args->RegisterOpt(OPT_SUBOPT_SORTED);

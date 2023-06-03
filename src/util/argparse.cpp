@@ -35,6 +35,7 @@ std::string Opt::Desc() const {
     }
     desc += ")";
   }
+  if (multiple_) desc += " (multiple)";
   if (!has_default_ && !choices_.empty()) desc += " <arg>";
   if (!help_.empty()) desc += ": " + help_;
   return desc;
@@ -46,6 +47,9 @@ void ArgParse::RegisterOpt(const Opt& opt) {
     verify(opt == iter->second, "conflicting option registered with longname {}", opt.longname());
   if (auto iter = shortname_.find(opt.shortname()); iter != shortname_.end())
     verify(opt == iter->second, "conflicting option registered with shortname {}", opt.shortname());
+
+  // Can't have multiple of a flag:
+  verify(opt.kind() != Opt::FLAG || !opt.multiple(), "flag {} cannot be multiple", opt.Desc());
 
   // If opt is a flag and has a longname, add the inversion to longname_ map.
   const bool has_inversion = !opt.longname().empty() && opt.kind() == Opt::FLAG;
@@ -93,7 +97,11 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
       const auto& opt = iter->second;
       if (opt.kind() == Opt::ARG) {
         if (i + 1 == argc) return fmt::format("missing argument for option {}", opt.Desc());
-        values_[opt] = argv[++i];
+        if (opt.multiple()) {
+          values_[opt] = std::string(argv[++i]);
+        } else {
+          values_[opt] = argv[++i];
+        }
       } else {
         auto pair = FlagPair(opt);
         const bool on = !opt.IsInverted();
@@ -105,8 +113,18 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
   for (const auto& opt : opts_) {
     const bool has = Has(opt);
     if (opt.required() && !has) return fmt::format("missing required option {}", opt.Desc());
-    if (has && !opt.choices().empty() && !opt.choices().contains(Get(opt)))
-      return fmt::format("unrecognised argument for option {}", opt.Desc());
+    if (has && !opt.choices().empty()) {
+      std::vector<std::string> string_values;
+      if (opt.multiple()) {
+        string_values = GetMultiple(opt);
+      } else {
+        string_values.emplace_back(Get(opt));
+      }
+      for (const auto& v : string_values) {
+        if (!opt.choices().contains(v))
+          return fmt::format("unrecognised argument for option {}", opt.Desc());
+      }
+    }
   }
   return "";
 }

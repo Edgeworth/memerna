@@ -6,6 +6,7 @@
 #include <random>
 #include <string>
 
+#include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
@@ -23,12 +24,12 @@ namespace mrna::md {
     }                                                          \
   } while (0)
 
-#define RANDOMISE_DATA(em, d)                                     \
-  do {                                                            \
-    auto dp = reinterpret_cast<Energy*>(&(em.d));                 \
-    /* NOLINTNEXTLINE */                                          \
-    for (unsigned int i = 0; i < sizeof(em.d) / sizeof(*dp); ++i) \
-      dp[i] = Energy::FromDouble(energy_dist(eng));               \
+#define RANDOMISE_DATA(em, d)                                       \
+  do {                                                              \
+    auto dp = reinterpret_cast<Energy*>(&((em).d));                 \
+    /* NOLINTNEXTLINE */                                            \
+    for (unsigned int i = 0; i < sizeof((em).d) / sizeof(*dp); ++i) \
+      dp[i] = Energy::FromDouble(energy_dist(eng));                 \
   } while (0)
 
 template <typename T>
@@ -38,9 +39,9 @@ class ModelMixin {
 
   static Ptr Create() { return Ptr(new T); }
 
-  static Ptr FromDir(const std::string& data_dir) {
+  static Ptr FromModelPath(const std::string& path) {
     auto em = Create();
-    em->LoadFromDir(data_dir);
+    em->LoadFromModelPath(path);
     std::string reason;
     verify(em->IsValid(&reason), "invalid energy model: {}", reason);
     return em;
@@ -60,7 +61,7 @@ class ModelMixin {
     if (args.Has(erg::OPT_SEED)) {
       em = Random(args.Get<uint_fast32_t>(erg::OPT_SEED));
     } else {
-      em = FromDir(erg::ModelPathFromArgParse(args));
+      em = FromModelPath(erg::ModelPathFromArgParse(args));
     }
     em->cfg = erg::EnergyCfg::FromArgParse(args);
     return em;

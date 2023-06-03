@@ -11,26 +11,6 @@
 
 namespace mrna::erg {
 
-inline const Opt OPT_SEED =
-    Opt(Opt::ARG).LongName("seed").Help("seed for random energy model for memerna");
-inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
-                                        .LongName("memerna-data")
-                                        .ShortName("md")
-                                        .Default("./data/")
-                                        .Help("data path for memerna data");
-
-// NEWMODEL: Add as an option here.
-inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
-                                        .LongName("energy-model")
-                                        .ShortName("em")
-#if ENERGY_PRECISION == 1
-                                        .Default("t04p1")
-                                        .Choice({"t04p1"})
-#elif ENERGY_PRECISION == 2
-                                        .Default("t04p2")
-                                        .Choice({"t04p2", "t04p2full", "t12p2", "t22p2"})
-#endif
-                                        .Help("energy model to use");
 inline const auto OPT_LONELY_PAIRS = mrna::Opt(Opt::ARG)
                                          .LongName("lonely-pairs")
                                          .Choice({"off", "heuristic", "on"})
@@ -44,11 +24,7 @@ inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
                                 .Default("all")
                                 .Help("whether to use CTDs");
 
-void RegisterOpts(ArgParse* args);
-
-std::string ModelPathFromArgParse(const ArgParse& args);
-std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model);
-std::string ModelPath(const std::string& data_dir, const std::string& model);
+void RegisterOptsEnergyCfg(ArgParse* args);
 
 struct EnergyCfg {
   enum class LonelyPairs {

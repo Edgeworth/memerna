@@ -2,6 +2,7 @@
 #include "api/ctx/ctx_cfg.h"
 
 #include "api/energy/energy_cfg.h"
+#include "api/energy/model.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "util/error.h"
@@ -9,7 +10,7 @@
 namespace mrna {
 
 void RegisterOpts(ArgParse* args) {
-  erg::RegisterOpts(args);
+  erg::RegisterOptsEnergyModel(args);
   trace::RegisterOpts(args);
   subopt::RegisterOpts(args);
   args->RegisterOpt(OPT_DP_ALG);

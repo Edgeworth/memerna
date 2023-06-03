@@ -23,7 +23,7 @@ inline const mrna::Opt OPT_DETAIL =
 int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
-  mrna::erg::RegisterOpts(&args);
+  mrna::erg::RegisterOptsEnergyModel(&args);
   args.RegisterOpt(OPT_DETAIL);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");

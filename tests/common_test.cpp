@@ -38,15 +38,15 @@ void InitTest(const std::string& data_dir) {
 
   // NEWMODEL: Add here.
 #if ENERGY_PRECISION == 1
-  mrna::t04p1 = mrna::md::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04p1"));
+  mrna::t04p1 = mrna::md::t04::Model::FromModelPath(mrna::erg::ModelPath(data_dir, "t04p1"));
 
   mrna::test_ems[last_test_ems_idx++] = mrna::t04p1;
   mrna::test_t04_ems[last_test_t04_ems_idx++] = mrna::t04p1;
 
 #elif ENERGY_PRECISION == 2
-  mrna::t04p2 = mrna::md::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t04p2"));
-  mrna::t12p2 = mrna::md::t04::Model::FromDir(mrna::erg::ModelPath(data_dir, "t12p2"));
-  mrna::t22p2 = mrna::md::t22::Model::FromDir(mrna::erg::ModelPath(data_dir, "t22p2"));
+  mrna::t04p2 = mrna::md::t04::Model::FromModelPath(mrna::erg::ModelPath(data_dir, "t04p2"));
+  mrna::t12p2 = mrna::md::t04::Model::FromModelPath(mrna::erg::ModelPath(data_dir, "t12p2"));
+  mrna::t22p2 = mrna::md::t22::Model::FromModelPath(mrna::erg::ModelPath(data_dir, "t22p2"));
 
   mrna::test_ems[last_test_ems_idx++] = mrna::t04p2;
   mrna::test_ems[last_test_ems_idx++] = mrna::t12p2;

@@ -58,34 +58,34 @@ void T04ParseMiscDataFromFile(EM& em, const std::string& filename) {
 }
 
 template <typename EM>
-void T04LoadFromDir(EM& em, const std::string& data_dir) {
+void T04LoadFromModelPath(EM& em, const std::string& path) {
   // Stacking interaction data.
-  Parse4MapFromFile(data_dir + "/stacking.data", em.stack);
+  Parse4MapFromFile(path + "/stacking.data", em.stack);
 
   // Terminal mismatch data.
-  Parse4MapFromFile(data_dir + "/terminal.data", em.terminal);
+  Parse4MapFromFile(path + "/terminal.data", em.terminal);
 
   // Hairpin data.
-  ParseNMapFromFile(data_dir + "/hairpin.data", &em.hairpin);
-  ParseVecFromFile(data_dir + "/hairpin_initiation.data", em.hairpin_init);
+  ParseNMapFromFile(path + "/hairpin.data", &em.hairpin);
+  ParseVecFromFile(path + "/hairpin_initiation.data", em.hairpin_init);
 
   // Bulge loop data.
-  ParseVecFromFile(data_dir + "/bulge_initiation.data", em.bulge_init);
+  ParseVecFromFile(path + "/bulge_initiation.data", em.bulge_init);
 
   // Internal loop data.
-  ParseVecFromFile(data_dir + "/internal_initiation.data", em.internal_init);
-  Parse6MapFromFile(data_dir + "/internal_1x1.data", em.internal_1x1);
-  Parse7MapFromFile(data_dir + "/internal_1x2.data", em.internal_1x2);
-  Parse8MapFromFile(data_dir + "/internal_2x2.data", em.internal_2x2);
-  Parse4MapFromFile(data_dir + "/internal_2x3_mismatch.data", em.internal_2x3_mismatch);
-  Parse4MapFromFile(data_dir + "/internal_other_mismatch.data", em.internal_other_mismatch);
+  ParseVecFromFile(path + "/internal_initiation.data", em.internal_init);
+  Parse6MapFromFile(path + "/internal_1x1.data", em.internal_1x1);
+  Parse7MapFromFile(path + "/internal_1x2.data", em.internal_1x2);
+  Parse8MapFromFile(path + "/internal_2x2.data", em.internal_2x2);
+  Parse4MapFromFile(path + "/internal_2x3_mismatch.data", em.internal_2x3_mismatch);
+  Parse4MapFromFile(path + "/internal_other_mismatch.data", em.internal_other_mismatch);
 
   // Dangle data.
-  Parse3MapFromFile(data_dir + "/dangle3.data", em.dangle3);
-  Parse3MapFromFile(data_dir + "/dangle5.data", em.dangle5);
+  Parse3MapFromFile(path + "/dangle3.data", em.dangle3);
+  Parse3MapFromFile(path + "/dangle5.data", em.dangle5);
 
   // Other misc data.
-  T04ParseMiscDataFromFile(em, data_dir + "/misc.data");
+  T04ParseMiscDataFromFile(em, path + "/misc.data");
 }
 
 template <typename EM>

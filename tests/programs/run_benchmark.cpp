@@ -7,6 +7,7 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt_cfg.h"
 #include "common_test.h"
@@ -132,7 +133,7 @@ int main(int argc, char** argv) {
   std::ios_base::sync_with_stdio(false);
   ::benchmark::Initialize(&argc, argv);
   mrna::ArgParse args;
-  mrna::erg::RegisterOpts(&args);
+  mrna::erg::RegisterOptsEnergyModel(&args);
   args.ParseOrExit(argc, argv);
   mrna::InitTest(args.Get(mrna::erg::OPT_MEMERNA_DATA));
 

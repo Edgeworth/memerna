@@ -11,9 +11,9 @@
 
 #include "api/bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"
+#include "fuzz/fuzz_harness.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"
-#include "programs/fuzz/fuzz_harness.h"
 #include "util/argparse.h"
 #include "util/error.h"
 
@@ -28,15 +28,12 @@ int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
-  args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
   args.RegisterOpt(OPT_PRINT_INTERVAL);
-  args.RegisterOpt(OPT_RANDOM_MODELS);
   args.RegisterOpt(OPT_ENUMERATE);
   args.ParseOrExit(argc, argv);
 
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
   const auto enumerate = args.Has(OPT_ENUMERATE);
-  const auto random_models = args.Has(OPT_RANDOM_MODELS);
   int min_len = 0;
   int max_len = 0;
   std::string seq;
@@ -52,7 +49,8 @@ int main(int argc, char* argv[]) {
     fatal("require min and max length or a sequence");
   }
 
-  auto harness = FuzzHarness(std::move(args));
+  auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
+  auto harness = mrna::fuzz::FuzzHarness(fuzz_cfg);
   if (!seq.empty()) {
     const auto r = mrna::Primary::FromSeq(seq);
     fmt::print("Running single fuzz on {}\n", seq);
@@ -97,7 +95,7 @@ int main(int argc, char* argv[]) {
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();
       if (!res.empty()) {
-        if (random_models) fmt::print("Random model seed: {}\n", invoc.seed());
+        if (fuzz_cfg.random_models) fmt::print("Random model seed: {}\n", invoc.seed());
         for (const auto& s : res) fmt::print("{}\n", s);
         fmt::print("\n");
       }

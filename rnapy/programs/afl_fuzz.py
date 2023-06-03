@@ -38,7 +38,6 @@ def run_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
 )
 def afl_fuzz(
     num_procs: int,
-    max_len: int,
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())

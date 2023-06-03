@@ -173,7 +173,7 @@ class Model : public ModelMixin<Model> {
   bool IsValid(std::string* reason = nullptr) const { return t04::T04IsValid(*this, reason); }
 
  protected:
-  void LoadFromDir(const std::string& data_dir);
+  void LoadFromModelPath(const std::string& path);
 
   void LoadRandom(std::mt19937& eng);
 

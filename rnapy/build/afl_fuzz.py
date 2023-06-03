@@ -55,7 +55,7 @@ class AflFuzzCfg:
     # Info for the actual fuzz_afl invocation:
     fuzz_max_len: int = -1
     fuzz_seed: int | None = None
-    fuzz_energy_model: str = "t04p1"
+    fuzz_energy_models: list[str] = field(default_factory=lambda: ["t04p1"])
     fuzz_brute_max: int = 22
     fuzz_mfe: bool = False
     fuzz_mfe_rnastructure: bool = False
@@ -140,7 +140,7 @@ class AflFuzzCfg:
         cmd += f"--max-len {self.fuzz_max_len} "
         if self.fuzz_seed:
             cmd += f"--seed {self.fuzz_seed} "
-        cmd += f"--energy-model {self.fuzz_energy_model} "
+        cmd += f"--energy-models {','.join(self.fuzz_energy_models)} "
         cmd += f"--brute-max {self.fuzz_brute_max} "
         cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
         cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "

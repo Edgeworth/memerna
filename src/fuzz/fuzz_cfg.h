@@ -4,12 +4,21 @@
 
 #include <string>
 
+#include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
 
 namespace mrna::fuzz {
 
-// Note that fuzz doesn't use flags from anything else - it has all custom flags.
+// Energy model options:
+inline const Opt OPT_FUZZ_ENERGY_MODELS =
+    erg::BuildOptEnergyModel().LongName("energy-models").ShortName("ems").Multiple();
+
+inline const auto OPT_FUZZ_RANDOM_MODELS =
+    mrna::Opt(mrna::Opt::FLAG)
+        .LongName("random-models")
+        .Help("fuzz random energy models - different each time. c.f. seed");
 
 // Brute force specific options:
 // Allows brute force fuzzing to be given a maximum RNA size
@@ -51,6 +60,7 @@ inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
 
 void RegisterOpts(ArgParse* args);
 
+// Contains all configuration needed to run a fuzzing round.
 struct FuzzCfg {
   int brute_max = 22;
 
@@ -65,6 +75,14 @@ struct FuzzCfg {
 
   bool part = false;
   bool part_rnastructure = false;
+
+  // Energy model cfg:
+  bool random_models = false;
+  erg::EnergyCfg energy_cfg{};
+  std::vector<std::string> model_names{};
+  std::string data_dir{};
+
+  std::string rnastructure_data_dir{};
 
   [[nodiscard]] std::string Desc() const;
 

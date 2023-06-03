@@ -5,25 +5,10 @@
 
 namespace mrna::erg {
 
-void RegisterOpts(ArgParse* args) {
-  args->RegisterOpt(OPT_SEED);
-  args->RegisterOpt(OPT_MEMERNA_DATA);
-  args->RegisterOpt(OPT_ENERGY_MODEL);
+void RegisterOptsEnergyCfg(ArgParse* args) {
   args->RegisterOpt(OPT_LONELY_PAIRS);
   args->RegisterOpt(OPT_BULGE_STATES);
   args->RegisterOpt(OPT_CTD);
-}
-
-std::string ModelPathFromArgParse(const ArgParse& args) {
-  return ModelPathFromArgParse(args, args.Get(OPT_ENERGY_MODEL));
-}
-
-std::string ModelPathFromArgParse(const ArgParse& args, const std::string& model) {
-  return ModelPath(args.Get(OPT_MEMERNA_DATA), model);
-}
-
-std::string ModelPath(const std::string& data_dir, const std::string& model) {
-  return data_dir + "/model/" + model;
 }
 
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {

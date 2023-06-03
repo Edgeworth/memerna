@@ -14,7 +14,6 @@
 #include "models/t04/energy/model.h"
 #include "models/t22/energy/boltz_model.h"
 #include "models/t22/energy/model.h"
-#include "util/argparse.h"
 #include "util/error.h"
 #include "util/util.h"
 
@@ -36,6 +35,16 @@ inline EnergyModelPtr FromArgParse(const ArgParse& args) {
   switch (kind) {
   case ModelKind::T04_LIKE: return md::t04::Model::FromArgParse(args);
   case ModelKind::T22_LIKE: return md::t22::Model::FromArgParse(args);
+  default: bug();
+  }
+}
+
+inline EnergyModelPtr FromDir(const std::string& data_dir, const std::string& model) {
+  auto kind = Conv<ModelKind>(model);
+  auto path = ModelPath(data_dir, model);
+  switch (kind) {
+  case ModelKind::T04_LIKE: return md::t04::Model::FromModelPath(path);
+  case ModelKind::T22_LIKE: return md::t22::Model::FromModelPath(path);
   default: bug();
   }
 }
