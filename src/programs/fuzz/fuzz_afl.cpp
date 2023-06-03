@@ -5,7 +5,7 @@
 
 #include "api/bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"
-#include "programs/fuzz/fuzz_harness.h"
+#include "fuzz/fuzz_harness.h"
 #include "util/argparse.h"
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
@@ -23,14 +23,13 @@ int main(int argc, char* argv[]) {
   std::ios_base::sync_with_stdio(false);
   mrna::ArgParse args;
   mrna::fuzz::RegisterOpts(&args);
-  args.RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
-  args.RegisterOpt(OPT_RANDOM_MODELS);
   args.RegisterOpt(OPT_MAX_LEN);
   args.ParseOrExit(argc, argv);
 
   [[maybe_unused]] const auto max_len = args.Get<int>(OPT_MAX_LEN);
 
-  auto harness = FuzzHarness(std::move(args));
+  auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
+  auto harness = mrna::fuzz::FuzzHarness(std::move(fuzz_cfg));
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
   __AFL_INIT();

@@ -3,12 +3,15 @@
 
 #include <fmt/core.h>
 
+#include "api/bridge/bridge.h"
 #include "api/energy/energy_cfg.h"
+#include "api/energy/model.h"
 
 namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
-  erg::RegisterOpts(args);
+  erg::RegisterOptsEnergyCfg(args);
+  args->RegisterOpt(erg::OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -19,6 +22,9 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_SUBOPT_DELTA);
   args->RegisterOpt(OPT_FUZZ_PARTITION);
   args->RegisterOpt(OPT_FUZZ_PARTITION_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_ENERGY_MODELS);
+  args->RegisterOpt(OPT_FUZZ_RANDOM_MODELS);
+  args->RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
 }
 
 std::string FuzzCfg::Desc() const {
@@ -33,6 +39,10 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("subopt_delta: {}\n", subopt_delta);
   desc += fmt::format("part: {}\n", part);
   desc += fmt::format("part_rnastructure: {}\n", part_rnastructure);
+  desc += fmt::format("energy_cfg: {}\n", energy_cfg);
+  for (const auto& model : model_names) desc += fmt::format("model: {}\n", model);
+  desc += fmt::format("data_dir: {}\n", data_dir);
+  desc += fmt::format("rnastructure_data_dir: {}\n", rnastructure_data_dir);
   return desc;
 }
 
@@ -55,6 +65,15 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.mfe = cfg.mfe || cfg.mfe_rnastructure;
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure;
   cfg.part = cfg.part || cfg.part_rnastructure;
+
+  args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
+  cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
+  cfg.model_names = args.GetMultiple<std::string>(OPT_FUZZ_ENERGY_MODELS);
+  cfg.data_dir = args.Get<std::string>(erg::OPT_MEMERNA_DATA);
+
+#ifdef USE_RNASTRUCTURE
+  cfg.rnastructure_data_dir = args.Get<std::string>(bridge::OPT_RNASTRUCTURE_DATA);
+#endif  // USE_RNASTRUCTURE
 
   return cfg;
 }

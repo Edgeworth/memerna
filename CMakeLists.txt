@@ -124,11 +124,13 @@ set(MEMERNA_SOURCE
   src/api/subopt/subopt_cfg.cpp
   src/api/subopt/subopt_cfg.h
   src/api/subopt/subopt.h
-  src/api/trace/trace.h
-  src/api/trace/trace_cfg.h
   src/api/trace/trace_cfg.cpp
+  src/api/trace/trace_cfg.h
+  src/api/trace/trace.h
   src/fuzz/fuzz_cfg.cpp
   src/fuzz/fuzz_cfg.h
+  src/fuzz/fuzz_harness.cpp
+  src/fuzz/fuzz_harness.h
   src/fuzz/fuzz_invocation.cpp
   src/fuzz/fuzz_invocation.h
   src/model/base.cpp
@@ -159,10 +161,10 @@ set(MEMERNA_SOURCE
   src/models/t04/energy/boltz_model.h
   src/models/t04/energy/boltz_precomp.cpp
   src/models/t04/energy/boltz_precomp.h
-  src/models/t04/energy/parse.h
   src/models/t04/energy/branch.h
   src/models/t04/energy/model.cpp
   src/models/t04/energy/model.h
+  src/models/t04/energy/parse.h
   src/models/t04/energy/precomp.cpp
   src/models/t04/energy/precomp.h
   src/models/t04/mfe/dp.h
@@ -193,8 +195,6 @@ set(MEMERNA_SOURCE
   src/programs/efn.cpp
   src/programs/fold.cpp
   src/programs/fuzz/fuzz_afl.cpp
-  src/programs/fuzz/fuzz_harness.cpp
-  src/programs/fuzz/fuzz_harness.h
   src/programs/fuzz/fuzz.cpp
   src/programs/harness.cpp
   src/programs/partition.cpp

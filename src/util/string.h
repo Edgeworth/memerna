@@ -5,6 +5,7 @@
 #include <cctype>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace mrna {
 
@@ -33,6 +34,8 @@ inline std::string ToLower(std::string s) {
 std::string TrimLeft(const std::string& s);
 std::string TrimRight(const std::string& s);
 std::string Trim(const std::string& s);
+
+std::vector<std::string> Split(const std::string& s, const std::string& delimiters);
 
 }  // namespace mrna
 

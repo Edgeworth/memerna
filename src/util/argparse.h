@@ -25,12 +25,12 @@ struct Opt {
   Opt() = delete;
   explicit Opt(Kind kind) : kind_(kind) {}
 
-  Opt& LongName(std::string n) {
+  constexpr Opt& LongName(std::string n) {
     longname_ = std::move(n);
     return *this;
   }
 
-  Opt& ShortName(std::string n) {
+  constexpr Opt& ShortName(std::string n) {
     shortname_ = std::move(n);
     return *this;
   }
@@ -59,6 +59,11 @@ struct Opt {
     return *this;
   }
 
+  constexpr Opt& Multiple() {
+    multiple_ = true;
+    return *this;
+  }
+
   Opt& Help(std::string h) {
     help_ = std::move(h);
     return *this;
@@ -80,6 +85,7 @@ struct Opt {
   [[nodiscard]] bool has_default() const { return has_default_; }
   [[nodiscard]] bool required() const { return required_; }
   [[nodiscard]] bool hidden() const { return hidden_; }
+  [[nodiscard]] bool multiple() const { return multiple_; }
 
  private:
   Kind kind_;
@@ -91,6 +97,7 @@ struct Opt {
   bool has_default_ = false;
   bool required_ = false;
   bool hidden_ = false;
+  bool multiple_ = false;
 };
 
 class ArgParse {
@@ -125,8 +132,8 @@ class ArgParse {
       *val = Conv<T>(iter->second);  // NOLINT
   }
 
-  // Useful mainly with flags where not specifying them means false (or whatever you pass as the
-  // default).
+  // Useful mainly with flags where not specifying them means false (or whatever
+  // you pass as the default).
   template <typename T = bool>
   T GetOr(const Opt& opt, T def = T()) const {
     if (auto iter = values_.find(opt); iter != values_.end())
@@ -140,6 +147,15 @@ class ArgParse {
       return Conv<T>(iter->second);  // NOLINT
     fatal("missing option {}", opt.Desc());
     return {};
+  }
+
+  template <typename T = std::string>
+  std::vector<T> GetMultiple(const Opt& opt) const {
+    auto iter = values_.find(opt);
+    if (iter == values_.end()) fatal("missing option {}", opt.Desc());
+    std::vector<T> values;
+    for (const auto& s : Split(iter->second, ",")) values.emplace_back(Conv<T>(s));
+    return values;
   }
 
   template <typename T = std::string>

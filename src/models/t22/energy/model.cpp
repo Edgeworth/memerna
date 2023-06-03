@@ -449,9 +449,9 @@ EnergyResult Model::TotalEnergy(
   return res;
 }
 
-void Model::LoadFromDir(const std::string& data_dir) {
-  t04::T04LoadFromDir(*this, data_dir);
-  Parse4MapFromFile(data_dir + "/penultimate_stacking.data", penultimate_stack);
+void Model::LoadFromModelPath(const std::string& path) {
+  t04::T04LoadFromModelPath(*this, path);
+  Parse4MapFromFile(path + "/penultimate_stacking.data", penultimate_stack);
 }
 
 void Model::LoadRandom(std::mt19937& eng) {

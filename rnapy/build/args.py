@@ -56,6 +56,36 @@ build_cfg_options = cloup.option_group(
     cloup.option("--energy-precision", type=int, default=2),
 )
 
+
+def build_cfg_from_args(  # pylint: disable=too-many-arguments
+    memerna_src_path: Path,
+    prefix: Path,
+    kind: BuildKind,
+    compiler: Compiler,
+    sanitizer: Sanitizer,
+    mpfr: bool,
+    rnastructure: bool,
+    iwyu: bool,
+    lto: bool,
+    float_precision: int,
+    energy_precision: int,
+    **_kwargs: Any,
+) -> BuildCfg:
+    return BuildCfg(
+        src=memerna_src_path,
+        prefix=prefix,
+        kind=kind,
+        compiler=compiler,
+        sanitizer=sanitizer,
+        mpfr=mpfr,
+        rnastructure=rnastructure,
+        iwyu=iwyu,
+        lto=lto,
+        float_precision=float_precision,
+        energy_precision=energy_precision,
+    )
+
+
 afl_fuzz_cfg_options = cloup.option_group(
     "afl-fuzz config options",
     cloup.option(
@@ -70,9 +100,10 @@ afl_fuzz_cfg_options = cloup.option_group(
         help="Seed to use for fuzzing",
     ),
     cloup.option(
-        "--energy-model",
-        default="t04p1",
-        help="Which type of energy model to use",
+        "--energy-models",
+        default=["t04p1"],
+        multiple=True,
+        help="Which energy models to use for fuzzing",
     ),
     cloup.option(
         "--brute-max",
@@ -127,40 +158,11 @@ afl_fuzz_cfg_options = cloup.option_group(
 )
 
 
-def build_cfg_from_args(  # pylint: disable=too-many-arguments
-    memerna_src_path: Path,
-    prefix: Path,
-    kind: BuildKind,
-    compiler: Compiler,
-    sanitizer: Sanitizer,
-    mpfr: bool,
-    rnastructure: bool,
-    iwyu: bool,
-    lto: bool,
-    float_precision: int,
-    energy_precision: int,
-    **_kwargs: Any,
-) -> BuildCfg:
-    return BuildCfg(
-        src=memerna_src_path,
-        prefix=prefix,
-        kind=kind,
-        compiler=compiler,
-        sanitizer=sanitizer,
-        mpfr=mpfr,
-        rnastructure=rnastructure,
-        iwyu=iwyu,
-        lto=lto,
-        float_precision=float_precision,
-        energy_precision=energy_precision,
-    )
-
-
 def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
     build_cfg: BuildCfg,
+    energy_models: list[str],
     max_len: int = -1,
     seed: int | None = None,
-    energy_model: str = "t04p1",
     brute_max: int = 22,
     mfe: bool = False,
     mfe_rnastructure: bool = False,
@@ -177,7 +179,7 @@ def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
         build_cfg=build_cfg,
         fuzz_max_len=max_len,
         fuzz_seed=seed,
-        fuzz_energy_model=energy_model,
+        fuzz_energy_models=energy_models,
         fuzz_brute_max=brute_max,
         fuzz_mfe=mfe,
         fuzz_mfe_rnastructure=mfe_rnastructure,
