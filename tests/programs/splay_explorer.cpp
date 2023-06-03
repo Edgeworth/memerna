@@ -102,7 +102,7 @@ inline const auto OPT_RANGE =
     mrna::Opt(mrna::Opt::ARG).ShortName("r").Default("-1").Help("load range from 1 until r");
 
 int main(int argc, char** argv) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   args.RegisterOpt(mrna::OPT_AFL);
   args.RegisterOpt(OPT_RANGE);

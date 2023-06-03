@@ -8,7 +8,7 @@
 #include "util/argparse.h"
 
 int main(int argc, char** argv) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   testing::InitGoogleTest(&argc, argv);
   mrna::ArgParse args;
   mrna::erg::RegisterOptsEnergyModel(&args);

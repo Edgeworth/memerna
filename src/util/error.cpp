@@ -1,0 +1,40 @@
+#include "util/error.h"
+
+#ifdef USE_BOOST
+#include <boost/stacktrace.hpp>
+#endif
+
+namespace {
+
+void terminate_handler() {
+  std::exception_ptr exptr = std::current_exception();
+  if (exptr) {
+    try {
+      std::rethrow_exception(exptr);
+    } catch (std::exception &ex) {
+      fmt::print(stderr, "terminated due to exception: {}\n", ex.what());
+    } catch (...) {
+      fmt::print(stderr, "terminated due to unknown exception\n");
+    }
+  } else {
+    fmt::print(stderr, "terminated due to unknown reason\n");
+  }
+
+#ifdef USE_BOOST
+  auto stack = boost::stacktrace::to_string(boost::stacktrace::stacktrace());
+  fmt::print(stderr, "stack trace:\n{}\n", stack);
+#endif
+
+  std::abort();
+}
+
+}  // namespace
+
+namespace mrna {
+
+void InitProgram() {
+  std::ios_base::sync_with_stdio(false);
+  std::set_terminate(terminate_handler);
+}
+
+}  // namespace mrna

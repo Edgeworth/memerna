@@ -204,6 +204,7 @@ set(MEMERNA_SOURCE
   src/util/argparse.cpp
   src/util/argparse.h
   src/util/array.h
+  src/util/error.cpp
   src/util/error.h
   src/util/float.h
   src/util/splaymap.h

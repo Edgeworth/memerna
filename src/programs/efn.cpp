@@ -21,7 +21,7 @@ inline const mrna::Opt OPT_DETAIL =
     mrna::Opt(mrna::Opt::FLAG).LongName("detail").ShortName("d").Help("detailed structure output");
 
 int main(int argc, char* argv[]) {
-  std::ios_base::sync_with_stdio(false);
+  mrna::InitProgram();
   mrna::ArgParse args;
   mrna::erg::RegisterOptsEnergyModel(&args);
   args.RegisterOpt(OPT_DETAIL);
