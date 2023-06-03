@@ -4,8 +4,15 @@
 #include <memory>
 #include <unordered_map>
 
+#include "models/t04/energy/parse.h"
+
 namespace mrna::md::t04 {
 
-BoltzModel::BoltzModel(const Model::Ptr& em) : T04BoltzMixin(*em) {}
+BoltzModel::BoltzModel(const Model::Ptr& em) : em_(*em) {
+  // Force this to be false to not include bulge states for the partition
+  // function.
+  em_.cfg.bulge_states = false;
+  T04LoadBoltz(*this);
+}
 
 }  // namespace mrna::md::t04

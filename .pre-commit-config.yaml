@@ -66,7 +66,6 @@ repos:
             torch,
             torchtext,
             torchvision,
-            ViennaRNA,
           ]
   - repo: https://github.com/PyCQA/prospector # runs pylint etc with good profiles
     rev: v1.9.0
@@ -88,7 +87,6 @@ repos:
             torch,
             torchtext,
             torchvision,
-            ViennaRNA,
           ]
   # C++ related hooks:
   - repo: https://github.com/cmake-lint/cmake-lint

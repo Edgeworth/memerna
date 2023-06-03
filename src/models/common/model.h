@@ -23,12 +23,12 @@ namespace mrna::md {
     }                                                          \
   } while (0)
 
-#define RANDOMISE_DATA(d)                                      \
-  do {                                                         \
-    auto dp = reinterpret_cast<Energy*>(&(d));                 \
-    /* NOLINTNEXTLINE */                                       \
-    for (unsigned int i = 0; i < sizeof(d) / sizeof(*dp); ++i) \
-      dp[i] = Energy::FromDouble(energy_dist(eng));            \
+#define RANDOMISE_DATA(em, d)                                     \
+  do {                                                            \
+    auto dp = reinterpret_cast<Energy*>(&(em.d));                 \
+    /* NOLINTNEXTLINE */                                          \
+    for (unsigned int i = 0; i < sizeof(em.d) / sizeof(*dp); ++i) \
+      dp[i] = Energy::FromDouble(energy_dist(eng));               \
   } while (0)
 
 template <typename T>

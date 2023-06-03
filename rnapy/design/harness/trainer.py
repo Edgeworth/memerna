@@ -7,11 +7,10 @@ from rnapy.design.harness.optimizer import Optimizer
 from rnapy.design.harness.reporter import Metrics
 from rnapy.design.harness.reporter import Reporter
 from rnapy.design.harness.train_cfg import TrainCfg
+from rnapy.design.harness.trainer_protocol import TrainerProtocol
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-
-from rnapy.design.harness.trainer_protocol import TrainerProtocol
 
 
 class Trainer(TrainerProtocol):

@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Sequence
-from bidict import bidict
+from typing import Any
 
+from bidict import bidict
 import matplotlib as mpl
 from matplotlib import pyplot as plt
 import numpy as np
@@ -9,11 +10,10 @@ from rnapy.analysis.metrics import Dataset
 from rnapy.analysis.plot.util import get_marker
 from rnapy.analysis.plot.util import get_subplot_grid
 from rnapy.analysis.plot.util import set_up_figure
+from rnapy.util.util import stable_hash
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-
-from rnapy.util.util import stable_hash
 
 
 @dataclass
@@ -60,7 +60,13 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
             x, y = xcol.idx, ycol.idx
             df = df[[x, y]].groupby(x)
             sns.lineplot(
-                df.mean(), x=x, y=y, label=did, ax=ax, color=_color(did), **get_marker(idx)
+                df.mean(),
+                x=x,
+                y=y,
+                label=did,
+                ax=ax,
+                color=_color(did),
+                **get_marker(idx),
             )
             low, high = df[y].min(), df[y].max()
             ax.fill_between(list(sorted(df.groups)), low, high, alpha=0.2, color=_color(did))
@@ -98,7 +104,11 @@ def plot_mean_log_quantity(  # noqa: too-many-locals
         label = f"{did}\n${a:.5f}x {sign} {abs(b):.2f}$\n$R^2 = {res.rsquared:.3f}$"
         sns.regplot(x=x, y=y, label=label, data=df, fit_reg=False, ax=axes[i], color=_color(did))
         sm.graphics.abline_plot(
-            model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), color=_color(did), **get_marker(i)
+            model_results=res,
+            ax=axes[i],
+            c=(0, 0, 0, 0.8),
+            color=_color(did),
+            **get_marker(i),
         )
 
     names = [xcol.name, ycol.name]

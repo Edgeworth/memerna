@@ -23,7 +23,8 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));
-    benchmark::DoNotOptimize(ctx.Fold(r, {}));
+    auto result = ctx.Fold(r, {});
+    benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
   state.SetComplexityN(state.range(0));
@@ -37,7 +38,8 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));
-    benchmark::DoNotOptimize(ctx.SuboptimalIntoVector(r, cfg));
+    auto result = ctx.SuboptimalIntoVector(r, cfg);
+    benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
   state.SetComplexityN(state.range(0));
@@ -50,7 +52,8 @@ void Partition(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)));
-    benchmark::DoNotOptimize(ctx.Partition(r));
+    auto result = ctx.Partition(r);
+    benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
   state.SetComplexityN(state.range(0));

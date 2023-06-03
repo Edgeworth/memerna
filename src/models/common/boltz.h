@@ -11,12 +11,14 @@ inline void FillBoltzArray(BoltzEnergy* output, const Energy* input, int element
   for (int i = 0; i < elements; ++i) output[i] = input[i].Boltz();
 }
 
-#define FILL_BOLTZ(name)                                                                    \
-  static_assert(/* NOLINTNEXTLINE */                                                        \
-      sizeof(name) / sizeof(*Decay(name)) == sizeof(em().name) / sizeof(*Decay(em().name)), \
-      "BoltzModel does not match Model");                                                   \
-  /* NOLINTNEXTLINE */                                                                      \
-  FillBoltzArray(Decay(name), Decay(em().name), sizeof(name) / sizeof(*Decay(name)));
+#define FILL_BOLTZ(bem, name)                                    \
+  static_assert(/* NOLINTNEXTLINE */                             \
+      sizeof(bem.name) / sizeof(*Decay(bem.name)) ==             \
+          sizeof(bem.em().name) / sizeof(*Decay(bem.em().name)), \
+      "BoltzModel does not match Model");                        \
+  /* NOLINTNEXTLINE */                                           \
+  FillBoltzArray(                                                \
+      Decay(bem.name), Decay(bem.em().name), sizeof(bem.name) / sizeof(*Decay(bem.name)));
 
 }  // namespace mrna::md
 

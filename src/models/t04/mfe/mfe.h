@@ -22,7 +22,6 @@ void MfeFastest(const Primary& r, const Model::Ptr& em, DpState& state);
 void MfeLyngso(const Primary& r, const Model::Ptr& em, DpState& state);
 
 template <typename T>
-  requires std::is_base_of_v<T04ModelMixin, T>
 Energy MfeExterior(const Primary& r, const T& em, DpState& state) {
   const int N = static_cast<int>(r.size());
 
