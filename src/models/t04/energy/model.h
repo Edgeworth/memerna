@@ -178,6 +178,10 @@ class Model : public ModelMixin<Model> {
         *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
   }
 
+  void LoadPseudofreeEnergy(std::vector<Energy>, std::vector<Energy>) {  // NOLINT
+    fatal("pseudofree energy is not supported in this energy model");
+  }
+
  private:
   friend class ModelMixin<Model>;
 
