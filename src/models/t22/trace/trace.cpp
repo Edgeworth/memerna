@@ -38,9 +38,9 @@ struct TracebackInternal {
   struct IndexState {
     std::optional<DpIndex> idx0 = std::nullopt;
     std::optional<DpIndex> idx1 = std::nullopt;
-    IndexCtd ctd0 = {};
-    IndexCtd ctd1 = {};
-    Pair pair = {};
+    IndexCtd ctd0{};
+    IndexCtd ctd1{};
+    Pair pair{};
   };
 
   const Primary& r;
@@ -94,7 +94,6 @@ struct TracebackInternal {
       if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
           (a != EXT_GU || IsGuPair(stb, enb))) {
         // EXT_WC and EXT_GU will have already had their ctds set.
-        // TODO(0): need to encapsule these ops into the state.
         IndexState state = {
             .idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
         if (a == EXT) state.ctd0 = {st, CTD_UNUSED};
@@ -109,20 +108,20 @@ struct TracebackInternal {
         next.push_back({
             .idx0 = t04::DpIndex(st, en - 1, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0 = {st, CTD_3_DANGLE},
+            .ctd0{st, CTD_3_DANGLE},
         });
       }
       // 5(   )<   > 5'
       if (base10 + em.dangle5[enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
         next.push_back({.idx0 = t04::DpIndex(st + 1, en, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0 = {st + 1, CTD_5_DANGLE}});
+            .ctd0{st + 1, CTD_5_DANGLE}});
       }
       // .(   ).<   > Terminal mismatch
       if (base11 + em.terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
         next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0 = {st + 1, CTD_MISMATCH}});
+            .ctd0{st + 1, CTD_MISMATCH}});
       }
 
       if (en < N - 1 && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
@@ -131,37 +130,37 @@ struct TracebackInternal {
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
               .idx1 = t04::DpIndex(en + 1, -1, EXT_WC),
-              .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
-              .ctd1 = {en + 1, CTD_LCOAX_WITH_PREV}});
+              .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
+              .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
         }
         if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
               .idx1 = t04::DpIndex(en + 1, -1, EXT_GU),
-              .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
-              .ctd1 = {en + 1, CTD_LCOAX_WITH_PREV}});
+              .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
+              .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
         }
 
         // (   )<.(   ). > Right coax forward
         if (base00 + ext[en + 1][EXT_RC] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st, en, DP_P),
               .idx1 = t04::DpIndex(en + 1, -1, EXT_RC),
-              .ctd0 = {st, CTD_RC_WITH_NEXT},
-              .ctd1 = {en + 2, CTD_RC_WITH_PREV}});
+              .ctd0{st, CTD_RC_WITH_NEXT},
+              .ctd1{en + 2, CTD_RC_WITH_PREV}});
         }
 
         // (   )(<   ) > Flush coax
         if (base01 + em.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st, en - 1, DP_P),
               .idx1 = t04::DpIndex(en, -1, EXT_WC),
-              .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
-              .ctd1 = {en, CTD_FCOAX_WITH_PREV}});
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{en, CTD_FCOAX_WITH_PREV}});
         }
         if (IsGu(enb) &&
             base01 + em.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st, en - 1, DP_P),
               .idx1 = t04::DpIndex(en, -1, EXT_GU),
-              .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
-              .ctd1 = {en, CTD_FCOAX_WITH_PREV}});
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{en, CTD_FCOAX_WITH_PREV}});
         }
       }
     }
@@ -231,28 +230,35 @@ struct TracebackInternal {
       }
     }
 
+    if (em.Hairpin(r, st, en) == target) {
+      next.push_back({.pair{st, en}});
+    }
+
     const auto base_branch_cost =
         em.AuGuPenalty(stb, enb) + em.multiloop_hack_a + em.multiloop_hack_b;
     // (<   ><    >)
     if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == target) {
-      res.ctd[en] = CTD_UNUSED;
-      next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_U2), .pair{st, en}});
+      next.push_back({
+          .idx0 = t04::DpIndex(st + 1, en - 1, DP_U2),
+          .ctd0{en, CTD_UNUSED},
+          .pair{st, en},
+      });
     }
     // (3<   ><   >) 3'
     if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] == target) {
-      res.ctd[en] = CTD_3_DANGLE;
-      next.push_back({.idx0 = t04::DpIndex(st + 2, en - 1, DP_U2), .pair{st, en}});
+      next.push_back(
+          {.idx0 = t04::DpIndex(st + 2, en - 1, DP_U2), .ctd0{en, CTD_3_DANGLE}, .pair{st, en}});
     }
     // (<   ><   >5) 5'
     if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] == target) {
-      res.ctd[en] = CTD_5_DANGLE;
-      next.push_back({.idx0 = t04::DpIndex(st + 1, en - 2, DP_U2), .pair{st, en}});
+      next.push_back(
+          {.idx0 = t04::DpIndex(st + 1, en - 2, DP_U2), .ctd0{en, CTD_5_DANGLE}, .pair{st, en}});
     }
     // (.<   ><   >.) Terminal mismatch
     if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] ==
         target) {
-      res.ctd[en] = CTD_MISMATCH;
-      next.push_back({.idx0 = t04::DpIndex(st + 2, en - 2, DP_U2), .pair{st, en}});
+      next.push_back(
+          {.idx0 = t04::DpIndex(st + 2, en - 2, DP_U2), .ctd0{en, CTD_MISMATCH}, .pair{st, en}});
     }
 
     if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
@@ -267,19 +273,21 @@ struct TracebackInternal {
         if (base_branch_cost + dp[st + 2][piv][DP_P] + em.multiloop_hack_b +
                 em.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
             target) {
-          res.ctd[en] = CTD_LCOAX_WITH_NEXT;
-          res.ctd[st + 2] = CTD_LCOAX_WITH_PREV;
-          next.push_back({.idx0 = t04::DpIndex(st + 2, piv, DP_P), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 1, en - 2, DP_U), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 2, piv, DP_P),
+              .idx1 = t04::DpIndex(piv + 1, en - 2, DP_U),
+              .ctd0{en, CTD_LCOAX_WITH_NEXT},
+              .ctd1{st + 2, CTD_LCOAX_WITH_PREV},
+              .pair{st, en}});
         }
         // (.   (   ).) Right outer coax
         if (base_branch_cost + dp[st + 2][piv][DP_U] + em.multiloop_hack_b +
                 em.AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
             target) {
-          res.ctd[en] = CTD_RC_WITH_PREV;
-          res.ctd[piv + 1] = CTD_RC_WITH_NEXT;
-          next.push_back({.idx0 = t04::DpIndex(st + 2, piv, DP_U), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 1, en - 2, DP_P), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 2, piv, DP_U),
+              .idx1 = t04::DpIndex(piv + 1, en - 2, DP_P),
+              .ctd0{en, CTD_RC_WITH_PREV},
+              .ctd1{piv + 1, CTD_RC_WITH_NEXT},
+              .pair{st, en}});
         }
 
         // (.(   ).   ) Left inner coax
@@ -287,20 +295,22 @@ struct TracebackInternal {
                 em.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                 em.MismatchCoaxial(pl1b, plb, st1b, st2b) ==
             target) {
-          res.ctd[en] = CTD_RC_WITH_NEXT;
-          res.ctd[st + 2] = CTD_RC_WITH_PREV;
-          next.push_back({.idx0 = t04::DpIndex(st + 2, piv - 1, DP_P), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 1, en - 1, DP_U), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 2, piv - 1, DP_P),
+              .idx1 = t04::DpIndex(piv + 1, en - 1, DP_U),
+              .ctd0{en, CTD_RC_WITH_NEXT},
+              .ctd1{st + 2, CTD_RC_WITH_PREV},
+              .pair{st, en}});
         }
         // (   .(   ).) Right inner coax
         if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
                 em.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                 em.MismatchCoaxial(en2b, en1b, prb, pr1b) ==
             target) {
-          res.ctd[en] = CTD_LCOAX_WITH_PREV;
-          res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
-          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_U), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 2, en - 2, DP_P), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_U),
+              .idx1 = t04::DpIndex(piv + 2, en - 2, DP_P),
+              .ctd0{en, CTD_LCOAX_WITH_PREV},
+              .ctd1{piv + 2, CTD_LCOAX_WITH_NEXT},
+              .pair{st, en}});
         }
 
         // ((   )   ) Left flush coax
@@ -308,20 +318,22 @@ struct TracebackInternal {
                 em.AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
                 em.stack[stb][st1b][plb][enb] ==
             target) {
-          res.ctd[en] = CTD_FCOAX_WITH_NEXT;
-          res.ctd[st + 1] = CTD_FCOAX_WITH_PREV;
-          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_P), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 1, en - 1, DP_U), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_P),
+              .idx1 = t04::DpIndex(piv + 1, en - 1, DP_U),
+              .ctd0{en, CTD_FCOAX_WITH_NEXT},
+              .ctd1{st + 1, CTD_FCOAX_WITH_PREV},
+              .pair{st, en}});
         }
         // (   (   )) Right flush coax
         if (base_branch_cost + dp[st + 1][piv][DP_U] + em.multiloop_hack_b +
                 em.AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
                 em.stack[stb][prb][en1b][enb] ==
             target) {
-          res.ctd[en] = CTD_FCOAX_WITH_PREV;
-          res.ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
-          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_U), .pair{st, en}});
-          next.push_back({.idx0 = t04::DpIndex(piv + 1, en - 1, DP_P), .pair{st, en}});
+          next.push_back({.idx0 = t04::DpIndex(st + 1, piv, DP_U),
+              .idx1 = t04::DpIndex(piv + 1, en - 1, DP_P),
+              .ctd0{en, CTD_FCOAX_WITH_PREV},
+              .ctd1{piv + 1, CTD_FCOAX_WITH_NEXT},
+              .pair{st, en}});
         }
       }
     }
@@ -386,21 +398,20 @@ struct TracebackInternal {
 
       // (   )3<   > 3' - U, U2
       if (base01 + em.dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
-        IndexState state = {.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0 = {st, CTD_3_DANGLE}};
+        IndexState state = {.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
       // 5(   )<   > 5' - U, U2
       if (base10 + em.dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
-        IndexState state = {
-            .idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0 = {st + 1, CTD_5_DANGLE}};
+        IndexState state = {.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
       // .(   ).<   > Terminal mismatch - U, U2
       if (base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
         IndexState state = {
-            .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0 = {st + 1, CTD_MISMATCH}};
+            .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
@@ -412,16 +423,16 @@ struct TracebackInternal {
           next.push_back({
               .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
               .idx1 = t04::DpIndex(piv + 1, en, DP_U_WC),
-              .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
-              .ctd1 = {piv + 1, CTD_LCOAX_WITH_PREV},
+              .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
+              .ctd1{piv + 1, CTD_LCOAX_WITH_PREV},
           });
         }
         if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
           next.push_back({
               .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
               .idx1 = t04::DpIndex(piv + 1, en, DP_U_GU),
-              .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
-              .ctd1 = {piv + 1, CTD_LCOAX_WITH_PREV},
+              .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
+              .ctd1{piv + 1, CTD_LCOAX_WITH_PREV},
           });
         }
 
@@ -430,8 +441,8 @@ struct TracebackInternal {
           next.push_back({
               .idx0 = t04::DpIndex(st, piv, DP_P),
               .idx1 = t04::DpIndex(piv + 1, en, DP_U_RC),
-              .ctd0 = {st, CTD_RC_WITH_NEXT},
-              .ctd1 = {piv + 2, CTD_RC_WITH_PREV},
+              .ctd0{st, CTD_RC_WITH_NEXT},
+              .ctd1{piv + 2, CTD_RC_WITH_PREV},
           });
         }
 
@@ -440,8 +451,8 @@ struct TracebackInternal {
           next.push_back({
               .idx0 = t04::DpIndex(st, piv - 1, DP_P),
               .idx1 = t04::DpIndex(piv, en, DP_U_WC),
-              .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
-              .ctd1 = {piv, CTD_FCOAX_WITH_PREV},
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{piv, CTD_FCOAX_WITH_PREV},
           });
         }
         if ((IsGu(pb)) &&
@@ -449,8 +460,8 @@ struct TracebackInternal {
           next.push_back({
               .idx0 = t04::DpIndex(st, piv - 1, DP_P),
               .idx1 = t04::DpIndex(piv, en, DP_U_GU),
-              .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
-              .ctd1 = {piv, CTD_FCOAX_WITH_PREV},
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{piv, CTD_FCOAX_WITH_PREV},
           });
         }
       }
@@ -458,10 +469,6 @@ struct TracebackInternal {
   }
 
   void ComputePenultimate(int st, int en, int length) {
-    // It's paired, so add it to the folding.
-    res.s[st] = en;
-    res.s[en] = st;
-
     const auto bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
     const auto bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
 
@@ -469,20 +476,20 @@ struct TracebackInternal {
     if (length == 2 &&
         none + nostack[st + 1][en - 1] + em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 1, en - 1)});
+      next.push_back({.idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
     }
     if (none + penult[st + 1][en - 1][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 1, length - 1)});
+      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
     }
 
     auto left = bulge_left;
     if (length == 2 &&
         left + nostack[st + 2][en - 1] + em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 2, en - 1)});
+      next.push_back({.idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
     }
     if (left + penult[st + 2][en - 1][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 2, en - 1, length - 1)});
+      next.push_back({.idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
     }
 
     auto right = bulge_right;
@@ -490,10 +497,10 @@ struct TracebackInternal {
         right + nostack[st + 1][en - 2] +
                 em.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
             penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 1, en - 2)});
+      next.push_back({.idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
     }
     if (right + penult[st + 1][en - 2][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 2, length - 1)});
+      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
     }
   }
 
@@ -542,7 +549,6 @@ struct TracebackInternal {
 
       if (!next.empty()) {
         if (cfg.random) {
-          fmt::print("Number of next states: {}\n", next.size());
           std::shuffle(next.begin(), next.end(), eng);
         }
         if (next[0].idx0.has_value()) q.push(next[0].idx0.value());
