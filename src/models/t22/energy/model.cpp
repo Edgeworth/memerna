@@ -463,9 +463,8 @@ void Model::LoadRandom(std::mt19937& eng) {
 
   // penultimate_stack is dependent on the direction, so 180 degree rotations
   // don't have to be the same.
-  // TODO(0): undo
-  // std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  // RANDOMISE_DATA((*this), penultimate_stack);
+  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  RANDOMISE_DATA((*this), penultimate_stack);
 }
 
 }  // namespace mrna::md::t22

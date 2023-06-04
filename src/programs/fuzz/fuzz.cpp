@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
         start_time = std::chrono::steady_clock::now();
       }
       const int len = len_dist(harness.e());
-      auto r = mrna::Primary::Random(len);
+      auto r = mrna::Primary::Random(len, harness.e());
 
       auto invoc = harness.CreateInvocation(r);
       const auto res = invoc.Run();

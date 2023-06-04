@@ -2,6 +2,7 @@
 #include <benchmark/benchmark.h>
 
 #include <memory>
+#include <random>
 #include <tuple>
 #include <utility>
 
@@ -21,9 +22,10 @@ template <class... Args>
 void Mfe(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
   const Ctx ctx(*std::get<0>(args), CtxCfg{.dp_alg = std::get<1>(args)});
+  std::mt19937 eng(0);
 
   for (auto _ : state) {
-    auto r = Primary::Random(static_cast<int>(state.range(0)));
+    auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
     auto result = ctx.Fold(r, {});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
@@ -36,9 +38,10 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
   const Ctx ctx(*std::get<0>(args), CtxCfg{.subopt_alg = std::get<1>(args)});
   auto cfg = std::get<2>(args);
+  std::mt19937 eng(0);
 
   for (auto _ : state) {
-    auto r = Primary::Random(static_cast<int>(state.range(0)));
+    auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
     auto result = ctx.SuboptimalIntoVector(r, cfg);
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
@@ -50,9 +53,10 @@ template <class... Args>
 void Partition(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
   const Ctx ctx(*std::get<0>(args), CtxCfg{.part_alg = std::get<1>(args)});
+  std::mt19937 eng(0);
 
   for (auto _ : state) {
-    auto r = Primary::Random(static_cast<int>(state.range(0)));
+    auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
     auto result = ctx.Partition(r);
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();

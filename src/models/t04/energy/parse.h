@@ -122,7 +122,7 @@ void T04LoadRandom(EM& em, std::mt19937& eng, double min_energy, double max_ener
   std::uniform_int_distribution<int> num_hairpin_dist(0, max_num_hairpin);
   const int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
-    auto hp = Primary::Random(hairpin_size_dist(eng)).ToSeq();
+    auto hp = Primary::Random(hairpin_size_dist(eng), eng).ToSeq();
     em.hairpin[hp] = Energy::FromDouble(energy_dist(eng));
   }
 

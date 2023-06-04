@@ -3,6 +3,7 @@
 #define MODEL_PRIMARY_H_
 
 #include <cstddef>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -41,7 +42,7 @@ class Primary {
   // Treat the sequence as a number and perform an increment.
   void Increment();
 
-  static Primary Random(int length);
+  static Primary Random(int length, std::mt19937& eng);
   static Primary FromSeq(const std::string& s);
 
  private:
