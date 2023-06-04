@@ -3,12 +3,14 @@
 #define MODEL_SECONDARY_H_
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <initializer_list>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "model/base.h"
 #include "model/primary.h"
 
 namespace mrna {

@@ -11,6 +11,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"

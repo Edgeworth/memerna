@@ -1,19 +1,19 @@
 // Copyright 2022 Eliot Courtney.
 #include <benchmark/benchmark.h>
 
-#include <ios>
+#include <memory>
 #include <tuple>
 #include <utility>
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/energy/energy.h"
-#include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt_cfg.h"
 #include "common_test.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "util/argparse.h"
+#include "util/error.h"
 
 namespace mrna {
 

@@ -1,8 +1,7 @@
 // Copyright 2021 Eliot Courtney.
 #include "api/ctx/ctx_cfg.h"
 
-#include "api/energy/energy_cfg.h"
-#include "api/energy/model.h"
+#include "api/energy/energy.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "util/error.h"

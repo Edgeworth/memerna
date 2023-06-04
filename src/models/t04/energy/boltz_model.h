@@ -2,6 +2,15 @@
 #ifndef MODELS_T04_ENERGY_BOLTZ_MODEL_H_
 #define MODELS_T04_ENERGY_BOLTZ_MODEL_H_
 
+#include <cassert>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+#include "model/base.h"
+#include "model/energy.h"
+#include "model/primary.h"
+#include "model/structure.h"
 #include "models/common/model.h"
 #include "models/t04/energy/model.h"
 

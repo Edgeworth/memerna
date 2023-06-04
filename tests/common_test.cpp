@@ -3,7 +3,7 @@
 
 #include <variant>
 
-#include "api/energy/energy_cfg.h"
+#include "api/energy/energy.h"
 
 namespace mrna {
 

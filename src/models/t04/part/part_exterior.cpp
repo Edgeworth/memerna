@@ -1,10 +1,12 @@
 // Copyright 2016 Eliot Courtney.
+#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "models/t04/energy/model.h"
 #include "models/t04/part/part.h"
+#include "util/error.h"
 
 namespace mrna::md::t04 {
 

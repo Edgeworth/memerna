@@ -1,5 +1,8 @@
+// Copyright 2023 Eliot Courtney.
 #ifndef MODEL_PART_H_
 #define MODEL_PART_H_
+
+#include <utility>
 
 #include "model/energy.h"
 #include "util/array.h"

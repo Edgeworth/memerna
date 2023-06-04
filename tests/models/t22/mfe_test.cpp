@@ -2,12 +2,15 @@
 #include "api/mfe.h"
 
 #include <string>
+#include <tuple>
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/energy/model.h"
+#include "api/trace/trace.h"
 #include "common_test.h"
 #include "gtest/gtest.h"
+#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 

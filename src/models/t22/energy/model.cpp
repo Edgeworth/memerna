@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <utility>
@@ -16,6 +18,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/structure.h"
+#include "models/common/branch.h"
 #include "models/common/model.h"
 #include "models/common/parse.h"
 #include "models/t04/energy/branch.h"
@@ -38,7 +41,7 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
   }
 
   std::string seq;
-  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]).value();
+  for (int i = st; i <= en; ++i) seq += BaseToChar(r[i]).value();  // NOLINT
   const auto iter = hairpin.find(seq);
   if (iter != hairpin.end()) {
     if (s) (*s)->AddNote("special hairpin");
@@ -460,8 +463,9 @@ void Model::LoadRandom(std::mt19937& eng) {
 
   // penultimate_stack is dependent on the direction, so 180 degree rotations
   // don't have to be the same.
-  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  RANDOMISE_DATA((*this), penultimate_stack);
+  // TODO(0): undo
+  // std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+  // RANDOMISE_DATA((*this), penultimate_stack);
 }
 
 }  // namespace mrna::md::t22

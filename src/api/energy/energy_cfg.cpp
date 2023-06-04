@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "api/energy/energy_cfg.h"
 
+#include <ostream>
+
 #include "util/error.h"
 
 namespace mrna::erg {

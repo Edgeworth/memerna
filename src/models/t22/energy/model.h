@@ -5,12 +5,17 @@
 #include <fmt/core.h>
 
 #include <cassert>
+#include <cmath>
+#include <deque>
 #include <memory>
 #include <random>
 #include <string>
 #include <unordered_map>
 
 #include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
+#include "model/base.h"
+#include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"

@@ -1,19 +1,23 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/t04/subopt/subopt_fastest.h"
 
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <exception>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/trace/trace.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
+#include "util/error.h"
 
 namespace mrna::md::t04 {
 

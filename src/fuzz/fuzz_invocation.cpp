@@ -25,6 +25,7 @@
 #include "model/part.h"
 #include "model/secondary.h"
 #include "models/t04/mfe/dp.h"
+#include "models/t22/mfe/mfe.h"
 #include "util/error.h"
 #include "util/float.h"
 #include "util/util.h"
@@ -138,7 +139,7 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<FoldResult> mrna_res;
   std::vector<Energy> mrna_ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
-  for (auto& em : ems_) {
+  for (const auto& em : ems_) {
     for (auto dp_alg : CtxCfg::DP_ALGS) {
       if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
 
@@ -222,7 +223,7 @@ Error FuzzInvocation::CheckSubopt() {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
   std::vector<std::vector<std::vector<subopt::SuboptResult>>> mrna;
-  for (auto& em : ems_) {
+  for (const auto& em : ems_) {
     for (auto cfg : cfgs) {
       mrna.emplace_back();
       for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
@@ -336,7 +337,7 @@ Error FuzzInvocation::CheckPartition() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   std::vector<part::PartResult> mrna_parts;
-  for (auto& em : ems_) {
+  for (const auto& em : ems_) {
     for (auto part_alg : CtxCfg::PART_ALGS) {
       if (part_alg == CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
 

@@ -1,7 +1,9 @@
 // Copyright 2016 Eliot Courtney.
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <exception>
 #include <memory>
 #include <utility>
 
@@ -14,6 +16,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 #include "models/t04/part/part.h"
+#include "util/error.h"
 #include "util/util.h"
 
 namespace mrna::md::t04 {

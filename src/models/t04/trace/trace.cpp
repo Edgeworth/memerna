@@ -1,13 +1,16 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/t04/trace/trace.h"
 
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <compare>
+#include <exception>
 #include <memory>
 #include <stack>
 
+#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -15,6 +18,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "models/t04/mfe/dp.h"
+#include "util/error.h"
 
 namespace mrna::md::t04 {
 

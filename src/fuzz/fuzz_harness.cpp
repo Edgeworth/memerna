@@ -5,12 +5,13 @@
 
 #include <cinttypes>
 #include <ctime>
+#include <memory>
 #include <string>
-#include <utility>
 
-#include "api/energy/energy_cfg.h"
 #include "api/energy/model.h"
 #include "fuzz/fuzz_cfg.h"
+#include "model/primary.h"
+#include "util/string.h"
 
 namespace mrna::fuzz {
 
@@ -44,10 +45,9 @@ void FuzzHarness::MaybeLoadModels(uint_fast32_t seed) {
 
 erg::EnergyModelPtr FuzzHarness::LoadModel(
     const std::string& model_name, uint_fast32_t seed) const {
-  if (cfg_.random_models) {
-    auto kind = Conv<erg::ModelKind>(model_name);
-    return erg::Random(kind, seed);
-  }
+  auto kind = Conv<erg::ModelKind>(model_name);
+  if (cfg_.seed >= 0) return erg::Random(kind, cfg_.seed);
+  if (cfg_.random_models) return erg::Random(kind, seed);
   return erg::FromDir(cfg_.data_dir, model_name);
 }
 

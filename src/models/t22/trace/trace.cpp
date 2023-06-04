@@ -1,15 +1,21 @@
 // Copyright 2023 Eliot Courtney.
 #include "models/t22/trace/trace.h"
 
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <compare>
+#include <exception>
 #include <memory>
 #include <optional>
+#include <random>
 #include <stack>
+#include <utility>
 #include <variant>
+#include <vector>
 
+#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -18,6 +24,8 @@
 #include "model/secondary.h"
 #include "models/t04/mfe/dp.h"
 #include "models/t22/mfe/mfe.h"
+#include "util/array.h"
+#include "util/error.h"
 
 namespace mrna::md::t22 {
 
@@ -94,8 +102,7 @@ struct TracebackInternal {
       if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
           (a != EXT_GU || IsGuPair(stb, enb))) {
         // EXT_WC and EXT_GU will have already had their ctds set.
-        IndexState state = {
-            .idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
+        IndexState state{.idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
         if (a == EXT) state.ctd0 = {st, CTD_UNUSED};
         next.push_back(state);
       }
@@ -375,7 +382,7 @@ struct TracebackInternal {
           if (base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
-            IndexState state = {.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
+            IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
             if (right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
             next.push_back(state);
           }
@@ -387,7 +394,7 @@ struct TracebackInternal {
           (a != DP_U_GU || IsGuPair(stb, pb))) {
         // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
         // were already set.
-        IndexState state = {.idx0 = t04::DpIndex(st, piv, DP_P)};
+        IndexState state{.idx0 = t04::DpIndex(st, piv, DP_P)};
         if (a != DP_U_WC && a != DP_U_GU) state.ctd0 = {st, CTD_UNUSED};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
@@ -398,20 +405,19 @@ struct TracebackInternal {
 
       // (   )3<   > 3' - U, U2
       if (base01 + em.dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
-        IndexState state = {.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
+        IndexState state{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
       // 5(   )<   > 5' - U, U2
       if (base10 + em.dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
-        IndexState state = {.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
+        IndexState state{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
       // .(   ).<   > Terminal mismatch - U, U2
       if (base11 + em.terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
-        IndexState state = {
-            .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
+        IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
         if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         next.push_back(state);
       }
@@ -551,8 +557,8 @@ struct TracebackInternal {
         if (cfg.random) {
           std::shuffle(next.begin(), next.end(), eng);
         }
-        if (next[0].idx0.has_value()) q.push(next[0].idx0.value());
-        if (next[0].idx1.has_value()) q.push(next[0].idx1.value());
+        if (next[0].idx0.has_value()) q.push(next[0].idx0.value());  // NOLINT
+        if (next[0].idx1.has_value()) q.push(next[0].idx1.value());  // NOLINT
 
         next[0].pair.MaybeApply(res.s);
         next[0].ctd0.MaybeApply(res.ctd);

@@ -3,6 +3,7 @@
 #define FUZZ_FUZZ_CFG_H_
 
 #include <string>
+#include <vector>
 
 #include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
@@ -77,7 +78,11 @@ struct FuzzCfg {
   bool part_rnastructure = false;
 
   // Energy model cfg:
+  // Whether to use a new random model every time.
   bool random_models = false;
+  // Whether to use a fixed seed for creating a random model. Negative means use
+  // the model data, not random data.
+  int seed = -1;
   erg::EnergyCfg energy_cfg{};
   std::vector<std::string> model_names{};
   std::string data_dir{};

@@ -4,8 +4,8 @@ from typing import Any
 
 import click
 import cloup
-from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.args import afl_fuzz_cfg_options
+from rnapy.build.args import build_afl_fuzz_cfg_from_args
 from rnapy.build.args import build_cfg_from_args
 from rnapy.build.args import build_cfg_options
 from rnapy.util.command import run_shell
@@ -25,10 +25,10 @@ def afl_fuzz_min(
     **_kwargs: Any,
 ) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
-    cfg = AflFuzzCfg(build_cfg=build_cfg)
-    cfg.build()
+    afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
+    afl_cfg.build()
 
     for path in paths:
-        cmd = cfg.afl_tmin_cmd(path)
+        cmd = afl_cfg.afl_tmin_cmd(path)
         click.echo(f"Running minimisation {cmd}")
-        run_shell(cmd, cwd=cfg.bin_path())
+        run_shell(cmd, cwd=afl_cfg.bin_path())

@@ -1,16 +1,18 @@
 // Copyright 2016 Eliot Courtney.
 #include "models/t04/subopt/subopt_slowest.h"
 
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
+#include <exception>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt.h"
 #include "model/base.h"
 #include "model/constants.h"

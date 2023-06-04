@@ -1,14 +1,15 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef FUZZ_FUZZ_HARNESS_H_
 #define FUZZ_FUZZ_HARNESS_H_
-#include <memory>
+#include <cstdint>
 #include <random>
+#include <string>
+#include <vector>
 
 #include "api/energy/model.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"
-#include "util/argparse.h"
 
 #ifdef USE_RNASTRUCTURE
 #include "api/bridge/rnastructure.h"

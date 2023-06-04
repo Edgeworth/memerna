@@ -3,6 +3,7 @@
 #define API_ENERGY_ENERGY_H_
 
 #include <memory>
+#include <string>
 
 #include "model/ctd.h"
 #include "model/energy.h"

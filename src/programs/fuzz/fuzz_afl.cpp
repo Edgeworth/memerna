@@ -1,12 +1,11 @@
 // Copyright 2022 Eliot Courtney.
-#include <ios>
 #include <memory>
 #include <utility>
 
-#include "api/bridge/bridge.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_harness.h"
 #include "util/argparse.h"
+#include "util/error.h"
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
 #include <unistd.h>  // For __AFL_FUZZ_TESTCASE_LEN

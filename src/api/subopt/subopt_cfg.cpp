@@ -1,8 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include "api/subopt/subopt_cfg.h"
 
-#include "api/energy/energy_cfg.h"
-#include "api/energy/model.h"
+#include "api/energy/energy.h"
 
 namespace mrna::subopt {
 

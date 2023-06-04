@@ -1,7 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef FUZZ_FUZZ_INVOCATION_H_
 #define FUZZ_FUZZ_INVOCATION_H_
+#include <cstdint>
 #include <deque>
+#include <optional>
 #include <string>
 #include <vector>
 

@@ -2,10 +2,12 @@
 #ifndef COMMON_TEST_H_
 #define COMMON_TEST_H_
 
-#include <cstdint>
 #include <string>
+#include <tuple>
 
 #include "api/energy/model.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 #include "models/t04/energy/model.h"
 #include "models/t22/energy/model.h"
 

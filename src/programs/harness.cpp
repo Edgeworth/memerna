@@ -10,7 +10,6 @@
 #include "api/bridge/bridge.h"
 #include "api/ctx/ctx.h"
 #include "api/energy/energy.h"
-#include "api/energy/energy_cfg.h"
 #include "api/mfe.h"
 #include "api/options.h"
 #include "api/part.h"

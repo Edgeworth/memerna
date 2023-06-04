@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "api/energy/energy_cfg.h"
@@ -17,11 +19,7 @@
 #include "model/primary.h"
 #include "model/structure.h"
 #include "models/common/branch.h"
-#include "models/common/model.h"
-#include "models/common/parse.h"
 #include "models/t04/energy/branch.h"
-#include "util/error.h"
-#include "util/string.h"
 
 namespace mrna::md::t04 {
 
