@@ -58,16 +58,16 @@ class BuildKind(StrEnum):
 class BuildCfg:
     src: Path
     prefix: Path
+    kind: BuildKind
+    compiler: Compiler
+    sanitizer: Sanitizer
+    mpfr: bool
+    rnastructure: bool
+    iwyu: bool
+    lto: bool
+    float_precision: int
+    energy_precision: int
     env: dict[str, str] = field(default_factory=dict)
-    kind: BuildKind = BuildKind.DEBUG
-    compiler: Compiler = Compiler.DEFAULT
-    sanitizer: Sanitizer = Sanitizer.NONE
-    mpfr: bool = False
-    rnastructure: bool = False
-    iwyu: bool = False
-    lto: bool = False
-    float_precision: int = 15
-    energy_precision: int = 2
 
     def ident(self) -> str:
         ident = self.kind + "-" + self.compiler

@@ -2,6 +2,7 @@
 #include "api/subopt/subopt.h"
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "api/ctx/ctx.h"

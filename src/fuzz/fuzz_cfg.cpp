@@ -3,15 +3,19 @@
 
 #include <fmt/core.h>
 
+#include <algorithm>
+
 #include "api/bridge/bridge.h"
+#include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
-#include "api/energy/model.h"
+#include "util/error.h"
 
 namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
   erg::RegisterOptsEnergyCfg(args);
   args->RegisterOpt(erg::OPT_MEMERNA_DATA);
+  args->RegisterOpt(erg::OPT_SEED);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -39,6 +43,8 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("subopt_delta: {}\n", subopt_delta);
   desc += fmt::format("part: {}\n", part);
   desc += fmt::format("part_rnastructure: {}\n", part_rnastructure);
+  desc += fmt::format("random_models: {}\n", random_models);
+  desc += fmt::format("seed: {}\n", seed);
   desc += fmt::format("energy_cfg: {}\n", energy_cfg);
   for (const auto& model : model_names) desc += fmt::format("model: {}\n", model);
   desc += fmt::format("data_dir: {}\n", data_dir);
@@ -67,6 +73,10 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.part = cfg.part || cfg.part_rnastructure;
 
   args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
+  cfg.seed = args.GetOr(erg::OPT_SEED, cfg.seed);
+
+  verify(!(cfg.random_models && cfg.seed >= 0), "cannot set fixed seed with random models");
+
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
   cfg.model_names = args.GetMultiple<std::string>(OPT_FUZZ_ENERGY_MODELS);
   cfg.data_dir = args.Get<std::string>(erg::OPT_MEMERNA_DATA);

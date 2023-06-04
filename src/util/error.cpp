@@ -1,11 +1,18 @@
 #include "util/error.h"
 
+#include <fmt/core.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <exception>
+#include <ios>
+#include <string>
+
 #ifdef USE_BOOST
 #include <boost/stacktrace.hpp>
 #endif
 
 namespace {
-
 void terminate_handler() {
   std::exception_ptr exptr = std::current_exception();
   if (exptr) {

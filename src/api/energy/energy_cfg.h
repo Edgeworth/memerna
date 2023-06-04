@@ -2,6 +2,7 @@
 #ifndef API_ENERGY_ENERGY_CFG_H_
 #define API_ENERGY_ENERGY_CFG_H_
 
+#include <fmt/core.h>
 #include <fmt/ostream.h>
 
 #include <iosfwd>

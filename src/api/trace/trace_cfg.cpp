@@ -1,7 +1,7 @@
 // Copyright 2023 E.
 #include "api/trace/trace_cfg.h"
 
-#include "util/error.h"
+#include <ostream>
 
 namespace mrna::trace {
 

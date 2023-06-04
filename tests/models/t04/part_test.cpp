@@ -2,6 +2,7 @@
 #include "api/part.h"
 
 #include <string>
+#include <tuple>
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"

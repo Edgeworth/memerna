@@ -2,7 +2,7 @@
 #ifndef UTIL_ERROR_H_
 #define UTIL_ERROR_H_
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <stdexcept>
 

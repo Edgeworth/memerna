@@ -2,13 +2,13 @@
 #include <fmt/core.h>
 
 #include <algorithm>
-#include <ios>
 #include <string>
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/mfe.h"
 #include "api/trace/trace.h"
+#include "api/trace/trace_cfg.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"

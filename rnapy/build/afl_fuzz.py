@@ -47,25 +47,27 @@ class AflFuzzKind(StrEnum):
 @dataclass
 class AflFuzzCfg:
     build_cfg: BuildCfg
+
+    # Info for the actual fuzz_afl invocation:
+    fuzz_max_len: int
+    fuzz_seed: int | None  # For fixed random model
+    fuzz_random_models: bool  # For random models every fuzz invocation
+    fuzz_energy_models: list[str]
+    fuzz_brute_max: int
+    fuzz_mfe: bool
+    fuzz_mfe_rnastructure: bool
+    fuzz_mfe_table: bool
+    fuzz_subopt: bool
+    fuzz_subopt_rnastructure: bool
+    fuzz_subopt_strucs: int
+    fuzz_subopt_delta: float
+    fuzz_part: bool
+    fuzz_part_rnastructure: bool
+
     kind: AflFuzzKind = AflFuzzKind.REGULAR
     # extra args for afl-fuzz. not included in ident
     afl_args: list[str] = field(default_factory=list)
     index: int = 0  # which fuzzer this is when running multiple fuzzers
-
-    # Info for the actual fuzz_afl invocation:
-    fuzz_max_len: int = -1
-    fuzz_seed: int | None = None
-    fuzz_energy_models: list[str] = field(default_factory=lambda: ["t04p1"])
-    fuzz_brute_max: int = 22
-    fuzz_mfe: bool = False
-    fuzz_mfe_rnastructure: bool = False
-    fuzz_mfe_table: bool = False
-    fuzz_subopt: bool = False
-    fuzz_subopt_rnastructure: bool = False
-    fuzz_subopt_strucs: int = 5000
-    fuzz_subopt_delta: float = 0.6
-    fuzz_part: bool = False
-    fuzz_part_rnastructure: bool = False
 
     def __post_init__(self) -> None:
         if self.error():
@@ -140,6 +142,8 @@ class AflFuzzCfg:
         cmd += f"--max-len {self.fuzz_max_len} "
         if self.fuzz_seed:
             cmd += f"--seed {self.fuzz_seed} "
+        if self.fuzz_random_models:
+            cmd += "--random-models "
         cmd += f"--energy-models {','.join(self.fuzz_energy_models)} "
         cmd += f"--brute-max {self.fuzz_brute_max} "
         cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "

@@ -97,7 +97,12 @@ afl_fuzz_cfg_options = cloup.option_group(
         "--seed",
         required=False,
         type=int,
-        help="Seed to use for fuzzing",
+        help="Seed to use for fuzzing for a single fixed random model",
+    ),
+    cloup.option(
+        "--random-models/--no-random-models",
+        default=False,
+        help="Whether to use random models for fuzzing every invocation",
     ),
     cloup.option(
         "--energy-models",
@@ -158,11 +163,12 @@ afl_fuzz_cfg_options = cloup.option_group(
 )
 
 
-def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
+def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments,too-many-locals
     build_cfg: BuildCfg,
     energy_models: list[str],
     max_len: int = -1,
     seed: int | None = None,
+    random_models: bool = False,
     brute_max: int = 22,
     mfe: bool = False,
     mfe_rnastructure: bool = False,
@@ -179,6 +185,7 @@ def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments
         build_cfg=build_cfg,
         fuzz_max_len=max_len,
         fuzz_seed=seed,
+        fuzz_random_models=random_models,
         fuzz_energy_models=energy_models,
         fuzz_brute_max=brute_max,
         fuzz_mfe=mfe,

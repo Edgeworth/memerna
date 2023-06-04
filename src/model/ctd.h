@@ -3,6 +3,7 @@
 #define MODEL_CTD_H_
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
@@ -12,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "model/base.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"

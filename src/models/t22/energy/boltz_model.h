@@ -2,6 +2,9 @@
 #ifndef MODELS_T22_ENERGY_BOLTZ_MODEL_H_
 #define MODELS_T22_ENERGY_BOLTZ_MODEL_H_
 
+#include <string>
+#include <unordered_map>
+
 #include "model/energy.h"
 #include "models/common/model.h"
 #include "models/t22/energy/model.h"

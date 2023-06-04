@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "api/energy/energy_cfg.h"
 #include "models/t04/energy/parse.h"
 
 namespace mrna::md::t04 {
