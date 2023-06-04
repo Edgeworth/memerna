@@ -40,17 +40,20 @@ int main(int argc, char* argv[]) {
     std::stringstream ss(data);
     std::string rs;
     while (ss >> rs) {
+      mrna::Primary seq;
       try {
         if (max_len > 0 && static_cast<int>(rs.size()) > max_len) rs.resize(max_len);
-        auto invoc = harness.CreateInvocation(mrna::Primary::FromSeq(rs));
-        const auto res = invoc.Run();
-        if (!res.empty()) {
-          for (const auto& s : res) fmt::print("{}\n", s);
-          fmt::print("\n");
-          abort();
-        }
+        seq = mrna::Primary::FromSeq(rs);
       } catch (const std::exception& e) {
         // Ignore. Probably a bad input.
+        continue;
+      }
+      auto invoc = harness.CreateInvocation(seq);
+      const auto res = invoc.Run();
+      if (!res.empty()) {
+        for (const auto& s : res) fmt::print("{}\n", s);
+        fmt::print("\n");
+        abort();
       }
     }
   }
