@@ -71,6 +71,10 @@ class Model : public ModelMixin<Model> {
   // Specific to T22:
   Energy penultimate_stack[4][4][4][4] = {};
 
+  // Pseudofree energies. Ignored if empty.
+  std::vector<Energy> pf_paired;
+  std::vector<Energy> pf_unpaired;
+
   mrna::erg::EnergyCfg cfg = {};
 
   [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
@@ -179,8 +183,11 @@ class Model : public ModelMixin<Model> {
 
  protected:
   void LoadFromModelPath(const std::string& path);
-
   void LoadRandom(std::mt19937& eng);
+  void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+    this->pf_paired = std::move(pf_paired);
+    this->pf_unpaired = std::move(pf_unpaired);
+  }
 
  private:
   friend class ModelMixin<Model>;
