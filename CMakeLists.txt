@@ -168,6 +168,7 @@ set(MEMERNA_SOURCE
   src/models/t04/energy/precomp.cpp
   src/models/t04/energy/precomp.h
   src/models/t04/mfe/dp.h
+  src/models/t04/mfe/mfe_exterior.cpp
   src/models/t04/mfe/mfe_fastest.cpp
   src/models/t04/mfe/mfe_lyngso.cpp
   src/models/t04/mfe/mfe_slow.cpp
@@ -187,6 +188,7 @@ set(MEMERNA_SOURCE
   src/models/t22/energy/boltz_model.h
   src/models/t22/energy/model.cpp
   src/models/t22/energy/model.h
+  src/models/t22/mfe/mfe_exterior.cpp
   src/models/t22/mfe/mfe_slowest.cpp
   src/models/t22/mfe/mfe.h
   src/models/t22/trace/trace.cpp

@@ -49,9 +49,7 @@ using DpIndex = std::variant<t04::DpIndex, NoStackIndex, PenultimateIndex>;
 
 void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
 
-inline Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
-  return t04::MfeExterior(r, *em, state.t04);
-}
+Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state);
 
 }  // namespace mrna::md::t22
 

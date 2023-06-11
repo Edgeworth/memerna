@@ -149,6 +149,22 @@ class Model : public ModelMixin<Model> {
       std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
       std::unique_ptr<Structure>* sstruc = nullptr) const;
 
+  [[nodiscard]] constexpr Energy PfUnpaired(int n) const {
+    if (pf_unpaired.empty()) return ZERO_E;
+    return pf_unpaired[n];
+  }
+
+  // Inclusive range, unlike pf_unpaired_cum directly.
+  [[nodiscard]] constexpr Energy PfUnpairedCum(int st, int en) const {
+    if (pf_unpaired.empty()) return ZERO_E;
+    return pf_unpaired_cum[en + 1] - pf_unpaired_cum[st];
+  }
+
+  [[nodiscard]] constexpr Energy PfPaired(int st, int en) const {
+    if (pf_paired.empty()) return ZERO_E;
+    return pf_paired[st] + pf_paired[en];
+  }
+
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
   // Handles bulge loops.
   [[nodiscard]] constexpr Energy StackPenalty(const Primary& r, const Secondary& s, int ost,
