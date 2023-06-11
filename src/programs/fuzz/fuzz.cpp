@@ -10,6 +10,7 @@
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_harness.h"
 #include "fuzz/fuzz_invocation.h"
+#include "model/energy.h"
 #include "model/primary.h"
 #include "util/argparse.h"
 #include "util/error.h"
@@ -20,6 +21,14 @@ inline const auto OPT_PRINT_INTERVAL = mrna::Opt(mrna::Opt::ARG)
                                            .Help("status update every n seconds");
 inline const auto OPT_ENUMERATE =
     mrna::Opt(mrna::Opt::FLAG).LongName("enumerate").Help("enumerate all sequences");
+inline const auto OPT_RANDOM_PSEUDOFREE =
+    mrna::Opt(mrna::Opt::FLAG).LongName("pf-random").Help("specify random pseudofree energy");
+
+std::vector<mrna::Energy> MaybeGetPseudofree(
+    std::size_t length, bool random_pseudofree, std::mt19937& eng) {
+  if (!random_pseudofree) return {};
+  return mrna::RandomEnergies(length, mrna::E(-100.0), mrna::E(100.0), eng);
+}
 
 int main(int argc, char* argv[]) {
   mrna::InitProgram();
@@ -27,10 +36,12 @@ int main(int argc, char* argv[]) {
   mrna::fuzz::RegisterOpts(&args);
   args.RegisterOpt(OPT_PRINT_INTERVAL);
   args.RegisterOpt(OPT_ENUMERATE);
+  args.RegisterOpt(OPT_RANDOM_PSEUDOFREE);
   args.ParseOrExit(argc, argv);
 
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
   const auto enumerate = args.Has(OPT_ENUMERATE);
+  const auto random_pseudofree = args.Has(OPT_RANDOM_PSEUDOFREE);
   int min_len = 0;
   int max_len = 0;
   std::string seq;
@@ -51,7 +62,9 @@ int main(int argc, char* argv[]) {
   if (!seq.empty()) {
     const auto r = mrna::Primary::FromSeq(seq);
     fmt::print("Running single fuzz on {}\n", seq);
-    auto invoc = harness.CreateInvocation(r);
+    auto pf_paired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+    auto pf_unpaired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+    auto invoc = harness.CreateInvocation(r, pf_paired, pf_unpaired);
     const auto res = invoc.Run();
     if (!res.empty()) {
       for (const auto& s : res) fmt::print("{}\n", s);
@@ -64,7 +77,9 @@ int main(int argc, char* argv[]) {
     while (static_cast<int>(r.size()) <= max_len) {
       if (++i % 1000 == 0) fmt::print("Fuzzed {} RNA, current size: {}\n", i, r.size());
 
-      auto invoc = harness.CreateInvocation(r);
+      auto pf_paired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+      auto pf_unpaired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+      auto invoc = harness.CreateInvocation(r, pf_paired, pf_unpaired);
       const auto res = invoc.Run();
       if (!res.empty()) {
         for (const auto& s : res) fmt::print("{}\n", s);
@@ -89,7 +104,9 @@ int main(int argc, char* argv[]) {
       const int len = len_dist(harness.e());
       auto r = mrna::Primary::Random(len, harness.e());
 
-      auto invoc = harness.CreateInvocation(r);
+      auto pf_paired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+      auto pf_unpaired = MaybeGetPseudofree(r.size(), random_pseudofree, harness.e());
+      auto invoc = harness.CreateInvocation(r, pf_paired, pf_unpaired);
       const auto res = invoc.Run();
       if (!res.empty()) {
         if (fuzz_cfg.random_models) fmt::print("Random model seed: {}\n", invoc.seed());

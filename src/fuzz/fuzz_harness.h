@@ -21,11 +21,14 @@ class FuzzHarness {
  public:
   explicit FuzzHarness(FuzzCfg cfg);
 
-  FuzzInvocation CreateInvocation(const Primary& r);
+  FuzzInvocation CreateInvocation(
+      const Primary& r, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
   std::mt19937& e() { return e_; }
 
  private:
   std::vector<erg::EnergyModelPtr> ems_;
+  std::vector<Energy> last_pf_paired_;
+  std::vector<Energy> last_pf_unpaired_;
   FuzzCfg cfg_;
   std::mt19937 e_;
 
@@ -33,7 +36,8 @@ class FuzzHarness {
   std::shared_ptr<bridge::RNAstructure> rstr_;
 #endif  // USE_RNASTRUCTURE
 
-  void MaybeLoadModels(uint_fast32_t seed);
+  void MaybeLoadModels(
+      uint_fast32_t seed, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
   [[nodiscard]] erg::EnergyModelPtr LoadModel(
       const std::string& model_name, uint_fast32_t seed) const;
 };

@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <istream>
+#include <random>
 
 #include "util/error.h"
 
@@ -63,6 +64,14 @@ std::istream& operator>>(std::istream& str, Energy& o) {
 std::ostream& operator<<(std::ostream& out, const Energy& o) {
   out << o.ToString();
   return out;
+}
+
+std::vector<Energy> RandomEnergies(
+    std::size_t length, Energy min_energy, Energy max_energy, std::mt19937& eng) {
+  std::uniform_int_distribution<decltype(min_energy.v)> energy_dist(min_energy.v, max_energy.v);
+  std::vector<Energy> energies(length);
+  for (int i = 0; i < int(length); ++i) energies[i] = Energy::FromRaw(energy_dist(eng));
+  return energies;
 }
 
 }  // namespace mrna

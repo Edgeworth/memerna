@@ -72,6 +72,18 @@ inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   return std::visit(vis, em);
 }
 
+// Creates the Boltzmann energy model from the given energy model.
+inline void LoadPseudofreeEnergy(
+    const EnergyModelPtr& em, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+  auto vis = overloaded{
+      [&](const auto& em) mutable {
+        return em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
+      },
+
+  };
+  std::visit(vis, em);
+}
+
 // Returns the underlying non-Boltzmann energy model for the given Boltzmann
 // energy model. Note that this may be different to the original energy model,
 // i.e. em != BoltzUnderlying(Boltz(em)). For example, Boltzing an energy model turns

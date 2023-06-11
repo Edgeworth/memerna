@@ -22,9 +22,10 @@ FuzzHarness::FuzzHarness(FuzzCfg cfg) : cfg_(cfg), e_(uint_fast32_t(time(nullptr
   fmt::print("Fuzzing with config: {}\n", cfg_.Desc());
 }
 
-FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r) {
+FuzzInvocation FuzzHarness::CreateInvocation(
+    const Primary& r, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
   uint_fast32_t seed = e_();
-  MaybeLoadModels(seed);
+  MaybeLoadModels(seed, std::move(pf_paired), std::move(pf_unpaired));
 
   FuzzInvocation invoc(r, ems_, cfg_, 0);
 #ifdef USE_RNASTRUCTURE
@@ -33,13 +34,21 @@ FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r) {
   return invoc;
 }
 
-void FuzzHarness::MaybeLoadModels(uint_fast32_t seed) {
+void FuzzHarness::MaybeLoadModels(
+    uint_fast32_t seed, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
   // Don't reload if already loaded and not randomising.
-  if (!ems_.empty() && !cfg_.random_models) return;
+  if (!ems_.empty() && !cfg_.random_models) {
+    bool pf_paired_changed = last_pf_paired_ != pf_paired;
+    bool pf_unpaired_changed = last_pf_unpaired_ != pf_unpaired;
+    if (!pf_paired_changed && !pf_unpaired_changed) return;
+  }
   ems_.clear();
 
+  last_pf_paired_ = std::move(pf_paired);
+  last_pf_unpaired_ = std::move(pf_unpaired);
   for (const auto& model_name : cfg_.model_names) {
     ems_.push_back(LoadModel(model_name, seed));
+    erg::LoadPseudofreeEnergy(ems_.back(), last_pf_paired_, last_pf_unpaired_);
   }
 }
 
