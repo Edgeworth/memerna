@@ -76,7 +76,7 @@ class Model : public ModelMixin<Model> {
 
   mrna::erg::EnergyCfg cfg = {};
 
-  [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
+  [[nodiscard]] inline constexpr bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
@@ -84,7 +84,7 @@ class Model : public ModelMixin<Model> {
             (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));
   }
 
-  [[nodiscard]] Energy HairpinInitiation(int n) const {
+  [[nodiscard]] constexpr Energy HairpinInitiation(int n) const {
     assert(n >= 3);
     if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -93,7 +93,7 @@ class Model : public ModelMixin<Model> {
     return hairpin_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy BulgeInitiation(int n) const {
+  [[nodiscard]] constexpr Energy BulgeInitiation(int n) const {
     assert(n >= 1);
     if (n < INITIATION_CACHE_SZ) return bulge_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -101,7 +101,7 @@ class Model : public ModelMixin<Model> {
     return bulge_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy InternalLoopInitiation(int n) const {
+  [[nodiscard]] constexpr Energy InternalLoopInitiation(int n) const {
     assert(n >= 4);
     if (n < INITIATION_CACHE_SZ) return internal_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
@@ -109,18 +109,18 @@ class Model : public ModelMixin<Model> {
     return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy MultiloopInitiation(int num_branches) const {
+  [[nodiscard]] constexpr Energy MultiloopInitiation(int num_branches) const {
     return multiloop_hack_a + num_branches * multiloop_hack_b;
   }
 
-  [[nodiscard]] Energy AuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] constexpr Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return au_penalty;
     if (IsGuPair(stb, enb)) return gu_penalty;
     return ZERO_E;
   }
 
-  [[nodiscard]] Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] constexpr Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return internal_au_penalty;
     if (IsGuPair(stb, enb)) return internal_gu_penalty;

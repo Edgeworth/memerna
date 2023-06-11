@@ -74,10 +74,12 @@ class Model : public ModelMixin<Model> {
   // Pseudofree energies. Ignored if empty.
   std::vector<Energy> pf_paired;
   std::vector<Energy> pf_unpaired;
+  // Exclusive cumulative sum of size N+1
+  std::vector<Energy> pf_unpaired_cum;
 
   mrna::erg::EnergyCfg cfg = {};
 
-  [[nodiscard]] inline bool CanPair(const Primary& r, int st, int en) const {
+  [[nodiscard]] inline constexpr bool CanPair(const Primary& r, int st, int en) const {
     if (cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
@@ -85,39 +87,39 @@ class Model : public ModelMixin<Model> {
             (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));
   }
 
-  [[nodiscard]] Energy HairpinInitiation(int n) const {
+  [[nodiscard]] constexpr Energy HairpinInitiation(int n) const {
     assert(n >= 3);
     if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     return hairpin_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy BulgeInitiation(int n) const {
+  [[nodiscard]] constexpr Energy BulgeInitiation(int n) const {
     assert(n >= 1);
     if (n < INITIATION_CACHE_SZ) return bulge_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     return bulge_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy InternalLoopInitiation(int n) const {
+  [[nodiscard]] constexpr Energy InternalLoopInitiation(int n) const {
     assert(n >= 4);
     if (n < INITIATION_CACHE_SZ) return internal_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
     return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
-  [[nodiscard]] Energy MultiloopInitiation(int num_branches) const {
+  [[nodiscard]] constexpr Energy MultiloopInitiation(int num_branches) const {
     return multiloop_hack_a + num_branches * multiloop_hack_b;
   }
 
-  [[nodiscard]] Energy AuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] constexpr Energy AuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return au_penalty;
     if (IsGuPair(stb, enb)) return gu_penalty;
     return ZERO_E;
   }
 
-  [[nodiscard]] Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
+  [[nodiscard]] constexpr Energy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
     if (IsAuPair(stb, enb)) return internal_au_penalty;
     if (IsGuPair(stb, enb)) return internal_gu_penalty;
@@ -150,28 +152,7 @@ class Model : public ModelMixin<Model> {
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
   // Handles bulge loops.
   [[nodiscard]] constexpr Energy StackPenalty(const Primary& r, const Secondary& s, int ost,
-      int oen, int ist, int ien, std::unique_ptr<Structure>* struc = nullptr) const {
-    assert(ost >= 0 && oen < static_cast<int>(r.size()));
-    assert(ist > 0 && ien < static_cast<int>(r.size()) - 1);
-    assert(ist > ost && ien < oen);
-    // Check for single unpaired bases to treat as continuous.
-    const int ost_next = s[ost + 1] == -1 ? ost + 2 : ost + 1;
-    const int oen_prev = s[oen - 1] == -1 ? oen - 2 : oen - 1;
-    assert(ost_next - ost + oen - oen_prev < 4);
-
-    const int ist_prev = s[ist - 1] == -1 ? ist - 2 : ist - 1;
-    const int ien_next = s[ien + 1] == -1 ? ien + 2 : ien + 1;
-    assert(ist - ist_prev + ien_next - ien < 4);
-
-    auto inner = penultimate_stack[r[ist_prev]][r[ist]][r[ien]][r[ien_next]];
-    auto outer = penultimate_stack[r[oen_prev]][r[oen]][r[ost]][r[ost_next]];
-    if (struc) {
-      (*struc)->AddNote("{}e - inner penultimate penalty at ({}, {})", inner, ist, ien);
-      (*struc)->AddNote("{}e - outer penultimate penalty at ({}, {})", outer, ost, oen);
-    }
-
-    return inner + outer;
-  }
+      int oen, int ist, int ien, std::unique_ptr<Structure>* struc = nullptr) const;
 
   // ModelMixin:
   EnergyResult SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
@@ -184,13 +165,12 @@ class Model : public ModelMixin<Model> {
  protected:
   void LoadFromModelPath(const std::string& path);
   void LoadRandom(std::mt19937& eng);
-  void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
-    this->pf_paired = std::move(pf_paired);
-    this->pf_unpaired = std::move(pf_unpaired);
-  }
+  void LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired);
 
  private:
   friend class ModelMixin<Model>;
+
+  void VerifyLengths(const Primary& r, const Secondary& s, const Ctds* given_ctd) const;
 
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;

@@ -28,6 +28,7 @@ class PositionalEncoder(nn.Module):
 
         # Compute the positional encoding to add on to the input embedding.
         pos_emb = torch.zeros(max_seq_len, d_emb)
+
         pos_emb[:, 0::2] = torch.sin(pos * div)
         pos_emb[:, 1::2] = torch.cos(pos * div)
 
