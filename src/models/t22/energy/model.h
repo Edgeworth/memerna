@@ -74,7 +74,7 @@ class Model : public ModelMixin<Model> {
   // Pseudofree energies. Ignored if empty.
   std::vector<Energy> pf_paired;
   std::vector<Energy> pf_unpaired;
-  // Exclusive cumulative sum of size N+1
+  // Cumulative sum of size N+1 (first element is nothing).
   std::vector<Energy> pf_unpaired_cum;
 
   mrna::erg::EnergyCfg cfg = {};
@@ -177,6 +177,12 @@ class Model : public ModelMixin<Model> {
       bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const { return t04::T04IsValid(*this, reason); }
+  void VerifyValidFor(const Primary& r) const {
+    if (!pf_paired.empty())
+      verify(pf_paired.size() == r.size(), "pseudofree paired must be same length as seq");
+    if (!pf_unpaired.empty())
+      verify(pf_unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+  }
 
   void LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired);
 

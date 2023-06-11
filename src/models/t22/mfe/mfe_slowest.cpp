@@ -49,6 +49,7 @@ struct MfeInternal {
         "fully disallowing lonely pairs is not supported in this energy model");
     verify(em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX,
         "only full CTDs are supported in this energy model");
+    em.VerifyValidFor(r);
 
     spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
 

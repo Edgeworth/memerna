@@ -343,7 +343,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
 
   if (!pf_unpaired_cum.empty()) {
     int pf_en = exterior_loop ? en + 1 : en;
-    energy += pf_unpaired_energy + pf_unpaired_cum[pf_en] - pf_unpaired_cum[pf_last_unpaired];
+    pf_unpaired_energy += pf_unpaired_cum[pf_en] - pf_unpaired_cum[pf_last_unpaired];
+    energy += pf_unpaired_energy;
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
 
@@ -588,10 +589,7 @@ void Model::VerifyLengths(const Primary& r, const Secondary& s, const Ctds* give
   verify(r.size() == s.size(), "sequence and secondary structure must be the same length");
   if (given_ctd)
     verify(given_ctd->size() == r.size(), "given CTDs must be the same length as the seq");
-  if (!pf_paired.empty())
-    verify(pf_paired.size() == r.size(), "pseudofree paired must be same length as seq");
-  if (!pf_unpaired.empty())
-    verify(pf_unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+  VerifyValidFor(r);
 }
 
 }  // namespace mrna::md::t22
