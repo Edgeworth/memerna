@@ -21,6 +21,9 @@ inline const auto OPT_FUZZ_RANDOM_MODELS =
         .LongName("random-models")
         .Help("fuzz random energy models - different each time. c.f. seed");
 
+inline const auto OPT_FUZZ_RANDOM_PSEUDOFREE =
+    mrna::Opt(mrna::Opt::FLAG).LongName("random-pf").Help("fuzz random pseudofree energies");
+
 // Brute force specific options:
 // Allows brute force fuzzing to be given a maximum RNA size
 inline const Opt OPT_FUZZ_BRUTE_MAX =
@@ -80,6 +83,7 @@ struct FuzzCfg {
   // Energy model cfg:
   // Whether to use a new random model every time.
   bool random_models = false;
+  bool random_pseudofree = false;
   // Whether to use a fixed seed for creating a random model. Negative means use
   // the model data, not random data.
   int seed = -1;

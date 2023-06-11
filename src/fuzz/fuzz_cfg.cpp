@@ -28,6 +28,7 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_PARTITION_RNASTRUCTURE);
   args->RegisterOpt(OPT_FUZZ_ENERGY_MODELS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_MODELS);
+  args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE);
   args->RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
 }
 
@@ -73,6 +74,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.part = cfg.part || cfg.part_rnastructure;
 
   args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
+  args.MaybeSet(OPT_FUZZ_RANDOM_PSEUDOFREE, &cfg.random_pseudofree);
   cfg.seed = args.GetOr(erg::OPT_SEED, cfg.seed);
 
   verify(!(cfg.random_models && cfg.seed >= 0), "cannot set fixed seed with random models");

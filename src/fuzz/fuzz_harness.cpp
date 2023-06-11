@@ -27,7 +27,7 @@ FuzzInvocation FuzzHarness::CreateInvocation(
   uint_fast32_t seed = e_();
   MaybeLoadModels(seed, std::move(pf_paired), std::move(pf_unpaired));
 
-  FuzzInvocation invoc(r, ems_, cfg_, 0);
+  FuzzInvocation invoc(r, ems_, cfg_);
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE
@@ -46,6 +46,7 @@ void FuzzHarness::MaybeLoadModels(
 
   last_pf_paired_ = std::move(pf_paired);
   last_pf_unpaired_ = std::move(pf_unpaired);
+  last_seed_ = seed;
   for (const auto& model_name : cfg_.model_names) {
     ems_.push_back(LoadModel(model_name, seed));
     erg::LoadPseudofreeEnergy(ems_.back(), last_pf_paired_, last_pf_unpaired_);

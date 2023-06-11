@@ -104,8 +104,8 @@ void CompareT04DpState(const md::t04::DpState& got, const md::t04::DpState& want
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(
-    const Primary& r, std::vector<erg::EnergyModelPtr> ems, const FuzzCfg& cfg, uint_fast32_t seed)
-    : r_(r), ems_(std::move(ems)), cfg_(cfg), seed_(seed) {
+    const Primary& r, std::vector<erg::EnergyModelPtr> ems, const FuzzCfg& cfg)
+    : r_(r), ems_(std::move(ems)), cfg_(cfg) {
   verify(!ems_.empty(), "must provide at least one energy model to fuzz");
 }
 

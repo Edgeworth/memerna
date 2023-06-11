@@ -25,8 +25,11 @@ class FuzzHarness {
       const Primary& r, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
   std::mt19937& e() { return e_; }
 
+  [[nodiscard]] constexpr uint_fast32_t last_seed() const { return last_seed_; }
+
  private:
   std::vector<erg::EnergyModelPtr> ems_;
+  uint_fast32_t last_seed_ = 0;
   std::vector<Energy> last_pf_paired_;
   std::vector<Energy> last_pf_unpaired_;
   FuzzCfg cfg_;
