@@ -388,7 +388,21 @@ struct TracebackInternal {
       // Min is for either placing another unpaired or leaving it as nothing.
       // If we're at U2, don't allow leaving as nothing.
       auto right_unpaired = dp[piv + 1][en][DP_U];
-      if (a != DP_U2) right_unpaired = std::min(right_unpaired, em.PfUnpairedCum(piv + 1, en));
+
+      // We need to store both of these because in the case that, due to
+      // pseudofree energies, both are equal, we need to consider both
+      // possibilities for a randomised traceback.
+      bool can_right_paired = true;
+      bool can_right_unpaired = false;
+      if (a != DP_U2) {
+        const auto unpaired_cum = em.PfUnpairedCum(piv + 1, en);
+        if (unpaired_cum == right_unpaired) can_right_unpaired = true;
+        if (unpaired_cum < right_unpaired) {
+          can_right_paired = false;
+          can_right_unpaired = true;
+          right_unpaired = unpaired_cum;
+        }
+      }
 
       if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // Check a == U_RC:
@@ -399,8 +413,11 @@ struct TracebackInternal {
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
-            if (right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-            next.push_back(state);
+            if (can_right_unpaired) next.push_back(state);
+            if (can_right_paired) {
+              state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+              next.push_back(state);
+            }
           }
         }
       }
@@ -412,8 +429,11 @@ struct TracebackInternal {
         // were already set.
         IndexState state{.idx0 = t04::DpIndex(st, piv, DP_P)};
         if (a != DP_U_WC && a != DP_U_GU) state.ctd0 = {st, CTD_UNUSED};
-        if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        next.push_back(state);
+        if (can_right_unpaired) next.push_back(state);
+        if (can_right_paired) {
+          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(state);
+        }
       }
 
       // The rest of the cases are for U and U2.
@@ -423,23 +443,32 @@ struct TracebackInternal {
       if (base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired ==
           dp[st][en][a]) {
         IndexState state{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
-        if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        next.push_back(state);
+        if (can_right_unpaired) next.push_back(state);
+        if (can_right_paired) {
+          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(state);
+        }
       }
       // 5(   )<   > 5' - U, U2
       if (base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired ==
           dp[st][en][a]) {
         IndexState state{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
-        if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        next.push_back(state);
+        if (can_right_unpaired) next.push_back(state);
+        if (can_right_paired) {
+          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(state);
+        }
       }
       // .(   ).<   > Terminal mismatch - U, U2
       if (base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
               right_unpaired ==
           dp[st][en][a]) {
         IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
-        if (a == DP_U2 || right_unpaired != ZERO_E) state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        next.push_back(state);
+        if (can_right_unpaired) next.push_back(state);
+        if (can_right_paired) {
+          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(state);
+        }
       }
 
       if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
