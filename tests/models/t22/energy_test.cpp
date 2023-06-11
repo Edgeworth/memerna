@@ -19,16 +19,6 @@
 
 namespace mrna::md::t22 {
 
-// Returns a model that adds energy s.t. we can read the energy out like:
-// AABBxx.xx, where AA is the number of paired bases, BB is the number of unpaired bases, and x is
-// the energy.
-md::t22::Model::Ptr MakeModelWithTestPseudofreeEnergy(
-    const md::t22::Model::Ptr& base, std::size_t length) {
-  std::vector<Energy> pf_paired(length, E(100000.0));
-  std::vector<Energy> pf_unpaired(length, E(1000.0));
-  return base->CloneWithPseudofreeEnergy(pf_paired, pf_unpaired);
-}
-
 Energy GetEnergy(const Model::Ptr& em, const std::tuple<Primary, Secondary>& s) {
   return em->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr).energy;
 }
@@ -39,13 +29,23 @@ Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& 
 
 std::tuple<Energy, Energy> GetPseudofree(
     const Model::Ptr& base_em, const std::string& r, const std::string& db) {
-  auto em = MakeModelWithTestPseudofreeEnergy(base_em, r.size());
+  const auto paired_mul = E(1000000.0);
+  const auto unpaired_mul = E(1000.0);
+  std::vector<Energy> pf_paired(r.size(), E(0.0));
+  std::vector<Energy> pf_unpaired(r.size(), E(0.0));
+  Energy extra_from_pseudofree = ZERO_E;
+  for (int i = 0; i < int(r.size()); ++i) {
+    pf_paired[i] = paired_mul * (i + 1);
+    pf_unpaired[i] = unpaired_mul * (i + 1);
+    if (db[i] == '.') {
+      extra_from_pseudofree += pf_unpaired[i];
+    } else {
+      extra_from_pseudofree += pf_paired[i];
+    }
+  }
+
+  auto em = base_em->CloneWithPseudofreeEnergy(pf_paired, pf_unpaired);
   auto energy = GetEnergy(em, {Primary::FromSeq(r), Secondary::FromDb(db)});
-  int num_unpaired = 0;
-  for (auto c : db)
-    if (c == '.') num_unpaired++;
-  Energy extra_from_pseudofree =
-      num_unpaired * E(1000.0) + static_cast<int>(r.size() - num_unpaired) * E(100000.0);
   return {energy, extra_from_pseudofree};
 }
 
@@ -354,7 +354,7 @@ TEST(T22P2ModelTest, T22P2) {
       GetEnergy(em, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))"));
 }
 
-TEST(T22P2ModelTest, T22P2PseudoFree) {
+TEST(T22P2ModelTest, T22P2Pseudofree) {
   auto em = t22p2;
 
   {

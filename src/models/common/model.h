@@ -63,6 +63,15 @@ class ModelMixin {
     } else {
       em = FromModelPath(erg::ModelPathFromArgParse(args));
     }
+    std::vector<Energy> pf_paired;
+    std::vector<Energy> pf_unpaired;
+    if (args.Has(erg::OPT_PAIRED_PSEUDOFREE))
+      pf_paired = args.GetMultiple<Energy>(erg::OPT_PAIRED_PSEUDOFREE);
+    if (args.Has(erg::OPT_UNPAIRED_PSEUDOFREE))
+      pf_unpaired = args.GetMultiple<Energy>(erg::OPT_UNPAIRED_PSEUDOFREE);
+    if (!pf_paired.empty() || !pf_unpaired.empty()) {
+      em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
+    }
     em->cfg = erg::EnergyCfg::FromArgParse(args);
     return em;
   }

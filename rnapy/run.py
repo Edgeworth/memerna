@@ -22,6 +22,7 @@ from rnapy.programs.util.update_datatables import update_datatables
 CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,
     show_subcommand_aliases=True,
+    show_default=True,
     formatter_settings=cloup.HelpFormatter.settings(
         theme=cloup.HelpTheme.dark(),
     ),

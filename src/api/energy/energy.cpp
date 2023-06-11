@@ -13,6 +13,8 @@ void RegisterOptsEnergyModel(ArgParse* args) {
   args->RegisterOpt(OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_ENERGY_MODEL);
   args->RegisterOpt(OPT_SEED);
+  args->RegisterOpt(OPT_PAIRED_PSEUDOFREE);
+  args->RegisterOpt(OPT_UNPAIRED_PSEUDOFREE);
 }
 
 std::string ModelPathFromArgParse(const ArgParse& args) {
