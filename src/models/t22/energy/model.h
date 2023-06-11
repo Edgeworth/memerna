@@ -162,10 +162,11 @@ class Model : public ModelMixin<Model> {
 
   bool IsValid(std::string* reason = nullptr) const { return t04::T04IsValid(*this, reason); }
 
+  void LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired);
+
  protected:
   void LoadFromModelPath(const std::string& path);
   void LoadRandom(std::mt19937& eng);
-  void LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired);
 
  private:
   friend class ModelMixin<Model>;

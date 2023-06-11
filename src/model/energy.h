@@ -8,7 +8,9 @@
 #include <compare>
 #include <cstdint>
 #include <iosfwd>
+#include <random>
 #include <string>
+#include <vector>
 
 #include "model/constants.h"
 #include "util/float.h"
@@ -79,6 +81,9 @@ inline const Energy NINIO_MAX_ASYM = E(3.0);
   if (*this >= CAP_E) return 0;
   return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
 }
+
+std::vector<Energy> RandomEnergies(
+    std::size_t length, Energy min_energy, Energy max_energy, std::mt19937& eng);
 
 }  // namespace mrna
 

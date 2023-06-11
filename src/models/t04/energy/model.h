@@ -170,16 +170,18 @@ class Model : public ModelMixin<Model> {
 
   bool IsValid(std::string* reason = nullptr) const { return T04IsValid(*this, reason); }
 
+  // NOLINTNEXTLINE
+  void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+    if (pf_paired.empty() && pf_unpaired.empty()) return;
+    fatal("pseudofree energy is not supported in this energy model");
+  }
+
  protected:
   void LoadFromModelPath(const std::string& path) { T04LoadFromModelPath(*this, path); }
 
   void LoadRandom(std::mt19937& eng) {
     T04LoadRandom(
         *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
-  }
-
-  void LoadPseudofreeEnergy(std::vector<Energy>, std::vector<Energy>) {  // NOLINT
-    fatal("pseudofree energy is not supported in this energy model");
   }
 
  private:

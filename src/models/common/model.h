@@ -76,10 +76,9 @@ class ModelMixin {
     return em;
   }
 
-  inline Ptr Clone() const { return std::make_shared<T>(*reinterpret_cast<const T*>(this)); }
+  Ptr Clone() const { return std::make_shared<T>(*reinterpret_cast<const T*>(this)); }
 
-  inline Ptr CloneWithPseudofreeEnergy(
-      std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+  Ptr CloneWithPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
     auto em = Clone();
     em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
     return em;
