@@ -91,7 +91,7 @@ struct TracebackInternal {
       if (a == EXT_RC && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // Don't set CTDs here since they will have already been set.
         if (base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + em.PfUnpaired(st) +
-                em.PfUnpaired(st) + ext[en + 1][EXT] ==
+                em.PfUnpaired(en) + ext[en + 1][EXT] ==
             ext[st][EXT_RC]) {
           next.push_back(
               {.idx0 = t04::DpIndex(st + 1, en - 1, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)});
@@ -139,7 +139,7 @@ struct TracebackInternal {
       if (en < N - 1 && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // .(   ).<(   ) > Left coax  x
         val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + em.PfUnpaired(st) +
-            em.PfUnpaired(st);
+            em.PfUnpaired(en);
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
               .idx1 = t04::DpIndex(en + 1, -1, EXT_WC),
@@ -499,7 +499,7 @@ struct TracebackInternal {
     const auto bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
     const auto bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
 
-    auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
+    auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + em.PfPaired(st, en);
     if (length == 2 &&
         none + nostack[st + 1][en - 1] + em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {

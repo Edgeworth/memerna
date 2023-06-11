@@ -75,7 +75,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
       if (em->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // .(   ).<(   ) > Left coax
         val = base11 + em->MismatchCoaxial(en1b, enb, stb, st1b) + em->PfUnpaired(st) +
-            em->PfUnpaired(st);
+            em->PfUnpaired(en);
         e = std::min(e, val + ext[en + 1][EXT_GU]);
         e = std::min(e, val + ext[en + 1][EXT_WC]);
 
@@ -84,7 +84,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
         // (   )<.( * ). > Right coax backward
         ext[st][EXT_RC] = std::min(ext[st][EXT_RC],
             base11 + em->MismatchCoaxial(en1b, enb, stb, st1b) + em->PfUnpaired(st) +
-                em->PfUnpaired(st) + ext[en + 1][EXT]);
+                em->PfUnpaired(en) + ext[en + 1][EXT]);
 
         // (   )(<   ) > Flush coax
         e = std::min(e, base01 + em->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
