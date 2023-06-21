@@ -191,6 +191,8 @@ set(MEMERNA_SOURCE
   src/models/t22/mfe/mfe_exterior.cpp
   src/models/t22/mfe/mfe_slowest.cpp
   src/models/t22/mfe/mfe.h
+  src/models/t22/subopt/subopt_slowest.cpp
+  src/models/t22/subopt/subopt_slowest.h
   src/models/t22/trace/trace.cpp
   src/models/t22/trace/trace.h
   src/programs/brute.cpp
