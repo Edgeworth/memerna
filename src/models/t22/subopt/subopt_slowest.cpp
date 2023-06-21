@@ -1,5 +1,5 @@
-// Copyright 2016 Eliot Courtney.
-#include "models/t04/subopt/subopt_fastest.h"
+// Copyright 2023 Eliot Courtney.
+#include "models/t22/subopt/subopt_slowest.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -19,14 +19,14 @@
 #include "model/secondary.h"
 #include "util/error.h"
 
-namespace mrna::md::t04 {
+namespace mrna::md::t22 {
 
-SuboptFastest::SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
+SuboptSlowest::SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
+    : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
-int SuboptFastest::Run(const SuboptCallback& fn) {
+int SuboptSlowest::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
-  q_.reserve(r_.size());  // Reasonable reservation.
+  q_.reserve(r_.size());
   cache_.Reserve(r_.size());
 
   verify(em_->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
@@ -34,9 +34,8 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   verify(em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL,
       "only full CTDs are supported in this energy model");
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
+  spdlog::debug("t22 {} with cfg {}", __func__, em_->cfg);
 
-  // If require sorted output, or limited number of structures (requires sorting).
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES) {
     int count = 0;
     Energy delta = ZERO_E;
@@ -50,7 +49,7 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptFastest::RunInternal(
+std::pair<int, Energy> SuboptSlowest::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -67,7 +66,7 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
   Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.idx = 0, .expand = {0, -1, EXT}, .should_unexpand = false});
+  q_.push_back({0, {0, -1, EXT}, false});
   while (!q_.empty()) {
     auto& s = q_.back();
     assert(s.expand.st != -1);
@@ -540,4 +539,4 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
   return exps;
 }
 
-}  // namespace mrna::md::t04
+}  // namespace mrna::md::t22

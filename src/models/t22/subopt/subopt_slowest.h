@@ -1,6 +1,6 @@
-// Copyright 2016 Eliot Courtney.
-#ifndef MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
-#define MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+// Copyright 2023 Eliot Courtney.
+#ifndef MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
+#define MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
 
 #include <algorithm>
 #include <cassert>
@@ -14,12 +14,12 @@
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "models/t04/energy/model.h"
-#include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
+#include "models/t22/energy/model.h"
+#include "models/t22/mfe/mfe.h"
 #include "util/splaymap.h"
 
-namespace mrna::md::t04 {
+namespace mrna::md::t22 {
 
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
@@ -38,23 +38,21 @@ struct Expand {
   bool operator<(const Expand& o) const { return energy < o.energy; }
 };
 
-class SuboptFastest {
+class SuboptSlowest {
  public:
-  SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
+  SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
  private:
   struct DfsState {
-    int idx{0};
-    DpIndex expand{};
-    // Stores whether this node's |expand| was from |unexpanded| and needs to be replaced.
-    bool should_unexpand{false};
+    int idx{};
+    DpIndex expand;
+    bool should_unexpand{};
   };
 
   Primary r_;
   Model::Ptr em_;
-  Precomp pc_;
   SuboptResult res_;
   DpState dp_;
   SuboptCfg cfg_;
@@ -67,10 +65,7 @@ class SuboptFastest {
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expand>& GetExpansion(const DpIndex& to_expand) {
-    // We request the expansions of an index multiple times when we find the
-    // next sibling of a node after coming back up during the DFS.
     if (!cache_.Find(to_expand)) {
-      // Need to generate the full way to delta so we can properly set |next_seen|.
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
       [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
@@ -79,12 +74,10 @@ class SuboptFastest {
     return cache_.Get();
   }
 
-  // Generates expansions for the given index, given that the extra energy over the best choice
-  // can't be more than |delta|.
   [[nodiscard]] std::vector<Expand> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };
 
-}  // namespace mrna::md::t04
+}  // namespace mrna::md::t22
 
-#endif  // MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+#endif  // MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
