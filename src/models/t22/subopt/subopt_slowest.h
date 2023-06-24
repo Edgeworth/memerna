@@ -17,6 +17,7 @@
 #include "models/t04/mfe/dp.h"
 #include "models/t22/energy/model.h"
 #include "models/t22/mfe/mfe.h"
+#include "models/t22/trace/trace.h"
 #include "util/splaymap.h"
 
 namespace mrna::md::t22 {
@@ -24,19 +25,6 @@ namespace mrna::md::t22 {
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
-
-struct Expand {
-  // Extra energy of this expansion compared to the best choice.
-  Energy energy = {ZERO_E};
-
-  // st is -1 if this does not exist
-  DpIndex to_expand = {};
-  DpIndex unexpanded = {};
-  IndexCtd ctd0 = {};
-  IndexCtd ctd1 = {};
-
-  bool operator<(const Expand& o) const { return energy < o.energy; }
-};
 
 class SuboptSlowest {
  public:
@@ -46,9 +34,9 @@ class SuboptSlowest {
 
  private:
   struct DfsState {
-    int idx{};
-    DpIndex expand;
-    bool should_unexpand{};
+    int idx = {0};
+    DpIndex expand = {};
+    bool should_unexpand = {false};
   };
 
   Primary r_;
@@ -57,14 +45,14 @@ class SuboptSlowest {
   DpState dp_;
   SuboptCfg cfg_;
 
-  SplayMap<DpIndex, std::vector<Expand>> cache_;
+  SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<DfsState> q_;
   std::vector<DpIndex> unexpanded_;
 
   std::pair<int, Energy> RunInternal(
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
-  const std::vector<Expand>& GetExpansion(const DpIndex& to_expand) {
+  const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     if (!cache_.Find(to_expand)) {
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
@@ -74,7 +62,7 @@ class SuboptSlowest {
     return cache_.Get();
   }
 
-  [[nodiscard]] std::vector<Expand> GenerateExpansions(
+  [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };
 

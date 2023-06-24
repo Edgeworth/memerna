@@ -25,9 +25,9 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-struct Expand {
+struct Expansion {
   // Extra energy of this expansion compared to the best choice.
-  Energy energy = {ZERO_E};
+  Energy delta = {ZERO_E};
 
   // st is -1 if this does not exist
   DpIndex to_expand = {};
@@ -35,7 +35,7 @@ struct Expand {
   IndexCtd ctd0 = {};
   IndexCtd ctd1 = {};
 
-  bool operator<(const Expand& o) const { return energy < o.energy; }
+  bool operator<(const Expansion& o) const { return delta < o.delta; }
 };
 
 class SuboptFastest {
@@ -46,27 +46,30 @@ class SuboptFastest {
 
  private:
   struct DfsState {
-    int idx{0};
-    DpIndex expand{};
+    int idx = {0};
+    DpIndex expand = {};
     // Stores whether this node's |expand| was from |unexpanded| and needs to be replaced.
-    bool should_unexpand{false};
+    bool should_unexpand = {false};
   };
 
   Primary r_;
   Model::Ptr em_;
   Precomp pc_;
-  SuboptResult res_;
   DpState dp_;
   SuboptCfg cfg_;
 
-  SplayMap<DpIndex, std::vector<Expand>> cache_;
+  SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<DfsState> q_;
+
+  // Incremental state. Holds the current partial structure.
+  SuboptResult res_;
+  // Incremental state - holds unexpanded Indexes for the current partial structure.
   std::vector<DpIndex> unexpanded_;
 
   std::pair<int, Energy> RunInternal(
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
-  const std::vector<Expand>& GetExpansion(const DpIndex& to_expand) {
+  const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the
     // next sibling of a node after coming back up during the DFS.
     if (!cache_.Find(to_expand)) {
@@ -81,7 +84,7 @@ class SuboptFastest {
 
   // Generates expansions for the given index, given that the extra energy over the best choice
   // can't be more than |delta|.
-  [[nodiscard]] std::vector<Expand> GenerateExpansions(
+  [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };
 

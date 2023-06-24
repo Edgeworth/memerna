@@ -51,46 +51,34 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
 
 std::pair<int, Energy> SuboptSlowest::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
-  // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
-  // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
-  // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
-  // another expansion it is put on the unexpanded list. Everything in unexpanded never affects
-  // the CTDs or energy of the current state - that is rolled into the modification when that
-  // unexpanded is originally generated.
-
   int count = 0;
-  // Store the smallest energy above delta we see. If we reach our |structure_limit| before
-  // finishing, we might not see the smallest one, but it's okay since we won't be called again.
-  // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
   Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({0, {0, -1, EXT}, false});
+  q_.push_back({.idx = 0, .expand = {0, -1, EXT}, .should_unexpand = false});
   while (!q_.empty()) {
     auto& s = q_.back();
     assert(s.expand.st != -1);
 
     const auto& exps = GetExpansion(s.expand);
-    assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
+    assert(!exps.empty());
 
-    // Undo previous child's ctds and energy. The pairing is undone by the child.
-    // Also remove from unexpanded if the previous child added stuff to it.
     if (s.idx != 0) {
       const auto& pexp = exps[s.idx - 1];
       if (pexp.ctd0.idx != -1) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
       if (pexp.ctd1.idx != -1) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
       if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
-      energy -= pexp.energy;
+      energy -= pexp.delta;
     }
 
     // Update the next best seen variable
-    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].energy + energy > delta)
-      next_seen = std::min(next_seen, exps[s.idx].energy + energy);
+    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].delta + energy > delta)
+      next_seen = std::min(next_seen, exps[s.idx].delta + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].energy + energy > delta) {
+    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].delta + energy > delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
       if (s.expand.en != -1 && s.expand.a == DP_P)
         res_.tb.s[s.expand.st] = res_.tb.s[s.expand.en] = -1;
@@ -101,7 +89,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
 
     const auto& ex = exps[s.idx++];
     DfsState ns = {0, ex.to_expand, false};
-    energy += ex.energy;
+    energy += ex.delta;
     if (ex.to_expand.st == -1) {
       // Can't have an unexpanded without a to_expand. Also can't set ctds or affect energy.
       assert(ex.unexpanded.st == -1);
@@ -141,13 +129,13 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expand> SuboptFastest::GenerateExpansions(
+std::vector<Expansion> SuboptFastest::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;
   int en = to_expand.en;
   const int a = to_expand.a;
-  std::vector<Expand> exps;
+  std::vector<Expansion> exps;
   // Temporary variable to hold energy calculations.
   Energy energy = ZERO_E;
   // Exterior loop
@@ -155,11 +143,11 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     if (a == EXT) {
       // Base case: do nothing.
       if (st == N)
-        exps.push_back({.energy = ZERO_E});
+        exps.push_back({.delta = ZERO_E});
       else
         // Case: No pair starting here (for EXT only)
         exps.push_back(
-            {.energy = dp_.ext[st + 1][EXT] - dp_.ext[st][a], .to_expand = {st + 1, -1, EXT}});
+            {.delta = dp_.ext[st + 1][EXT] - dp_.ext[st][a], .to_expand = {st + 1, -1, EXT}});
     }
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
@@ -179,7 +167,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
         energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta)
-          exps.push_back({.energy = energy,
+          exps.push_back({.delta = energy,
               .to_expand = {en + 1, -1, EXT},
               .unexpanded = {st + 1, en - 1, DP_P}});
       }
@@ -190,7 +178,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base00 + dp_.ext[en + 1][EXT];
       if (energy <= delta) {
         if (a == EXT)
-          exps.push_back({.energy = energy,
+          exps.push_back({.delta = energy,
               .to_expand = {en + 1, -1, EXT},
               .unexpanded = {st, en, DP_P},
               .ctd0 = {st, CTD_UNUSED}});
@@ -200,7 +188,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
         // coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           exps.push_back(
-              {.energy = energy, .to_expand = {en + 1, -1, EXT}, .unexpanded = {st, en, DP_P}});
+              {.delta = energy, .to_expand = {en + 1, -1, EXT}, .unexpanded = {st, en, DP_P}});
       }
 
       // Everything after this is only for EXT.
@@ -209,7 +197,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       // (   )3<   > 3'
       energy = base01 + em_->dangle3[en1b][enb][stb] + dp_.ext[en + 1][EXT];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {en + 1, -1, EXT},
             .unexpanded = {st, en - 1, DP_P},
             .ctd0 = {st, CTD_3_DANGLE}});
@@ -217,7 +205,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       // 5(   )<   > 5'
       energy = base10 + em_->dangle5[enb][stb][st1b] + dp_.ext[en + 1][EXT];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {en + 1, -1, EXT},
             .unexpanded = {st + 1, en, DP_P},
             .ctd0 = {st + 1, CTD_5_DANGLE}});
@@ -225,7 +213,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       // .(   ).<   > Terminal mismatch
       energy = base11 + em_->terminal[en1b][enb][stb][st1b] + dp_.ext[en + 1][EXT];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {en + 1, -1, EXT},
             .unexpanded = {st + 1, en - 1, DP_P},
             .ctd0 = {st + 1, CTD_MISMATCH}});
@@ -234,13 +222,13 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
         // .(   ).<(   ) > Left coax
         energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b);
         if (energy + dp_.ext[en + 1][EXT_GU] <= delta)
-          exps.push_back({.energy = energy + dp_.ext[en + 1][EXT_GU],
+          exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_GU],
               .to_expand = {en + 1, -1, EXT_GU},
               .unexpanded = {st + 1, en - 1, DP_P},
               .ctd0 = {en + 1, CTD_LCOAX_WITH_PREV},
               .ctd1 = {st + 1, CTD_LCOAX_WITH_NEXT}});
         if (energy + dp_.ext[en + 1][EXT_WC] <= delta)
-          exps.push_back({.energy = energy + dp_.ext[en + 1][EXT_WC],
+          exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_WC],
               .to_expand = {en + 1, -1, EXT_WC},
               .unexpanded = {st + 1, en - 1, DP_P},
               .ctd0 = {en + 1, CTD_LCOAX_WITH_PREV},
@@ -251,7 +239,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
         // (   )<.(   ). > Right coax forward
         energy = base00 + dp_.ext[en + 1][EXT_RC];
         if (energy <= delta)
-          exps.push_back({.energy = energy,
+          exps.push_back({.delta = energy,
               .to_expand = {en + 1, -1, EXT_RC},
               .unexpanded = {st, en, DP_P},
               .ctd0 = {en + 2, CTD_RC_WITH_PREV},
@@ -261,7 +249,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       // (   )(<   ) > Flush coax
       energy = base01 + em_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {en, -1, EXT_WC},
             .unexpanded = {st, en - 1, DP_P},
             .ctd0 = {en, CTD_FCOAX_WITH_PREV},
@@ -270,7 +258,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       if (IsGu(enb)) {
         energy = base01 + em_->stack[en1b][enb][GuPair(enb)][stb] + dp_.ext[en][EXT_GU];
         if (energy <= delta)
-          exps.push_back({.energy = energy,
+          exps.push_back({.delta = energy,
               .to_expand = {en, -1, EXT_GU},
               .unexpanded = {st, en - 1, DP_P},
               .ctd0 = {en, CTD_FCOAX_WITH_PREV},
@@ -296,35 +284,35 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
       for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
         energy = pc_.TwoLoop(st, en, ist, ien) + dp_.dp[ist][ien][DP_P] - dp_.dp[st][en][a];
-        if (energy <= delta) exps.push_back({.energy = energy, .to_expand = {ist, ien, DP_P}});
+        if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {ist, ien, DP_P}});
       }
     }
 
     // Hairpin loop
     energy = pc_.Hairpin(st, en) - dp_.dp[st][en][a];
-    if (energy <= delta) exps.push_back({.energy = energy});
+    if (energy <= delta) exps.push_back({.delta = energy});
 
     auto base_and_branch = pc_.augubranch[stb][enb] + em_->multiloop_hack_a - dp_.dp[st][en][a];
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
     if (energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 1, en - 1, DP_U2}, .ctd0 = {en, CTD_UNUSED}});
+          {.delta = energy, .to_expand = {st + 1, en - 1, DP_U2}, .ctd0 = {en, CTD_UNUSED}});
     // (3<   ><   >) 3'
     energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb];
     if (energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 2, en - 1, DP_U2}, .ctd0 = {en, CTD_3_DANGLE}});
+          {.delta = energy, .to_expand = {st + 2, en - 1, DP_U2}, .ctd0 = {en, CTD_3_DANGLE}});
     // (<   ><   >5) 5'
     energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb];
     if (energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 1, en - 2, DP_U2}, .ctd0 = {en, CTD_5_DANGLE}});
+          {.delta = energy, .to_expand = {st + 1, en - 2, DP_U2}, .ctd0 = {en, CTD_5_DANGLE}});
     // (.<   ><   >.) Terminal mismatch
     energy = base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb];
     if (energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 2, en - 2, DP_U2}, .ctd0 = {en, CTD_MISMATCH}});
+          {.delta = energy, .to_expand = {st + 2, en - 2, DP_U2}, .ctd0 = {en, CTD_MISMATCH}});
 
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
       const Base pl1b = r_[piv - 1];
@@ -337,7 +325,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
           dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 2, piv, DP_P},
             .unexpanded = {piv + 1, en - 2, DP_U},
             .ctd0 = {st + 2, CTD_LCOAX_WITH_PREV},
@@ -347,7 +335,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 2][piv][DP_U] + pc_.augubranch[prb][en2b] +
           dp_.dp[piv + 1][en - 2][DP_P] + outer_coax;
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 2, piv, DP_U},
             .unexpanded = {piv + 1, en - 2, DP_P},
             .ctd0 = {piv + 1, CTD_RC_WITH_NEXT},
@@ -357,7 +345,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
           dp_.dp[piv + 1][en - 1][DP_U] + em_->MismatchCoaxial(pl1b, plb, st1b, st2b);
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 2, piv - 1, DP_P},
             .unexpanded = {piv + 1, en - 1, DP_U},
             .ctd0 = {st + 2, CTD_RC_WITH_PREV},
@@ -367,7 +355,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
           dp_.dp[piv + 2][en - 2][DP_P] + em_->MismatchCoaxial(en2b, en1b, prb, pr1b);
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 1, piv, DP_U},
             .unexpanded = {piv + 2, en - 2, DP_P},
             .ctd0 = {piv + 2, CTD_LCOAX_WITH_NEXT},
@@ -377,7 +365,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 1][piv][DP_P] + pc_.augubranch[st1b][plb] +
           dp_.dp[piv + 1][en - 1][DP_U] + em_->stack[stb][st1b][plb][enb];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 1, piv, DP_P},
             .unexpanded = {piv + 1, en - 1, DP_U},
             .ctd0 = {st + 1, CTD_FCOAX_WITH_PREV},
@@ -387,7 +375,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
       energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + pc_.augubranch[prb][en1b] +
           dp_.dp[piv + 1][en - 1][DP_P] + em_->stack[stb][prb][en1b][enb];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st + 1, piv, DP_U},
             .unexpanded = {piv + 1, en - 1, DP_P},
             .ctd0 = {piv + 1, CTD_FCOAX_WITH_NEXT},
@@ -399,7 +387,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
   // Left unpaired. Either DP_U or DP_U2.
   if (st + 1 < en && (a == DP_U || a == DP_U2)) {
     energy = dp_.dp[st + 1][en][a] - dp_.dp[st][en][a];
-    if (energy <= delta) exps.push_back({.energy = energy, .to_expand = {st + 1, en, a}});
+    if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {st + 1, en, a}});
   }
 
   // Pair here.
@@ -419,9 +407,9 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     if (a == DP_U_RC) {
       energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b);
       // Our ctds will have already been set by now.
-      if (energy <= delta) exps.push_back({.energy = energy, .to_expand = {st + 1, piv - 1, DP_P}});
+      if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {st + 1, piv - 1, DP_P}});
       if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
             .to_expand = {st + 1, piv - 1, DP_P},
             .unexpanded = {piv + 1, en, DP_U}});
       continue;
@@ -432,24 +420,24 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     energy = base00;
     if (a == DP_U) {
       if (energy <= delta)
-        exps.push_back({.energy = energy, .to_expand = {st, piv, DP_P}, .ctd0 = {st, CTD_UNUSED}});
+        exps.push_back({.delta = energy, .to_expand = {st, piv, DP_P}, .ctd0 = {st, CTD_UNUSED}});
       if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
             .to_expand = {st, piv, DP_P},
             .unexpanded = {piv + 1, en, DP_U},
             .ctd0 = {st, CTD_UNUSED}});
     }
     if (a == DP_U2 && energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
           .to_expand = {st, piv, DP_P},
           .unexpanded = {piv + 1, en, DP_U},
           .ctd0 = {st, CTD_UNUSED}});
     if (a == DP_U_WC || a == DP_U_GU) {
       // Make sure we don't form any branches that are not the right type of pair.
       if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
-        if (energy <= delta) exps.push_back({.energy = energy, .to_expand = {st, piv, DP_P}});
+        if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {st, piv, DP_P}});
         if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-          exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+          exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
               .to_expand = {st, piv, DP_P},
               .unexpanded = {piv + 1, en, DP_U}});
       }
@@ -463,9 +451,9 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
     if (a == DP_U && energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st, piv - 1, DP_P}, .ctd0 = {st, CTD_3_DANGLE}});
+          {.delta = energy, .to_expand = {st, piv - 1, DP_P}, .ctd0 = {st, CTD_3_DANGLE}});
     if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
           .to_expand = {st, piv - 1, DP_P},
           .unexpanded = {piv + 1, en, DP_U},
           .ctd0 = {st, CTD_3_DANGLE}});
@@ -474,9 +462,9 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     energy = base10 + em_->dangle5[pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 1, piv, DP_P}, .ctd0 = {st + 1, CTD_5_DANGLE}});
+          {.delta = energy, .to_expand = {st + 1, piv, DP_P}, .ctd0 = {st + 1, CTD_5_DANGLE}});
     if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
           .to_expand = {st + 1, piv, DP_P},
           .unexpanded = {piv + 1, en, DP_U},
           .ctd0 = {st + 1, CTD_5_DANGLE}});
@@ -485,9 +473,9 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     energy = base11 + em_->terminal[pl1b][pb][stb][st1b];
     if (a == DP_U && energy <= delta)
       exps.push_back(
-          {.energy = energy, .to_expand = {st + 1, piv - 1, DP_P}, .ctd0 = {st + 1, CTD_MISMATCH}});
+          {.delta = energy, .to_expand = {st + 1, piv - 1, DP_P}, .ctd0 = {st + 1, CTD_MISMATCH}});
     if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
           .to_expand = {st + 1, piv - 1, DP_P},
           .unexpanded = {piv + 1, en, DP_U},
           .ctd0 = {st + 1, CTD_MISMATCH}});
@@ -495,13 +483,13 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     // .(   ).<(   ) > Left coax - U, U2
     energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b);
     if (energy + dp_.dp[piv + 1][en][DP_U_WC] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U_WC],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U_WC],
           .to_expand = {st + 1, piv - 1, DP_P},
           .unexpanded = {piv + 1, en, DP_U_WC},
           .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
           .ctd1 = {piv + 1, CTD_LCOAX_WITH_PREV}});
     if (energy + dp_.dp[piv + 1][en][DP_U_GU] <= delta)
-      exps.push_back({.energy = energy + dp_.dp[piv + 1][en][DP_U_GU],
+      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U_GU],
           .to_expand = {st + 1, piv - 1, DP_P},
           .unexpanded = {piv + 1, en, DP_U_GU},
           .ctd0 = {st + 1, CTD_LCOAX_WITH_NEXT},
@@ -510,7 +498,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     // (   )<.(   ). > Right coax forward - U, U2
     energy = base00 + dp_.dp[piv + 1][en][DP_U_RC];
     if (energy <= delta)
-      exps.push_back({.energy = energy,
+      exps.push_back({.delta = energy,
           .to_expand = {st, piv, DP_P},
           .unexpanded = {piv + 1, en, DP_U_RC},
           .ctd0 = {st, CTD_RC_WITH_NEXT},
@@ -519,7 +507,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     // (   )(<   ) > Flush coax - U, U2
     energy = base01 + em_->stack[pl1b][pb][WcPair(pb)][stb] + dp_.dp[piv][en][DP_U_WC];
     if (energy <= delta)
-      exps.push_back({.energy = energy,
+      exps.push_back({.delta = energy,
           .to_expand = {st, piv - 1, DP_P},
           .unexpanded = {piv, en, DP_U_WC},
           .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
@@ -528,7 +516,7 @@ std::vector<Expand> SuboptFastest::GenerateExpansions(
     if (IsGu(pb)) {
       energy = base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp_.dp[piv][en][DP_U_GU];
       if (energy <= delta)
-        exps.push_back({.energy = energy,
+        exps.push_back({.delta = energy,
             .to_expand = {st, piv - 1, DP_P},
             .unexpanded = {piv, en, DP_U_GU},
             .ctd0 = {st, CTD_FCOAX_WITH_NEXT},
