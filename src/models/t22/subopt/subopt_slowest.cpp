@@ -21,6 +21,8 @@
 
 namespace mrna::md::t22 {
 
+using t04::EXT;
+
 SuboptSlowest::SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
@@ -56,16 +58,17 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
   Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.idx = 0, .expand = {0, -1, EXT}, .should_unexpand = false});
+  q_.push_back({.child_idx = 0, .to_expand = t04::DpIndex(0, -1, EXT), .should_unexpand = false});
   while (!q_.empty()) {
     auto& s = q_.back();
-    assert(s.expand.st != -1);
+    assert(s.to_expand.has_value());
+    auto to_expand = *s.to_expand;
 
-    const auto& exps = GetExpansion(s.expand);
+    const auto& exps = GetExpansion(to_expand);
     assert(!exps.empty());
 
-    if (s.idx != 0) {
-      const auto& pexp = exps[s.idx - 1];
+    if (s.child_idx != 0) {
+      const auto& pexp = exps[s.child_idx - 1];
       if (pexp.ctd0.idx != -1) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
       if (pexp.ctd1.idx != -1) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
       if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
@@ -73,27 +76,27 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
     }
 
     // Update the next best seen variable
-    if (s.idx != static_cast<int>(exps.size()) && exps[s.idx].delta + energy > delta)
-      next_seen = std::min(next_seen, exps[s.idx].delta + energy);
+    if (s.child_idx != static_cast<int>(exps.size()) && exps[s.child_idx].delta + energy > delta)
+      next_seen = std::min(next_seen, exps[s.child_idx].delta + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.idx == static_cast<int>(exps.size()) || exps[s.idx].delta + energy > delta) {
+    if (s.child_idx == static_cast<int>(exps.size()) || exps[s.child_idx].delta + energy > delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
-      if (s.expand.en != -1 && s.expand.a == DP_P)
-        res_.tb.s[s.expand.st] = res_.tb.s[s.expand.en] = -1;
-      if (s.should_unexpand) unexpanded_.push_back(s.expand);
+      if (to_expand.en != -1 && to_expand.a == DP_P)
+        res_.tb.s[to_expand.st] = res_.tb.s[to_expand.en] = -1;
+      if (s.should_unexpand) unexpanded_.push_back(to_expand);
       q_.pop_back();
       continue;  // Done.
     }
 
-    const auto& ex = exps[s.idx++];
-    DfsState ns = {0, ex.to_expand, false};
-    energy += ex.delta;
-    if (ex.to_expand.st == -1) {
+    const auto& exp = exps[s.child_idx++];
+    DfsState ns = {0, exp.to_expand, false};
+    energy += exp.delta;
+    if (exp.to_expand.st == -1) {
       // Can't have an unexpanded without a to_expand. Also can't set ctds or affect energy.
-      assert(ex.unexpanded.st == -1);
-      assert(ex.ctd0.idx == -1 && ex.ctd1.idx == -1);
+      assert(exp.unexpanded.st == -1);
+      assert(exp.ctd0.idx == -1 && exp.ctd1.idx == -1);
       // Use an unexpanded now, if one exists.
       if (unexpanded_.empty()) {
         // At a terminal state.
@@ -107,20 +110,20 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
         }
         continue;  // Done
       }
-      ns.expand = unexpanded_.back();
+      ns.to_expand = unexpanded_.back();
       unexpanded_.pop_back();
       // This node should replace itself into |unexpanded| when its done.
       ns.should_unexpand = true;
 
     } else {
       // Apply child's modifications to the global state.
-      if (ex.ctd0.idx != -1) res_.tb.ctd[ex.ctd0.idx] = ex.ctd0.ctd;
-      if (ex.ctd1.idx != -1) res_.tb.ctd[ex.ctd1.idx] = ex.ctd1.ctd;
-      if (ex.unexpanded.st != -1) unexpanded_.push_back(ex.unexpanded);
+      if (exp.ctd0.idx != -1) res_.tb.ctd[exp.ctd0.idx] = exp.ctd0.ctd;
+      if (exp.ctd1.idx != -1) res_.tb.ctd[exp.ctd1.idx] = exp.ctd1.ctd;
+      if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
     }
-    if (ns.expand.en != -1 && ns.expand.a == DP_P) {
-      res_.tb.s[ns.expand.st] = ns.expand.en;
-      res_.tb.s[ns.expand.en] = ns.expand.st;
+    if (ns.to_expand.en != -1 && ns.to_expand.a == DP_P) {
+      res_.tb.s[ns.to_expand.st] = ns.to_expand.en;
+      res_.tb.s[ns.to_expand.en] = ns.to_expand.st;
     }
     q_.push_back(ns);
   }
