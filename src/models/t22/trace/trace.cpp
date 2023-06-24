@@ -43,14 +43,6 @@ using t04::EXT_RC;
 using t04::EXT_WC;
 
 struct TracebackInternal {
-  struct IndexState {
-    std::optional<DpIndex> idx0 = std::nullopt;
-    std::optional<DpIndex> idx1 = std::nullopt;
-    IndexCtd ctd0{};
-    IndexCtd ctd1{};
-    Pair pair{};
-  };
-
   const Primary& r;
   const Model& em;
   const trace::TraceCfg& cfg;
@@ -60,7 +52,7 @@ struct TracebackInternal {
   const Array2D<Energy>& nostack;
   const Array3D<Energy>& penult;
   TraceResult res;
-  std::vector<IndexState> next;
+  std::vector<Expansion> next;
   std::mt19937 eng;
 
   // TODO(0): configurable seed
@@ -103,9 +95,9 @@ struct TracebackInternal {
       if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
           (a != EXT_GU || IsGuPair(stb, enb))) {
         // EXT_WC and EXT_GU will have already had their ctds set.
-        IndexState state{.idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
-        if (a == EXT) state.ctd0 = {st, CTD_UNUSED};
-        next.push_back(state);
+        Expansion exp{.idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
+        if (a == EXT) exp.ctd0 = {st, CTD_UNUSED};
+        next.push_back(exp);
       }
 
       // Only look at EXT from here on.
@@ -412,11 +404,11 @@ struct TracebackInternal {
                   em.PfUnpaired(piv) + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
-            IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
-            if (can_right_unpaired) next.push_back(state);
+            Expansion exp{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
+            if (can_right_unpaired) next.push_back(exp);
             if (can_right_paired) {
-              state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-              next.push_back(state);
+              exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+              next.push_back(exp);
             }
           }
         }
@@ -427,12 +419,12 @@ struct TracebackInternal {
           (a != DP_U_GU || IsGuPair(stb, pb))) {
         // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
         // were already set.
-        IndexState state{.idx0 = t04::DpIndex(st, piv, DP_P)};
-        if (a != DP_U_WC && a != DP_U_GU) state.ctd0 = {st, CTD_UNUSED};
-        if (can_right_unpaired) next.push_back(state);
+        Expansion exp{.idx0 = t04::DpIndex(st, piv, DP_P)};
+        if (a != DP_U_WC && a != DP_U_GU) exp.ctd0 = {st, CTD_UNUSED};
+        if (can_right_unpaired) next.push_back(exp);
         if (can_right_paired) {
-          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(state);
+          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(exp);
         }
       }
 
@@ -442,32 +434,32 @@ struct TracebackInternal {
       // (   )3<   > 3' - U, U2
       if (base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired ==
           dp[st][en][a]) {
-        IndexState state{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
-        if (can_right_unpaired) next.push_back(state);
+        Expansion exp{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
+        if (can_right_unpaired) next.push_back(exp);
         if (can_right_paired) {
-          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(state);
+          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(exp);
         }
       }
       // 5(   )<   > 5' - U, U2
       if (base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired ==
           dp[st][en][a]) {
-        IndexState state{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
-        if (can_right_unpaired) next.push_back(state);
+        Expansion exp{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
+        if (can_right_unpaired) next.push_back(exp);
         if (can_right_paired) {
-          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(state);
+          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(exp);
         }
       }
       // .(   ).<   > Terminal mismatch - U, U2
       if (base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
               right_unpaired ==
           dp[st][en][a]) {
-        IndexState state{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
-        if (can_right_unpaired) next.push_back(state);
+        Expansion exp{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
+        if (can_right_unpaired) next.push_back(exp);
         if (can_right_paired) {
-          state.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(state);
+          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+          next.push_back(exp);
         }
       }
 
