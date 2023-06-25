@@ -375,43 +375,43 @@ std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
   if (energy <= delta) exps.push_back({.delta = energy, .pair{st, en}});
 
   const auto base_branch_cost = em_->AuGuPenalty(stb, enb) + em_->PfPaired(st, en) +
-      em_->multiloop_hack_a + em_->multiloop_hack_b;
+      em_->multiloop_hack_a + em_->multiloop_hack_b - target;
   // (<   ><    >)
-  if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == target) {
+  energy = base_branch_cost + dp[st + 1][en - 1][DP_U2];
+  if (energy <= delta)
     exps.push_back({
         .delta = energy,
         .idx0 = t04::DpIndex(st + 1, en - 1, DP_U2),
         .ctd0{en, CTD_UNUSED},
         .pair{st, en},
     });
-  }
+
   // (3<   ><   >) 3'
-  if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb] +
-          em_->PfUnpaired(st + 1) ==
-      target) {
+  energy = base_branch_cost + dp[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb] +
+      em_->PfUnpaired(st + 1);
+  if (energy <= delta)
     exps.push_back({.delta = energy,
         .idx0 = t04::DpIndex(st + 2, en - 1, DP_U2),
         .ctd0{en, CTD_3_DANGLE},
         .pair{st, en}});
-  }
+
   // (<   ><   >5) 5'
-  if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb] +
-          em_->PfUnpaired(en - 1) ==
-      target) {
+  energy = base_branch_cost + dp[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb] +
+      em_->PfUnpaired(en - 1);
+  if (energy <= delta)
     exps.push_back({.delta = energy,
         .idx0 = t04::DpIndex(st + 1, en - 2, DP_U2),
         .ctd0{en, CTD_5_DANGLE},
         .pair{st, en}});
-  }
+
   // (.<   ><   >.) Terminal mismatch
-  if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb] +
-          em_->PfUnpaired(st + 1) + em_->PfUnpaired(en - 1) ==
-      target) {
+  energy = base_branch_cost + dp[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb] +
+      em_->PfUnpaired(st + 1) + em_->PfUnpaired(en - 1);
+  if (energy <= delta)
     exps.push_back({.delta = energy,
         .idx0 = t04::DpIndex(st + 2, en - 2, DP_U2),
         .ctd0{en, CTD_MISMATCH},
         .pair{st, en}});
-  }
 
   if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -423,79 +423,75 @@ std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
       // (.(   )   .) Left outer coax - P
       const auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb) + em_->PfUnpaired(st + 1) +
           em_->PfUnpaired(en - 1);
-      if (base_branch_cost + dp[st + 2][piv][DP_P] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
-          target) {
+
+      energy = base_branch_cost + dp[st + 2][piv][DP_P] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax;
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 2, piv, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en - 2, DP_U),
             .ctd0{en, CTD_LCOAX_WITH_NEXT},
             .ctd1{st + 2, CTD_LCOAX_WITH_PREV},
             .pair{st, en}});
-      }
+
       // (.   (   ).) Right outer coax
-      if (base_branch_cost + dp[st + 2][piv][DP_U] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
-          target) {
+      energy = base_branch_cost + dp[st + 2][piv][DP_U] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax;
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 2, piv, DP_U),
             .idx1 = t04::DpIndex(piv + 1, en - 2, DP_P),
             .ctd0{en, CTD_RC_WITH_PREV},
             .ctd1{piv + 1, CTD_RC_WITH_NEXT},
             .pair{st, en}});
-      }
 
       // (.(   ).   ) Left inner coax
-      if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-              em_->MismatchCoaxial(pl1b, plb, st1b, st2b) + em_->PfUnpaired(st + 1) +
-              em_->PfUnpaired(piv) ==
-          target) {
+      energy = base_branch_cost + dp[st + 2][piv - 1][DP_P] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
+          em_->MismatchCoaxial(pl1b, plb, st1b, st2b) + em_->PfUnpaired(st + 1) +
+          em_->PfUnpaired(piv);
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 2, piv - 1, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en - 1, DP_U),
             .ctd0{en, CTD_RC_WITH_NEXT},
             .ctd1{st + 2, CTD_RC_WITH_PREV},
             .pair{st, en}});
-      }
+
       // (   .(   ).) Right inner coax
-      if (base_branch_cost + dp[st + 1][piv][DP_U] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-              em_->MismatchCoaxial(en2b, en1b, prb, pr1b) + em_->PfUnpaired(piv + 1) +
-              em_->PfUnpaired(en - 1) ==
-          target) {
+      energy = base_branch_cost + dp[st + 1][piv][DP_U] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
+          em_->MismatchCoaxial(en2b, en1b, prb, pr1b) + em_->PfUnpaired(piv + 1) +
+          em_->PfUnpaired(en - 1);
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 1, piv, DP_U),
             .idx1 = t04::DpIndex(piv + 2, en - 2, DP_P),
             .ctd0{en, CTD_LCOAX_WITH_PREV},
             .ctd1{piv + 2, CTD_LCOAX_WITH_NEXT},
             .pair{st, en}});
-      }
 
       // ((   )   ) Left flush coax
-      if (base_branch_cost + dp[st + 1][piv][DP_P] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
-              em_->stack[stb][st1b][plb][enb] ==
-          target) {
+      energy = base_branch_cost + dp[st + 1][piv][DP_P] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] + em_->stack[stb][st1b][plb][enb];
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 1, piv, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en - 1, DP_U),
             .ctd0{en, CTD_FCOAX_WITH_NEXT},
             .ctd1{st + 1, CTD_FCOAX_WITH_PREV},
             .pair{st, en}});
-      }
+
       // (   (   )) Right flush coax
-      if (base_branch_cost + dp[st + 1][piv][DP_U] + em_->multiloop_hack_b +
-              em_->AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
-              em_->stack[stb][prb][en1b][enb] ==
-          target) {
+      energy = base_branch_cost + dp[st + 1][piv][DP_U] + em_->multiloop_hack_b +
+          em_->AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] + em_->stack[stb][prb][en1b][enb];
+      if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = t04::DpIndex(st + 1, piv, DP_U),
             .idx1 = t04::DpIndex(piv + 1, en - 1, DP_P),
             .ctd0{en, CTD_FCOAX_WITH_PREV},
             .ctd1{piv + 1, CTD_FCOAX_WITH_NEXT},
             .pair{st, en}});
-      }
     }
   }
 
