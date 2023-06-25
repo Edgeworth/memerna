@@ -434,34 +434,24 @@ std::vector<Expansion> SuboptFastest::GenerateExpansions(
     // From here on, a must be U, U2, U_WC, or U_GU.
 
     // (   )<   > - U, U2, U_WC?, U_GU?
-    energy = base00;
-    if (a == DP_U) {
-      if (energy <= delta)
-        exps.push_back({.delta = energy, .to_expand = {st, piv, DP_P}, .ctd0 = {st, CTD_UNUSED}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
-            .to_expand = {st, piv, DP_P},
-            .unexpanded = {piv + 1, en, DP_U},
-            .ctd0 = {st, CTD_UNUSED}});
-    }
-    if (a == DP_U2 && energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
-          .to_expand = {st, piv, DP_P},
-          .unexpanded = {piv + 1, en, DP_U},
-          .ctd0 = {st, CTD_UNUSED}});
-    if (a == DP_U_WC || a == DP_U_GU) {
-      // Make sure we don't form any branches that are not the right type of pair.
-      if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
-        if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {st, piv, DP_P}});
-        if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-          exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
-              .to_expand = {st, piv, DP_P},
-              .unexpanded = {piv + 1, en, DP_U}});
+    if ((a != DP_U_WC || IsWcPair(stb, pb)) && (a != DP_U_GU || IsGuPair(stb, pb))) {
+      // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
+      // were already set.
+      Expansion exp{.to_expand = t04::DpIndex(st, piv, DP_P)};
+      if (a != DP_U_WC && a != DP_U_GU) exp.ctd0 = {st, CTD_UNUSED};
+
+      exp.delta = base00;
+      if (a != DP_U2 && exp.delta <= delta) exps.push_back(exp);
+
+      exp.delta = base00 + dp_.dp[piv + 1][en][DP_U];
+      if (exp.delta <= delta) {
+        exp.unexpanded = t04::DpIndex(piv + 1, en, DP_U);
+        exps.push_back(exp);
       }
-      continue;
     }
-    // From here on, a must be U or U2.
-    assert(a == DP_U || a == DP_U2);
+
+    // The rest of the cases are for U and U2.
+    if (a != DP_U && a != DP_U2) continue;
 
     // (   )3<   > 3' - U, U2
     energy = base01 + em_->dangle3[pl1b][pb][stb];
