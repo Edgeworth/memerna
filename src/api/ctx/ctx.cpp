@@ -24,6 +24,7 @@
 #include "models/t04/trace/trace.h"
 #include "models/t22/energy/model.h"
 #include "models/t22/mfe/mfe.h"
+#include "models/t22/subopt/subopt_slowest.h"
 #include "models/t22/trace/trace.h"
 #include "util/error.h"
 #include "util/util.h"
@@ -148,7 +149,7 @@ int Ctx::Suboptimal(
   ComputeMfe(r, dp);
   ComputeMfeExterior(r, dp);
 
-  auto vis = overloaded{
+  auto vis = overloaded{// fix clang-format comment
       [&](const md::t04::Model::Ptr& em) mutable -> int {
         auto state = std::get<md::t04::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
@@ -159,9 +160,18 @@ int Ctx::Suboptimal(
         default: bug();
         }
       },
-      // TODO(2): Implement suboptimal for t22.
-      [&](const md::t22::Model::Ptr&) mutable -> int { bug(); },
-  };
+      [&](const md::t22::Model::Ptr& em) mutable -> int {
+        auto state = std::get<md::t22::DpState>(std::move(dp));
+        switch (cfg_.subopt_alg) {
+          // TODO(0): add code that dynamically returns supported algorithms for
+          // a model. (not here, for use in callers)
+        case CtxCfg::SuboptAlg::SLOWEST:
+        case CtxCfg::SuboptAlg::FASTEST:
+          return md::t22::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
+
+        default: bug();
+        }
+      }};
   return std::visit(vis, em_);
 }
 

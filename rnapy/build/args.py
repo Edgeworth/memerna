@@ -142,7 +142,7 @@ afl_fuzz_cfg_options = cloup.option_group(
     ),
     cloup.option(
         "--subopt-strucs",
-        default=5000,
+        default=10000,
         help="Maximum number of structures to generate for subopt",
     ),
     cloup.option(
