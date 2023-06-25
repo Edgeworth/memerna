@@ -46,7 +46,7 @@ inline const Opt OPT_FUZZ_SUBOPT_RNASTRUCTURE = Opt(Opt::FLAG)
 inline const Opt OPT_FUZZ_SUBOPT_STRUCS =
     Opt(Opt::ARG)
         .LongName("subopt-strucs")
-        .Default(5000)
+        .Default(10000)
         .Help("maximum number of substructures for subopt fuzz");
 inline const Opt OPT_FUZZ_SUBOPT_DELTA = Opt(Opt::ARG)
                                              .LongName("subopt-delta")

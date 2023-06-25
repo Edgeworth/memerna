@@ -98,12 +98,15 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
 
     const auto& exp = exps[s.child_idx++];
     DfsState ns = {0, exp.idx0, false};
+
+    // Update global state with this expansion. We can do the others after since
+    // they are guaranteed to be empty if this is a terminal.
     energy += exp.delta;
+    exp.pair.MaybeApply(res_.tb.s);
 
     if (!exp.idx0.has_value()) {
       assert(!exp.idx1.has_value());
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
-      assert(!exp.pair.IsValid());
 
       if (unexpanded_.empty()) {
         // At a terminal state.
@@ -124,7 +127,6 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
       // Update global state with this expansion.
       exp.ctd0.MaybeApply(res_.tb.ctd);
       exp.ctd1.MaybeApply(res_.tb.ctd);
-      exp.pair.MaybeApply(res_.tb.s);
       if (exp.idx1.has_value()) unexpanded_.push_back(*exp.idx1);
     }
 
@@ -243,7 +245,7 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta)
           .ctd0{st + 1, CTD_MISMATCH}});
 
     if (en < N - 1 && em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
-      // .(   ).<(   ) > Left coax  x
+      // .(   ).<(   ) > Left coax
       energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + em_->PfUnpaired(st) +
           em_->PfUnpaired(en);
       if (energy + ext[en + 1][EXT_WC] <= delta)
@@ -654,8 +656,8 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
             .ctd1{piv, CTD_FCOAX_WITH_PREV},
         });
 
-      energy = base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
       if ((IsGu(pb))) {
+        energy = base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
         if (energy <= delta)
           exps.push_back({
               .delta = energy,
