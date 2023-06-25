@@ -650,7 +650,6 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{piv + 1, CTD_LCOAX_WITH_PREV},
         });
-
       if (energy + dp[piv + 1][en][DP_U_GU] <= delta)
         exps.push_back({
             .delta = energy + dp[piv + 1][en][DP_U_GU],
@@ -661,9 +660,10 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
         });
 
       // (   )<.(   ). > Right coax forward - U, U2
-      if (base00 + dp[piv + 1][en][DP_U_RC] <= delta)
+      energy = base00 + dp[piv + 1][en][DP_U_RC];
+      if (energy <= delta)
         exps.push_back({
-            .delta = energy + dp[piv + 1][en][DP_U_RC],
+            .delta = energy,
             .idx0 = t04::DpIndex(st, piv, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en, DP_U_RC),
             .ctd0{st, CTD_RC_WITH_NEXT},
