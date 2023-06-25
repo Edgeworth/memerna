@@ -507,11 +507,10 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
   const auto stb = r_[st];
   const auto st1b = r_[st + 1];
 
-  // Deal with the rest of the cases:
   // Left unpaired. Either DP_U or DP_U2.
-  if (st + 1 < en && (a == DP_U || a == DP_U2) &&
-      dp[st + 1][en][a] + em_->PfUnpaired(st) == dp[st][en][a]) {
-    exps.push_back({.delta = energy, .idx0 = t04::DpIndex(st + 1, en, a)});
+  if (st + 1 < en && (a == DP_U || a == DP_U2)) {
+    energy = dp[st + 1][en][a] + em_->PfUnpaired(st) - dp[st][en][a];
+    if (energy <= delta) exps.push_back({.delta = energy, .idx0 = t04::DpIndex(st + 1, en, a)});
   }
 
   // Pair here.
@@ -522,58 +521,48 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
     const auto pl1b = r_[piv - 1];
     // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
     // right.
-    const auto base00 = dp[st][piv][DP_P] + em_->AuGuPenalty(stb, pb) + em_->multiloop_hack_b;
-    const auto base01 = dp[st][piv - 1][DP_P] + em_->AuGuPenalty(stb, pl1b) + em_->multiloop_hack_b;
-    const auto base10 = dp[st + 1][piv][DP_P] + em_->AuGuPenalty(st1b, pb) + em_->multiloop_hack_b;
-    const auto base11 =
-        dp[st + 1][piv - 1][DP_P] + em_->AuGuPenalty(st1b, pl1b) + em_->multiloop_hack_b;
+    const auto base00 =
+        dp[st][piv][DP_P] + em_->AuGuPenalty(stb, pb) + em_->multiloop_hack_b - dp[st][en][a];
+    const auto base01 =
+        dp[st][piv - 1][DP_P] + em_->AuGuPenalty(stb, pl1b) + em_->multiloop_hack_b - dp[st][en][a];
+    const auto base10 =
+        dp[st + 1][piv][DP_P] + em_->AuGuPenalty(st1b, pb) + em_->multiloop_hack_b - dp[st][en][a];
+    const auto base11 = dp[st + 1][piv - 1][DP_P] + em_->AuGuPenalty(st1b, pl1b) +
+        em_->multiloop_hack_b - dp[st][en][a];
 
-    // Min is for either placing another unpaired or leaving it as nothing.
-    // If we're at U2, don't allow leaving as nothing.
-    auto right_unpaired = dp[piv + 1][en][DP_U];
-
-    // We need to store both of these because in the case that, due to
-    // pseudofree energies, both are equal, we need to consider both
-    // possibilities for a randomised traceback.
-    bool can_right_paired = true;
-    bool can_right_unpaired = false;
-    if (a != DP_U2) {
-      const auto unpaired_cum = em_->PfUnpairedCum(piv + 1, en);
-      if (unpaired_cum == right_unpaired) can_right_unpaired = true;
-      if (unpaired_cum < right_unpaired) {
-        can_right_paired = false;
-        can_right_unpaired = true;
-        right_unpaired = unpaired_cum;
-      }
-    }
+    const auto right_paired = dp[piv + 1][en][DP_U];
+    // This is only usable if a != DP_U2 since this leaves everything unpaired.
+    const auto right_unpaired = em_->PfUnpairedCum(piv + 1, en);
 
     if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // Check a == U_RC:
       // (   )<.( ** ). > Right coax backward
       if (a == DP_U_RC) {
-        if (base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b) + em_->PfUnpaired(st) +
-                em_->PfUnpaired(piv) + right_unpaired ==
-            dp[st][en][DP_U_RC]) {
-          // Ctds were already set from the recurrence that called this.
-          Expansion exp{.delta = energy, .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)};
-          if (can_right_unpaired) exps.push_back(exp);
-          if (can_right_paired) {
-            exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-            exps.push_back(exp);
-          }
-        }
+        energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b) + em_->PfUnpaired(st) +
+            em_->PfUnpaired(piv);
+        if (energy + right_unpaired <= delta)
+          exps.push_back(
+              {.delta = energy + right_unpaired, .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P)});
+
+        if (energy + right_paired <= delta)
+          exps.push_back({.delta = energy + right_paired,
+              .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
+              .idx1 = t04::DpIndex(piv + 1, en, DP_U)});
       }
     }
 
     // (   )<   > - U, U2, U_WC?, U_GU?
-    if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
-        (a != DP_U_GU || IsGuPair(stb, pb))) {
+    if ((a != DP_U_WC || IsWcPair(stb, pb)) && (a != DP_U_GU || IsGuPair(stb, pb))) {
       // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
       // were already set.
-      Expansion exp{.delta = energy, .idx0 = t04::DpIndex(st, piv, DP_P)};
+      Expansion exp{.idx0 = t04::DpIndex(st, piv, DP_P)};
       if (a != DP_U_WC && a != DP_U_GU) exp.ctd0 = {st, CTD_UNUSED};
-      if (can_right_unpaired) exps.push_back(exp);
-      if (can_right_paired) {
+
+      exp.delta = base00 + right_unpaired;
+      if (a != DP_U2 && exp.delta <= delta) exps.push_back(exp);
+
+      exp.delta = base00 + right_paired;
+      if (exp.delta <= delta) {
         exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
         exps.push_back(exp);
       }
@@ -581,6 +570,9 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
 
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
+
+    bool can_right_unpaired = false;
+    bool can_right_paired = false;
 
     // (   )3<   > 3' - U, U2
     if (base01 + em_->dangle3[pl1b][pb][stb] + em_->PfUnpaired(piv) + right_unpaired ==
