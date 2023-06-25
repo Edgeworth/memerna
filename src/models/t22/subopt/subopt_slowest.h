@@ -65,7 +65,7 @@ class SuboptSlowest {
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 
-  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, int en, int a, Energy delta) const;
+  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, int a, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> PairedOrNoStackExpansions(
       int st, int en, bool is_nostack, Energy delta) const;
