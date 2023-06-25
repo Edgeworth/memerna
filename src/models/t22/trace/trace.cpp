@@ -62,12 +62,12 @@ struct TracebackInternal {
         ext(state_.t04.ext), nostack(state_.nostack), penult(state_.penult),
         res((Secondary(N)), Ctds(N)), eng(1234) {}
 
-  void ComputeExt(int st, int en, int a) {
+  void ComputeExt(int st, int a) {
     // Case: No pair starting here
     if (a == EXT && st + 1 < N && ext[st + 1][EXT] + em.PfUnpaired(st) == ext[st][EXT]) {
       next.push_back({.idx0 = t04::DpIndex(st + 1, -1, EXT)});
     }
-    for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
       const auto stb = r[st];
@@ -573,7 +573,7 @@ struct TracebackInternal {
         int en = idx.en;
         int a = idx.a;
         if (en == -1) {
-          ComputeExt(st, en, a);
+          ComputeExt(st, a);
         } else {
           // Done with paired. We might not have returned true if this was a hairpin.
           if (a == DP_P) {

@@ -142,7 +142,7 @@ std::vector<Expansion> SuboptSlowest::GenerateExpansions(
     int st = idx.st;
     int en = idx.en;
     int a = idx.a;
-    if (en == -1) return ExtExpansions(st, en, a, delta);
+    if (en == -1) return ExtExpansions(st, a, delta);
     if (a == DP_P) return PairedOrNoStackExpansions(st, en, /*is_nostack=*/false, delta);
     return UnpairedExpansions(st, en, a, delta);
   }
@@ -161,45 +161,53 @@ std::vector<Expansion> SuboptSlowest::GenerateExpansions(
   return PairedOrNoStackExpansions(st, en, /*is_nostack=*/true, delta);
 }
 
-std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int en, int a, Energy delta) const {
+std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const auto& dp = dp_.t04.dp;
   const auto& ext = dp_.t04.ext;
   std::vector<Expansion> exps;
+  Energy energy = ZERO_E;
 
   // Case: No pair starting here
-  if (a == EXT && st + 1 < N && ext[st + 1][EXT] + em_->PfUnpaired(st) == ext[st][EXT]) {
-    exps.push_back({.idx0 = t04::DpIndex(st + 1, -1, EXT)});
+  if (a == EXT) {
+    if (st == N) {
+      exps.push_back({.delta = ZERO_E});
+    } else {
+      energy = ext[st + 1][EXT] + em_->PfUnpaired(st) - ext[st][EXT];
+      if (energy <= delta) exps.push_back({.delta = energy, .idx0 = t04::DpIndex(st + 1, -1, EXT)});
+    }
   }
-  for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+  for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
     // .   .   .   (   .   .   .   )   <   >
     //           stb  st1b   en1b  enb   rem
     const auto stb = r_[st];
     const auto st1b = r_[st + 1];
     const auto enb = r_[en];
     const auto en1b = r_[en - 1];
-    const auto base00 = dp[st][en][DP_P] + em_->AuGuPenalty(stb, enb);
-    const auto base01 = dp[st][en - 1][DP_P] + em_->AuGuPenalty(stb, en1b);
-    const auto base10 = dp[st + 1][en][DP_P] + em_->AuGuPenalty(st1b, enb);
-    const auto base11 = dp[st + 1][en - 1][DP_P] + em_->AuGuPenalty(st1b, en1b);
+    const auto base00 = dp[st][en][DP_P] + em_->AuGuPenalty(stb, enb) - ext[st][a];
+    const auto base01 = dp[st][en - 1][DP_P] + em_->AuGuPenalty(stb, en1b) - ext[st][a];
+    const auto base10 = dp[st + 1][en][DP_P] + em_->AuGuPenalty(st1b, enb) - ext[st][a];
+    const auto base11 = dp[st + 1][en - 1][DP_P] + em_->AuGuPenalty(st1b, en1b) - ext[st][a];
 
     // (   )<.( * ). > Right coax backward
     if (a == EXT_RC && em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // Don't set CTDs here since they will have already been set.
-      if (base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + em_->PfUnpaired(st) +
-              em_->PfUnpaired(en) + ext[en + 1][EXT] ==
-          ext[st][EXT_RC]) {
-        exps.push_back(
-            {.idx0 = t04::DpIndex(st + 1, en - 1, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)});
-      }
+      energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + em_->PfUnpaired(st) +
+          em_->PfUnpaired(en) + ext[en + 1][EXT];
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+            .idx1 = t04::DpIndex(en + 1, -1, EXT)});
     }
 
     // (   )<   >
-    auto val = base00 + ext[en + 1][EXT];
-    if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
-        (a != EXT_GU || IsGuPair(stb, enb))) {
+    energy = base00 + ext[en + 1][EXT];
+    if (energy <= delta ||
+        ((a != EXT_WC || IsWcPair(stb, enb)) && (a != EXT_GU || IsGuPair(stb, enb)))) {
       // EXT_WC and EXT_GU will have already had their ctds set.
-      Expansion exp{.idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
+      Expansion exp{.delta = energy,
+          .idx0 = t04::DpIndex(st, en, DP_P),
+          .idx1 = t04::DpIndex(en + 1, -1, EXT)};
       if (a == EXT) exp.ctd0 = {st, CTD_UNUSED};
       exps.push_back(exp);
     }
@@ -208,68 +216,75 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int en, int a, Energ
     if (a != EXT) continue;
 
     // (   )3<   > 3'
-    if (base01 + em_->dangle3[en1b][enb][stb] + em_->PfUnpaired(en) + ext[en + 1][EXT] ==
-        ext[st][EXT]) {
+    energy = base01 + em_->dangle3[en1b][enb][stb] + em_->PfUnpaired(en) + ext[en + 1][EXT];
+    if (energy <= delta)
       exps.push_back({
+          .delta = energy,
           .idx0 = t04::DpIndex(st, en - 1, DP_P),
           .idx1 = t04::DpIndex(en + 1, -1, EXT),
           .ctd0{st, CTD_3_DANGLE},
       });
-    }
+
     // 5(   )<   > 5'
-    if (base10 + em_->dangle5[enb][stb][st1b] + em_->PfUnpaired(st) + ext[en + 1][EXT] ==
-        ext[st][EXT]) {
-      exps.push_back({.idx0 = t04::DpIndex(st + 1, en, DP_P),
+    energy = base10 + em_->dangle5[enb][stb][st1b] + em_->PfUnpaired(st) + ext[en + 1][EXT];
+    if (energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st + 1, en, DP_P),
           .idx1 = t04::DpIndex(en + 1, -1, EXT),
           .ctd0{st + 1, CTD_5_DANGLE}});
-    }
+
     // .(   ).<   > Terminal mismatch
-    if (base11 + em_->terminal[en1b][enb][stb][st1b] + em_->PfUnpaired(st) + em_->PfUnpaired(en) +
-            ext[en + 1][EXT] ==
-        ext[st][EXT]) {
-      exps.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+    energy = base11 + em_->terminal[en1b][enb][stb][st1b] + em_->PfUnpaired(st) +
+        em_->PfUnpaired(en) + ext[en + 1][EXT];
+    if (energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
           .idx1 = t04::DpIndex(en + 1, -1, EXT),
           .ctd0{st + 1, CTD_MISMATCH}});
-    }
 
     if (en < N - 1 && em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // .(   ).<(   ) > Left coax  x
-      val = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + em_->PfUnpaired(st) +
+      energy = base11 + em_->MismatchCoaxial(en1b, enb, stb, st1b) + em_->PfUnpaired(st) +
           em_->PfUnpaired(en);
-      if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
-        exps.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+      if (energy + ext[en + 1][EXT_WC] <= delta)
+        exps.push_back({.delta = energy + ext[en + 1][EXT_WC],
+            .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT_WC),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
-      }
-      if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
-        exps.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+
+      if (energy + ext[en + 1][EXT_GU] <= delta)
+        exps.push_back({.delta = energy + ext[en + 1][EXT_GU],
+            .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT_GU),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
-      }
 
       // (   )<.(   ). > Right coax forward
-      if (base00 + ext[en + 1][EXT_RC] == ext[st][EXT]) {
-        exps.push_back({.idx0 = t04::DpIndex(st, en, DP_P),
+      if (en < N - 2 && base00 + ext[en + 1][EXT_RC] <= delta)
+        exps.push_back({.delta = base00 + ext[en + 1][EXT_RC],
+            .idx0 = t04::DpIndex(st, en, DP_P),
             .idx1 = t04::DpIndex(en + 1, -1, EXT_RC),
             .ctd0{st, CTD_RC_WITH_NEXT},
             .ctd1{en + 2, CTD_RC_WITH_PREV}});
-      }
 
       // (   )(<   ) > Flush coax
-      if (base01 + em_->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
-        exps.push_back({.idx0 = t04::DpIndex(st, en - 1, DP_P),
+      energy = base01 + em_->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC];
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st, en - 1, DP_P),
             .idx1 = t04::DpIndex(en, -1, EXT_WC),
             .ctd0{st, CTD_FCOAX_WITH_NEXT},
             .ctd1{en, CTD_FCOAX_WITH_PREV}});
-      }
-      if (IsGu(enb) &&
-          base01 + em_->stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
-        exps.push_back({.idx0 = t04::DpIndex(st, en - 1, DP_P),
-            .idx1 = t04::DpIndex(en, -1, EXT_GU),
-            .ctd0{st, CTD_FCOAX_WITH_NEXT},
-            .ctd1{en, CTD_FCOAX_WITH_PREV}});
+
+      if (IsGu(enb)) {
+        energy = base01 + em_->stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU];
+        if (energy <= delta)
+          exps.push_back({.delta = energy,
+              .idx0 = t04::DpIndex(st, en - 1, DP_P),
+              .idx1 = t04::DpIndex(en, -1, EXT_GU),
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{en, CTD_FCOAX_WITH_PREV}});
       }
     }
   }
@@ -279,9 +294,7 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int en, int a, Energ
 
 std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
     int st, int en, bool is_nostack, Energy delta) const {
-  const int N = static_cast<int>(r_.size());
   const auto& dp = dp_.t04.dp;
-  const auto& ext = dp_.t04.ext;
   const auto& nostack = dp_.nostack;
   const auto& penult = dp_.penult;
   std::vector<Expansion> exps;
@@ -349,7 +362,7 @@ std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
     }
   }
 
-  if (em_->Hairpin(r, st, en) == target) {
+  if (em_->Hairpin(r_, st, en) == target) {
     exps.push_back({.pair{st, en}});
   }
 
