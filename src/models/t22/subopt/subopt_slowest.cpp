@@ -571,81 +571,81 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
 
-    bool can_right_unpaired = false;
-    bool can_right_paired = false;
-
     // (   )3<   > 3' - U, U2
-    if (base01 + em_->dangle3[pl1b][pb][stb] + em_->PfUnpaired(piv) + right_unpaired ==
-        dp[st][en][a]) {
-      Expansion exp{
-          .delta = energy, .idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
-      if (can_right_unpaired) exps.push_back(exp);
-      if (can_right_paired) {
-        exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        exps.push_back(exp);
-      }
-    }
+    energy = base01 + em_->dangle3[pl1b][pb][stb] + em_->PfUnpaired(piv);
+    if (a == DP_U && energy + right_unpaired <= delta)
+      exps.push_back({.delta = energy + right_unpaired,
+          .idx0 = t04::DpIndex(st, piv - 1, DP_P),
+          .ctd0{st, CTD_3_DANGLE}});
+
+    if (energy + right_paired <= delta)
+      exps.push_back({.delta = energy + right_paired,
+          .idx0 = t04::DpIndex(st, piv - 1, DP_P),
+          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+          .ctd0{st, CTD_3_DANGLE}});
+
     // 5(   )<   > 5' - U, U2
-    if (base10 + em_->dangle5[pb][stb][st1b] + em_->PfUnpaired(st) + right_unpaired ==
-        dp[st][en][a]) {
-      Expansion exp{
-          .delta = energy, .idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
-      if (can_right_unpaired) exps.push_back(exp);
-      if (can_right_paired) {
-        exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        exps.push_back(exp);
-      }
-    }
+    energy = base10 + em_->dangle5[pb][stb][st1b] + em_->PfUnpaired(st);
+    if (a == DP_U && energy + right_unpaired <= delta)
+      exps.push_back({.delta = energy + right_unpaired,
+          .idx0 = t04::DpIndex(st + 1, piv, DP_P),
+          .ctd0{st + 1, CTD_5_DANGLE}});
+
+    if (energy + right_paired <= delta)
+      exps.push_back({.delta = energy + right_paired,
+          .idx0 = t04::DpIndex(st + 1, piv, DP_P),
+          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+          .ctd0{st + 1, CTD_5_DANGLE}});
+
     // .(   ).<   > Terminal mismatch - U, U2
-    if (base11 + em_->terminal[pl1b][pb][stb][st1b] + em_->PfUnpaired(st) + em_->PfUnpaired(piv) +
-            right_unpaired ==
-        dp[st][en][a]) {
-      Expansion exp{.delta = energy,
+    energy =
+        base11 + em_->terminal[pl1b][pb][stb][st1b] + em_->PfUnpaired(st) + em_->PfUnpaired(piv);
+    if (a == DP_U && energy + right_unpaired <= delta)
+      exps.push_back({.delta = energy + right_unpaired,
           .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
-          .ctd0{st + 1, CTD_MISMATCH}};
-      if (can_right_unpaired) exps.push_back(exp);
-      if (can_right_paired) {
-        exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        exps.push_back(exp);
-      }
-    }
+          .ctd0{st + 1, CTD_MISMATCH}});
+
+    if (energy + right_paired <= delta)
+      exps.push_back({.delta = energy + right_paired,
+          .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
+          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+          .ctd0{st + 1, CTD_MISMATCH}});
 
     if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // .(   ).<(   ) > Left coax - U, U2
-      auto val = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b) + em_->PfUnpaired(st) +
+      energy = base11 + em_->MismatchCoaxial(pl1b, pb, stb, st1b) + em_->PfUnpaired(st) +
           em_->PfUnpaired(piv);
-      if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
+      if (energy + dp[piv + 1][en][DP_U_WC] <= delta)
         exps.push_back({
-            .delta = energy,
+            .delta = energy + dp[piv + 1][en][DP_U_WC],
             .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en, DP_U_WC),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{piv + 1, CTD_LCOAX_WITH_PREV},
         });
-      }
-      if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
+
+      if (energy + dp[piv + 1][en][DP_U_GU] <= delta)
         exps.push_back({
-            .delta = energy,
+            .delta = energy + dp[piv + 1][en][DP_U_GU],
             .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en, DP_U_GU),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{piv + 1, CTD_LCOAX_WITH_PREV},
         });
-      }
 
       // (   )<.(   ). > Right coax forward - U, U2
-      if (base00 + dp[piv + 1][en][DP_U_RC] == dp[st][en][a]) {
+      if (base00 + dp[piv + 1][en][DP_U_RC] <= delta)
         exps.push_back({
-            .delta = energy,
+            .delta = energy + dp[piv + 1][en][DP_U_RC],
             .idx0 = t04::DpIndex(st, piv, DP_P),
             .idx1 = t04::DpIndex(piv + 1, en, DP_U_RC),
             .ctd0{st, CTD_RC_WITH_NEXT},
             .ctd1{piv + 2, CTD_RC_WITH_PREV},
         });
-      }
 
       // (   )(<   ) > Flush coax - U, U2
-      if (base01 + em_->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
+      energy = base01 + em_->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];
+      if (energy <= delta)
         exps.push_back({
             .delta = energy,
             .idx0 = t04::DpIndex(st, piv - 1, DP_P),
@@ -653,16 +653,17 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
             .ctd0{st, CTD_FCOAX_WITH_NEXT},
             .ctd1{piv, CTD_FCOAX_WITH_PREV},
         });
-      }
-      if ((IsGu(pb)) &&
-          base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
-        exps.push_back({
-            .delta = energy,
-            .idx0 = t04::DpIndex(st, piv - 1, DP_P),
-            .idx1 = t04::DpIndex(piv, en, DP_U_GU),
-            .ctd0{st, CTD_FCOAX_WITH_NEXT},
-            .ctd1{piv, CTD_FCOAX_WITH_PREV},
-        });
+
+      energy = base01 + em_->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU];
+      if ((IsGu(pb))) {
+        if (energy <= delta)
+          exps.push_back({
+              .delta = energy,
+              .idx0 = t04::DpIndex(st, piv - 1, DP_P),
+              .idx1 = t04::DpIndex(piv, en, DP_U_GU),
+              .ctd0{st, CTD_FCOAX_WITH_NEXT},
+              .ctd1{piv, CTD_FCOAX_WITH_PREV},
+          });
       }
     }
   }
@@ -680,41 +681,44 @@ std::vector<Expansion> SuboptSlowest::PenultimateExpansions(
   const auto bulge_left = em_->Bulge(r_, st, en, st + 2, en - 1);
   const auto bulge_right = em_->Bulge(r_, st, en, st + 1, en - 2);
 
-  auto none = em_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + em_->PfPaired(st, en);
-  if (length == 2 &&
-      none + nostack[st + 1][en - 1] +
-              em_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] ==
-          penult[st][en][length]) {
-    exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
+  auto none = em_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + em_->PfPaired(st, en) -
+      penult[st][en][length];
+  if (length == 2) {
+    energy = none + nostack[st + 1][en - 1] +
+        em_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]];
+    if (energy <= delta)
+      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
   }
-  if (none + penult[st + 1][en - 1][length - 1] == penult[st][en][length]) {
+  energy = none + penult[st + 1][en - 1][length - 1];
+  if (energy <= delta)
     exps.push_back(
         {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
+
+  auto left = bulge_left - penult[st][en][length];
+  if (length == 2) {
+    energy = left + nostack[st + 2][en - 1] +
+        em_->penultimate_stack[r_[st]][r_[st + 2]][r_[en - 1]][r_[en]];
+    if (energy <= delta)
+      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
   }
 
-  auto left = bulge_left;
-  if (length == 2 &&
-      left + nostack[st + 2][en - 1] +
-              em_->penultimate_stack[r_[st]][r_[st + 2]][r_[en - 1]][r_[en]] ==
-          penult[st][en][length]) {
-    exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
-  }
-  if (left + penult[st + 2][en - 1][length - 1] == penult[st][en][length]) {
+  energy = left + penult[st + 2][en - 1][length - 1];
+  if (energy <= delta)
     exps.push_back(
         {.delta = energy, .idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
+
+  auto right = bulge_right - penult[st][en][length];
+  if (length == 2) {
+    energy = right + nostack[st + 1][en - 2] +
+        em_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 2]][r_[en]];
+    if (energy <= delta)
+      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
   }
 
-  auto right = bulge_right;
-  if (length == 2 &&
-      right + nostack[st + 1][en - 2] +
-              em_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 2]][r_[en]] ==
-          penult[st][en][length]) {
-    exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
-  }
-  if (right + penult[st + 1][en - 2][length - 1] == penult[st][en][length]) {
+  energy = right + penult[st + 1][en - 2][length - 1];
+  if (energy <= delta)
     exps.push_back(
         {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
-  }
 
   return exps;
 }
