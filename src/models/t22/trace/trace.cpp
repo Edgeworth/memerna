@@ -184,9 +184,12 @@ struct TracebackInternal {
       const Energy bulge_left = em.Bulge(r, st, en, st + 2, en - 1);
       const Energy bulge_right = em.Bulge(r, st, en, st + 1, en - 2);
 
+      const auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
+          em.penultimate_stack[en1b][enb][stb][st1b] + em.PfPaired(st, en);
+      const auto left = bulge_left + em.penultimate_stack[en1b][enb][stb][st2b];
+      const auto right = bulge_right + em.penultimate_stack[en2b][enb][stb][st1b];
+
       for (int length = 2; 2 * length <= max_stack; ++length) {
-        auto none = em.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
-            em.penultimate_stack[en1b][enb][stb][st1b] + em.PfPaired(st, en);
         if (length == 2 &&
             none + nostack[st + 1][en - 1] +
                     em.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
@@ -197,7 +200,6 @@ struct TracebackInternal {
           next.push_back({.idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
         }
 
-        auto left = bulge_left + em.penultimate_stack[en1b][enb][stb][st2b];
         if (length == 2 &&
             left + nostack[st + 2][en - 1] +
                     em.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
@@ -208,7 +210,6 @@ struct TracebackInternal {
           next.push_back({.idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
         }
 
-        auto right = bulge_right + em.penultimate_stack[en2b][enb][stb][st1b];
         if (length == 2 &&
             right + nostack[st + 1][en - 2] +
                     em.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
