@@ -222,10 +222,10 @@ Error FuzzInvocation::CheckSubopt() {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = true},
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
-  std::vector<std::vector<std::vector<subopt::SuboptResult>>> mrna;
-  for (const auto& em : ems_) {
-    for (auto cfg : cfgs) {
-      mrna.emplace_back();
+  std::vector<std::pair<subopt::SuboptCfg, std::vector<std::vector<subopt::SuboptResult>>>> mrna;
+  for (auto cfg : cfgs) {
+    mrna.push_back({cfg, {}});
+    for (const auto& em : ems_) {
       for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
         if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
@@ -234,25 +234,26 @@ Error FuzzInvocation::CheckSubopt() {
         // Sort them to make the sorted=false configurations comparable between
         // algoritms.
         std::sort(res.begin(), res.end());
-        mrna.back().push_back(std::move(res));
+        mrna.back().second.push_back(std::move(res));
       }
     }
   }
 
-  for (int cfg = 0; cfg < static_cast<int>(mrna.size()); ++cfg) {
-    const auto& mrna_cfg = mrna[cfg];
-    auto desc = fmt::format("subopt delta: {} strucs: {} sorted: {}", cfgs[cfg].delta,
-        cfgs[cfg].strucs, cfgs[cfg].sorted);
-    for (int alg = 0; alg < static_cast<int>(mrna_cfg.size()); ++alg) {
+  for (int i = 0; i < static_cast<int>(mrna.size()); ++i) {
+    const auto& cfg = mrna[i].first;
+    const auto& results = mrna[i].second;
+    auto desc = fmt::format(
+        "subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta, cfg.strucs, cfg.sorted, i);
+    for (int alg = 0; alg < static_cast<int>(results.size()); ++alg) {
       Register(fmt::format("alg {}, cfg: {}", alg, desc),
-          CheckSuboptResult(mrna_cfg[alg], /*has_ctds=*/true));
+          CheckSuboptResult(results[alg], /*has_ctds=*/true));
       Register(fmt::format("alg {} vs alg 0, cfg: {}", alg, desc),
-          CheckSuboptResultPair(cfgs[cfg], mrna_cfg[0], mrna_cfg[alg]));
+          CheckSuboptResultPair(cfg, results[0], results[alg]));
     }
   }
 
   // Put regular configuration (delta-sorted) into common result:
-  subopt_ = std::move(mrna.front().front());
+  subopt_ = std::move(mrna.front().second.front());
 
 #ifdef USE_RNASTRUCTURE
   if (cfg_.subopt_rnastructure) Register("rnastructure:", CheckSuboptRNAstructure(cfgs[0]));
