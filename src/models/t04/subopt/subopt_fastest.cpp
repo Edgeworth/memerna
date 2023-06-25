@@ -83,8 +83,8 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
     // Also remove from unexpanded if the previous child added stuff to it.
     if (s.child_idx != 0) {
       const auto& pexp = exps[s.child_idx - 1];
-      if (pexp.ctd0.IsValid()) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
-      if (pexp.ctd1.IsValid()) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
+      pexp.ctd0.MaybeRemove(res_.tb.ctd);
+      pexp.ctd1.MaybeRemove(res_.tb.ctd);
       if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
       energy -= pexp.delta;
     }

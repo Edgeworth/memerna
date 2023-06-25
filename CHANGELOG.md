@@ -1,6 +1,11 @@
 
 # 2023/06
 
+Added suboptimal folding for t22:
+- Uses same Expansion struct as for randomised traceback
+- Pairs are handled explicitly in the State rather than implicitly like in t04
+  by looking at the DP tables (for DP_P)
+
 Added SHAPE support for t22:
 - add pf_paired and pf_unpaired vectors to the energy model - these are
   pseudofree energy penalties for each nucleotide

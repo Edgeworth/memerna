@@ -80,8 +80,19 @@ struct Pair {
     s[en] = st;
   }
 
+  constexpr void Remove(Secondary& s) const {
+    assert(st >= 0);
+    assert(en >= 0);
+    s[st] = -1;
+    s[en] = -1;
+  }
+
   constexpr void MaybeApply(Secondary& s) const {
     if (IsValid()) Apply(s);
+  }
+
+  constexpr void MaybeRemove(Secondary& s) const {
+    if (IsValid()) Remove(s);
   }
 };
 
