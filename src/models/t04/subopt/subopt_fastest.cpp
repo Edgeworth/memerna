@@ -338,7 +338,7 @@ std::vector<Expansion> SuboptFastest::GenerateExpansions(
       const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);
+      const auto outer_coax = em_->MismatchCoaxial(stb, st1b, en1b, enb);
       energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
           dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
