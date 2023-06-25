@@ -97,7 +97,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
     }
 
     const auto& exp = exps[s.child_idx++];
-    DfsState ns = {0, exp.idx0, false};
+    DfsState ns = {.child_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
 
     // Update global state with this expansion. We can do the others after since
     // they are guaranteed to be empty if this is a terminal.
@@ -202,16 +202,22 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta)
             .idx1 = t04::DpIndex(en + 1, -1, EXT)});
     }
 
+    if (a == EXT_RC) continue;
+
     // (   )<   >
     energy = base00 + ext[en + 1][EXT];
-    if (energy <= delta ||
-        ((a != EXT_WC || IsWcPair(stb, enb)) && (a != EXT_GU || IsGuPair(stb, enb)))) {
+    if (energy <= delta) {
       // EXT_WC and EXT_GU will have already had their ctds set.
       Expansion exp{.delta = energy,
           .idx0 = t04::DpIndex(st, en, DP_P),
           .idx1 = t04::DpIndex(en + 1, -1, EXT)};
-      if (a == EXT) exp.ctd0 = {st, CTD_UNUSED};
-      exps.push_back(exp);
+      if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
+        exps.push_back(exp);
+
+      if (a == EXT) {
+        exp.ctd0 = {st, CTD_UNUSED};
+        exps.push_back(exp);
+      }
     }
 
     // Only look at EXT from here on.
@@ -553,21 +559,40 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
       }
     }
 
+    // DP_U_RC is only the above case.
+    if (a == DP_U_RC) continue;
+
     // (   )<   > - U, U2, U_WC?, U_GU?
-    if ((a != DP_U_WC || IsWcPair(stb, pb)) && (a != DP_U_GU || IsGuPair(stb, pb))) {
-      // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
-      // were already set.
-      Expansion exp{.idx0 = t04::DpIndex(st, piv, DP_P)};
-      if (a != DP_U_WC && a != DP_U_GU) exp.ctd0 = {st, CTD_UNUSED};
+    if (a == DP_U) {
+      energy = base00 + right_unpaired;
+      if (energy <= delta)
+        exps.push_back(
+            {.delta = energy, .idx0 = t04::DpIndex(st, piv, DP_P), .ctd0 = {st, CTD_UNUSED}});
 
-      exp.delta = base00 + right_unpaired;
-      if (a != DP_U2 && exp.delta <= delta) exps.push_back(exp);
+      energy = base00 + right_paired;
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st, piv, DP_P),
+            .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+            .ctd0 = {st, CTD_UNUSED}});
+    }
 
-      exp.delta = base00 + right_paired;
-      if (exp.delta <= delta) {
-        exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-        exps.push_back(exp);
-      }
+    energy = base00 + right_paired;
+    if (a == DP_U2 && energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st, piv, DP_P),
+          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+          .ctd0 = {st, CTD_UNUSED}});
+
+    if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
+      energy = base00 + right_unpaired;
+      if (energy <= delta) exps.push_back({.delta = energy, .idx0 = t04::DpIndex(st, piv, DP_P)});
+
+      energy = base00 + right_paired;
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st, piv, DP_P),
+            .idx1 = t04::DpIndex(piv + 1, en, DP_U)});
     }
 
     // The rest of the cases are for U and U2.

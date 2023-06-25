@@ -90,9 +90,10 @@ struct TracebackInternal {
         }
       }
 
+      if (a == EXT_RC) continue;
+
       // (   )<   >
-      auto val = base00 + ext[en + 1][EXT];
-      if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
+      if (base00 + ext[en + 1][EXT] == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
           (a != EXT_GU || IsGuPair(stb, enb))) {
         // EXT_WC and EXT_GU will have already had their ctds set.
         Expansion exp{.idx0 = t04::DpIndex(st, en, DP_P), .idx1 = t04::DpIndex(en + 1, -1, EXT)};
@@ -130,7 +131,7 @@ struct TracebackInternal {
 
       if (en < N - 1 && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // .(   ).<(   ) > Left coax  x
-        val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + em.PfUnpaired(st) +
+        auto val = base11 + em.MismatchCoaxial(en1b, enb, stb, st1b) + em.PfUnpaired(st) +
             em.PfUnpaired(en);
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
@@ -414,6 +415,9 @@ struct TracebackInternal {
           }
         }
       }
+
+      // DP_U_RC is only the above case.
+      if (a == DP_U_RC) continue;
 
       // (   )<   > - U, U2, U_WC?, U_GU?
       if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&

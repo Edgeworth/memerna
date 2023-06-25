@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
-#define MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
+#ifndef MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
+#define MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
 
 #include <algorithm>
 #include <cassert>
@@ -59,6 +59,7 @@ class SuboptSlowest {
       [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
       assert(res);
     }
+
     return cache_.Get();
   }
 
@@ -79,4 +80,4 @@ class SuboptSlowest {
 
 }  // namespace mrna::md::t22
 
-#endif  // MODELS_T22_SUBOPT_SUBOPT_FASTEST_H_
+#endif  // MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
