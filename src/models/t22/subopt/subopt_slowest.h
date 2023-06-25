@@ -64,6 +64,14 @@ class SuboptSlowest {
 
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
+
+  [[nodiscard]] std::vector<Expansion> ComputeExt(int st, int en, int a);
+
+  [[nodiscard]] std::vector<Expansion> ComputePairedOrNoStack(int st, int en, bool is_nostack);
+
+  [[nodiscard]] std::vector<Expansion> ComputeUnpaired(int st, int en, int a);
+
+  [[nodiscard]] std::vector<Expansion> ComputePenultimate(int st, int en, int length);
 };
 
 }  // namespace mrna::md::t22

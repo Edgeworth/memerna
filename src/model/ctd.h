@@ -112,8 +112,17 @@ struct IndexCtd {
     ctds[idx] = ctd;
   }
 
+  constexpr void Remove(Ctds& ctds) const {
+    assert(idx >= 0);
+    ctds[idx] = CTD_NA;
+  }
+
   constexpr void MaybeApply(Ctds& ctds) const {
     if (IsValid()) Apply(ctds);
+  }
+
+  constexpr void MaybeRemove(Ctds& ctds) const {
+    if (IsValid()) Remove(ctds);
   }
 
   Index idx{-1};
