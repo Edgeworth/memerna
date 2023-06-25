@@ -71,8 +71,10 @@ TraceResult Traceback(
             q.emplace(en + 1, -1, EXT);
             goto loopend;
           }
-          continue;
         }
+
+        // EXT_RC is only for the above case.
+        if (a == EXT_RC) continue;
 
         // (   )<   >
         auto val = base00 + ext[en + 1][EXT];
@@ -327,8 +329,10 @@ TraceResult Traceback(
             if (right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
             goto loopend;
           }
-          continue;
         }
+
+        // DP_U_RC is only the above case.
+        if (a == DP_U_RC) continue;
 
         // (   )<   > - U, U2, U_WC?, U_GU?
         if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&

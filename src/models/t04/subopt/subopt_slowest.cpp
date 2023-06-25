@@ -104,6 +104,9 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P});
         }
 
+        // EXT_RC is only for the above case.
+        if (a == EXT_RC) continue;
+
         // Cases for EXT, EXT_WC, EXT_GU.
         // (   )<   >
         // If we are at EXT then this is unused.
@@ -283,8 +286,11 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
           // Our ctds will have already been set by now.
           Expand(energy, {st + 1, piv - 1, DP_P});
           Expand(energy + dp_.dp[piv + 1][en][DP_U], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U});
-          continue;
         }
+
+        // DP_U_RC is only the above case.
+        if (a == DP_U_RC) continue;
+
         // From here on, a must be U, U2, U_WC, or U_GU.
 
         // (   )<   > - U, U2, U_WC?, U_GU?
@@ -294,19 +300,19 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
           Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U},
               {st, CTD_UNUSED});
         }
+
         if (a == DP_U2)
           Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U},
               {st, CTD_UNUSED});
-        if (a == DP_U_WC || a == DP_U_GU) {
-          // Make sure we don't form any branches that are not the right type of pair.
-          if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
-            Expand(energy, {st, piv, DP_P});
-            Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U});
-          }
-          continue;
+
+        // Make sure we don't form any branches that are not the right type of pair.
+        if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
+          Expand(energy, {st, piv, DP_P});
+          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U});
         }
-        // From here on, a must be U or U2.
-        assert(a == DP_U || a == DP_U2);
+
+        // The rest of the cases are for U and U2.
+        if (a != DP_U && a != DP_U2) continue;
 
         // (   )3<   > 3' - U, U2
         energy = base_energy + base01 + em_->dangle3[pl1b][pb][stb];
