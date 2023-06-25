@@ -69,18 +69,15 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
 
     if (s.child_idx != 0) {
       const auto& pexp = exps[s.child_idx - 1];
-      if (pexp.ctd0.idx != -1) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
-      if (pexp.ctd1.idx != -1) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
-      if (pexp.unexpanded.st != -1) unexpanded_.pop_back();
+      if (pexp.ctd0.IsValid()) res_.tb.ctd[pexp.ctd0.idx] = CTD_NA;
+      if (pexp.ctd1.IsValid()) res_.tb.ctd[pexp.ctd1.idx] = CTD_NA;
+      if (pexp.idx1.has_value()) unexpanded_.pop_back();
       energy -= pexp.delta;
     }
 
-    // Update the next best seen variable
     if (s.child_idx != static_cast<int>(exps.size()) && exps[s.child_idx].delta + energy > delta)
       next_seen = std::min(next_seen, exps[s.child_idx].delta + energy);
 
-    // If we ran out of expansions, or the next expansion would take us over the delta limit
-    // we are done with this node.
     if (s.child_idx == static_cast<int>(exps.size()) || exps[s.child_idx].delta + energy > delta) {
       // Finished looking at this node, so undo this node's modifications to the global state.
       if (to_expand.en != -1 && to_expand.a == DP_P)
@@ -96,7 +93,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
     if (exp.to_expand.st == -1) {
       // Can't have an unexpanded without a to_expand. Also can't set ctds or affect energy.
       assert(exp.unexpanded.st == -1);
-      assert(exp.ctd0.idx == -1 && exp.ctd1.idx == -1);
+      assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
       // Use an unexpanded now, if one exists.
       if (unexpanded_.empty()) {
         // At a terminal state.
@@ -117,8 +114,8 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
 
     } else {
       // Apply child's modifications to the global state.
-      if (exp.ctd0.idx != -1) res_.tb.ctd[exp.ctd0.idx] = exp.ctd0.ctd;
-      if (exp.ctd1.idx != -1) res_.tb.ctd[exp.ctd1.idx] = exp.ctd1.ctd;
+      exp.ctd0.MaybeApply(res_.tb.ctd);
+      exp.ctd1.MaybeApply(res_.tb.ctd);
       if (exp.unexpanded.st != -1) unexpanded_.push_back(exp.unexpanded);
     }
     if (ns.to_expand.en != -1 && ns.to_expand.a == DP_P) {
@@ -132,7 +129,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expansion> SuboptFastest::GenerateExpansions(
+std::vector<Expansion> SuboptSlowest::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;
