@@ -119,7 +119,8 @@ class BuildCfg:
     def build(self, targets: list[str], build: bool = True, regenerate: bool = False) -> None:
         path = self.build_path()
         if regenerate:
-            shutil.rmtree(path)
+            shutil.rmtree(path, ignore_errors=True)
+            assert not path.exists()
         if not path.exists():
             self._generate_cmake()
         if build:
