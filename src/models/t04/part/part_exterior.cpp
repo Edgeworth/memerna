@@ -13,10 +13,12 @@ namespace mrna::md::t04 {
 void PartitionExterior(const Primary& r, const Model& em, PartState& state) {
   const int N = static_cast<int>(r.size());
 
-  verify(em.cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
-      "fully disallowing lonely pairs is not supported in this energy model");
-  verify(
-      em.cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+  static thread_local erg::EnergyCfgSupport support{
+      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
+      .bulge_states{false},  // Bulge states with partition function doesn't make sense.
+      .ctd{erg::EnergyCfg::Ctd::ALL},
+  };
+  support.VerifySupported(__func__, em.cfg);
 
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);
