@@ -52,6 +52,14 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
   // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return ZERO_E;
 
+  static thread_local const erg::EnergyCfgSupport support{
+      .lonely_pairs{erg::EnergyCfg::LonelyPairs::OFF, erg::EnergyCfg::LonelyPairs::HEURISTIC,
+          erg::EnergyCfg::LonelyPairs::ON},
+      .bulge_states{false, true},
+      .ctd{erg::EnergyCfg::Ctd::ALL},
+  };
+  support.VerifySupported(__func__, em.cfg);
+
   // cache[used][i]
   std::vector<Energy> cache[2] = {
       std::vector<Energy>(N + 1, MAX_E), std::vector<Energy>(N + 1, MAX_E)};

@@ -32,7 +32,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(__func__, em->cfg);
 
@@ -65,14 +65,18 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
       else
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
 
-      // (   )3<   > 3'
-      e = std::min(e, base01 + em->dangle3[en1b][enb][stb] + em->PfUnpaired(en) + ext[en + 1][EXT]);
-      // 5(   )<   > 5'
-      e = std::min(e, base10 + em->dangle5[enb][stb][st1b] + em->PfUnpaired(st) + ext[en + 1][EXT]);
-      // .(   ).<   > Terminal mismatch
-      e = std::min(e,
-          base11 + em->terminal[en1b][enb][stb][st1b] + em->PfUnpaired(st) + em->PfUnpaired(en) +
-              ext[en + 1][EXT]);
+      if (em->cfg.ctd == erg::EnergyCfg::Ctd::ALL || em->cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+        // (   )3<   > 3'
+        e = std::min(
+            e, base01 + em->dangle3[en1b][enb][stb] + em->PfUnpaired(en) + ext[en + 1][EXT]);
+        // 5(   )<   > 5'
+        e = std::min(
+            e, base10 + em->dangle5[enb][stb][st1b] + em->PfUnpaired(st) + ext[en + 1][EXT]);
+        // .(   ).<   > Terminal mismatch
+        e = std::min(e,
+            base11 + em->terminal[en1b][enb][stb][st1b] + em->PfUnpaired(st) + em->PfUnpaired(en) +
+                ext[en + 1][EXT]);
+      }
 
       if (em->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
         // .(   ).<(   ) > Left coax
