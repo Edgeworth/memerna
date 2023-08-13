@@ -36,6 +36,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   support.VerifySupported(__func__, em_->cfg);
 
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
+  auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
   // just one of them. Fully expanding one of them means there will be no duplicates in the tree.
@@ -47,6 +48,12 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
+    if (cfg_.time_secs >= 0.0) {
+      auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+          std::chrono::steady_clock::now() - start_time);
+      if (elapsed.count() >= cfg_.time_secs) break;
+    }
+
     node = std::move(q_.extract(q_.begin()).value());
     // Finished state.
     if (node.not_yet_expanded.empty()) {

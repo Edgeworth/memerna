@@ -145,6 +145,7 @@ afl_fuzz_cfg_options = cloup.option_group(
         default=10000,
         help="Maximum number of structures to generate for subopt",
     ),
+    # no subopt time here because it will generate different results between algos
     cloup.option(
         "--subopt-delta",
         default=0.6,

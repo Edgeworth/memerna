@@ -27,6 +27,8 @@ class MemeRna(RnaPackage):
             args += ["--subopt-delta", str(cfg.delta)]
         if cfg.strucs:
             args += ["--subopt-strucs", str(cfg.strucs)]
+        if cfg.time_secs:
+            args += ["--subopt-time-secs", str(cfg.time_secs)]
         if cfg.sorted:
             args += ["--subopt-sorted"]
         else:

@@ -14,6 +14,10 @@ inline const auto OPT_SUBOPT_DELTA =
     Opt(Opt::ARG).LongName("subopt-delta").Help("maximum energy delta from minimum");
 inline const auto OPT_SUBOPT_MAX =
     Opt(Opt::ARG).LongName("subopt-strucs").Help("maximum number of reported structures");
+inline const auto OPT_SUBOPT_TIME_SECS =
+    Opt(Opt::ARG)
+        .LongName("subopt-time-secs")
+        .Help("maximum time in seconds to run suboptimal folding for");
 inline const auto OPT_SUBOPT_SORTED = Opt(Opt::FLAG)
                                           .LongName("subopt-sorted")
                                           .Default(true)
@@ -26,6 +30,7 @@ struct SuboptCfg {
 
   Energy delta = CAP_E;  // maximum energy delta from minimum
   int strucs = MAX_STRUCTURES;  // maximum number of structures to report
+  float time_secs = -1.0;  // maximum time in seconds to run suboptimal folding for
   bool sorted = true;  // if the structures should be sorted
 
   static SuboptCfg FromArgParse(const ArgParse& args);

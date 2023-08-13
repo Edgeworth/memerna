@@ -52,6 +52,10 @@ class ViennaRna(RnaPackage):
             raise NotImplementedError(
                 "ViennaRNA does not support reporting a maximum number of suboptimal structures",
             )
+        if cfg.time_secs:
+            raise NotImplementedError(
+                "ViennaRNA does not support reporting a maximum running time",
+            )
         if cfg.sorted:
             args += ["--sorted"]
         return args
