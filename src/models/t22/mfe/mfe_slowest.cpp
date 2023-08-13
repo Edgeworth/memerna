@@ -48,7 +48,7 @@ struct MfeInternal {
     static thread_local const erg::EnergyCfgSupport support{
         .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
         .bulge_states{false, true},
-        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX},
+        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
     };
     support.VerifySupported(__func__, em.cfg);
     em.VerifyValidFor(r);
@@ -146,18 +146,22 @@ struct MfeInternal {
 
           // (<   ><   >)
           nostack_min = std::min(nostack_min, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
-          // (3<   ><   >) 3'
-          nostack_min = std::min(nostack_min,
-              base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] +
-                  em.PfUnpaired(st + 1));
-          // (<   ><   >5) 5'
-          nostack_min = std::min(nostack_min,
-              base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] +
-                  em.PfUnpaired(en - 1));
-          // (.<   ><   >.) Terminal mismatch
-          nostack_min = std::min(nostack_min,
-              base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] +
-                  em.PfUnpaired(st + 1) + em.PfUnpaired(en - 1));
+
+          if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL ||
+              em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+            // (3<   ><   >) 3'
+            nostack_min = std::min(nostack_min,
+                base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] +
+                    em.PfUnpaired(st + 1));
+            // (<   ><   >5) 5'
+            nostack_min = std::min(nostack_min,
+                base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] +
+                    em.PfUnpaired(en - 1));
+            // (.<   ><   >.) Terminal mismatch
+            nostack_min = std::min(nostack_min,
+                base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] +
+                    em.PfUnpaired(st + 1) + em.PfUnpaired(en - 1));
+          }
 
           if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
             for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -247,23 +251,27 @@ struct MfeInternal {
           else
             wc_min = std::min(wc_min, val);
 
-          // (   )3<   > 3' - U
-          u_min = std::min(
-              u_min, base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired);
-          u2_min = std::min(u2_min,
-              base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + dp[piv + 1][en][DP_U]);
-          // 5(   )<   > 5' - U
-          u_min = std::min(
-              u_min, base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired);
-          u2_min = std::min(u2_min,
-              base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + dp[piv + 1][en][DP_U]);
-          // .(   ).<   > Terminal mismatch - U
-          u_min = std::min(u_min,
-              base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
-                  right_unpaired);
-          u2_min = std::min(u2_min,
-              base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
-                  dp[piv + 1][en][DP_U]);
+          if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL ||
+              em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+            // (   )3<   > 3' - U
+            u_min = std::min(
+                u_min, base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired);
+            u2_min = std::min(u2_min,
+                base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + dp[piv + 1][en][DP_U]);
+            // 5(   )<   > 5' - U
+            u_min = std::min(
+                u_min, base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired);
+            u2_min = std::min(u2_min,
+                base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + dp[piv + 1][en][DP_U]);
+            // .(   ).<   > Terminal mismatch - U
+            u_min = std::min(u_min,
+                base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
+                    right_unpaired);
+            u2_min = std::min(u2_min,
+                base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
+                    dp[piv + 1][en][DP_U]);
+          }
+
           if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
             // .(   ).<(   ) > Left coax - U
             val = base11 + em.MismatchCoaxial(pl1b, pb, stb, st1b) + em.PfUnpaired(st) +

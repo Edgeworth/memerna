@@ -43,7 +43,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(__func__, em_->cfg);
 
@@ -225,32 +225,34 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta)
     // Only look at EXT from here on.
     if (a != EXT) continue;
 
-    // (   )3<   > 3'
-    energy = base01 + em_->dangle3[en1b][enb][stb] + em_->PfUnpaired(en) + ext[en + 1][EXT];
-    if (energy <= delta)
-      exps.push_back({
-          .delta = energy,
-          .idx0 = t04::DpIndex(st, en - 1, DP_P),
-          .idx1 = t04::DpIndex(en + 1, -1, EXT),
-          .ctd0{st, CTD_3_DANGLE},
-      });
+    if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL || em_->cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+      // (   )3<   > 3'
+      energy = base01 + em_->dangle3[en1b][enb][stb] + em_->PfUnpaired(en) + ext[en + 1][EXT];
+      if (energy <= delta)
+        exps.push_back({
+            .delta = energy,
+            .idx0 = t04::DpIndex(st, en - 1, DP_P),
+            .idx1 = t04::DpIndex(en + 1, -1, EXT),
+            .ctd0{st, CTD_3_DANGLE},
+        });
 
-    // 5(   )<   > 5'
-    energy = base10 + em_->dangle5[enb][stb][st1b] + em_->PfUnpaired(st) + ext[en + 1][EXT];
-    if (energy <= delta)
-      exps.push_back({.delta = energy,
-          .idx0 = t04::DpIndex(st + 1, en, DP_P),
-          .idx1 = t04::DpIndex(en + 1, -1, EXT),
-          .ctd0{st + 1, CTD_5_DANGLE}});
+      // 5(   )<   > 5'
+      energy = base10 + em_->dangle5[enb][stb][st1b] + em_->PfUnpaired(st) + ext[en + 1][EXT];
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st + 1, en, DP_P),
+            .idx1 = t04::DpIndex(en + 1, -1, EXT),
+            .ctd0{st + 1, CTD_5_DANGLE}});
 
-    // .(   ).<   > Terminal mismatch
-    energy = base11 + em_->terminal[en1b][enb][stb][st1b] + em_->PfUnpaired(st) +
-        em_->PfUnpaired(en) + ext[en + 1][EXT];
-    if (energy <= delta)
-      exps.push_back({.delta = energy,
-          .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
-          .idx1 = t04::DpIndex(en + 1, -1, EXT),
-          .ctd0{st + 1, CTD_MISMATCH}});
+      // .(   ).<   > Terminal mismatch
+      energy = base11 + em_->terminal[en1b][enb][stb][st1b] + em_->PfUnpaired(st) +
+          em_->PfUnpaired(en) + ext[en + 1][EXT];
+      if (energy <= delta)
+        exps.push_back({.delta = energy,
+            .idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+            .idx1 = t04::DpIndex(en + 1, -1, EXT),
+            .ctd0{st + 1, CTD_MISMATCH}});
+    }
 
     if (en < N - 1 && em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // .(   ).<(   ) > Left coax
@@ -396,32 +398,34 @@ std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
         .pair{st, en},
     });
 
-  // (3<   ><   >) 3'
-  energy = base_branch_cost + dp[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb] +
-      em_->PfUnpaired(st + 1);
-  if (energy <= delta)
-    exps.push_back({.delta = energy,
-        .idx0 = t04::DpIndex(st + 2, en - 1, DP_U2),
-        .ctd0{en, CTD_3_DANGLE},
-        .pair{st, en}});
+  if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL || em_->cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+    // (3<   ><   >) 3'
+    energy = base_branch_cost + dp[st + 2][en - 1][DP_U2] + em_->dangle3[stb][st1b][enb] +
+        em_->PfUnpaired(st + 1);
+    if (energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st + 2, en - 1, DP_U2),
+          .ctd0{en, CTD_3_DANGLE},
+          .pair{st, en}});
 
-  // (<   ><   >5) 5'
-  energy = base_branch_cost + dp[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb] +
-      em_->PfUnpaired(en - 1);
-  if (energy <= delta)
-    exps.push_back({.delta = energy,
-        .idx0 = t04::DpIndex(st + 1, en - 2, DP_U2),
-        .ctd0{en, CTD_5_DANGLE},
-        .pair{st, en}});
+    // (<   ><   >5) 5'
+    energy = base_branch_cost + dp[st + 1][en - 2][DP_U2] + em_->dangle5[stb][en1b][enb] +
+        em_->PfUnpaired(en - 1);
+    if (energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st + 1, en - 2, DP_U2),
+          .ctd0{en, CTD_5_DANGLE},
+          .pair{st, en}});
 
-  // (.<   ><   >.) Terminal mismatch
-  energy = base_branch_cost + dp[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb] +
-      em_->PfUnpaired(st + 1) + em_->PfUnpaired(en - 1);
-  if (energy <= delta)
-    exps.push_back({.delta = energy,
-        .idx0 = t04::DpIndex(st + 2, en - 2, DP_U2),
-        .ctd0{en, CTD_MISMATCH},
-        .pair{st, en}});
+    // (.<   ><   >.) Terminal mismatch
+    energy = base_branch_cost + dp[st + 2][en - 2][DP_U2] + em_->terminal[stb][st1b][en1b][enb] +
+        em_->PfUnpaired(st + 1) + em_->PfUnpaired(en - 1);
+    if (energy <= delta)
+      exps.push_back({.delta = energy,
+          .idx0 = t04::DpIndex(st + 2, en - 2, DP_U2),
+          .ctd0{en, CTD_MISMATCH},
+          .pair{st, en}});
+  }
 
   if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -600,45 +604,47 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
 
-    // (   )3<   > 3' - U, U2
-    energy = base01 + em_->dangle3[pl1b][pb][stb] + em_->PfUnpaired(piv);
-    if (a == DP_U && energy + right_unpaired <= delta)
-      exps.push_back({.delta = energy + right_unpaired,
-          .idx0 = t04::DpIndex(st, piv - 1, DP_P),
-          .ctd0{st, CTD_3_DANGLE}});
+    if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL || em_->cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+      // (   )3<   > 3' - U, U2
+      energy = base01 + em_->dangle3[pl1b][pb][stb] + em_->PfUnpaired(piv);
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired,
+            .idx0 = t04::DpIndex(st, piv - 1, DP_P),
+            .ctd0{st, CTD_3_DANGLE}});
 
-    if (energy + right_paired <= delta)
-      exps.push_back({.delta = energy + right_paired,
-          .idx0 = t04::DpIndex(st, piv - 1, DP_P),
-          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
-          .ctd0{st, CTD_3_DANGLE}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
+            .idx0 = t04::DpIndex(st, piv - 1, DP_P),
+            .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+            .ctd0{st, CTD_3_DANGLE}});
 
-    // 5(   )<   > 5' - U, U2
-    energy = base10 + em_->dangle5[pb][stb][st1b] + em_->PfUnpaired(st);
-    if (a == DP_U && energy + right_unpaired <= delta)
-      exps.push_back({.delta = energy + right_unpaired,
-          .idx0 = t04::DpIndex(st + 1, piv, DP_P),
-          .ctd0{st + 1, CTD_5_DANGLE}});
+      // 5(   )<   > 5' - U, U2
+      energy = base10 + em_->dangle5[pb][stb][st1b] + em_->PfUnpaired(st);
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired,
+            .idx0 = t04::DpIndex(st + 1, piv, DP_P),
+            .ctd0{st + 1, CTD_5_DANGLE}});
 
-    if (energy + right_paired <= delta)
-      exps.push_back({.delta = energy + right_paired,
-          .idx0 = t04::DpIndex(st + 1, piv, DP_P),
-          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
-          .ctd0{st + 1, CTD_5_DANGLE}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
+            .idx0 = t04::DpIndex(st + 1, piv, DP_P),
+            .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+            .ctd0{st + 1, CTD_5_DANGLE}});
 
-    // .(   ).<   > Terminal mismatch - U, U2
-    energy =
-        base11 + em_->terminal[pl1b][pb][stb][st1b] + em_->PfUnpaired(st) + em_->PfUnpaired(piv);
-    if (a == DP_U && energy + right_unpaired <= delta)
-      exps.push_back({.delta = energy + right_unpaired,
-          .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
-          .ctd0{st + 1, CTD_MISMATCH}});
+      // .(   ).<   > Terminal mismatch - U, U2
+      energy =
+          base11 + em_->terminal[pl1b][pb][stb][st1b] + em_->PfUnpaired(st) + em_->PfUnpaired(piv);
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired,
+            .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
+            .ctd0{st + 1, CTD_MISMATCH}});
 
-    if (energy + right_paired <= delta)
-      exps.push_back({.delta = energy + right_paired,
-          .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
-          .idx1 = t04::DpIndex(piv + 1, en, DP_U),
-          .ctd0{st + 1, CTD_MISMATCH}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
+            .idx0 = t04::DpIndex(st + 1, piv - 1, DP_P),
+            .idx1 = t04::DpIndex(piv + 1, en, DP_U),
+            .ctd0{st + 1, CTD_MISMATCH}});
+    }
 
     if (em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
       // .(   ).<(   ) > Left coax - U, U2

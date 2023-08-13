@@ -2,7 +2,6 @@
 
 ## TODO
 
-- implement no-ctds
 - implement cfg verification
 - implement time based subopt generation
 - use CPM to handle libraries

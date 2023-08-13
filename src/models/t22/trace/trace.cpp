@@ -104,29 +104,31 @@ struct TracebackInternal {
       // Only look at EXT from here on.
       if (a != EXT) continue;
 
-      // (   )3<   > 3'
-      if (base01 + em.dangle3[en1b][enb][stb] + em.PfUnpaired(en) + ext[en + 1][EXT] ==
-          ext[st][EXT]) {
-        next.push_back({
-            .idx0 = t04::DpIndex(st, en - 1, DP_P),
-            .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0{st, CTD_3_DANGLE},
-        });
-      }
-      // 5(   )<   > 5'
-      if (base10 + em.dangle5[enb][stb][st1b] + em.PfUnpaired(st) + ext[en + 1][EXT] ==
-          ext[st][EXT]) {
-        next.push_back({.idx0 = t04::DpIndex(st + 1, en, DP_P),
-            .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0{st + 1, CTD_5_DANGLE}});
-      }
-      // .(   ).<   > Terminal mismatch
-      if (base11 + em.terminal[en1b][enb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(en) +
-              ext[en + 1][EXT] ==
-          ext[st][EXT]) {
-        next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
-            .idx1 = t04::DpIndex(en + 1, -1, EXT),
-            .ctd0{st + 1, CTD_MISMATCH}});
+      if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+        // (   )3<   > 3'
+        if (base01 + em.dangle3[en1b][enb][stb] + em.PfUnpaired(en) + ext[en + 1][EXT] ==
+            ext[st][EXT]) {
+          next.push_back({
+              .idx0 = t04::DpIndex(st, en - 1, DP_P),
+              .idx1 = t04::DpIndex(en + 1, -1, EXT),
+              .ctd0{st, CTD_3_DANGLE},
+          });
+        }
+        // 5(   )<   > 5'
+        if (base10 + em.dangle5[enb][stb][st1b] + em.PfUnpaired(st) + ext[en + 1][EXT] ==
+            ext[st][EXT]) {
+          next.push_back({.idx0 = t04::DpIndex(st + 1, en, DP_P),
+              .idx1 = t04::DpIndex(en + 1, -1, EXT),
+              .ctd0{st + 1, CTD_5_DANGLE}});
+        }
+        // .(   ).<   > Terminal mismatch
+        if (base11 + em.terminal[en1b][enb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(en) +
+                ext[en + 1][EXT] ==
+            ext[st][EXT]) {
+          next.push_back({.idx0 = t04::DpIndex(st + 1, en - 1, DP_P),
+              .idx1 = t04::DpIndex(en + 1, -1, EXT),
+              .ctd0{st + 1, CTD_MISMATCH}});
+        }
       }
 
       if (en < N - 1 && em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
@@ -251,26 +253,29 @@ struct TracebackInternal {
           .pair{st, en},
       });
     }
-    // (3<   ><   >) 3'
-    if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] +
-            em.PfUnpaired(st + 1) ==
-        target) {
-      next.push_back(
-          {.idx0 = t04::DpIndex(st + 2, en - 1, DP_U2), .ctd0{en, CTD_3_DANGLE}, .pair{st, en}});
-    }
-    // (<   ><   >5) 5'
-    if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] +
-            em.PfUnpaired(en - 1) ==
-        target) {
-      next.push_back(
-          {.idx0 = t04::DpIndex(st + 1, en - 2, DP_U2), .ctd0{en, CTD_5_DANGLE}, .pair{st, en}});
-    }
-    // (.<   ><   >.) Terminal mismatch
-    if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] +
-            em.PfUnpaired(st + 1) + em.PfUnpaired(en - 1) ==
-        target) {
-      next.push_back(
-          {.idx0 = t04::DpIndex(st + 2, en - 2, DP_U2), .ctd0{en, CTD_MISMATCH}, .pair{st, en}});
+
+    if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+      // (3<   ><   >) 3'
+      if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em.dangle3[stb][st1b][enb] +
+              em.PfUnpaired(st + 1) ==
+          target) {
+        next.push_back(
+            {.idx0 = t04::DpIndex(st + 2, en - 1, DP_U2), .ctd0{en, CTD_3_DANGLE}, .pair{st, en}});
+      }
+      // (<   ><   >5) 5'
+      if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em.dangle5[stb][en1b][enb] +
+              em.PfUnpaired(en - 1) ==
+          target) {
+        next.push_back(
+            {.idx0 = t04::DpIndex(st + 1, en - 2, DP_U2), .ctd0{en, CTD_5_DANGLE}, .pair{st, en}});
+      }
+      // (.<   ><   >.) Terminal mismatch
+      if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em.terminal[stb][st1b][en1b][enb] +
+              em.PfUnpaired(st + 1) + em.PfUnpaired(en - 1) ==
+          target) {
+        next.push_back(
+            {.idx0 = t04::DpIndex(st + 2, en - 2, DP_U2), .ctd0{en, CTD_MISMATCH}, .pair{st, en}});
+      }
     }
 
     if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL) {
@@ -436,35 +441,37 @@ struct TracebackInternal {
       // The rest of the cases are for U and U2.
       if (a != DP_U && a != DP_U2) continue;
 
-      // (   )3<   > 3' - U, U2
-      if (base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired ==
-          dp[st][en][a]) {
-        Expansion exp{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
-        if (can_right_unpaired) next.push_back(exp);
-        if (can_right_paired) {
-          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(exp);
+      if (em.cfg.ctd == erg::EnergyCfg::Ctd::ALL || em.cfg.ctd == erg::EnergyCfg::Ctd::NO_COAX) {
+        // (   )3<   > 3' - U, U2
+        if (base01 + em.dangle3[pl1b][pb][stb] + em.PfUnpaired(piv) + right_unpaired ==
+            dp[st][en][a]) {
+          Expansion exp{.idx0 = t04::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
+          if (can_right_unpaired) next.push_back(exp);
+          if (can_right_paired) {
+            exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+            next.push_back(exp);
+          }
         }
-      }
-      // 5(   )<   > 5' - U, U2
-      if (base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired ==
-          dp[st][en][a]) {
-        Expansion exp{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
-        if (can_right_unpaired) next.push_back(exp);
-        if (can_right_paired) {
-          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(exp);
+        // 5(   )<   > 5' - U, U2
+        if (base10 + em.dangle5[pb][stb][st1b] + em.PfUnpaired(st) + right_unpaired ==
+            dp[st][en][a]) {
+          Expansion exp{.idx0 = t04::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
+          if (can_right_unpaired) next.push_back(exp);
+          if (can_right_paired) {
+            exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+            next.push_back(exp);
+          }
         }
-      }
-      // .(   ).<   > Terminal mismatch - U, U2
-      if (base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
-              right_unpaired ==
-          dp[st][en][a]) {
-        Expansion exp{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
-        if (can_right_unpaired) next.push_back(exp);
-        if (can_right_paired) {
-          exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
-          next.push_back(exp);
+        // .(   ).<   > Terminal mismatch - U, U2
+        if (base11 + em.terminal[pl1b][pb][stb][st1b] + em.PfUnpaired(st) + em.PfUnpaired(piv) +
+                right_unpaired ==
+            dp[st][en][a]) {
+          Expansion exp{.idx0 = t04::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
+          if (can_right_unpaired) next.push_back(exp);
+          if (can_right_paired) {
+            exp.idx1 = t04::DpIndex(piv + 1, en, DP_U);
+            next.push_back(exp);
+          }
         }
       }
 
@@ -561,7 +568,7 @@ struct TracebackInternal {
     static thread_local const erg::EnergyCfgSupport support{
         .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
         .bulge_states{false, true},
-        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX},
+        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
     };
     support.VerifySupported(__func__, em.cfg);
 
