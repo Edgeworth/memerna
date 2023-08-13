@@ -45,7 +45,7 @@ struct MfeInternal {
     static_assert(
         HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-    static thread_local erg::EnergyCfgSupport support{
+    static thread_local const erg::EnergyCfgSupport support{
         .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
         .bulge_states{false, true},
         .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX},

@@ -26,7 +26,7 @@ TraceResult Traceback(
     const Primary& r, const Model::Ptr& em, const trace::TraceCfg& cfg, const DpState& state) {
   const int N = static_cast<int>(r.size());
 
-  static thread_local erg::EnergyCfgSupport support{
+  static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},

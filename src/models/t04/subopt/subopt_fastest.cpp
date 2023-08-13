@@ -29,7 +29,7 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
-  static thread_local erg::EnergyCfgSupport support{
+  static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
