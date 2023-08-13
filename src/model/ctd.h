@@ -38,6 +38,8 @@ enum Ctd : uint8_t {
   CTD_SIZE
 };
 
+std::ostream& operator<<(std::ostream& str, const Ctd& o);
+
 const char* CtdToName(Ctd ctd);
 
 // Branch representation of CTDs:
@@ -133,5 +135,8 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
     const std::string& prim_str, const std::string& ctd_str);
 
 }  // namespace mrna
+
+template <>
+struct fmt::formatter<mrna::Ctd> : ostream_formatter {};
 
 #endif  // MODEL_CTD_H_

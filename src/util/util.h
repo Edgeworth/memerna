@@ -2,6 +2,7 @@
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 
+#include <algorithm>
 #include <cassert>
 #include <type_traits>
 
@@ -25,6 +26,11 @@ inline int FastMod(int a, int m) {
   assert(a < 2 * m);
   if (a >= m) return a - m;
   return a;
+}
+
+template <typename Container, typename Value>
+inline bool Contains(const Container& c, const Value& v) {
+  return std::find(c.begin(), c.end(), v) != c.end();
 }
 
 }  // namespace mrna

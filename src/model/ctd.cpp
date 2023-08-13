@@ -10,6 +10,8 @@
 
 namespace mrna {
 
+std::ostream& operator<<(std::ostream& str, const Ctd& o) { return str << CtdToName(o); }
+
 const char* CtdToName(Ctd ctd) {
   switch (ctd) {
   case CTD_NA: return "n/a";
