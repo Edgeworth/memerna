@@ -19,7 +19,17 @@ namespace mrna::md::brute {
 
 Brute::Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg)
     : r_(r), em_(std::move(em)), bem_(erg::Boltz(em_)), underlying_(erg::Underlying(bem_)),
-      cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {}
+      cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {
+  static thread_local const erg::EnergyCfgSupport support{
+      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
+      .bulge_states{false, true},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+  };
+
+  auto energy_cfg = erg::ModelEnergyCfg(em_);
+  support.VerifySupported(__func__, energy_cfg);
+  ctd_cfg_ = energy_cfg.ctd;
+}
 
 BruteResult Brute::Run() {
   // Preconditions:
@@ -134,56 +144,60 @@ void Brute::AddAllCombinations(int idx) {
   ctd_[idx] = CTD_UNUSED;
   AddAllCombinations(idx + 1);
 
-  // CTD_3_DANGLE
-  if (ru_usable) {
-    ctd_[idx] = CTD_3_DANGLE;
-    AddAllCombinations(idx + 1);
-  }
-
-  // CTD_5_DANGLE
-  if (lu_usable) {
-    ctd_[idx] = CTD_5_DANGLE;
-    AddAllCombinations(idx + 1);
-  }
-
-  // CTD_MISMATCH
-  if (ru_usable && lu_usable) {
-    ctd_[idx] = CTD_MISMATCH;
-    AddAllCombinations(idx + 1);
-  }
-
-  // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
-  // CTD_LCOAX_WITH_NEXT
-  if (lu_usable && ru_usable && ru_shared) {
-    auto prevval = ctd_[s_[idx] + 2];
-    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      ctd_[idx] = CTD_LCOAX_WITH_NEXT;
-      ctd_[s_[idx] + 2] = CTD_LCOAX_WITH_PREV;
+  if (ctd_cfg_ == erg::EnergyCfg::Ctd::ALL || ctd_cfg_ == erg::EnergyCfg::Ctd::NO_COAX) {
+    // CTD_3_DANGLE
+    if (ru_usable) {
+      ctd_[idx] = CTD_3_DANGLE;
       AddAllCombinations(idx + 1);
-      ctd_[s_[idx] + 2] = prevval;
+    }
+
+    // CTD_5_DANGLE
+    if (lu_usable) {
+      ctd_[idx] = CTD_5_DANGLE;
+      AddAllCombinations(idx + 1);
+    }
+
+    // CTD_MISMATCH
+    if (ru_usable && lu_usable) {
+      ctd_[idx] = CTD_MISMATCH;
+      AddAllCombinations(idx + 1);
     }
   }
 
-  // Check that the previous branch hasn't been set already.
-  // CTD_RC_WITH_PREV
-  if (lu_usable && lu_shared && ru_usable) {
-    auto prevval = ctd_[s_[idx - 2]];
-    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      ctd_[idx] = CTD_RC_WITH_PREV;
-      ctd_[s_[idx - 2]] = CTD_RC_WITH_NEXT;
-      AddAllCombinations(idx + 1);
-      ctd_[s_[idx - 2]] = prevval;
+  if (ctd_cfg_ == erg::EnergyCfg::Ctd::ALL) {
+    // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
+    // CTD_LCOAX_WITH_NEXT
+    if (lu_usable && ru_usable && ru_shared) {
+      auto prevval = ctd_[s_[idx] + 2];
+      if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+        ctd_[idx] = CTD_LCOAX_WITH_NEXT;
+        ctd_[s_[idx] + 2] = CTD_LCOAX_WITH_PREV;
+        AddAllCombinations(idx + 1);
+        ctd_[s_[idx] + 2] = prevval;
+      }
     }
-  }
 
-  // CTD_FCOAX_WITH_NEXT
-  if (s_[idx] + 1 < N && s_[s_[idx] + 1] != -1) {
-    auto prevval = ctd_[s_[idx] + 1];
-    if (prevval == CTD_UNUSED || prevval == CTD_NA) {
-      ctd_[idx] = CTD_FCOAX_WITH_NEXT;
-      ctd_[s_[idx] + 1] = CTD_FCOAX_WITH_PREV;
-      AddAllCombinations(idx + 1);
-      ctd_[s_[idx] + 1] = prevval;
+    // Check that the previous branch hasn't been set already.
+    // CTD_RC_WITH_PREV
+    if (lu_usable && lu_shared && ru_usable) {
+      auto prevval = ctd_[s_[idx - 2]];
+      if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+        ctd_[idx] = CTD_RC_WITH_PREV;
+        ctd_[s_[idx - 2]] = CTD_RC_WITH_NEXT;
+        AddAllCombinations(idx + 1);
+        ctd_[s_[idx - 2]] = prevval;
+      }
+    }
+
+    // CTD_FCOAX_WITH_NEXT
+    if (s_[idx] + 1 < N && s_[s_[idx] + 1] != -1) {
+      auto prevval = ctd_[s_[idx] + 1];
+      if (prevval == CTD_UNUSED || prevval == CTD_NA) {
+        ctd_[idx] = CTD_FCOAX_WITH_NEXT;
+        ctd_[s_[idx] + 1] = CTD_FCOAX_WITH_PREV;
+        AddAllCombinations(idx + 1);
+        ctd_[s_[idx] + 1] = prevval;
+      }
     }
   }
 

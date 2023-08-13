@@ -72,6 +72,11 @@ inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
   return std::visit(vis, em);
 }
 
+// Gets energy configuration for the given energy model.
+inline EnergyCfg ModelEnergyCfg(const EnergyModelPtr& em) {
+  return std::visit([&](const auto& em) { return em->cfg; }, em);
+}
+
 // Creates the Boltzmann energy model from the given energy model.
 inline void LoadPseudofreeEnergy(
     const EnergyModelPtr& em, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {

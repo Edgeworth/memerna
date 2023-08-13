@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "api/brute/brute_cfg.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/model.h"
 #include "api/subopt/subopt.h"
 #include "model/ctd.h"
@@ -64,6 +65,7 @@ class Brute {
   erg::EnergyModelPtr em_;
   erg::BoltzEnergyModelPtr bem_;
   erg::EnergyModelPtr underlying_;
+  erg::EnergyCfg::Ctd ctd_cfg_;
   BruteCfg cfg_;
 
   Secondary s_;
