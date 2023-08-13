@@ -34,6 +34,8 @@ class RNAstructure(RnaPackage):
             raise NotImplementedError(
                 "RNAstructure does not support subopt with max number of structures",
             )
+        if cfg.time_secs is not None:
+            raise NotImplementedError("RNAstructure does not support subopt with max time")
 
     def name(self) -> str:
         return "RNAstructure"

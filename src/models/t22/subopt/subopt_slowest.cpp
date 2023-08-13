@@ -49,10 +49,16 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
 
   spdlog::debug("t22 {} with cfg {}", __func__, em_->cfg);
 
-  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES) {
+  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
     int count = 0;
     Energy delta = ZERO_E;
+    auto start_time = std::chrono::steady_clock::now();
     while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
+      if (cfg_.time_secs >= 0.0) {
+        auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+            std::chrono::steady_clock::now() - start_time);
+        if (elapsed.count() >= cfg_.time_secs) break;
+      }
       auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
       count += res.first;
       delta = res.second;

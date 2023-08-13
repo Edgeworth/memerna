@@ -2,8 +2,6 @@
 
 ## TODO
 
-- implement cfg verification
-- implement time based subopt generation
 - use CPM to handle libraries
 - implement d2
   - add to mfe_fastest, see how much it affects perf

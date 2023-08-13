@@ -47,6 +47,11 @@ subopt_options = cloup.option_group(
         help="maximum number of reported structures",
     ),
     cloup.option(
+        "--subopt-time-secs",
+        type=float,
+        help="maximum time in seconds to run suboptimal folding for",
+    ),
+    cloup.option(
         "--subopt-sorted/--no-subopt-sorted",
         default=True,
         help="if the structures should be sorted",
@@ -57,11 +62,13 @@ subopt_options = cloup.option_group(
 def subopt_cfg_from_args(
     subopt_delta: Decimal | None,
     subopt_strucs: int | None,
+    subopt_time_secs: float | None,
     subopt_sorted: bool,
     **_kwargs: Any,
 ) -> SuboptCfg:
     return SuboptCfg(
         delta=subopt_delta,
         strucs=subopt_strucs,
+        time_secs=subopt_time_secs,
         sorted=subopt_sorted,
     )

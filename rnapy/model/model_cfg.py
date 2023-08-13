@@ -31,4 +31,5 @@ class EnergyCfg:
 class SuboptCfg:
     delta: Decimal | None = None
     strucs: int | None = None
+    time_secs: float | None = None
     sorted: bool = True
