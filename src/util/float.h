@@ -93,10 +93,8 @@ struct formatter<T> {
 
  public:
   constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
-    using handler_type = detail::dynamic_specs_handler<format_parse_context>;
-    auto type = detail::type_constant<T, char>::value;
-    auto checker = detail::specs_checker<handler_type>(handler_type(specs_, ctx), type);
-    auto end = detail::parse_format_specs(ctx.begin(), ctx.end(), checker);
+    auto end = parse_format_specs(ctx.begin(), ctx.end(), specs_, ctx, detail::type::float_type);
+    detail::parse_float_type_spec(specs_, detail::error_handler());
     return end;
   }
 

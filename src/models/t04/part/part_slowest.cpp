@@ -29,7 +29,7 @@ Part PartitionSlowest(const Primary& r, const Model::Ptr& initial_em, PartState&
   auto em = initial_em->Clone();
   em->cfg.bulge_states = false;
 
-  static thread_local erg::EnergyCfgSupport support{
+  static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},

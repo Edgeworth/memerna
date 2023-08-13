@@ -13,7 +13,7 @@ namespace mrna::md::t04 {
 void PartitionExterior(const Primary& r, const Model& em, PartState& state) {
   const int N = static_cast<int>(r.size());
 
-  static thread_local erg::EnergyCfgSupport support{
+  static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},

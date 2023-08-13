@@ -28,7 +28,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
 
-  static thread_local erg::EnergyCfgSupport support{
+  static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
