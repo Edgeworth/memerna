@@ -29,8 +29,8 @@ Energy GetEnergy(const Model::Ptr& em, const std::string& r, const std::string& 
 
 std::tuple<Energy, Energy> GetPseudofree(
     const Model::Ptr& base_em, const std::string& r, const std::string& db) {
-  const auto paired_mul = E(1000000.0);
-  const auto unpaired_mul = E(1000.0);
+  const auto paired_mul = E(100.0);
+  const auto unpaired_mul = E(10.0);
   std::vector<Energy> pf_paired(r.size(), E(0.0));
   std::vector<Energy> pf_unpaired(r.size(), E(0.0));
   Energy extra_from_pseudofree = ZERO_E;
