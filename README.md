@@ -7,9 +7,15 @@
 - implement time based subopt generation
 - use CPM to handle libraries
 - implement d2
+  - add to mfe_fastest, see how much it affects perf
+  - add all variants to all mfe, traceback, suboptimal, partition function
+  - add to energy model
+  - add to fuzz
+  - need to add to ComputeOptimalCtds
+  - ctrl f for flush coax etc
+- implement dynamic option selection for e.g. dpalg enums based on energy model
 
 need to implement lonely pairs disabling properly for t22. (check this)
-
 
 ## Model notes
 

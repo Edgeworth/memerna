@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#include <boost/container/small_vector.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -56,6 +57,15 @@ struct EnergyCfg {
   static EnergyCfg FromArgParse(const ArgParse& args);
 };
 
+// Description of the support of an algorithm for each energy configuration.
+struct EnergyCfgSupport {
+  boost::container::small_vector<EnergyCfg::LonelyPairs, 10> lonely_pairs{};
+  boost::container::small_vector<bool, 2> bulge_states{};
+  boost::container::small_vector<EnergyCfg::Ctd, 10> ctd{};
+
+  void VerifySupported(const std::string& name, const EnergyCfg& cfg) const;
+};
+
 std::ostream& operator<<(std::ostream& str, const EnergyCfg& o);
 std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o);
 std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o);
@@ -67,5 +77,11 @@ std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
 
 template <>
 struct fmt::formatter<mrna::erg::EnergyCfg> : ostream_formatter {};
+
+template <>
+struct fmt::formatter<mrna::erg::EnergyCfg::LonelyPairs> : ostream_formatter {};
+
+template <>
+struct fmt::formatter<mrna::erg::EnergyCfg::Ctd> : ostream_formatter {};
 
 #endif  // API_ENERGY_ENERGY_CFG_H_
