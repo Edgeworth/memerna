@@ -29,10 +29,12 @@ Part PartitionSlowest(const Primary& r, const Model::Ptr& initial_em, PartState&
   auto em = initial_em->Clone();
   em->cfg.bulge_states = false;
 
-  verify(em->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
-      "fully disallowing lonely pairs is not supported in this energy model");
-  verify(
-      em->cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
+  static thread_local erg::EnergyCfgSupport support{
+      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
+      .bulge_states{false},  // Bulge states with partition function doesn't make sense.
+      .ctd{erg::EnergyCfg::Ctd::ALL},
+  };
+  support.VerifySupported(__func__, em->cfg);
 
   spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
 

@@ -29,10 +29,12 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
 
-  verify(em_->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
-      "fully disallowing lonely pairs is not supported in this energy model");
-  verify(em_->cfg.ctd == erg::EnergyCfg::Ctd::ALL,
-      "only full CTDs are supported in this energy model");
+  static thread_local erg::EnergyCfgSupport support{
+      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
+      .bulge_states{false, true},
+      .ctd{erg::EnergyCfg::Ctd::ALL},
+  };
+  support.VerifySupported(__func__, em_->cfg);
 
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
 
@@ -456,7 +458,7 @@ std::vector<Expansion> SuboptFastest::GenerateExpansions(
           .to_expand = {st, piv, DP_P},
           .unexpanded = {piv + 1, en, DP_U},
           .ctd0 = {st, CTD_UNUSED}});
-    
+
     if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
       if (energy <= delta) exps.push_back({.delta = energy, .to_expand = {st, piv, DP_P}});
       if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)

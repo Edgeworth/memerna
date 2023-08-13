@@ -35,13 +35,7 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-
   support.VerifySupported(__func__, em->cfg);
-
-  verify(em->cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::OFF,
-      "fully disallowing lonely pairs is not supported in this energy model");
-  verify(
-      em->cfg.ctd == erg::EnergyCfg::Ctd::ALL, "only full CTDs are supported in this energy model");
 
   spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
 
