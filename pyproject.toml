@@ -8,26 +8,26 @@ version = "0.1.0"
 
 [tool.poetry.dependencies]
 bidict = "^0.22.1"
-click = "^8.1.5"
+click = "^8.1.6"
 click-params = "^0.4.1"
 click_log = "^0.4.0"
-cloup = "^2.1.2"
+cloup = "^3.0.0"
 libtmux = "^0.22.1"
 pandas = "^2.0.3"
 protobuf = "3.20.1"
 python = "~3.11"
 python-dotenv = "^1.0.0"
-ray = "^2.5.1"
+ray = "^2.6.2"
 scipy = "^1.11.1"
 seaborn = "^0.12.2"
 statsmodels = "^0.14.0"
 torch = {url = "https://download.pytorch.org/whl/cu118/torch-2.0.1%2Bcu118-cp311-cp311-linux_x86_64.whl"}
 torch-tb-profiler = "^0.4.1"
-viennarna = "^2.6.2"
+viennarna = "^2.6.3"
 
 [tool.poetry.dev-dependencies]
 black = "^23.7.0"
-mypy = "^1.4.1"
+mypy = "^1.5.0"
 poetry-plugin-up = "^0.3.0"
 prospector = "^1.10.2"
 

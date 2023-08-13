@@ -2,12 +2,14 @@
 
 ## TODO
 
-add 0.1.0 version
+- implement no-ctds
+- implement cfg verification
+- implement time based subopt generation
+- use CPM to handle libraries
+- implement d2
 
-need to implement lonely pairs disabling properly for t22.
-implement no ctds, d2
+need to implement lonely pairs disabling properly for t22. (check this)
 
-switch to pytorch 2.0 in march; update to use pytorch 2.0 features.
 
 ## Model notes
 
