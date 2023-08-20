@@ -135,7 +135,8 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   RegisterOpt(OPT_VERBOSE);
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    spdlog::critical("{}\n{}\n", ret, Usage());
+    auto usage = Usage();
+    spdlog::critical("{}\n{}\n", ret, usage);
     std::exit(1);  // NOLINT
   }
 
