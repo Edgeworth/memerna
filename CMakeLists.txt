@@ -211,6 +211,7 @@ set(MEMERNA_SOURCE
   src/util/error.cpp
   src/util/error.h
   src/util/float.h
+  src/util/container.h
   src/util/splaymap.h
   src/util/string.cpp
   src/util/string.h

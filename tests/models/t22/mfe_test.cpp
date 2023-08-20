@@ -16,14 +16,14 @@
 
 namespace mrna::md::t22 {
 
-class T22MfeTest : public testing::TestWithParam<CtxCfg::DpAlg> {
+class MfeTestT22Like : public testing::TestWithParam<CtxCfg::MfeAlg> {
  public:
   static std::tuple<Energy, std::string> Mfe(const erg::EnergyModelPtr& em, const std::string& s) {
     return Mfe(em, Primary::FromSeq(s));
   }
 
   static std::tuple<Energy, std::string> Mfe(const erg::EnergyModelPtr& em, const Primary& r) {
-    auto res = Ctx(em, CtxCfg{.dp_alg = GetParam()}).Fold(r, {});
+    auto res = Ctx(em, CtxCfg{.mfe_alg = GetParam()}).Fold(r, {});
     return {res.mfe.energy, res.tb.ctd.ToString(res.tb.s)};
   }
 
@@ -41,7 +41,7 @@ class T22MfeTest : public testing::TestWithParam<CtxCfg::DpAlg> {
 
 #if ENERGY_PRECISION == 2
 
-TEST_P(T22MfeTest, T22P2) {
+TEST_P(MfeTestT22Like, T22P2) {
   auto em = t22p2;
 
   // Fast enough for brute force:
@@ -65,7 +65,7 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(ans, Mfe(em, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::MfeAlg::BRUTE) return;
   ans = {E(-5.31), ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]]."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.48), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
@@ -121,7 +121,7 @@ TEST_P(T22MfeTest, T22P2) {
   EXPECT_EQ(ans, Mfe(em, std::get<Primary>(k16sHSapiens3)));
 }
 
-TEST_P(T22MfeTest, T22P2PseudofreeEnergy) {
+TEST_P(MfeTestT22Like, T22P2PseudofreeEnergy) {
   auto em = t22p2;
 
   // Fast enough for brute force:
@@ -136,7 +136,7 @@ TEST_P(T22MfeTest, T22P2PseudofreeEnergy) {
   TestMfePseudofree(em, E(-2.08), "CUGAAACUGGAAACAGAAAUG", "......[[[....]]]3....");
 
   // Too slow for brute force:
-  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::MfeAlg::BRUTE) return;
   TestMfePseudofree(em, E(-5.31), "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]].");
   TestMfePseudofree(em, E(-13.48),
@@ -191,10 +191,11 @@ TEST_P(T22MfeTest, T22P2PseudofreeEnergy) {
 
 #else
 
-GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(T22MfeTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT22Like);
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T22MfeTest, testing::ValuesIn(CtxCfg::DP_ALGS));
+INSTANTIATE_TEST_SUITE_P(MfeTest, MfeTestT22Like,
+    testing::ValuesIn(CtxCfg::MfeAlgsForModelKind(erg::ModelKind::T22_LIKE)));
 
 }  // namespace mrna::md::t22

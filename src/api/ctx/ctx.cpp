@@ -60,21 +60,18 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
   auto vis = overloaded{
       [&](const md::t04::Model::Ptr& em) {
         auto& state = std::get<md::t04::DpState>(dp);
-        switch (cfg_.dp_alg) {
-        case CtxCfg::DpAlg::SLOWEST: md::t04::MfeSlowest(r, em, state); break;
-        case CtxCfg::DpAlg::SLOW: md::t04::MfeSlow(r, em, state); break;
-        case CtxCfg::DpAlg::FASTEST: md::t04::MfeFastest(r, em, state); break;
-        case CtxCfg::DpAlg::LYNGSO: md::t04::MfeLyngso(r, em, state); break;
+        switch (cfg_.mfe_alg) {
+        case CtxCfg::MfeAlg::SLOWEST: md::t04::MfeSlowest(r, em, state); break;
+        case CtxCfg::MfeAlg::SLOW: md::t04::MfeSlow(r, em, state); break;
+        case CtxCfg::MfeAlg::FASTEST: md::t04::MfeFastest(r, em, state); break;
+        case CtxCfg::MfeAlg::LYNGSO: md::t04::MfeLyngso(r, em, state); break;
         default: bug();
         }
       },
       [&](const md::t22::Model::Ptr& em) {
         auto& state = std::get<md::t22::DpState>(dp);
-        switch (cfg_.dp_alg) {
-        case CtxCfg::DpAlg::SLOWEST:
-        case CtxCfg::DpAlg::SLOW:
-        case CtxCfg::DpAlg::FASTEST:
-        case CtxCfg::DpAlg::LYNGSO: md::t22::MfeSlowest(r, em, state); break;
+        switch (cfg_.mfe_alg) {
+        case CtxCfg::MfeAlg::SLOWEST: md::t22::MfeSlowest(r, em, state); break;
         default: bug();
         }
       },
@@ -112,7 +109,7 @@ trace::TraceResult Ctx::ComputeTraceback(
 }
 
 FoldResult Ctx::Fold(const Primary& r, const trace::TraceCfg& cfg) const {
-  if (cfg_.dp_alg == CtxCfg::DpAlg::BRUTE) {
+  if (cfg_.mfe_alg == CtxCfg::MfeAlg::BRUTE) {
     auto subopt = md::brute::MfeBrute(r, em_);
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
@@ -163,10 +160,7 @@ int Ctx::Suboptimal(
       [&](const md::t22::Model::Ptr& em) mutable -> int {
         auto state = std::get<md::t22::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
-          // TODO(0): add code that dynamically returns supported algorithms for
-          // a model. (not here, for use in callers)
         case CtxCfg::SuboptAlg::SLOWEST:
-        case CtxCfg::SuboptAlg::FASTEST:
           return md::t22::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
 
         default: bug();

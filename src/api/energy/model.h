@@ -73,7 +73,7 @@ inline BoltzEnergyModelPtr Boltz(const EnergyModelPtr& em) {
 }
 
 // Gets energy configuration for the given energy model.
-inline EnergyCfg ModelEnergyCfg(const EnergyModelPtr& em) {
+inline constexpr EnergyCfg ModelEnergyCfg(const EnergyModelPtr& em) {
   return std::visit([&](const auto& em) { return em->cfg; }, em);
 }
 
@@ -98,7 +98,7 @@ inline EnergyModelPtr Underlying(const BoltzEnergyModelPtr& bem) {
   return std::visit([](const auto& bem) -> EnergyModelPtr { return bem->em().Clone(); }, bem);
 }
 
-inline ModelKind Kind(const EnergyModelPtr& em) {
+inline constexpr ModelKind Kind(const EnergyModelPtr& em) {
   auto vis = overloaded{
       [](const md::t04::Model::Ptr&) { return ModelKind::T04_LIKE; },
       [](const md::t22::Model::Ptr&) { return ModelKind::T22_LIKE; },

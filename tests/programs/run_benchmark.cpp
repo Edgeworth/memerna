@@ -21,7 +21,7 @@ namespace mrna {
 template <class... Args>
 void Mfe(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args), CtxCfg{.dp_alg = std::get<1>(args)});
+  const Ctx ctx(*std::get<0>(args), CtxCfg{.mfe_alg = std::get<1>(args)});
   std::mt19937 eng(0);
 
   for (auto _ : state) {
@@ -65,13 +65,13 @@ void Partition(benchmark::State& state, Args&&... arglist) {
 }
 
 #define DEFINE_BENCHES(em)                                                             \
-  BENCHMARK_CAPTURE(Mfe, em##_slowest, &(em), CtxCfg::DpAlg::SLOWEST)                  \
+  BENCHMARK_CAPTURE(Mfe, em##_slowest, &(em), CtxCfg::MfeAlg::SLOWEST)                 \
       ->RangeMultiplier(2)                                                             \
       ->Range(16, 512)                                                                 \
       ->Complexity()                                                                   \
       ->Unit(benchmark::kMillisecond);                                                 \
                                                                                        \
-  BENCHMARK_CAPTURE(Mfe, em##_fastest, &(em), CtxCfg::DpAlg::FASTEST)                  \
+  BENCHMARK_CAPTURE(Mfe, em##_fastest, &(em), CtxCfg::MfeAlg::FASTEST)                 \
       ->RangeMultiplier(2)                                                             \
       ->Range(16, 512)                                                                 \
       ->Complexity()                                                                   \

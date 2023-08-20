@@ -16,7 +16,7 @@
 
 namespace mrna::md::t04 {
 
-class SuboptAlgTest : public testing::TestWithParam<CtxCfg::SuboptAlg> {
+class SuboptTestT04Like : public testing::TestWithParam<CtxCfg::SuboptAlg> {
  public:
   static std::vector<subopt::SuboptResult> Subopt(
       const erg::EnergyModelPtr& em, const std::string& s, const std::vector<Energy>& energies) {
@@ -36,7 +36,7 @@ class SuboptAlgTest : public testing::TestWithParam<CtxCfg::SuboptAlg> {
 
 #if ENERGY_PRECISION == 1
 
-TEST_P(SuboptAlgTest, T04P1) {
+TEST_P(SuboptTestT04Like, T04P1) {
   auto em = t04p1;
 
   Subopt(em, "CCUCCGGG",
@@ -474,7 +474,7 @@ TEST_P(SuboptAlgTest, T04P1) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST_P(SuboptAlgTest, T04P2) {
+TEST_P(SuboptTestT04Like, T04P2) {
   auto em = t04p2;
 
   Subopt(em, "CCUCCGGG",
@@ -910,7 +910,7 @@ TEST_P(SuboptAlgTest, T04P2) {
       });
 }
 
-TEST_P(SuboptAlgTest, T12P2) {
+TEST_P(SuboptTestT04Like, T12P2) {
   auto em = t12p2;
   Subopt(em, "CCUCCGGG",
       {
@@ -1349,6 +1349,7 @@ TEST_P(SuboptAlgTest, T12P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(SuboptAlgTest, SuboptAlgTest, testing::ValuesIn(CtxCfg::SUBOPT_ALGS));
+INSTANTIATE_TEST_SUITE_P(SuboptTest, SuboptTestT04Like,
+    testing::ValuesIn(CtxCfg::SuboptAlgsForModelKind(erg::ModelKind::T04_LIKE)));
 
 }  // namespace mrna::md::t04

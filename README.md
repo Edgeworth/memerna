@@ -10,7 +10,6 @@
   - add to fuzz
   - need to add to ComputeOptimalCtds
   - ctrl f for flush coax etc
-- implement dynamic option selection for e.g. dpalg enums based on energy model
 
 need to implement lonely pairs disabling properly for t22. (check this)
 
@@ -220,3 +219,8 @@ Minimising test cases:
 ```bash
 python -m rnapy.run afl-fuzz-min <crash-file>
 ```
+
+## License notes
+
+For any commercial applications of this software, please contact the author for
+a license.

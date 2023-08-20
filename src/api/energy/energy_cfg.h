@@ -5,11 +5,11 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#include <boost/container/small_vector.hpp>
 #include <iosfwd>
 #include <string>
 
 #include "util/argparse.h"
+#include "util/container.h"
 
 namespace mrna::erg {
 
@@ -59,9 +59,9 @@ struct EnergyCfg {
 
 // Description of the support of an algorithm for each energy configuration.
 struct EnergyCfgSupport {
-  boost::container::small_vector<EnergyCfg::LonelyPairs, 10> lonely_pairs{};
-  boost::container::small_vector<bool, 2> bulge_states{};
-  boost::container::small_vector<EnergyCfg::Ctd, 10> ctd{};
+  smallvec<EnergyCfg::LonelyPairs, 10> lonely_pairs{};
+  smallvec<bool, 2> bulge_states{};
+  smallvec<EnergyCfg::Ctd, 10> ctd{};
 
   void VerifySupported(const std::string& name, const EnergyCfg& cfg) const;
 };
