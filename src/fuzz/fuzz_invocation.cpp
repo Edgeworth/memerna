@@ -140,10 +140,10 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<Energy> mrna_ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
   for (const auto& em : ems_) {
-    for (auto dp_alg : CtxCfg::DP_ALGS) {
-      if (dp_alg == CtxCfg::DpAlg::BRUTE && N > cfg_.brute_max) continue;
+    for (auto mfe_alg : CtxCfg::MfeAlgsForModel(em)) {
+      if (mfe_alg == CtxCfg::MfeAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      const Ctx ctx(em, CtxCfg{.dp_alg = dp_alg});
+      const Ctx ctx(em, CtxCfg{.mfe_alg = mfe_alg});
       auto res = ctx.Fold(r_, {});
       // First compute with the CTDs that fold returned to check the energy.
       mrna_ctd_efns.push_back(erg::TotalEnergy(em, r_, res.tb.s, &res.tb.ctd).energy);
@@ -226,7 +226,7 @@ Error FuzzInvocation::CheckSubopt() {
   for (auto cfg : cfgs) {
     mrna.push_back({cfg, {}});
     for (const auto& em : ems_) {
-      for (auto subopt_alg : CtxCfg::SUBOPT_ALGS) {
+      for (auto subopt_alg : CtxCfg::SuboptAlgsForModel(em)) {
         if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
         const Ctx ctx(em, CtxCfg{.subopt_alg = subopt_alg});
@@ -339,7 +339,7 @@ Error FuzzInvocation::CheckPartition() {
   Error errors;
   std::vector<part::PartResult> mrna_parts;
   for (const auto& em : ems_) {
-    for (auto part_alg : CtxCfg::PART_ALGS) {
+    for (auto part_alg : CtxCfg::PartitionAlgsForModel(em)) {
       if (part_alg == CtxCfg::PartAlg::BRUTE && N > cfg_.brute_max) continue;
 
       const Ctx ctx(em, CtxCfg{.part_alg = part_alg});

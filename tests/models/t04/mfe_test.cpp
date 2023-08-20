@@ -16,21 +16,21 @@
 
 namespace mrna::md::t04 {
 
-class T04MfeTest : public testing::TestWithParam<CtxCfg::DpAlg> {
+class MfeTestT04Like : public testing::TestWithParam<CtxCfg::MfeAlg> {
  public:
   static std::tuple<Energy, std::string> Mfe(const erg::EnergyModelPtr& em, const std::string& s) {
     return Mfe(em, Primary::FromSeq(s));
   }
 
   static std::tuple<Energy, std::string> Mfe(const erg::EnergyModelPtr& em, const Primary& r) {
-    auto res = Ctx(em, CtxCfg{.dp_alg = GetParam()}).Fold(r, {});
+    auto res = Ctx(em, CtxCfg{.mfe_alg = GetParam()}).Fold(r, {});
     return {res.mfe.energy, res.tb.ctd.ToString(res.tb.s)};
   }
 };
 
 #if ENERGY_PRECISION == 1
 
-TEST_P(T04MfeTest, T04P1) {
+TEST_P(MfeTestT04Like, T04P1) {
   auto em = t04p1;
 
   // Fast enough for brute force:
@@ -54,7 +54,7 @@ TEST_P(T04MfeTest, T04P1) {
   EXPECT_EQ(ans, Mfe(em, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::MfeAlg::BRUTE) return;
   ans = {E(-5.1), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.3), ".....n[[[...]]]]mp[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]]M."};
@@ -111,7 +111,7 @@ TEST_P(T04MfeTest, T04P1) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST_P(T04MfeTest, T04P2) {
+TEST_P(MfeTestT04Like, T04P2) {
   auto em = t04p2;
 
   // Fast enough for brute force:
@@ -135,7 +135,7 @@ TEST_P(T04MfeTest, T04P2) {
   EXPECT_EQ(ans, Mfe(em, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::MfeAlg::BRUTE) return;
   ans = {E(-5.05), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.32), "....n[[[[...]]]]]p[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]].."};
@@ -191,7 +191,7 @@ TEST_P(T04MfeTest, T04P2) {
   EXPECT_EQ(ans, Mfe(em, std::get<Primary>(k16sHSapiens3)));
 }
 
-TEST_P(T04MfeTest, T12P2) {
+TEST_P(MfeTestT04Like, T12P2) {
   auto em = t12p2;
 
   // Fast enough for brute force:
@@ -215,7 +215,7 @@ TEST_P(T04MfeTest, T12P2) {
   EXPECT_EQ(ans, Mfe(em, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (GetParam() == CtxCfg::DpAlg::BRUTE) return;
+  if (GetParam() == CtxCfg::MfeAlg::BRUTE) return;
   ans = {E(-5.19), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(em, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-12.94), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
@@ -275,6 +275,7 @@ TEST_P(T04MfeTest, T12P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(FoldAlgTest, T04MfeTest, testing::ValuesIn(CtxCfg::DP_ALGS));
+INSTANTIATE_TEST_SUITE_P(MfeTest, MfeTestT04Like,
+    testing::ValuesIn(CtxCfg::MfeAlgsForModelKind(erg::ModelKind::T04_LIKE)));
 
 }  // namespace mrna::md::t04

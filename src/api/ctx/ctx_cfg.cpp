@@ -12,32 +12,32 @@ void RegisterOpts(ArgParse* args) {
   erg::RegisterOptsEnergyModel(args);
   trace::RegisterOpts(args);
   subopt::RegisterOpts(args);
-  args->RegisterOpt(OPT_DP_ALG);
+  args->RegisterOpt(OPT_MFE_ALG);
   args->RegisterOpt(OPT_SUBOPT_ALG);
   args->RegisterOpt(OPT_PART_ALG);
 }
 
 CtxCfg CtxCfg::FromArgParse(const ArgParse& args) {
   CtxCfg cfg;
-  cfg.dp_alg = args.Get<DpAlg>(OPT_DP_ALG);
+  cfg.mfe_alg = args.Get<MfeAlg>(OPT_MFE_ALG);
   cfg.subopt_alg = args.Get<SuboptAlg>(OPT_SUBOPT_ALG);
   cfg.part_alg = args.Get<PartAlg>(OPT_PART_ALG);
   return cfg;
 }
 
-std::istream& operator>>(std::istream& str, CtxCfg::DpAlg& o) {
+std::istream& operator>>(std::istream& str, CtxCfg::MfeAlg& o) {
   std::string s;
   str >> s;
   if (s == "slowest") {
-    o = CtxCfg::DpAlg::SLOWEST;
+    o = CtxCfg::MfeAlg::SLOWEST;
   } else if (s == "slow") {
-    o = CtxCfg::DpAlg::SLOW;
+    o = CtxCfg::MfeAlg::SLOW;
   } else if (s == "fastest") {
-    o = CtxCfg::DpAlg::FASTEST;
+    o = CtxCfg::MfeAlg::FASTEST;
   } else if (s == "lyngso") {
-    o = CtxCfg::DpAlg::LYNGSO;
+    o = CtxCfg::MfeAlg::LYNGSO;
   } else if (s == "brute") {
-    o = CtxCfg::DpAlg::BRUTE;
+    o = CtxCfg::MfeAlg::BRUTE;
   } else {
     fatal("unknown fold option {}", s);
   }

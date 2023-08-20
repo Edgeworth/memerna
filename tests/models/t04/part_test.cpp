@@ -14,7 +14,7 @@
 
 namespace mrna::md::t04 {
 
-class PartAlgTest : public testing::TestWithParam<CtxCfg::PartAlg> {
+class PartitionTestT04Like : public testing::TestWithParam<CtxCfg::PartAlg> {
  public:
   static part::PartResult Partition(const erg::EnergyModelPtr& em, const std::string& s) {
     return Partition(em, Primary::FromSeq(s));
@@ -27,7 +27,7 @@ class PartAlgTest : public testing::TestWithParam<CtxCfg::PartAlg> {
 
 #if ENERGY_PRECISION == 1
 
-TEST_P(PartAlgTest, T04P1) {
+TEST_P(PartitionTestT04Like, T04P1) {
   auto em = t04p1;
 
   EXPECT_REL_EQ(
@@ -103,7 +103,7 @@ TEST_P(PartAlgTest, T04P1) {
 
 #elif ENERGY_PRECISION == 2
 
-TEST_P(PartAlgTest, T04P2) {
+TEST_P(PartitionTestT04Like, T04P2) {
   auto em = t04p2;
 
   EXPECT_REL_EQ(
@@ -177,7 +177,7 @@ TEST_P(PartAlgTest, T04P2) {
       Partition(em, std::get<Primary>(k16sHSapiens3)).part.q);
 }
 
-TEST_P(PartAlgTest, T12P2) {
+TEST_P(PartitionTestT04Like, T12P2) {
   auto em = t12p2;
 
   EXPECT_REL_EQ(
@@ -255,6 +255,7 @@ TEST_P(PartAlgTest, T12P2) {
 
 #endif
 
-INSTANTIATE_TEST_SUITE_P(PartAlgTest, PartAlgTest, testing::ValuesIn(CtxCfg::PART_ALGS));
+INSTANTIATE_TEST_SUITE_P(PartitionTest, PartitionTestT04Like,
+    testing::ValuesIn(CtxCfg::PartitionAlgsForModelKind(erg::ModelKind::T04_LIKE)));
 
 }  // namespace mrna::md::t04
