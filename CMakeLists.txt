@@ -48,13 +48,49 @@ endif()
 # Include things to find libraries.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/sanitizers-cmake/cmake)
+include(get_cpm) # get cmake package manager
+
+# Find packages
+find_package(Threads REQUIRED)
+find_package(Boost REQUIRED)
 find_package(Sanitizers)
-find_package(Threads)
 find_package(MPFR)
-find_package(Boost)
-find_package(benchmark)
-find_package(fmt)
-find_package(spdlog)
+
+# Enable stacktraces if we have boost.
+find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
+
+if(LIBBACKTRACE)
+  message(STATUS "Using Boost stacktrace with libbacktrace - ${LIBBACKTRACE}")
+  add_compile_definitions(BOOST_STACKTRACE_USE_BACKTRACE)
+endif()
+
+# Get rarer packages using CPM.
+
+# Google benchmark
+CPMAddPackage(
+  NAME benchmark
+  GITHUB_REPOSITORY google/benchmark
+  VERSION 1.8.2
+  OPTIONS "BENCHMARK_ENABLE_TESTING Off"
+)
+
+# fmt
+CPMAddPackage("gh:fmtlib/fmt#10.1.0")
+
+# spdlog should reuse existing fmtlib.
+CPMAddPackage(
+  GITHUB_REPOSITORY gabime/spdlog
+  VERSION 1.12.0
+  OPTIONS "SPDLOG_FMT_EXTERNAL 1"
+)
+
+# gtest
+CPMAddPackage(
+  NAME googletest
+  GITHUB_REPOSITORY google/googletest
+  VERSION 1.14.0
+  OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt"
+)
 
 # Fail loudly.
 # Note we don't support msan because it requires an instrumented libc++.
@@ -87,18 +123,9 @@ endif()
 # Enable tests.
 set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 enable_testing()
-find_package(GTest REQUIRED)
 
 # Apply compile definitions here so they only apply to memerna code.
 add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
-
-# Enable stacktraces if we have boost.
-find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
-
-if(LIBBACKTRACE)
-  message(STATUS "Using Boost stacktrace with libbacktrace - ${LIBBACKTRACE}")
-  add_compile_definitions(BOOST_STACKTRACE_USE_BACKTRACE)
-endif()
 
 # Source set definitions.
 set(MEMERNA_SOURCE
