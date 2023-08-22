@@ -138,15 +138,15 @@ The rest of this document uses $MRNA to locate the memerna directory.
 Run git submodule init and git submodule update to pull in external dependencies.
 Memerna requires a modern C++ compiler that supports C++20.
 
-Install dependencies: boost
+Install dependencies: boost, python poetry
 
-python -m rnapy.run build
+poetry run python -m rnapy.run build
 
 Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
 
 ### Running include-what-you-use
 
-python -m rnapy.run build --iwyu --no-build
+poetry run python -m rnapy.run build --iwyu --no-build
 
 Then from the cmake build directory:
 make -j$(nproc) 2> /tmp/iwyu.out
@@ -163,7 +163,7 @@ Run from $MRNA/run_tests after building.
 Fuzzing against RNAstructure
 
 ```bash
-python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
+poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
 ./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
 # Partition and subopt are supported, but fuzzing shows differences instantly.
@@ -174,20 +174,20 @@ python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precisio
 Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
 
 ```bash
-python -m rnapy.run afl-fuzz --help
+poetry run python -m rnapy.run afl-fuzz --help
 ```
 
 For example, try this command line:
 
 ```bash
-python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --seed 1234
 ```
 
 To fuzz everything:
 
 ```bash
-python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
  --subopt --subopt-rnastructure --num-procs 28 --max-len 100 \
  --energy-model t04p2 --energy-precision 1
@@ -196,7 +196,7 @@ python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
 Fuzz memerna only, with faster settings:
 
 ```bash
-python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --mfe --mfe-table --subopt --num-procs 28 --max-len 100 --seed 1234 \
  --energy-model t04p2 --subopt-strucs 100 --subopt-delta 0.2 \
  --energy-precision 2
@@ -217,7 +217,7 @@ cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
 Minimising test cases:
 
 ```bash
-python -m rnapy.run afl-fuzz-min <crash-file>
+poetry run python -m rnapy.run afl-fuzz-min <crash-file>
 ```
 
 ## License notes

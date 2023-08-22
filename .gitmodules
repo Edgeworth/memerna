@@ -3,4 +3,4 @@
 	url = git@github.com:Edgeworth/rnastructure_bridge.git
 [submodule "extern/sanitizers-cmake"]
 	path = extern/sanitizers-cmake
-	url = git://github.com/arsenm/sanitizers-cmake.git
+	url = https://github.com/arsenm/sanitizers-cmake.git
