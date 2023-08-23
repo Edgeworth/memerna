@@ -134,15 +134,33 @@ LINEARFOLD=${HOME}/...
 ### Building
 
 The rest of this document uses $MRNA to locate the memerna directory.
-
-Run git submodule init and git submodule update to pull in external dependencies.
 Memerna requires a modern C++ compiler that supports C++20.
 
-Install dependencies: boost, python poetry
+Set up git submodules to pull in external dependencies.:
 
+```sh
+git submodule init
+git submodule update
+```
+
+Install dependencies: boost, python poetry. Then we can build:
+
+```sh
 poetry run python -m rnapy.run build
+```
 
 Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
+
+### Compiler and toolchain support
+
+| Compiler | Version      | Supported |
+|----------|--------------|-----------|
+| GCC      | <= 11        | ❌        |
+| GCC      | 12           | ✅        |
+| GCC      | 13           | ✅        |
+| Clang    | <= 13        | ❓        |
+| Clang    | 14           | ✅        |
+| Clang    | 15           | ✅        |
 
 ### Running include-what-you-use
 
