@@ -289,7 +289,7 @@ target_include_directories(memerna PUBLIC src)
 target_include_directories(run_benchmark PRIVATE tests)
 target_include_directories(run_tests PRIVATE tests)
 
-target_link_libraries(memerna PRIVATE fmt::fmt spdlog::spdlog)
+target_link_libraries(memerna PUBLIC fmt::fmt spdlog::spdlog)
 target_link_libraries(brute PRIVATE memerna)
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
