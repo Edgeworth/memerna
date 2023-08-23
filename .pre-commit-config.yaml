@@ -24,30 +24,30 @@ repos:
       - id: trailing-whitespace # trims trailing whitespace.
   # Python related hooks:
   - repo: https://github.com/psf/black
-    rev: 23.7.0
+    rev: 23.9.1
     hooks:
       - id: black
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.10.1
+    rev: v3.13.0
     hooks:
       - id: pyupgrade
         args: [--py311-plus]
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.0.1
+    rev: v3.1.0
     hooks:
       - id: add-trailing-comma
         args: [--py36-plus]
   - repo: https://github.com/sqlalchemyorg/zimports/
-    rev: v0.6.0
+    rev: v0.6.1
     hooks:
       - id: zimports
   - repo: https://github.com/asottile/blacken-docs
-    rev: 1.15.0
+    rev: 1.16.0
     hooks:
       - id: blacken-docs
         args: [--line-length=100, -t=py311]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.0
+    rev: v1.5.1
     hooks:
       - id: mypy
         additional_dependencies:
