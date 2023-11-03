@@ -2,8 +2,7 @@ from dataclasses import dataclass
 
 from rnapy.design.harness.model import Model
 from rnapy.design.models.transformer.transformer_cfg import MLMTransformerCfg
-from rnapy.design.rna.tensor import ChunkedRnaTensor
-from rnapy.design.rna.tensor import RnaTensor
+from rnapy.design.rna.tensor import ChunkedRnaTensor, RnaTensor
 
 
 @dataclass

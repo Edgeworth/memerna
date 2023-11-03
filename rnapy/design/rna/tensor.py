@@ -1,10 +1,9 @@
-from collections.abc import Generator
-from collections.abc import Sequence
 import itertools
+from collections.abc import Generator, Sequence
 from typing import Any
 
-from bidict import bidict
 import torch
+from bidict import bidict
 
 BOS_IDX = 0  # beginning of sequence
 EOS_IDX = 1  # end of sequence
@@ -57,7 +56,7 @@ class BasicRnaTensor(RnaTensor):
                 "C": IDX_END + 2,
                 "G": IDX_END + 3,
                 "U": IDX_END + 4,
-            },
+            }
         )
         self.db_map = bidict(
             {
@@ -68,7 +67,7 @@ class BasicRnaTensor(RnaTensor):
                 "(": IDX_END + 1,
                 ".": IDX_END + 2,
                 ")": IDX_END + 3,
-            },
+            }
         )
 
     def from_primary(self, primary: str) -> torch.Tensor:
@@ -113,12 +112,7 @@ class ChunkedRnaTensor(RnaTensor):
         self.chunk_size = chunk_size
 
         self.primary_map = bidict(
-            {
-                ">": BOS_IDX,
-                "<": EOS_IDX,
-                MASK_TOK: MASK_IDX,
-                PAD_TOK: PAD_IDX,
-            },
+            {">": BOS_IDX, "<": EOS_IDX, MASK_TOK: MASK_IDX, PAD_TOK: PAD_IDX}
         )
         self.db_map = bidict(
             {
@@ -129,7 +123,7 @@ class ChunkedRnaTensor(RnaTensor):
                 "(": IDX_END + 1,
                 ".": IDX_END + 2,
                 ")": IDX_END + 3,
-            },
+            }
         )
         cur_idx = IDX_END + 1
         iters = []

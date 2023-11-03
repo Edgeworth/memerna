@@ -3,10 +3,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
@@ -27,7 +24,7 @@ class LinearFold(RnaPackage):
                 args.append("-d2")
             case CtdCfg.NO_COAX:
                 raise NotImplementedError(
-                    "LinearFold does not support CTDs with no coaxial stacking",
+                    "LinearFold does not support CTDs with no coaxial stacking"
                 )
             case CtdCfg.ALL:
                 raise NotImplementedError("LinearFold does not support all CTDs")
@@ -54,10 +51,7 @@ class LinearFold(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
 

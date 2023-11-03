@@ -2,12 +2,11 @@
 from pathlib import Path
 
 import pandas as pd
-from rnapy.analysis.metrics import Dataset
-from rnapy.analysis.plot.plots import Column
-from rnapy.analysis.plot.plots import plot_mean_quantity
-from rnapy.analysis.plot.util import save_figure
-from rnapy.analysis.plot.util import set_style
 from scipy.stats import ttest_rel
+
+from rnapy.analysis.metrics import Dataset
+from rnapy.analysis.plot.plots import Column, plot_mean_quantity
+from rnapy.analysis.plot.util import save_figure, set_style
 
 
 class FoldAccuracyPlotter:

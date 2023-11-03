@@ -1,7 +1,8 @@
-from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
-from rnapy.model.random import RandomRna
 import torch
 from torch.utils.data import Dataset
+
+from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
+from rnapy.model.random import RandomRna
 
 try:
     from ViennaRNA import RNA

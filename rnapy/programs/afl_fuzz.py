@@ -6,12 +6,14 @@ from typing import Any
 import click
 import cloup
 import libtmux
-from rnapy.build.afl_fuzz import afl_fuzz_cfgs
-from rnapy.build.afl_fuzz import AflFuzzCfg
-from rnapy.build.args import afl_fuzz_cfg_options
-from rnapy.build.args import build_afl_fuzz_cfg_from_args
-from rnapy.build.args import build_cfg_from_args
-from rnapy.build.args import build_cfg_options
+
+from rnapy.build.afl_fuzz import AflFuzzCfg, afl_fuzz_cfgs
+from rnapy.build.args import (
+    afl_fuzz_cfg_options,
+    build_afl_fuzz_cfg_from_args,
+    build_cfg_from_args,
+    build_cfg_options,
+)
 from rnapy.util.util import fn_args
 
 
@@ -36,10 +38,7 @@ def run_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
     default=multiprocessing.cpu_count() - 2,
     help="Number of fuzzing configurations to run.",
 )
-def afl_fuzz(
-    num_procs: int,
-    **_kwargs: Any,
-) -> None:
+def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
     afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
     cfgs = afl_fuzz_cfgs(afl_cfg, num_procs)

@@ -1,16 +1,15 @@
 import logging
 from pathlib import Path
 
+import torch
+from torch.utils.data import DataLoader, Dataset
+
 from rnapy.design.harness.device_model import DeviceModel
 from rnapy.design.harness.model import Model
 from rnapy.design.harness.optimizer import Optimizer
-from rnapy.design.harness.reporter import Metrics
-from rnapy.design.harness.reporter import Reporter
+from rnapy.design.harness.reporter import Metrics, Reporter
 from rnapy.design.harness.train_cfg import TrainCfg
 from rnapy.design.harness.trainer_protocol import TrainerProtocol
-import torch
-from torch.utils.data import DataLoader
-from torch.utils.data import Dataset
 
 
 class Trainer(TrainerProtocol):
@@ -59,8 +58,7 @@ class Trainer(TrainerProtocol):
 
         # Set config sample counts to the actual sample counts.
         cfg.set_samples(
-            len(self.train_loader) * cfg.batch_size,
-            len(self.valid_loader) * cfg.batch_size,
+            len(self.train_loader) * cfg.batch_size, len(self.valid_loader) * cfg.batch_size
         )
 
         self.optimizer = Optimizer(cfg, DeviceModel(model=model))
@@ -113,7 +111,7 @@ class Trainer(TrainerProtocol):
                 if sample_count > num_samples:
                     break
                 logging.warning(
-                    f"reached end of validation data after {sample_count} samples. reusing...",
+                    f"reached end of validation data after {sample_count} samples. reusing..."
                 )
         r_loss, r_accuracy, _ = metrics.take()
         logging.info(f"validation loss: {r_loss:>7f} accuracy: {r_accuracy*100:.2f}%")
@@ -128,7 +126,7 @@ class Trainer(TrainerProtocol):
 
         try:
             logging.info(
-                f"Start training for {epochs} epochs, model has {dm.num_parameters()} parameters",
+                f"Start training for {epochs} epochs, model has {dm.num_parameters()} parameters"
             )
             for t in range(1, epochs + 1):
                 logging.info(f"Epoch {t}\n-------------------------------")

@@ -3,14 +3,16 @@ from typing import Any
 
 import click
 import cloup
+
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.data.args import data_options
-from rnapy.data.args import rna_from_args
-from rnapy.model.args import energy_cfg_from_args
-from rnapy.model.args import energy_options
-from rnapy.model.args import subopt_cfg_from_args
-from rnapy.model.args import subopt_options
+from rnapy.data.args import data_options, rna_from_args
+from rnapy.model.args import (
+    energy_cfg_from_args,
+    energy_options,
+    subopt_cfg_from_args,
+    subopt_options,
+)
 from rnapy.util.util import fn_args
 
 
@@ -22,38 +24,20 @@ from rnapy.util.util import fn_args
 @cloup.option("-e", "--efn/--no-efn", default=False, help="Run efn the given RNA")
 @cloup.option("-f", "--fold/--no-fold", default=False, help="Fold the given RNA")
 @cloup.option(
-    "-p",
-    "--partition/--no-partition",
-    default=False,
-    help="Run partition on the given RNA",
+    "-p", "--partition/--no-partition", default=False, help="Run partition on the given RNA"
 )
 @cloup.option(
-    "-s",
-    "--subopt/--no-subopt",
-    default=False,
-    help="Run suboptimal folding on the given RNA",
+    "-s", "--subopt/--no-subopt", default=False, help="Run suboptimal folding on the given RNA"
 )
 @cloup.option(
     "-p",
     "--programs",
     multiple=True,
-    type=cloup.Choice(
-        [
-            "memerna",
-            "rnastructure",
-            "sparsemfefold",
-            "viennarna",
-        ],
-    ),
+    type=cloup.Choice(["memerna", "rnastructure", "sparsemfefold", "viennarna"]),
     help="Programs to run",
 )
 def harness(  # pylint: disable=too-many-locals
-    programs: list[str],
-    efn: bool,
-    fold: bool,
-    partition: bool,
-    subopt: bool,
-    **kwargs: Any,
+    programs: list[str], efn: bool, fold: bool, partition: bool, subopt: bool, **kwargs: Any
 ) -> None:
     energy_cfg = energy_cfg_from_args(**fn_args())
     subopt_cfg = subopt_cfg_from_args(**fn_args())

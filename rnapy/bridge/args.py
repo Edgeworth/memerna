@@ -4,6 +4,7 @@ from typing import Any
 
 import click
 import cloup
+
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
@@ -13,9 +14,7 @@ from rnapy.bridge.viennarna import ViennaRna
 
 
 def validate_memerna(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: Path | None,
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
 ) -> MemeRna | None:
     if value is None:
         return None
@@ -23,9 +22,7 @@ def validate_memerna(
 
 
 def validate_linearfold(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: Path | None,
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
 ) -> LinearFold | None:
     if value is None:
         return None
@@ -33,9 +30,7 @@ def validate_linearfold(
 
 
 def validate_rnastructure(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: Path | None,
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
 ) -> RNAstructure | None:
     if value is None:
         return None
@@ -43,9 +38,7 @@ def validate_rnastructure(
 
 
 def validate_sparsemfefold(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: Path | None,
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
 ) -> SparseMfeFold | None:
     if value is None:
         return None
@@ -53,9 +46,7 @@ def validate_sparsemfefold(
 
 
 def validate_viennarna(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: Path | None,
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
 ) -> ViennaRna | None:
     if value is None:
         return None
@@ -64,15 +55,9 @@ def validate_viennarna(
 
 bridge_options = cloup.option_group(
     "Bridge options",
+    cloup.option("--time-limit-seconds", type=int, help="maximum time to run any bridge packages"),
     cloup.option(
-        "--time-limit-seconds",
-        type=int,
-        help="maximum time to run any bridge packages",
-    ),
-    cloup.option(
-        "--memory-limit-bytes",
-        type=int,
-        help="maximum memory to use for any bridge packages",
+        "--memory-limit-bytes", type=int, help="maximum memory to use for any bridge packages"
     ),
     cloup.option(
         "--memerna-path",
@@ -121,9 +106,7 @@ bridge_options = cloup.option_group(
 
 
 def init_package_limits(
-    time_limit_seconds: int | None,
-    memory_limit_bytes: int | None,
-    **kwargs: Any,
+    time_limit_seconds: int | None, memory_limit_bytes: int | None, **kwargs: Any
 ) -> None:
     for v in kwargs.values():
         if isinstance(v, RnaPackage):

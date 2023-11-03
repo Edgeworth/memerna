@@ -1,10 +1,11 @@
 from typing import Any
 
+import torch
+import torch.nn.functional as F
+from torch import nn
+
 from rnapy.design.harness.model import Model
 from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
-import torch
-from torch import nn
-import torch.nn.functional as F
 
 
 class SimpleFF(Model):
@@ -28,11 +29,7 @@ class SimpleFF(Model):
             nn.Unflatten(1, (cfg.tensor.primary_dim(), cfg.max_seq_len)),
         )
 
-    def forward(
-        self,
-        db: torch.Tensor,
-        _: torch.Tensor,
-    ) -> Any:
+    def forward(self, db: torch.Tensor, _: torch.Tensor) -> Any:
         """
         Args:
             db: db structure, shape (batch_size, seq_len)
@@ -51,10 +48,7 @@ class SimpleFF(Model):
         return out.argmax(dim=-2)
 
     def model_loss(
-        self,
-        *,
-        batch: list[torch.Tensor],
-        outs: list[torch.Tensor],
+        self, *, batch: list[torch.Tensor], outs: list[torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
         out = outs[0]  # shape: (batch_size, seq_len, d_out_tok)
         y = batch[-1]  # primary, shape: (batch_size, seq_len)

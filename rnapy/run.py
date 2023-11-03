@@ -4,13 +4,12 @@ import logging
 import click_log
 import cloup
 from dotenv import load_dotenv
+
 from rnapy.programs.afl_fuzz import afl_fuzz
 from rnapy.programs.afl_fuzz_min import afl_fuzz_min
 from rnapy.programs.analysis.compare_partition import compare_partition
-from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy
-from rnapy.programs.analysis.fold_accuracy import run_fold_accuracy
-from rnapy.programs.analysis.fold_perf import plot_fold_perf
-from rnapy.programs.analysis.fold_perf import run_fold_perf
+from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy, run_fold_accuracy
+from rnapy.programs.analysis.fold_perf import plot_fold_perf, run_fold_perf
 from rnapy.programs.build import build
 from rnapy.programs.design import design
 from rnapy.programs.harness import harness
@@ -23,9 +22,7 @@ CONTEXT_SETTINGS = cloup.Context.settings(
     show_constraints=True,
     show_subcommand_aliases=True,
     show_default=True,
-    formatter_settings=cloup.HelpFormatter.settings(
-        theme=cloup.HelpTheme.dark(),
-    ),
+    formatter_settings=cloup.HelpFormatter.settings(theme=cloup.HelpTheme.dark()),
 )
 
 load_dotenv()
@@ -50,11 +47,7 @@ cli.section(
 )
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section(
-    "Conversion",
-    convert_format,
-    crop_image,
-    parse_rnastructure_datatables,
-    update_datatables,
+    "Conversion", convert_format, crop_image, parse_rnastructure_datatables, update_datatables
 )
 cli.section("Design", design)
 

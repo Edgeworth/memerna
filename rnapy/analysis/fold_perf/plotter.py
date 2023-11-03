@@ -4,12 +4,10 @@ from pathlib import Path
 
 import matplotlib as mpl
 import pandas as pd
+
 from rnapy.analysis.metrics import Dataset
-from rnapy.analysis.plot.plots import Column
-from rnapy.analysis.plot.plots import plot_mean_log_quantity
-from rnapy.analysis.plot.plots import plot_mean_quantity
-from rnapy.analysis.plot.util import save_figure
-from rnapy.analysis.plot.util import set_style
+from rnapy.analysis.plot.plots import Column, plot_mean_log_quantity, plot_mean_quantity
+from rnapy.analysis.plot.util import save_figure, set_style
 from rnapy.util.format import human_size
 
 
@@ -23,7 +21,7 @@ class FoldPerfPlotter:
         "maxrss_bytes": Column(
             idx="maxrss_bytes",
             name="Maximum RSS (B)",
-            formatter=mpl.ticker.FuncFormatter(lambda x, pos: human_size(x, False)),
+            formatter=mpl.ticker.FuncFormatter(lambda x, _: human_size(x, False)),
         ),
     }
     input_dir: Path

@@ -3,13 +3,12 @@ from pathlib import Path
 
 import click
 import pandas as pd
+
 from rnapy.analysis.metrics import RnaAccuracy
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
 
 
 class FoldAccuracyRunner:
@@ -17,12 +16,7 @@ class FoldAccuracyRunner:
     output_dir: Path
     programs: list[tuple[RnaPackage, EnergyCfg, str]]
 
-    def __init__(
-        self,
-        memevault: MemeVault,
-        output_dir: Path,
-        memerna: MemeRna,
-    ) -> None:
+    def __init__(self, memevault: MemeVault, output_dir: Path, memerna: MemeRna) -> None:
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [

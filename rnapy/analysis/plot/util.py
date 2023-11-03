@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any
 
-from matplotlib import pyplot as plt
 import seaborn as sns
+from matplotlib import pyplot as plt
 
 
 def set_style() -> None:
@@ -10,14 +10,11 @@ def set_style() -> None:
 
 
 def get_subplot_grid(
-    n: int,
-    sharex: bool = False,
-    sharey: bool = False,
-    inches: float = 3.0,
+    n: int, *, sharex: bool = False, sharey: bool = False, inches: float = 3.0
 ) -> tuple[plt.Figure, list[plt.Axes]]:
-    SPLITTINGS = [(0, 0), (1, 1), (1, 2), (2, 2), (2, 2), (2, 3), (2, 3), (3, 3), (3, 3), (3, 3)]
+    splittings = [(0, 0), (1, 1), (1, 2), (2, 2), (2, 2), (2, 3), (2, 3), (3, 3), (3, 3), (3, 3)]
 
-    factors = SPLITTINGS[n]
+    factors = splittings[n]
     if factors == (1, 1):
         f, axes = plt.subplots(n, sharey=sharey, sharex=sharex)
     else:
@@ -39,8 +36,8 @@ def get_subplot_grid(
 
 
 def get_marker(idx: int) -> dict[str, Any]:
-    MARKERS = " ov^sp*+xD|"
-    return {"marker": MARKERS[idx % len(MARKERS)], "markersize": 5, "markevery": 5}
+    markers = " ov^sp*+xD|"
+    return {"marker": markers[idx % len(markers)], "markersize": 5, "markevery": 5}
 
 
 def save_figure(f: plt.Figure, path: Path) -> None:

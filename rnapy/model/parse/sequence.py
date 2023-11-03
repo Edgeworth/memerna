@@ -19,10 +19,7 @@ def primary_to_seq(r: str) -> str:
     return r
 
 
-def db_to_secondary(
-    db: str,
-    brackets: list[str] = default_brackets(),
-) -> list[int]:
+def db_to_secondary(db: str, brackets: list[str] = default_brackets()) -> list[int]:
     opening = {v[0] for v in brackets}
     closing = {v[1]: v[0] for v in brackets}
     stack: dict[str, list[int]] = {}

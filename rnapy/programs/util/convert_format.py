@@ -3,8 +3,8 @@ from typing import Any
 
 import click
 import cloup
-from rnapy.data.args import data_options
-from rnapy.data.args import rna_from_args
+
+from rnapy.data.args import data_options, rna_from_args
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.util.util import fn_args
 

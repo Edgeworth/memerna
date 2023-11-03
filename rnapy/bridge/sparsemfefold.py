@@ -3,10 +3,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
@@ -40,10 +37,7 @@ class SparseMfeFold(RnaPackage):
         raise NotImplementedError("SparseMFEFold does not support partition")
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
 

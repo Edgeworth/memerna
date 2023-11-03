@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import cloup
+
 from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
 from rnapy.analysis.fold_perf.runner import FoldPerfRunner
 from rnapy.bridge.args import bridge_options
@@ -37,13 +38,7 @@ def run_fold_perf(
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
     analyser = FoldPerfRunner(
-        memevault,
-        output_dir,
-        memerna,
-        linearfold,
-        rnastructure,
-        viennarna,
-        sparsemfefold,
+        memevault, output_dir, memerna, linearfold, rnastructure, viennarna, sparsemfefold
     )
     analyser.run()
 

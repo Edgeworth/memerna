@@ -1,13 +1,14 @@
 from pathlib import Path
 
 import click
+import torch
+from torch.utils.data import Dataset
+
 from rnapy.design.harness.train_cfg import TrainCfg
 from rnapy.design.harness.trainer import Trainer
 from rnapy.design.rna.dataset import RnaDataset
 from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
 from rnapy.design.rna.tensor import BOS_IDX
-import torch
-from torch.utils.data import Dataset
 
 
 class RnaPipeline:
@@ -19,11 +20,7 @@ class RnaPipeline:
     cfg: RnaPipelineCfg
 
     def __init__(
-        self,
-        *,
-        cfg: RnaPipelineCfg,
-        output_path: Path,
-        checkpoint_path: Path | None,
+        self, *, cfg: RnaPipelineCfg, output_path: Path, checkpoint_path: Path | None
     ) -> None:
         self.output_path = output_path
         self.cfg = cfg

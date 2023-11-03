@@ -8,9 +8,7 @@ GU_PENALTY = 0.50
 
 
 def update_internal_loop_end_penalties(
-    data: str,
-    remove_au: bool = True,
-    remove_gu: bool = True,
+    data: str, remove_au: bool = True, remove_gu: bool = True
 ) -> str:
     out = ""
     for line in data.splitlines():
@@ -58,11 +56,11 @@ def update_internal_loop_end_penalties(
 )
 def update_datatables(inp: Path, out: Path) -> None:
     (out / "internal_1x1.data").write_text(
-        update_internal_loop_end_penalties((inp / "internal_1x1.data").read_text()),
+        update_internal_loop_end_penalties((inp / "internal_1x1.data").read_text())
     )
     (out / "internal_1x2.data").write_text(
-        update_internal_loop_end_penalties((inp / "internal_1x2.data").read_text()),
+        update_internal_loop_end_penalties((inp / "internal_1x2.data").read_text())
     )
     (out / "internal_2x2.data").write_text(
-        update_internal_loop_end_penalties((inp / "internal_2x2.data").read_text()),
+        update_internal_loop_end_penalties((inp / "internal_2x2.data").read_text())
     )

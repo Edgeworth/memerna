@@ -1,9 +1,10 @@
 import logging
 
-from rnapy.design.harness.device_model import DeviceModel
-from rnapy.design.harness.train_cfg import TrainCfg
 import torch
 from torch import nn
+
+from rnapy.design.harness.device_model import DeviceModel
+from rnapy.design.harness.train_cfg import TrainCfg
 
 
 class Optimizer:
@@ -22,9 +23,7 @@ class Optimizer:
         if cfg.optimizer == "sgd":
             self.optimizer = torch.optim.SGD(self.dm.parameters(), lr=1.0)
             self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                self.optimizer,
-                factor=0.5,
-                patience=5,
+                self.optimizer, factor=0.5, patience=5
             )
         elif cfg.optimizer == "adam":
             self.optimizer = torch.optim.Adam(self.dm.parameters())
@@ -79,10 +78,7 @@ class Optimizer:
             logging.info(f"Using learning rates: {self.lr_params()}")
 
     def state_dict(self) -> dict:
-        d = {
-            "model": self.dm.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-        }
+        d = {"model": self.dm.state_dict(), "optimizer": self.optimizer.state_dict()}
         if self.scheduler is not None:
             d["scheduler"] = self.scheduler.state_dict()
         return d

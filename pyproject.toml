@@ -94,14 +94,19 @@ ignore = [
   "ERA001", # allow commented out code
   "FBT001", # allow boolean position arg in functions
   "FBT002", # allow boolean position arg in functions
+  "FBT003", # allow boolean position arg in functions
   "G004", # allow f-string in logs, just be careful if performance matters
   "ISC001", # avoid conflict with formatter
   "PD002", # allow pandas in place operations
   "PD901", # allow 'df'
   "PLR0912", # allow more branches in functions
+  "PLR0913", # allow more arguments in functions
+  "PLR2004", # allow magic numbers
   "S311", # remove cryptographic random gen false positives
   "T201", # allow print statements
   "TRY003", # allow exceptions with string arguments
+  "TD", # no TODO related warnings
+  "FIX", # no notes on FIXME, TODO, etc
 ]
 select = ["ALL"]
 
