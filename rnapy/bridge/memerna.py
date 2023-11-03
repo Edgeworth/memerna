@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import EnergyCfg, SuboptCfg
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
@@ -56,10 +55,7 @@ class MemeRna(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)

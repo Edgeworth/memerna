@@ -4,8 +4,8 @@ from typing import Any
 
 import click
 import cloup
-from rnapy.build.args import build_cfg_from_args
-from rnapy.build.args import build_cfg_options
+
+from rnapy.build.args import build_cfg_from_args, build_cfg_options
 from rnapy.util.command import run_shell
 from rnapy.util.util import fn_args
 
@@ -16,10 +16,7 @@ from rnapy.util.util import fn_args
 @cloup.option("--build/--no-build", default=True)
 @cloup.option("--test/--no-test", default=False)
 @cloup.option("--bench/--no-bench", default=False)
-@cloup.option(
-    "--bench-output",
-    type=cloup.Path(dir_okay=False, resolve_path=True, path_type=Path),
-)
+@cloup.option("--bench-output", type=cloup.Path(dir_okay=False, resolve_path=True, path_type=Path))
 @cloup.argument("targets", nargs=-1)
 def build(
     regenerate: bool,

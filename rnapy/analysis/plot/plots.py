@@ -2,18 +2,17 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from bidict import bidict
 import matplotlib as mpl
-from matplotlib import pyplot as plt
 import numpy as np
-from rnapy.analysis.metrics import Dataset
-from rnapy.analysis.plot.util import get_marker
-from rnapy.analysis.plot.util import get_subplot_grid
-from rnapy.analysis.plot.util import set_up_figure
-from rnapy.util.util import stable_hash
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+from bidict import bidict
+from matplotlib import pyplot as plt
+
+from rnapy.analysis.metrics import Dataset
+from rnapy.analysis.plot.util import get_marker, get_subplot_grid, set_up_figure
+from rnapy.util.util import stable_hash
 
 
 @dataclass
@@ -28,7 +27,7 @@ class Column:
 
 def _color(name: str, palette: Sequence[Any] | None = None) -> Any:
     color_map: bidict = getattr(_color, "color_map", bidict())
-    setattr(_color, "color_map", color_map)
+    _color.color_map = color_map
 
     print(color_map)
 
@@ -60,16 +59,10 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
             x, y = xcol.idx, ycol.idx
             df = df[[x, y]].groupby(x)
             sns.lineplot(
-                df.mean(),
-                x=x,
-                y=y,
-                label=did,
-                ax=ax,
-                color=_color(did),
-                **get_marker(idx),
+                df.mean(), x=x, y=y, label=did, ax=ax, color=_color(did), **get_marker(idx)
             )
             low, high = df[y].min(), df[y].max()
-            ax.fill_between(list(sorted(df.groups)), low, high, alpha=0.2, color=_color(did))
+            ax.fill_between(sorted(df.groups), low, high, alpha=0.2, color=_color(did))
 
     set_up_figure(f, names=(xcol.name, ycols[0].name))
     if ycols[0].formatter:
@@ -78,20 +71,16 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
 
 
 def plot_mean_log_quantity(  # noqa: too-many-locals
-    ds: Dataset,
-    xcol: Column,
-    ycol: Column,
-    logx: bool = True,
-    logy: bool = True,
+    ds: Dataset, xcol: Column, ycol: Column, logx: bool = True, logy: bool = True
 ) -> plt.Figure:
-    EP = 1e-2
+    ep = 1e-2
 
-    f, axes = get_subplot_grid(len(ds), True, True)
+    f, axes = get_subplot_grid(len(ds), sharex=True, sharey=True)
     for i, did in enumerate(sorted(ds.keys())):
         x, y = xcol.idx, ycol.idx
 
         df = ds[did][[x, y]].groupby(x).mean()
-        df = df[df[y] > EP].reset_index()
+        df = df[df[y] > ep].reset_index()
         if logx:
             df[x] = df[x].apply(np.log10)
         if logy:
@@ -104,11 +93,7 @@ def plot_mean_log_quantity(  # noqa: too-many-locals
         label = f"{did}\n${a:.5f}x {sign} {abs(b):.2f}$\n$R^2 = {res.rsquared:.3f}$"
         sns.regplot(x=x, y=y, label=label, data=df, fit_reg=False, ax=axes[i], color=_color(did))
         sm.graphics.abline_plot(
-            model_results=res,
-            ax=axes[i],
-            c=(0, 0, 0, 0.8),
-            color=_color(did),
-            **get_marker(i),
+            model_results=res, ax=axes[i], c=(0, 0, 0, 0.8), color=_color(did), **get_marker(i)
         )
 
     names = [xcol.name, ycol.name]

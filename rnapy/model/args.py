@@ -2,50 +2,30 @@
 from decimal import Decimal
 from typing import Any
 
-from click_params import DECIMAL
 import cloup
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
-from rnapy.model.model_cfg import SuboptCfg
+from click_params import DECIMAL
+
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 
 energy_options = cloup.option_group(
     "Energy options",
+    cloup.option("--lonely-pairs/--no-lonely-pairs", default=False, help="allow lonely pairs"),
     cloup.option(
-        "--lonely-pairs/--no-lonely-pairs",
-        default=False,
-        help="allow lonely pairs",
-    ),
-    cloup.option(
-        "--ctd",
-        type=cloup.Choice(list(CtdCfg)),
-        default=CtdCfg.ALL,
-        help="whether to use CTDs",
+        "--ctd", type=cloup.Choice(list(CtdCfg)), default=CtdCfg.ALL, help="whether to use CTDs"
     ),
 )
 
 
 def energy_cfg_from_args(
-    lonely_pairs: LonelyPairs,
-    ctd: CtdCfg,
-    model: str | None,
-    **_kwargs: Any,
+    lonely_pairs: LonelyPairs, ctd: CtdCfg, model: str | None, **_kwargs: Any
 ) -> EnergyCfg:
     return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, model=model)
 
 
 subopt_options = cloup.option_group(
     "Subopt options",
-    cloup.option(
-        "--subopt-delta",
-        type=DECIMAL,
-        help="maximum energy delta from minimum",
-    ),
-    cloup.option(
-        "--subopt-strucs",
-        type=int,
-        help="maximum number of reported structures",
-    ),
+    cloup.option("--subopt-delta", type=DECIMAL, help="maximum energy delta from minimum"),
+    cloup.option("--subopt-strucs", type=int, help="maximum number of reported structures"),
     cloup.option(
         "--subopt-time-secs",
         type=float,
@@ -67,8 +47,5 @@ def subopt_cfg_from_args(
     **_kwargs: Any,
 ) -> SuboptCfg:
     return SuboptCfg(
-        delta=subopt_delta,
-        strucs=subopt_strucs,
-        time_secs=subopt_time_secs,
-        sorted=subopt_sorted,
+        delta=subopt_delta, strucs=subopt_strucs, time_secs=subopt_time_secs, sorted=subopt_sorted
     )

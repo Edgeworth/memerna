@@ -3,6 +3,7 @@ from pathlib import Path
 
 import click
 import pandas as pd
+
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
@@ -10,9 +11,7 @@ from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
 
 
 class FoldPerfRunner:

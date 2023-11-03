@@ -1,12 +1,11 @@
 # Copyright 2022 Eliot Courtney.
 from __future__ import annotations
 
-from collections.abc import Iterator
-from collections.abc import Sequence
-from dataclasses import dataclass
-from dataclasses import field
+from collections.abc import Iterator, Sequence
+from dataclasses import dataclass, field
 
 import pandas as pd
+
 from rnapy.model.rna import Rna
 
 

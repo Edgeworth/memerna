@@ -1,14 +1,11 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
-from decimal import Decimal
 import re
 import tempfile
+from dataclasses import dataclass
+from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
@@ -32,7 +29,7 @@ class RNAstructure(RnaPackage):
             raise NotImplementedError("RNAstructure does not support subopt without delta")
         if cfg.strucs is not None:
             raise NotImplementedError(
-                "RNAstructure does not support subopt with max number of structures",
+                "RNAstructure does not support subopt with max number of structures"
             )
         if cfg.time_secs is not None:
             raise NotImplementedError("RNAstructure does not support subopt with max time")
@@ -69,10 +66,7 @@ class RNAstructure(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         self.check_energy_cfg(energy_cfg)
         self.check_subopt_cfg(subopt_cfg)
@@ -81,13 +75,7 @@ class RNAstructure(RnaPackage):
             fin.flush()
 
             assert subopt_cfg.delta is not None
-            res = self._run_cmd(
-                "./exe/AllSub",
-                "-a",
-                f"{subopt_cfg.delta}",
-                fin.name,
-                fout.name,
-            )
+            res = self._run_cmd("./exe/AllSub", "-a", f"{subopt_cfg.delta}", fin.name, fout.name)
             output = fout.read()
             # TODO(3): does not extract energy yet
             subopts = RnaParser.multi_from_ct_file(output)

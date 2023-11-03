@@ -1,15 +1,11 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
 
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import EnergyCfg, SuboptCfg
 from rnapy.model.rna import Rna
-from rnapy.util.command import CmdLimits
-from rnapy.util.command import CmdResult
-from rnapy.util.command import run_cmd
+from rnapy.util.command import CmdLimits, CmdResult, run_cmd
 
 
 @dataclass
@@ -31,10 +27,7 @@ class RnaPackage:
         raise NotImplementedError
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
 

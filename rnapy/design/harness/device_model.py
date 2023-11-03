@@ -1,9 +1,10 @@
 from collections.abc import Iterator
 from typing import Any
 
-from rnapy.design.harness.model import Model
 import torch
 from torch import nn
+
+from rnapy.design.harness.model import Model
 
 
 class DeviceModel:
@@ -12,12 +13,7 @@ class DeviceModel:
     device: str
     model: Model
 
-    def __init__(
-        self,
-        *,
-        model: Model,
-        device: str | None = None,
-    ) -> None:
+    def __init__(self, *, model: Model, device: str | None = None) -> None:
         if device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
@@ -48,10 +44,7 @@ class DeviceModel:
         return self.model.model_prediction(out)
 
     def loss(
-        self,
-        *,
-        batch: list[torch.Tensor],
-        outs: list[torch.Tensor],
+        self, *, batch: list[torch.Tensor], outs: list[torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
         return self.model.model_loss(batch=self.inputs(batch), outs=outs)
 

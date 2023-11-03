@@ -1,14 +1,11 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
-from decimal import Decimal
 import re
 import tempfile
+from dataclasses import dataclass
+from decimal import Decimal
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import CtdCfg
-from rnapy.model.model_cfg import EnergyCfg
-from rnapy.model.model_cfg import LonelyPairs
-from rnapy.model.model_cfg import SuboptCfg
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
@@ -27,7 +24,7 @@ class ViennaRna(RnaPackage):
                 pass
             case LonelyPairs.ON:
                 raise NotImplementedError(
-                    "ViennaRNA does not support non-heuristic disallowing of lonely pairs",
+                    "ViennaRNA does not support non-heuristic disallowing of lonely pairs"
                 )
         match cfg.ctd:
             case CtdCfg.NONE:
@@ -36,7 +33,7 @@ class ViennaRna(RnaPackage):
                 args.append("-d2")
             case CtdCfg.NO_COAX:
                 raise NotImplementedError(
-                    "ViennaRNA does not support CTDs with no coaxial stacking",
+                    "ViennaRNA does not support CTDs with no coaxial stacking"
                 )
             case CtdCfg.ALL:
                 args.append("-d3")
@@ -50,12 +47,10 @@ class ViennaRna(RnaPackage):
             args += ["--deltaEnergy", f"{cfg.delta}"]
         if cfg.strucs:
             raise NotImplementedError(
-                "ViennaRNA does not support reporting a maximum number of suboptimal structures",
+                "ViennaRNA does not support reporting a maximum number of suboptimal structures"
             )
         if cfg.time_secs:
-            raise NotImplementedError(
-                "ViennaRNA does not support reporting a maximum running time",
-            )
+            raise NotImplementedError("ViennaRNA does not support reporting a maximum running time")
         if cfg.sorted:
             args += ["--sorted"]
         return args
@@ -87,10 +82,7 @@ class ViennaRna(RnaPackage):
         raise NotImplementedError
 
     def subopt(
-        self,
-        rna: Rna,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
+        self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)

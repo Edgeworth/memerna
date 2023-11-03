@@ -1,12 +1,13 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import resource
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import click
+
 from rnapy.util.format import human_size
 
 

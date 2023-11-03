@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import cloup
+
 from rnapy.design.models.ff.simple import SimpleFF
 from rnapy.design.models.transformer.mlm import MLMTransformer
 from rnapy.design.rna.pipeline import RnaPipeline
@@ -33,11 +34,7 @@ from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
         path_type=Path,
     ),
 )
-@cloup.option(
-    "--model",
-    default="simple",
-    type=cloup.Choice(["simple", "transformer"]),
-)
+@cloup.option("--model", default="simple", type=cloup.Choice(["simple", "transformer"]))
 def design(output_path: Path, checkpoint_path: Path | None, model: str) -> None:
     cfg = RnaPipelineCfg(activation="gelu")
 

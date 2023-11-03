@@ -1,8 +1,8 @@
 # Copyright 2016 Eliot Courtney.
-from collections.abc import Generator
-from pathlib import Path
 import random
 import sqlite3
+from collections.abc import Generator
+from pathlib import Path
 
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
@@ -16,10 +16,7 @@ class MemeVault:
         self.dataset = dataset
 
     def add(self, rna: Rna) -> None:
-        self.db.execute(
-            f"INSERT INTO {self.dataset} VALUES (?, ?, ?)",
-            (rna.name, rna.r, rna.db()),
-        )
+        self.db.execute(f"INSERT INTO {self.dataset} VALUES (?, ?, ?)", (rna.name, rna.r, rna.db()))
         self.db.commit()
 
     def get_with_seq(self, seq: str) -> Rna:

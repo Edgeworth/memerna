@@ -1,22 +1,19 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
-from typing import Any
-from typing import TextIO
+from typing import Any, TextIO
 
 import click
 import cloup
 from cloup.constraints import RequireAtLeast
+
 from rnapy.data.memevault import MemeVault
 from rnapy.model.parse.rna_parser import RnaParser
-from rnapy.model.parse.sequence import db_to_secondary
-from rnapy.model.parse.sequence import seq_to_primary
+from rnapy.model.parse.sequence import db_to_secondary, seq_to_primary
 from rnapy.model.rna import Rna
 
 
 def validate_rna_file(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: TextIO | None,
+    _ctx: click.Context, _param: click.Parameter, value: TextIO | None
 ) -> Rna | None:
     if value is None:
         return None
@@ -30,9 +27,7 @@ def validate_seq(_ctx: click.Context, _param: click.Parameter, value: str | None
 
 
 def validate_db(
-    _ctx: click.Context,
-    _param: click.Parameter,
-    value: str | None,
+    _ctx: click.Context, _param: click.Parameter, value: str | None
 ) -> list[int] | None:
     if value is None:
         return None
@@ -70,7 +65,7 @@ def rna_from_args(
         raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
     if sum(1 for i in [memevault_rna, file_rna, primary or secondary] if i) != 1:
         raise click.UsageError(
-            "Specify only one of --memevault-rna, --file-rna, --primary/--secondary",
+            "Specify only one of --memevault-rna, --file-rna, --primary/--secondary"
         )
     if file_rna:
         return file_rna

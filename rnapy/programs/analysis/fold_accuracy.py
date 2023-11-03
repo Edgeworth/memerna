@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import cloup
+
 from rnapy.analysis.fold_accuracy.plotter import FoldAccuracyPlotter
 from rnapy.analysis.fold_accuracy.runner import FoldAccuracyRunner
 from rnapy.bridge.args import bridge_options
@@ -21,18 +22,10 @@ from rnapy.data.memevault import MemeVault
     required=True,
 )
 def run_fold_accuracy(
-    memevault_path: Path,
-    dataset: str,
-    output_dir: Path,
-    memerna: MemeRna,
-    **_kwargs: Any,
+    memevault_path: Path, dataset: str, output_dir: Path, memerna: MemeRna, **_kwargs: Any
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
-    analyser = FoldAccuracyRunner(
-        memevault,
-        output_dir,
-        memerna,
-    )
+    analyser = FoldAccuracyRunner(memevault, output_dir, memerna)
     analyser.run()
 
 

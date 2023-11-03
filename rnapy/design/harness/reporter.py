@@ -1,11 +1,12 @@
 import logging
 import time
 
-from rnapy.design.harness.train_cfg import TrainCfg
-from rnapy.design.harness.trainer_protocol import TrainerProtocol
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
+
+from rnapy.design.harness.train_cfg import TrainCfg
+from rnapy.design.harness.trainer_protocol import TrainerProtocol
 
 
 class Metrics:
@@ -101,7 +102,7 @@ class Reporter:
                 f"loss: {r_loss:>7f} | accuracy: {100*r_accuracy:.2f}% | "
                 f"{r_sample_time_ms:.2f} ms/sample | "
                 f"{self.sample_count_since_epoch:>5d}/{self.cfg.train_samples} samples | "
-                f"{self.sample_count:>5d} samples",
+                f"{self.sample_count:>5d} samples"
             )
             self.prev_print_sample_count = self.sample_count
 
@@ -110,9 +111,7 @@ class Reporter:
 
             valid_loss, valid_accuracy = trainer.validate(self.cfg.fast_valid_samples)
             self.writer.add_scalars(
-                "loss",
-                {"train": r_loss, "valid": valid_loss},
-                self.sample_count,
+                "loss", {"train": r_loss, "valid": valid_loss}, self.sample_count
             )
             self.writer.add_scalars(
                 "accuracy",
@@ -136,9 +135,7 @@ class Reporter:
             if self.cfg.checkpoint_valid_loss:
                 trainer.save_checkpoint(self.cfg.checkpoint_path("best"))
 
-        logging.info(
-            f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n",
-        )
+        logging.info(f"Epoch validation loss: {loss:>7f} accuracy: {100*accuracy:.2f}%\n")
 
     def start(self, module: nn.Module, batch: list[torch.Tensor]) -> None:
         if self.cfg.save_graph:

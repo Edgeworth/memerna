@@ -1,14 +1,14 @@
-from math import ceil
 import random
+from math import ceil
 from typing import Any
+
+import torch
+import torch.nn.functional as F
 
 from rnapy.design.harness.model import Model
 from rnapy.design.models.parts.transformer.transformer_model import TransformerModel
 from rnapy.design.rna.pipeline_cfg import RnaPipelineCfg
-from rnapy.design.rna.tensor import MASK_IDX
-from rnapy.design.rna.tensor import PAD_IDX
-import torch
-import torch.nn.functional as F
+from rnapy.design.rna.tensor import MASK_IDX, PAD_IDX
 
 
 class MLMTransformer(Model):
@@ -95,29 +95,20 @@ class MLMTransformer(Model):
         if self.cfg.mlm.mask_incorrect_prop > 0:
             # Select some of the masked tokens to be passed through as incorrect.
             random_tokens = torch.randint(
-                0,
-                self.cfg.tensor.primary_dim(),
-                size=primary.shape,
-                device=primary.device,
+                0, self.cfg.tensor.primary_dim(), size=primary.shape, device=primary.device
             )
             # Remove the ignored tokens. We may not passthrough enough incorrect tokens
             # but oh well.
             random_ignored = self.mask_for_values(random_tokens, ignored_tokens)
             incorrect_mask = self.prob_mask_subset(
-                passthrough_mask,
-                self.cfg.mlm.mask_incorrect_prop,
+                passthrough_mask, self.cfg.mlm.mask_incorrect_prop
             )
             incorrect_mask &= ~random_ignored
             primary = torch.where(incorrect_mask, random_tokens, primary)
 
         return (primary, mask)
 
-    def forward(
-        self,
-        db: torch.Tensor,
-        primary: torch.Tensor,
-        randomize_mask: bool = True,
-    ) -> Any:
+    def forward(self, db: torch.Tensor, primary: torch.Tensor, randomize_mask: bool = True) -> Any:
         """
         Args:
             db: db structure, shape (batch_size, seq_len, d_db)
@@ -143,10 +134,7 @@ class MLMTransformer(Model):
         return out.argmax(dim=-1)
 
     def model_loss(
-        self,
-        *,
-        batch: list[torch.Tensor],
-        outs: list[torch.Tensor],
+        self, *, batch: list[torch.Tensor], outs: list[torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
         out = outs[0]  # shape: (batch_size, seq_len, d_out_tok)
         mask = outs[1]
@@ -156,9 +144,7 @@ class MLMTransformer(Model):
         y = batch[-1].masked_fill(~mask, PAD_IDX)
 
         loss = F.cross_entropy(
-            out.reshape(-1, self.cfg.tensor.primary_dim()),
-            y.reshape(-1),
-            ignore_index=PAD_IDX,
+            out.reshape(-1, self.cfg.tensor.primary_dim()), y.reshape(-1), ignore_index=PAD_IDX
         )
 
         # Select only the masked tokens for accuracy calculation.

@@ -1,12 +1,11 @@
 # Copyright 2022 Eliot Courtney.
 
 
+import re
 from collections import deque
 from decimal import Decimal
-import re
 
-from rnapy.model.parse.sequence import db_to_secondary
-from rnapy.model.parse.sequence import seq_to_primary
+from rnapy.model.parse.sequence import db_to_secondary, seq_to_primary
 from rnapy.model.rna import Rna
 
 

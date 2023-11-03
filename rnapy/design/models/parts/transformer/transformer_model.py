@@ -1,9 +1,10 @@
 from typing import Any
 
-from rnapy.design.models.parts.transformer.positional_encoder import PositionalEncoder
-from rnapy.design.models.parts.transformer.token_embedding import TokenEmbedding
 import torch
 from torch import nn
+
+from rnapy.design.models.parts.transformer.positional_encoder import PositionalEncoder
+from rnapy.design.models.parts.transformer.token_embedding import TokenEmbedding
 
 
 class TransformerModel(nn.Module):
