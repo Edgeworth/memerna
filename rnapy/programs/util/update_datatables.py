@@ -15,9 +15,7 @@ def update_internal_loop_end_penalties(
         s, estr = line.split()
         e = float(estr)
         mid = 0
-        if len(s) == 6:
-            mid = 3
-        elif len(s) == 7:
+        if len(s) == 6 or len(s) == 7:
             mid = 3
         elif len(s) == 8:
             mid = 4

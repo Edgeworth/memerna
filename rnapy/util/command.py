@@ -31,20 +31,21 @@ class CmdResult:
         return f"{self.real_sec:.2f}s, {human_size(self.maxrss_bytes)} "
 
 
-def try_cmd(  # pylint: disable=too-many-locals
+def try_cmd(
     *cmd: str,
     inp: str | bytes | None = None,
     return_stdout: bool = True,
     stdout_path: Path | None = None,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
-    limits: CmdLimits = CmdLimits(),
+    limits: CmdLimits | None = None,
 ) -> CmdResult:
+    limits = limits or CmdLimits()
     if isinstance(inp, str):
         inp = inp.encode("utf-8")
 
     # Uses GNU time.
-    cmd = ("/usr/bin/time", "-f", "%e %U %S %M") + cmd
+    cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd)
 
     def preexec_fn() -> None:
         if limits.mem_bytes:
@@ -58,11 +59,11 @@ def try_cmd(  # pylint: disable=too-many-locals
 
     stdout: Any
     if stdout_path:
-        stdout = open(stdout_path, "wb")  # pylint: disable=consider-using-with
+        stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if return_stdout else subprocess.DEVNULL
     stdin = subprocess.PIPE if inp else None
-    with subprocess.Popen(  # pylint: disable=subprocess-popen-preexec-fn
+    with subprocess.Popen(
         cmd,
         shell=False,
         stdin=stdin,
@@ -70,7 +71,7 @@ def try_cmd(  # pylint: disable=too-many-locals
         stderr=subprocess.PIPE,
         cwd=cwd,
         env=env,
-        preexec_fn=preexec_fn,
+        preexec_fn=preexec_fn,  # noqa: PLW1509
     ) as proc:
         stdout_bytes, stderr_bytes = proc.communicate(input=inp)
         ret_code = proc.wait()
@@ -106,8 +107,9 @@ def run_cmd(
     stdout_path: Path | None = None,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
-    limits: CmdLimits = CmdLimits(),
+    limits: CmdLimits | None = None,
 ) -> CmdResult:
+    limits = limits or CmdLimits()
     res = try_cmd(
         *cmd,
         inp=inp,
@@ -125,7 +127,7 @@ def run_cmd(
 
 
 def run_shell(cmd: str, cwd: Path | None = None, extra_env: dict[str, str] | None = None) -> None:
-    prev_cwd = os.getcwd()
+    prev_cwd = Path.cwd()
     if cwd is not None:
         os.chdir(cwd)
     if extra_env:

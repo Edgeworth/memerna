@@ -70,7 +70,8 @@ def rna_from_args(
     if file_rna:
         return file_rna
     if memevault_rna:
-        assert memevault_path is not None
+        if memevault_path is None:
+            raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
         return MemeVault(memevault_path, "archiveii")[memevault_rna]
     if primary or secondary:
         return Rna("cmd", primary, secondary)

@@ -6,7 +6,7 @@ from rnapy.model.random import RandomRna
 
 try:
     from ViennaRNA import RNA
-except:
+except Exception:
     print("ViennaRNA not installed")
 
 

@@ -25,7 +25,8 @@ def run_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
 
     # Run in given tmux window:
     pane = window.attached_pane
-    assert pane
+    if not pane:
+        raise RuntimeError(f"Window {window} has no attached pane")
     pane.send_keys(f"cd {shlex.quote(str(cwd))}", enter=True, suppress_history=True)
     pane.send_keys(cmd, enter=True, suppress_history=True)
 
@@ -54,7 +55,7 @@ def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
             windows.append(window)
 
         with multiprocessing.Pool(len(cfgs)) as pool:
-            pool.starmap(run_fuzz, zip(cfgs, windows))
+            pool.starmap(run_fuzz, zip(cfgs, windows, strict=True))
 
         click.echo("Attaching session")
         session.attach_session()

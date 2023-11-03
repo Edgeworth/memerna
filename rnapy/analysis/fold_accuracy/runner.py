@@ -44,11 +44,13 @@ class FoldAccuracyRunner:
             dataset = self.memevault.dataset
             click.echo(f"Folding accuracy with {name} on {dataset}")
             output_path = self.output_dir / f"{dataset}_{name}.results"
-            assert not output_path.exists(), f"Output path {output_path} already exists"
+            if output_path.exists():
+                raise RuntimeError(f"Output path {output_path} already exists")
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {name} on {rna_idx} {rna.name}")
-                assert rna.name
+                if not rna.name:
+                    raise ValueError(f"RNA name is empty: {rna}")
                 pred, _ = program.fold(rna, cfg)
                 accuracy = RnaAccuracy.from_rna(rna, pred)
                 df = pd.DataFrame(

@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 from functools import reduce
 from pathlib import Path
+from typing import ClassVar
 
 import matplotlib as mpl
 import pandas as pd
@@ -12,7 +13,7 @@ from rnapy.util.format import human_size
 
 
 class FoldPerfPlotter:
-    COLS: dict[str, Column] = {
+    COLS: ClassVar[dict[str, Column]] = {
         "name": Column(idx="name", name="Name"),
         "length": Column(idx="length", name="Length (nuc)"),
         "real_sec": Column(idx="real_sec", name="Wall time (s)"),
@@ -52,7 +53,8 @@ class FoldPerfPlotter:
     def run(self) -> None:
         datasets = self._load_datasets()
         # Plot quantities
-        for ds in datasets.values():
+        for dataset in datasets.values():
+            ds = dataset
             if "large" in ds.name:
                 ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
             self._plot_quantity(ds)

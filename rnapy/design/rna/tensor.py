@@ -87,7 +87,7 @@ class BasicRnaTensor(RnaTensor):
 
     def from_db(self, db: str) -> torch.Tensor:
         # TODO(1): try relative, absolute, and 0/1/2 representations.
-        return torch.LongTensor([BOS_IDX] + self.db_flat_mapping(db) + [EOS_IDX])
+        return torch.LongTensor([BOS_IDX, *self.db_flat_mapping(db), EOS_IDX])
 
     def to_db(self, index: torch.Tensor | list[int]) -> str:
         if isinstance(index, torch.Tensor):
@@ -134,11 +134,8 @@ class ChunkedRnaTensor(RnaTensor):
                 cur_idx += 1
 
     def from_primary(self, primary: str) -> torch.Tensor:
-        t = []
-        for chunk in chunks(primary, self.chunk_size):
-            t.append(self.primary_map["".join(chunk)])
-
-        return torch.LongTensor([BOS_IDX] + t + [EOS_IDX])
+        t = [self.primary_map["".join(chunk)] for chunk in chunks(primary, self.chunk_size)]
+        return torch.LongTensor([BOS_IDX, *t, EOS_IDX])
 
     def to_primary(self, index: torch.Tensor | list[int]) -> str:
         if isinstance(index, torch.Tensor):

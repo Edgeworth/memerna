@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from rnapy.design.harness.model import Model
 from rnapy.design.models.transformer.transformer_cfg import MLMTransformerCfg
@@ -28,8 +28,8 @@ class RnaPipelineCfg:
     dim_feedforward: int = 2048
     """Dimension of the feedforward layers used (e.g. controls transformer feedforward)"""
 
-    tensor: RnaTensor = ChunkedRnaTensor(1)
+    tensor: RnaTensor = field(default_factory=lambda: ChunkedRnaTensor(1))
 
-    mlm: MLMTransformerCfg = MLMTransformerCfg()
+    mlm: MLMTransformerCfg = field(default_factory=MLMTransformerCfg)
 
     model_class: type[Model] = Model  # Needs to be set.

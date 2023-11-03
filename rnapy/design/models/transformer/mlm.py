@@ -15,7 +15,7 @@ class MLMTransformer(Model):
     model: TransformerModel
     cfg: RnaPipelineCfg
 
-    def __init__(self, *, cfg: RnaPipelineCfg):
+    def __init__(self, *, cfg: RnaPipelineCfg) -> None:
         super().__init__()
         self.cfg = cfg
 

@@ -39,14 +39,16 @@ class MemeRna(RnaPackage):
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        assert rna.r is not None
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd("./efn", *args, rna.r, rna.db())
         energy = Decimal(res.stdout.splitlines()[0].strip())
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        assert rna.r is not None
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd("./fold", *args, rna.r)
         _, db, _ = res.stdout.strip().split("\n")
         return Rna(rna.name, rna.r, db_to_secondary(db)), res
@@ -59,7 +61,8 @@ class MemeRna(RnaPackage):
     ) -> tuple[list[Rna], CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)
-        assert rna.r is not None
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd("./subopt", *args, rna.r)
         subopts = []
         for line in res.stdout.splitlines()[:-1]:

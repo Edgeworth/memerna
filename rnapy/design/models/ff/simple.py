@@ -14,7 +14,7 @@ class SimpleFF(Model):
     model: nn.Module
     cfg: RnaPipelineCfg
 
-    def __init__(self, *, cfg: RnaPipelineCfg):
+    def __init__(self, *, cfg: RnaPipelineCfg) -> None:
         super().__init__()
         self.cfg = cfg
 

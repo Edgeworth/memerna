@@ -1,5 +1,6 @@
 # Copyright 2023 Eliot Courtney.
 from pathlib import Path
+from typing import ClassVar
 
 import pandas as pd
 from scipy.stats import ttest_rel
@@ -10,7 +11,7 @@ from rnapy.analysis.plot.util import save_figure, set_style
 
 
 class FoldAccuracyPlotter:
-    COLS: dict[str, Column] = {
+    COLS: ClassVar[dict[str, Column]] = {
         "name": Column(idx="name", name="Name"),
         "family": Column(idx="family", name="Family"),
         "sensitivity": Column(idx="sensitivity", name="Sensitivity"),
@@ -47,7 +48,8 @@ class FoldAccuracyPlotter:
         parents = set()
         for name in domained:
             parent = "_".join(name.split("_")[:-1])
-            assert parent in df["name"].values
+            if parent not in df["name"].to_numpy():
+                raise ValueError(f"Parent {parent} not found in dataframe.")
             parents.add(parent)
 
         return list(parents)
@@ -55,8 +57,7 @@ class FoldAccuracyPlotter:
     def _filter_df(self, df: pd.DataFrame) -> pd.DataFrame:
         parents = self._get_parent_rnas(df)
         df = df.copy()
-        df = df[~df["name"].isin(parents)]
-        return df
+        return df[~df["name"].isin(parents)]
 
     def run(self) -> None:
         datasets = self._load_datasets()
