@@ -89,6 +89,4 @@ class TransformerModel(nn.Module):
         )
 
         # Linear layer, output shape: [batch_size, seq_len, d_out_tok]
-        out = self.linear(attn)
-
-        return out
+        return self.linear(attn)

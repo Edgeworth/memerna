@@ -53,7 +53,8 @@ class FoldPerfRunner:
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {name} on {dataset}")
             output_path = self.output_dir / f"{dataset}_{name}.results"
-            assert not output_path.exists(), f"Output path {output_path} already exists"
+            if output_path.exists():
+                raise RuntimeError(f"Output path {output_path} already exists")
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")

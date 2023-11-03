@@ -36,7 +36,7 @@ from rnapy.util.util import fn_args
     type=cloup.Choice(["memerna", "rnastructure", "sparsemfefold", "viennarna"]),
     help="Programs to run",
 )
-def harness(  # pylint: disable=too-many-locals
+def harness(
     programs: list[str], efn: bool, fold: bool, partition: bool, subopt: bool, **kwargs: Any
 ) -> None:
     energy_cfg = energy_cfg_from_args(**fn_args())

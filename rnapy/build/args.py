@@ -57,7 +57,7 @@ build_cfg_options = cloup.option_group(
 )
 
 
-def build_cfg_from_args(  # pylint: disable=too-many-arguments
+def build_cfg_from_args(
     memerna_src_path: Path,
     prefix: Path,
     kind: BuildKind,
@@ -164,7 +164,7 @@ afl_fuzz_cfg_options = cloup.option_group(
 )
 
 
-def build_afl_fuzz_cfg_from_args(  # pylint: disable=too-many-arguments,too-many-locals
+def build_afl_fuzz_cfg_from_args(
     build_cfg: BuildCfg,
     energy_models: list[str],
     max_len: int = -1,

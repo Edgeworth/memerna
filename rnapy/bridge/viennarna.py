@@ -62,14 +62,16 @@ class ViennaRna(RnaPackage):
         args = self._energy_cfg_args(cfg)
         res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
-        assert match is not None
+        if match is None:
+            raise ValueError(f"Could not find energy in {res.stdout}")
         energy = Decimal(match.group(1))
         return energy, res
 
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
         with tempfile.NamedTemporaryFile("w") as f:
-            assert rna.r is not None
+            if rna.r is None:
+                raise ValueError(f"RNA {rna.name} has no sequence")
             f.write(rna.r)
             f.flush()
             res = self._run_cmd("./src/bin/RNAfold", *args, "--noPS", "-i", f.name)

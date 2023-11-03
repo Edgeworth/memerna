@@ -27,7 +27,7 @@ class Column:
 
 def _color(name: str, palette: Sequence[Any] | None = None) -> Any:
     color_map: bidict = getattr(_color, "color_map", bidict())
-    _color.color_map = color_map
+    _color.color_map = color_map  # type: ignore[attr-defined]
 
     print(color_map)
 
@@ -70,7 +70,7 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
     return f
 
 
-def plot_mean_log_quantity(  # noqa: too-many-locals
+def plot_mean_log_quantity(
     ds: Dataset, xcol: Column, ycol: Column, logx: bool = True, logy: bool = True
 ) -> plt.Figure:
     ep = 1e-2

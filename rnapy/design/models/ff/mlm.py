@@ -15,7 +15,7 @@ class MlmFF(Model):
     model: nn.Module
     cfg: RnaPipelineCfg
 
-    def __init__(self, *, cfg: RnaPipelineCfg):
+    def __init__(self, *, cfg: RnaPipelineCfg) -> None:
         super().__init__()
         self.cfg = cfg
         self.d_emb = max(cfg.tensor.db_dim(), cfg.tensor.primary_dim())

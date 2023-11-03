@@ -68,7 +68,8 @@ class RnaParser:
         rnas = []
         while len(q) > 0:
             match = re.search(r"(\d+)", q[0].strip())
-            assert match is not None
+            if match is None:
+                raise ValueError(f"Invalid CT file: {q[0]}")
             length = int(match.group(0))
             subdata = f"{q[0]}\n"
             q.popleft()
@@ -80,7 +81,10 @@ class RnaParser:
 
     @staticmethod
     def to_ct_file(rna: Rna) -> str:
-        assert rna.r is not None and rna.s is not None
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
+        if rna.s is None:
+            raise ValueError(f"RNA {rna.name} has no secondary structure")
 
         name = rna.name if rna.name else "unnamed"
         ct = [f"{len(rna.r)}\t{name}"]

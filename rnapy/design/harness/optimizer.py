@@ -35,10 +35,7 @@ class Optimizer:
         self.cfg = cfg
 
     def lr_params(self) -> list[float]:
-        lrs = []
-        for param_group in self.optimizer.param_groups:
-            lrs.append(float(param_group["lr"]))
-        return lrs
+        return [float(param_group["lr"]) for param_group in self.optimizer.param_groups]
 
     def eval_batch(self, batch: list[torch.Tensor]) -> tuple[torch.Tensor, torch.Tensor]:
         """Evalute a single batch of data.

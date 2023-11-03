@@ -25,7 +25,7 @@ def parse_58_dangle_file(data: str) -> tuple[str, str]:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ["", ""]
     idx = 0
-    for i in range(len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(lines)):
         if not re.match(r"(\s*5\' --> 3\'\s*){4}", lines[i]):
             continue
         out_idx = 1
@@ -42,7 +42,7 @@ def parse_58_2x2_file(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
     idx = 0
-    for i in range(len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(lines)):
         if not re.match(r"(\s*3\' <-- 5\'\s*){4}", lines[i]):
             continue
         matrix_lines = [[j.strip() for j in i.split()] for i in lines[i + 1 : i + 5]]
@@ -56,7 +56,7 @@ def parse_58_2x2_file(data: str) -> str:
 def parse_58_1x1_internal_loop(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
-    for i in range(len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(lines)):
         if not re.match(r"(\s*5\' --> 3\'\s*){6}", lines[i]):
             continue
         t3prime = re.findall(r"[GUAC]", lines[i + 2])
@@ -78,7 +78,7 @@ def parse_58_1x1_internal_loop(data: str) -> str:
 def parse_58_1x2_internal_loop(data: str) -> str:
     lines = [i.strip() for i in re.sub(r" +", " ", data).split("\n")]
     out = ""
-    for i in range(len(lines)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(lines)):
         if not re.match(r"(\s*5\' --> 3\'\s*){6}", lines[i]):
             continue
         t3prime = re.findall(r"[GUAC]", lines[i + 2])

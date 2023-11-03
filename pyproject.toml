@@ -13,7 +13,7 @@ click-params = "^0.4.1"
 click_log = "^0.4.0"
 cloup = "^3.0.2"
 libtmux = "^0.23.2"
-pandas = "^2.1.2"
+pandas = "^2.1.3"
 protobuf = "3.20.1"
 python = "~3.11"
 python-dotenv = "^1.0.0"
@@ -26,7 +26,7 @@ torch-tb-profiler = "^0.4.1"
 viennarna = "^2.6.4"
 
 [tool.poetry.dev-dependencies]
-mypy = "^1.6.1"
+mypy = "^1.7.0"
 poetry-plugin-up = "^0.4.0"
 
 [tool.mypy]
@@ -83,8 +83,11 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 ignore = [
+  "A003", # allow attribute shadowing builtins 'eval', 'sorted' etc
   "ANN101", # no need to annotate self
+  "ANN102", # no need to annotate cls self
   "ANN401", # allow Any type annotation
+  "BLE001", # allow except Exception
   "C901", # ignore too complex code
   "COM812", # allow missing trailing comma
   "D", # ignore docstring stuff
@@ -95,20 +98,37 @@ ignore = [
   "FBT001", # allow boolean position arg in functions
   "FBT002", # allow boolean position arg in functions
   "FBT003", # allow boolean position arg in functions
+  "FIX", # no notes on FIXME, TODO, etc
   "G004", # allow f-string in logs, just be careful if performance matters
   "ISC001", # avoid conflict with formatter
+  "N803", # allow uppercase variables
+  "N806", # allow uppercase variables
+  "N812", # allow e.g. import torch.nn.functional as F
   "PD002", # allow pandas in place operations
   "PD901", # allow 'df'
   "PLR0912", # allow more branches in functions
   "PLR0913", # allow more arguments in functions
   "PLR2004", # allow magic numbers
+  "PYI021", # allow docstrings in stubs
+  "RET504", # allow return statements after assignment of variable
+  "S101", # allow asserts
   "S311", # remove cryptographic random gen false positives
+  "S324", # allow md5
+  "S603", # false positives on subprocess sanitising
+  "S605", # allow starting process via shell
+  "S608", # allow interpolated SQL (be careful)
   "T201", # allow print statements
-  "TRY003", # allow exceptions with string arguments
+  "TCH", # don't use type-checking import blocks
   "TD", # no TODO related warnings
-  "FIX", # no notes on FIXME, TODO, etc
+  "TRY003", # allow exceptions with string arguments
+  "PLR0911", # allow more returns in functions
 ]
 select = ["ALL"]
+
+[tool.ruff.per-file-ignores]
+"**/tests/**/*.py" = [
+  "SLF001", # allow private member access
+]
 
 [tool.ruff.isort]
 # To be consistent with skip-magic-trailing-comma = true

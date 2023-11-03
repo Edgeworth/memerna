@@ -48,7 +48,8 @@ class RNAstructure(RnaPackage):
             # the fitted -9.
             res = self._run_cmd("./exe/efn2", "-s", fin.name, fout.name)
             match = re.search(r"[eE]nergy = (.+)", fout.read())
-            assert match is not None
+            if match is None:
+                raise RuntimeError(f"Could not find energy in {fout.read()}")
             energy = Decimal(match.group(1))
         return energy, res
 
@@ -61,7 +62,7 @@ class RNAstructure(RnaPackage):
             predicted = RnaParser.from_any_file(fout.read())
         return predicted, res
 
-    def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
+    def partition(self, _: Rna, cfg: EnergyCfg) -> None:
         self.check_energy_cfg(cfg)
         raise NotImplementedError
 
@@ -74,7 +75,8 @@ class RNAstructure(RnaPackage):
             fin.write(RnaParser.to_seq_file(rna))
             fin.flush()
 
-            assert subopt_cfg.delta is not None
+            if subopt_cfg.delta is None:
+                raise ValueError("SuboptCfg.delta must be set")
             res = self._run_cmd("./exe/AllSub", "-a", f"{subopt_cfg.delta}", fin.name, fout.name)
             output = fout.read()
             # TODO(3): does not extract energy yet
