@@ -17,6 +17,7 @@
 #include "models/t04/energy/model.h"
 #include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
+#include "models/t04/trace/trace.h"
 #include "util/splaymap.h"
 
 namespace mrna::md::t04 {
@@ -24,19 +25,6 @@ namespace mrna::md::t04 {
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
-
-struct Expansion {
-  // Extra energy of this expansion compared to the best choice.
-  Energy delta = {ZERO_E};
-
-  // st is -1 if this does not exist
-  DpIndex to_expand = {};
-  DpIndex unexpanded = {};
-  IndexCtd ctd0 = {};
-  IndexCtd ctd1 = {};
-
-  bool operator<(const Expansion& o) const { return delta < o.delta; }
-};
 
 class SuboptFastest {
  public:

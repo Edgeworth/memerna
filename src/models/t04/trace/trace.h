@@ -12,6 +12,19 @@ namespace mrna::md::t04 {
 
 using trace::TraceResult;
 
+struct Expansion {
+  // Extra energy of this expansion compared to the best choice.
+  Energy delta = {ZERO_E};
+
+  // st is -1 if this does not exist
+  DpIndex to_expand = {};
+  DpIndex unexpanded = {};
+  IndexCtd ctd0 = {};
+  IndexCtd ctd1 = {};
+
+  bool operator<(const Expansion& o) const { return delta < o.delta; }
+};
+
 TraceResult Traceback(
     const Primary& r, const t04::Model::Ptr& em, const trace::TraceCfg& cfg, const DpState& state);
 
