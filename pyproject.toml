@@ -2,7 +2,7 @@
 authors = ["Eliot Courtney <edgeworth.dev@gmail.com>"]
 classifiers = ["License :: OSI Approved :: GPL-3.0-only"]
 description = "memerna"
-name = "memerna"
+name = "rnapy"
 readme = "README.md"
 version = "0.1.0"
 
