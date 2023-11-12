@@ -16,11 +16,11 @@ struct Expansion {
   // Extra energy of this expansion compared to the best choice.
   Energy delta = {ZERO_E};
 
-  // st is -1 if this does not exist
-  DpIndex to_expand = {};
-  DpIndex unexpanded = {};
-  IndexCtd ctd0 = {};
-  IndexCtd ctd1 = {};
+  // st == -1 used to mean none - using optional here is like a 40% perf hit.
+  DpIndex idx0{};
+  DpIndex idx1{};
+  IndexCtd ctd0{};
+  IndexCtd ctd1{};
 
   bool operator<(const Expansion& o) const { return delta < o.delta; }
 };
