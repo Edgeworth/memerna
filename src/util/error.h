@@ -14,7 +14,7 @@
       msg += '\n';                                             \
       throw ::std::runtime_error(msg);                         \
     }                                                          \
-  } while (0)
+  } while (0) /* NOLINT(cppcoreguidelines-avoid-do-while) */
 
 #define fatal(...)              \
   do {                          \
