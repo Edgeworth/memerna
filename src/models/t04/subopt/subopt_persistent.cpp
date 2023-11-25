@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "models/t04/subopt/subopt_fastest.h"
+#include "models/t04/subopt/subopt_persistent.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -21,10 +21,10 @@
 
 namespace mrna::md::t04 {
 
-SuboptFastest::SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
+SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
 
-int SuboptFastest::Run(const SuboptCallback& fn) {
+int SuboptPersistent::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
   cache_.Reserve(r_.size());
@@ -37,6 +37,7 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   support.VerifySupported(__func__, em_->cfg);
 
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
+  spdlog::error("PERSISTENT");
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
@@ -58,7 +59,7 @@ int SuboptFastest::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptFastest::RunInternal(
+std::pair<int, Energy> SuboptPersistent::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -162,7 +163,7 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expansion> SuboptFastest::GenerateExpansions(
+std::vector<Expansion> SuboptPersistent::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;

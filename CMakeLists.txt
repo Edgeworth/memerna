@@ -207,6 +207,8 @@ set(MEMERNA_SOURCE
   src/models/t04/part/part.h
   src/models/t04/subopt/subopt_fastest.cpp
   src/models/t04/subopt/subopt_fastest.h
+  src/models/t04/subopt/subopt_persistent.cpp
+  src/models/t04/subopt/subopt_persistent.h
   src/models/t04/subopt/subopt_slowest.cpp
   src/models/t04/subopt/subopt_slowest.h
   src/models/t04/trace/trace.cpp
