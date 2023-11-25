@@ -51,6 +51,8 @@ std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
     o = CtxCfg::SuboptAlg::SLOWEST;
   } else if (s == "fastest") {
     o = CtxCfg::SuboptAlg::FASTEST;
+  } else if (s == "persistent") {
+    o = CtxCfg::SuboptAlg::PERSISTENT;
   } else if (s == "brute") {
     o = CtxCfg::SuboptAlg::BRUTE;
   } else {

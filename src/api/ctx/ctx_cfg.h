@@ -19,7 +19,7 @@ inline const Opt OPT_MFE_ALG = Opt(Opt::ARG)
 inline const Opt OPT_SUBOPT_ALG = Opt(Opt::ARG)
                                       .LongName("subopt-alg")
                                       .Default("fastest")
-                                      .Choice({"slowest", "fastest", "brute"})
+                                      .Choice({"slowest", "fastest", "persistent", "brute"})
                                       .Help("which algorithm for suboptimal folding");
 inline const Opt OPT_PART_ALG = Opt(Opt::ARG)
                                     .LongName("part-alg")
@@ -31,7 +31,7 @@ void RegisterOpts(ArgParse* args);
 
 struct CtxCfg {
   enum class MfeAlg { SLOWEST, SLOW, FASTEST, LYNGSO, BRUTE };
-  enum class SuboptAlg { SLOWEST, FASTEST, BRUTE };
+  enum class SuboptAlg { SLOWEST, FASTEST, PERSISTENT, BRUTE };
   enum class PartAlg { SLOWEST, FASTEST, BRUTE };
 
   MfeAlg mfe_alg = MfeAlg::FASTEST;
@@ -66,7 +66,7 @@ struct CtxCfg {
       erg::ModelKind kind) {
     switch (kind) {
     case erg::ModelKind::T04_LIKE:
-      return {SuboptAlg::SLOWEST, SuboptAlg::FASTEST, SuboptAlg::BRUTE};
+      return {SuboptAlg::SLOWEST, SuboptAlg::FASTEST, SuboptAlg::PERSISTENT, SuboptAlg::BRUTE};
     case erg::ModelKind::T22_LIKE: return {SuboptAlg::SLOWEST, SuboptAlg::BRUTE};
     default: bug();
     }

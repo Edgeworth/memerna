@@ -20,6 +20,7 @@
 #include "models/t04/mfe/mfe.h"
 #include "models/t04/part/part.h"
 #include "models/t04/subopt/subopt_fastest.h"
+#include "models/t04/subopt/subopt_persistent.h"
 #include "models/t04/subopt/subopt_slowest.h"
 #include "models/t04/trace/trace.h"
 #include "models/t22/energy/model.h"
@@ -154,6 +155,8 @@ int Ctx::Suboptimal(
           return md::t04::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::FASTEST:
           return md::t04::SuboptFastest(Primary(r), em, std::move(state), cfg).Run(fn);
+        case CtxCfg::SuboptAlg::PERSISTENT:
+          return md::t04::SuboptPersistent(Primary(r), em, std::move(state), cfg).Run(fn);
         default: bug();
         }
       },

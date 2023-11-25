@@ -20,7 +20,7 @@
   do {                          \
     verify(false, __VA_ARGS__); \
     __builtin_unreachable();    \
-  } while (0)
+  } while (0) /* NOLINT(cppcoreguidelines-avoid-do-while) */
 
 #define bug() fatal("bug")
 
