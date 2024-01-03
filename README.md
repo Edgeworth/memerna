@@ -1,83 +1,119 @@
 # memerna
-Check out docs/thesis/thesis.pdf for my thesis which will explain a bit about
-what this is all about.
 
-In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
+memerna is a library and set of programs for RNA folding. It includes algorithms
+for folding, suboptimal folding, and the partition function. memerna is very
+performant, as it uses both fast algorithms and a highly optimized
+implementation.
 
-### Building
-The rest of this document uses $MRNA to locate the memerna directory.
+This is version 0.1 of memerna. The main branch is actively developed and has
+more features (although it is not API or command line compatible with 0.1),
+although is slightly less performant. The main branch is recommended in general.
 
-Run git submodule init and git submodule update to pull in external dependencies.
-Memerna requires a modern C++ compiler that supports C++14.
+## Building
 
-./build.py -t [debug, asan, ubsan, release, relwithdebinfo] -c
+memerna 0.1 was tested to build and run in Ubuntu 2022.04 LTS with up to date
+packages. The following instructions assume you are using Ubuntu 2022.04 LTS.
 
-Will use clang with -c. The flag -t specifies the build type. Then run from $PREFIX/memerna.
+### Environment setup
 
-No guarantees this runs or even builds on Windows.
+Install the following packages:
 
-### Directories
+```sh
+sudo apt install build-essential cmake git
+```
 
-- build: build output directory
+Clone the repo and checkout v0.1:
+
+```sh
+git clone https://github.com/Edgeworth/memerna.git
+cd memerna
+git switch release/0.1
+```
+
+Set up git submodules to pull in external dependencies:
+
+```sh
+git submodule update --init --recursive
+```
+
+The default configuration builds without MPFR or RNAstructure integration. Most
+people will not need either of these. If you want to use MPFR, install the following
+dependencies:
+
+```sh
+sudo apt install libboost-dev libmpfr-dev
+```
+
+### Compiling
+
+memerna can be compiled directly with cmake. The following commands will build
+it:
+
+```sh
+cmake -B build -D CMAKE_BUILD_TYPE=Release .
+cmake --build build
+```
+
+There is also the build.py script which wraps cmake for convenience. The
+build.py script creates some additional directory structure for each build type.
+
+```sh
+./build.py -t release -p ./build
+```
+
+#### Compiler and toolchain support
+
+| Compiler | Version      | Supported |
+|----------|--------------|-----------|
+| GCC      | <= 10        | ❓        |
+| GCC      | >= 11        | ✅        |
+| Clang    | <= 13        | ❓        |
+| Clang    | >= 14        | ✅        |
+
+## Running
+
+The following commands assume memerna is built in the build/ directory and the
+current directory is the memerna source directory.
+
+You may pass `--help` to any of the programs to see a list of options.
+
+### MFE folding examples
+
+```sh
+./build/fold -memerna-data ./data/ GCGACCGGGGCUGGCUUGGUAA
+```
+
+### Suboptimal folding examples
+
+```sh
+./build/subopt -memerna-data ./data/ -ctd-output -delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt -memerna-data ./data/ -delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt -memerna-data ./data/ -num 7 GCGACCGGGGCUGGCUUGGUAA
+```
+
+### Partition function examples
+
+```sh
+./build/partition -memerna-data ./data/ GCGACCGGGGCUGGCUUGGUAA
+```
+
+### Running the tests
+
+```sh
+./build/run_tests -memerna-data ./data/
+```
+
+## Source
+
 - cmake: CMake scripts
 - data: energy model data for memerna
-- docs: documentation
 - examples: various dot-bracket example folded RNAs
-- extern: external projects and data (original data from rnastructure and nndb, rnark)
-- scripts: scripts for various things (see below)
+- extern: external projects and data
+- scripts: scripts for various things
 - src: source
 - tests: tests
 
-### Running the tests
-Run from $MRNA/run_tests after building.
+## License notes
 
-### Fuzzing
-
-#### Randomized fuzzing
-```
-make -j32 && ./fuzz -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
-  -memerna-data $MRNA/data/ 6 8 -print-interval 5 -no-partition -no-subopt
-```
-
-Use the -no-table-check option to only compare the result of memerna vs another
-program, rather than the internal dp tables.
-
-#### AFL
-To run AFL++, first build the afl binary with build.py -t relwithdebinfo -a, then run:
-
-```
-sudo sh -c 'echo core >/proc/sys/kernel/core_pattern'
-AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 \
-  afl-fuzz -x $MRNA/extern/afl/fuzz/dict.dct -m 2000 -t 2000 \
-  -i $MRNA/extern/afl/fuzz/testcases -o ./afl -- ./fuzz -afl \
-  -memerna-data $MRNA/data/ -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
-  -rnastructure -table-check
-```
-
-Minimising test cases:
-```
-afl-tmin -i case -o ./afl/min -- ./fuzz -afl -memerna-data $MRNA/data/ \
-  -rnastructure-data $MRNA/extern/miles_rnastructure/data_tables/ \
-  -rnastructure -table-check
-```
-
-### Useful commands
-
-./scripts/run_benchmarks.py
-Runs benchmarking for various packages.
-
-./scripts/run.py
-Supports EFN or folding through -e and -f respectively. Benchmarking through -b.
-Can also specify memevault RNA via -kv <memevault name>.
-
-./scripts/parse_data.py
-Parses the original data files from orig_data and outputs them in memerna format in data/.
-
-./scripts/extract_subsequence.py
-Gives you the subsequence (0 indexed) between st, en of an RNA.
-
-./scripts/crop.py
-Crops images in a directory.
-
-./scripts/convert.py
-Converts between db and ct files.
+For any commercial applications of this software, please contact the author for
+a license.
