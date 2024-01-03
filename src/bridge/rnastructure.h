@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "bridge/bridge.h"
-#include "miles_rnastructure/include/algorithm.h"
-#include "miles_rnastructure/include/alltrace.h"
-#include "miles_rnastructure/include/pfunction.h"
-#include "miles_rnastructure/include/rna_library.h"
+#include "rnastructure_bridge/include/algorithm.h"
+#include "rnastructure_bridge/include/alltrace.h"
+#include "rnastructure_bridge/include/pfunction.h"
+#include "rnastructure_bridge/include/rna_library.h"
 
 namespace mrna::bridge {
 

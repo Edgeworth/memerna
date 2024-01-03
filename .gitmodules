@@ -1,3 +1,3 @@
-[submodule "extern/miles_rnastructure"]
-	path = extern/miles_rnastructure
-	url = git@github.com:Edgeworth/miles_rnastructure.git
+[submodule "extern/rnastructure_bridge"]
+	path = extern/rnastructure_bridge
+	url = https://github.com/Edgeworth/rnastructure_bridge.git
