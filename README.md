@@ -161,6 +161,7 @@ Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows
 | Clang    | <= 13        | ❓        |
 | Clang    | 14           | ✅        |
 | Clang    | 15           | ✅        |
+| Clang    | 16           | ✅        |
 
 ### Running include-what-you-use
 
