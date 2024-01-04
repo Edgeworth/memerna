@@ -1,167 +1,101 @@
 # memerna
 
-## TODO
+memerna is a library and set of programs for RNA folding. It includes algorithms
+for folding, suboptimal folding, and the partition function. memerna is very
+performant, as it uses both fast algorithms and a highly optimized
+implementation.
 
-- use CPM to handle libraries
-- implement d2
-  - add to mfe_fastest, see how much it affects perf
-  - add all variants to all mfe, traceback, suboptimal, partition function
-  - add to energy model
-  - add to fuzz
-  - need to add to ComputeOptimalCtds
-  - ctrl f for flush coax etc
+## Building
 
-need to implement lonely pairs disabling properly for t22. (check this)
+memerna was tested to build and run in Ubuntu 2022.04 LTS with up to date
+packages. The following instructions assume you are using Ubuntu 2022.04 LTS.
+However, memerna is mainly developed on Arch Linux, and is likely to work on any
+modern Linux distribution provided the toolchain is new enough.
 
-## Model notes
+### Environment setup
 
-Turner 1999 model (not implemented)
-
-Turner 2004 model (t04p1, t04p2):
-
-- Adds coaxial stacking
-- Lonely pairs are "soft disallowed" - only consider pairs where at least one of
-  the adjacent two pairs could be made.
-- Updates parameters for terminal mismatches, hairpin, bulge, internal, and multiloops.
-- Special stacks of length > 2 base pairs are not handled.
-- Internal loops are limited to size 30 in most implementations in memerna.
-
-Update in 2012 model (t12p2):
-
-- GU penalty removed from AU/GU penalty
-- GU penalty removed from special hairpins, if closed by GU (none like this)
-- Removed 0.45 portion of GU penalty from internal loop GU penalty.
-- Stacking parameters changed (for GU stacks, not WC)
-- See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
-
-Update in 2022 model (t22p2):
-
-- AU penalty removed as well
-- AU penalty removed from special hairpins, if closed by AU
-- Lonely pairs implemented fully correctly.
-- Removed 0.5 (not 0.45) portion of AU penalty from internal loop AU penalty.
-- Stacking parameters changed
-- Sequence dependent parameters for terminal base pairs based on the penultimate
-  pair (penultimate_stacking.data)
-  - Bulge loops of size 1 are continuous and don't have penultimate stacking
-    applied inside (same as AU/GU penalty rules).
-  - Coaxial stacks are not treated as continuous for penultimate stacking (same
-    as AU/GU penalty rules).
-- See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
-
-## Data table notes
-
-- bulge_initiation.data
-- dangle3.data
-- dangle5.data
-- hairpin.data
-  Special hairpins. AU/GU penalties NOT baked in.
-- hairpin_initiation.data
-- internal_1x1.data
-  1x1 special internal loops. AU/GU penalties NOT baked in.
-  N.B. internal loops are never treated as continuous.
-- internal_1x2.data
-  2x1 special internal loops. AU/GU penalties NOT baked in.
-- internal_2x2.data
-  2x2 special internal loops. AU/GU penalties NOT baked in.
-- internal_2x3_mismatch.data
-  2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
-- internal_initiation.data
-- internal_other_mismatch.data
-  Non 2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
-- misc.data
-- stacking.data
-- terminal.data
-
-## RNAstructure data tables notes
-
-- rna.coaxial
-- rna.coaxstack
-- rna.cov
-- rna.dangle
-- rna.dynalignmiscloop
-- rna.helix_ends
-  Table for terminal end penalties (e.g. AU/GU penalties).
-- rna.hexaloop
-  Special hairpin loops of length 6. AU/GU penalties baked in.
-- rna.int11
-  1x1 special internal loops. AU/GU penalties baked in.
-- rna.int21
-  2x1 special internal loops. AU/GU penalties baked in.
-- rna.int22
-  2x2 special internal loops. AU/GU penalties baked in.
-- rna.loop
-- rna.miscloop
-- rna.param_map
-- rna.stack
-  Stacking parameters for helices.
-- rna.tloop
-  Special hairpin loops of length 4. AU/GU penalties baked in.
-- rna.triloop
-  Special hairpin loops of length 3. AU/GU penalties baked in.
-- rna.tstack
-- rna.tstackcoax
-- rna.tstackh
-  Hairpin loop terminal mismatch parameters.
-  AU/GU penalties and other special hairpin parameters baked in.
-- rna.tstacki
-  Internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
-- rna.tstacki1n
-  Bulge loop terminal mismatch parameters. AU/GU penalties baked in.
-- rna.tstacki23
-  2x3 internal loop terminal mismatch parameters. Internal loop AU/GU penalties baked in.
-- rna.tstackm
-
-## Misc notes
-
-In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
-
-### Environment variables
-
-Optionally, it can be useful to set the following variables, for example in
-a .env file (used by rnapy):
-
-```bash
-MRNA=...
-MEMEVAULT=${MRNA}/rnapy/data/memevault.db
-MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
-RNASTRUCTURE=${HOME}/...
-SPARSEMFEFOLD=${HOME}/...
-VIENNARNA=${HOME}/...
-LINEARFOLD=${HOME}/...
-```
-
-### Building
-
-The rest of this document uses $MRNA to locate the memerna directory.
-Memerna requires a modern C++ compiler that supports C++20.
-
-Set up git submodules to pull in external dependencies.:
+Install the following packages:
 
 ```sh
-git submodule init
-git submodule update
+sudo apt install build-essential cmake git libboost-dev libmpfr-dev
 ```
 
-Install dependencies: boost, python poetry. Then we can build:
+On Ubuntu 2022.04 LTS, the following packages are also required since the
+toolchain version is too old (note that this is a PPA, so use at your own risk):
 
 ```sh
-poetry run python -m rnapy.run build
+sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+sudo apt install gcc-12 g++-12
 ```
 
-Then run from $PREFIX/memerna. No guarantees this runs or even builds on Windows.
+Clone the repo:
 
-### Compiler and toolchain support
+```sh
+git clone https://github.com/Edgeworth/memerna.git
+cd memerna
+```
+
+Set up git submodules to pull in external dependencies:
+
+```sh
+git submodule update --init --recursive
+```
+
+### Compiling
+
+memerna can be compiled directly with cmake. The following commands will build
+it for Ubuntu 2022.04 LTS:
+
+```sh
+CC=gcc-12 CXX=g++-12 cmake -B build -D CMAKE_BUILD_TYPE=Release .
+cmake --build build
+```
+
+Alternatively, memerna can be compiled using the rnapy python helper script,
+if you have have Python 3.11+ and poetry installed. This will output builds
+into the given prefix directory, which defaults to $HOME/bin/memerna.
+
+```sh
+poetry run python -m rnapy.run build --kind release
+```
+
+Optionally, you may set `CPM_SOURCE_CACHE` to a directory to cache external
+dependencies. This can be useful if you are building memerna with many separate
+configurations.
+
+#### Compiler and toolchain support
 
 | Compiler | Version      | Supported |
 |----------|--------------|-----------|
 | GCC      | <= 11        | ❌        |
 | GCC      | 12           | ✅        |
 | GCC      | 13           | ✅        |
-| Clang    | <= 13        | ❓        |
-| Clang    | 14           | ✅        |
-| Clang    | 15           | ✅        |
+| Clang    | <= 15        | ❌        |
 | Clang    | 16           | ✅        |
+
+Note that clang 14 and 15 will work with a sufficiently modern standard C++
+library (but not gcc 11's, or libc++ 14 or 15's).
+
+## Running
+
+### MFE folding
+
+```sh
+```
+
+### Suboptimal folding
+
+```sh
+```
+
+### Partition function
+
+```sh
+```
+
+### Running the tests
+
+Run from $MRNA/run_tests after building.
 
 ### Running include-what-you-use
 
@@ -172,10 +106,6 @@ make -j$(nproc) 2> /tmp/iwyu.out
 
 Then:
 iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
-
-### Running the tests
-
-Run from $MRNA/run_tests after building.
 
 ### Fuzzing
 
@@ -238,6 +168,85 @@ Minimising test cases:
 ```bash
 poetry run python -m rnapy.run afl-fuzz-min <crash-file>
 ```
+
+### Environment variables for rnapy
+
+Optionally, it can be useful to set the following variables, for example in
+a .env file (used by rnapy):
+
+```bash
+MRNA=...
+MEMEVAULT=${MRNA}/rnapy/data/memevault.db
+MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
+RNASTRUCTURE=${HOME}/...
+SPARSEMFEFOLD=${HOME}/...
+VIENNARNA=${HOME}/...
+LINEARFOLD=${HOME}/...
+```
+
+## Model notes
+
+Turner 1999 model (not implemented)
+
+Turner 2004 model (t04p1, t04p2):
+
+- Adds coaxial stacking
+- Lonely pairs are "soft disallowed" - only consider pairs where at least one of
+  the adjacent two pairs could be made.
+- Updates parameters for terminal mismatches, hairpin, bulge, internal, and multiloops.
+- Special stacks of length > 2 base pairs are not handled.
+- Internal loops are limited to size 30 in most implementations in memerna.
+
+Update in 2012 model (t12p2):
+
+- GU penalty removed from AU/GU penalty
+- GU penalty removed from special hairpins, if closed by GU (none like this)
+- Removed 0.45 portion of GU penalty from internal loop GU penalty.
+- Stacking parameters changed (for GU stacks, not WC)
+- See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
+
+Update in 2022 model (t22p2):
+
+- AU penalty removed as well
+- AU penalty removed from special hairpins, if closed by AU
+- Lonely pairs implemented fully correctly.
+- Removed 0.5 (not 0.45) portion of AU penalty from internal loop AU penalty.
+- Stacking parameters changed
+- Sequence dependent parameters for terminal base pairs based on the penultimate
+  pair (penultimate_stacking.data)
+  - Bulge loops of size 1 are continuous and don't have penultimate stacking
+    applied inside (same as AU/GU penalty rules).
+  - Coaxial stacks are not treated as continuous for penultimate stacking (same
+    as AU/GU penalty rules).
+- See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
+
+## Data table notes
+
+- bulge_initiation.data
+- dangle3.data
+- dangle5.data
+- hairpin.data
+  Special hairpins. AU/GU penalties NOT baked in.
+- hairpin_initiation.data
+- internal_1x1.data
+  1x1 special internal loops. AU/GU penalties NOT baked in.
+  N.B. internal loops are never treated as continuous.
+- internal_1x2.data
+  2x1 special internal loops. AU/GU penalties NOT baked in.
+- internal_2x2.data
+  2x2 special internal loops. AU/GU penalties NOT baked in.
+- internal_2x3_mismatch.data
+  2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
+- internal_initiation.data
+- internal_other_mismatch.data
+  Non 2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
+- misc.data
+- stacking.data
+- terminal.data
+
+## Misc notes
+
+In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
 
 ## License notes
 

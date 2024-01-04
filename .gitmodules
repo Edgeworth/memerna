@@ -1,6 +1,6 @@
 [submodule "extern/rnastructure_bridge"]
 	path = extern/rnastructure_bridge
-	url = git@github.com:Edgeworth/rnastructure_bridge.git
+	url = https://github.com/Edgeworth/rnastructure_bridge.git
 [submodule "extern/sanitizers-cmake"]
 	path = extern/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
