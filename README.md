@@ -52,7 +52,7 @@ cmake --build build
 ```
 
 Alternatively, memerna can be compiled using the rnapy python helper script,
-if you have have Python 3.11+ and poetry installed. This will output builds
+if you have Python 3.11+ and poetry installed. This will output builds
 into the given prefix directory, which defaults to $HOME/bin/memerna.
 
 ```sh
@@ -76,26 +76,44 @@ configurations.
 Note that clang 14 and 15 will work with a sufficiently modern standard C++
 library (but not gcc 11's, or libc++ 14 or 15's).
 
+### Build configuration
+
+memerna has some build options that can be set with cmake (or passed via the
+rnapy helper build script) that may be useful for some users. See the cmake
+configuration for a full explanation.
+
+- USE_MPFR: use MPFR for arbitrary precision floating point
+- ENERGY_PRECISION: the number of decimal places to use for energy calculations
+- FLOAT_PRECISION: the number of significant digits to use for floats
+
 ## Running
 
 ### MFE folding
 
 ```sh
+./build/fold GCGACCGGGGCUGGCUUGGUAA
 ```
 
 ### Suboptimal folding
 
 ```sh
+./build/subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 ### Partition function
 
 ```sh
+./build/partition GCGACCGGGGCUGGCUUGGUAA
 ```
 
 ### Running the tests
 
-Run from $MRNA/run_tests after building.
+```sh
+./build/run_tests
+```
 
 ### Running include-what-you-use
 
@@ -114,8 +132,7 @@ Fuzzing against RNAstructure
 ```bash
 poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
-./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
-# Partition and subopt are supported, but fuzzing shows differences instantly.
+./build/fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
 ```
 
 ### Fuzzing with afl-fuzz
@@ -175,7 +192,7 @@ Optionally, it can be useful to set the following variables, for example in
 a .env file (used by rnapy):
 
 ```bash
-MRNA=...
+MRNA=<set to memerna source directory>
 MEMEVAULT=${MRNA}/rnapy/data/memevault.db
 MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
 RNASTRUCTURE=${HOME}/...
