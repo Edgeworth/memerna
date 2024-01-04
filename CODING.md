@@ -16,28 +16,15 @@ Set up pre-commit.
 - Python 3.10
 - Format according to black -l 100
 
-# Directories
+## Directories
 
 - cmake: CMake scripts
-- extern: external projects and data (original data from rnastructure and nndb, rnark)
+- extern: external projects and data
 - data: energy model data for memerna
-- docs: documentation
 - examples: various dot-bracket example folded RNAs
-- scripts: scripts for various things (see below)
+- scripts: scripts for various things
 - src: source
 - tests: tests
-
-## src directory
-
-- bridge
-- compute
-- context
-  Contains the high level API.
-
-- fuzz
-- model
-- programs
-- util
 
 ### memerna API notes
 
