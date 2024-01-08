@@ -25,8 +25,8 @@ std::ostream& operator<<(std::ostream& os, ModelKind kind) {
   switch (kind) {
   case ModelKind::T04_LIKE: return os << "t04-like";
   case ModelKind::T22_LIKE: return os << "t22-like";
-  default: bug();
   }
+  unreachable();
 }
 
 }  // namespace mrna::erg

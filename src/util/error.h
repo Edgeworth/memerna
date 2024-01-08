@@ -22,10 +22,18 @@
     __builtin_unreachable();    \
   } while (0)
 
-#define bug() fatal("bug")
+#ifdef NDEBUG
+#define unreachable() __builtin_unreachable()
+#else
+
+#define unreachable()     \
+  do {                    \
+    fatal("unreachable"); \
+  } while (0)
+
+#endif
 
 namespace mrna {
-
 void InitProgram();
 
 }  // namespace mrna

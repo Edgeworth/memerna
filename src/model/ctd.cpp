@@ -25,8 +25,9 @@ const char* CtdToName(Ctd ctd) {
   case CTD_RC_WITH_PREV: return "right mismatch coax with prev";
   case CTD_FCOAX_WITH_NEXT: return "flush coax with next";
   case CTD_FCOAX_WITH_PREV: return "flush coax with prev";
-  default: bug();
+  case CTD_SIZE: break;
   }
+  unreachable();
 }
 
 std::string Ctds::ToString(const Secondary& s) const {
@@ -61,7 +62,7 @@ std::string Ctds::ToString(const Secondary& s) const {
       break;
     case CTD_FCOAX_WITH_NEXT: str[i] = closing ? 'N' : 'n'; break;
     case CTD_FCOAX_WITH_PREV: str[i] = closing ? 'P' : 'p'; break;
-    default: bug();
+    case CTD_SIZE: unreachable();
     }
   }
   return str;

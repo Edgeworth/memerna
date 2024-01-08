@@ -41,17 +41,18 @@ std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o) {
   case EnergyCfg::LonelyPairs::OFF: return str << "off";
   case EnergyCfg::LonelyPairs::HEURISTIC: return str << "heuristic";
   case EnergyCfg::LonelyPairs::ON: return str << "on";
-  default: bug();
   }
+  unreachable();
 }
 
 std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o) {
   switch (o) {
   case EnergyCfg::Ctd::NONE: return str << "none";
+  case EnergyCfg::Ctd::D2: return str << "d2";
   case EnergyCfg::Ctd::NO_COAX: return str << "no-coax";
   case EnergyCfg::Ctd::ALL: return str << "all";
-  default: bug();
   }
+  unreachable();
 }
 
 std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o) {
