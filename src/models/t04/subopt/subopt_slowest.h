@@ -30,7 +30,7 @@ class SuboptSlowest {
 
  private:
   struct Node {
-    // State should be fully defined by |not_yet_expanded|, |history|, and |ctd| which denote
+    // State should be fully defined by `not_yet_expanded`, `history`, and `ctd` which denote
     // what it has done so far, and what it can do from now.
     std::vector<DpIndex> not_yet_expanded;
     std::vector<DpIndex> history;
@@ -60,14 +60,14 @@ class SuboptSlowest {
     }
   }
 
-  // Creates and inserts a new node with energy |energy| that doesn't
+  // Creates and inserts a new node with energy `energy` that doesn't
   // need to expand any more ranges than it currently has.
   void Expand(Energy energy) {
     curnode_.res.energy = energy;
     PruneInsert(curnode_, &q_);
   }
 
-  // Creates and inserts a new node with energy |energy| that needs to expand the given ranges.
+  // Creates and inserts a new node with energy `energy` that needs to expand the given ranges.
   void Expand(Energy energy, DpIndex nye) {
     curnode_.not_yet_expanded.push_back(nye);
     curnode_.res.energy = energy;
@@ -81,7 +81,7 @@ class SuboptSlowest {
     curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
-  // Creates and inserts a new node with energy |energy| that needs to expand the two given ranges.
+  // Creates and inserts a new node with energy `energy` that needs to expand the two given ranges.
   void Expand(Energy energy, DpIndex nye0, DpIndex nye1) {
     curnode_.not_yet_expanded.push_back(nye0);
     curnode_.not_yet_expanded.push_back(nye1);

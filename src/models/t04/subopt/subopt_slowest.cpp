@@ -40,7 +40,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
   // just one of them. Fully expanding one of them means there will be no duplicates in the tree.
-  // Cull the ones not inside the window or when we have more than |max_structures|.
+  // Cull the ones not inside the window or when we have more than `max_structures`.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert({.not_yet_expanded = {{0, -1, EXT}},
@@ -61,8 +61,8 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       continue;
     }
 
-    // If we found a non-finished node, but |finished| is full, and the worst in |finished| is
-    // as good as our current node (which is the best in |q|), then we can exit.
+    // If we found a non-finished node, but `finished` is full, and the worst in `finished` is
+    // as good as our current node (which is the best in `q`), then we can exit.
     if (static_cast<int>(finished_.size()) >= cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;

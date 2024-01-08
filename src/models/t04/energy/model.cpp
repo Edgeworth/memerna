@@ -364,7 +364,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
       branch_ctd = config_ctds[config_energies[0].second];
       ctd_energy = config_energies[0].first;
 
-      // Write the optimal ctds to |ctd|.
+      // Write the optimal ctds to `ctd`.
       branches->push_front(en);
       AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
       branches->pop_front();
@@ -435,7 +435,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 }
 
 // If (st, en) is not paired, treated as an exterior loop.
-// If |ctd| is non-null, use the given ctds.
+// If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
   const bool use_given_ctds = given_ctd;

@@ -68,7 +68,7 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
   // unexpanded is originally generated.
 
   int count = 0;
-  // Store the smallest energy above delta we see. If we reach our |structure_limit| before
+  // Store the smallest energy above delta we see. If we reach our `structure_limit` before
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
@@ -141,7 +141,7 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
       }
       ns.to_expand = unexpanded_.back();
       unexpanded_.pop_back();
-      // This node should replace itself into |unexpanded| when its done.
+      // This node should replace itself into `unexpanded` when its done.
       ns.should_unexpand = true;
     } else {
       // Apply child's modifications to the global state.

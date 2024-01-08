@@ -34,11 +34,11 @@ class SuboptFastest {
 
  private:
   struct DfsState {
-    // Index of the child expansion of |expand| we should process.
+    // Index of the child expansion of `to_expand` we should process.
     int child_idx = {0};
-    // Index whose child expansions we are processing. -1 means empty
+    // DpIndex whose child expansions we are processing. -1 means empty
     DpIndex to_expand{};
-    // Stores whether this node's |to_expand| was from |unexpanded_| and needs
+    // Stores whether this node's `to_expand` was from `unexpanded_` and needs
     // to be replaced when going back up the DFS stack.
     bool should_unexpand = {false};
   };
@@ -64,7 +64,7 @@ class SuboptFastest {
     // We request the expansions of an index multiple times when we find the
     // next sibling of a node after coming back up during the DFS.
     if (!cache_.Find(to_expand)) {
-      // Need to generate the full way to delta so we can properly set |next_seen|.
+      // Need to generate the full way to delta so we can properly set `next_seen`.
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
       [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
@@ -74,7 +74,7 @@ class SuboptFastest {
   }
 
   // Generates expansions for the given index, given that the extra energy over the best choice
-  // can't be more than |delta|.
+  // can't be more than `delta`.
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };

@@ -45,7 +45,7 @@ struct EnergyCfg {
   // Whether to allow lonely pairs in folding, subopt, partition, etc.
   LonelyPairs lonely_pairs = LonelyPairs::HEURISTIC;
 
-  // Use |bulge_states| to include bonuses for bulge loop states. This is used
+  // Use `bulge_states` to include bonuses for bulge loop states. This is used
   // for minimum free energy like calculations. For partition function like
   // calculations, the states are already handled.
   bool bulge_states = true;

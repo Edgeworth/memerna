@@ -11,7 +11,7 @@
 
 namespace mrna::md {
 
-// For each base in |s|, the value at the index of that base will contain the
+// For each base in `s`, the value at the index of that base will contain the
 // number of child branches in the loop that that base is a child of. For
 // example, if the base is part of a base pair inside a multiloop with 2 inner
 // branches, the value will be 2. N.B. that bases in the exterior loop will
@@ -19,8 +19,8 @@ namespace mrna::md {
 // multiloop.
 std::vector<int> GetBranchCounts(const Secondary& s);
 
-// Takes the branch representation of ctds in |branch_ctd| for |branches| branches and
-// writes it in per-base representation to |ctds|.
+// Takes the branch representation of ctds in `branch_ctd` for `branches` branches and
+// writes it in per-base representation to `ctds`.
 void AddBranchCtdsToBaseCtds(
     const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd);
 
