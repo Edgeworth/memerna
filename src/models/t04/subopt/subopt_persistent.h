@@ -34,16 +34,8 @@ class SuboptPersistent {
 
   int Run(const SuboptCallback& fn);
 
-  // Computes the suboptimal folding for the given subpath.
-  [[nodiscard]] SuboptResult GenerateResult(int idx) const {
-    // TODO(-1): implement.
-    return {};
-  }
-
  private:
   struct DfsState {
-    // TODO(-1): can turn the expand_idx's here and other places into Index, since they can't be
-    // more than the RNA length.
     // Index of the parent DfsState in the expand tree.
     int parent_idx = {-1};
     // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
@@ -64,12 +56,16 @@ class SuboptPersistent {
   Precomp pc_;
   DpState dp_;
   SuboptCfg cfg_;
+  SuboptResult res_;
 
   SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<DfsState> q_;
   std::priority_queue<std::pair<Energy, int>> pq_;
 
   std::pair<Energy, int> RunInternal();
+
+  // Computes the suboptimal folding for the given subpath and puts it into `res_`.
+  void GenerateResult(int idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the

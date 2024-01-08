@@ -40,7 +40,6 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   support.VerifySupported(__func__, em_->cfg);
 
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
-  spdlog::error("PERSISTENT");
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method
@@ -48,39 +47,44 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   cache_.Reserve(r_.size() * r_.size());
 
   q_.push_back({.expand_idx = 0, .to_expand{0, -1, EXT}});
-  pq_.push({ZERO_E, 0});
+  pq_.emplace(ZERO_E, 0);
 
   int num_strucs = 0;
-  Energy delta = ZERO_E;
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
-    if (num_strucs > cfg_.strucs || delta > cfg_.delta) break;
+    if (num_strucs >= cfg_.strucs) break;
 
     if (cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
       if (elapsed.count() >= cfg_.time_secs) break;
     }
-    auto [energy, idx] = RunInternal();
-    if (idx == -1) break;
+    auto [delta, idx] = RunInternal();
+    if (idx == -1 || delta > cfg_.delta) break;
 
     // TODO(2): We could expose an API that just has the index to avoid the cost of materialising
     // the full structure here.
     num_strucs++;
-    auto res = GenerateResult(idx);
-    res.energy = energy;
-    fn(res);
+    GenerateResult(idx);
+    res_.energy = dp_.ext[0][EXT] + delta;
+    fn(res_);
   }
 
   return num_strucs;
 }
 
 std::pair<Energy, int> SuboptPersistent::RunInternal() {
-  while (true) {
+  while (!pq_.empty()) {
     auto [energy, idx] = pq_.top();
-    auto& s = q_[idx];  // TODO(-1): check we don't modify q_ later which would invalidate this ref.
-    assert(s.to_expand.st != -1);
+    auto& s = q_[idx];
+
+    if (s.to_expand.st == -1) {
+      // At a terminal state - this is a bit different to the other subopt implementations because
+      // nodes with no expansions are put onto the queue to make sure energy is properly ordered.
+      pq_.pop();
+      return {-energy, idx};
+    }
 
     const auto& exps = GetExpansion(s.to_expand);
     assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
@@ -91,41 +95,70 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
       continue;
     }
 
-    const auto& exp = exps[s.expand_idx++];
+    const auto& exp = exps[s.expand_idx];
+    // fmt::println("expand idx: {}, exp idx0 st: {}, delta: {}, num exps: {}", s.expand_idx,
+    //     exp.idx0.st, exp.delta, exps.size());
     const bool has_unexpanded = exp.idx1.st != -1;
     // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
     // to the next one.
     DfsState ns = {.parent_idx = idx,
         .parent_expand_idx = s.expand_idx,
         .unexpanded_idx = has_unexpanded ? idx : s.unexpanded_idx,
+        .unexpanded_expand_idx = has_unexpanded ? s.expand_idx : s.unexpanded_expand_idx,
         .expand_idx = 0,
         .to_expand = exp.idx0};
+    s.expand_idx++;
+    energy -= exp.delta;
 
-    if (exp.idx0.st == -1) {
-      // Ran out of expansions at this node (we are a leaf). May still need to go through collected
-      // unexpanded nodes. Can't have an unexpanded DpIndex here. Also can't set ctds or affect
-      // energy.
+    if (exp.idx0.st == -1 && s.unexpanded_idx != -1) {
+      // Ran out of expansions at this node but we still have unexpanded DpIndexes to process.
       assert(!has_unexpanded);
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
 
-      // Use an unexpanded now, if one exists.
-      if (s.unexpanded_idx == -1) {
-        // At a terminal state.
-        return {-energy, idx};
-      } else {
-        // We have unexpanded DpIndexes to process.
-        // Set the next unexpanded index to the next one in the path up the tree.
-        auto unexpanded_parent_
-        auto unexpanded_parent_exps = GetExpansion()
-        ns.to_expand = q_[s.unexpanded_idx].to_expand;
-        ns.unexpanded_idx = q_[ns.unexpanded_idx].unexpanded_idx;
-      }
+      // Grab the next unexpanded DpIndex.
+      const auto& unexpanded_exp =
+          GetExpansion(q_[s.unexpanded_idx].to_expand)[s.unexpanded_expand_idx];
+      assert(unexpanded_exp.idx1.st != -1);  // There should be a valid unexpanded DpIndex here.
+
+      // Set the next unexpanded index to the next one in the path up the tree.
+      ns.unexpanded_expand_idx = q_[ns.unexpanded_idx].unexpanded_expand_idx;
+      ns.unexpanded_idx = q_[ns.unexpanded_idx].unexpanded_idx;
+      ns.to_expand = unexpanded_exp.idx1;
     }
 
-    pq_.emplace(energy - exp.delta, static_cast<int>(q_.size()));
+    pq_.emplace(energy, static_cast<int>(q_.size()));
+    // This is the only modification to `q_`, so access to `s` is valid until here.
     q_.push_back(ns);
   }
   return {ZERO_E, -1};
+}
+
+void SuboptPersistent::GenerateResult(int idx) {
+  // fmt::println("Generating result, idx: {}, q size: {}, pq size: {}", idx, q_.size(),
+  // pq_.size());
+  res_.tb.s.reset(r_.size());
+  res_.tb.ctd.reset(r_.size());
+
+  int expand_idx = q_[idx].parent_expand_idx;
+  idx = q_[idx].parent_idx;
+  while (idx != -1) {
+    const auto to_expand = q_[idx].to_expand;
+    // fmt::println("idx: {}, expand_idx: {}, expansion count: {}", idx, expand_idx,
+    //     GetExpansion(to_expand).size());
+    // Get the expansion that generated the previous node.
+    const auto& exp = GetExpansion(to_expand)[expand_idx];
+
+    if (to_expand.en != -1 && to_expand.a == DP_P) {
+      res_.tb.s[to_expand.st] = to_expand.en;
+      res_.tb.s[to_expand.en] = to_expand.st;
+    }
+    exp.ctd0.MaybeApply(res_.tb.ctd);
+    exp.ctd1.MaybeApply(res_.tb.ctd);
+
+    expand_idx = q_[idx].parent_expand_idx;
+    idx = q_[idx].parent_idx;
+  }
+  // fmt::println("res: {}", res_.tb.ctd.ToString(res_.tb.s));
 }
 
 std::vector<Expansion> SuboptPersistent::GenerateExpansions(
