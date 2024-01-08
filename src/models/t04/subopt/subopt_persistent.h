@@ -6,6 +6,7 @@
 #include <cassert>
 #include <compare>
 #include <functional>
+#include <queue>
 #include <utility>
 #include <vector>
 
@@ -34,17 +35,25 @@ class SuboptPersistent {
   int Run(const SuboptCallback& fn);
 
   // Computes the suboptimal folding for the given subpath.
-  [[nodiscard]] SuboptResult GenerateResult() const { return res_; }
+  [[nodiscard]] SuboptResult GenerateResult(int idx) const {
+    // TODO(-1): implement.
+    return {};
+  }
 
  private:
   struct DfsState {
+    // TODO(-1): can turn the expand_idx's here and other places into Index, since they can't be
+    // more than the RNA length.
     // Index of the parent DfsState in the expand tree.
     int parent_idx = {-1};
     // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
     int parent_expand_idx = {-1};
     // Index of the next DfsState who's expansion contains an unexpanded DpIndex we need to process.
     int unexpanded_idx = {-1};
-    // Index of the child expansion of `to_expand` we should process.
+    // Index of the expansion to use for `unexpanded_idx`'s DfsState.
+    int unexpanded_expand_idx = {-1};
+    // Index of the child expansion of `to_expand` we should process. This gets updated in place
+    // (saves time and memory), which is why we need to keep `parent_expand_idx` around as well.
     int expand_idx = {0};
     // DpIndex whose child expansions we are processing.
     DpIndex to_expand{};
@@ -58,9 +67,9 @@ class SuboptPersistent {
 
   SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<DfsState> q_;
+  std::priority_queue<std::pair<Energy, int>> pq_;
 
-  std::pair<int, Energy> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+  std::pair<Energy, int> RunInternal();
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the
