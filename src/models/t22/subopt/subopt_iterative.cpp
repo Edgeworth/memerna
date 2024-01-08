@@ -1,5 +1,5 @@
 // Copyright 2023 Eliot Courtney.
-#include "models/t22/subopt/subopt_slowest.h"
+#include "models/t22/subopt/subopt_iterative.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -32,10 +32,10 @@ using t04::EXT_GU;
 using t04::EXT_RC;
 using t04::EXT_WC;
 
-SuboptSlowest::SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
+SuboptIterative::SuboptIterative(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
-int SuboptSlowest::Run(const SuboptCallback& fn) {
+int SuboptIterative::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
   cache_.Reserve(r_.size());
@@ -45,9 +45,9 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(__func__, em_->cfg);
+  support.VerifySupported(funcname(), em_->cfg);
 
-  spdlog::debug("t22 {} with cfg {}", __func__, em_->cfg);
+  spdlog::debug("t22 {} with cfg {}", funcname(), em_->cfg);
 
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
     int count = 0;
@@ -68,7 +68,7 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptSlowest::RunInternal(
+std::pair<int, Energy> SuboptIterative::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   int count = 0;
   Energy next_seen = MAX_E;
@@ -146,7 +146,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expansion> SuboptSlowest::GenerateExpansions(
+std::vector<Expansion> SuboptIterative::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   if (std::holds_alternative<t04::DpIndex>(to_expand)) {
     auto idx = std::get<t04::DpIndex>(to_expand);
@@ -172,7 +172,7 @@ std::vector<Expansion> SuboptSlowest::GenerateExpansions(
   return PairedOrNoStackExpansions(st, en, /*is_nostack=*/true, delta);
 }
 
-std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta) const {
+std::vector<Expansion> SuboptIterative::ExtExpansions(int st, int a, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const auto& dp = dp_.t04.dp;
   const auto& ext = dp_.t04.ext;
@@ -311,7 +311,7 @@ std::vector<Expansion> SuboptSlowest::ExtExpansions(int st, int a, Energy delta)
   return exps;
 }
 
-std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
+std::vector<Expansion> SuboptIterative::PairedOrNoStackExpansions(
     int st, int en, bool is_nostack, Energy delta) const {
   const auto& dp = dp_.t04.dp;
   const auto& nostack = dp_.nostack;
@@ -519,7 +519,7 @@ std::vector<Expansion> SuboptSlowest::PairedOrNoStackExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
+std::vector<Expansion> SuboptIterative::UnpairedExpansions(
     int st, int en, int a, Energy delta) const {
   const auto& dp = dp_.t04.dp;
   std::vector<Expansion> exps;
@@ -713,7 +713,7 @@ std::vector<Expansion> SuboptSlowest::UnpairedExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptSlowest::PenultimateExpansions(
+std::vector<Expansion> SuboptIterative::PenultimateExpansions(
     int st, int en, int length, Energy delta) const {
   const auto& nostack = dp_.nostack;
   const auto& penult = dp_.penult;

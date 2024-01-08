@@ -1,6 +1,6 @@
 // Copyright 2023 Eliot Courtney.
-#ifndef MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
-#define MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
+#ifndef MODELS_T22_SUBOPT_SUBOPT_ITERATIVE_H_
+#define MODELS_T22_SUBOPT_SUBOPT_ITERATIVE_H_
 
 #include <algorithm>
 #include <cassert>
@@ -26,9 +26,9 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-class SuboptSlowest {
+class SuboptIterative {
  public:
-  SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
+  SuboptIterative(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -83,4 +83,4 @@ class SuboptSlowest {
 
 }  // namespace mrna::md::t22
 
-#endif  // MODELS_T22_SUBOPT_SUBOPT_SLOWEST_H_
+#endif  // MODELS_T22_SUBOPT_SUBOPT_ITERATIVE_H_

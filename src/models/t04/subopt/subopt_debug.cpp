@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "models/t04/subopt/subopt_slowest.h"
+#include "models/t04/subopt/subopt_debug.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -21,10 +21,10 @@
 
 namespace mrna::md::t04 {
 
-SuboptSlowest::SuboptSlowest(Primary r, t04::Model::Ptr em, DpState dp, SuboptCfg cfg)
+SuboptDebug::SuboptDebug(Primary r, t04::Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
-int SuboptSlowest::Run(const SuboptCallback& fn) {
+int SuboptDebug::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
 
@@ -33,9 +33,9 @@ int SuboptSlowest::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em_->cfg);
+  support.VerifySupported(funcname(), em_->cfg);
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
+  spdlog::debug("t04 {} with cfg {}", funcname(), em_->cfg);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand

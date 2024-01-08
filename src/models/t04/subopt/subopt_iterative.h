@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
-#define MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+#ifndef MODELS_T04_SUBOPT_SUBOPT_ITERATIVE_H_
+#define MODELS_T04_SUBOPT_SUBOPT_ITERATIVE_H_
 
 #include <algorithm>
 #include <cassert>
@@ -26,9 +26,9 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-class SuboptFastest {
+class SuboptIterative {
  public:
-  SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
+  SuboptIterative(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -81,4 +81,4 @@ class SuboptFastest {
 
 }  // namespace mrna::md::t04
 
-#endif  // MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+#endif  // MODELS_T04_SUBOPT_SUBOPT_ITERATIVE_H_

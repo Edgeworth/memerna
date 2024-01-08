@@ -58,7 +58,7 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em.cfg);
+  support.VerifySupported(funcname(), em.cfg);
 
   // cache[used][i]
   std::vector<Energy> cache[2] = {

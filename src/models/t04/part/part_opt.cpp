@@ -22,7 +22,7 @@
 
 namespace mrna::md::t04 {
 
-Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state) {
+Part PartitionOpt(const Primary& r, const BoltzModel::Ptr& bem, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -31,9 +31,9 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, bem->em().cfg);
+  support.VerifySupported(funcname(), bem->em().cfg);
 
-  spdlog::debug("t04 {} with cfg {}", __func__, bem->em().cfg);
+  spdlog::debug("t04 {} with cfg {}", funcname(), bem->em().cfg);
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bem);

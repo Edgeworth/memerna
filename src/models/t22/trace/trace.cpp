@@ -569,9 +569,9 @@ struct TracebackInternal {
         .bulge_states{false, true},
         .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
     };
-    support.VerifySupported(__func__, em.cfg);
+    support.VerifySupported(funcname(), em.cfg);
 
-    spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
+    spdlog::debug("t22 {} with cfg {}", funcname(), em.cfg);
 
     std::vector<DpIndex> q;
     q.emplace_back(t04::DpIndex(0, -1, EXT));

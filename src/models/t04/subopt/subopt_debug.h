@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
-#define MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
+#ifndef MODELS_T04_SUBOPT_SUBOPT_DEBUG_H_
+#define MODELS_T04_SUBOPT_SUBOPT_DEBUG_H_
 
 #include <compare>
 #include <functional>
@@ -22,9 +22,9 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-class SuboptSlowest {
+class SuboptDebug {
  public:
-  SuboptSlowest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
+  SuboptDebug(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -108,4 +108,4 @@ class SuboptSlowest {
 
 }  // namespace mrna::md::t04
 
-#endif  // MODELS_T04_SUBOPT_SUBOPT_SLOWEST_H_
+#endif  // MODELS_T04_SUBOPT_SUBOPT_DEBUG_H_

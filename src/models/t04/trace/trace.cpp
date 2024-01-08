@@ -31,10 +31,10 @@ TraceResult Traceback(
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em->cfg);
+  support.VerifySupported(funcname(), em->cfg);
   verify(!cfg.random, "random traceback is not supported in this energy model");
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
+  spdlog::debug("t04 {} with cfg {}", funcname(), em->cfg);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));

@@ -4,6 +4,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 #include "api/energy/model.h"
 #include "util/argparse.h"
@@ -70,7 +71,7 @@ struct CtxCfg {
     case erg::ModelKind::T04_LIKE:
       return {SuboptAlg::DEBUG, SuboptAlg::ITERATIVE, SuboptAlg::PERSISTENT, SuboptAlg::AUTO,
           SuboptAlg::BRUTE};
-    case erg::ModelKind::T22_LIKE: return {SuboptAlg::DEBUG, SuboptAlg::AUTO, SuboptAlg::BRUTE};
+    case erg::ModelKind::T22_LIKE: return {SuboptAlg::ITERATIVE, SuboptAlg::AUTO, SuboptAlg::BRUTE};
     }
     unreachable();
   }

@@ -18,7 +18,7 @@ void PartitionExterior(const Primary& r, const Model& em, PartState& state) {
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em.cfg);
+  support.VerifySupported(funcname(), em.cfg);
 
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);

@@ -2,7 +2,7 @@
 
 - use CPM to handle libraries
 - implement d2
-  - add to mfe_fastest, see how much it affects perf
+  - add to mfe_opt_sparse, see how much it affects perf
   - add all variants to all mfe, traceback, suboptimal, partition function
   - add to energy model
   - add to fuzz

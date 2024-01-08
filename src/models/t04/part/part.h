@@ -39,9 +39,9 @@ struct PartState {
   BoltzExtArray ext;
 };
 
-Part PartitionSlowest(const Primary& r, const Model::Ptr& em, PartState& state);
+Part PartitionDebug(const Primary& r, const Model::Ptr& em, PartState& state);
 
-Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& state);
+Part PartitionOpt(const Primary& r, const BoltzModel::Ptr& bem, PartState& state);
 
 void PartitionExterior(const Primary& r, const Model& em, PartState& state);
 

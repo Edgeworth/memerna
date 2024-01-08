@@ -1,10 +1,13 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef API_ENERGY_MODEL_H_
 #define API_ENERGY_MODEL_H_
+
 #include <cstdint>
 #include <iosfwd>
 #include <string>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include "api/energy/energy.h"
 #include "model/ctd.h"
@@ -83,8 +86,7 @@ inline void LoadPseudofreeEnergy(
   auto vis = overloaded{
       [&](const auto& em) mutable {
         return em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
-      },
-
+      }
   };
   std::visit(vis, em);
 }

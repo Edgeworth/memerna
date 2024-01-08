@@ -34,7 +34,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(__func__, em->cfg);
+  support.VerifySupported(funcname(), em->cfg);
 
   state.t04.ext = t04::ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state.t04;

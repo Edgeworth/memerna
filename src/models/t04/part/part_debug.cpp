@@ -21,7 +21,7 @@
 
 namespace mrna::md::t04 {
 
-Part PartitionSlowest(const Primary& r, const Model::Ptr& initial_em, PartState& state) {
+Part PartitionDebug(const Primary& r, const Model::Ptr& initial_em, PartState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -34,9 +34,9 @@ Part PartitionSlowest(const Primary& r, const Model::Ptr& initial_em, PartState&
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em->cfg);
+  support.VerifySupported(funcname(), em->cfg);
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
+  spdlog::debug("t04 {} with cfg {}", funcname(), em->cfg);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), em);
