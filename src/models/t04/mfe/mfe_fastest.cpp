@@ -114,7 +114,7 @@ void MfeFastest(const Primary& r, const Model::Ptr& em, DpState& state) {
         dp[st][en][DP_P] = mins[DP_P];
       }
       // Update unpaired.
-      // Choose |st| to be unpaired.
+      // Choose `st` to be unpaired.
       if (st + 1 < en) {
         mins[DP_U] = std::min(mins[DP_U], dp[st + 1][en][DP_U]);
         mins[DP_U2] = std::min(mins[DP_U2], dp[st + 1][en][DP_U2]);

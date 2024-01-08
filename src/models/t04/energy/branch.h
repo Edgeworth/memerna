@@ -28,7 +28,7 @@ namespace mrna::md::t04 {
 // Running with having the left unpaired base both not used lets the last branch potentially
 // consume it (wrapping around).
 //
-// The state holds which branches we're up to, |i|, and whether the unpaired base on the left was
+// The state holds which branches we're up to, `i`, and whether the unpaired base on the left was
 // consumed (if it exists).
 //
 // Note that we can't form two dangles attached to the same stem; that's a terminal mismatch.
@@ -89,7 +89,7 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
     assert(ri[i] != -1);
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
-    // If |use_first_lu|, then if the left unpaired base is the same as the last branch's right
+    // If `use_first_lu`, then if the left unpaired base is the same as the last branch's right
     // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
     // dangle, right facing coaxial stack, etc). This is because the loop is cyclic.
     lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && s[lui[i]] == -1;
@@ -115,7 +115,7 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
       // anything, so just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FCOAX_WITH_NEXT);
       if (lu_exists[i]) {
-        // If lu exists, and it was used, then it's fine to coaxially stack. If |used| were true but
+        // If lu exists, and it was used, then it's fine to coaxially stack. If `used` were true but
         // lu didn't exist then we couldn't coaxially stack as the current branch would already
         // have been involved in one, though.
         UPDATE_CACHE(0, i + 2, 1, i, coax, CTD_FCOAX_WITH_NEXT);
@@ -196,14 +196,14 @@ Energy ComputeOptimalCtds(const T& em, const Primary& r, const Secondary& s,
 
 #undef UPDATE_CACHE
 
-// Reads the per-base ctd representation from |ctd| for |branches| branches and
-// writes it in branch representation to |branch_ctd|.
+// Reads the per-base ctd representation from `ctd` for `branches` branches and
+// writes it in branch representation to `branch_ctd`.
 template <typename T>
 Energy AddBaseCtdsToBranchCtds(const T& em, const Primary& r, const Secondary& s, const Ctds& ctd,
     const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = ZERO_E;
-  // If we have an outer loop in |branches|, it is possible the first could refer to PREV, or the
+  // If we have an outer loop in `branches`, it is possible the first could refer to PREV, or the
   // last, to NEXT. In this case, we need to fix the branch_ctd so that the corresponding branch
   // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
   // before it, but that actually needs to be at the end.

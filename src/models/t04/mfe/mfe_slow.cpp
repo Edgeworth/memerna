@@ -120,7 +120,7 @@ void MfeSlow(const Primary& r, const Model::Ptr& em, DpState& state) {
       Energy wc_min = MAX_E;
       Energy gu_min = MAX_E;
       // Update unpaired.
-      // Choose |st| to be unpaired.
+      // Choose `st` to be unpaired.
       if (st + 1 < en) {
         u_min = std::min(u_min, dp[st + 1][en][DP_U]);
         u2_min = std::min(u2_min, dp[st + 1][en][DP_U2]);

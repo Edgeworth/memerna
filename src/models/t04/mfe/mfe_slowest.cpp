@@ -124,7 +124,7 @@ void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
       }
 
       // Update unpaired.
-      // Choose |st| to be unpaired.
+      // Choose `st` to be unpaired.
       if (st + 1 < en) {
         UPDATE_CACHE(DP_U, dp[st + 1][en][DP_U]);
         UPDATE_CACHE(DP_U2, dp[st + 1][en][DP_U2]);

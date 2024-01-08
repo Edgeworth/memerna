@@ -25,7 +25,7 @@ class SplayMap {
 
     int oldroot = root;
     root = static_cast<int>(ns_.size());
-    // Case where |oldroot| is NONE will be handled magically, since none.{l, r} == none.
+    // Case where `oldroot` is NONE will be handled magically, since none.{l, r} == none.
     if (key < ns_[oldroot].k) {
       ns_.push_back({key, ns_[oldroot].l, oldroot, std::forward<ValueRef>(value)});
       ns_[oldroot].l = NONE;

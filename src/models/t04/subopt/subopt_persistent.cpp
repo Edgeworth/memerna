@@ -21,13 +21,19 @@
 
 namespace mrna::md::t04 {
 
+namespace {
+
+// Check the time every `CHECK_TIME_FREQ` iterations.
+constexpr int CHECK_TIME_FREQ = 10000;
+
+}  // namespace
+
 SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptPersistent::Run(const SuboptCallback& fn) {
-  res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
-  q_.reserve(r_.size());  // Reasonable reservation.
-  cache_.Reserve(r_.size());
+  q_.reserve(r_.size() * r_.size());
+  cache_.Reserve(r_.size() * r_.size());
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
@@ -39,18 +45,30 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
   spdlog::error("PERSISTENT");
 
-  // If require sorted output, or limited number of structures (requires sorting).
+  int num_strucs = 0;
+  Energy delta = ZERO_E;
+  auto start_time = std::chrono::steady_clock::now();
+
+  while (1) {
+    if (num_strucs > cfg_.strucs || delta > cfg_.delta) {
+      break;
+    }
+    if
+
+      auto res = RunInternal();
+    num_strucs++;
+
+    // TODO(-1): call callback
+  }
+
   if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
     int count = 0;
-    Energy delta = ZERO_E;
-    auto start_time = std::chrono::steady_clock::now();
     while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
       if (cfg_.time_secs >= 0.0) {
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
             std::chrono::steady_clock::now() - start_time);
         if (elapsed.count() >= cfg_.time_secs) break;
       }
-      auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
       count += res.first;
       delta = res.second;
     }
@@ -69,7 +87,7 @@ std::pair<int, Energy> SuboptPersistent::RunInternal(
   // unexpanded is originally generated.
 
   int count = 0;
-  // Store the smallest energy above delta we see. If we reach our |structure_limit| before
+  // Store the smallest energy above delta we see. If we reach our `structure_limit` before
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.
   Energy next_seen = MAX_E;
@@ -142,7 +160,7 @@ std::pair<int, Energy> SuboptPersistent::RunInternal(
       }
       ns.to_expand = unexpanded_.back();
       unexpanded_.pop_back();
-      // This node should replace itself into |unexpanded| when its done.
+      // This node should replace itself into `unexpanded` when its done.
       ns.should_unexpand = true;
     } else {
       // Apply child's modifications to the global state.

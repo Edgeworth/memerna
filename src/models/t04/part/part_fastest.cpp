@@ -107,7 +107,7 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
       BoltzEnergy wc{0};
       BoltzEnergy gu{0};
       // Update unpaired.
-      // Choose |st| to be unpaired.
+      // Choose `st` to be unpaired.
       if (st + 1 < en) {
         u += dp[st + 1][en][PT_U];
         u2 += dp[st + 1][en][PT_U2];
@@ -383,7 +383,7 @@ Part PartitionFastest(const Primary& r, const BoltzModel::Ptr& bem, PartState& s
       BoltzEnergy wc{0};
       BoltzEnergy gu{0};
       // Update unpaired.
-      // Choose |st| to be unpaired, but only if we can maintain the constraint that we have
+      // Choose `st` to be unpaired, but only if we can maintain the constraint that we have
       // an enclosing loop formed.
       if (st + 1 < N) {
         u += dp[st + 1][en][PT_U];

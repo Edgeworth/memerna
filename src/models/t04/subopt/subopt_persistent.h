@@ -33,15 +33,21 @@ class SuboptPersistent {
 
   int Run(const SuboptCallback& fn);
 
+  // Computes the suboptimal folding for the given subpath.
+  [[nodiscard]] SuboptResult GenerateResult() const { return res_; }
+
  private:
   struct DfsState {
-    // Index of the child expansion of |expand| we should process.
-    int child_idx = {0};
-    // Index whose child expansions we are processing.
+    // Index of the parent DfsState in the expand tree.
+    int parent_idx = {-1};
+    // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
+    int parent_expand_idx = {-1};
+    // Index of the next DfsState who's expansion contains an unexpanded DpIndex we need to process.
+    int unexpanded_idx = {-1};
+    // Index of the child expansion of `to_expand` we should process.
+    int expand_idx = {0};
+    // DpIndex whose child expansions we are processing.
     DpIndex to_expand{};
-    // Stores whether this node's |to_expand| was from |unexpanded_| and needs
-    // to be replaced when going back up the DFS stack.
-    bool should_unexpand = {false};
   };
 
   Primary r_;
@@ -53,11 +59,6 @@ class SuboptPersistent {
   SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<DfsState> q_;
 
-  // Incremental state. Holds the current partial structure.
-  SuboptResult res_;
-  // Incremental state - holds unexpanded Indexes for the current partial structure.
-  std::vector<DpIndex> unexpanded_;
-
   std::pair<int, Energy> RunInternal(
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
@@ -65,7 +66,7 @@ class SuboptPersistent {
     // We request the expansions of an index multiple times when we find the
     // next sibling of a node after coming back up during the DFS.
     if (!cache_.Find(to_expand)) {
-      // Need to generate the full way to delta so we can properly set |next_seen|.
+      // Need to generate the full way to delta so we can properly set `next_seen`.
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
       [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
@@ -75,7 +76,7 @@ class SuboptPersistent {
   }
 
   // Generates expansions for the given index, given that the extra energy over the best choice
-  // can't be more than |delta|.
+  // can't be more than `delta`.
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };

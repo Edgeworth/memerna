@@ -519,7 +519,7 @@ constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int o
 }
 
 // If (st, en) is not paired, treated as an exterior loop.
-// If |ctd| is non-null, use the given ctds.
+// If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
   const bool use_given_ctds = given_ctd;
