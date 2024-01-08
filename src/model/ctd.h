@@ -95,6 +95,8 @@ class Ctds {
     std::fill(data_.begin(), data_.end(), CTD_NA);
   }
 
+  void reset() { std::fill(data_.begin(), data_.end(), CTD_NA); }
+
   [[nodiscard]] std::string ToString(const Secondary& s) const;
   static bool IsCtdString(const std::string& ctd_str);
 

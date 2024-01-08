@@ -50,6 +50,8 @@ class Secondary {
     std::fill(data_.begin(), data_.end(), -1);
   }
 
+  void reset() { std::fill(data_.begin(), data_.end(), -1); }
+
   [[nodiscard]] inline constexpr bool PreviousPaired(int st, int en) const {
     return st != 0 && en != static_cast<int>(size()) - 1 && data_[st - 1] == en + 1;
   }
