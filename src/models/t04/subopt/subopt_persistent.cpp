@@ -1,4 +1,4 @@
-// Copyright 2016 Eliot Courtney.
+// Copyright 2023 Eliot Courtney.
 #include "models/t04/subopt/subopt_persistent.h"
 
 #include <fmt/core.h>
@@ -101,7 +101,7 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
     const bool has_unexpanded = exp.idx1.st != -1;
     // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
     // to the next one.
-    DfsState ns = {.parent_idx = idx,
+    Node ns = {.parent_idx = idx,
         .parent_expand_idx = s.expand_idx,
         .unexpanded_idx = has_unexpanded ? idx : s.unexpanded_idx,
         .unexpanded_expand_idx = has_unexpanded ? s.expand_idx : s.unexpanded_expand_idx,

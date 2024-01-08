@@ -35,7 +35,7 @@ class SuboptPersistent {
   int Run(const SuboptCallback& fn);
 
  private:
-  struct DfsState {
+  struct Node {
     // Index of the parent DfsState in the expand tree.
     int parent_idx = {-1};
     // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
@@ -59,7 +59,7 @@ class SuboptPersistent {
   SuboptResult res_;
 
   SplayMap<DpIndex, std::vector<Expansion>> cache_;
-  std::vector<DfsState> q_;
+  std::vector<Node> q_;
   std::priority_queue<std::pair<Energy, int>> pq_;
 
   std::pair<Energy, int> RunInternal();

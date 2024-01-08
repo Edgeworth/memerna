@@ -1,11 +1,13 @@
-// Copyright 2016 Eliot Courtney.
-#ifndef MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
-#define MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+// Copyright 2023 Eliot Courtney.
+
+#ifndef MODELS_T22_SUBOPT_SUBOPT_PERSISTENT_H_
+#define MODELS_T22_SUBOPT_SUBOPT_PERSISTENT_H_
 
 #include <algorithm>
 #include <cassert>
 #include <compare>
 #include <functional>
+#include <queue>
 #include <utility>
 #include <vector>
 
@@ -14,51 +16,54 @@
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "models/t04/energy/model.h"
-#include "models/t04/energy/precomp.h"
-#include "models/t04/mfe/dp.h"
-#include "models/t04/trace/trace.h"
+#include "models/t22/energy/model.h"
+#include "models/t22/trace/trace.h"
 #include "util/splaymap.h"
 
-namespace mrna::md::t04 {
+namespace mrna::md::t22 {
 
 using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-class SuboptFastest {
+// Suboptimal folding based on a persistent data structure algorithm.
+class SuboptPersistent {
  public:
-  SuboptFastest(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
+  SuboptPersistent(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
  private:
   struct Node {
-    // Index of the child expansion of `to_expand` we should process.
+    // Index of the parent DfsState in the expand tree.
+    int parent_idx = {-1};
+    // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
+    int parent_expand_idx = {-1};
+    // Index of the next DfsState who's expansion contains an unexpanded DpIndex we need to process.
+    int unexpanded_idx = {-1};
+    // Index of the expansion to use for `unexpanded_idx`'s DfsState.
+    int unexpanded_expand_idx = {-1};
+    // Index of the child expansion of `to_expand` we should process. This gets updated in place
+    // (saves time and memory), which is why we need to keep `parent_expand_idx` around as well.
     int expand_idx = {0};
-    // DpIndex whose child expansions we are processing. -1 means empty
+    // DpIndex whose child expansions we are processing.
     DpIndex to_expand{};
-    // Stores whether this node's `to_expand` was from `unexpanded_` and needs
-    // to be replaced when going back up the DFS stack.
-    bool should_unexpand = {false};
   };
 
   Primary r_;
   Model::Ptr em_;
-  Precomp pc_;
   DpState dp_;
   SuboptCfg cfg_;
+  SuboptResult res_;
 
   SplayMap<DpIndex, std::vector<Expansion>> cache_;
   std::vector<Node> q_;
+  std::priority_queue<std::pair<Energy, int>> pq_;
 
-  // Incremental state. Holds the current partial structure.
-  SuboptResult res_;
-  // Incremental state - holds unexpanded Indexes for the current partial structure.
-  std::vector<DpIndex> unexpanded_;
+  std::pair<Energy, int> RunInternal();
 
-  std::pair<int, Energy> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+  // Computes the suboptimal folding for the given subpath and puts it into `res_`.
+  void GenerateResult(int idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the
@@ -79,6 +84,6 @@ class SuboptFastest {
       const DpIndex& to_expand, Energy delta) const;
 };
 
-}  // namespace mrna::md::t04
+}  // namespace mrna::md::t22
 
-#endif  // MODELS_T04_SUBOPT_SUBOPT_FASTEST_H_
+#endif  // MODELS_T22_SUBOPT_SUBOPT_PERSISTENT_H_
