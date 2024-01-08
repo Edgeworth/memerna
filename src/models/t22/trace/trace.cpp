@@ -575,7 +575,7 @@ struct TracebackInternal {
     spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
 
     std::stack<DpIndex> q;
-    q.push(t04::DpIndex(0, -1, EXT));
+    q.emplace(t04::DpIndex(0, -1, EXT));
     while (!q.empty()) {
       auto idx_all = q.top();
       q.pop();

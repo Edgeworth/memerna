@@ -14,13 +14,13 @@
       msg += '\n';                                             \
       throw ::std::runtime_error(msg);                         \
     }                                                          \
-  } while (0) /* NOLINT(cppcoreguidelines-avoid-do-while) */
+  } while (0)
 
 #define fatal(...)              \
   do {                          \
     verify(false, __VA_ARGS__); \
     __builtin_unreachable();    \
-  } while (0) /* NOLINT(cppcoreguidelines-avoid-do-while) */
+  } while (0)
 
 #define bug() fatal("bug")
 

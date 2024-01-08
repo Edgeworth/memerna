@@ -1,5 +1,5 @@
 // Copyright 2023 E.
-#include "models/t04/subopt/subopt_persistent.h"
+#include "models/t22/subopt/subopt_persistent.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -19,7 +19,7 @@
 #include "model/secondary.h"
 #include "util/error.h"
 
-namespace mrna::md::t04 {
+namespace mrna::md::t22 {
 
 namespace {
 
@@ -29,7 +29,7 @@ constexpr int CHECK_TIME_FREQ = 10000;
 }  // namespace
 
 SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr em, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
+    : r_(std::move(r)), em_(std::move(em)), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptPersistent::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
@@ -39,7 +39,7 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   };
   support.VerifySupported(__func__, em_->cfg);
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
+  spdlog::debug("t22 {} with cfg {}", __func__, em_->cfg);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method
@@ -553,4 +553,4 @@ std::vector<Expansion> SuboptPersistent::GenerateExpansions(
   return exps;
 }
 
-}  // namespace mrna::md::t04
+}  // namespace mrna::md::t22
