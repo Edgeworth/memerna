@@ -37,8 +37,8 @@ inline EnergyModelPtr FromArgParse(const ArgParse& args) {
   switch (kind) {
   case ModelKind::T04_LIKE: return md::t04::Model::FromArgParse(args);
   case ModelKind::T22_LIKE: return md::t22::Model::FromArgParse(args);
-  default: bug();
   }
+  unreachable();
 }
 
 inline EnergyModelPtr FromDir(const std::string& data_dir, const std::string& model) {
@@ -47,16 +47,16 @@ inline EnergyModelPtr FromDir(const std::string& data_dir, const std::string& mo
   switch (kind) {
   case ModelKind::T04_LIKE: return md::t04::Model::FromModelPath(path);
   case ModelKind::T22_LIKE: return md::t22::Model::FromModelPath(path);
-  default: bug();
   }
+  unreachable();
 }
 
 inline EnergyModelPtr Random(ModelKind kind, uint_fast32_t seed) {
   switch (kind) {
   case ModelKind::T04_LIKE: return md::t04::Model::Random(seed);
   case ModelKind::T22_LIKE: return md::t22::Model::Random(seed);
-  default: bug();
   }
+  unreachable();
 }
 
 // Creates the Boltzmann energy model from the given energy model.

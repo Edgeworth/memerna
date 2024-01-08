@@ -28,14 +28,16 @@ CtxCfg CtxCfg::FromArgParse(const ArgParse& args) {
 std::istream& operator>>(std::istream& str, CtxCfg::MfeAlg& o) {
   std::string s;
   str >> s;
-  if (s == "slowest") {
-    o = CtxCfg::MfeAlg::SLOWEST;
-  } else if (s == "slow") {
-    o = CtxCfg::MfeAlg::SLOW;
-  } else if (s == "fastest") {
-    o = CtxCfg::MfeAlg::FASTEST;
-  } else if (s == "lyngso") {
-    o = CtxCfg::MfeAlg::LYNGSO;
+  if (s == "debug") {
+    o = CtxCfg::MfeAlg::DEBUG;
+  } else if (s == "opt") {
+    o = CtxCfg::MfeAlg::OPT;
+  } else if (s == "sparse-opt") {
+    o = CtxCfg::MfeAlg::SPARSE_OPT;
+  } else if (s == "lyngso-sparse-opt") {
+    o = CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT;
+  } else if (s == "auto") {
+    o = CtxCfg::MfeAlg::AUTO;
   } else if (s == "brute") {
     o = CtxCfg::MfeAlg::BRUTE;
   } else {
@@ -44,15 +46,29 @@ std::istream& operator>>(std::istream& str, CtxCfg::MfeAlg& o) {
   return str;
 }
 
+std::ostream& operator<<(std::ostream& str, const CtxCfg::MfeAlg& o) {
+  switch (o) {
+  case CtxCfg::MfeAlg::DEBUG: return str << "debug";
+  case CtxCfg::MfeAlg::OPT: return str << "opt";
+  case CtxCfg::MfeAlg::SPARSE_OPT: return str << "sparse-opt";
+  case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT: return str << "lyngso-sparse-opt";
+  case CtxCfg::MfeAlg::AUTO: return str << "auto";
+  case CtxCfg::MfeAlg::BRUTE: return str << "brute";
+  }
+  unreachable();
+}
+
 std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
   std::string s;
   str >> s;
-  if (s == "slowest") {
-    o = CtxCfg::SuboptAlg::SLOWEST;
-  } else if (s == "fastest") {
-    o = CtxCfg::SuboptAlg::FASTEST;
+  if (s == "debug") {
+    o = CtxCfg::SuboptAlg::DEBUG;
+  } else if (s == "iterative") {
+    o = CtxCfg::SuboptAlg::ITERATIVE;
   } else if (s == "persistent") {
     o = CtxCfg::SuboptAlg::PERSISTENT;
+  } else if (s == "auto") {
+    o = CtxCfg::SuboptAlg::AUTO;
   } else if (s == "brute") {
     o = CtxCfg::SuboptAlg::BRUTE;
   } else {
@@ -61,19 +77,42 @@ std::istream& operator>>(std::istream& str, CtxCfg::SuboptAlg& o) {
   return str;
 }
 
+std::ostream& operator<<(std::ostream& str, const CtxCfg::SuboptAlg& o) {
+  switch (o) {
+  case CtxCfg::SuboptAlg::DEBUG: return str << "debug";
+  case CtxCfg::SuboptAlg::ITERATIVE: return str << "iterative";
+  case CtxCfg::SuboptAlg::PERSISTENT: return str << "persistent";
+  case CtxCfg::SuboptAlg::AUTO: return str << "auto";
+  case CtxCfg::SuboptAlg::BRUTE: return str << "brute";
+  }
+  unreachable();
+}
+
 std::istream& operator>>(std::istream& str, CtxCfg::PartAlg& o) {
   std::string s;
   str >> s;
-  if (s == "slowest") {
-    o = CtxCfg::PartAlg::SLOWEST;
-  } else if (s == "fastest") {
-    o = CtxCfg::PartAlg::FASTEST;
+  if (s == "debug") {
+    o = CtxCfg::PartAlg::DEBUG;
+  } else if (s == "opt") {
+    o = CtxCfg::PartAlg::OPT;
+  } else if (s == "auto") {
+    o = CtxCfg::PartAlg::AUTO;
   } else if (s == "brute") {
     o = CtxCfg::PartAlg::BRUTE;
   } else {
     fatal("unknown partition option {}", s);
   }
   return str;
+}
+
+std::ostream& operator<<(std::ostream& str, const CtxCfg::PartAlg& o) {
+  switch (o) {
+  case CtxCfg::PartAlg::DEBUG: return str << "debug";
+  case CtxCfg::PartAlg::OPT: return str << "opt";
+  case CtxCfg::PartAlg::AUTO: return str << "auto";
+  case CtxCfg::PartAlg::BRUTE: return str << "brute";
+  }
+  unreachable();
 }
 
 }  // namespace mrna

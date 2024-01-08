@@ -141,6 +141,7 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<Energy> mrna_opt_efns;  // Efn using optimal CTDs.
   for (const auto& em : ems_) {
     for (auto mfe_alg : CtxCfg::MfeAlgsForModel(em)) {
+      if (mfe_alg == CtxCfg::MfeAlg::AUTO) continue;
       if (mfe_alg == CtxCfg::MfeAlg::BRUTE && N > cfg_.brute_max) continue;
 
       const Ctx ctx(em, CtxCfg{.mfe_alg = mfe_alg});
@@ -162,7 +163,7 @@ Error FuzzInvocation::CheckMfe() {
       [&](md::t22::DpState& got) -> md::t04::DpState* { return &got.t04; },
       [&](const std::monostate&) -> md::t04::DpState* { return nullptr; },
       [&](const auto&) -> md::t04::DpState* {
-        bug();
+        fatal("bug");
         return nullptr;
       },
   };
@@ -192,7 +193,7 @@ Error FuzzInvocation::CheckMfe() {
             // TODO(2): test got.penult.
           },
           [&](const std::monostate&) {},
-          [&](const auto&) { bug(); },
+          [&](const auto&) { fatal("bug"); },
       };
       std::visit(vis, mrna_res[i].mfe.dp);
     }
@@ -409,7 +410,7 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
           }
         }
       },
-      [&](const auto&) { bug(); },
+      [&](const auto&) { fatal("bug"); },
   };
   std::visit(vis, fold_->mfe.dp);
 

@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 
+#include "api/ctx/ctx_cfg.h"
 #include "api/mfe.h"
 #include "api/part.h"
 #include "api/trace/trace_cfg.h"
@@ -45,7 +46,7 @@ mfe::DpState CreateDpState(const erg::EnergyModelPtr& em) {
 part::PartState CreatePartState(const erg::EnergyModelPtr& em) {
   auto vis = overloaded{
       [&](const md::t04::Model::Ptr&) -> part::PartState { return md::t04::PartState{}; },
-      [&](const md::t22::Model::Ptr&) -> part::PartState { bug(); },
+      [&](const md::t22::Model::Ptr&) -> part::PartState { fatal("unimplemented"); },
   };
   return std::visit(vis, em);
 }
@@ -62,18 +63,20 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
       [&](const md::t04::Model::Ptr& em) {
         auto& state = std::get<md::t04::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::SLOWEST: md::t04::MfeSlowest(r, em, state); break;
-        case CtxCfg::MfeAlg::SLOW: md::t04::MfeSlow(r, em, state); break;
-        case CtxCfg::MfeAlg::FASTEST: md::t04::MfeFastest(r, em, state); break;
-        case CtxCfg::MfeAlg::LYNGSO: md::t04::MfeLyngso(r, em, state); break;
-        default: bug();
+        case CtxCfg::MfeAlg::DEBUG: md::t04::MfeSlowest(r, em, state); break;
+        case CtxCfg::MfeAlg::OPT: md::t04::MfeSlow(r, em, state); break;
+        case CtxCfg::MfeAlg::AUTO:
+        case CtxCfg::MfeAlg::SPARSE_OPT: md::t04::MfeFastest(r, em, state); break;
+        case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT: md::t04::MfeLyngso(r, em, state); break;
+        default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },
       [&](const md::t22::Model::Ptr& em) {
         auto& state = std::get<md::t22::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::SLOWEST: md::t22::MfeSlowest(r, em, state); break;
-        default: bug();
+        case CtxCfg::MfeAlg::AUTO:
+        case CtxCfg::MfeAlg::DEBUG: md::t22::MfeSlowest(r, em, state); break;
+        default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },
   };
@@ -151,22 +154,23 @@ int Ctx::Suboptimal(
       [&](const md::t04::Model::Ptr& em) mutable -> int {
         auto state = std::get<md::t04::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
-        case CtxCfg::SuboptAlg::SLOWEST:
+        case CtxCfg::SuboptAlg::DEBUG:
           return md::t04::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
-        case CtxCfg::SuboptAlg::FASTEST:
+        case CtxCfg::SuboptAlg::AUTO:
+        case CtxCfg::SuboptAlg::ITERATIVE:
           return md::t04::SuboptFastest(Primary(r), em, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
           return md::t04::SuboptPersistent(Primary(r), em, std::move(state), cfg).Run(fn);
-        default: bug();
+        default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
       },
       [&](const md::t22::Model::Ptr& em) mutable -> int {
         auto state = std::get<md::t22::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
-        case CtxCfg::SuboptAlg::SLOWEST:
+        case CtxCfg::SuboptAlg::AUTO:
+        case CtxCfg::SuboptAlg::ITERATIVE:
           return md::t22::SuboptSlowest(Primary(r), em, std::move(state), cfg).Run(fn);
-
-        default: bug();
+        default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
       }};
   return std::visit(vis, em_);
@@ -183,14 +187,15 @@ part::PartResult Ctx::Partition(const Primary& r) const {
       [&](const md::t04::Model::Ptr& em) -> Part {
         auto state = std::get<md::t04::PartState>(std::move(dp));
         switch (cfg_.part_alg) {
-        case CtxCfg::PartAlg::SLOWEST: return md::t04::PartitionSlowest(r, em, state);
-        case CtxCfg::PartAlg::FASTEST:
+        case CtxCfg::PartAlg::DEBUG: return md::t04::PartitionSlowest(r, em, state);
+        case CtxCfg::PartAlg::AUTO:
+        case CtxCfg::PartAlg::OPT:
           return md::t04::PartitionFastest(r, md::t04::BoltzModel::Create(em), state);
-        default: bug();
+        default: fatal("unsupported partition algorithm for energy model: {}", cfg_.part_alg);
         }
       },
       // TODO(2): Implement partition for t22.
-      [&](const md::t22::Model::Ptr&) -> Part { bug(); },
+      [&](const md::t22::Model::Ptr&) -> Part { fatal("unimplemented"); },
   };
   auto part = std::visit(vis, em_);
 

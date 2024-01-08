@@ -113,7 +113,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
       } while (s.contains(key));
       EXPECT_FALSE(h.Delete(key));
       break;
-    default: bug();
+    default: unreachable();
     }
   }
 }
