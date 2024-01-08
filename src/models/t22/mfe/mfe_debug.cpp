@@ -50,10 +50,10 @@ struct MfeInternal {
         .bulge_states{false, true},
         .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
     };
-    support.VerifySupported(__func__, em.cfg);
+    support.VerifySupported(funcname(), em.cfg);
     em.VerifyValidFor(r);
 
-    spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
+    spdlog::debug("t22 {} with cfg {}", funcname(), em.cfg);
 
     dp = t04::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);
@@ -311,7 +311,7 @@ struct MfeInternal {
 
 }  // namespace
 
-void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state) {
+void MfeDebug(const Primary& r, const Model::Ptr& em, DpState& state) {
   MfeInternal(r, em, state).Compute();
 }
 

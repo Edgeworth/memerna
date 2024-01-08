@@ -1,3 +1,4 @@
+// Copyright 2023 E.
 #include "util/error.h"
 
 #include <fmt/core.h>

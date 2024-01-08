@@ -1,7 +1,9 @@
 // Copyright 2022 E.
 #ifndef FUZZ_FUZZ_HARNESS_H_
 #define FUZZ_FUZZ_HARNESS_H_
+
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <string>
 #include <vector>

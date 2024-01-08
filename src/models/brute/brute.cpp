@@ -27,7 +27,7 @@ Brute::Brute(const Primary& r, erg::EnergyModelPtr em, BruteCfg cfg)
   };
 
   auto energy_cfg = erg::ModelEnergyCfg(em_);
-  support.VerifySupported(__func__, energy_cfg);
+  support.VerifySupported(funcname(), energy_cfg);
   ctd_cfg_ = energy_cfg.ctd;
 
   verify(cfg_.subopt_cfg.time_secs < 0,

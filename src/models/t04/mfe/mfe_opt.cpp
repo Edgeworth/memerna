@@ -19,7 +19,7 @@
 
 namespace mrna::md::t04 {
 
-void MfeSlow(const Primary& r, const Model::Ptr& em, DpState& state) {
+void MfeOpt(const Primary& r, const Model::Ptr& em, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -28,9 +28,9 @@ void MfeSlow(const Primary& r, const Model::Ptr& em, DpState& state) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em->cfg);
+  support.VerifySupported(funcname(), em->cfg);
 
-  spdlog::debug("t04 {} with cfg {}", __func__, em->cfg);
+  spdlog::debug("t04 {} with cfg {}", funcname(), em->cfg);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), em);

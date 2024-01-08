@@ -12,6 +12,7 @@
 #include <random>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "model/base.h"
 #include "model/ctd.h"

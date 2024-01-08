@@ -37,9 +37,9 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(__func__, em_->cfg);
+  support.VerifySupported(funcname(), em_->cfg);
 
-  spdlog::debug("t22 {} with cfg {}", __func__, em_->cfg);
+  spdlog::debug("t22 {} with cfg {}", funcname(), em_->cfg);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method

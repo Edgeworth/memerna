@@ -47,7 +47,7 @@ struct NoStackIndex {
 // Index into the DP tables.
 using DpIndex = std::variant<t04::DpIndex, NoStackIndex, PenultimateIndex>;
 
-void MfeSlowest(const Primary& r, const Model::Ptr& em, DpState& state);
+void MfeDebug(const Primary& r, const Model::Ptr& em, DpState& state);
 
 Energy MfeExterior(const Primary& r, const Model::Ptr& em, DpState& state);
 
