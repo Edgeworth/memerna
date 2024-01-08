@@ -32,9 +32,6 @@ SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr em, DpState dp, SuboptC
     : r_(std::move(r)), em_(std::move(em)), pc_(Primary(r_), em_), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptPersistent::Run(const SuboptCallback& fn) {
-  q_.reserve(r_.size() * r_.size());
-  cache_.Reserve(r_.size() * r_.size());
-
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
@@ -45,140 +42,90 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   spdlog::debug("t04 {} with cfg {}", __func__, em_->cfg);
   spdlog::error("PERSISTENT");
 
+  q_.clear();
+  pq_ = {};  // priority queue has no clear method
+  q_.reserve(r_.size() * r_.size());
+  cache_.Reserve(r_.size() * r_.size());
+
+  q_.push_back({.expand_idx = 0, .to_expand{0, -1, EXT}});
+  pq_.push({ZERO_E, 0});
+
   int num_strucs = 0;
   Energy delta = ZERO_E;
   auto start_time = std::chrono::steady_clock::now();
 
-  while (1) {
-    if (num_strucs > cfg_.strucs || delta > cfg_.delta) {
-      break;
-    }
-    if
+  while (!pq_.empty()) {
+    if (num_strucs > cfg_.strucs || delta > cfg_.delta) break;
 
-      auto res = RunInternal();
+    if (cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
+      auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+          std::chrono::steady_clock::now() - start_time);
+      if (elapsed.count() >= cfg_.time_secs) break;
+    }
+    auto [energy, idx] = RunInternal();
+    if (idx == -1) break;
+
+    // TODO(2): We could expose an API that just has the index to avoid the cost of materialising
+    // the full structure here.
     num_strucs++;
-
-    // TODO(-1): call callback
+    auto res = GenerateResult(idx);
+    res.energy = energy;
+    fn(res);
   }
 
-  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
-    int count = 0;
-    while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
-      if (cfg_.time_secs >= 0.0) {
-        auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
-            std::chrono::steady_clock::now() - start_time);
-        if (elapsed.count() >= cfg_.time_secs) break;
-      }
-      count += res.first;
-      delta = res.second;
-    }
-    return count;
-  }
-  return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
+  return num_strucs;
 }
 
-std::pair<int, Energy> SuboptPersistent::RunInternal(
-    const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
-  // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
-  // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
-  // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
-  // another expansion it is put on the unexpanded list. Everything in unexpanded never affects
-  // the CTDs or energy of the current state - that is rolled into the modification when that
-  // unexpanded is originally generated.
-
-  int count = 0;
-  // Store the smallest energy above delta we see. If we reach our `structure_limit` before
-  // finishing, we might not see the smallest one, but it's okay since we won't be called again.
-  // Otherwise, we will completely finish, and definitely see it.
-  Energy next_seen = MAX_E;
-  Energy energy = ZERO_E;
-  q_.clear();
-  unexpanded_.clear();
-  q_.push_back({.child_idx = 0, .to_expand{0, -1, EXT}, .should_unexpand = false});
-  while (!q_.empty()) {
-    // We don't pop here because we update the node in place to advance it to
-    // the next child (via incrementing the index into its expansions). This
-    // makes it easy to update the incremental state across children and easy to
-    // early stop when we reach the energy delta limit.
-    auto& s = q_.back();
+std::pair<Energy, int> SuboptPersistent::RunInternal() {
+  while (true) {
+    auto [energy, idx] = pq_.top();
+    auto& s = q_[idx];  // TODO(-1): check we don't modify q_ later which would invalidate this ref.
     assert(s.to_expand.st != -1);
 
     const auto& exps = GetExpansion(s.to_expand);
     assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
 
-    // Undo previous child's ctds and energy. The pairing is undone by the child.
-    // Also remove from unexpanded if the previous child added stuff to it.
-    if (s.child_idx != 0) {
-      const auto& pexp = exps[s.child_idx - 1];
-      pexp.ctd0.MaybeRemove(res_.tb.ctd);
-      pexp.ctd1.MaybeRemove(res_.tb.ctd);
-      if (pexp.idx1.st != -1) unexpanded_.pop_back();
-      energy -= pexp.delta;
-    }
-
-    // Update the next best seen variable
-    if (s.child_idx != static_cast<int>(exps.size()) && exps[s.child_idx].delta + energy > delta)
-      next_seen = std::min(next_seen, exps[s.child_idx].delta + energy);
-
-    // If we ran out of expansions, or the next expansion would take us over the delta limit
-    // we are done with this node.
-    if (s.child_idx == static_cast<int>(exps.size()) || exps[s.child_idx].delta + energy > delta) {
-      if (s.to_expand.en != -1 && s.to_expand.a == DP_P)
-        res_.tb.s[s.to_expand.st] = res_.tb.s[s.to_expand.en] = -1;
-      if (s.should_unexpand) unexpanded_.push_back(s.to_expand);
-      q_.pop_back();
+    // If we ran out of expansions we are done with this node - try the next one.
+    if (s.expand_idx == static_cast<int>(exps.size())) {
+      pq_.pop();
       continue;
     }
 
-    const auto& exp = exps[s.child_idx++];
-    DfsState ns = {.child_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
-
-    // Update global state with this expansion. We can do the others after since
-    // they are guaranteed to be empty if this is a terminal.
-    energy += exp.delta;
+    const auto& exp = exps[s.expand_idx++];
+    const bool has_unexpanded = exp.idx1.st != -1;
+    // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
+    // to the next one.
+    DfsState ns = {.parent_idx = idx,
+        .parent_expand_idx = s.expand_idx,
+        .unexpanded_idx = has_unexpanded ? idx : s.unexpanded_idx,
+        .expand_idx = 0,
+        .to_expand = exp.idx0};
 
     if (exp.idx0.st == -1) {
-      // Ran out of expansions at this node (leaf). May still need to go through
-      // collected unexpanded nodes.
-
-      // Can't have a idx1 without idx0. Also can't set ctds or affect energy.
-      assert(exp.idx1.st == -1);
+      // Ran out of expansions at this node (we are a leaf). May still need to go through collected
+      // unexpanded nodes. Can't have an unexpanded DpIndex here. Also can't set ctds or affect
+      // energy.
+      assert(!has_unexpanded);
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
 
       // Use an unexpanded now, if one exists.
-      if (unexpanded_.empty()) {
+      if (s.unexpanded_idx == -1) {
         // At a terminal state.
-        if (!exact_energy || energy == delta) {
-          res_.energy = energy + dp_.ext[0][EXT];
-          fn(res_);
-          ++count;
-
-          // Hit structure limit.
-          if (count == max) return {count, CAP_E};
-        }
-        continue;  // Done
+        return {-energy, idx};
+      } else {
+        // We have unexpanded DpIndexes to process.
+        // Set the next unexpanded index to the next one in the path up the tree.
+        auto unexpanded_parent_
+        auto unexpanded_parent_exps = GetExpansion()
+        ns.to_expand = q_[s.unexpanded_idx].to_expand;
+        ns.unexpanded_idx = q_[ns.unexpanded_idx].unexpanded_idx;
       }
-      ns.to_expand = unexpanded_.back();
-      unexpanded_.pop_back();
-      // This node should replace itself into `unexpanded` when its done.
-      ns.should_unexpand = true;
-    } else {
-      // Apply child's modifications to the global state.
-      exp.ctd0.MaybeApply(res_.tb.ctd);
-      exp.ctd1.MaybeApply(res_.tb.ctd);
-      if (exp.idx1.st != -1) unexpanded_.push_back(exp.idx1);
     }
 
-    if (ns.to_expand.en != -1 && ns.to_expand.a == DP_P) {
-      res_.tb.s[ns.to_expand.st] = ns.to_expand.en;
-      res_.tb.s[ns.to_expand.en] = ns.to_expand.st;
-    }
-
+    pq_.emplace(energy - exp.delta, static_cast<int>(q_.size()));
     q_.push_back(ns);
   }
-  assert(unexpanded_.empty() && energy == ZERO_E && res_.tb.s == Secondary(res_.tb.s.size()) &&
-      res_.tb.ctd == Ctds(res_.tb.ctd.size()));
-  return {count, next_seen};
+  return {ZERO_E, -1};
 }
 
 std::vector<Expansion> SuboptPersistent::GenerateExpansions(
