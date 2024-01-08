@@ -35,7 +35,7 @@ class SuboptFastest {
  private:
   struct DfsState {
     // Index of the child expansion of `to_expand` we should process.
-    int child_idx = {0};
+    int expand_idx = {0};
     // DpIndex whose child expansions we are processing. -1 means empty
     DpIndex to_expand{};
     // Stores whether this node's `to_expand` was from `unexpanded_` and needs

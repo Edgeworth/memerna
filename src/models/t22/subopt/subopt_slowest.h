@@ -34,7 +34,7 @@ class SuboptSlowest {
 
  private:
   struct DfsState {
-    int child_idx = {0};
+    int expand_idx = {0};
     std::optional<DpIndex> to_expand = {};
     bool should_unexpand = {false};
   };
