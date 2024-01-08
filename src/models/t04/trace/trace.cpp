@@ -8,7 +8,7 @@
 #include <compare>
 #include <exception>
 #include <memory>
-#include <stack>
+#include <vector>
 
 #include "api/energy/energy_cfg.h"
 #include "model/base.h"
@@ -38,18 +38,18 @@ TraceResult Traceback(
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
-  std::stack<DpIndex> q;
-  q.emplace(0, -1, EXT);
+  std::vector<DpIndex> q;
+  q.emplace_back(0, -1, EXT);
   while (!q.empty()) {
-    const int st = q.top().st;
-    int en = q.top().en;
-    const int a = q.top().a;
-    q.pop();
+    const int st = q.back().st;
+    int en = q.back().en;
+    const int a = q.back().a;
+    q.pop_back();
 
     if (en == -1) {
       // Case: No pair starting here
       if (a == EXT && st + 1 < N && ext[st + 1][EXT] == ext[st][EXT]) {
-        q.emplace(st + 1, -1, EXT);
+        q.emplace_back(st + 1, -1, EXT);
         goto loopend;
       }
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -69,8 +69,8 @@ TraceResult Traceback(
           // Don't set CTDs here since they will have already been set.
           if (base11 + em->MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT] ==
               ext[st][EXT_RC]) {
-            q.emplace(st + 1, en - 1, DP_P);
-            q.emplace(en + 1, -1, EXT);
+            q.emplace_back(st + 1, en - 1, DP_P);
+            q.emplace_back(en + 1, -1, EXT);
             goto loopend;
           }
         }
@@ -84,8 +84,8 @@ TraceResult Traceback(
             (a != EXT_GU || IsGuPair(stb, enb))) {
           // EXT_WC and EXT_GU will have already had their ctds set.
           if (a == EXT) res.ctd[st] = CTD_UNUSED;
-          q.emplace(st, en, DP_P);
-          q.emplace(en + 1, -1, EXT);
+          q.emplace_back(st, en, DP_P);
+          q.emplace_back(en + 1, -1, EXT);
           goto loopend;
         }
 
@@ -95,22 +95,22 @@ TraceResult Traceback(
         // (   )3<   > 3'
         if (base01 + em->dangle3[en1b][enb][stb] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st] = CTD_3_DANGLE;
-          q.emplace(st, en - 1, DP_P);
-          q.emplace(en + 1, -1, EXT);
+          q.emplace_back(st, en - 1, DP_P);
+          q.emplace_back(en + 1, -1, EXT);
           goto loopend;
         }
         // 5(   )<   > 5'
         if (base10 + em->dangle5[enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st + 1] = CTD_5_DANGLE;
-          q.emplace(st + 1, en, DP_P);
-          q.emplace(en + 1, -1, EXT);
+          q.emplace_back(st + 1, en, DP_P);
+          q.emplace_back(en + 1, -1, EXT);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch
         if (base11 + em->terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st + 1] = CTD_MISMATCH;
-          q.emplace(st + 1, en - 1, DP_P);
-          q.emplace(en + 1, -1, EXT);
+          q.emplace_back(st + 1, en - 1, DP_P);
+          q.emplace_back(en + 1, -1, EXT);
           goto loopend;
         }
 
@@ -120,15 +120,15 @@ TraceResult Traceback(
           if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
-            q.emplace(st + 1, en - 1, DP_P);
-            q.emplace(en + 1, -1, EXT_WC);
+            q.emplace_back(st + 1, en - 1, DP_P);
+            q.emplace_back(en + 1, -1, EXT_WC);
             goto loopend;
           }
           if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
-            q.emplace(st + 1, en - 1, DP_P);
-            q.emplace(en + 1, -1, EXT_GU);
+            q.emplace_back(st + 1, en - 1, DP_P);
+            q.emplace_back(en + 1, -1, EXT_GU);
             goto loopend;
           }
 
@@ -136,8 +136,8 @@ TraceResult Traceback(
           if (base00 + ext[en + 1][EXT_RC] == ext[st][EXT]) {
             res.ctd[st] = CTD_RC_WITH_NEXT;
             res.ctd[en + 2] = CTD_RC_WITH_PREV;
-            q.emplace(st, en, DP_P);
-            q.emplace(en + 1, -1, EXT_RC);
+            q.emplace_back(st, en, DP_P);
+            q.emplace_back(en + 1, -1, EXT_RC);
             goto loopend;
           }
 
@@ -145,16 +145,16 @@ TraceResult Traceback(
           if (base01 + em->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
-            q.emplace(st, en - 1, DP_P);
-            q.emplace(en, -1, EXT_WC);
+            q.emplace_back(st, en - 1, DP_P);
+            q.emplace_back(en, -1, EXT_WC);
             goto loopend;
           }
           if (IsGu(enb) &&
               base01 + em->stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
-            q.emplace(st, en - 1, DP_P);
-            q.emplace(en, -1, EXT_GU);
+            q.emplace_back(st, en - 1, DP_P);
+            q.emplace_back(en, -1, EXT_GU);
             goto loopend;
           }
         }
@@ -178,7 +178,7 @@ TraceResult Traceback(
             if (dp[ist][ien][DP_P] < CAP_E) {
               const auto val = em->TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P];
               if (val == dp[st][en][DP_P]) {
-                q.emplace(ist, ien, DP_P);
+                q.emplace_back(ist, ien, DP_P);
                 goto loopend;
               }
             }
@@ -190,28 +190,28 @@ TraceResult Traceback(
         // (<   ><    >)
         if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == dp[st][en][DP_P]) {
           res.ctd[en] = CTD_UNUSED;
-          q.emplace(st + 1, en - 1, DP_U2);
+          q.emplace_back(st + 1, en - 1, DP_U2);
           goto loopend;
         }
         // (3<   ><   >) 3'
         if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + em->dangle3[stb][st1b][enb] ==
             dp[st][en][DP_P]) {
           res.ctd[en] = CTD_3_DANGLE;
-          q.emplace(st + 2, en - 1, DP_U2);
+          q.emplace_back(st + 2, en - 1, DP_U2);
           goto loopend;
         }
         // (<   ><   >5) 5'
         if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + em->dangle5[stb][en1b][enb] ==
             dp[st][en][DP_P]) {
           res.ctd[en] = CTD_5_DANGLE;
-          q.emplace(st + 1, en - 2, DP_U2);
+          q.emplace_back(st + 1, en - 2, DP_U2);
           goto loopend;
         }
         // (.<   ><   >.) Terminal mismatch
         if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + em->terminal[stb][st1b][en1b][enb] ==
             dp[st][en][DP_P]) {
           res.ctd[en] = CTD_MISMATCH;
-          q.emplace(st + 2, en - 2, DP_U2);
+          q.emplace_back(st + 2, en - 2, DP_U2);
           goto loopend;
         }
 
@@ -228,8 +228,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_LCOAX_WITH_NEXT;
             res.ctd[st + 2] = CTD_LCOAX_WITH_PREV;
-            q.emplace(st + 2, piv, DP_P);
-            q.emplace(piv + 1, en - 2, DP_U);
+            q.emplace_back(st + 2, piv, DP_P);
+            q.emplace_back(piv + 1, en - 2, DP_U);
             goto loopend;
           }
           // (.   (   ).) Right outer coax
@@ -238,8 +238,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_RC_WITH_PREV;
             res.ctd[piv + 1] = CTD_RC_WITH_NEXT;
-            q.emplace(st + 2, piv, DP_U);
-            q.emplace(piv + 1, en - 2, DP_P);
+            q.emplace_back(st + 2, piv, DP_U);
+            q.emplace_back(piv + 1, en - 2, DP_P);
             goto loopend;
           }
 
@@ -250,8 +250,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_RC_WITH_NEXT;
             res.ctd[st + 2] = CTD_RC_WITH_PREV;
-            q.emplace(st + 2, piv - 1, DP_P);
-            q.emplace(piv + 1, en - 1, DP_U);
+            q.emplace_back(st + 2, piv - 1, DP_P);
+            q.emplace_back(piv + 1, en - 1, DP_U);
             goto loopend;
           }
           // (   .(   ).) Right inner coax
@@ -261,8 +261,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_LCOAX_WITH_PREV;
             res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
-            q.emplace(st + 1, piv, DP_U);
-            q.emplace(piv + 2, en - 2, DP_P);
+            q.emplace_back(st + 1, piv, DP_U);
+            q.emplace_back(piv + 2, en - 2, DP_P);
             goto loopend;
           }
 
@@ -273,8 +273,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_FCOAX_WITH_NEXT;
             res.ctd[st + 1] = CTD_FCOAX_WITH_PREV;
-            q.emplace(st + 1, piv, DP_P);
-            q.emplace(piv + 1, en - 1, DP_U);
+            q.emplace_back(st + 1, piv, DP_P);
+            q.emplace_back(piv + 1, en - 1, DP_U);
             goto loopend;
           }
           // (   (   )) Right flush coax
@@ -284,8 +284,8 @@ TraceResult Traceback(
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
             res.ctd[piv + 1] = CTD_FCOAX_WITH_NEXT;
-            q.emplace(st + 1, piv, DP_U);
-            q.emplace(piv + 1, en - 1, DP_P);
+            q.emplace_back(st + 1, piv, DP_U);
+            q.emplace_back(piv + 1, en - 1, DP_P);
             goto loopend;
           }
         }
@@ -297,7 +297,7 @@ TraceResult Traceback(
       // Deal with the rest of the cases:
       // Left unpaired. Either DP_U or DP_U2.
       if (st + 1 < en && (a == DP_U || a == DP_U2) && dp[st + 1][en][a] == dp[st][en][a]) {
-        q.emplace(st + 1, en, a);
+        q.emplace_back(st + 1, en, a);
         goto loopend;
       }
 
@@ -327,8 +327,8 @@ TraceResult Traceback(
           if (base11 + em->MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
-            q.emplace(st + 1, piv - 1, DP_P);
-            if (right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
+            q.emplace_back(st + 1, piv - 1, DP_P);
+            if (right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
         }
@@ -342,8 +342,8 @@ TraceResult Traceback(
           // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were
           // already set.
           if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
-          q.emplace(st, piv, DP_P);
-          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
+          q.emplace_back(st, piv, DP_P);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;
         }
 
@@ -353,22 +353,22 @@ TraceResult Traceback(
         // (   )3<   > 3' - U, U2
         if (base01 + em->dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
           res.ctd[st] = CTD_3_DANGLE;
-          q.emplace(st, piv - 1, DP_P);
-          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
+          q.emplace_back(st, piv - 1, DP_P);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;
         }
         // 5(   )<   > 5' - U, U2
         if (base10 + em->dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_5_DANGLE;
-          q.emplace(st + 1, piv, DP_P);
-          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
+          q.emplace_back(st + 1, piv, DP_P);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch - U, U2
         if (base11 + em->terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_MISMATCH;
-          q.emplace(st + 1, piv - 1, DP_P);
-          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace(piv + 1, en, DP_U);
+          q.emplace_back(st + 1, piv - 1, DP_P);
+          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;
         }
         // .(   ).<(   ) > Left coax - U, U2
@@ -376,15 +376,15 @@ TraceResult Traceback(
         if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
           res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
-          q.emplace(st + 1, piv - 1, DP_P);
-          q.emplace(piv + 1, en, DP_U_WC);
+          q.emplace_back(st + 1, piv - 1, DP_P);
+          q.emplace_back(piv + 1, en, DP_U_WC);
           goto loopend;
         }
         if (val + dp[piv + 1][en][DP_U_GU] == dp[st][en][a]) {
           res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
           res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
-          q.emplace(st + 1, piv - 1, DP_P);
-          q.emplace(piv + 1, en, DP_U_GU);
+          q.emplace_back(st + 1, piv - 1, DP_P);
+          q.emplace_back(piv + 1, en, DP_U_GU);
           goto loopend;
         }
 
@@ -392,8 +392,8 @@ TraceResult Traceback(
         if (base00 + dp[piv + 1][en][DP_U_RC] == dp[st][en][a]) {
           res.ctd[st] = CTD_RC_WITH_NEXT;
           res.ctd[piv + 2] = CTD_RC_WITH_PREV;
-          q.emplace(st, piv, DP_P);
-          q.emplace(piv + 1, en, DP_U_RC);
+          q.emplace_back(st, piv, DP_P);
+          q.emplace_back(piv + 1, en, DP_U_RC);
           goto loopend;
         }
 
@@ -401,16 +401,16 @@ TraceResult Traceback(
         if (base01 + em->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC] == dp[st][en][a]) {
           res.ctd[st] = CTD_FCOAX_WITH_NEXT;
           res.ctd[piv] = CTD_FCOAX_WITH_PREV;
-          q.emplace(st, piv - 1, DP_P);
-          q.emplace(piv, en, DP_U_WC);
+          q.emplace_back(st, piv - 1, DP_P);
+          q.emplace_back(piv, en, DP_U_WC);
           goto loopend;
         }
         if ((IsGu(pb)) &&
             base01 + em->stack[pl1b][pb][GuPair(pb)][stb] + dp[piv][en][DP_U_GU] == dp[st][en][a]) {
           res.ctd[st] = CTD_FCOAX_WITH_NEXT;
           res.ctd[piv] = CTD_FCOAX_WITH_PREV;
-          q.emplace(st, piv - 1, DP_P);
-          q.emplace(piv, en, DP_U_GU);
+          q.emplace_back(st, piv - 1, DP_P);
+          q.emplace_back(piv, en, DP_U_GU);
           goto loopend;
         }
       }

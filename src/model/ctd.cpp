@@ -2,8 +2,8 @@
 #include "model/ctd.h"
 
 #include <functional>
-#include <stack>
 #include <utility>
+#include <vector>
 
 #include "model/primary.h"
 #include "util/error.h"
@@ -80,17 +80,17 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
   auto r = Primary::FromSeq(prim_str);
   verify(prim_str.size() == ctd_str.size(), "primary and pairs string need to be the same length");
   const int N = static_cast<int>(r.size());
-  std::stack<int> stk;
+  std::vector<int> stk;
   Secondary s(N);
   for (int i = 0; i < N; ++i) {
     const char c = ctd_str[i];
     if (c == 'p' || c == 'n' || c == '[') {
-      stk.push(i);
+      stk.push_back(i);
     } else if (c == 'P' || c == 'N' || c == ']') {
       verify(!stk.empty(), "invalid input");
-      s[stk.top()] = i;
-      s[i] = stk.top();
-      stk.pop();
+      s[stk.back()] = i;
+      s[i] = stk.back();
+      stk.pop_back();
     }
   }
   verify(stk.empty(), "invalid input");
@@ -142,16 +142,16 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
     // Opening a branch.
     if (c == 'p' || c == 'n' || c == '[') {
       if (!stk.empty())
-        ++stk.top();  // One more branch here.
+        ++stk.back();  // One more branch here.
       else if (ctd[i] == CTD_NA && c == '[')
         ctd[i] = CTD_UNUSED;
-      stk.push(0);  // Number of branches for this part.
+      stk.push_back(0);  // Number of branches for this part.
     }
     // Closing a branch.
     if (c == 'P' || c == 'N' || c == ']') {
       // Set explicitly unused CTDs for any child branches if this is a multiloop.
       // Also this branch as an outer loop.
-      if (stk.top() >= 2) {
+      if (stk.back() >= 2) {
         if (ctd[i] == CTD_NA) ctd[i] = CTD_UNUSED;
         for (int j = s[i] + 1; j < i; ++j) {
           if (s[j] == -1) continue;
@@ -159,7 +159,7 @@ std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
           j = s[j];
         }
       }
-      stk.pop();
+      stk.pop_back();
     }
     if (allowed_characters.find(c) == std::string::npos) fatal("invalid input '{}'", ctd_str[i]);
   }

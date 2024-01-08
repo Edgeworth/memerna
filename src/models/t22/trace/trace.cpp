@@ -10,7 +10,6 @@
 #include <memory>
 #include <optional>
 #include <random>
-#include <stack>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -574,11 +573,11 @@ struct TracebackInternal {
 
     spdlog::debug("t22 {} with cfg {}", __func__, em.cfg);
 
-    std::stack<DpIndex> q;
-    q.emplace(t04::DpIndex(0, -1, EXT));
+    std::vector<DpIndex> q;
+    q.emplace_back(t04::DpIndex(0, -1, EXT));
     while (!q.empty()) {
-      auto idx_all = q.top();
-      q.pop();
+      auto idx_all = q.back();
+      q.pop_back();
 
       next.clear();
       if (std::holds_alternative<t04::DpIndex>(idx_all)) {
@@ -613,8 +612,8 @@ struct TracebackInternal {
         if (cfg.random) {
           std::shuffle(next.begin(), next.end(), eng);
         }
-        if (next[0].idx0.has_value()) q.push(next[0].idx0.value());  // NOLINT
-        if (next[0].idx1.has_value()) q.push(next[0].idx1.value());  // NOLINT
+        if (next[0].idx0.has_value()) q.push_back(next[0].idx0.value());  // NOLINT
+        if (next[0].idx1.has_value()) q.push_back(next[0].idx1.value());  // NOLINT
 
         next[0].pair.MaybeApply(res.s);
         next[0].ctd0.MaybeApply(res.ctd);

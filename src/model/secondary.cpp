@@ -1,7 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/secondary.h"
 
-#include <stack>
+#include <vector>
 
 #include "model/primary.h"
 #include "util/error.h"
@@ -10,15 +10,15 @@ namespace mrna {
 
 Secondary Secondary::FromDb(const std::string& pairs_str) {
   Secondary s(pairs_str.size());
-  std::stack<int> stk;
+  std::vector<int> stk;
   for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
     if (pairs_str[i] == '(') {
-      stk.push(i);
+      stk.push_back(i);
     } else if (pairs_str[i] == ')') {
       verify(!stk.empty(), "unmatched bracket");
-      s[i] = stk.top();
-      s[stk.top()] = i;
-      stk.pop();
+      s[i] = stk.back();
+      s[stk.back()] = i;
+      stk.pop_back();
     }
   }
   return s;

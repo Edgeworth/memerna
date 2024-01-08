@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <stack>
 #include <utility>
 #include <vector>
 
@@ -13,13 +12,13 @@ namespace mrna::md {
 
 std::vector<int> GetBranchCounts(const Secondary& s) {
   std::vector<int> branch_count(s.size(), 0);
-  std::stack<int> q;
+  std::vector<int> q;
   for (int i = 0; i < static_cast<int>(s.size()); ++i) {
     if (s[i] == -1) continue;
     if (s[i] > i) {
       // Exterior loop counts a multiloop for CTDs.
       if (q.empty()) branch_count[i] = 2;
-      q.push(i);
+      q.push_back(i);
 
       // Look at all the children.
       int count = 0;
@@ -37,7 +36,7 @@ std::vector<int> GetBranchCounts(const Secondary& s) {
       }
       branch_count[s[i]] = count;
     } else {
-      q.pop();
+      q.pop_back();
     }
   }
   return branch_count;
