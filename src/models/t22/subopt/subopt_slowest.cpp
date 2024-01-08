@@ -76,7 +76,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
   Energy mfe = dp_.t04.ext[0][EXT];
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.child_idx = 0, .to_expand = t04::DpIndex(0, -1, EXT), .should_unexpand = false});
+  q_.push_back({.expand_idx = 0, .to_expand = t04::DpIndex(0, -1, EXT), .should_unexpand = false});
   while (!q_.empty()) {
     auto& s = q_.back();
     assert(s.to_expand.has_value());
@@ -86,8 +86,8 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
     assert(!exps.empty());
 
     // Go to next child:
-    if (s.child_idx != 0) {
-      const auto& pexp = exps[s.child_idx - 1];
+    if (s.expand_idx != 0) {
+      const auto& pexp = exps[s.expand_idx - 1];
       pexp.ctd0.MaybeRemove(res_.tb.ctd);
       pexp.ctd1.MaybeRemove(res_.tb.ctd);
       pexp.pair.MaybeRemove(res_.tb.s);
@@ -95,17 +95,18 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
       energy -= pexp.delta;
     }
 
-    if (s.child_idx != static_cast<int>(exps.size()) && exps[s.child_idx].delta + energy > delta)
-      next_seen = std::min(next_seen, exps[s.child_idx].delta + energy);
+    if (s.expand_idx != static_cast<int>(exps.size()) && exps[s.expand_idx].delta + energy > delta)
+      next_seen = std::min(next_seen, exps[s.expand_idx].delta + energy);
 
-    if (s.child_idx == static_cast<int>(exps.size()) || exps[s.child_idx].delta + energy > delta) {
+    if (s.expand_idx == static_cast<int>(exps.size()) ||
+        exps[s.expand_idx].delta + energy > delta) {
       if (s.should_unexpand) unexpanded_.push_back(to_expand);
       q_.pop_back();
       continue;
     }
 
-    const auto& exp = exps[s.child_idx++];
-    DfsState ns = {.child_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
+    const auto& exp = exps[s.expand_idx++];
+    DfsState ns = {.expand_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
 
     // Update global state with this expansion. We can do the others after since
     // they are guaranteed to be empty if this is a terminal.

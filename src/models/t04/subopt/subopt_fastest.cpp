@@ -75,7 +75,7 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
   Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.child_idx = 0, .to_expand{0, -1, EXT}, .should_unexpand = false});
+  q_.push_back({.expand_idx = 0, .to_expand{0, -1, EXT}, .should_unexpand = false});
   while (!q_.empty()) {
     // We don't pop here because we update the node in place to advance it to
     // the next child (via incrementing the index into its expansions). This
@@ -89,8 +89,8 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
 
     // Undo previous child's ctds and energy. The pairing is undone by the child.
     // Also remove from unexpanded if the previous child added stuff to it.
-    if (s.child_idx != 0) {
-      const auto& pexp = exps[s.child_idx - 1];
+    if (s.expand_idx != 0) {
+      const auto& pexp = exps[s.expand_idx - 1];
       pexp.ctd0.MaybeRemove(res_.tb.ctd);
       pexp.ctd1.MaybeRemove(res_.tb.ctd);
       if (pexp.idx1.st != -1) unexpanded_.pop_back();
@@ -98,12 +98,13 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
     }
 
     // Update the next best seen variable
-    if (s.child_idx != static_cast<int>(exps.size()) && exps[s.child_idx].delta + energy > delta)
-      next_seen = std::min(next_seen, exps[s.child_idx].delta + energy);
+    if (s.expand_idx != static_cast<int>(exps.size()) && exps[s.expand_idx].delta + energy > delta)
+      next_seen = std::min(next_seen, exps[s.expand_idx].delta + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.child_idx == static_cast<int>(exps.size()) || exps[s.child_idx].delta + energy > delta) {
+    if (s.expand_idx == static_cast<int>(exps.size()) ||
+        exps[s.expand_idx].delta + energy > delta) {
       if (s.to_expand.en != -1 && s.to_expand.a == DP_P)
         res_.tb.s[s.to_expand.st] = res_.tb.s[s.to_expand.en] = -1;
       if (s.should_unexpand) unexpanded_.push_back(s.to_expand);
@@ -111,8 +112,8 @@ std::pair<int, Energy> SuboptFastest::RunInternal(
       continue;
     }
 
-    const auto& exp = exps[s.child_idx++];
-    DfsState ns = {.child_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
+    const auto& exp = exps[s.expand_idx++];
+    DfsState ns = {.expand_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
 
     // Update global state with this expansion. We can do the others after since
     // they are guaranteed to be empty if this is a terminal.
