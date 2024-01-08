@@ -106,7 +106,7 @@ std::pair<int, Energy> SuboptSlowest::RunInternal(
     }
 
     const auto& exp = exps[s.expand_idx++];
-    DfsState ns = {.expand_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
+    Node ns = {.expand_idx = 0, .to_expand = exp.idx0, .should_unexpand = false};
 
     // Update global state with this expansion. We can do the others after since
     // they are guaranteed to be empty if this is a terminal.
