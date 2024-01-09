@@ -146,7 +146,8 @@ enum : int8_t {
   CAND_EN_SIZE
 };
 
-// Index into the DP tables.
+// Index into the DP tables. `en` set to -1 is used to indicate using the external table. `st` can
+// be N on the external loop.
 struct DpIndex {
   Index st{-1}, en{-1}, a{-1};
 
@@ -156,6 +157,22 @@ struct DpIndex {
   }
 
   constexpr auto operator<=>(const DpIndex&) const = default;
+
+  [[nodiscard]] constexpr std::size_t LinearIndex(std::size_t n) const {
+    assert(a >= 0 && a < int(MaxArrayCount()));
+    assert(st >= 0 && st <= int(n));
+    assert(en >= -1 && en < int(n));
+    return a + MaxArrayCount() * (en + 1) + MaxArrayCount() * (n + 1) * st;
+  }
+
+  [[nodiscard]] constexpr static std::size_t MaxLinearIndex(std::size_t n) {
+    return MaxArrayCount() + MaxArrayCount() * (n + 1) + MaxArrayCount() * (n + 1) * (n + 1);
+  }
+
+ private:
+  [[nodiscard]] constexpr static std::size_t MaxArrayCount() {
+    return std::max(static_cast<std::size_t>(DP_SIZE), static_cast<std::size_t>(EXT_SIZE));
+  }
 };
 
 struct Cand {

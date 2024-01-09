@@ -18,7 +18,6 @@
 #include "models/t04/energy/precomp.h"
 #include "models/t04/mfe/dp.h"
 #include "models/t04/trace/trace.h"
-#include "util/splaymap.h"
 
 namespace mrna::md::t04 {
 
@@ -49,7 +48,7 @@ class SuboptIterative {
   DpState dp_;
   SuboptCfg cfg_;
 
-  SplayMap<DpIndex, std::vector<Expansion>> cache_;
+  std::vector<std::vector<Expansion>> cache_;
   std::vector<Node> q_;
 
   // Incremental state. Holds the current partial structure.
@@ -63,14 +62,15 @@ class SuboptIterative {
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the
     // next sibling of a node after coming back up during the DFS.
-    if (!cache_.Find(to_expand)) {
+    auto idx = to_expand.LinearIndex(r_.size());
+    if (cache_[idx].empty()) {
       // Need to generate the full way to delta so we can properly set `next_seen`.
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
-      [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
-      assert(res);
+      assert(!exps.empty());
+      cache_[idx] = std::move(exps);
     }
-    return cache_.Get();
+    return cache_[idx];
   }
 
   // Generates expansions for the given index, given that the extra energy over the best choice
