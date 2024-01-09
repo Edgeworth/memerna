@@ -27,7 +27,7 @@ SuboptIterative::SuboptIterative(Primary r, Model::Ptr em, DpState dp, SuboptCfg
 int SuboptIterative::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
-  cache_.Reserve(r_.size());
+  cache_.resize(DpIndex::MaxLinearIndex(r_.size()));
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},

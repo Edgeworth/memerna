@@ -44,7 +44,7 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   q_.clear();
   pq_ = {};  // priority queue has no clear method
   q_.reserve(r_.size() * r_.size());
-  cache_.Reserve(r_.size() * r_.size());
+  cache_.resize(DpIndex::MaxLinearIndex(r_.size()));
 
   q_.push_back({.expand_idx = 0, .to_expand{0, -1, EXT}});
   pq_.emplace(ZERO_E, 0);
@@ -96,8 +96,6 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
     }
 
     const auto& exp = exps[s.expand_idx];
-    // fmt::println("expand idx: {}, exp idx0 st: {}, delta: {}, num exps: {}", s.expand_idx,
-    //     exp.idx0.st, exp.delta, exps.size());
     const bool has_unexpanded = exp.idx1.st != -1;
     // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
     // to the next one.
@@ -134,8 +132,6 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
 }
 
 void SuboptPersistent::GenerateResult(int idx) {
-  // fmt::println("Generating result, idx: {}, q size: {}, pq size: {}", idx, q_.size(),
-  // pq_.size());
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 
@@ -143,8 +139,6 @@ void SuboptPersistent::GenerateResult(int idx) {
   idx = q_[idx].parent_idx;
   while (idx != -1) {
     const auto to_expand = q_[idx].to_expand;
-    // fmt::println("idx: {}, expand_idx: {}, expansion count: {}", idx, expand_idx,
-    //     GetExpansion(to_expand).size());
     // Get the expansion that generated the previous node.
     const auto& exp = GetExpansion(to_expand)[expand_idx];
 
@@ -158,7 +152,6 @@ void SuboptPersistent::GenerateResult(int idx) {
     expand_idx = q_[idx].parent_expand_idx;
     idx = q_[idx].parent_idx;
   }
-  // fmt::println("res: {}", res_.tb.ctd.ToString(res_.tb.s));
 }
 
 std::vector<Expansion> SuboptPersistent::GenerateExpansions(
