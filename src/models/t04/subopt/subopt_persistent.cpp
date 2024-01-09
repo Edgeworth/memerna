@@ -89,12 +89,6 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
     const auto& exps = GetExpansion(s.to_expand);
     assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
 
-    // If we ran out of expansions we are done with this node - try the next one.
-    if (s.expand_idx == static_cast<int>(exps.size())) {
-      pq_.pop();
-      continue;
-    }
-
     const auto& exp = exps[s.expand_idx];
     const bool has_unexpanded = exp.idx1.st != -1;
     // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
@@ -107,6 +101,11 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
         .to_expand = exp.idx0};
     s.expand_idx++;
     energy -= exp.delta;
+
+    // If we ran out of expansions we are done with this node.
+    if (s.expand_idx == static_cast<int>(exps.size())) {
+      pq_.pop();
+    }
 
     if (exp.idx0.st == -1 && s.unexpanded_idx != -1) {
       // Ran out of expansions at this node but we still have unexpanded DpIndexes to process.
