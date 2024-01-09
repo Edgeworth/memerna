@@ -15,7 +15,7 @@
 
 namespace mrna::fuzz {
 
-FuzzHarness::FuzzHarness(FuzzCfg cfg) : cfg_(cfg), e_(uint_fast32_t(time(nullptr))) {
+FuzzHarness::FuzzHarness(FuzzCfg cfg) : cfg_(cfg), e_(std::random_device{}()) {
 #ifdef USE_RNASTRUCTURE
   rstr_ = std::make_shared<bridge::RNAstructure>(cfg.rnastructure_data_dir, false);
 #endif  // USE_RNASTRUCTURE
