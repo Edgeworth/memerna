@@ -50,7 +50,7 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   const DpIndex start_idx{0, -1, EXT};
   const Energy mfe = dp_.Index(start_idx);
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
-  pq_.emplace(0, 0, 0);
+  pq_.emplace(0, 0);
 
   int num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
@@ -74,18 +74,14 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
     fn(res_);
   }
 
-  // fmt::println("QUEUE size: {}", q_.size());
-
   return num_strucs;
 }
 
 std::pair<Energy, int> SuboptPersistent::RunInternal() {
   while (!pq_.empty()) {
-    auto [neg_delta, depth, idx] = pq_.top();
+    auto [neg_delta, idx] = pq_.top();
     pq_.pop();
     auto& s = q_[idx];
-    // fmt::println(
-    //     "energy: {}, depth: {}, idx: {}, expand idx: {}", -neg_delta, depth, idx, s.expand_idx);
 
     if (s.to_expand.st == -1) {
       // At a terminal state - this is a bit different to the other subopt implementations because
@@ -113,7 +109,7 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
     // the best we could do is with the next (worse) expansion.
     // TODO(0): Use update key here for more performance?
     if (s.expand_idx != static_cast<int>(exps.size())) {
-      pq_.emplace(neg_delta + exp.delta - exps[s.expand_idx].delta, depth, idx);
+      pq_.emplace(neg_delta + exp.delta - exps[s.expand_idx].delta, idx);
     }
 
     if (exp.idx0.st == -1 && s.unexpanded_idx != -1) {
@@ -132,16 +128,13 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
       ns.to_expand = unexpanded_exp.idx1;
     }
 
-    // Use the MFE energy in the new state as a lower bound for the amount of energy required to
-    // finish the best substructure from this partial structure. This is useful to avoid early
-    // expanding nodes that eventually end up taking worse substructures.
-    // const Energy ns_energy = ns.to_expand.st == -1 ? ZERO_E : dp_.Index(ns.to_expand);
-    // assert() neg_energy = -(-neg_energy - dp_.Index(s.to_expand) + ns_energy + exp.delta);
-    // fmt::println("  push next, idx: {}, delta: {}, energy: {}, s erg: {}, ns "
-    //              "erg: {}, ns st: {}, en: {}, a: {}",
-    //     q_.size(), exp.delta, -neg_delta, dp_.Index(s.to_expand), ns_energy, ns.to_expand.st,
-    //     ns.to_expand.en, ns.to_expand.a);
-    pq_.emplace(neg_delta, depth + 1, static_cast<int>(q_.size()));
+    // We want to explore nodes with the same energy depth-first, so we reach a complete structure
+    // as fast as possible. Doing this depth first guarantees linear memory usage in the number of
+    // structures produced. We don't need to explicilty store a depth because the increasing index
+    // functions as a depth counter. If we stored a depth value, the only advantage we would get is
+    // starting from a lower internal node when we 'switch' to a new place in the tree to generate a
+    // new structure, but the extra memory usage is not worth it.
+    pq_.emplace(neg_delta, static_cast<int>(q_.size()));
     // This is the only modification to `q_`, so access to `s` is valid until here.
     q_.push_back(ns);
   }
