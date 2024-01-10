@@ -27,6 +27,7 @@
 #include "models/t22/energy/model.h"
 #include "models/t22/mfe/mfe.h"
 #include "models/t22/subopt/subopt_iterative.h"
+#include "models/t22/subopt/subopt_persistent.h"
 #include "models/t22/trace/trace.h"
 #include "util/error.h"
 #include "util/util.h"
@@ -170,6 +171,8 @@ int Ctx::Suboptimal(
         case CtxCfg::SuboptAlg::AUTO:
         case CtxCfg::SuboptAlg::ITERATIVE:
           return md::t22::SuboptIterative(Primary(r), em, std::move(state), cfg).Run(fn);
+        case CtxCfg::SuboptAlg::PERSISTENT:
+          return md::t22::SuboptPersistent(Primary(r), em, std::move(state), cfg).Run(fn);
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
       }};

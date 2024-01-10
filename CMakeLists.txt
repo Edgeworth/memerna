@@ -195,36 +195,35 @@ set(MEMERNA_SOURCE
   src/models/t04/energy/precomp.cpp
   src/models/t04/energy/precomp.h
   src/models/t04/mfe/dp.h
+  src/models/t04/mfe/mfe_debug.cpp
   src/models/t04/mfe/mfe_exterior.cpp
-  src/models/t04/mfe/mfe_sparse_opt.cpp
   src/models/t04/mfe/mfe_lyngso_sparse_opt.cpp
   src/models/t04/mfe/mfe_opt.cpp
-  src/models/t04/mfe/mfe_debug.cpp
+  src/models/t04/mfe/mfe_sparse_opt.cpp
   src/models/t04/mfe/mfe.h
+  src/models/t04/part/part_debug.cpp
   src/models/t04/part/part_exterior.cpp
   src/models/t04/part/part_opt.cpp
-  src/models/t04/part/part_debug.cpp
   src/models/t04/part/part.h
+  src/models/t04/subopt/subopt_debug.cpp
+  src/models/t04/subopt/subopt_debug.h
   src/models/t04/subopt/subopt_iterative.cpp
   src/models/t04/subopt/subopt_iterative.h
   src/models/t04/subopt/subopt_persistent.cpp
   src/models/t04/subopt/subopt_persistent.h
-  src/models/t04/subopt/subopt_debug.cpp
-  src/models/t04/subopt/subopt_debug.h
   src/models/t04/trace/trace.cpp
   src/models/t04/trace/trace.h
   src/models/t22/energy/boltz_model.cpp
   src/models/t22/energy/boltz_model.h
   src/models/t22/energy/model.cpp
   src/models/t22/energy/model.h
-  src/models/t22/mfe/mfe_exterior.cpp
   src/models/t22/mfe/mfe_debug.cpp
+  src/models/t22/mfe/mfe_exterior.cpp
   src/models/t22/mfe/mfe.h
-
-  # src/models/t22/subopt/subopt_persistent.cpp
-  # src/models/t22/subopt/subopt_persistent.h
   src/models/t22/subopt/subopt_iterative.cpp
   src/models/t22/subopt/subopt_iterative.h
+  src/models/t22/subopt/subopt_persistent.cpp
+  src/models/t22/subopt/subopt_persistent.h
   src/models/t22/trace/trace.cpp
   src/models/t22/trace/trace.h
   src/programs/brute.cpp
@@ -240,10 +239,10 @@ set(MEMERNA_SOURCE
   src/util/argparse.cpp
   src/util/argparse.h
   src/util/array.h
+  src/util/container.h
   src/util/error.cpp
   src/util/error.h
   src/util/float.h
-  src/util/container.h
   src/util/splaymap.h
   src/util/string.cpp
   src/util/string.h
