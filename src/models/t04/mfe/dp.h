@@ -183,6 +183,13 @@ struct Cand {
 struct DpState {
   DpArray dp;
   ExtArray ext;
+
+  [[nodiscard]] constexpr Energy Index(const DpIndex& idx) const {
+    if (idx.en == -1) {
+      return ext[idx.st][idx.a];
+    }
+    return dp[idx.st][idx.en][idx.a];
+  }
 };
 
 }  // namespace mrna::md::t04
