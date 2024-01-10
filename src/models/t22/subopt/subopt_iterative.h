@@ -48,7 +48,7 @@ class SuboptIterative {
   DpState dp_;
   SuboptCfg cfg_;
 
-  SplayMap<DpIndex, std::vector<Expansion>> cache_;
+  std::vector<std::vector<Expansion>> cache_;
   std::vector<Node> q_;
   std::vector<DpIndex> unexpanded_;
 
@@ -56,14 +56,14 @@ class SuboptIterative {
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
-    if (!cache_.Find(to_expand)) {
+    auto idx = LinearIndex(to_expand, r_.size());
+    if (cache_[idx].empty()) {
       auto exps = GenerateExpansions(to_expand, cfg_.delta);
       std::sort(exps.begin(), exps.end());
-      [[maybe_unused]] auto res = cache_.Insert(to_expand, std::move(exps));
-      assert(res);
+      assert(!exps.empty());
+      cache_[idx] = std::move(exps);
     }
-
-    return cache_.Get();
+    return cache_[idx];
   }
 
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
