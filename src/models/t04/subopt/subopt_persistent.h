@@ -59,7 +59,7 @@ class SuboptPersistent {
 
   std::vector<std::vector<Expansion>> cache_;
   std::vector<Node> q_;
-  std::priority_queue<std::tuple<Energy, int, int>> pq_;
+  std::priority_queue<std::tuple<Energy, int>> pq_;
 
   std::pair<Energy, int> RunInternal();
 
