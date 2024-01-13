@@ -65,13 +65,13 @@ configurations.
 
 #### Compiler and toolchain support
 
-| Compiler | Version      | Supported |
-|----------|--------------|-----------|
-| GCC      | <= 11        | ❌        |
-| GCC      | 12           | ✅        |
-| GCC      | 13           | ✅        |
-| Clang    | <= 15        | ❌        |
-| Clang    | 16           | ✅        |
+| Compiler | Version | Supported |
+| -------- | ------- | --------- |
+| GCC      | <= 11   | ❌        |
+| GCC      | 12      | ✅        |
+| GCC      | 13      | ✅        |
+| Clang    | <= 15   | ❌        |
+| Clang    | 16      | ✅        |
 
 Note that clang 14 and 15 will work with a sufficiently modern standard C++
 library (but not gcc 11's, or libc++ 14 or 15's).
@@ -86,15 +86,40 @@ configuration for a full explanation.
 - ENERGY_PRECISION: the number of decimal places to use for energy calculations
 - FLOAT_PRECISION: the number of significant digits to use for floats
 
+ENERGY_PRECISION is by default 2, meaning energies are specified to two decimal
+places. If you only need 1 decimal place, you can set this to 1 and performance
+will be better.
+
 ## Running
 
 ### MFE folding
+
+memerna supports minimum free energy (MFE) folding.
 
 ```sh
 ./build/fold GCGACCGGGGCUGGCUUGGUAA
 ```
 
+There are several algorithms for MFE folding, which can be specified like so:
+
+```sh
+./build/fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
+```
+
+Some of the algorithms are listed here:
+
+| Algorithm  | Expected time | Expected memory | Example runtime (1000 nt) |
+| ---------- | ------------- | --------------- | ------------------------- |
+| sparse-opt | O(N^2)        | O(N^2)          | 0.18 seconds              |
+| opt        | O(N^3)        | O(N^2)          | 1.58 seconds              |
+| debug      | O(N^3)        | O(N^2)          | 3.87 seconds              |
+
+
+The sparse-opt algorithm is the default, and is the fastest algorithm.
+
 ### Suboptimal folding
+
+memerna supports suboptimal folding. For example:
 
 ```sh
 ./build/subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
@@ -103,11 +128,44 @@ configuration for a full explanation.
 ./build/subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
 ```
 
+There are several algorithms for suboptimal folding, which can be specified like so:
+
+```sh
+./build/subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+```
+
+Some of the algorithms are listed here (where k is the number of structures produced). The example
+runtime is based on a 100 nt sequence and 1000000 structures.
+
+| Algorithm  | Expected time | Expected memory | Example runtime |
+| ---------- | ------------- | --------------- | --------------- |
+| iterative  | O(N^2 + k)    | O(N^3)          | 12.78 seconds   |
+| persistent | O(N^2 + kN)   | O(N^3 + k)      | 2.71 seconds    |
+
+The iterative algorithm will be faster and use less memory for longer sequences. It's theoretically
+possible to implement it using O(N^2) memory trading off for worse time performance, but this is not
+currently implemented.
+
 ### Partition function
+
+memerna supports computing the partition function. For example:
 
 ```sh
 ./build/partition GCGACCGGGGCUGGCUUGGUAA
 ```
+
+There are several algorithms for the partition function, which can be specified like so:
+
+```sh
+./build/partition --part-alg opt GCGACCGGGGCUGGCUUGGUAA
+```
+
+Some of the algorithms are listed here:
+
+| Algorithm | Expected time | Expected memory | Example runtime (1000 nt) |
+| --------- | ------------- | --------------- | ------------------------- |
+| opt       | O(N^3)        | O(N^2)          | 9.23 seconds              |
+| debug     | O(N^3)        | O(N^2)          | 34.43 seconds             |
 
 ### Running the tests
 
