@@ -70,17 +70,17 @@ endif()
 CPMAddPackage(
   NAME benchmark
   GITHUB_REPOSITORY google/benchmark
-  VERSION 1.8.2
+  VERSION 1.8.3
   OPTIONS "BENCHMARK_ENABLE_TESTING Off"
 )
 
 # fmt
-CPMAddPackage("gh:fmtlib/fmt#10.1.0")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 
 # spdlog should reuse existing fmtlib.
 CPMAddPackage(
   GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.12.0
+  VERSION 1.13.0
   OPTIONS "SPDLOG_FMT_EXTERNAL 1"
 )
 

@@ -94,7 +94,7 @@ struct formatter<T> {
  public:
   constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
     auto end = parse_format_specs(ctx.begin(), ctx.end(), specs_, ctx, detail::type::float_type);
-    detail::parse_float_type_spec(specs_, detail::error_handler());
+    detail::parse_float_type_spec(specs_);
     return end;
   }
 
