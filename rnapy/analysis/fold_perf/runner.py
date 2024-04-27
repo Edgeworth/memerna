@@ -9,20 +9,22 @@ from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
 
 
 class FoldPerfRunner:
-    BENCHMARK_NUM_TRIES = 5
-
+    num_tries: int
     memevault: MemeVault
     output_dir: Path
     programs: list[tuple[RnaPackage, EnergyCfg, str]]
 
     def __init__(
         self,
+        *,
+        num_tries: int,
         memevault: MemeVault,
         output_dir: Path,
         memerna: MemeRna,
@@ -30,7 +32,9 @@ class FoldPerfRunner:
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
         sparsemfefold: SparseMfeFold,
+        sparsernafold: SparseRNAFolD,
     ) -> None:
+        self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [
@@ -46,6 +50,7 @@ class FoldPerfRunner:
                 viennarna.name() + "-d2",
             ),
             (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE), sparsemfefold.name()),
+            (sparsernafold, EnergyCfg(ctd=CtdCfg.D2), sparsernafold.name()),
         ]
 
     def run(self) -> None:
@@ -58,7 +63,7 @@ class FoldPerfRunner:
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")
-                for run_idx in range(self.BENCHMARK_NUM_TRIES):
+                for run_idx in range(self.num_tries):
                     _, res = program.fold(rna, cfg)
                     df = pd.DataFrame(
                         {

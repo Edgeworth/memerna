@@ -10,6 +10,7 @@ from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 
 
@@ -51,6 +52,14 @@ def validate_viennarna(
     if value is None:
         return None
     return ViennaRna(value)
+
+
+def validate_sparsernafold(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> SparseRNAFolD | None:
+    if value is None:
+        return None
+    return SparseRNAFolD(value)
 
 
 bridge_options = cloup.option_group(
@@ -100,6 +109,14 @@ bridge_options = cloup.option_group(
         envvar="VIENNARNA",
         show_envvar=True,
         callback=validate_viennarna,
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+    ),
+    cloup.option(
+        "--sparsernafold-path",
+        "sparsernafold",
+        envvar="SPARSERNAFOLD",
+        show_envvar=True,
+        callback=validate_sparsernafold,
         type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     ),
 )
