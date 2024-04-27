@@ -33,7 +33,7 @@ from rnapy.util.util import fn_args
     "-p",
     "--programs",
     multiple=True,
-    type=cloup.Choice(["memerna", "rnastructure", "sparsemfefold", "viennarna"]),
+    type=cloup.Choice(["memerna", "rnastructure", "sparsemfefold", "sparsernafold", "viennarna"]),
     help="Programs to run",
 )
 def harness(

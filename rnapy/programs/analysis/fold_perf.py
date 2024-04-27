@@ -11,6 +11,7 @@ from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.args import memevault_options
 from rnapy.data.memevault import MemeVault
@@ -34,6 +35,7 @@ def run_fold_perf(
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
     sparsemfefold: SparseMfeFold,
+    sparsernafold: SparseRNAFolD,
     **_kwargs: Any,
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
