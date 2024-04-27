@@ -83,11 +83,9 @@ inline constexpr EnergyCfg ModelEnergyCfg(const EnergyModelPtr& em) {
 // Creates the Boltzmann energy model from the given energy model.
 inline void LoadPseudofreeEnergy(
     const EnergyModelPtr& em, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
-  auto vis = overloaded{
-      [&](const auto& em) mutable {
-        return em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
-      }
-  };
+  auto vis = overloaded{[&](const auto& em) mutable {
+    return em->LoadPseudofreeEnergy(std::move(pf_paired), std::move(pf_unpaired));
+  }};
   std::visit(vis, em);
 }
 

@@ -83,5 +83,5 @@ class Optimizer:
     def load_state_dict(self, state_dict: dict) -> None:
         self.dm.load_state_dict(state_dict["model"])
         self.optimizer.load_state_dict(state_dict["optimizer"])
-        if state_dict.get("scheduler", None) is not None and self.scheduler is not None:
+        if state_dict.get("scheduler") is not None and self.scheduler is not None:
             self.scheduler.load_state_dict(state_dict["scheduler"])
