@@ -25,6 +25,8 @@ class FoldPerfRunner:
         self,
         *,
         num_tries: int,
+        time_sec_limit: int | None,
+        mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
         memerna: MemeRna,
@@ -52,6 +54,9 @@ class FoldPerfRunner:
             (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE), sparsemfefold.name()),
             (sparsernafold, EnergyCfg(ctd=CtdCfg.D2), sparsernafold.name()),
         ]
+        for program, _, _ in self.programs:
+            program.limits.mem_bytes = mem_bytes_limit
+            program.limits.time_sec = time_sec_limit
 
     def run(self) -> None:
         for program, cfg, name in self.programs:
@@ -63,8 +68,14 @@ class FoldPerfRunner:
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")
+                failed = False
                 for run_idx in range(self.num_tries):
-                    _, res = program.fold(rna, cfg)
+                    try:
+                        _, res = program.fold(rna, cfg)
+                    except Exception as e:
+                        click.echo(f"Error running {program} on {rna.name}: {e}")
+                        failed = True
+                        break
                     df = pd.DataFrame(
                         {
                             "name": rna.name,
@@ -84,3 +95,6 @@ class FoldPerfRunner:
                         index=False,
                         float_format="%g",
                     )
+                if failed:
+                    click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
+                    break
