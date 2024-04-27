@@ -3,11 +3,9 @@ from pathlib import Path
 from typing import Any
 
 import cloup
+
 from rnapy.build.afl_fuzz import AflFuzzCfg
-from rnapy.build.build_cfg import BuildCfg
-from rnapy.build.build_cfg import BuildKind
-from rnapy.build.build_cfg import Compiler
-from rnapy.build.build_cfg import Sanitizer
+from rnapy.build.build_cfg import BuildCfg, BuildKind, Compiler, Sanitizer
 
 build_cfg_options = cloup.option_group(
     "Build config options",
@@ -25,31 +23,13 @@ build_cfg_options = cloup.option_group(
         default=Path.home() / "bin",
         help="Where to place build directory",
     ),
+    cloup.option("--kind", type=cloup.Choice(list(BuildKind)), default="debug"),
+    cloup.option("--compiler", type=cloup.Choice(list(Compiler)), default="default"),
+    cloup.option("--sanitizer", type=cloup.Choice(list(Sanitizer)), default="none"),
     cloup.option(
-        "--kind",
-        type=cloup.Choice(list(BuildKind)),
-        default="debug",
+        "--iwyu/--no-iwyu", default=False, help="Whether to build with include-what-you-use"
     ),
-    cloup.option(
-        "--compiler",
-        type=cloup.Choice(list(Compiler)),
-        default="default",
-    ),
-    cloup.option(
-        "--sanitizer",
-        type=cloup.Choice(list(Sanitizer)),
-        default="none",
-    ),
-    cloup.option(
-        "--iwyu/--no-iwyu",
-        default=False,
-        help="Whether to build with include-what-you-use",
-    ),
-    cloup.option(
-        "--lto/--no-lto",
-        default=False,
-        help="Whether to build with LTO",
-    ),
+    cloup.option("--lto/--no-lto", default=False, help="Whether to build with LTO"),
     cloup.option("--rnastructure/--no-rnastructure", default=False),
     cloup.option("--mpfr/--no-mpfr", default=False),
     cloup.option("--float-precision", type=int, default=15),
@@ -88,11 +68,7 @@ def build_cfg_from_args(
 
 afl_fuzz_cfg_options = cloup.option_group(
     "afl-fuzz config options",
-    cloup.option(
-        "--max-len",
-        default=-1,
-        help="Max size of sequences to fuzz",
-    ),
+    cloup.option("--max-len", default=-1, help="Max size of sequences to fuzz"),
     cloup.option(
         "--seed",
         required=False,
@@ -110,52 +86,28 @@ afl_fuzz_cfg_options = cloup.option_group(
         multiple=True,
         help="Which energy models to use for fuzzing",
     ),
-    cloup.option(
-        "--brute-max",
-        default=22,
-        help="Max size of sequences to brute force",
-    ),
-    cloup.option(
-        "--mfe/--no-mfe",
-        default=False,
-        help="Whether to fuzz mfe",
-    ),
+    cloup.option("--brute-max", default=22, help="Max size of sequences to brute force"),
+    cloup.option("--mfe/--no-mfe", default=False, help="Whether to fuzz mfe"),
     cloup.option(
         "--mfe-rnastructure/--no-mfe-rnastructure",
         default=False,
         help="Whether to fuzz mfe with rnastructure",
     ),
     cloup.option(
-        "--mfe-table/--no-mfe-table",
-        default=False,
-        help="Whether to fuzz mfe with table",
+        "--mfe-table/--no-mfe-table", default=False, help="Whether to fuzz mfe with table"
     ),
-    cloup.option(
-        "--subopt/--no-subopt",
-        default=False,
-        help="Whether to fuzz subopt",
-    ),
+    cloup.option("--subopt/--no-subopt", default=False, help="Whether to fuzz subopt"),
     cloup.option(
         "--subopt-rnastructure/--no-subopt-rnastructure",
         default=False,
         help="Whether to fuzz subopt with rnastructure",
     ),
     cloup.option(
-        "--subopt-strucs",
-        default=10000,
-        help="Maximum number of structures to generate for subopt",
+        "--subopt-strucs", default=10000, help="Maximum number of structures to generate for subopt"
     ),
     # no subopt time here because it will generate different results between algos
-    cloup.option(
-        "--subopt-delta",
-        default=0.6,
-        help="Maximum energy delta for subopt",
-    ),
-    cloup.option(
-        "--part/--no-part",
-        default=False,
-        help="Whether to fuzz partition function",
-    ),
+    cloup.option("--subopt-delta", default=0.6, help="Maximum energy delta for subopt"),
+    cloup.option("--part/--no-part", default=False, help="Whether to fuzz partition function"),
     cloup.option(
         "--part-rnastructure/--no-part-rnastructure",
         default=False,

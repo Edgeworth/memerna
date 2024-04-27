@@ -1,11 +1,11 @@
 # Copyright 2022 Eliot Courtney.
-from dataclasses import dataclass
-from dataclasses import field
+import shutil
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-import shutil
 
 import click
+
 from rnapy.util.command import run_shell
 
 

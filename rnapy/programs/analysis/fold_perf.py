@@ -21,12 +21,14 @@ from rnapy.data.memevault import MemeVault
 @bridge_options
 @memevault_options
 @cloup.option("--dataset", default="random", type=str)
+@cloup.option("--num-tries", default=5, type=int)
 @cloup.option(
     "--output-dir",
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
     required=True,
 )
 def run_fold_perf(
+    num_tries: int,
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
@@ -40,7 +42,15 @@ def run_fold_perf(
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
     analyser = FoldPerfRunner(
-        memevault, output_dir, memerna, linearfold, rnastructure, viennarna, sparsemfefold
+        num_tries=num_tries,
+        memevault=memevault,
+        output_dir=output_dir,
+        memerna=memerna,
+        linearfold=linearfold,
+        rnastructure=rnastructure,
+        viennarna=viennarna,
+        sparsemfefold=sparsemfefold,
+        sparsernafold=sparsernafold,
     )
     analyser.run()
 

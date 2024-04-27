@@ -1,17 +1,15 @@
 # Copyright 2022 Eliot Courtney.
 import copy
 import dataclasses
-from dataclasses import dataclass
-from dataclasses import field
-from enum import StrEnum
-from itertools import cycle
-from itertools import islice
-from pathlib import Path
 import shutil
+from dataclasses import dataclass, field
+from enum import StrEnum
+from itertools import cycle, islice
+from pathlib import Path
 
 import click
-from rnapy.build.build_cfg import BuildCfg
-from rnapy.build.build_cfg import Sanitizer
+
+from rnapy.build.build_cfg import BuildCfg, Sanitizer
 
 AFL_MEMORY_LIMIT_MB = "2000"
 AFL_TIME_LIMIT_MS = "2000"
