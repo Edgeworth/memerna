@@ -9,9 +9,20 @@ from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 
 energy_options = cloup.option_group(
     "Energy options",
-    cloup.option("--lonely-pairs/--no-lonely-pairs", default=False, help="allow lonely pairs"),
+    cloup.option(
+        "--lonely-pairs",
+        type=cloup.Choice(list(LonelyPairs)),
+        default=LonelyPairs.HEURISTIC,
+        help="allow lonely pairs",
+    ),
     cloup.option(
         "--ctd", type=cloup.Choice(list(CtdCfg)), default=CtdCfg.ALL, help="whether to use CTDs"
+    ),
+    cloup.option(
+        "--model",
+        type=str,
+        required=False,
+        help="energy model to use (only applies to some programs, like memerna)",
     ),
 )
 
