@@ -5,10 +5,10 @@ import click
 import pandas as pd
 
 from rnapy.bridge.linearfold import LinearFold
-from rnapy.bridge.memerna import MemeRna
+from rnapy.bridge.memerna01 import MemeRna01
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
-from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsemfefold import SparseMFEFold
 from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
@@ -29,18 +29,18 @@ class FoldPerfRunner:
         mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
-        memerna: MemeRna,
+        memerna01: MemeRna01,
         linearfold: LinearFold,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
-        sparsemfefold: SparseMfeFold,
+        sparsemfefold: SparseMFEFold,
         sparsernafold: SparseRNAFolD,
     ) -> None:
         self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [
-            (memerna, EnergyCfg(), memerna.name()),
+            (memerna01, EnergyCfg(), memerna01.name()),
             (linearfold, EnergyCfg(ctd=CtdCfg.D2), linearfold.name()),
             (rnastructure, EnergyCfg(), rnastructure.name()),
             (viennarna, EnergyCfg(), viennarna.name() + "-d3-noLP"),

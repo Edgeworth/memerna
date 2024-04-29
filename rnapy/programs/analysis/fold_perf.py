@@ -8,9 +8,9 @@ from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
 from rnapy.analysis.fold_perf.runner import FoldPerfRunner
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.linearfold import LinearFold
-from rnapy.bridge.memerna import MemeRna
+from rnapy.bridge.memerna01 import MemeRna01
 from rnapy.bridge.rnastructure import RNAstructure
-from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsemfefold import SparseMFEFold
 from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.args import memevault_options
@@ -36,11 +36,11 @@ def run_fold_perf(
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
-    memerna: MemeRna,
+    memerna01: MemeRna01,
     linearfold: LinearFold,
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
-    sparsemfefold: SparseMfeFold,
+    sparsemfefold: SparseMFEFold,
     sparsernafold: SparseRNAFolD,
     **_kwargs: Any,
 ) -> None:
@@ -51,7 +51,7 @@ def run_fold_perf(
         num_tries=num_tries,
         memevault=memevault,
         output_dir=output_dir,
-        memerna=memerna,
+        memerna01=memerna01,
         linearfold=linearfold,
         rnastructure=rnastructure,
         viennarna=viennarna,

@@ -67,6 +67,7 @@ def plot_mean_quantity(ds: Dataset, xcol: Column, ycols: list[Column] | Column) 
     set_up_figure(f, names=(xcol.name, ycols[0].name))
     if ycols[0].formatter:
         ax.yaxis.set_major_formatter(ycols[0].formatter)
+    ax.legend(loc="best", framealpha=0.5)
     return f
 
 
