@@ -7,9 +7,10 @@ import cloup
 
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
+from rnapy.bridge.memerna01 import MemeRna01
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
-from rnapy.bridge.sparsemfefold import SparseMfeFold
+from rnapy.bridge.sparsemfefold import SparseMFEFold
 from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 
@@ -20,6 +21,14 @@ def validate_memerna(
     if value is None:
         return None
     return MemeRna(value)
+
+
+def validate_memerna01(
+    _ctx: click.Context, _param: click.Parameter, value: Path | None
+) -> MemeRna01 | None:
+    if value is None:
+        return None
+    return MemeRna01(value)
 
 
 def validate_linearfold(
@@ -40,10 +49,10 @@ def validate_rnastructure(
 
 def validate_sparsemfefold(
     _ctx: click.Context, _param: click.Parameter, value: Path | None
-) -> SparseMfeFold | None:
+) -> SparseMFEFold | None:
     if value is None:
         return None
-    return SparseMfeFold(value)
+    return SparseMFEFold(value)
 
 
 def validate_viennarna(
@@ -76,6 +85,15 @@ bridge_options = cloup.option_group(
         type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
         callback=validate_memerna,
         help="path to memerna build directory",
+    ),
+    cloup.option(
+        "--memerna01-path",
+        "memerna01",
+        envvar="MRNA01_DIST",
+        show_envvar=True,
+        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+        callback=validate_memerna01,
+        help="path to memerna0.1 build directory",
     ),
     cloup.option(
         "--linearfold-path",

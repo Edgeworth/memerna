@@ -72,4 +72,4 @@ class MemeRna(RnaPackage):
         return subopts, res
 
     def __str__(self) -> str:
-        return "MemeRNA"
+        return "memerna"

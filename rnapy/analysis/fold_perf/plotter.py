@@ -1,5 +1,4 @@
 # Copyright 2022 Eliot Courtney.
-from functools import reduce
 from pathlib import Path
 from typing import ClassVar
 
@@ -35,7 +34,7 @@ class FoldPerfPlotter:
 
     def _load_datasets(self) -> dict[str, Dataset]:
         datasets: dict[str, Dataset] = {}
-        for path in self.input_dir.iterdir():
+        for path in self.input_dir.glob("*.results"):
             dataset, program = path.stem.rsplit("_", maxsplit=1)
             df = pd.read_csv(path)
             datasets.setdefault(dataset, Dataset(dataset))
@@ -53,20 +52,14 @@ class FoldPerfPlotter:
     def run(self) -> None:
         datasets = self._load_datasets()
         # Plot quantities
-        for dataset in datasets.values():
-            ds = dataset
-            if "large" in ds.name:
-                ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
+        for ds in datasets.values():
             self._plot_quantity(ds)
 
             # Also plot random dataset without RNAstructure and ViennaRNA-d3
             if ds.name == "random":
-                ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
-                self._plot_quantity(ds, "subset_")
+                subset_ds = ds.exclude(["RNAstructure", "ViennaRNA-d3", "ViennaRNA-d3-noLP"])
+                self._plot_quantity(subset_ds, "subset_")
 
-        # Plot log graphs
-        combined_ds = reduce(lambda a, b: a.concat(b), datasets.values())
-        print(combined_ds)
-        for y in ["real_sec", "maxrss_bytes"]:
-            f = plot_mean_log_quantity(combined_ds, self.COLS["length"], self.COLS[y])
-            save_figure(f, self._path(combined_ds, f"{y}_log"))
+            for y in ["real_sec", "maxrss_bytes"]:
+                f = plot_mean_log_quantity(ds, self.COLS["length"], self.COLS[y])
+                save_figure(f, self._path(ds, f"{y}_log"))
