@@ -44,22 +44,17 @@ repos:
             click_log,
             cloup,
             pandas,
-            protobuf,
             python-dotenv,
-            ray,
             seaborn,
             statsmodels,
-            torch,
-            torchtext,
-            torchvision,
           ]
   # C++ related hooks:
-  - repo: https://github.com/cmake-lint/cmake-lint
-    rev: 1.4.2
-    hooks:
-      - id: cmakelint
-        args: [--linelength=100]
-        exclude: ^cmake/FindMPFR.cmake$
+  # - repo: https://github.com/cmake-lint/cmake-lint
+  #   rev: 1.4.2
+  #   hooks:
+  #     - id: cmakelint
+  #       args: [--linelength=100]
+  #       exclude: ^cmake/FindMPFR.cmake$
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:

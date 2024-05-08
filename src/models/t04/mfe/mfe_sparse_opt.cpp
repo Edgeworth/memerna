@@ -3,9 +3,6 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
-#include <compare>
-#include <exception>
-#include <memory>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"

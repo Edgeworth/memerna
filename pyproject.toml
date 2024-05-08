@@ -52,12 +52,9 @@ show_error_codes = true
 # Set python version.
 python_version = '3.12'
 
-# No type hints for torchvision.
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = [
-  "torchvision.*",
-  "torchtext.*",
   "click_log.*",
   "numpy.*",
   "ViennaRNA.*",
@@ -126,6 +123,6 @@ select = ["ALL"]
   "SLF001", # allow private member access
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 # To be consistent with skip-magic-trailing-comma = true
 split-on-trailing-comma = false
