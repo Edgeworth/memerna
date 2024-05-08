@@ -11,22 +11,18 @@ bidict = ">=0.23.1"
 click = ">=8.1.7"
 click-params = ">=0.5.0"
 click_log = ">=0.4.0"
-cloup = ">=3.0.4"
-libtmux = ">=0.31.0.post0"
-pandas = ">=2.2.1"
-protobuf = "3.20.1"
-python = "~3.11"
+cloup = ">=3.0.5"
+libtmux = ">=0.37.0"
+pandas = ">=2.2.2"
+python = ">=3.11,<4.0"
 python-dotenv = ">=1.0.1"
-ray = ">=2.9.3"
-scipy = ">=1.12.0"
+scipy = ">=1.13.0"
 seaborn = ">=0.13.2"
-statsmodels = ">=0.14.1"
-torch = ">=2.2.1"
-torch-tb-profiler = ">=0.4.3"
+statsmodels = ">=0.14.2"
 viennarna = ">=2.6.4"
 
 [tool.poetry.dev-dependencies]
-mypy = ">=1.8.0"
+mypy = ">=1.10.0"
 poetry-plugin-up = ">=0.7.1"
 
 [tool.mypy]
@@ -54,7 +50,7 @@ warn_unused_ignores = true
 show_error_codes = true
 
 # Set python version.
-python_version = '3.11'
+python_version = '3.12'
 
 # No type hints for torchvision.
 [[tool.mypy.overrides]]
@@ -75,7 +71,7 @@ module = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.format]
 # Make sure lists etc can go back onto one line if they get shorter.

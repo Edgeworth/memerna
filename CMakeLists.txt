@@ -80,7 +80,7 @@ CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 # spdlog should reuse existing fmtlib.
 CPMAddPackage(
   GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.13.0
+  VERSION 1.14.1
   OPTIONS "SPDLOG_FMT_EXTERNAL 1"
 )
 
