@@ -11,7 +11,6 @@ from rnapy.programs.analysis.compare_partition import compare_partition
 from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy, run_fold_accuracy
 from rnapy.programs.analysis.fold_perf import plot_fold_perf, run_fold_perf
 from rnapy.programs.build import build
-from rnapy.programs.design import design
 from rnapy.programs.harness import harness
 from rnapy.programs.util.convert_format import convert_format
 from rnapy.programs.util.crop_image import crop_image
@@ -49,7 +48,6 @@ cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section(
     "Conversion", convert_format, crop_image, parse_rnastructure_datatables, update_datatables
 )
-cli.section("Design", design)
 
 if __name__ == "__main__":
     cli()
