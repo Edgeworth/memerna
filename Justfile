@@ -28,7 +28,7 @@ bench:
     ./data/benchmark.json --kind=release
 
 fix:
-  SETUPTOOLS_USE_DISTUTILS=stdlib pre-commit run --all-files
+  pre-commit run --all-files
 
 update:
   poetry run poetry up --latest
