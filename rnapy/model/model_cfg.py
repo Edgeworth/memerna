@@ -18,7 +18,6 @@ class CtdCfg(StrEnum):
     NO_COAX = "no-coax"
     ALL = "all"  #  Use CTDs in folding, subopt, partition, etc.
 
-
 @dataclass
 class EnergyCfg:
     ctd: CtdCfg
@@ -33,3 +32,5 @@ class SuboptCfg:
     delta: Decimal | None = None
     strucs: int | None = None
     time_secs: float | None = None
+    # Program specific suboptimal folding algorithm option.
+    algorithm: str | None = None

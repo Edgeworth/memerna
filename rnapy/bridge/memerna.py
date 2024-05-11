@@ -32,6 +32,8 @@ class MemeRna(RnaPackage):
             args += ["--subopt-sorted"]
         else:
             args += ["--no-subopt-sorted"]
+        if cfg.algorithm:
+            args += ["--subopt-alg", f"{cfg.algorithm}"]
         args += ["--no-ctd-output"]
         return args
 
