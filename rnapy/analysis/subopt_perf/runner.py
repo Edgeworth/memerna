@@ -1,25 +1,24 @@
 # Copyright 2022 Eliot Courtney.
+from decimal import Decimal
 from pathlib import Path
 
 import click
 import pandas as pd
 
-from rnapy.bridge.linearfold import LinearFold
-from rnapy.bridge.memerna01 import MemeRna01
+from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
-from rnapy.bridge.sparsemfefold import SparseMFEFold
-from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
-from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 
 
-class FoldPerfRunner:
+class SuboptPerfRunner:
     num_tries: int
     memevault: MemeVault
     output_dir: Path
-    programs: list[tuple[RnaPackage, EnergyCfg, str]]
+    delta: Decimal | None
+    programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg, str]]
 
     def __init__(
         self,
@@ -29,69 +28,47 @@ class FoldPerfRunner:
         mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
-        memerna01: MemeRna01,
-        linearfold: LinearFold,
+        delta: Decimal | None,
+        memerna: MemeRna,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
-        sparsemfefold: SparseMFEFold,
-        sparsernafold: SparseRNAFolD,
     ) -> None:
         self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
+        self.delta = delta
         self.programs = [
-            (
-                memerna01,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                memerna01.name(),
-            ),
-            (
-                linearfold,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                linearfold.name(),
-            ),
             (
                 rnastructure,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True),
                 rnastructure.name(),
             ),
             (
                 viennarna,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                viennarna.name() + "-d3-noLP",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                viennarna.name() + "-d2-noLP",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON),
+                SuboptCfg(delta=delta, sorted_strucs=True),
                 viennarna.name() + "-d3",
             ),
             (
                 viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.ON),
+                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True),
                 viennarna.name() + "-d2",
             ),
             (
-                sparsemfefold,
-                EnergyCfg(ctd=CtdCfg.NONE, lonely_pairs=LonelyPairs.HEURISTIC),
-                sparsemfefold.name(),
-            ),
-            (
-                sparsernafold,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                sparsernafold.name(),
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True),
+                memerna.name(),
             ),
         ]
-        for program, _, _ in self.programs:
+        for program, _, _, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
             program.limits.time_sec = time_sec_limit
 
     def run(self) -> None:
-        for program, cfg, name in self.programs:
+        for program, energy_cfg, subopt_cfg, name in self.programs:
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {name} on {dataset}")
             output_path = self.output_dir / f"{dataset}_{name}.results"
@@ -103,7 +80,7 @@ class FoldPerfRunner:
                 failed = False
                 for run_idx in range(self.num_tries):
                     try:
-                        _, res = program.fold(rna, cfg)
+                        _, res = program.subopt(rna, energy_cfg, subopt_cfg)
                     except Exception as e:
                         click.echo(f"Error running {program} on {rna.name}: {e}")
                         failed = True

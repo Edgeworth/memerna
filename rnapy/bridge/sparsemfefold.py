@@ -13,7 +13,9 @@ from rnapy.util.command import CmdResult
 class SparseMFEFold(RnaPackage):
     def _check_energy_cfg(self, cfg: EnergyCfg) -> None:
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:  # TODO(3): Check this.
-            raise NotImplementedError("SparseMFEFold does not support turning on lonely pairs")
+            raise NotImplementedError(
+                "SparseMFEFold does not support modifying lonely pairs behavior"
+            )
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
         if cfg.model is not None:

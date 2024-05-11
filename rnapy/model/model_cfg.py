@@ -21,15 +21,15 @@ class CtdCfg(StrEnum):
 
 @dataclass
 class EnergyCfg:
-    lonely_pairs: LonelyPairs = LonelyPairs.HEURISTIC
-    ctd: CtdCfg = CtdCfg.ALL
+    ctd: CtdCfg
+    lonely_pairs: LonelyPairs
     # Program specific energy model option.
     model: str | None = None
 
 
 @dataclass
 class SuboptCfg:
+    sorted_strucs: bool
     delta: Decimal | None = None
     strucs: int | None = None
     time_secs: float | None = None
-    sorted: bool = True

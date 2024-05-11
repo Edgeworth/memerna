@@ -10,6 +10,7 @@ from rnapy.programs.afl_fuzz_min import afl_fuzz_min
 from rnapy.programs.analysis.compare_partition import compare_partition
 from rnapy.programs.analysis.fold_accuracy import plot_fold_accuracy, run_fold_accuracy
 from rnapy.programs.analysis.fold_perf import plot_fold_perf, run_fold_perf
+from rnapy.programs.analysis.subopt_perf import plot_subopt_perf, run_subopt_perf
 from rnapy.programs.build import build
 from rnapy.programs.harness import harness
 from rnapy.programs.util.convert_format import convert_format
@@ -43,6 +44,8 @@ cli.section(
     plot_fold_perf,
     run_fold_accuracy,
     plot_fold_accuracy,
+    run_subopt_perf,
+    plot_subopt_perf,
 )
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section(
