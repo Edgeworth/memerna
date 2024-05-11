@@ -28,20 +28,20 @@ class RnaPackage:
 
     def subopt(
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> tuple[list[Rna], CmdResult]:
+    ) -> tuple[list[Rna] | int, CmdResult]:
         raise NotImplementedError
 
     def _run_cmd(
         self,
         *cmd: str,
-        inp: str | None = None,
-        return_stdout: bool = True,
+        stdout_to_str: bool,
+        stdin_inp: str | None = None,
         stdout_path: Path | None = None,
     ) -> CmdResult:
         return run_cmd(
             *cmd,
-            inp=inp,
-            return_stdout=return_stdout,
+            stdin_inp=stdin_inp,
+            stdout_to_str=stdout_to_str,
             stdout_path=stdout_path,
             limits=self.limits,
             cwd=self.path,

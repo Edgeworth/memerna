@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import override
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
@@ -21,27 +22,32 @@ class SparseMFEFold(RnaPackage):
         if cfg.model is not None:
             raise NotImplementedError("SparseMFEFold energy model configuration not supported")
 
+    @override
     def name(self) -> str:
         return "SparseMFEFold"
 
+    @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         raise NotImplementedError
 
+    @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self._check_energy_cfg(cfg)
-        res = self._run_cmd("./src/SparseMFEFold", inp=rna.r)
+        res = self._run_cmd("./src/SparseMFEFold", stdin_inp=rna.r, stdout_to_str=True)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
         predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
+    @override
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         raise NotImplementedError("SparseMFEFold does not support partition")
 
+    @override
     def subopt(
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
 
     def __str__(self) -> str:
-        return "SparseMFEFold"
+        return self.name()

@@ -3,6 +3,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import override
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
@@ -57,18 +58,23 @@ class ViennaRna(RnaPackage):
             raise NotImplementedError("ViennaRNA does not support custom subopt algorithm")
         return args
 
+    @override
     def name(self) -> str:
         return "ViennaRNA"
 
+    @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        res = self._run_cmd("./src/bin/RNAeval", *args, inp=f"{rna.r}\n{rna.db()}")
+        res = self._run_cmd(
+            "./src/bin/RNAeval", *args, stdin_inp=f"{rna.r}\n{rna.db()}", stdout_to_str=True
+        )
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         if match is None:
             raise ValueError(f"Could not find energy in {res.stdout}")
         energy = Decimal(match.group(1))
         return energy, res
 
+    @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
         with tempfile.NamedTemporaryFile("w") as f:
@@ -76,21 +82,25 @@ class ViennaRna(RnaPackage):
                 raise ValueError(f"RNA {rna.name} has no sequence")
             f.write(rna.r)
             f.flush()
-            res = self._run_cmd("./src/bin/RNAfold", *args, "--noPS", "-i", f.name)
+            res = self._run_cmd(
+                "./src/bin/RNAfold", *args, "--noPS", "-i", f.name, stdout_to_str=True
+            )
             seq, db = res.stdout.strip().split("\n")
             db = db.split(" ")[0]
             predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
+    @override
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         raise NotImplementedError
 
+    @override
     def subopt(
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)
-        res = self._run_cmd("./src/bin/RNAsubopt", *args, inp=rna.r)
+        res = self._run_cmd("./src/bin/RNAsubopt", *args, stdin_inp=rna.r)
         subopts = []
         for i in res.stdout.splitlines()[1:]:
             db, energy_str = re.split(r"\s+", i.strip())
@@ -99,4 +109,4 @@ class ViennaRna(RnaPackage):
         return subopts, res
 
     def __str__(self) -> str:
-        return "ViennaRNA"
+        return self.name()

@@ -33,16 +33,16 @@ class CmdResult:
 
 def try_cmd(
     *cmd: str,
-    inp: str | bytes | None = None,
-    return_stdout: bool = True,
+    stdin_inp: str | bytes | None = None,
+    stdout_to_str: bool = True,
     stdout_path: Path | None = None,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
     limits: CmdLimits | None = None,
 ) -> CmdResult:
     limits = limits or CmdLimits()
-    if isinstance(inp, str):
-        inp = inp.encode("utf-8")
+    if isinstance(stdin_inp, str):
+        stdin_inp = stdin_inp.encode("utf-8")
 
     # Uses GNU time.
     cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd)
@@ -61,8 +61,8 @@ def try_cmd(
     if stdout_path:
         stdout = stdout_path.open("wb")
     else:
-        stdout = subprocess.PIPE if return_stdout else subprocess.DEVNULL
-    stdin = subprocess.PIPE if inp else None
+        stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
+    stdin = subprocess.PIPE if stdin_inp else None
 
     CMD_STR_LIM = 500
     cmd_str = " ".join(cmd)
@@ -70,7 +70,7 @@ def try_cmd(
         cmd_str = cmd_str[: CMD_STR_LIM // 2] + "..." + cmd_str[-CMD_STR_LIM // 2 :]
     print(
         f"try_cmd: {cmd_str}, cwd: {cwd}, extra_env: {extra_env}, "
-        f"return_stdout: {return_stdout}, stdout_path: {stdout_path}, limits: {limits}"
+        f"stdout_to_str: {stdout_to_str}, stdout_path: {stdout_path}, limits: {limits}"
     )
     with subprocess.Popen(
         cmd,
@@ -82,7 +82,7 @@ def try_cmd(
         env=env,
         preexec_fn=preexec_fn,  # noqa: PLW1509
     ) as proc:
-        stdout_bytes, stderr_bytes = proc.communicate(input=inp)
+        stdout_bytes, stderr_bytes = proc.communicate(input=stdin_inp)
         ret_code = proc.wait()
         stdout_str = stdout_bytes.decode("utf-8") if stdout_bytes else ""
         stderr_str = stderr_bytes.decode("utf-8") if stderr_bytes else ""
@@ -95,7 +95,7 @@ def try_cmd(
             stdout.close()
 
             # We may want to not return the stdout if it's too big.
-            if return_stdout:
+            if stdout_to_str:
                 stdout_str = stdout_path.read_text()
 
         return CmdResult(
@@ -111,8 +111,8 @@ def try_cmd(
 
 def run_cmd(
     *cmd: str,
-    inp: str | bytes | None = None,
-    return_stdout: bool = True,
+    stdin_inp: str | bytes | None = None,
+    stdout_to_str: bool = True,
     stdout_path: Path | None = None,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
@@ -121,8 +121,8 @@ def run_cmd(
     limits = limits or CmdLimits()
     res = try_cmd(
         *cmd,
-        inp=inp,
-        return_stdout=return_stdout,
+        stdin_inp=stdin_inp,
+        stdout_to_str=stdout_to_str,
         stdout_path=stdout_path,
         cwd=cwd,
         extra_env=extra_env,

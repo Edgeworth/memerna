@@ -1,6 +1,7 @@
 # Copyright 2023 Eliot Courtney.
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import override
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
@@ -33,27 +34,32 @@ class LinearFold(RnaPackage):
             raise NotImplementedError("LinearFold energy model configuration not supported")
         return args
 
+    @override
     def name(self) -> str:
         return "LinearFold"
 
+    @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         raise NotImplementedError
 
+    @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        res = self._run_cmd("./linearfold", *args, "-V", inp=rna.r)
+        res = self._run_cmd("./linearfold", *args, "-V", stdin_inp=rna.r, stdout_to_str=True)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
         predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
         return predicted, res
 
+    @override
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         raise NotImplementedError
 
+    @override
     def subopt(
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
 
     def __str__(self) -> str:
-        return "LinearFold"
+        return self.name()

@@ -63,6 +63,7 @@ def harness(
             raise NotImplementedError
         if subopt:
             subopts, res = p.subopt(rna, energy_cfg, subopt_cfg)
+            assert isinstance(subopts, list)
             click.echo(f"{len(subopts)} suboptimal structures of RNA {rna.name} with {p} - {res}")
             for rna in subopts:
                 click.echo(f"{rna.energy} {rna.db()}")

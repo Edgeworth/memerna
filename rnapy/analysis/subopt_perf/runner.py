@@ -39,36 +39,36 @@ class SuboptPerfRunner:
         self.delta = delta
         assert delta is not None
         self.programs = [
-            (
-                rnastructure,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True),
-                rnastructure.name(),
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True),
-                viennarna.name() + "-d3",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True),
-                viennarna.name() + "-d2",
-            ),
+            # (
+            #     rnastructure,
+            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+            #     rnastructure.name(),
+            # ),
+            # (
+            #     viennarna,
+            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+            #     viennarna.name() + "-d3",
+            # ),
+            # (
+            #     viennarna,
+            #     EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
+            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+            #     viennarna.name() + "-d2",
+            # ),
+            # (
+            #     memerna,
+            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True, algorithm="iterative"),
+            #     memerna.name() + "-delta-iterative",
+            # ),
             (
                 memerna,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True, algorithm="iterative"),
-                memerna.name() + "-delta-iterative",
-            ),
-            (
-                memerna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True, algorithm="persistent"),
+                SuboptCfg(delta=delta, sorted_strucs=True, count_only=True, algorithm="persistent"),
                 memerna.name() + "-delta-persistent",
-            ),
+            )
         ]
         for program, _, _, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
@@ -89,11 +89,13 @@ class SuboptPerfRunner:
                 failed = False
                 for run_idx in range(self.num_tries):
                     try:
-                        rnas, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
+                        rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
                     except Exception as e:
                         click.echo(f"Error running {program} on {rna.name}: {e}")
                         failed = True
                         break
+                    assert isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
+
                     df = pd.DataFrame(
                         {
                             "name": rna.name,
@@ -101,7 +103,7 @@ class SuboptPerfRunner:
                             "length": len(rna),
                             # "delta": delta,
                             # "num": num, # TODO: do this.
-                            "num_strucs": len(rnas),
+                            "num_strucs": rna_count,
                             "maxrss_bytes": cmd_res.maxrss_bytes,
                             "user_sec": cmd_res.user_sec,
                             "sys_sec": cmd_res.sys_sec,
