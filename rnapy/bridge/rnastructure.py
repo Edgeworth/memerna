@@ -100,12 +100,9 @@ class RNAstructure(RnaPackage):
 
             if subopt_cfg.count_only:
                 count = fast_linecount(Path(fout.name))
-                divisor = (
-                    len(rna) + 1
-                )  # ct file has one line per nucleotide, plus one for the header
-                assert (
-                    count % divisor == 0
-                ), f"Expected count to be a multiple of {divisor}, got {count}"
+                # ct file has one line per nucleotide, plus one for the header
+                divisor = len(rna) + 1
+                assert count % divisor == 0, f"Expected {divisor} to div {count}"
                 return count // divisor, res
 
             output = fout.read()
