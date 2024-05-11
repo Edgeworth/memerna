@@ -53,6 +53,8 @@ class ViennaRna(RnaPackage):
             raise NotImplementedError("ViennaRNA does not support reporting a maximum running time")
         if cfg.sorted_strucs:
             args += ["--sorted"]
+        if cfg.algorithm is not None:
+            raise NotImplementedError("ViennaRNA does not support custom subopt algorithm")
         return args
 
     def name(self) -> str:

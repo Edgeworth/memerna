@@ -37,6 +37,7 @@ class SuboptPerfRunner:
         self.memevault = memevault
         self.output_dir = output_dir
         self.delta = delta
+        assert delta is not None
         self.programs = [
             (
                 rnastructure,
@@ -59,8 +60,14 @@ class SuboptPerfRunner:
             (
                 memerna,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                SuboptCfg(delta=delta, sorted_strucs=True),
-                memerna.name(),
+                SuboptCfg(delta=delta, sorted_strucs=True, algorithm="iterative"),
+                memerna.name() + "-delta-iterative",
+            ),
+            (
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True, algorithm="persistent"),
+                memerna.name() + "-delta-persistent",
             ),
         ]
         for program, _, _, _ in self.programs:
@@ -77,6 +84,8 @@ class SuboptPerfRunner:
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")
+                if rna.name != "len_50":
+                    continue
                 failed = False
                 for run_idx in range(self.num_tries):
                     try:
@@ -89,7 +98,9 @@ class SuboptPerfRunner:
                         {
                             "name": rna.name,
                             "run_idx": run_idx,
-                            "length": len(rnas),
+                            "length": len(rna),
+                            # "delta": delta,
+                            # "num": num, # TODO: do this.
                             "num_strucs": len(rnas),
                             "maxrss_bytes": cmd_res.maxrss_bytes,
                             "user_sec": cmd_res.user_sec,
@@ -108,4 +119,3 @@ class SuboptPerfRunner:
                 if failed:
                     click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
                     break
-                break

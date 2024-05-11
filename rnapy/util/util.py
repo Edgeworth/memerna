@@ -2,7 +2,10 @@
 import hashlib
 import inspect
 import json
+from pathlib import Path
 from typing import Any
+
+from rnapy.util.command import run_cmd
 
 
 def fn_args() -> dict[str, Any]:
@@ -41,3 +44,9 @@ def stable_hash(val: Any) -> int:
     val = json.dumps(val, ensure_ascii=False, sort_keys=True, indent=None, separators=(",", ":"))
     val = hashlib.md5(val.encode("utf-8")).digest()
     return int.from_bytes(val, "big")
+
+
+def fast_linecount(path: Path) -> int:
+    res = run_cmd("wc", "-l", str(path))
+    count = int(res.stdout.strip().split()[0])
+    return count

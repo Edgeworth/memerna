@@ -63,8 +63,13 @@ def try_cmd(
     else:
         stdout = subprocess.PIPE if return_stdout else subprocess.DEVNULL
     stdin = subprocess.PIPE if inp else None
+
+    CMD_STR_LIM = 500
+    cmd_str = " ".join(cmd)
+    if len(cmd_str) > CMD_STR_LIM:
+        cmd_str = cmd_str[: CMD_STR_LIM // 2] + "..." + cmd_str[-CMD_STR_LIM // 2 :]
     print(
-        f"try_cmd: {" ".join(cmd)}, cwd: {cwd}, extra_env: {extra_env}, "
+        f"try_cmd: {cmd_str}, cwd: {cwd}, extra_env: {extra_env}, "
         f"return_stdout: {return_stdout}, stdout_path: {stdout_path}, limits: {limits}"
     )
     with subprocess.Popen(
