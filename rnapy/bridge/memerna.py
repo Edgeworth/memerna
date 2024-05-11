@@ -28,10 +28,11 @@ class MemeRna(RnaPackage):
             args += ["--subopt-strucs", str(cfg.strucs)]
         if cfg.time_secs:
             args += ["--subopt-time-secs", str(cfg.time_secs)]
-        if cfg.sorted:
+        if cfg.sorted_strucs:
             args += ["--subopt-sorted"]
         else:
             args += ["--no-subopt-sorted"]
+        args += ["--no-ctd-output"]
         return args
 
     def name(self) -> str:

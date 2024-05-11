@@ -20,19 +20,33 @@ class FoldAccuracyRunner:
         self.memevault = memevault
         self.output_dir = output_dir
         self.programs = [
-            (memerna, EnergyCfg(model="t04p1"), memerna.name() + "-t04p1"),
             (
                 memerna,
-                EnergyCfg(model="t04p2", lonely_pairs=LonelyPairs.ON),
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, model="t04p1"),
+                memerna.name() + "-t04p1",
+            ),
+            (
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON, model="t04p2"),
                 memerna.name() + "-t04p2-lonely",
             ),
             (
                 memerna,
-                EnergyCfg(model="t04p2full", ctd=CtdCfg.NO_COAX),
+                EnergyCfg(
+                    ctd=CtdCfg.NO_COAX, lonely_pairs=LonelyPairs.HEURISTIC, model="t04p2full"
+                ),
                 memerna.name() + "-t04p2-no-coax",
             ),
-            (memerna, EnergyCfg(model="t04p2"), memerna.name() + "-t04p2"),
-            (memerna, EnergyCfg(model="t22p2"), memerna.name() + "-t22p2"),
+            (
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, model="t04p2"),
+                memerna.name() + "-t04p2",
+            ),
+            (
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, model="t22p2"),
+                memerna.name() + "-t22p2",
+            ),
         ]
 
     @staticmethod

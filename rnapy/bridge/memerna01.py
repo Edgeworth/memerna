@@ -13,7 +13,7 @@ from rnapy.util.command import CmdResult
 class MemeRna01(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
-            raise NotImplementedError("memerna0.1 does not support turning on lonely pairs")
+            raise NotImplementedError("memerna0.1 does not support modifying lonely pairs behavior")
         if cfg.model is not None:
             raise NotImplementedError("memerna0.1 energy model configuration not supported")
         if cfg.ctd != "all":

@@ -15,7 +15,9 @@ class SparseRNAFolD(RnaPackage):
         args = []
 
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
-            raise NotImplementedError("SparseRNAFolD does not support turning on lonely pairs")
+            raise NotImplementedError(
+                "SparseRNAFolD does not support modifying lonely pairs behavior"
+            )
 
         match cfg.ctd:
             case CtdCfg.NONE:

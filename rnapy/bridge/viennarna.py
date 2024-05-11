@@ -19,13 +19,13 @@ class ViennaRna(RnaPackage):
 
         match cfg.lonely_pairs:
             case LonelyPairs.OFF:
-                args.append("--noLP")
-            case LonelyPairs.HEURISTIC:
-                pass
-            case LonelyPairs.ON:
                 raise NotImplementedError(
                     "ViennaRNA does not support non-heuristic disallowing of lonely pairs"
                 )
+            case LonelyPairs.HEURISTIC:
+                args.append("--noLP")
+            case LonelyPairs.ON:
+                pass
         match cfg.ctd:
             case CtdCfg.NONE:
                 args.append("-d0")
@@ -51,7 +51,7 @@ class ViennaRna(RnaPackage):
             )
         if cfg.time_secs:
             raise NotImplementedError("ViennaRNA does not support reporting a maximum running time")
-        if cfg.sorted:
+        if cfg.sorted_strucs:
             args += ["--sorted"]
         return args
 

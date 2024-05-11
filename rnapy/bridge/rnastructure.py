@@ -18,7 +18,9 @@ class RNAstructure(RnaPackage):
 
     def check_energy_cfg(self, cfg: EnergyCfg) -> None:
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
-            raise NotImplementedError("RNAstructure does not support turning on lonely pairs")
+            raise NotImplementedError(
+                "RNAstructure does not support modifying lonely pairs behavior"
+            )
         if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("RNAstructure does not support turning off CTDs")
         if cfg.model is not None:

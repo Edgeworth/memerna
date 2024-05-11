@@ -58,5 +58,8 @@ def subopt_cfg_from_args(
     **_kwargs: Any,
 ) -> SuboptCfg:
     return SuboptCfg(
-        delta=subopt_delta, strucs=subopt_strucs, time_secs=subopt_time_secs, sorted=subopt_sorted
+        delta=subopt_delta,
+        strucs=subopt_strucs,
+        time_secs=subopt_time_secs,
+        sorted_strucs=subopt_sorted,
     )

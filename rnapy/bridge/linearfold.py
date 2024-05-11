@@ -15,7 +15,7 @@ class LinearFold(RnaPackage):
         args = []
 
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
-            raise NotImplementedError("LinearFold does not support turning on lonely pairs")
+            raise NotImplementedError("LinearFold does not support modifying lonely pairs behavior")
 
         match cfg.ctd:
             case CtdCfg.NONE:
