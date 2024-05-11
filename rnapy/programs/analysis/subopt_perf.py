@@ -1,5 +1,4 @@
 # Copyright 2022 Eliot Courtney.
-from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +26,7 @@ from rnapy.data.memevault import MemeVault
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
     required=True,
 )
-@cloup.option("--delta", type=str, required=True)
+@cloup.option("--delta", is_flag=True, default=True)
 def run_subopt_perf(
     time_sec_limit: int | None,
     mem_bytes_limit: int | None,
@@ -35,21 +34,20 @@ def run_subopt_perf(
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
-    delta: str | None,
+    delta: bool,
     memerna: MemeRna,
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
     **_kwargs: Any,
 ) -> None:
     memevault = MemeVault(memevault_path, dataset)
-    delta_dec = None if delta is None else Decimal(delta)
     analyser = SuboptPerfRunner(
         time_sec_limit=time_sec_limit,
         mem_bytes_limit=mem_bytes_limit,
         num_tries=num_tries,
         memevault=memevault,
         output_dir=output_dir,
-        delta=delta_dec,
+        delta=delta,
         memerna=memerna,
         rnastructure=rnastructure,
         viennarna=viennarna,
