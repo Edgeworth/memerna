@@ -71,7 +71,7 @@ class SuboptPerfRunner:
         for program, energy_cfg, subopt_cfg, name in self.programs:
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {name} on {dataset}")
-            output_path = self.output_dir / f"{dataset}_{name}.results"
+            output_path = self.output_dir / f"{dataset}_{name}_{self.delta}.results"
             if output_path.exists():
                 raise RuntimeError(f"Output path {output_path} already exists")
 
@@ -80,7 +80,7 @@ class SuboptPerfRunner:
                 failed = False
                 for run_idx in range(self.num_tries):
                     try:
-                        _, res = program.subopt(rna, energy_cfg, subopt_cfg)
+                        rnas, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
                     except Exception as e:
                         click.echo(f"Error running {program} on {rna.name}: {e}")
                         failed = True
@@ -89,11 +89,12 @@ class SuboptPerfRunner:
                         {
                             "name": rna.name,
                             "run_idx": run_idx,
-                            "length": len(rna),
-                            "maxrss_bytes": res.maxrss_bytes,
-                            "user_sec": res.user_sec,
-                            "sys_sec": res.sys_sec,
-                            "real_sec": res.real_sec,
+                            "length": len(rnas),
+                            "num_strucs": len(rnas),
+                            "maxrss_bytes": cmd_res.maxrss_bytes,
+                            "user_sec": cmd_res.user_sec,
+                            "sys_sec": cmd_res.sys_sec,
+                            "real_sec": cmd_res.real_sec,
                         },
                         index=[0],
                     )
@@ -107,3 +108,4 @@ class SuboptPerfRunner:
                 if failed:
                     click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
                     break
+                break
