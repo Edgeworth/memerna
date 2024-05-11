@@ -3,6 +3,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from decimal import Decimal
+from pathlib import Path
 from typing import override
 
 from rnapy.bridge.rnapackage import RnaPackage
@@ -10,6 +11,7 @@ from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
+from rnapy.util.util import fast_linecount
 
 
 @dataclass
@@ -78,7 +80,7 @@ class RNAstructure(RnaPackage):
     @override
     def subopt(
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
-    ) -> tuple[list[Rna], CmdResult]:
+    ) -> tuple[list[Rna] | int, CmdResult]:
         self.check_energy_cfg(energy_cfg)
         self.check_subopt_cfg(subopt_cfg)
         with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
@@ -87,7 +89,25 @@ class RNAstructure(RnaPackage):
 
             if subopt_cfg.delta is None:
                 raise ValueError("SuboptCfg.delta must be set")
-            res = self._run_cmd("./exe/AllSub", "-a", f"{subopt_cfg.delta}", fin.name, fout.name)
+            res = self._run_cmd(
+                "./exe/AllSub",
+                "-a",
+                f"{subopt_cfg.delta}",
+                fin.name,
+                fout.name,
+                stdout_to_str=False,
+            )
+
+            if subopt_cfg.count_only:
+                count = fast_linecount(Path(fout.name))
+                divisor = (
+                    len(rna) + 1
+                )  # ct file has one line per nucleotide, plus one for the header
+                assert (
+                    count % divisor == 0
+                ), f"Expected count to be a multiple of {divisor}, got {count}"
+                return count // divisor, res
+
             output = fout.read()
             # TODO(3): does not extract energy yet
             subopts = RnaParser.multi_from_ct_file(output)

@@ -39,36 +39,36 @@ class SuboptPerfRunner:
         self.delta = delta
         assert delta is not None
         self.programs = [
-            # (
-            #     rnastructure,
-            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
-            #     rnastructure.name(),
-            # ),
-            # (
-            #     viennarna,
-            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
-            #     viennarna.name() + "-d3",
-            # ),
-            # (
-            #     viennarna,
-            #     EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
-            #     viennarna.name() + "-d2",
-            # ),
-            # (
-            #     memerna,
-            #     EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-            #     SuboptCfg(delta=delta, sorted_strucs=True, count_only=True, algorithm="iterative"),
-            #     memerna.name() + "-delta-iterative",
-            # ),
+            (
+                rnastructure,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+                rnastructure.name(),
+            ),
+            (
+                viennarna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+                viennarna.name() + "-d3",
+            ),
+            (
+                viennarna,
+                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True, count_only=True),
+                viennarna.name() + "-d2",
+            ),
+            (
+                memerna,
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                SuboptCfg(delta=delta, sorted_strucs=True, count_only=True, algorithm="iterative"),
+                memerna.name() + "-delta-iterative",
+            ),
             (
                 memerna,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
                 SuboptCfg(delta=delta, sorted_strucs=True, count_only=True, algorithm="persistent"),
                 memerna.name() + "-delta-persistent",
-            )
+            ),
         ]
         for program, _, _, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
@@ -84,8 +84,6 @@ class SuboptPerfRunner:
 
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")
-                if rna.name != "len_50":
-                    continue
                 failed = False
                 for run_idx in range(self.num_tries):
                     try:
