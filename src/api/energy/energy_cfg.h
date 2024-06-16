@@ -10,37 +10,27 @@
 
 #include "util/argparse.h"
 #include "util/container.h"
+#include "util/string.h"
 
 namespace mrna::erg {
 
-inline const auto OPT_LONELY_PAIRS = mrna::Opt(Opt::ARG)
-                                         .LongName("lonely-pairs")
-                                         .Choice({"off", "heuristic", "on"})
-                                         .Default("heuristic")
-                                         .Help("allow lonely pairs");
-inline const auto OPT_BULGE_STATES =
-    mrna::Opt(Opt::FLAG).LongName("bulge-states").Default(true).Help("count bulge states bonus");
-inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
-                                .LongName("ctd")
-                                .Choice({"none", "d2", "no-coax", "all"})
-                                .Default("all")
-                                .Help("whether to use CTDs");
-
 void RegisterOptsEnergyCfg(ArgParse* args);
 
-struct EnergyCfg {
-  enum class LonelyPairs {
-    OFF,  // Do not allow lonely pairs.
-    HEURISTIC,  // Use a heuristic to disallow lonely pairs (RNAstructure default behaviour).
-    ON,  //  Allow lonely pairs.
-  };
+MAKE_ENUM(EnergyModelKind, T04, T12, T22);
 
-  enum class Ctd {
-    NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
-    D2,  // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
-    NO_COAX,  //  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.
-    ALL,  //  Use CTDs in folding, subopt, partition, etc.
-  };
+struct EnergyCfg {
+  MAKE_NESTED_ENUM(LonelyPairs,
+      OFF,  // Do not allow lonely pairs.
+      HEURISTIC,  // Use a heuristic to disallow lonely pairs (RNAstructure default behaviour).
+      ON  //  Allow lonely pairs.
+  );
+
+  MAKE_NESTED_ENUM(Ctd,
+      NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
+      D2,  // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
+      NO_COAX,  //  Use only terminal mismatches and dangling ends in folding, subopt, partition
+      ALL  //  Use CTDs in folding, subopt, partition, etc.
+  );
 
   // Whether to allow lonely pairs in folding, subopt, partition, etc.
   LonelyPairs lonely_pairs = LonelyPairs::HEURISTIC;
@@ -55,6 +45,12 @@ struct EnergyCfg {
   Ctd ctd = Ctd::ALL;
 
   static EnergyCfg FromArgParse(const ArgParse& args);
+
+  [[nodiscard]] constexpr bool UseCoaxialStacking() const { return ctd == Ctd::ALL; }
+
+  [[nodiscard]] constexpr bool UseDangleMismatch() const {
+    return ctd == Ctd::ALL || ctd == Ctd::NO_COAX;
+  }
 };
 
 // Description of the support of an algorithm for each energy configuration.
@@ -67,21 +63,23 @@ struct EnergyCfgSupport {
 };
 
 std::ostream& operator<<(std::ostream& str, const EnergyCfg& o);
-std::ostream& operator<<(std::ostream& str, const EnergyCfg::LonelyPairs& o);
-std::ostream& operator<<(std::ostream& str, const EnergyCfg::Ctd& o);
 
-std::istream& operator>>(std::istream& str, EnergyCfg::LonelyPairs& o);
-std::istream& operator>>(std::istream& str, EnergyCfg::Ctd& o);
+inline const auto OPT_LONELY_PAIRS = mrna::Opt(Opt::ARG)
+                                         .LongName("lonely-pairs")
+                                         .ChoiceEnum<EnergyCfg::LonelyPairs>()
+                                         .Default(EnergyCfg::LonelyPairs::HEURISTIC)
+                                         .Help("allow lonely pairs");
+inline const auto OPT_BULGE_STATES =
+    mrna::Opt(Opt::FLAG).LongName("bulge-states").Default(true).Help("count bulge states bonus");
+inline const auto OPT_CTD = mrna::Opt(Opt::ARG)
+                                .LongName("ctd")
+                                .ChoiceEnum<EnergyCfg::Ctd>()
+                                .Default(EnergyCfg::Ctd::ALL)
+                                .Help("whether to use CTDs");
 
 }  // namespace mrna::erg
 
 template <>
 struct fmt::formatter<mrna::erg::EnergyCfg> : ostream_formatter {};
-
-template <>
-struct fmt::formatter<mrna::erg::EnergyCfg::LonelyPairs> : ostream_formatter {};
-
-template <>
-struct fmt::formatter<mrna::erg::EnergyCfg::Ctd> : ostream_formatter {};
 
 #endif  // API_ENERGY_ENERGY_CFG_H_

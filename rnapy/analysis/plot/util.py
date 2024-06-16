@@ -15,6 +15,7 @@ def get_subplot_grid(
     splittings = [(0, 0), (1, 1), (1, 2), (2, 2), (2, 2), (2, 3), (2, 3), (3, 3), (3, 3), (3, 3)]
 
     factors = splittings[n]
+    axes: Any
     if factors == (1, 1):
         f, axes = plt.subplots(n, sharey=sharey, sharex=sharex)
     else:

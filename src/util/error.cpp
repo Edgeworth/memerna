@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <exception>
 #include <ios>
-#include <string>
 
 #ifdef USE_BOOST
 #include <boost/stacktrace.hpp>

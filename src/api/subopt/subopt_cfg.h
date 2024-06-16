@@ -3,7 +3,6 @@
 #define API_SUBOPT_SUBOPT_CFG_H_
 
 #include <limits>
-#include <memory>
 
 #include "model/energy.h"
 #include "util/argparse.h"

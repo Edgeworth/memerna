@@ -2,9 +2,9 @@
 #ifndef UTIL_ARGPARSE_H_
 #define UTIL_ARGPARSE_H_
 
-#include <compare>
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -42,9 +42,25 @@ struct Opt {
   }
 
   template <typename T>
+  Opt& ChoiceEnum() {
+    verify(kind_ == ARG, "cannot set choices for flag");
+    auto choices = EnumNames<T>();
+    choices_ = std::set(choices.begin(), choices.end());
+    return *this;
+  }
+
+  template <typename T>
   Opt& Default(const T& d) {
     has_default_ = true;
     default_ = Conv(d);
+    return *this;
+  }
+
+  Opt& AllChoicesAsDefault() {
+    verify(!choices_.empty(), "choices must be set already");
+    verify(multiple_, "multiple must be set");
+    has_default_ = true;
+    default_ = Join(choices_, ",");
     return *this;
   }
 
@@ -132,17 +148,24 @@ class ArgParse {
       *val = Conv<T>(iter->second);  // NOLINT
   }
 
+  template <typename T>
+  [[nodiscard]] std::optional<T> MaybeGet(const Opt& opt) const {
+    if (auto iter = values_.find(opt); iter != values_.end())
+      return Conv<T>(iter->second);  // NOLINT
+    return std::nullopt;
+  }
+
   // Useful mainly with flags where not specifying them means false (or whatever
   // you pass as the default).
   template <typename T = bool>
-  T GetOr(const Opt& opt, T def = T()) const {
+  [[nodiscard]] T GetOr(const Opt& opt, T def = T()) const {
     if (auto iter = values_.find(opt); iter != values_.end())
       return Conv<T>(iter->second);  // NOLINT
     return def;
   }
 
   template <typename T = std::string>
-  T Get(const Opt& opt) const {
+  [[nodiscard]] T Get(const Opt& opt) const {
     if (auto iter = values_.find(opt); iter != values_.end())
       return Conv<T>(iter->second);  // NOLINT
     fatal("missing option {}", opt.Desc());
@@ -150,7 +173,7 @@ class ArgParse {
   }
 
   template <typename T = std::string>
-  std::vector<T> GetMultiple(const Opt& opt) const {
+  [[nodiscard]] std::vector<T> GetMultiple(const Opt& opt) const {
     auto iter = values_.find(opt);
     if (iter == values_.end()) fatal("missing option {}", opt.Desc());
     std::vector<T> values;
@@ -159,7 +182,14 @@ class ArgParse {
   }
 
   template <typename T = std::string>
-  T Pos(std::size_t index) const {
+  [[nodiscard]] std::vector<T> GetMultipleOr(
+      const Opt& opt, std::vector<T> def = std::vector<T>()) const {
+    if (!values_.contains(opt)) return def;
+    return GetMultiple<T>(opt);
+  }
+
+  template <typename T = std::string>
+  [[nodiscard]] T Pos(std::size_t index) const {
     verify(index < pos_.size(), "index out of bounds");
     return Conv<T>(pos_[index]);
   }

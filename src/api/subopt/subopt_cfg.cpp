@@ -1,12 +1,12 @@
 // Copyright 2022 Eliot Courtney.
 #include "api/subopt/subopt_cfg.h"
 
-#include "api/energy/energy.h"
+#include "api/ctx/backend_cfg.h"
 
 namespace mrna::subopt {
 
 void RegisterOpts(ArgParse* args) {
-  erg::RegisterOptsEnergyModel(args);
+  RegisterOptsBackendCfg(args);
   args->RegisterOpt(OPT_SUBOPT_DELTA);
   args->RegisterOpt(OPT_SUBOPT_MAX);
   args->RegisterOpt(OPT_SUBOPT_TIME_SECS);

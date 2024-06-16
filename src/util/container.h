@@ -1,3 +1,4 @@
+// Copyright 2024 Eliot Courtney.
 #ifndef UTIL_CONTAINER_H_
 #define UTIL_CONTAINER_H_
 

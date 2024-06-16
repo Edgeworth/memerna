@@ -15,7 +15,7 @@ inline const Opt OPT_AFL = Opt(Opt::FLAG).LongName("afl").Help("run in afl-fuzz 
 inline const Opt OPT_EFN = Opt(Opt::FLAG).LongName("efn").ShortName("e").Help("run efn");
 inline const Opt OPT_FOLD = Opt(Opt::FLAG).LongName("fold").ShortName("f").Help("run fold");
 inline const Opt OPT_SUBOPT = Opt(Opt::FLAG).LongName("subopt").ShortName("s").Help("run subopt");
-inline const Opt OPT_PART = Opt(Opt::FLAG).LongName("part").ShortName("p").Help("run partition");
+inline const Opt OPT_PFN = Opt(Opt::FLAG).LongName("pfn").ShortName("p").Help("run partition");
 
 }  // namespace mrna
 

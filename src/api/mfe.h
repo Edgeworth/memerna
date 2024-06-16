@@ -4,14 +4,14 @@
 
 #include <variant>
 
+#include "backends/common/base/dp.h"
+#include "backends/stack/mfe/mfe.h"
 #include "model/energy.h"
-#include "models/t04/mfe/dp.h"
-#include "models/t22/mfe/mfe.h"
 
 namespace mrna::mfe {
 
 // Monostate if there is no DP state supported/used, like with RNAstructure.
-using DpState = std::variant<std::monostate, md::t04::DpState, md::t22::DpState>;
+using DpState = std::variant<std::monostate, md::base::DpState, md::stack::DpState>;
 
 struct MfeResult {
   DpState dp;

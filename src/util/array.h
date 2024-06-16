@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "model/constants.h"
-
 namespace mrna {
 
 // Array types optimised for various memory layouts. The naming convention is

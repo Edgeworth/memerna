@@ -4,19 +4,14 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "api/bridge/bridge.h"
 #include "api/ctx/ctx.h"
-#include "api/energy/model.h"
-#include "api/part.h"
+#include "api/pfn.h"
 #include "api/subopt/subopt.h"
-#include "model/constants.h"
 #include "model/secondary.h"
 #include "rnastructure_bridge/include/algorithm.h"
-#include "rnastructure_bridge/include/alltrace.h"
-#include "rnastructure_bridge/include/pfunction.h"
 #include "rnastructure_bridge/include/rna_library.h"
 
 namespace mrna::bridge {
@@ -35,11 +30,11 @@ class RNAstructure : public RnaPackage {
   erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
   [[nodiscard]] FoldResult Fold(const Primary& r) const override;
-  [[nodiscard]] int Suboptimal(
+  [[nodiscard]] int Subopt(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
-  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(
       const Primary& r, Energy delta) const override;
-  [[nodiscard]] part::PartResult Partition(const Primary& r) const override;
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r) const override;
   // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies in SuboptResult
   // are meaningless.
   [[nodiscard]] std::vector<subopt::SuboptResult> StochasticSampleIntoVector(

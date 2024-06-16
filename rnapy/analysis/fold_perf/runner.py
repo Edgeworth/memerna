@@ -19,7 +19,7 @@ class FoldPerfRunner:
     num_tries: int
     memevault: MemeVault
     output_dir: Path
-    programs: list[tuple[RnaPackage, EnergyCfg, str]]
+    programs: list[tuple[RnaPackage, EnergyCfg]]
 
     def __init__(
         self,
@@ -42,59 +42,32 @@ class FoldPerfRunner:
         self.programs = [
             (
                 memerna01,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                memerna01.name(),
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="baseopt",
+                ),
             ),
-            (
-                linearfold,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                linearfold.name(),
-            ),
-            (
-                rnastructure,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                rnastructure.name(),
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
-                viennarna.name() + "-d3-noLP",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                viennarna.name() + "-d2-noLP",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON),
-                viennarna.name() + "-d3",
-            ),
-            (
-                viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.ON),
-                viennarna.name() + "-d2",
-            ),
-            (
-                sparsemfefold,
-                EnergyCfg(ctd=CtdCfg.NONE, lonely_pairs=LonelyPairs.HEURISTIC),
-                sparsemfefold.name(),
-            ),
-            (
-                sparsernafold,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
-                sparsernafold.name(),
-            ),
+            (linearfold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
+            (rnastructure, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
+            (viennarna, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
+            (viennarna, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
+            (viennarna, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON)),
+            (viennarna, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.ON)),
+            (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE, lonely_pairs=LonelyPairs.HEURISTIC)),
+            (sparsernafold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
         ]
-        for program, _, _ in self.programs:
+        for program, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
             program.limits.time_sec = time_sec_limit
 
     def run(self) -> None:
-        for program, cfg, name in self.programs:
+        for program, cfg in self.programs:
+            desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
             dataset = self.memevault.dataset
-            click.echo(f"Benchmarking folding with {name} on {dataset}")
-            output_path = self.output_dir / f"{dataset}_{name}.results"
+            click.echo(f"Benchmarking folding with {desc} on {dataset}")
+            output_path = self.output_dir / f"{dataset}_{desc}.results"
             if output_path.exists():
                 raise RuntimeError(f"Output path {output_path} already exists")
 

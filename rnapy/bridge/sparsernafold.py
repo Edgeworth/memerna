@@ -32,12 +32,12 @@ class SparseRNAFolD(RnaPackage):
             case CtdCfg.ALL:
                 raise NotImplementedError("SparseRNAFolD does not support all CTDs")
 
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("SparseRNAFolD energy model configuration not supported")
         return args
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "SparseRNAFolD"
 
     @override
@@ -64,6 +64,3 @@ class SparseRNAFolD(RnaPackage):
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
-
-    def __str__(self) -> str:
-        return self.name()

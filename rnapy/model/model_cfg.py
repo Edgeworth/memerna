@@ -24,7 +24,16 @@ class EnergyCfg:
     ctd: CtdCfg
     lonely_pairs: LonelyPairs
     # Program specific energy model option.
-    model: str | None = None
+    energy_model: str | None = None
+    backend: str | None = None
+
+    def desc(self) -> str:
+        desc = f"ctd:{self.ctd}-lp:{self.lonely_pairs}"
+        if self.energy_model:
+            desc += f"-{self.energy_model}"
+        if self.backend:
+            desc += f"-{self.backend}"
+        return desc
 
 
 @dataclass
@@ -36,3 +45,17 @@ class SuboptCfg:
     count_only: bool = False
     # Program specific suboptimal folding algorithm option.
     algorithm: str | None = None
+
+    def desc(self) -> str:
+        desc = "subopt"
+        if self.delta:
+            desc += f"-delta:{self.delta}"
+        if self.strucs:
+            desc += f"-strucs:{self.strucs}"
+        if self.time_secs:
+            desc += f"-time:{self.time_secs}"
+        if self.sorted_strucs:
+            desc += "-sorted"
+        if self.algorithm:
+            desc += f"-alg:{self.algorithm}"
+        return desc

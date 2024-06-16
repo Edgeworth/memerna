@@ -19,11 +19,11 @@ class SparseMFEFold(RnaPackage):
             )
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("SparseMFEFold energy model configuration not supported")
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "SparseMFEFold"
 
     @override
@@ -48,6 +48,3 @@ class SparseMFEFold(RnaPackage):
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError("SparseMFEFold does not support suboptimal folding")
-
-    def __str__(self) -> str:
-        return self.name()

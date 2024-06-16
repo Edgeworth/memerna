@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 
 #ifdef USE_MPFR
 #include <fmt/ostream.h>
@@ -62,9 +61,9 @@ inline flt exp(flt v) { return std::exp(v); }
 #if FLOAT_PRECISION == 6
 inline const flt EP{1e-3};
 #elif FLOAT_PRECISION == 15
-inline const flt EP{1e-6};
+inline const flt EP{1e-7};
 #elif FLOAT_PRECISION == 18
-inline const flt EP{1e-8};
+inline const flt EP{1e-9};
 #else
 inline const flt EP{1e-30};
 #endif
@@ -74,6 +73,8 @@ inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) < ep; }
 inline bool rel_eq(flt a, flt b, flt rel = EP) {
   return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
 }
+
+inline bool absrel_eq(flt a, flt b, flt ep = EP) { return abs_eq(a, b, ep) || rel_eq(a, b, ep); }
 
 }  // namespace mrna
 
@@ -98,15 +99,14 @@ struct formatter<T> {
     return end;
   }
 
-  template <class FormatContext>
-  auto format(const T& c, FormatContext& ctx) -> decltype(ctx.out()) {
+  auto format(const T& c, format_context& ctx) const -> auto {
     std::stringstream out;
-    detail::handle_dynamic_spec<detail::precision_checker>(
-        specs_.precision, specs_.precision_ref, ctx);
-    if (specs_.precision > 0) out << std::setprecision(specs_.precision);
+    int precision = specs_.precision;
+    detail::handle_dynamic_spec<detail::precision_checker>(precision, specs_.precision_ref, ctx);
+    if (precision > 0) out << std::setprecision(precision);
     if (specs_.width > 0) out << std::setw(specs_.width);
-    if (specs_.type == presentation_type::fixed_lower) out << std::fixed;
-    if (specs_.type == presentation_type::exp_lower) out << std::scientific;
+    if (specs_.type == presentation_type::fixed) out << std::fixed;
+    if (specs_.type == presentation_type::exp) out << std::scientific;
     out << c;
     return format_to(ctx.out(), "{}", out.str());
   }

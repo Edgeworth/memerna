@@ -1,15 +1,13 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef FUZZ_FUZZ_INVOCATION_H_
 #define FUZZ_FUZZ_INVOCATION_H_
-#include <cstdint>
 #include <deque>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include "api/ctx/ctx.h"
-#include "api/energy/model.h"
-#include "api/part.h"
+#include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "fuzz/fuzz_cfg.h"
@@ -28,7 +26,7 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, std::vector<erg::EnergyModelPtr> ems, const FuzzCfg& cfg);
+  FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, const FuzzCfg& cfg);
 
   Error Run();
 
@@ -38,13 +36,13 @@ class FuzzInvocation {
 
  private:
   Primary r_;
-  std::vector<erg::EnergyModelPtr> ems_;
+  std::vector<BackendModelPtr> ms_;
   FuzzCfg cfg_;
 
   // Store assumed to be correct answers for each problem type:
   std::optional<FoldResult> fold_;
   std::vector<subopt::SuboptResult> subopt_{};
-  part::PartResult part_{};
+  pfn::PfnResult pfn_{};
 
   Error errors_;
 
@@ -53,7 +51,7 @@ class FuzzInvocation {
 
   Error CheckMfeRNAstructure();
   Error CheckSuboptRNAstructure(subopt::SuboptCfg cfg);
-  Error CheckPartitionRNAstructure();
+  Error CheckPfnRNAstructure();
 #endif  // USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
@@ -69,7 +67,7 @@ class FuzzInvocation {
   static Error CheckSuboptResultPair(subopt::SuboptCfg cfg,
       const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
 
-  Error CheckPartition();
+  Error CheckPfn();
 };
 
 }  // namespace mrna::fuzz

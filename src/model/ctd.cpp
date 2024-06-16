@@ -1,7 +1,6 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/ctd.h"
 
-#include <functional>
 #include <utility>
 #include <vector>
 

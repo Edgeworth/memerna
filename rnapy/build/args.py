@@ -14,7 +14,7 @@ build_cfg_options = cloup.option_group(
         type=cloup.Path(exists=True, file_okay=False, resolve_path=True, path_type=Path),
         envvar="MRNA",
         show_envvar=True,
-        required=True,
+        default=Path(),  # Use the current directory as default.
         help="Path to memerna source directory",
     ),
     cloup.option(
@@ -80,13 +80,14 @@ afl_fuzz_cfg_options = cloup.option_group(
         default=False,
         help="Whether to use random models for fuzzing every invocation",
     ),
+    cloup.option("--energy-model", default="t04", help="Which energy model to use for fuzzing"),
     cloup.option(
-        "--energy-models",
-        default=["t04p1"],
+        "--backends",
+        default=["base", "baseopt"],
         multiple=True,
-        help="Which energy models to use for fuzzing",
+        help="Which backends to use for fuzzing",
     ),
-    cloup.option("--brute-max", default=22, help="Max size of sequences to brute force"),
+    cloup.option("--brute-max", default=30, help="Max size of sequences to brute force"),
     cloup.option("--mfe/--no-mfe", default=False, help="Whether to fuzz mfe"),
     cloup.option(
         "--mfe-rnastructure/--no-mfe-rnastructure",
@@ -107,9 +108,9 @@ afl_fuzz_cfg_options = cloup.option_group(
     ),
     # no subopt time here because it will generate different results between algos
     cloup.option("--subopt-delta", default=0.6, help="Maximum energy delta for subopt"),
-    cloup.option("--part/--no-part", default=False, help="Whether to fuzz partition function"),
+    cloup.option("--pfn/--no-pfn", default=False, help="Whether to fuzz partition function"),
     cloup.option(
-        "--part-rnastructure/--no-part-rnastructure",
+        "--pfn-rnastructure/--no-pfn-rnastructure",
         default=False,
         help="Whether to fuzz partition function with rnastructure",
     ),
@@ -118,11 +119,12 @@ afl_fuzz_cfg_options = cloup.option_group(
 
 def build_afl_fuzz_cfg_from_args(
     build_cfg: BuildCfg,
-    energy_models: list[str],
+    energy_model: str,
+    backends: list[str],
     max_len: int = -1,
     seed: int | None = None,
     random_models: bool = False,
-    brute_max: int = 22,
+    brute_max: int = 30,
     mfe: bool = False,
     mfe_rnastructure: bool = False,
     mfe_table: bool = False,
@@ -130,8 +132,8 @@ def build_afl_fuzz_cfg_from_args(
     subopt_rnastructure: bool = False,
     subopt_strucs: int = 5000,
     subopt_delta: float = 0.6,
-    part: bool = False,
-    part_rnastructure: bool = False,
+    pfn: bool = False,
+    pfn_rnastructure: bool = False,
     **_kwargs: Any,
 ) -> AflFuzzCfg:
     return AflFuzzCfg(
@@ -139,7 +141,8 @@ def build_afl_fuzz_cfg_from_args(
         fuzz_max_len=max_len,
         fuzz_seed=seed,
         fuzz_random_models=random_models,
-        fuzz_energy_models=energy_models,
+        fuzz_energy_model=energy_model,
+        fuzz_backends=backends,
         fuzz_brute_max=brute_max,
         fuzz_mfe=mfe,
         fuzz_mfe_rnastructure=mfe_rnastructure,
@@ -148,6 +151,6 @@ def build_afl_fuzz_cfg_from_args(
         fuzz_subopt_rnastructure=subopt_rnastructure,
         fuzz_subopt_strucs=subopt_strucs,
         fuzz_subopt_delta=subopt_delta,
-        fuzz_part=part,
-        fuzz_part_rnastructure=part_rnastructure,
+        fuzz_pfn=pfn,
+        fuzz_pfn_rnastructure=pfn_rnastructure,
     )

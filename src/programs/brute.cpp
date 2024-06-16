@@ -1,14 +1,13 @@
 // Copyright 2022 Eliot Courtney.
 
-#include "models/brute/brute.h"
+#include "backends/brute/brute.h"
 
 #include <fmt/core.h>
 
 #include <algorithm>
-#include <string>
 
 #include "api/brute/brute_cfg.h"
-#include "api/energy/model.h"
+#include "api/ctx/backend.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
@@ -23,7 +22,7 @@ int main(int argc, char* argv[]) {
   mrna::ArgParse args;
   mrna::brute::RegisterOpts(&args);
   args.ParseOrExit(argc, argv);
-  const auto em = mrna::erg::FromArgParse(args);
+  const auto m = mrna::BackendFromArgParse(args);
   auto cfg = mrna::brute::BruteCfg::FromArgParse(args);
   if (cfg.mfe) {
     cfg.subopt = true;
@@ -33,7 +32,7 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto res = mrna::md::brute::Brute(r, em, cfg).Run();
+  auto res = mrna::md::brute::Brute(r, m, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
@@ -50,11 +49,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (args.GetOr(mrna::OPT_PART)) {
-    fmt::print("q: {}\n", res.part.q);
+  if (args.GetOr(mrna::OPT_PFN)) {
+    fmt::print("q: {}\n", res.pfn.q);
     fmt::print("p:\n");
-    PrintPartition(res.part.p);
+    PrintPfn(res.pfn.p);
     fmt::print("\nprobabilities:\n");
-    PrintBoltzProbs(res.part.prob);
+    PrintBoltzProbs(res.pfn.prob);
   }
 }

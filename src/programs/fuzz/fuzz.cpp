@@ -2,8 +2,6 @@
 #include <fmt/core.h>
 
 #include <chrono>
-#include <cinttypes>
-#include <deque>
 #include <random>
 #include <string>
 
@@ -79,7 +77,7 @@ class FuzzRunner {
   void MaybePrintResult(const mrna::fuzz::Error& res, const std::vector<mrna::Energy>& pf_paired,
       const std::vector<mrna::Energy>& pf_unpaired) {
     if (res.empty()) return;
-    if (cfg_.random_models) fmt::print("Random model seed: {}\n", harness_.last_seed());
+    if (cfg_.random_models) fmt::print("Random model seed: {}\n", harness_.last_seed().value());
     if (!pf_paired.empty()) {
       fmt::print("Pseudofree paired energies: ");
       PrintPseudofreeEnergy(pf_paired);

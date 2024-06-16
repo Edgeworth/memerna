@@ -1,16 +1,12 @@
 // Copyright 2016 Eliot Courtney.
 #include <fmt/core.h>
 
-#include <algorithm>
-#include <string>
-
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/mfe.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"

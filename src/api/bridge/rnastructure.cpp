@@ -1,8 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/rnastructure.h"
 
-#include <algorithm>
-#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
@@ -12,7 +10,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/trace/trace.h"
-#include "model/structure.h"
+#include "rnastructure_bridge/include/alltrace.h"
 #include "rnastructure_bridge/include/stochastic.h"
 #include "util/error.h"
 
@@ -53,7 +51,7 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   return res;
 }
 
-struct PartitionState {
+struct PfnState {
   const PFPRECISION scaling = 1.0;  // TODO(0) return scaling to 0.6.
   DynProgArray<PFPRECISION> w;
   DynProgArray<PFPRECISION> v;
@@ -69,14 +67,14 @@ struct PartitionState {
   std::unique_ptr<bool[]> lfce;
   std::unique_ptr<bool[]> mod;
 
-  PartitionState(int N, datatable* data)
+  PfnState(int N, datatable* data)
       : w(N), v(N), wmb(N), wl(N), wlc(N), wmbl(N), wcoax(N), w5(new PFPRECISION[N + 1]),
         w3(new PFPRECISION[N + 2]), pfdata(new pfdatatable(data, scaling, T)),
         fce(new forceclass(N)), lfce(new bool[2 * N + 1]()), mod(new bool[2 * N + 1]()) {}
 };
 
-PartitionState RunPartition(structure* struc, datatable* data) {
-  PartitionState state(struc->GetSequenceLength(), data);
+PfnState RunPfn(structure* struc, datatable* data) {
+  PfnState state(struc->GetSequenceLength(), data);
 
   calculatepfunction(struc, state.pfdata.get(), nullptr, nullptr, false, nullptr, &state.w,
       &state.v, &state.wmb, &state.wl, &state.wlc, &state.wmbl, &state.wcoax, state.fce.get(),
@@ -125,13 +123,13 @@ FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) 
       .tb = trace::TraceResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
-  auto res = SuboptimalIntoVector(r, delta);
+int RNAstructure::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+  auto res = SuboptIntoVector(r, delta);
   for (const auto& subopt : res) fn(subopt);
   return static_cast<int>(res.size());
 }
 
-std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
+std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(
     const Primary& r, Energy delta) const {
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
@@ -139,9 +137,9 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptimalIntoVector(
   return StructureToSuboptVector(*structure);
 }
 
-part::PartResult RNAstructure::Partition(const Primary& r) const {
+pfn::PfnResult RNAstructure::Pfn(const Primary& r) const {
   const auto structure = LoadStructure(r);
-  auto state = RunPartition(structure.get(), data_.get());
+  auto state = RunPfn(structure.get(), data_.get());
   const int N = static_cast<int>(r.size());
 
   // RNAstructure partition values are stored in natural log space.
@@ -162,13 +160,13 @@ part::PartResult RNAstructure::Partition(const Primary& r) const {
           state.fce.get()));
     }
   }
-  return {.state{}, .part{std::move(p), q, std::move(prob)}};
+  return {.state{}, .pfn{std::move(p), q, std::move(prob)}};
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::StochasticSampleIntoVector(
     const Primary& r, int num_samples) const {
   const auto structure = LoadStructure(r);
-  auto state = RunPartition(structure.get(), data_.get());
+  auto state = RunPfn(structure.get(), data_.get());
   stochastictraceback(&state.w, &state.wmb, &state.wmbl, &state.wcoax, &state.wl, &state.wlc,
       &state.v, state.fce.get(), state.w3.get(), state.w5.get(), state.scaling, state.lfce.get(),
       state.mod.get(), state.pfdata.get(), num_samples, structure.get());

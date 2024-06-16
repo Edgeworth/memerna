@@ -3,12 +3,11 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy.h"
-#include "api/energy/model.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/secondary.h"
 #include "model/structure.h"
 #include "util/argparse.h"
@@ -20,23 +19,23 @@ inline const mrna::Opt OPT_DETAIL =
 int main(int argc, char* argv[]) {
   mrna::InitProgram();
   mrna::ArgParse args;
-  mrna::erg::RegisterOptsEnergyModel(&args);
+  mrna::RegisterOptsBackendCfg(&args);
   args.RegisterOpt(OPT_DETAIL);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
-  const auto em = mrna::erg::FromArgParse(args);
+  const auto m = mrna::BackendFromArgParse(args);
   const auto& rs = args.Pos(0);
   const auto& ss = args.Pos(1);
   mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
-    res = mrna::erg::TotalEnergy(em, r, s, &ctd, true);
+    res = mrna::TotalEnergy(m, r, s, &ctd, true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", res.ctd.ToString(s));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
-    res = mrna::erg::TotalEnergy(em, r, s, nullptr, true);
+    res = mrna::TotalEnergy(m, r, s, nullptr, true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", res.ctd.ToString(s));
   }

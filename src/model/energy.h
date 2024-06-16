@@ -5,7 +5,6 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#include <compare>
 #include <cstdint>
 #include <iosfwd>
 #include <random>
