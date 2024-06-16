@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 import re
-import tempfile
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
@@ -12,7 +11,7 @@ from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
-from rnapy.util.util import fast_linecount
+from rnapy.util.util import fast_linecount, named_tmpfile
 
 
 @dataclass
@@ -79,7 +78,7 @@ class ViennaRna(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        with tempfile.NamedTemporaryFile("w") as f:
+        with named_tmpfile("w") as f:
             if rna.r is None:
                 raise ValueError(f"RNA {rna.name} has no sequence")
             f.write(rna.r)
@@ -103,7 +102,7 @@ class ViennaRna(RnaPackage):
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)
 
-        with tempfile.NamedTemporaryFile("w") as f:
+        with named_tmpfile("w") as f:
             stdout_path = Path(f.name)
             res = self._run_cmd(
                 "./src/bin/RNAsubopt",

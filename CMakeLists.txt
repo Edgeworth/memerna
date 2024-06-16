@@ -70,7 +70,7 @@ endif()
 CPMAddPackage(
   NAME benchmark
   GITHUB_REPOSITORY google/benchmark
-  VERSION 1.8.3
+  VERSION 1.8.4
   OPTIONS "BENCHMARK_ENABLE_TESTING Off"
 )
 

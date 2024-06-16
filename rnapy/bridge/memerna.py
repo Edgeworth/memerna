@@ -1,5 +1,4 @@
 # Copyright 2022 Eliot Courtney.
-import tempfile
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
@@ -10,7 +9,7 @@ from rnapy.model.model_cfg import EnergyCfg, SuboptCfg
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
-from rnapy.util.util import fast_linecount
+from rnapy.util.util import fast_linecount, named_tmpfile
 
 
 @dataclass
@@ -76,7 +75,7 @@ class MemeRna(RnaPackage):
         if rna.r is None:
             raise ValueError(f"RNA {rna.name} has no sequence")
 
-        with tempfile.NamedTemporaryFile("w") as f:
+        with named_tmpfile("w") as f:
             stdout_path = Path(f.name)
             res = self._run_cmd(
                 "./subopt", *args, rna.r, stdout_to_str=False, stdout_path=stdout_path

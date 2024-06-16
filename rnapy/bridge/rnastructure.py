@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 import re
-import tempfile
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
@@ -11,7 +10,7 @@ from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.rna_parser import RnaParser
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
-from rnapy.util.util import fast_linecount
+from rnapy.util.util import fast_linecount, named_tmpfile
 
 
 @dataclass
@@ -48,7 +47,7 @@ class RNAstructure(RnaPackage):
     @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         self.check_energy_cfg(cfg)
-        with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
+        with named_tmpfile("w") as fin, named_tmpfile("r") as fout:
             fin.write(RnaParser.to_ct_file(rna))
             fin.flush()
             # Note that not giving the -s flag doesn't make it logarithmic.
@@ -65,7 +64,7 @@ class RNAstructure(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self.check_energy_cfg(cfg)
-        with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
+        with named_tmpfile("w") as fin, named_tmpfile("r") as fout:
             fin.write(RnaParser.to_seq_file(rna))
             fin.flush()
             res = self._run_cmd("./exe/Fold", "-mfe", fin.name, fout.name, stdout_to_str=True)
@@ -83,7 +82,7 @@ class RNAstructure(RnaPackage):
     ) -> tuple[list[Rna] | int, CmdResult]:
         self.check_energy_cfg(energy_cfg)
         self.check_subopt_cfg(subopt_cfg)
-        with tempfile.NamedTemporaryFile("w") as fin, tempfile.NamedTemporaryFile("r") as fout:
+        with named_tmpfile("w") as fin, named_tmpfile("r") as fout:
             fin.write(RnaParser.to_seq_file(rna))
             fin.flush()
 

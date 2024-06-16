@@ -26,7 +26,7 @@ from rnapy.data.memevault import MemeVault
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
     required=True,
 )
-@cloup.option("--delta", is_flag=True, default=True)
+@cloup.option("--delta/--no-delta", default=True)
 def run_subopt_perf(
     time_sec_limit: int | None,
     mem_bytes_limit: int | None,
