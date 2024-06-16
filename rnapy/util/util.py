@@ -2,8 +2,9 @@
 import hashlib
 import inspect
 import json
+import tempfile
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 from rnapy.util.command import run_cmd
 
@@ -50,3 +51,14 @@ def fast_linecount(path: Path) -> int:
     res = run_cmd("wc", "-l", str(path))
     count = int(res.stdout.strip().split()[0])
     return count
+
+
+def resolve_path(path: Path | str) -> Path:
+    return Path(path).expanduser().resolve()
+
+
+def named_tmpfile(mode: str, directory: Path | None = None) -> IO[Any]:
+    if directory is None:
+        # TODO(-1): Find a better way for this - tmp files too large for tmpfs.
+        directory = resolve_path("~/tmp")
+    return tempfile.NamedTemporaryFile(mode, dir=directory)

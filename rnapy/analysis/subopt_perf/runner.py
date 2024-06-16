@@ -77,7 +77,7 @@ class SuboptPerfRunner:
 
     @staticmethod
     def _max_delta(length: int) -> Decimal:
-        max_delta = 3000 * Decimal(length) ** Decimal("-1.25")
+        max_delta = 3000 * Decimal(length) ** Decimal("-1.06")
         return SuboptPerfRunner._trunc_delta(max_delta)
 
     @staticmethod
@@ -136,9 +136,11 @@ class SuboptPerfRunner:
         for program, energy_cfg, subopt_cfg, name in self.programs:
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {name} on {dataset}")
-            output_path = self.output_dir / f"{dataset}_{name}_{self.delta}.results"
+            kind = "delta" if self.delta else "num-strucs"
+            output_path = self.output_dir / f"{dataset}_{name}_{kind}.results"
             if output_path.exists():
-                raise RuntimeError(f"Output path {output_path} already exists")
+                click.echo(f"Output path {output_path} already exists, skipping")
+                continue
 
             for rna_idx, rna in enumerate(self.memevault):
                 deltas = self._deltas(len(rna), count=5)
