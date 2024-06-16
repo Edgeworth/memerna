@@ -77,8 +77,8 @@ class FoldAccuracyPlotter:
                 print(f"{gp['f1'].mean().mean()}")
                 print()
 
-            df1 = self._filter_df(ds["memerna-t04p2"]).groupby("family")
-            df2 = self._filter_df(ds["memerna-t22p2"]).groupby("family")
+            df1 = self._filter_df(ds["memerna-t04p2-TODO"]).groupby("family")
+            df2 = self._filter_df(ds["memerna-t22p2-TODO"]).groupby("family")
             for col in ["ppv", "sensitivity", "f1"]:
                 print(f"paired t-tests for {col}:")
                 for family, _ in df1:

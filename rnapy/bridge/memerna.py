@@ -17,8 +17,10 @@ class MemeRna(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
 
-        if cfg.model:
-            args += ["--energy-model", f"{cfg.model}"]
+        if cfg.energy_model:
+            args += ["--energy-model", f"{cfg.energy_model}"]
+        if cfg.backend:
+            args += ["--backend", f"{cfg.backend}"]
         args += ["--ctd", f"{cfg.ctd}"]
         args += ["--lonely-pairs", f"{cfg.lonely_pairs}"]
         return args
@@ -41,7 +43,7 @@ class MemeRna(RnaPackage):
         return args
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "memerna"
 
     @override
@@ -90,6 +92,3 @@ class MemeRna(RnaPackage):
                 energy = Decimal(energy_str)
                 subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
             return subopts, res
-
-    def __str__(self) -> str:
-        return self.name()

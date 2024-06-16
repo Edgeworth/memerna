@@ -14,7 +14,15 @@ class RnaPackage:
     limits: CmdLimits = field(default_factory=CmdLimits)
     env: dict[str, str] = field(default_factory=dict)
 
-    def name(self) -> str:
+    def desc(self, *, energy_cfg: EnergyCfg | None, subopt_cfg: SuboptCfg | None) -> str:
+        desc = self.package_name()
+        if energy_cfg:
+            desc += f"-{energy_cfg.desc()}"
+        if subopt_cfg:
+            desc += f"-{subopt_cfg.desc()}"
+        return desc
+
+    def package_name(self) -> str:
         raise NotImplementedError
 
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:

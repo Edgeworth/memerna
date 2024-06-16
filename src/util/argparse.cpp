@@ -4,9 +4,7 @@
 #include <fmt/core.h>
 #include <spdlog/common.h>
 
-#include <algorithm>
 #include <cstdlib>
-#include <exception>
 
 #include "api/options.h"
 #include "spdlog/spdlog.h"

@@ -15,7 +15,6 @@
 #include "util/argparse.h"
 #include "util/error.h"
 
-// TODO(2): can replace this with modelcfg ctd stuff
 inline const auto OPT_CTD_OUTPUT =
     mrna::Opt(mrna::Opt::FLAG).LongName("ctd-output").Help("if we should output CTD data");
 
@@ -46,6 +45,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Suboptimal(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
+  int strucs = ctx.Subopt(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

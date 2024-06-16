@@ -19,18 +19,28 @@ energy_options = cloup.option_group(
         "--ctd", type=cloup.Choice(list(CtdCfg)), default=CtdCfg.ALL, help="whether to use CTDs"
     ),
     cloup.option(
-        "--model",
+        "--energy-model",
         type=str,
         required=False,
         help="energy model to use (only applies to some programs, like memerna)",
+    ),
+    cloup.option(
+        "--backend",
+        type=str,
+        required=False,
+        help="backend to use (only applies to some programs, like memerna)",
     ),
 )
 
 
 def energy_cfg_from_args(
-    lonely_pairs: LonelyPairs, ctd: CtdCfg, model: str | None, **_kwargs: Any
+    lonely_pairs: LonelyPairs,
+    ctd: CtdCfg,
+    energy_model: str | None,
+    backend: str | None,
+    **_kwargs: Any,
 ) -> EnergyCfg:
-    return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, model=model)
+    return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, energy_model=energy_model, backend=backend)
 
 
 subopt_options = cloup.option_group(

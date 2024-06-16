@@ -51,6 +51,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 include(get_cpm) # get cmake package manager
 
 # Find packages
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Sanitizers)
@@ -70,12 +74,12 @@ endif()
 CPMAddPackage(
   NAME benchmark
   GITHUB_REPOSITORY google/benchmark
-  VERSION 1.8.4
+  VERSION 1.8.5
   OPTIONS "BENCHMARK_ENABLE_TESTING Off"
 )
 
 # fmt
-CPMAddPackage("gh:fmtlib/fmt#10.2.1")
+CPMAddPackage("gh:fmtlib/fmt#11.0.2")
 
 # spdlog should reuse existing fmtlib.
 CPMAddPackage(
@@ -129,12 +133,20 @@ add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
 # Source set definitions.
 set(MEMERNA_SOURCE
+
+  # src/backends/stack/pfn/pfn_exterior.cpp
+  # src/backends/stack/pfn/pfn_opt.cpp
+  # src/backends/stack/pfn/pfn.h
   src/api/bridge/bridge.cpp
   src/api/bridge/bridge.h
   src/api/bridge/memerna.cpp
   src/api/bridge/memerna.h
   src/api/brute/brute_cfg.cpp
   src/api/brute/brute_cfg.h
+  src/api/ctx/backend_cfg.cpp
+  src/api/ctx/backend_cfg.h
+  src/api/ctx/backend.cpp
+  src/api/ctx/backend.h
   src/api/ctx/ctx_cfg.cpp
   src/api/ctx/ctx_cfg.h
   src/api/ctx/ctx.cpp
@@ -143,17 +155,99 @@ set(MEMERNA_SOURCE
   src/api/energy/energy_cfg.h
   src/api/energy/energy.cpp
   src/api/energy/energy.h
-  src/api/energy/model.cpp
-  src/api/energy/model.h
   src/api/mfe.h
   src/api/options.h
-  src/api/part.h
+  src/api/pfn.h
   src/api/subopt/subopt_cfg.cpp
   src/api/subopt/subopt_cfg.h
   src/api/subopt/subopt.h
   src/api/trace/trace_cfg.cpp
   src/api/trace/trace_cfg.h
   src/api/trace/trace.h
+  src/backends/base/energy/boltz_model.h
+  src/backends/base/energy/boltz_precomp.cpp
+  src/backends/base/energy/boltz_precomp.h
+  src/backends/base/energy/model.cpp
+  src/backends/base/energy/model.h
+  src/backends/base/energy/precomp.cpp
+  src/backends/base/energy/precomp.h
+  src/backends/base/mfe/mfe_debug.cpp
+  src/backends/base/mfe/mfe_exterior.cpp
+  src/backends/base/mfe/mfe_lyngso_sparse_opt.cpp
+  src/backends/base/mfe/mfe_opt.cpp
+  src/backends/base/mfe/mfe_sparse_opt.cpp
+  src/backends/base/mfe/mfe.h
+  src/backends/base/pfn/pfn_debug.cpp
+  src/backends/base/pfn/pfn_exterior.cpp
+  src/backends/base/pfn/pfn_opt.cpp
+  src/backends/base/pfn/pfn.h
+  src/backends/base/subopt/subopt_debug.cpp
+  src/backends/base/subopt/subopt_debug.h
+  src/backends/base/subopt/subopt_iterative.cpp
+  src/backends/base/subopt/subopt_iterative.h
+  src/backends/base/subopt/subopt_persistent.cpp
+  src/backends/base/subopt/subopt_persistent.h
+  src/backends/base/trace/trace.cpp
+  src/backends/base/trace/trace.h
+  src/backends/baseopt/energy/boltz_model.h
+  src/backends/baseopt/energy/boltz_precomp.cpp
+  src/backends/baseopt/energy/boltz_precomp.h
+  src/backends/baseopt/energy/model.cpp
+  src/backends/baseopt/energy/model.h
+  src/backends/baseopt/energy/precomp.cpp
+  src/backends/baseopt/energy/precomp.h
+  src/backends/baseopt/mfe/mfe_debug.cpp
+  src/backends/baseopt/mfe/mfe_exterior.cpp
+  src/backends/baseopt/mfe/mfe_lyngso_sparse_opt.cpp
+  src/backends/baseopt/mfe/mfe_opt.cpp
+  src/backends/baseopt/mfe/mfe_sparse_opt.cpp
+  src/backends/baseopt/mfe/mfe.h
+  src/backends/baseopt/pfn/pfn_debug.cpp
+  src/backends/baseopt/pfn/pfn_exterior.cpp
+  src/backends/baseopt/pfn/pfn_opt.cpp
+  src/backends/baseopt/pfn/pfn.h
+  src/backends/baseopt/subopt/subopt_debug.cpp
+  src/backends/baseopt/subopt/subopt_debug.h
+  src/backends/baseopt/subopt/subopt_iterative.cpp
+  src/backends/baseopt/subopt/subopt_iterative.h
+  src/backends/baseopt/subopt/subopt_persistent.cpp
+  src/backends/baseopt/subopt/subopt_persistent.h
+  src/backends/baseopt/trace/trace.cpp
+  src/backends/baseopt/trace/trace.h
+  src/backends/brute/alg.cpp
+  src/backends/brute/alg.h
+  src/backends/brute/brute.cpp
+  src/backends/brute/brute.h
+  src/backends/common/base/boltz_model_base.h
+  src/backends/common/base/boltz_precomp_base.h
+  src/backends/common/base/branch.cpp
+  src/backends/common/base/branch.h
+  src/backends/common/base/dp.h
+  src/backends/common/base/model_base.h
+  src/backends/common/base/parse.h
+  src/backends/common/base/precomp_base.h
+  src/backends/common/boltz.h
+  src/backends/common/branch.cpp
+  src/backends/common/branch.h
+  src/backends/common/energy.h
+  src/backends/common/model_mixin.h
+  src/backends/common/parse.cpp
+  src/backends/common/parse.h
+  src/backends/stack/energy/boltz_model.cpp
+  src/backends/stack/energy/boltz_model.h
+  src/backends/stack/energy/model.cpp
+  src/backends/stack/energy/model.h
+  src/backends/stack/mfe/mfe_debug.cpp
+  src/backends/stack/mfe/mfe_exterior.cpp
+  src/backends/stack/mfe/mfe.h
+  src/backends/stack/subopt/subopt_iterative.cpp
+  src/backends/stack/subopt/subopt_iterative.h
+  src/backends/stack/subopt/subopt_persistent.cpp
+  src/backends/stack/subopt/subopt_persistent.h
+  src/backends/stack/trace/trace.cpp
+  src/backends/stack/trace/trace.h
+  src/programs/print.cpp
+  src/programs/print.h
   src/fuzz/fuzz_cfg.cpp
   src/fuzz/fuzz_cfg.h
   src/fuzz/fuzz_harness.cpp
@@ -167,75 +261,13 @@ set(MEMERNA_SOURCE
   src/model/ctd.h
   src/model/energy.cpp
   src/model/energy.h
-  src/model/part.h
+  src/model/pfn.h
   src/model/primary.cpp
   src/model/primary.h
   src/model/secondary.cpp
   src/model/secondary.h
   src/model/structure.cpp
   src/model/structure.h
-  src/models/brute/alg.cpp
-  src/models/brute/alg.h
-  src/models/brute/brute.cpp
-  src/models/brute/brute.h
-  src/models/common/boltz.h
-  src/models/common/branch.cpp
-  src/models/common/branch.h
-  src/models/common/model.h
-  src/models/common/parse.cpp
-  src/models/common/parse.h
-  src/models/t04/energy/boltz_model.cpp
-  src/models/t04/energy/boltz_model.h
-  src/models/t04/energy/boltz_precomp.cpp
-  src/models/t04/energy/boltz_precomp.h
-  src/models/t04/energy/branch.h
-  src/models/t04/energy/model.cpp
-  src/models/t04/energy/model.h
-  src/models/t04/energy/parse.h
-  src/models/t04/energy/precomp.cpp
-  src/models/t04/energy/precomp.h
-  src/models/t04/mfe/dp.h
-  src/models/t04/mfe/mfe_debug.cpp
-  src/models/t04/mfe/mfe_exterior.cpp
-  src/models/t04/mfe/mfe_lyngso_sparse_opt.cpp
-  src/models/t04/mfe/mfe_opt.cpp
-  src/models/t04/mfe/mfe_sparse_opt.cpp
-  src/models/t04/mfe/mfe.h
-  src/models/t04/part/part_debug.cpp
-  src/models/t04/part/part_exterior.cpp
-  src/models/t04/part/part_opt.cpp
-  src/models/t04/part/part.h
-  src/models/t04/subopt/subopt_debug.cpp
-  src/models/t04/subopt/subopt_debug.h
-  src/models/t04/subopt/subopt_iterative.cpp
-  src/models/t04/subopt/subopt_iterative.h
-  src/models/t04/subopt/subopt_persistent.cpp
-  src/models/t04/subopt/subopt_persistent.h
-  src/models/t04/trace/trace.cpp
-  src/models/t04/trace/trace.h
-  src/models/t22/energy/boltz_model.cpp
-  src/models/t22/energy/boltz_model.h
-  src/models/t22/energy/model.cpp
-  src/models/t22/energy/model.h
-  src/models/t22/mfe/mfe_debug.cpp
-  src/models/t22/mfe/mfe_exterior.cpp
-  src/models/t22/mfe/mfe.h
-  src/models/t22/subopt/subopt_iterative.cpp
-  src/models/t22/subopt/subopt_iterative.h
-  src/models/t22/subopt/subopt_persistent.cpp
-  src/models/t22/subopt/subopt_persistent.h
-  src/models/t22/trace/trace.cpp
-  src/models/t22/trace/trace.h
-  src/programs/brute.cpp
-  src/programs/efn.cpp
-  src/programs/fold.cpp
-  src/programs/fuzz/fuzz_afl.cpp
-  src/programs/fuzz/fuzz.cpp
-  src/programs/harness.cpp
-  src/programs/partition.cpp
-  src/programs/print.cpp
-  src/programs/print.h
-  src/programs/subopt.cpp
   src/util/argparse.cpp
   src/util/argparse.h
   src/util/array.h
@@ -249,23 +281,32 @@ set(MEMERNA_SOURCE
   src/util/util.h
 )
 set(TEST_SOURCE
-  tests/common_test.cpp
-  tests/common_test.h
-  tests/model/base_test.cpp
-  tests/model/model_test.cpp
-  tests/model/parsing_test.cpp
-  tests/models/brute/brute_test.cpp
-  tests/models/energy_test.cpp
-  tests/models/t04/energy_test.cpp
-  tests/models/t04/mfe_test.cpp
-  tests/models/t04/part_test.cpp
-  tests/models/t04/subopt_test.cpp
-  tests/models/t22/energy_test.cpp
-  tests/models/t22/mfe_test.cpp
-  tests/util/splaymap_test.cpp
+  src/tests/backends/energy_test.cpp
+  src/tests/backends/baseopt/energy_test.cpp
+  src/tests/backends/stack/energy_test.cpp
+  src/tests/backends/base/energy_test.cpp
+  src/tests/model/base_test.cpp
+  src/tests/model/parsing_test.cpp
+  src/tests/model/model_test.cpp
+  src/tests/models/t22/energy_test.cpp
+  src/tests/models/t22/mfe_test.cpp
+  src/tests/models/t12/energy_test.cpp
+  src/tests/models/t12/subopt_test.cpp
+  src/tests/models/t12/pfn_test.cpp
+  src/tests/models/t12/mfe_test.cpp
+  src/tests/models/t04/energy_test.cpp
+  src/tests/models/t04/subopt_test.cpp
+  src/tests/models/t04/pfn_test.cpp
+  src/tests/models/t04/mfe_test.cpp
+  src/tests/util/splaymap_test.cpp
+  src/tests/util.cpp
+  src/tests/util.h
+  src/tests/init.cpp
+  src/tests/init.h
 )
 set(BENCHMARK_SOURCE
-  tests/common_test.cpp tests/common_test.h
+  src/tests/init.cpp
+  src/tests/init.h
 )
 
 # Use RNAstructure if necessary
@@ -284,14 +325,12 @@ add_executable(fuzz src/programs/fuzz/fuzz.cpp)
 add_executable(fuzz_afl src/programs/fuzz/fuzz_afl.cpp)
 add_executable(harness src/programs/harness.cpp)
 add_executable(partition src/programs/partition.cpp)
-add_executable(run_benchmark ${BENCHMARK_SOURCE} tests/programs/run_benchmark.cpp)
-add_executable(run_tests ${TEST_SOURCE} tests/programs/run_tests.cpp)
-add_executable(splay_explorer tests/programs/splay_explorer.cpp)
+add_executable(run_benchmark ${BENCHMARK_SOURCE} src/tests/programs/run_benchmark.cpp)
+add_executable(run_tests ${TEST_SOURCE} src/tests/programs/run_tests.cpp)
+add_executable(splay_explorer src/tests/programs/splay_explorer.cpp)
 add_executable(subopt src/programs/subopt.cpp)
 
 target_include_directories(memerna PUBLIC src)
-target_include_directories(run_benchmark PRIVATE tests)
-target_include_directories(run_tests PRIVATE tests)
 
 target_link_libraries(memerna PUBLIC fmt::fmt spdlog::spdlog)
 target_link_libraries(brute PRIVATE memerna)

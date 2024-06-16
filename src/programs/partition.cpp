@@ -3,8 +3,8 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
-#include "api/part.h"
-#include "model/part.h"
+#include "api/pfn.h"
+#include "model/pfn.h"
 #include "model/primary.h"
 #include "programs/print.h"
 #include "util/argparse.h"
@@ -20,9 +20,9 @@ int main(int argc, char* argv[]) {
   auto r = mrna::Primary::FromSeq(args.Pos(0));
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto res = ctx.Partition(r);
-  fmt::print("q: {}\np:\n", res.part.q);
-  PrintPartition(res.part.prob);
+  auto res = ctx.Pfn(r);
+  fmt::print("q: {}\np:\n", res.pfn.q);
+  PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");
-  PrintBoltzProbs(res.part.prob);
+  PrintBoltzProbs(res.pfn.prob);
 }

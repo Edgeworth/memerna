@@ -20,7 +20,7 @@ class SuboptPerfRunner:
     memevault: MemeVault
     output_dir: Path
     delta: bool
-    programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg, str]]
+    programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg]]
 
     def __init__(
         self,
@@ -44,34 +44,39 @@ class SuboptPerfRunner:
                 rnastructure,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
                 SuboptCfg(sorted_strucs=True, count_only=True),
-                rnastructure.name(),
             ),
             (
                 viennarna,
                 EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
                 SuboptCfg(sorted_strucs=True, count_only=True),
-                viennarna.name() + "-d3",
             ),
             (
                 viennarna,
                 EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
                 SuboptCfg(sorted_strucs=True, count_only=True),
-                viennarna.name() + "-d2",
             ),
             (
                 memerna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="baseopt",
+                ),
                 SuboptCfg(sorted_strucs=True, count_only=True, algorithm="iterative"),
-                memerna.name() + "-delta-iterative",
             ),
             (
                 memerna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="baseopt",
+                ),
                 SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent"),
-                memerna.name() + "-delta-persistent",
             ),
         ]
-        for program, _, _, _ in self.programs:
+        for program, _, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
             program.limits.time_sec = time_sec_limit
 
@@ -133,11 +138,12 @@ class SuboptPerfRunner:
         return True
 
     def run(self) -> None:
-        for program, energy_cfg, subopt_cfg, name in self.programs:
+        for program, energy_cfg, subopt_cfg in self.programs:
+            desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
             dataset = self.memevault.dataset
-            click.echo(f"Benchmarking folding with {name} on {dataset}")
+            click.echo(f"Benchmarking folding with {desc} on {dataset}")
             kind = "delta" if self.delta else "num-strucs"
-            output_path = self.output_dir / f"{dataset}_{name}_{kind}.results"
+            output_path = self.output_dir / f"{dataset}_{desc}_{kind}.results"
             if output_path.exists():
                 click.echo(f"Output path {output_path} already exists, skipping")
                 continue

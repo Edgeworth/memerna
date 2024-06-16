@@ -50,7 +50,8 @@ class AflFuzzCfg:
     fuzz_max_len: int
     fuzz_seed: int | None  # For fixed random model
     fuzz_random_models: bool  # For random models every fuzz invocation
-    fuzz_energy_models: list[str]
+    fuzz_energy_model: str
+    fuzz_backends: list[str]
     fuzz_brute_max: int
     fuzz_mfe: bool
     fuzz_mfe_rnastructure: bool
@@ -59,8 +60,8 @@ class AflFuzzCfg:
     fuzz_subopt_rnastructure: bool
     fuzz_subopt_strucs: int
     fuzz_subopt_delta: float
-    fuzz_part: bool
-    fuzz_part_rnastructure: bool
+    fuzz_pfn: bool
+    fuzz_pfn_rnastructure: bool
 
     kind: AflFuzzKind = AflFuzzKind.REGULAR
     # extra args for afl-fuzz. not included in ident
@@ -115,16 +116,17 @@ class AflFuzzCfg:
             shutil.copy(self.bin_path() / AFL_TARGET, self.bin_path() / (AFL_TARGET + ".cmplog"))
 
     def _afl_env(self) -> str:
+        env = "AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 "
         # Use ASAN options to enforce memory limit.
         # These use the AFL default ASAN options plus hard_rss_limit_mb
         if self.kind == AflFuzzKind.ASAN:
-            return (
+            env += (
                 "ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:malloc_context_size=0:"
-                f"symbolize=0:allocator_may_return_null=1:hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB}"
+                f"symbolize=0:allocator_may_return_null=1:hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB} "
             )
         if self.kind == AflFuzzKind.TSAN:
-            return f"TSAN_OPTIONS=hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB}"
-        return ""
+            env += f"TSAN_OPTIONS=hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB} "
+        return env
 
     def _afl_limits(self) -> str:
         # ASAN allocates virtual memory which doesn't work well with AFL memory limit.
@@ -142,7 +144,8 @@ class AflFuzzCfg:
             cmd += f"--seed {self.fuzz_seed} "
         if self.fuzz_random_models:
             cmd += "--random-models "
-        cmd += f"--energy-models {','.join(self.fuzz_energy_models)} "
+        cmd += f"--energy-model {self.fuzz_energy_model} "
+        cmd += f"--backends {','.join(self.fuzz_backends)} "
         cmd += f"--brute-max {self.fuzz_brute_max} "
         cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
         cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "
@@ -155,8 +158,8 @@ class AflFuzzCfg:
         )
         cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
         cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
-        cmd += "--part " if self.fuzz_part else "--no-part-rnastructure "
-        cmd += "--part-rnastructure " if self.fuzz_part_rnastructure else "--no-part-rnastructure "
+        cmd += "--pfn " if self.fuzz_pfn else "--no-pfn-rnastructure "
+        cmd += "--pfn-rnastructure " if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure "
 
         return cmd
 
@@ -166,7 +169,6 @@ class AflFuzzCfg:
         instance = f"-M {self.ident()}" if self.index == 0 else f"-S {self.ident()}"
 
         # Add environment vars.
-        cmd += "AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 "
         cmd += f"{self._afl_env()} "
         # Add dictionary for fuzzing.
         afl_data_dir = self.build_cfg.src / AFL_DATA

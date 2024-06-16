@@ -12,9 +12,9 @@ void RegisterOpts(ArgParse* args);
 struct BruteCfg {
   bool mfe = false;  // Whether to compute the mfe.
   bool subopt = false;  // Whether to compute suboptimal structures.
-  bool part = false;  // Whether to compute the partition function.
+  bool pfn = false;  // Whether to compute the partition function.
 
-  subopt::SuboptCfg subopt_cfg = {};  // Suboptimal structure computation configuration.
+  subopt::SuboptCfg subopt_cfg = {};  // Subopt structure computation configuration.
 
   static BruteCfg FromArgParse(const ArgParse& args);
 };

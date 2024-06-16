@@ -12,12 +12,12 @@
 #include "api/energy/energy.h"
 #include "api/mfe.h"
 #include "api/options.h"
-#include "api/part.h"
+#include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
 #include "model/energy.h"
-#include "model/part.h"
+#include "model/pfn.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "programs/print.h"
@@ -34,16 +34,16 @@ int main(int argc, char* argv[]) {
   args.RegisterOpt(mrna::OPT_SUBOPT);
   // Done manually since we only support a subset of options.
   args.RegisterOpt(mrna::subopt::OPT_SUBOPT_DELTA);
-  args.RegisterOpt(mrna::OPT_PART);
+  args.RegisterOpt(mrna::OPT_PFN);
   args.ParseOrExit(argc, argv);
 
   const bool efn = args.GetOr(mrna::OPT_EFN);
   const bool fold = args.GetOr(mrna::OPT_FOLD);
   const bool subopt = args.GetOr(mrna::OPT_SUBOPT);
-  const bool part = args.GetOr(mrna::OPT_PART);
+  const bool pfn = args.GetOr(mrna::OPT_PFN);
 
-  verify(efn + fold + subopt + part == 1, "require exactly one program flag\n{}", args.Usage());
-  verify(args.Has(mrna::erg::OPT_SEED) + args.Has(mrna::erg::OPT_MEMERNA_DATA) == 1,
+  verify(efn + fold + subopt + pfn == 1, "require exactly one program flag\n{}", args.Usage());
+  verify(args.Has(mrna::OPT_SEED) + args.Has(mrna::OPT_MEMERNA_DATA) == 1,
       "require exactly one seed or memerna-data flag\n{}", args.Usage());
 
   auto package = mrna::bridge::RnaPackage::FromArgParse(args);
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
       if (subopt) {
         auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
-        int strucs = package->Suboptimal(
+        int strucs = package->Subopt(
             [](const mrna::subopt::SuboptResult& c) {
               fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
             },
@@ -94,12 +94,12 @@ int main(int argc, char* argv[]) {
       } else if (fold) {
         const auto res = package->Fold(r);
         fmt::print("{}\n{}\n", res.mfe.energy, res.tb.s.ToDb());
-      } else if (part) {
-        auto res = package->Partition(r);
-        fmt::print("q: {}\np:\n", res.part.q);
-        PrintPartition(res.part.p);
+      } else if (pfn) {
+        auto res = package->Pfn(r);
+        fmt::print("q: {}\np:\n", res.pfn.q);
+        PrintPfn(res.pfn.p);
         fmt::print("\nprobabilities:\n");
-        PrintBoltzProbs(res.part.prob);
+        PrintBoltzProbs(res.pfn.prob);
       }
     }
   }

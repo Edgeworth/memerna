@@ -4,8 +4,6 @@
 
 #include <fmt/format.h>
 
-#include <stdexcept>
-
 #define funcname() __PRETTY_FUNCTION__
 
 #define verify(expr, ...)                                        \

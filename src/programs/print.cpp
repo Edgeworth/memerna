@@ -12,7 +12,7 @@ void PrintBoltzProbs(const mrna::BoltzProbs& p) {
     fmt::print("\n");
   }
 }
-void PrintPartition(const mrna::BoltzSums& p) {
+void PrintPfn(const mrna::BoltzSums& p) {
   const int N = static_cast<int>(p.size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {

@@ -1,4 +1,3 @@
-set positional-arguments
 alias t := test
 alias f := fix
 alias u := update
@@ -26,6 +25,25 @@ bench:
   # Run benchmarks.
   poetry run python -m rnapy.run build --bench --bench-output \
     ./data/benchmark.json --kind=release
+
+fuzz $fuzz_exec:
+  #!/usr/bin/env -S parallel --shebang --ungroup --verbose
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base,baseopt --random-models 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,baseopt --random-models 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd no-coax 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd all 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd none 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd no-coax 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd all 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd no-coax 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd all 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd none 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd no-coax 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd all 1 200
 
 fix:
   pre-commit run --all-files

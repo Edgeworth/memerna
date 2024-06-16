@@ -25,7 +25,7 @@ class RNAstructure(RnaPackage):
             )
         if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("RNAstructure does not support turning off CTDs")
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("RNAstructure energy model configuration not supported")
 
     def check_subopt_cfg(self, cfg: SuboptCfg) -> None:
@@ -41,7 +41,7 @@ class RNAstructure(RnaPackage):
             raise NotImplementedError("RNAstructure does not support custom subopt algorithm")
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "RNAstructure"
 
     @override
@@ -108,6 +108,3 @@ class RNAstructure(RnaPackage):
             # TODO(3): does not extract energy yet
             subopts = RnaParser.multi_from_ct_file(output)
         return subopts, res
-
-    def __str__(self) -> str:
-        return self.name()

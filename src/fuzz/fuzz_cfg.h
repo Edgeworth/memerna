@@ -5,16 +5,19 @@
 #include <string>
 #include <vector>
 
-#include "api/energy/energy.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
 
 namespace mrna::fuzz {
 
-// Energy model options:
-inline const Opt OPT_FUZZ_ENERGY_MODELS =
-    erg::BuildOptEnergyModel().LongName("energy-models").ShortName("ems").Multiple();
+inline const Opt OPT_FUZZ_BACKENDS = Opt(Opt::ARG)
+                                         .LongName("backends")
+                                         .ChoiceEnum<BackendKind>()
+                                         .Multiple()
+                                         .AllChoicesAsDefault()
+                                         .Help("backends to fuzz");
 
 inline const auto OPT_FUZZ_RANDOM_MODELS =
     mrna::Opt(mrna::Opt::FLAG)
@@ -27,7 +30,7 @@ inline const auto OPT_FUZZ_RANDOM_PSEUDOFREE =
 // Brute force specific options:
 // Allows brute force fuzzing to be given a maximum RNA size
 inline const Opt OPT_FUZZ_BRUTE_MAX =
-    Opt(Opt::ARG).LongName("brute-max").Default(22).Help("maximum RNA size to run brute force on");
+    Opt(Opt::ARG).LongName("brute-max").Default(30).Help("maximum RNA size to run brute force on");
 
 // MFE fuzzing options:
 inline const Opt OPT_FUZZ_MFE = Opt(Opt::FLAG).LongName("mfe").Default(0).Help("fuzz mfe");
@@ -55,10 +58,10 @@ inline const Opt OPT_FUZZ_SUBOPT_DELTA = Opt(Opt::ARG)
 
 // Partition fuzzing:
 inline const Opt OPT_FUZZ_PARTITION =
-    Opt(Opt::FLAG).LongName("part").Default(0).Help("fuzz partition function");
+    Opt(Opt::FLAG).LongName("pfn").Default(0).Help("fuzz partition function");
 inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
     Opt(Opt::FLAG)
-        .LongName("part-rnastructure")
+        .LongName("pfn-rnastructure")
         .Default(0)
         .Help("fuzz RNAstructure partition function");
 
@@ -68,29 +71,34 @@ void RegisterOpts(ArgParse* args);
 struct FuzzCfg {
   int brute_max = 22;
 
+  // MFE configuration.
   bool mfe = false;
   bool mfe_rnastructure = false;
   bool mfe_table = false;
 
+  // Subopt folding configuration.
   bool subopt = false;
   bool subopt_rnastructure = false;
   int subopt_strucs = 5000;
   Energy subopt_delta = E(0.6);
 
-  bool part = false;
-  bool part_rnastructure = false;
+  // Partition function configuration.
+  bool pfn = false;
+  bool pfn_rnastructure = false;
 
-  // Energy model cfg:
   // Whether to use a new random model every time.
   bool random_models = false;
   bool random_pseudofree = false;
+
   // Whether to use a fixed seed for creating a random model. Negative means use
   // the model data, not random data.
   int seed = -1;
-  erg::EnergyCfg energy_cfg{};
-  std::vector<std::string> model_names{};
-  std::string data_dir{};
 
+  erg::EnergyCfg energy_cfg{};
+  erg::EnergyModelKind energy_model{};
+  std::vector<BackendKind> backends{};
+
+  std::string data_dir{};
   std::string rnastructure_data_dir{};
 
   [[nodiscard]] std::string Desc() const;

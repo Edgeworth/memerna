@@ -8,7 +8,7 @@
 
 #include "api/ctx/ctx.h"
 #include "api/energy/energy.h"
-#include "api/part.h"
+#include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -39,11 +39,11 @@ class RnaPackage {
   virtual erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
   [[nodiscard]] virtual FoldResult Fold(const Primary& r) const = 0;
-  [[nodiscard]] virtual int Suboptimal(
+  [[nodiscard]] virtual int Subopt(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const = 0;
-  [[nodiscard]] virtual std::vector<subopt::SuboptResult> SuboptimalIntoVector(
+  [[nodiscard]] virtual std::vector<subopt::SuboptResult> SuboptIntoVector(
       const Primary& r, Energy delta) const = 0;
-  [[nodiscard]] virtual part::PartResult Partition(const Primary& r) const = 0;
+  [[nodiscard]] virtual pfn::PfnResult Pfn(const Primary& r) const = 0;
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };

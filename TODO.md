@@ -1,8 +1,7 @@
 # TODO
 
-- use CPM to handle libraries
+- RNAstructure bridge should grab CTDs - needed for fuzzing.
 - implement d2
-  - add to mfe_opt_sparse, see how much it affects perf
   - add all variants to all mfe, traceback, suboptimal, partition function
   - add to energy model
   - add to fuzz

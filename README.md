@@ -97,13 +97,13 @@ will be better.
 memerna supports minimum free energy (MFE) folding.
 
 ```sh
-./build/fold GCGACCGGGGCUGGCUUGGUAA
+./fold GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for MFE folding, which can be specified like so:
 
 ```sh
-./build/fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
+./fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -114,24 +114,23 @@ Some of the algorithms are listed here:
 | opt        | O(N^3)        | O(N^2)          | 1.58 seconds              |
 | debug      | O(N^3)        | O(N^2)          | 3.87 seconds              |
 
-
 The sparse-opt algorithm is the default, and is the fastest algorithm.
 
-### Suboptimal folding
+### Subopt folding
 
 memerna supports suboptimal folding. For example:
 
 ```sh
-./build/subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./build/subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./build/subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
-./build/subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
+./subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
+./subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for suboptimal folding, which can be specified like so:
 
 ```sh
-./build/subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here (where k is the number of structures produced). The example
@@ -146,18 +145,18 @@ The iterative algorithm will be faster and use less memory for longer sequences.
 possible to implement it using O(N^2) memory trading off for worse time performance, but this is not
 currently implemented.
 
-### Partition function
+### Pfn function
 
 memerna supports computing the partition function. For example:
 
 ```sh
-./build/partition GCGACCGGGGCUGGCUUGGUAA
+./partition GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for the partition function, which can be specified like so:
 
 ```sh
-./build/partition --part-alg opt GCGACCGGGGCUGGCUUGGUAA
+./partition --pfn-alg opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -170,7 +169,7 @@ Some of the algorithms are listed here:
 ### Running the tests
 
 ```sh
-./build/run_tests
+./run_tests
 ```
 
 ### Running include-what-you-use
@@ -183,19 +182,54 @@ make -j$(nproc) 2> /tmp/iwyu.out
 Then:
 iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 
-### Fuzzing
+## Fuzzing
 
-Fuzzing against RNAstructure
+### Basic fuzzing
+
+General fuzzing:
+
+```bash
+./fuzz --mfe --mfe-table --subopt --pfn --random-models --energy-model t04 \
+  --backends base,baseopt 1 200
+```
+
+Exhaustive fuzzing:
+
+```bash
+./fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
+  --backends base,baseopt --enumerate 1 10
+```
+
+Fuzzing for t22:
+
+```bash
+./fuzz --mfe --mfe-table --subopt --pfn --random-models --random-pf \
+  --energy-model t22 --backends stack  1 200
+```
+
+### Fuzzing in parallel
+
+The below command runs fuzzing in parallel using GNU parallel with 16 jobs.
+
+```bash
+seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
+  --random-models --energy-model t04 --backends base,baseopt 1 200'
+```
+
+### Fuzzing against RNAstructure
 
 ```bash
 poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
-./build/fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe --mfe-rnastructure --mfe-table 1 200
+./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
+  --mfe-rnastructure --mfe-table --energy-model t04 --backends base,baseopt 1 200
 ```
 
 ### Fuzzing with afl-fuzz
 
-Note that afl-fast seems to cause broken behaviour recently, compared to afl-lto.
+Note that afl-fast seems to cause broken behaviour recently, compared to
+afl-lto. It's better to use a seeded energy model than random energy models for
+afl-fuzz since it will be more stable and easier to debug if it finds something.
 
 ```bash
 poetry run python -m rnapy.run afl-fuzz --help
@@ -205,31 +239,30 @@ For example, try this command line:
 
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --mfe --num-procs 1 --max-len 500 --energy-model t22p2 --seed 1234
+ --num-procs 16 --mfe --mfe-table --seed 123 --max-len 200 \
+ --energy-model t22 --backends stack
 ```
 
 To fuzz everything:
 
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --mfe --mfe-rnastructure --mfe-table --part --part-rnastructure \
- --subopt --subopt-rnastructure --num-procs 28 --max-len 100 \
- --energy-model t04p2 --energy-precision 1
+  --num-procs 16 --energy-precision 1 --mfe --mfe-rnastructure --mfe-table \
+  --subopt --max-len 200 --backends base,baseopt
 ```
 
 Fuzz memerna only, with faster settings:
 
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --mfe --mfe-table --subopt --num-procs 28 --max-len 100 --seed 1234 \
- --energy-model t04p2 --subopt-strucs 100 --subopt-delta 0.2 \
- --energy-precision 2
+ --num-procs 16 --mfe --mfe-table --subopt --subopt-strucs 100 \
+ --subopt-delta 0.2 --seed 123 --max-len 200 --backends base,baseopt  \
 ```
 
 Checking progress:
 
 ```bash
-afl-whatsup -s $PREFIX/memerna-afl/\*/afl
+afl-whatsup -s $PREFIX/memerna-afl/*/afl
 ```
 
 Reproducing a crash:
@@ -265,7 +298,7 @@ LINEARFOLD=${HOME}/...
 
 Turner 1999 model (not implemented)
 
-Turner 2004 model (t04p1, t04p2):
+Turner 2004 model (t04):
 
 - Adds coaxial stacking
 - Lonely pairs are "soft disallowed" - only consider pairs where at least one of
@@ -274,7 +307,7 @@ Turner 2004 model (t04p1, t04p2):
 - Special stacks of length > 2 base pairs are not handled.
 - Internal loops are limited to size 30 in most implementations in memerna.
 
-Update in 2012 model (t12p2):
+Update in 2012 model (t12):
 
 - GU penalty removed from AU/GU penalty
 - GU penalty removed from special hairpins, if closed by GU (none like this)
@@ -282,7 +315,7 @@ Update in 2012 model (t12p2):
 - Stacking parameters changed (for GU stacks, not WC)
 - See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
 
-Update in 2022 model (t22p2):
+Update in 2022 model (t22):
 
 - AU penalty removed as well
 - AU penalty removed from special hairpins, if closed by AU

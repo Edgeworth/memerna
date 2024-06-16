@@ -1,3 +1,4 @@
+// Copyright 2024 E.
 #ifndef UTIL_CONTAINER_H_
 #define UTIL_CONTAINER_H_
 

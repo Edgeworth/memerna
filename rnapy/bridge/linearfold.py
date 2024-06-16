@@ -30,12 +30,12 @@ class LinearFold(RnaPackage):
             case CtdCfg.ALL:
                 raise NotImplementedError("LinearFold does not support all CTDs")
 
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("LinearFold energy model configuration not supported")
         return args
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "LinearFold"
 
     @override
@@ -60,6 +60,3 @@ class LinearFold(RnaPackage):
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
-
-    def __str__(self) -> str:
-        return self.name()

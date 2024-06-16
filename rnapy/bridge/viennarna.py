@@ -39,7 +39,7 @@ class ViennaRna(RnaPackage):
                 )
             case CtdCfg.ALL:
                 args.append("-d3")
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("ViennaRNA energy model configuration not supported")
         return args
 
@@ -60,7 +60,7 @@ class ViennaRna(RnaPackage):
         return args
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "ViennaRNA"
 
     @override
@@ -122,6 +122,3 @@ class ViennaRna(RnaPackage):
                 energy = Decimal(energy_str)
                 subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
             return subopts, res
-
-    def __str__(self) -> str:
-        return self.name()

@@ -15,7 +15,7 @@ class MemeRna01(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         if cfg.lonely_pairs != LonelyPairs.HEURISTIC:
             raise NotImplementedError("memerna0.1 does not support modifying lonely pairs behavior")
-        if cfg.model is not None:
+        if cfg.energy_model is not None:
             raise NotImplementedError("memerna0.1 energy model configuration not supported")
         if cfg.ctd != "all":
             raise NotImplementedError("memerna0.1 only supports all CTDs")
@@ -23,7 +23,7 @@ class MemeRna01(RnaPackage):
         return []
 
     @override
-    def name(self) -> str:
+    def package_name(self) -> str:
         return "memerna0.1"
 
     @override
@@ -55,6 +55,3 @@ class MemeRna01(RnaPackage):
         self, rna: Rna, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg
     ) -> tuple[list[Rna], CmdResult]:
         raise NotImplementedError
-
-    def __str__(self) -> str:
-        return self.name()

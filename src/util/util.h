@@ -17,7 +17,7 @@ template <class... T>
 overloaded(T...) -> overloaded<T...>;
 
 template <typename T>
-constexpr auto Decay(T& a) {  // NOLINT
+constexpr auto Decay(T& a) {
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 

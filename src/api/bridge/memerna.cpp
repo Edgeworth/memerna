@@ -24,16 +24,15 @@ erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string
 
 FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r, {}); }
 
-int Memerna::Suboptimal(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
-  return ctx_.Suboptimal(r, fn, {.delta = delta, .sorted = true});
+int Memerna::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+  return ctx_.Subopt(r, fn, {.delta = delta, .sorted = true});
 }
 
-std::vector<subopt::SuboptResult> Memerna::SuboptimalIntoVector(
-    const Primary& r, Energy delta) const {
-  return ctx_.SuboptimalIntoVector(r, {.delta = delta, .sorted = true});
+std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r, Energy delta) const {
+  return ctx_.SuboptIntoVector(r, {.delta = delta, .sorted = true});
 }
 
-part::PartResult Memerna::Partition(const Primary& r) const { return ctx_.Partition(r); }
+pfn::PfnResult Memerna::Pfn(const Primary& r) const { return ctx_.Pfn(r); }
 
 Memerna Memerna::FromArgParse(const ArgParse& args) { return Memerna(Ctx::FromArgParse(args)); }
 
