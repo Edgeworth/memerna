@@ -203,7 +203,7 @@ class ArgParse {
 
   std::map<std::string, Opt> longname_;
   std::map<std::string, Opt> shortname_;
-  std::set<Opt> opts_;
+  std::vector<Opt> opts_;  // In order of registration.
   std::map<Opt, std::string> values_;
   std::vector<std::string> pos_;
 };

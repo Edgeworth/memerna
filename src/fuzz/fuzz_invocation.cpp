@@ -36,32 +36,6 @@ using md::base::EXT_SIZE;
 
 namespace {
 
-void ComparePfn(
-    const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors) {
-  const int N = static_cast<int>(want.p.size());
-  verify(want.prob.size() == want.prob.size(), "bug");
-  verify(got.p.size() == want.prob.size(), "bug");
-
-  if (!absrel_eq(got.q, want.q)) {
-    errors.push_back(
-        fmt::format("{} q: {} != {}; diff: {}", name_got, got.q, want.q, got.q - want.q));
-  }
-
-  for (int st = 0; st < N; ++st) {
-    for (int en = 0; en < N; ++en) {
-      if (!absrel_eq(got.p[st][en], want.p[st][en])) {
-        errors.push_back(fmt::format("{} p at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
-            got.p[st][en], want.p[st][en], got.p[st][en] - want.p[st][en]));
-      }
-
-      if (!absrel_eq(got.prob[st][en], want.prob[st][en])) {
-        errors.push_back(fmt::format("{} prob at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
-            got.prob[st][en], want.prob[st][en], got.prob[st][en] - want.prob[st][en]));
-      }
-    }
-  }
-}
-
 void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& want,
     const std::string& name_got, Error& errors) {
   if (got.dp.empty()) return;  // Brute force doesn't generate tables.
@@ -329,6 +303,36 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
     }
   }
   return errors;
+}
+
+bool FuzzInvocation::PfnPQEq(flt a, flt b) const { return absrel_eq(a, b, cfg_.pfn_pq_ep); }
+
+bool FuzzInvocation::PfnProbEq(flt a, flt b) const { return absrel_eq(a, b, cfg_.pfn_prob_ep); }
+
+void FuzzInvocation::ComparePfn(
+    const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors) {
+  const int N = static_cast<int>(want.p.size());
+  verify(want.prob.size() == want.prob.size(), "bug");
+  verify(got.p.size() == want.prob.size(), "bug");
+
+  if (!PfnPQEq(got.q, want.q)) {
+    errors.push_back(
+        fmt::format("{} q: {} != {}; diff: {}", name_got, got.q, want.q, got.q - want.q));
+  }
+
+  for (int st = 0; st < N; ++st) {
+    for (int en = 0; en < N; ++en) {
+      if (!PfnPQEq(got.p[st][en], want.p[st][en])) {
+        errors.push_back(fmt::format("{} p at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
+            got.p[st][en], want.p[st][en], got.p[st][en] - want.p[st][en]));
+      }
+
+      if (!PfnProbEq(got.prob[st][en], want.prob[st][en])) {
+        errors.push_back(fmt::format("{} prob at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
+            got.prob[st][en], want.prob[st][en], got.prob[st][en] - want.prob[st][en]));
+      }
+    }
+  }
 }
 
 Error FuzzInvocation::CheckPfn() {

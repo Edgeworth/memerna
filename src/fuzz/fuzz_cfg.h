@@ -57,13 +57,20 @@ inline const Opt OPT_FUZZ_SUBOPT_DELTA = Opt(Opt::ARG)
                                              .Help("max energy delta for subopt delta fuzz");
 
 // Partition fuzzing:
-inline const Opt OPT_FUZZ_PARTITION =
+inline const Opt OPT_FUZZ_PFN =
     Opt(Opt::FLAG).LongName("pfn").Default(0).Help("fuzz partition function");
-inline const Opt OPT_FUZZ_PARTITION_RNASTRUCTURE =
-    Opt(Opt::FLAG)
-        .LongName("pfn-rnastructure")
-        .Default(0)
-        .Help("fuzz RNAstructure partition function");
+inline const Opt OPT_FUZZ_PFN_RNASTRUCTURE = Opt(Opt::FLAG)
+                                                 .LongName("pfn-rnastructure")
+                                                 .Default(0)
+                                                 .Help("fuzz RNAstructure partition function");
+inline const Opt OPT_FUZZ_PFN_PQ_EP = Opt(Opt::ARG)
+                                          .LongName("pfn-pq-ep")
+                                          .Default(EP)
+                                          .Help("partition function Q and P table epsilon");
+inline const Opt OPT_FUZZ_PFN_PROB_EP = Opt(Opt::ARG)
+                                            .LongName("pfn-prob-ep")
+                                            .Default(EP)
+                                            .Help("partition function probability table epsilon");
 
 void RegisterOpts(ArgParse* args);
 
@@ -79,12 +86,14 @@ struct FuzzCfg {
   // Subopt folding configuration.
   bool subopt = false;
   bool subopt_rnastructure = false;
-  int subopt_strucs = 5000;
+  int subopt_strucs = 10000;
   Energy subopt_delta = E(0.6);
 
   // Partition function configuration.
   bool pfn = false;
   bool pfn_rnastructure = false;
+  flt pfn_pq_ep = EP;
+  flt pfn_prob_ep = EP;
 
   // Whether to use a new random model every time.
   bool random_models = false;

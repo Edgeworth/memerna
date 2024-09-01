@@ -67,6 +67,12 @@ class FuzzInvocation {
   static Error CheckSuboptResultPair(subopt::SuboptCfg cfg,
       const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
 
+  [[nodiscard]] bool PfnPQEq(flt a, flt b) const;
+  [[nodiscard]] bool PfnProbEq(flt a, flt b) const;
+
+  void ComparePfn(
+      const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors);
+
   Error CheckPfn();
 };
 
