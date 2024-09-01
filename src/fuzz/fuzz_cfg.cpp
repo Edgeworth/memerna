@@ -24,8 +24,10 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_SUBOPT_RNASTRUCTURE);
   args->RegisterOpt(OPT_FUZZ_SUBOPT_STRUCS);
   args->RegisterOpt(OPT_FUZZ_SUBOPT_DELTA);
-  args->RegisterOpt(OPT_FUZZ_PARTITION);
-  args->RegisterOpt(OPT_FUZZ_PARTITION_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_PFN);
+  args->RegisterOpt(OPT_FUZZ_PFN_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_PFN_PQ_EP);
+  args->RegisterOpt(OPT_FUZZ_PFN_PROB_EP);
   args->RegisterOpt(OPT_FUZZ_BACKENDS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_MODELS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE);
@@ -44,6 +46,8 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("subopt_delta: {}\n", subopt_delta);
   desc += fmt::format("pfn: {}\n", pfn);
   desc += fmt::format("pfn_rnastructure: {}\n", pfn_rnastructure);
+  desc += fmt::format("pfn_pq_ep: {}\n", pfn_pq_ep);
+  desc += fmt::format("pfn_prob_ep: {}\n", pfn_prob_ep);
   desc += fmt::format("random_models: {}\n", random_models);
   desc += fmt::format("seed: {}\n", seed);
   desc += fmt::format("energy_cfg: {}\n", energy_cfg);
@@ -69,8 +73,10 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_FUZZ_SUBOPT_STRUCS, &cfg.subopt_strucs);
   args.MaybeSet(OPT_FUZZ_SUBOPT_DELTA, &cfg.subopt_delta);
 
-  args.MaybeSet(OPT_FUZZ_PARTITION, &cfg.pfn);
-  args.MaybeSet(OPT_FUZZ_PARTITION_RNASTRUCTURE, &cfg.pfn_rnastructure);
+  args.MaybeSet(OPT_FUZZ_PFN, &cfg.pfn);
+  args.MaybeSet(OPT_FUZZ_PFN_RNASTRUCTURE, &cfg.pfn_rnastructure);
+  args.MaybeSet(OPT_FUZZ_PFN_PQ_EP, &cfg.pfn_pq_ep);
+  args.MaybeSet(OPT_FUZZ_PFN_PROB_EP, &cfg.pfn_prob_ep);
 
   cfg.mfe = cfg.mfe || cfg.mfe_rnastructure;
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure;

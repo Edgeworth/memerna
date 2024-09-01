@@ -65,7 +65,7 @@ void ArgParse::RegisterOpt(const Opt& opt) {
   if (!opt.longname().empty()) longname_.emplace(opt.longname(), opt);
   if (has_inversion) longname_.emplace(inverted_longname, inverted_opt);
   if (!opt.shortname().empty()) shortname_.emplace(opt.shortname(), opt);
-  opts_.insert(opt);
+  opts_.push_back(opt);
   // Add default argument if necessary.
   if (auto iter = values_.find(opt); opt.has_default() && iter == values_.end())
     values_.emplace(opt, opt.default_arg());
