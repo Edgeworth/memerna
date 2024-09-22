@@ -33,15 +33,15 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
   Energy energy = ZERO_E;
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_unpaired_cum.empty()) {
-    auto unpaired = pf.pf_unpaired_cum[en] - pf.pf_unpaired_cum[st + 1];
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired = pf.unpaired_cum[en] - pf.unpaired_cum[st + 1];
     if (s) (*s)->AddNote("{}e - unpaired pseudofree energy", unpaired);
     energy += unpaired;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_paired.empty()) {
-    auto paired = pf.pf_paired[st] + pf.pf_paired[en];
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[st] + pf.paired[en];
     if (s) (*s)->AddNote("{}e - paired pseudofree energy", paired);
     energy += paired;
   }
@@ -120,19 +120,19 @@ Energy Model::Bulge(
   }
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_unpaired_cum.empty()) {
-    auto unpaired5 = pf.pf_unpaired_cum[ist] - pf.pf_unpaired_cum[ost + 1];
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired5 = pf.unpaired_cum[ist] - pf.unpaired_cum[ost + 1];
     if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
     energy += unpaired5;
 
-    auto unpaired3 = pf.pf_unpaired_cum[oen] - pf.pf_unpaired_cum[ien + 1];
+    auto unpaired3 = pf.unpaired_cum[oen] - pf.unpaired_cum[ien + 1];
     if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
     energy += unpaired3;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_paired.empty()) {
-    auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[ost] + pf.paired[oen];
     if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -190,19 +190,19 @@ Energy Model::InternalLoop(
   Energy energy = ZERO_E;
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_unpaired_cum.empty()) {
-    auto unpaired5 = pf.pf_unpaired_cum[ist] - pf.pf_unpaired_cum[ost + 1];
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired5 = pf.unpaired_cum[ist] - pf.unpaired_cum[ost + 1];
     if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
     energy += unpaired5;
 
-    auto unpaired3 = pf.pf_unpaired_cum[oen] - pf.pf_unpaired_cum[ien + 1];
+    auto unpaired3 = pf.unpaired_cum[oen] - pf.unpaired_cum[ien + 1];
     if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
     energy += unpaired3;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.pf_paired.empty()) {
-    auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[ost] + pf.paired[oen];
     if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -287,8 +287,8 @@ Energy Model::TwoLoop(
     auto energy = stack[r[ost]][r[ist]][r[ien]][r[oen]];
 
     // Add paired nucleotide pseudofree energy, if it exists.
-    if (!pf.pf_paired.empty()) {
-      auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
+    if (!pf.paired.empty()) {
+      auto paired = pf.paired[ost] + pf.paired[oen];
       if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
       energy += paired;
     }
@@ -312,8 +312,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!exterior_loop && !pf.pf_paired.empty()) {
-    auto paired = pf.pf_paired[st] + pf.pf_paired[en];
+  if (!exterior_loop && !pf.paired.empty()) {
+    auto paired = pf.paired[st] + pf.paired[en];
     if (struc) struc->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -325,8 +325,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     num_unpaired += s[branch_st] - branch_st + 1;
 
     // Add unpaired nucleotide pseudofree energy, if it exists.
-    if (!pf.pf_unpaired_cum.empty()) {
-      pf_unpaired_energy += pf.pf_unpaired_cum[branch_st] - pf.pf_unpaired_cum[pf_last_unpaired];
+    if (!pf.unpaired_cum.empty()) {
+      pf_unpaired_energy += pf.unpaired_cum[branch_st] - pf.unpaired_cum[pf_last_unpaired];
       pf_last_unpaired = s[branch_st] + 1;
     }
 
@@ -342,9 +342,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     }
   }
 
-  if (!pf.pf_unpaired_cum.empty()) {
+  if (!pf.unpaired_cum.empty()) {
     int pf_en = exterior_loop ? en + 1 : en;
-    pf_unpaired_energy += pf.pf_unpaired_cum[pf_en] - pf.pf_unpaired_cum[pf_last_unpaired];
+    pf_unpaired_energy += pf.unpaired_cum[pf_en] - pf.unpaired_cum[pf_last_unpaired];
     energy += pf_unpaired_energy;
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
@@ -525,6 +525,7 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
     int en, bool build_structure) const {
   ModelBase::Verify(r, s, given_ctd);
   pf.Verify(r);
+
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 

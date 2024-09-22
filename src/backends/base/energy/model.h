@@ -3,6 +3,7 @@
 
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
+#include "backends/common/base/pseudofree_model.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {
@@ -10,6 +11,8 @@ namespace mrna::md::base {
 class Model : public ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::BASE;
+
+  PseudofreeModel pf;
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
@@ -30,10 +33,8 @@ class Model : public ModelBase, public ModelMixin<Model> {
 
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
-  // NOLINTNEXTLINE
   void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
-    if (pf_paired.empty() && pf_unpaired.empty()) return;
-    fatal("pseudofree energy is not supported in this energy model");
+    pf.Load(std::move(pf_paired), std::move(pf_unpaired));
   }
 
   void LoadFromModelPath(const std::string& path) { base::LoadFromModelPath(*this, path); }

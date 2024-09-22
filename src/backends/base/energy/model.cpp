@@ -46,6 +46,20 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
 
   Energy energy = ZERO_E;
 
+  // Add unpaired nucleotide pseudofree energy, if it exists.
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired = pf.unpaired_cum[en] - pf.unpaired_cum[st + 1];
+    if (s) (*s)->AddNote("{}e - unpaired pseudofree energy", unpaired);
+    energy += unpaired;
+  }
+
+  // Add paired nucleotide pseudofree energy, if it exists.
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[st] + pf.paired[en];
+    if (s) (*s)->AddNote("{}e - paired pseudofree energy", paired);
+    energy += paired;
+  }
+
   // Apply AU penalty if necessary.
   if (IsAuPair(r[st], r[en])) {
     if (s) (*s)->AddNote("{}e - AU penalty", au_penalty);
@@ -133,6 +147,24 @@ Energy Model::Bulge(
     (*s)->AddNote("{}e - initiation", energy);
   }
 
+  // Add unpaired nucleotide pseudofree energy, if it exists.
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired5 = pf.unpaired_cum[ist] - pf.unpaired_cum[ost + 1];
+    if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
+    energy += unpaired5;
+
+    auto unpaired3 = pf.unpaired_cum[oen] - pf.unpaired_cum[ien + 1];
+    if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
+    energy += unpaired3;
+  }
+
+  // Add paired nucleotide pseudofree energy, if it exists.
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[ost] + pf.paired[oen];
+    if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+    energy += paired;
+  }
+
   if (length > 1) {
     // Bulges of length > 1 are considered separate helices and get AU/GU penalties.
     if (IsAuPair(r[ost], r[oen])) {
@@ -197,6 +229,24 @@ Energy Model::InternalLoop(
   }
 
   Energy energy = ZERO_E;
+
+  // Add unpaired nucleotide pseudofree energy, if it exists.
+  if (!pf.unpaired_cum.empty()) {
+    auto unpaired5 = pf.unpaired_cum[ist] - pf.unpaired_cum[ost + 1];
+    if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
+    energy += unpaired5;
+
+    auto unpaired3 = pf.unpaired_cum[oen] - pf.unpaired_cum[ien + 1];
+    if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
+    energy += unpaired3;
+  }
+
+  // Add paired nucleotide pseudofree energy, if it exists.
+  if (!pf.paired.empty()) {
+    auto paired = pf.paired[ost] + pf.paired[oen];
+    if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+    energy += paired;
+  }
 
   // AU/GU penalties.
   if (IsAuPair(r[ost], r[oen])) {
@@ -281,7 +331,16 @@ Energy Model::TwoLoop(
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
-    return stack[r[ost]][r[ist]][r[ien]][r[oen]];
+    auto energy = stack[r[ost]][r[ist]][r[ien]][r[oen]];
+
+    // Add paired nucleotide pseudofree energy, if it exists.
+    if (!pf.paired.empty()) {
+      auto paired = pf.paired[ost] + pf.paired[oen];
+      if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+      energy += paired;
+    }
+
+    return energy;
   }
   if (toplen >= 1 && botlen >= 1) return InternalLoop(r, ost, oen, ist, ien, s);
   return Bulge(r, ost, oen, ist, ien, s);
@@ -299,11 +358,26 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     if (exterior_loop) struc->AddNote("exterior loop");
   }
 
-  // Add AUGU penalties.
+  // Add paired nucleotide pseudofree energy, if it exists.
+  if (!exterior_loop && !pf.paired.empty()) {
+    auto paired = pf.paired[st] + pf.paired[en];
+    if (struc) struc->AddNote("{}e - opening pair pseudofree energy", paired);
+    energy += paired;
+  }
+
+  auto pf_unpaired_energy = ZERO_E;
+  int pf_last_unpaired = exterior_loop ? 0 : st + 1;
   int num_unpaired = 0;
   for (auto branch_st : *branches) {
     num_unpaired += s[branch_st] - branch_st + 1;
 
+    // Add unpaired nucleotide pseudofree energy, if it exists.
+    if (!pf.unpaired_cum.empty()) {
+      pf_unpaired_energy += pf.unpaired_cum[branch_st] - pf.unpaired_cum[pf_last_unpaired];
+      pf_last_unpaired = s[branch_st] + 1;
+    }
+
+    // Add AUGU penalties.
     if (IsAuPair(r[branch_st], r[s[branch_st]])) {
       if (struc)
         struc->AddNote("{}e - opening AU penalty at {} {}", au_penalty, branch_st, s[branch_st]);
@@ -315,6 +389,14 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
       energy += gu_penalty;
     }
   }
+
+  if (!pf.unpaired_cum.empty()) {
+    int pf_en = exterior_loop ? en + 1 : en;
+    pf_unpaired_energy += pf.unpaired_cum[pf_en] - pf.unpaired_cum[pf_last_unpaired];
+    energy += pf_unpaired_energy;
+    if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
+  }
+
   num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
   if (struc) struc->AddNote("Unpaired: {}, Branches: {}", num_unpaired, branches->size() + 1);
 
@@ -440,6 +522,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
   ModelBase::Verify(r, s, given_ctd);
+  pf.Verify(r);
+
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
