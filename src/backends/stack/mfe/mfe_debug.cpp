@@ -48,7 +48,7 @@ struct MfeInternal {
         .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
     };
     support.VerifySupported(funcname(), m.cfg());
-    m.VerifyValidFor(r);
+    m.pf.Verify(r);
 
     spdlog::debug("stack {} with cfg {}", funcname(), m.cfg());
 
@@ -80,7 +80,7 @@ struct MfeInternal {
               if (m.CanPair(r, st + 1, en - 1)) {
                 // Include the paired pseudofree energy value for all except the last pair in this
                 // stack. The last pair will be handled by whatever starts after this stack.
-                auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + m.PfPaired(st, en);
+                auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + m.pf.PfPaired(st, en);
                 // Try ending the stack without a bulge loop.
                 if (length == 2) {
                   none += nostack[st + 1][en - 1] +
@@ -138,7 +138,7 @@ struct MfeInternal {
 
           // Multiloops. Look at range [st + 1, en - 1].
           // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-          const auto base_branch_cost = m.AuGuPenalty(stb, enb) + m.PfPaired(st, en) +
+          const auto base_branch_cost = m.AuGuPenalty(stb, enb) + m.pf.PfPaired(st, en) +
               m.multiloop_hack_a + m.multiloop_hack_b;
 
           // (<   ><   >)
@@ -148,15 +148,15 @@ struct MfeInternal {
             // (3<   ><   >) 3'
             nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][en - 1][DP_U2] + m.dangle3[stb][st1b][enb] +
-                    m.PfUnpaired(st + 1));
+                    m.pf.PfUnpaired(st + 1));
             // (<   ><   >5) 5'
             nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 1][en - 2][DP_U2] + m.dangle5[stb][en1b][enb] +
-                    m.PfUnpaired(en - 1));
+                    m.pf.PfUnpaired(en - 1));
             // (.<   ><   >.) Terminal mismatch
             nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][en - 2][DP_U2] + m.terminal[stb][st1b][en1b][enb] +
-                    m.PfUnpaired(st + 1) + m.PfUnpaired(en - 1));
+                    m.pf.PfUnpaired(st + 1) + m.pf.PfUnpaired(en - 1));
           }
 
           if (m.cfg().UseCoaxialStacking()) {
@@ -171,7 +171,7 @@ struct MfeInternal {
 
               // (.(   )   .) Left outer coax - P
               const auto outer_coax = m.MismatchCoaxial(stb, st1b, en1b, enb) +
-                  m.PfUnpaired(st + 1) + m.PfUnpaired(en - 1);
+                  m.pf.PfUnpaired(st + 1) + m.pf.PfUnpaired(en - 1);
               nostack_min = std::min(nostack_min,
                   base_branch_cost + dp[st + 2][piv][DP_P] + m.multiloop_hack_b +
                       m.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);
@@ -184,14 +184,14 @@ struct MfeInternal {
               nostack_min = std::min(nostack_min,
                   base_branch_cost + dp[st + 2][piv - 1][DP_P] + m.multiloop_hack_b +
                       m.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-                      m.MismatchCoaxial(pl1b, plb, st1b, st2b) + m.PfUnpaired(st + 1) +
-                      m.PfUnpaired(piv));
+                      m.MismatchCoaxial(pl1b, plb, st1b, st2b) + m.pf.PfUnpaired(st + 1) +
+                      m.pf.PfUnpaired(piv));
               // (   .(   ).) Right inner coax
               nostack_min = std::min(nostack_min,
                   base_branch_cost + dp[st + 1][piv][DP_U] + m.multiloop_hack_b +
                       m.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-                      m.MismatchCoaxial(en2b, en1b, prb, pr1b) + m.PfUnpaired(piv + 1) +
-                      m.PfUnpaired(en - 1));
+                      m.MismatchCoaxial(en2b, en1b, prb, pr1b) + m.pf.PfUnpaired(piv + 1) +
+                      m.pf.PfUnpaired(en - 1));
 
               // ((   )   ) Left flush coax
               nostack_min = std::min(nostack_min,
@@ -217,8 +217,8 @@ struct MfeInternal {
         // Update unpaired.
         // Choose `st` to be unpaired.
         if (st + 1 < en) {
-          u_min = std::min(u_min, dp[st + 1][en][DP_U] + m.PfUnpaired(st));
-          u2_min = std::min(u2_min, dp[st + 1][en][DP_U2] + m.PfUnpaired(st));
+          u_min = std::min(u_min, dp[st + 1][en][DP_U] + m.pf.PfUnpaired(st));
+          u2_min = std::min(u2_min, dp[st + 1][en][DP_U2] + m.pf.PfUnpaired(st));
         }
         for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
           //   (   .   )<   (
@@ -233,7 +233,8 @@ struct MfeInternal {
           const auto base11 =
               dp[st + 1][piv - 1][DP_P] + m.multiloop_hack_b + m.AuGuPenalty(st1b, pl1b);
           // Min is for either placing another unpaired or leaving it as nothing.
-          const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], m.PfUnpairedCum(piv + 1, en));
+          const auto right_unpaired =
+              std::min(dp[piv + 1][en][DP_U], m.pf.PfUnpairedCum(piv + 1, en));
 
           // (   )<   > - U, U_WC?, U_GU?
           u2_min = std::min(u2_min, base00 + dp[piv + 1][en][DP_U]);
@@ -247,27 +248,27 @@ struct MfeInternal {
           if (m.cfg().UseDangleMismatch()) {
             // (   )3<   > 3' - U
             u_min = std::min(
-                u_min, base01 + m.dangle3[pl1b][pb][stb] + m.PfUnpaired(piv) + right_unpaired);
+                u_min, base01 + m.dangle3[pl1b][pb][stb] + m.pf.PfUnpaired(piv) + right_unpaired);
             u2_min = std::min(u2_min,
-                base01 + m.dangle3[pl1b][pb][stb] + m.PfUnpaired(piv) + dp[piv + 1][en][DP_U]);
+                base01 + m.dangle3[pl1b][pb][stb] + m.pf.PfUnpaired(piv) + dp[piv + 1][en][DP_U]);
             // 5(   )<   > 5' - U
             u_min = std::min(
-                u_min, base10 + m.dangle5[pb][stb][st1b] + m.PfUnpaired(st) + right_unpaired);
+                u_min, base10 + m.dangle5[pb][stb][st1b] + m.pf.PfUnpaired(st) + right_unpaired);
             u2_min = std::min(u2_min,
-                base10 + m.dangle5[pb][stb][st1b] + m.PfUnpaired(st) + dp[piv + 1][en][DP_U]);
+                base10 + m.dangle5[pb][stb][st1b] + m.pf.PfUnpaired(st) + dp[piv + 1][en][DP_U]);
             // .(   ).<   > Terminal mismatch - U
             u_min = std::min(u_min,
-                base11 + m.terminal[pl1b][pb][stb][st1b] + m.PfUnpaired(st) + m.PfUnpaired(piv) +
-                    right_unpaired);
+                base11 + m.terminal[pl1b][pb][stb][st1b] + m.pf.PfUnpaired(st) +
+                    m.pf.PfUnpaired(piv) + right_unpaired);
             u2_min = std::min(u2_min,
-                base11 + m.terminal[pl1b][pb][stb][st1b] + m.PfUnpaired(st) + m.PfUnpaired(piv) +
-                    dp[piv + 1][en][DP_U]);
+                base11 + m.terminal[pl1b][pb][stb][st1b] + m.pf.PfUnpaired(st) +
+                    m.pf.PfUnpaired(piv) + dp[piv + 1][en][DP_U]);
           }
 
           if (m.cfg().UseCoaxialStacking()) {
             // .(   ).<(   ) > Left coax - U
-            val = base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.PfUnpaired(st) +
-                m.PfUnpaired(piv) + std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
+            val = base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.pf.PfUnpaired(st) +
+                m.pf.PfUnpaired(piv) + std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
             u_min = std::min(u_min, val);
             u2_min = std::min(u2_min, val);
 
@@ -276,8 +277,8 @@ struct MfeInternal {
             u_min = std::min(u_min, val);
             u2_min = std::min(u2_min, val);
             rcoax_min = std::min(rcoax_min,
-                base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.PfUnpaired(st) +
-                    m.PfUnpaired(piv) + right_unpaired);
+                base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.pf.PfUnpaired(st) +
+                    m.pf.PfUnpaired(piv) + right_unpaired);
 
             // (   )(<   ) > Flush coax - U
             val = base01 + m.stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];

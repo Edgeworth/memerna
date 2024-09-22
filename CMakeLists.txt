@@ -219,10 +219,11 @@ set(MEMERNA_SOURCE
   src/backends/common/base/branch.cpp
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
-  src/backends/common/base/model_base.cpp
   src/backends/common/base/model_base.h
   src/backends/common/base/parse.h
   src/backends/common/base/precomp_base.h
+  src/backends/common/base/pseudofree_model.cpp
+  src/backends/common/base/pseudofree_model.h
   src/backends/common/boltz.h
   src/backends/common/branch.cpp
   src/backends/common/branch.h

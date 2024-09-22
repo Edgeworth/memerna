@@ -149,7 +149,11 @@ class ModelBase {
   // This is protected to prevent construction on the stack, since this structure is large.
   ModelBase() = default;
 
-  static void VerifyForEfn(const Primary& r, const Secondary& s, const Ctds* given_ctd);
+  static void Verify(const Primary& r, const Secondary& s, const Ctds* given_ctd) {
+    verify(r.size() == s.size(), "sequence and secondary structure must be the same length");
+    if (given_ctd)
+      verify(given_ctd->size() == r.size(), "given CTDs must be the same length as the seq");
+  }
 
  private:
   mrna::erg::EnergyCfg cfg_ = {};

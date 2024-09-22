@@ -60,7 +60,7 @@ struct TracebackInternal {
 
   void ComputeExt(int st, int a) {
     // Case: No pair starting here
-    if (a == EXT && st + 1 < N && ext[st + 1][EXT] + m.PfUnpaired(st) == ext[st][EXT]) {
+    if (a == EXT && st + 1 < N && ext[st + 1][EXT] + m.pf.PfUnpaired(st) == ext[st][EXT]) {
       next.push_back({.idx0 = base::DpIndex(st + 1, -1, EXT)});
     }
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -78,8 +78,8 @@ struct TracebackInternal {
       // (   )<.( * ). > Right coax backward
       if (a == EXT_RC && m.cfg().UseCoaxialStacking()) {
         // Don't set CTDs here since they will have already been set.
-        if (base11 + m.MismatchCoaxial(en1b, enb, stb, st1b) + m.PfUnpaired(st) + m.PfUnpaired(en) +
-                ext[en + 1][EXT] ==
+        if (base11 + m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.PfUnpaired(st) +
+                m.pf.PfUnpaired(en) + ext[en + 1][EXT] ==
             ext[st][EXT_RC]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
               .idx1 = base::DpIndex(en + 1, -1, EXT)});
@@ -102,7 +102,7 @@ struct TracebackInternal {
 
       if (m.cfg().UseDangleMismatch()) {
         // (   )3<   > 3'
-        if (base01 + m.dangle3[en1b][enb][stb] + m.PfUnpaired(en) + ext[en + 1][EXT] ==
+        if (base01 + m.dangle3[en1b][enb][stb] + m.pf.PfUnpaired(en) + ext[en + 1][EXT] ==
             ext[st][EXT]) {
           next.push_back({
               .idx0 = base::DpIndex(st, en - 1, DP_P),
@@ -111,14 +111,14 @@ struct TracebackInternal {
           });
         }
         // 5(   )<   > 5'
-        if (base10 + m.dangle5[enb][stb][st1b] + m.PfUnpaired(st) + ext[en + 1][EXT] ==
+        if (base10 + m.dangle5[enb][stb][st1b] + m.pf.PfUnpaired(st) + ext[en + 1][EXT] ==
             ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en, DP_P),
               .idx1 = base::DpIndex(en + 1, -1, EXT),
               .ctd0{st + 1, CTD_5_DANGLE}});
         }
         // .(   ).<   > Terminal mismatch
-        if (base11 + m.terminal[en1b][enb][stb][st1b] + m.PfUnpaired(st) + m.PfUnpaired(en) +
+        if (base11 + m.terminal[en1b][enb][stb][st1b] + m.pf.PfUnpaired(st) + m.pf.PfUnpaired(en) +
                 ext[en + 1][EXT] ==
             ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
@@ -129,8 +129,8 @@ struct TracebackInternal {
 
       if (en < N - 1 && m.cfg().UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax  x
-        auto val =
-            base11 + m.MismatchCoaxial(en1b, enb, stb, st1b) + m.PfUnpaired(st) + m.PfUnpaired(en);
+        auto val = base11 + m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.PfUnpaired(st) +
+            m.pf.PfUnpaired(en);
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
               .idx1 = base::DpIndex(en + 1, -1, EXT_WC),
@@ -184,7 +184,7 @@ struct TracebackInternal {
       const Energy bulge_right = m.Bulge(r, st, en, st + 1, en - 2);
 
       const auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
-          m.penultimate_stack[en1b][enb][stb][st1b] + m.PfPaired(st, en);
+          m.penultimate_stack[en1b][enb][stb][st1b] + m.pf.PfPaired(st, en);
       const auto left = bulge_left + m.penultimate_stack[en1b][enb][stb][st2b];
       const auto right = bulge_right + m.penultimate_stack[en2b][enb][stb][st1b];
 
@@ -240,7 +240,7 @@ struct TracebackInternal {
     }
 
     const auto base_branch_cost =
-        m.AuGuPenalty(stb, enb) + m.PfPaired(st, en) + m.multiloop_hack_a + m.multiloop_hack_b;
+        m.AuGuPenalty(stb, enb) + m.pf.PfPaired(st, en) + m.multiloop_hack_a + m.multiloop_hack_b;
     // (<   ><    >)
     if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == target) {
       next.push_back({
@@ -253,21 +253,21 @@ struct TracebackInternal {
     if (m.cfg().UseDangleMismatch()) {
       // (3<   ><   >) 3'
       if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m.dangle3[stb][st1b][enb] +
-              m.PfUnpaired(st + 1) ==
+              m.pf.PfUnpaired(st + 1) ==
           target) {
         next.push_back(
             {.idx0 = base::DpIndex(st + 2, en - 1, DP_U2), .ctd0{en, CTD_3_DANGLE}, .pair{st, en}});
       }
       // (<   ><   >5) 5'
       if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + m.dangle5[stb][en1b][enb] +
-              m.PfUnpaired(en - 1) ==
+              m.pf.PfUnpaired(en - 1) ==
           target) {
         next.push_back(
             {.idx0 = base::DpIndex(st + 1, en - 2, DP_U2), .ctd0{en, CTD_5_DANGLE}, .pair{st, en}});
       }
       // (.<   ><   >.) Terminal mismatch
       if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + m.terminal[stb][st1b][en1b][enb] +
-              m.PfUnpaired(st + 1) + m.PfUnpaired(en - 1) ==
+              m.pf.PfUnpaired(st + 1) + m.pf.PfUnpaired(en - 1) ==
           target) {
         next.push_back(
             {.idx0 = base::DpIndex(st + 2, en - 2, DP_U2), .ctd0{en, CTD_MISMATCH}, .pair{st, en}});
@@ -282,8 +282,8 @@ struct TracebackInternal {
         const Base pr1b = r[piv + 2];
 
         // (.(   )   .) Left outer coax - P
-        const auto outer_coax =
-            m.MismatchCoaxial(stb, st1b, en1b, enb) + m.PfUnpaired(st + 1) + m.PfUnpaired(en - 1);
+        const auto outer_coax = m.MismatchCoaxial(stb, st1b, en1b, enb) + m.pf.PfUnpaired(st + 1) +
+            m.pf.PfUnpaired(en - 1);
         if (base_branch_cost + dp[st + 2][piv][DP_P] + m.multiloop_hack_b +
                 m.AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
             target) {
@@ -307,8 +307,8 @@ struct TracebackInternal {
         // (.(   ).   ) Left inner coax
         if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + m.multiloop_hack_b +
                 m.AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-                m.MismatchCoaxial(pl1b, plb, st1b, st2b) + m.PfUnpaired(st + 1) +
-                m.PfUnpaired(piv) ==
+                m.MismatchCoaxial(pl1b, plb, st1b, st2b) + m.pf.PfUnpaired(st + 1) +
+                m.pf.PfUnpaired(piv) ==
             target) {
           next.push_back({.idx0 = base::DpIndex(st + 2, piv - 1, DP_P),
               .idx1 = base::DpIndex(piv + 1, en - 1, DP_U),
@@ -319,8 +319,8 @@ struct TracebackInternal {
         // (   .(   ).) Right inner coax
         if (base_branch_cost + dp[st + 1][piv][DP_U] + m.multiloop_hack_b +
                 m.AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-                m.MismatchCoaxial(en2b, en1b, prb, pr1b) + m.PfUnpaired(piv + 1) +
-                m.PfUnpaired(en - 1) ==
+                m.MismatchCoaxial(en2b, en1b, prb, pr1b) + m.pf.PfUnpaired(piv + 1) +
+                m.pf.PfUnpaired(en - 1) ==
             target) {
           next.push_back({.idx0 = base::DpIndex(st + 1, piv, DP_U),
               .idx1 = base::DpIndex(piv + 2, en - 2, DP_P),
@@ -362,7 +362,7 @@ struct TracebackInternal {
     // Deal with the rest of the cases:
     // Left unpaired. Either DP_U or DP_U2.
     if (st + 1 < en && (a == DP_U || a == DP_U2) &&
-        dp[st + 1][en][a] + m.PfUnpaired(st) == dp[st][en][a]) {
+        dp[st + 1][en][a] + m.pf.PfUnpaired(st) == dp[st][en][a]) {
       next.push_back({.idx0 = base::DpIndex(st + 1, en, a)});
     }
 
@@ -390,7 +390,7 @@ struct TracebackInternal {
       bool can_right_paired = true;
       bool can_right_unpaired = false;
       if (a != DP_U2) {
-        const auto unpaired_cum = m.PfUnpairedCum(piv + 1, en);
+        const auto unpaired_cum = m.pf.PfUnpairedCum(piv + 1, en);
         if (unpaired_cum == right_unpaired) can_right_unpaired = true;
         if (unpaired_cum < right_unpaired) {
           can_right_paired = false;
@@ -403,8 +403,8 @@ struct TracebackInternal {
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
         if (a == DP_U_RC) {
-          if (base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.PfUnpaired(st) +
-                  m.PfUnpaired(piv) + right_unpaired ==
+          if (base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.pf.PfUnpaired(st) +
+                  m.pf.PfUnpaired(piv) + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             Expansion exp{.idx0 = base::DpIndex(st + 1, piv - 1, DP_P)};
@@ -439,7 +439,7 @@ struct TracebackInternal {
 
       if (m.cfg().UseDangleMismatch()) {
         // (   )3<   > 3' - U, U2
-        if (base01 + m.dangle3[pl1b][pb][stb] + m.PfUnpaired(piv) + right_unpaired ==
+        if (base01 + m.dangle3[pl1b][pb][stb] + m.pf.PfUnpaired(piv) + right_unpaired ==
             dp[st][en][a]) {
           Expansion exp{.idx0 = base::DpIndex(st, piv - 1, DP_P), .ctd0{st, CTD_3_DANGLE}};
           if (can_right_unpaired) next.push_back(exp);
@@ -449,7 +449,7 @@ struct TracebackInternal {
           }
         }
         // 5(   )<   > 5' - U, U2
-        if (base10 + m.dangle5[pb][stb][st1b] + m.PfUnpaired(st) + right_unpaired ==
+        if (base10 + m.dangle5[pb][stb][st1b] + m.pf.PfUnpaired(st) + right_unpaired ==
             dp[st][en][a]) {
           Expansion exp{.idx0 = base::DpIndex(st + 1, piv, DP_P), .ctd0{st + 1, CTD_5_DANGLE}};
           if (can_right_unpaired) next.push_back(exp);
@@ -459,7 +459,7 @@ struct TracebackInternal {
           }
         }
         // .(   ).<   > Terminal mismatch - U, U2
-        if (base11 + m.terminal[pl1b][pb][stb][st1b] + m.PfUnpaired(st) + m.PfUnpaired(piv) +
+        if (base11 + m.terminal[pl1b][pb][stb][st1b] + m.pf.PfUnpaired(st) + m.pf.PfUnpaired(piv) +
                 right_unpaired ==
             dp[st][en][a]) {
           Expansion exp{.idx0 = base::DpIndex(st + 1, piv - 1, DP_P), .ctd0{st + 1, CTD_MISMATCH}};
@@ -473,8 +473,8 @@ struct TracebackInternal {
 
       if (m.cfg().UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax - U, U2
-        auto val =
-            base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.PfUnpaired(st) + m.PfUnpaired(piv);
+        auto val = base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + m.pf.PfUnpaired(st) +
+            m.pf.PfUnpaired(piv);
         if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
           next.push_back({
               .idx0 = base::DpIndex(st + 1, piv - 1, DP_P),
@@ -528,7 +528,7 @@ struct TracebackInternal {
     const auto bulge_left = m.Bulge(r, st, en, st + 2, en - 1);
     const auto bulge_right = m.Bulge(r, st, en, st + 1, en - 2);
 
-    auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + m.PfPaired(st, en);
+    auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + m.pf.PfPaired(st, en);
     if (length == 2 &&
         none + nostack[st + 1][en - 1] + m.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
             penult[st][en][length]) {

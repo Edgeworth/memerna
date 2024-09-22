@@ -33,15 +33,15 @@ Energy Model::Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structur
   Energy energy = ZERO_E;
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf_unpaired_cum.empty()) {
-    auto unpaired = pf_unpaired_cum[en] - pf_unpaired_cum[st + 1];
+  if (!pf.pf_unpaired_cum.empty()) {
+    auto unpaired = pf.pf_unpaired_cum[en] - pf.pf_unpaired_cum[st + 1];
     if (s) (*s)->AddNote("{}e - unpaired pseudofree energy", unpaired);
     energy += unpaired;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf_paired.empty()) {
-    auto paired = pf_paired[st] + pf_paired[en];
+  if (!pf.pf_paired.empty()) {
+    auto paired = pf.pf_paired[st] + pf.pf_paired[en];
     if (s) (*s)->AddNote("{}e - paired pseudofree energy", paired);
     energy += paired;
   }
@@ -120,19 +120,19 @@ Energy Model::Bulge(
   }
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf_unpaired_cum.empty()) {
-    auto unpaired5 = pf_unpaired_cum[ist] - pf_unpaired_cum[ost + 1];
+  if (!pf.pf_unpaired_cum.empty()) {
+    auto unpaired5 = pf.pf_unpaired_cum[ist] - pf.pf_unpaired_cum[ost + 1];
     if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
     energy += unpaired5;
 
-    auto unpaired3 = pf_unpaired_cum[oen] - pf_unpaired_cum[ien + 1];
+    auto unpaired3 = pf.pf_unpaired_cum[oen] - pf.pf_unpaired_cum[ien + 1];
     if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
     energy += unpaired3;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf_paired.empty()) {
-    auto paired = pf_paired[ost] + pf_paired[oen];
+  if (!pf.pf_paired.empty()) {
+    auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
     if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -190,19 +190,19 @@ Energy Model::InternalLoop(
   Energy energy = ZERO_E;
 
   // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf_unpaired_cum.empty()) {
-    auto unpaired5 = pf_unpaired_cum[ist] - pf_unpaired_cum[ost + 1];
+  if (!pf.pf_unpaired_cum.empty()) {
+    auto unpaired5 = pf.pf_unpaired_cum[ist] - pf.pf_unpaired_cum[ost + 1];
     if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
     energy += unpaired5;
 
-    auto unpaired3 = pf_unpaired_cum[oen] - pf_unpaired_cum[ien + 1];
+    auto unpaired3 = pf.pf_unpaired_cum[oen] - pf.pf_unpaired_cum[ien + 1];
     if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
     energy += unpaired3;
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf_paired.empty()) {
-    auto paired = pf_paired[ost] + pf_paired[oen];
+  if (!pf.pf_paired.empty()) {
+    auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
     if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -287,8 +287,8 @@ Energy Model::TwoLoop(
     auto energy = stack[r[ost]][r[ist]][r[ien]][r[oen]];
 
     // Add paired nucleotide pseudofree energy, if it exists.
-    if (!pf_paired.empty()) {
-      auto paired = pf_paired[ost] + pf_paired[oen];
+    if (!pf.pf_paired.empty()) {
+      auto paired = pf.pf_paired[ost] + pf.pf_paired[oen];
       if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
       energy += paired;
     }
@@ -312,8 +312,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
   }
 
   // Add paired nucleotide pseudofree energy, if it exists.
-  if (!exterior_loop && !pf_paired.empty()) {
-    auto paired = pf_paired[st] + pf_paired[en];
+  if (!exterior_loop && !pf.pf_paired.empty()) {
+    auto paired = pf.pf_paired[st] + pf.pf_paired[en];
     if (struc) struc->AddNote("{}e - opening pair pseudofree energy", paired);
     energy += paired;
   }
@@ -325,8 +325,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     num_unpaired += s[branch_st] - branch_st + 1;
 
     // Add unpaired nucleotide pseudofree energy, if it exists.
-    if (!pf_unpaired_cum.empty()) {
-      pf_unpaired_energy += pf_unpaired_cum[branch_st] - pf_unpaired_cum[pf_last_unpaired];
+    if (!pf.pf_unpaired_cum.empty()) {
+      pf_unpaired_energy += pf.pf_unpaired_cum[branch_st] - pf.pf_unpaired_cum[pf_last_unpaired];
       pf_last_unpaired = s[branch_st] + 1;
     }
 
@@ -342,9 +342,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
     }
   }
 
-  if (!pf_unpaired_cum.empty()) {
+  if (!pf.pf_unpaired_cum.empty()) {
     int pf_en = exterior_loop ? en + 1 : en;
-    pf_unpaired_energy += pf_unpaired_cum[pf_en] - pf_unpaired_cum[pf_last_unpaired];
+    pf_unpaired_energy += pf.pf_unpaired_cum[pf_en] - pf.pf_unpaired_cum[pf_last_unpaired];
     energy += pf_unpaired_energy;
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
@@ -523,8 +523,8 @@ constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int o
 // If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
-  ModelBase::VerifyForEfn(r, s, given_ctd);
-  VerifyValidFor(r);
+  ModelBase::Verify(r, s, given_ctd);
+  pf.Verify(r);
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
@@ -574,17 +574,6 @@ void Model::LoadRandom(std::mt19937& eng) {
   // don't have to be the same.
   std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
   RANDOMISE_DATA((*this), penultimate_stack);
-}
-
-void Model::LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired) {
-  pf_paired = std::move(paired);
-  pf_unpaired = std::move(unpaired);
-  if (!pf_unpaired.empty()) {
-    pf_unpaired_cum.resize(pf_unpaired.size() + 1);
-    pf_unpaired_cum[0] = ZERO_E;
-    for (size_t i = 0; i < pf_unpaired.size(); ++i)
-      pf_unpaired_cum[i + 1] = pf_unpaired_cum[i] + pf_unpaired[i];
-  }
 }
 
 }  // namespace mrna::md::stack
