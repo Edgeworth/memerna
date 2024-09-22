@@ -23,6 +23,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "tests/init.h"
+#include "tests/util.h"
 
 namespace mrna::md::base {
 
@@ -193,6 +194,398 @@ TEST(EnergyTestBase, T04) {
       {E(0.50 - 0.60), E(-0.60), E(0.50 - 0.60), E(-0.60)}};
   EXPECT_EQ(sizeof(augubranch), sizeof(pc.augubranch));
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
+}
+
+TEST(EnergyTestBase, T04Pseudofree) {
+  auto m = base_t04;
+
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))");
+    EXPECT_EQ(E(-3.88) + pseudofree, energy);
+  }
+
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "UAGGUCAGCCCCUGGUCUA", "((((((((...))))))))");
+    EXPECT_EQ(E(-1.97) + pseudofree, energy);
+  }
+
+  // Penultimate stacking tests:
+
+  // Hairpin + helices tests:
+  // Test penultimate stacking not applied lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCCCCU", ".(...).");
+    EXPECT_EQ(E(5.70) + pseudofree, energy);
+  }
+
+  // AU end on CG (0.44):
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCCCCU", "((...))");
+    EXPECT_EQ(E(5.32) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAGCCCCUU", ".((...)).");
+    EXPECT_EQ(E(4.62) + pseudofree, energy);
+  }
+
+  // Counting twice, two AU on AUs (0.22):
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AACCCUU", "((...))");
+    EXPECT_EQ(E(6.97) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAACCCUUU", ".((...)).");
+    EXPECT_EQ(E(6.27) + pseudofree, energy);
+  }
+
+  // Special hairpin with lonely pair unaffected:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "ACAGUGCU", "(......)");
+    EXPECT_EQ(E(3.40) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAACAGUGCUUU", "..(......)..");
+    EXPECT_EQ(E(2.70) + pseudofree, energy);
+  }
+
+  // Special hairpins:
+  // GU end on AU at 0; AU end on GU at 1
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GACAGUGCUU", "((......))");
+    EXPECT_EQ(E(2.13) + pseudofree, energy);
+  }
+  // GU end on AU at 1; AU end on GU at 2
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGACAGUGCUUU", ".((......)).");
+    EXPECT_EQ(E(1.43) + pseudofree, energy);
+  }
+
+  // Single nuc bulge loop - treated as continuous.
+  // AU end on GU at 0, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCGAAAAUUUU", "((.((...))))");
+    EXPECT_EQ(E(7.88) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 5
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGCGAAAAUUUUU", ".((.((...)))).");
+    EXPECT_EQ(E(7.18) + pseudofree, energy);
+  }
+
+  // Single nuc bulge, continuous single on outer:
+  // GU end on GU at 0; AU end on GU at 3
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GCGAAAAUUU", "(.((...)))");
+    EXPECT_EQ(E(8.43) + pseudofree, energy);
+  }
+  // GU end on GU at 1; AU end on GU at 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGCGAAAAUUUU", ".(.((...))).");
+    EXPECT_EQ(E(7.73) + pseudofree, energy);
+  }
+
+  // Single nuc bulge, continuous single on inner:
+  // AU end on GU at 0, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCAAAAUUU", "((.(...)))");
+    EXPECT_EQ(E(8.38) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 5
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGCAAAAUUUU", ".((.(...))).");
+    EXPECT_EQ(E(7.68) + pseudofree, energy);
+  }
+
+  // Single nuc bulge, continuous single on both:
+  // GU end on AU at 0; AU end on GU at 2
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GCAAAAUU", "(.(...))");
+    EXPECT_EQ(E(8.93) + pseudofree, energy);
+  }
+  // GU end on AU at 1; AU end on GU at 3
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGCAAAAUUU", ".(.(...)).");
+    EXPECT_EQ(E(8.23) + pseudofree, energy);
+  }
+
+  // Multi nuc bulge loop:
+  // AU end on GU at 0, 5; GU end on AU at 1, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCCGAAAAUUUU", "((..((...))))");
+    EXPECT_EQ(E(8.38) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 6; GU end on AU at 2, 5
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGCCAGAAAUUUUU", ".((..((...)))).");
+    EXPECT_EQ(E(8.40) + pseudofree, energy);
+  }
+
+  // Multi nuc bulge loop with lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GCCGAAAUU", "(..(...))");
+    EXPECT_EQ(E(10.20) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGCCGAAAUUU", ".(..(...)).");
+    EXPECT_EQ(E(9.50) + pseudofree, energy);
+  }
+
+  // Internal loop:
+  // AU end on GU at 0, 4; GU end on AU at 1, 3
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGACCCUUCCCUU", "((.((...))...))");
+    EXPECT_EQ(E(9.78) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 5; GU end on AU at 2, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGGGACCCUUCCCUUU", ".((.((...))...)).");
+    EXPECT_EQ(E(9.08) + pseudofree, energy);
+  }
+
+  // Internal loop with lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAACCCUCCCU", "(.(...)...)");
+    EXPECT_EQ(E(11.60) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAAACCCUCCCUU", ".(.(...)...).");
+    EXPECT_EQ(E(10.90) + pseudofree, energy);
+  }
+
+  // Special 1x1 internal loop with helix affected by penultimate stack on external
+  // sides only:
+  // AU end on GU at 0, 4; GU end on AU at 1, 3
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGACCCUUCUU", "((.((...)).))");
+    EXPECT_EQ(E(7.98) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 5; GU end on AU at 2, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGGGACCCUUCUUU", ".((.((...)).)).");
+    EXPECT_EQ(E(7.28) + pseudofree, energy);
+  }
+
+  // Special 1x1 internal loop with lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAACCCUAU", "(.(...).)");
+    EXPECT_EQ(E(9.80) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAAACCCUAUU", ".(.(...).).");
+    EXPECT_EQ(E(9.10) + pseudofree, energy);
+  }
+
+  // Special 1x2 internal loop with helix affected by penultimate stack on external
+  // sides only:
+  // AU end on GU at 0, 4; GU end on AU at 1, 3
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGACCCUUCCUU", "((.((...))..))");
+    EXPECT_EQ(E(9.78) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 5; GU end on AU at 2, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGGGACCCUUCCUUU", ".((.((...))..)).");
+    EXPECT_EQ(E(9.08) + pseudofree, energy);
+  }
+
+  // Special 1x2 internal loop with lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAACCCUCAU", "(.(...)..)");
+    EXPECT_EQ(E(11.60) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAAACCCUCAUU", ".(.(...)..).");
+    EXPECT_EQ(E(10.90) + pseudofree, energy);
+  }
+
+  // Special 2x2 internal loop with helix affected by penultimate stack on external
+  // sides only:
+  // AU end on GU at 0, 5; GU end on AU at 1, 4
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGGACCCUUCCUU", "((..((...))..))");
+    EXPECT_EQ(E(9.18) + pseudofree, energy);
+  }
+  // AU end on GU at 1, 6; GU end on AU at 2, 5
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GAGGGGACCCUUCCUUU", ".((..((...))..)).");
+    EXPECT_EQ(E(8.48) + pseudofree, energy);
+  }
+
+  // Special 2x2 internal loop with lonely pairs:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAAACCCUAAU", "(..(...)..)");
+    EXPECT_EQ(E(10.70) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AAAAACCCUAAUU", ".(..(...)..).");
+    EXPECT_EQ(E(10.00) + pseudofree, energy);
+  }
+
+  // Multiloop:
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "ACACCCUCCACCCUCCACCCUCU", "(.(...)..(...)..(...).)");
+    EXPECT_EQ(E(27.70) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "AACACCCUCCACCCUCCACCCUCUU", ".(.(...)..(...)..(...).).");
+    EXPECT_EQ(E(27.00) + pseudofree, energy);
+  }
+
+  // AU end on GU at 0; GU end on AU at 1
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "AGCACCCUCCACCCUCCACCCUCUU", "((.(...)..(...)..(...).))");
+    EXPECT_EQ(E(27.15) + pseudofree, energy);
+  }
+
+  // AU end on GU at 1; GU end on AU at 2
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "AAGCACCCUCCACCCUCCACCCUCUUU", ".((.(...)..(...)..(...).)).");
+    EXPECT_EQ(E(26.45) + pseudofree, energy);
+  }
+
+  // AU end on GU at 1, 4, 13; GU end on AU at 2, 5, 14
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "AAGCAGCCCUUCCAGCCCUUCCACCCUCUUU", ".((.((...))..((...))..(...).)).");
+    EXPECT_EQ(E(25.35) + pseudofree, energy);
+  }
+
+  // Flush coax stack
+  // GU end on AU at 0, 7; AU end on GU at 1, 8 (not taken as continuous)
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GACCCUUGACCCUU", "((...))((...))");
+    EXPECT_EQ(E(13.26) + pseudofree, energy);
+  }
+
+  // GU end on GC at 1; GU end on AU at 7; AU end on GU at 8
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGCCCUCGACCCUU", "((...))((...))");
+    EXPECT_EQ(E(11.09) + pseudofree, energy);
+  }
+
+  // GU end on AU at 1, 8; AU end on GU at 2, 9
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGACCCUUGACCCUUU", ".((...))((...)).");
+    EXPECT_EQ(E(12.86) + pseudofree, energy);
+  }
+
+  // GU end on GC at 2; GU end on AU at 8; AU end on GU at 9
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGCCCUCGACCCUUU", ".((...))((...)).");
+    EXPECT_EQ(E(11.09) + pseudofree, energy);
+  }
+
+  // Flush coax stack with lonely pairs:
+  // Not counted as continuous, so no penultimate stacking.
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCCCUACCCUU", ".(...)(...).");
+    EXPECT_EQ(E(14.80) + pseudofree, energy);
+  }
+
+  // Mismatch mediated coax stack
+  // GU end on AU at 1, 9; AU end on GU at 2, 10
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGACCCUUAGACCCUUU", ".((...)).((...)).");
+    EXPECT_EQ(E(10.06) + pseudofree, energy);
+  }
+
+  // GU end on GC at 2; GU end on AU at 9; AU end on GU at 10
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGCCCUCAGACCCUUU", ".((...)).((...)).");
+    EXPECT_EQ(E(8.90) + pseudofree, energy);
+  }
+
+  // Mismatch mediated coax stack with lonely pairs:
+  // Not counted as continuous, so no penultimate stacking.
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGCCCUAACCCUU", ".(...).(...).");
+    EXPECT_EQ(E(12.60) + pseudofree, energy);
+  }
+
+  // Other tests:
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GCAAAGCC", "((...).)");
+    EXPECT_EQ(E(4.45) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "CCCAAAAUG", ".(.(...))");
+    EXPECT_EQ(E(5.71) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "UACAGA", "(....)");
+    EXPECT_EQ(E(5.50) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGUCAUCCG", ".(((...))).");
+    EXPECT_EQ(E(-0.59) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "AGAGAAACAAAU", "(..(...)...)");
+    EXPECT_EQ(E(8.00) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "CGUUGCCUAAAAAGGAAACAAG", "(.............(...)..)");
+    EXPECT_EQ(E(9.50) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "CCCGAAACAG", "(..(...).)");
+    EXPECT_EQ(E(7.70) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GACAGAAACGCUGAAUC", "((..(...)......))");
+    EXPECT_EQ(E(7.45) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "CUGAAACUGGAAACAGAAAUG", "(.(...)..(...).(...))");
+    EXPECT_EQ(E(17.30) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "UUAGAAACGCAAAGAGGUCCAAAGA", "(..(...).(...).....(...))");
+    EXPECT_EQ(E(18.25) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "AGCUAAAAACAAAGGUGAAACGU", "(..(...).(...)..(...).)");
+    EXPECT_EQ(E(17.60) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "CUGAAACUGGAAACAGAAAUG", ".(.(...)(....)......)");
+    EXPECT_EQ(E(13.10) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m,
+        "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
+        "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))....");
+    EXPECT_EQ(E(-27.41) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] =
+        GetPseudofree(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)");
+    EXPECT_EQ(E(17.90) + pseudofree, energy);
+  }
+
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGUCAAAGGUC", "((((...))))");
+    EXPECT_EQ(E(3.63) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "GGGGAAACCCC", "((((...))))");
+    EXPECT_EQ(E(-4.38) + pseudofree, energy);
+  }
+  {
+    const auto& [energy, pseudofree] = GetPseudofree(m, "UGACAAAGGCGA", "(..(...)...)");
+    EXPECT_EQ(E(7.20) + pseudofree, energy);
+  }
 }
 
 #endif
