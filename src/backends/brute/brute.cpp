@@ -240,7 +240,7 @@ Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
     const uint32_t bit = b & 15;
     struc.bits[chunk] |= pack << bit;
     const uint32_t space = 16 - bit;
-    if (space < CTD_MAX_BITS + PT_MAX_BITS) struc.bits[chunk + 1] = pack >> space;
+    if (space < CTD_MAX_BITS + PT_MAX_BITS) struc.bits[chunk + 1] = uint16_t(pack >> space);
   }
   return struc;
 }

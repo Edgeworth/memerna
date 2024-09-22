@@ -523,6 +523,8 @@ constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int o
 // If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
+  ModelBase::VerifyForEfn(r, s, given_ctd);
+  VerifyValidFor(r);
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
@@ -538,7 +540,6 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
 
 EnergyResult Model::TotalEnergy(
     const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
-  VerifyLengths(r, s, given_ctd);
   auto res = SubEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
   if (s[0] == static_cast<int>(r.size() - 1)) {
     auto extra_energy = ZERO_E;
@@ -584,13 +585,6 @@ void Model::LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy>
     for (size_t i = 0; i < pf_unpaired.size(); ++i)
       pf_unpaired_cum[i + 1] = pf_unpaired_cum[i] + pf_unpaired[i];
   }
-}
-
-void Model::VerifyLengths(const Primary& r, const Secondary& s, const Ctds* given_ctd) const {
-  verify(r.size() == s.size(), "sequence and secondary structure must be the same length");
-  if (given_ctd)
-    verify(given_ctd->size() == r.size(), "given CTDs must be the same length as the seq");
-  VerifyValidFor(r);
 }
 
 }  // namespace mrna::md::stack

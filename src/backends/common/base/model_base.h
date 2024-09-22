@@ -149,6 +149,8 @@ class ModelBase {
   // This is protected to prevent construction on the stack, since this structure is large.
   ModelBase() = default;
 
+  static void VerifyForEfn(const Primary& r, const Secondary& s, const Ctds* given_ctd);
+
  private:
   mrna::erg::EnergyCfg cfg_ = {};
 };

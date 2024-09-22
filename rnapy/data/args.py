@@ -38,6 +38,7 @@ memevault_options = cloup.option(
     "--memevault-path",
     envvar="MEMEVAULT",
     show_envvar=True,
+    required=False,
     type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
 )
 
