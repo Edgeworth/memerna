@@ -133,10 +133,6 @@ add_compile_options(-Wall -Wextra -Wconversion -Wno-sign-conversion -pedantic)
 
 # Source set definitions.
 set(MEMERNA_SOURCE
-
-  # src/backends/stack/pfn/pfn_exterior.cpp
-  # src/backends/stack/pfn/pfn_opt.cpp
-  # src/backends/stack/pfn/pfn.h
   src/api/bridge/bridge.cpp
   src/api/bridge/bridge.h
   src/api/bridge/memerna.cpp
@@ -223,6 +219,7 @@ set(MEMERNA_SOURCE
   src/backends/common/base/branch.cpp
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
+  src/backends/common/base/model_base.cpp
   src/backends/common/base/model_base.h
   src/backends/common/base/parse.h
   src/backends/common/base/precomp_base.h

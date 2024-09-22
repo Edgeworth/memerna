@@ -92,8 +92,6 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  private:
   friend class ModelMixin<Model>;
 
-  void VerifyLengths(const Primary& r, const Secondary& s, const Ctds* given_ctd) const;
-
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 
