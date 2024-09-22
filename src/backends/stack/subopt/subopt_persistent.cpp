@@ -191,7 +191,7 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
     if (st == N) {
       exps.push_back({.delta = ZERO_E});
     } else {
-      energy = ext[st + 1][EXT] + m_->PfUnpaired(st) - ext[st][EXT];
+      energy = ext[st + 1][EXT] + m_->pf.PfUnpaired(st) - ext[st][EXT];
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0 = base::DpIndex(st + 1, -1, EXT)});
     }
@@ -211,8 +211,8 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
     // (   )<.( * ). > Right coax backward
     if (a == EXT_RC && m_->cfg().UseCoaxialStacking()) {
       // Don't set CTDs here since they will have already been set.
-      energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->PfUnpaired(st) +
-          m_->PfUnpaired(en) + ext[en + 1][EXT];
+      energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->pf.PfUnpaired(st) +
+          m_->pf.PfUnpaired(en) + ext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
@@ -242,7 +242,7 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
 
     if (m_->cfg().UseDangleMismatch()) {
       // (   )3<   > 3'
-      energy = base01 + m_->dangle3[en1b][enb][stb] + m_->PfUnpaired(en) + ext[en + 1][EXT];
+      energy = base01 + m_->dangle3[en1b][enb][stb] + m_->pf.PfUnpaired(en) + ext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({
             .delta = energy,
@@ -252,7 +252,7 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
         });
 
       // 5(   )<   > 5'
-      energy = base10 + m_->dangle5[enb][stb][st1b] + m_->PfUnpaired(st) + ext[en + 1][EXT];
+      energy = base10 + m_->dangle5[enb][stb][st1b] + m_->pf.PfUnpaired(st) + ext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en, DP_P),
@@ -260,8 +260,8 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
             .ctd0{st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch
-      energy = base11 + m_->terminal[en1b][enb][stb][st1b] + m_->PfUnpaired(st) +
-          m_->PfUnpaired(en) + ext[en + 1][EXT];
+      energy = base11 + m_->terminal[en1b][enb][stb][st1b] + m_->pf.PfUnpaired(st) +
+          m_->pf.PfUnpaired(en) + ext[en + 1][EXT];
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
@@ -271,8 +271,8 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
 
     if (en < N - 1 && m_->cfg().UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax
-      energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->PfUnpaired(st) +
-          m_->PfUnpaired(en);
+      energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->pf.PfUnpaired(st) +
+          m_->pf.PfUnpaired(en);
       if (energy + ext[en + 1][EXT_WC] <= delta)
         exps.push_back({.delta = energy + ext[en + 1][EXT_WC],
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
@@ -340,7 +340,7 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
     const Energy bulge_right = m_->Bulge(r_, st, en, st + 1, en - 2);
 
     const auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] +
-        m_->penultimate_stack[en1b][enb][stb][st1b] + m_->PfPaired(st, en) - dp[st][en][DP_P];
+        m_->penultimate_stack[en1b][enb][stb][st1b] + m_->pf.PfPaired(st, en) - dp[st][en][DP_P];
     const auto left = bulge_left + m_->penultimate_stack[en1b][enb][stb][st2b] - dp[st][en][DP_P];
     const auto right = bulge_right + m_->penultimate_stack[en2b][enb][stb][st1b] - dp[st][en][DP_P];
 
@@ -400,7 +400,7 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
   energy = m_->Hairpin(r_, st, en) - target;
   if (energy <= delta) exps.push_back({.delta = energy, .pair{st, en}});
 
-  const auto base_branch_cost = m_->AuGuPenalty(stb, enb) + m_->PfPaired(st, en) +
+  const auto base_branch_cost = m_->AuGuPenalty(stb, enb) + m_->pf.PfPaired(st, en) +
       m_->multiloop_hack_a + m_->multiloop_hack_b - target;
   // (<   ><    >)
   energy = base_branch_cost + dp[st + 1][en - 1][DP_U2];
@@ -415,7 +415,7 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
   if (m_->cfg().UseDangleMismatch()) {
     // (3<   ><   >) 3'
     energy = base_branch_cost + dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
-        m_->PfUnpaired(st + 1);
+        m_->pf.PfUnpaired(st + 1);
     if (energy <= delta)
       exps.push_back({.delta = energy,
           .idx0 = base::DpIndex(st + 2, en - 1, DP_U2),
@@ -424,7 +424,7 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
 
     // (<   ><   >5) 5'
     energy = base_branch_cost + dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb] +
-        m_->PfUnpaired(en - 1);
+        m_->pf.PfUnpaired(en - 1);
     if (energy <= delta)
       exps.push_back({.delta = energy,
           .idx0 = base::DpIndex(st + 1, en - 2, DP_U2),
@@ -433,7 +433,7 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
 
     // (.<   ><   >.) Terminal mismatch
     energy = base_branch_cost + dp[st + 2][en - 2][DP_U2] + m_->terminal[stb][st1b][en1b][enb] +
-        m_->PfUnpaired(st + 1) + m_->PfUnpaired(en - 1);
+        m_->pf.PfUnpaired(st + 1) + m_->pf.PfUnpaired(en - 1);
     if (energy <= delta)
       exps.push_back({.delta = energy,
           .idx0 = base::DpIndex(st + 2, en - 2, DP_U2),
@@ -449,8 +449,8 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
       const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->PfUnpaired(st + 1) +
-          m_->PfUnpaired(en - 1);
+      const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) +
+          m_->pf.PfUnpaired(st + 1) + m_->pf.PfUnpaired(en - 1);
 
       energy = base_branch_cost + dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
           m_->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax;
@@ -476,7 +476,8 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
       // (.(   ).   ) Left inner coax
       energy = base_branch_cost + dp[st + 2][piv - 1][DP_P] + m_->multiloop_hack_b +
           m_->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-          m_->MismatchCoaxial(pl1b, plb, st1b, st2b) + m_->PfUnpaired(st + 1) + m_->PfUnpaired(piv);
+          m_->MismatchCoaxial(pl1b, plb, st1b, st2b) + m_->pf.PfUnpaired(st + 1) +
+          m_->pf.PfUnpaired(piv);
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 2, piv - 1, DP_P),
@@ -488,8 +489,8 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
       // (   .(   ).) Right inner coax
       energy = base_branch_cost + dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
           m_->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-          m_->MismatchCoaxial(en2b, en1b, prb, pr1b) + m_->PfUnpaired(piv + 1) +
-          m_->PfUnpaired(en - 1);
+          m_->MismatchCoaxial(en2b, en1b, prb, pr1b) + m_->pf.PfUnpaired(piv + 1) +
+          m_->pf.PfUnpaired(en - 1);
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, piv, DP_U),
@@ -536,7 +537,7 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
 
   // Left unpaired. Either DP_U or DP_U2.
   if (st + 1 < en && (a == DP_U || a == DP_U2)) {
-    energy = dp[st + 1][en][a] + m_->PfUnpaired(st) - dp[st][en][a];
+    energy = dp[st + 1][en][a] + m_->pf.PfUnpaired(st) - dp[st][en][a];
     if (energy <= delta) exps.push_back({.delta = energy, .idx0 = base::DpIndex(st + 1, en, a)});
   }
 
@@ -559,14 +560,14 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
 
     const auto right_paired = dp[piv + 1][en][DP_U];
     // This is only usable if a != DP_U2 since this leaves everything unpaired.
-    const auto right_unpaired = m_->PfUnpairedCum(piv + 1, en);
+    const auto right_unpaired = m_->pf.PfUnpairedCum(piv + 1, en);
 
     if (m_->cfg().UseCoaxialStacking()) {
       // Check a == U_RC:
       // (   )<.( ** ). > Right coax backward
       if (a == DP_U_RC) {
-        energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->PfUnpaired(st) +
-            m_->PfUnpaired(piv);
+        energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.PfUnpaired(st) +
+            m_->pf.PfUnpaired(piv);
         if (energy + right_unpaired <= delta)
           exps.push_back(
               {.delta = energy + right_unpaired, .idx0 = base::DpIndex(st + 1, piv - 1, DP_P)});
@@ -619,7 +620,7 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
 
     if (m_->cfg().UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
-      energy = base01 + m_->dangle3[pl1b][pb][stb] + m_->PfUnpaired(piv);
+      energy = base01 + m_->dangle3[pl1b][pb][stb] + m_->pf.PfUnpaired(piv);
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired,
             .idx0 = base::DpIndex(st, piv - 1, DP_P),
@@ -632,7 +633,7 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
             .ctd0{st, CTD_3_DANGLE}});
 
       // 5(   )<   > 5' - U, U2
-      energy = base10 + m_->dangle5[pb][stb][st1b] + m_->PfUnpaired(st);
+      energy = base10 + m_->dangle5[pb][stb][st1b] + m_->pf.PfUnpaired(st);
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired,
             .idx0 = base::DpIndex(st + 1, piv, DP_P),
@@ -645,8 +646,8 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
             .ctd0{st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch - U, U2
-      energy =
-          base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->PfUnpaired(st) + m_->PfUnpaired(piv);
+      energy = base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->pf.PfUnpaired(st) +
+          m_->pf.PfUnpaired(piv);
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired,
             .idx0 = base::DpIndex(st + 1, piv - 1, DP_P),
@@ -661,8 +662,8 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
 
     if (m_->cfg().UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
-      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->PfUnpaired(st) +
-          m_->PfUnpaired(piv);
+      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.PfUnpaired(st) +
+          m_->pf.PfUnpaired(piv);
       if (energy + dp[piv + 1][en][DP_U_WC] <= delta)
         exps.push_back({
             .delta = energy + dp[piv + 1][en][DP_U_WC],
@@ -729,7 +730,7 @@ std::vector<Expansion> SuboptPersistent::PenultimateExpansions(
   const auto bulge_left = m_->Bulge(r_, st, en, st + 2, en - 1);
   const auto bulge_right = m_->Bulge(r_, st, en, st + 1, en - 2);
 
-  auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + m_->PfPaired(st, en) -
+  auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + m_->pf.PfPaired(st, en) -
       penult[st][en][length];
   if (length == 2) {
     energy = none + nostack[st + 1][en - 1] +

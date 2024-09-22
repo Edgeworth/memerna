@@ -14,6 +14,7 @@
 #include "api/energy/energy.h"
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
+#include "backends/common/base/pseudofree_model.h"
 #include "backends/common/model_mixin.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -29,13 +30,8 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::STACK;
 
+  base::PseudofreeModel pf;
   Energy penultimate_stack[4][4][4][4] = {};
-
-  // Pseudofree energies. Ignored if empty.
-  std::vector<Energy> pf_paired;
-  std::vector<Energy> pf_unpaired;
-  // Cumulative sum of size N+1 (first element is nothing).
-  std::vector<Energy> pf_unpaired_cum;
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
@@ -47,22 +43,6 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
   Energy MultiloopEnergy(const Primary& r, const Secondary& s, int st, int en,
       std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
       std::unique_ptr<Structure>* sstruc = nullptr) const;
-
-  [[nodiscard]] constexpr Energy PfUnpaired(int n) const {
-    if (pf_unpaired.empty()) return ZERO_E;
-    return pf_unpaired[n];
-  }
-
-  // Inclusive range, unlike pf_unpaired_cum directly.
-  [[nodiscard]] constexpr Energy PfUnpairedCum(int st, int en) const {
-    if (pf_unpaired.empty()) return ZERO_E;
-    return pf_unpaired_cum[en + 1] - pf_unpaired_cum[st];
-  }
-
-  [[nodiscard]] constexpr Energy PfPaired(int st, int en) const {
-    if (pf_paired.empty()) return ZERO_E;
-    return pf_paired[st] + pf_paired[en];
-  }
 
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
   // Handles bulge loops.
@@ -77,14 +57,9 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
 
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
-  void VerifyValidFor(const Primary& r) const {
-    if (!pf_paired.empty())
-      verify(pf_paired.size() == r.size(), "pseudofree paired must be same length as seq");
-    if (!pf_unpaired.empty())
-      verify(pf_unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+  void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+    pf.Load(std::move(pf_paired), std::move(pf_unpaired));
   }
-
-  void LoadPseudofreeEnergy(std::vector<Energy> paired, std::vector<Energy> unpaired);
 
   void LoadFromModelPath(const std::string& path);
   void LoadRandom(std::mt19937& eng);

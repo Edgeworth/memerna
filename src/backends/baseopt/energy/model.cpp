@@ -439,7 +439,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 // If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
     int en, bool build_structure) const {
-  ModelBase::VerifyForEfn(r, s, given_ctd);
+  ModelBase::Verify(r, s, given_ctd);
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
