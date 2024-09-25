@@ -32,6 +32,7 @@ constexpr int powi(int base, int exp) {
 
 using flt =
     boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_PRECISION>>;
+#define FLTFMT "{:.20f}"
 
 // Stringify to ensure
 #define FLT(x) static_cast<flt>(#x)
@@ -40,10 +41,13 @@ using flt =
 
 #if FLOAT_PRECISION == 6
 using flt = float;
+#define FLTFMT "{:.6f}"
 #elif FLOAT_PRECISION == 15
 using flt = double;
+#define FLTFMT "{:.15f}"
 #elif FLOAT_PRECISION == 18
 using flt = long double;
+#define FLTFMT "{:.18f}"
 #else
 static_assert(false, "unknown float precision");
 #endif
