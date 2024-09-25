@@ -34,6 +34,8 @@ class Model : public ModelBase, public ModelMixin<Model> {
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
   void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+    // TODO: Finish implementing.
+    verify(false, "not implemented");
     pf.Load(std::move(pf_paired), std::move(pf_unpaired));
   }
 

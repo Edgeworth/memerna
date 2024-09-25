@@ -63,14 +63,26 @@ inline const Opt OPT_FUZZ_PFN_RNASTRUCTURE = Opt(Opt::FLAG)
                                                  .LongName("pfn-rnastructure")
                                                  .Default(0)
                                                  .Help("fuzz RNAstructure partition function");
-inline const Opt OPT_FUZZ_PFN_PQ_EP = Opt(Opt::ARG)
-                                          .LongName("pfn-pq-ep")
-                                          .Default(EP)
-                                          .Help("partition function Q and P table epsilon");
-inline const Opt OPT_FUZZ_PFN_PROB_EP = Opt(Opt::ARG)
-                                            .LongName("pfn-prob-ep")
-                                            .Default(EP)
-                                            .Help("partition function probability table epsilon");
+inline const Opt OPT_FUZZ_PFN_PQ_REL_EP =
+    Opt(Opt::ARG)
+        .LongName("pfn-pq-rel-ep")
+        .Default(EP)
+        .Help("partition function Q and P table relative epsilon");
+inline const Opt OPT_FUZZ_PFN_PQ_ABS_EP =
+    Opt(Opt::ARG)
+        .LongName("pfn-pq-abs-ep")
+        .Default(EP)
+        .Help("partition function Q and P table absolute epsilon");
+inline const Opt OPT_FUZZ_PFN_PROB_REL_EP =
+    Opt(Opt::ARG)
+        .LongName("pfn-prob-rel-ep")
+        .Default(EP)
+        .Help("partition function probability table relative epsilon");
+inline const Opt OPT_FUZZ_PFN_PROB_ABS_EP =
+    Opt(Opt::ARG)
+        .LongName("pfn-prob-abs-ep")
+        .Default(EP)
+        .Help("partition function probability table absolute epsilon");
 
 void RegisterOpts(ArgParse* args);
 
@@ -92,8 +104,10 @@ struct FuzzCfg {
   // Partition function configuration.
   bool pfn = false;
   bool pfn_rnastructure = false;
-  flt pfn_pq_ep = EP;
-  flt pfn_prob_ep = EP;
+  flt pfn_pq_rel_ep = EP;
+  flt pfn_pq_abs_ep = EP;
+  flt pfn_prob_rel_ep = EP;
+  flt pfn_prob_abs_ep = EP;
 
   // Whether to use a new random model every time.
   bool random_models = false;

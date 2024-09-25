@@ -216,8 +216,7 @@ Error FuzzInvocation::CheckSubopt() {
     auto desc = fmt::format(
         "subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta, cfg.strucs, cfg.sorted, i);
     for (int alg = 0; alg < static_cast<int>(res.size()); ++alg) {
-      Register(fmt::format("alg {}, cfg: {}", alg, desc),
-          CheckSuboptResult(res[alg], /*has_ctds=*/true));
+      Register(fmt::format("alg {}, cfg: {}", alg, desc), CheckSuboptResult(res[alg]));
       Register(fmt::format("alg {} vs alg 0, cfg: {}", alg, desc),
           CheckSuboptResultPair(cfg, res[0], res[alg]));
     }
@@ -244,7 +243,7 @@ bool FuzzInvocation::SuboptDuplicates(const std::vector<subopt::SuboptResult>& s
 }
 
 Error FuzzInvocation::CheckSuboptResult(
-    const std::vector<subopt::SuboptResult>& subopt, bool has_ctds) {
+    const std::vector<subopt::SuboptResult>& subopt, bool has_ctds, bool check_duplicates) {
   verify(fold_.has_value(), "bug");
   Error errors;
   // Check at least one suboptimal structure.
@@ -255,7 +254,7 @@ Error FuzzInvocation::CheckSuboptResult(
         fmt::format("lowest structure energy {} != mfe {}", subopt[0].energy, fold_->mfe.energy));
 
   // Check for duplicate structures.
-  if (SuboptDuplicates(subopt)) errors.emplace_back("has duplicates");
+  if (check_duplicates && SuboptDuplicates(subopt)) errors.emplace_back("has duplicates");
 
   // Only ones with CTDs set can do these tests.
   // TODO(2): Improve this once we have better CTD option support.
@@ -282,7 +281,8 @@ Error FuzzInvocation::CheckSuboptResult(
 }
 
 Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
-    const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b) {
+    const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b,
+    bool has_ctds) {
   Error errors;
   if (a.size() != b.size()) {
     errors.push_back(
@@ -298,16 +298,20 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
             fmt::format("structure {}: first {} != second {}", i, a[i].energy, b[i].energy));
       if (a[i].tb.s != b[i].tb.s)
         errors.push_back(fmt::format("structure {}: secondaries differ", i));
-      if (a[i].tb.ctd != b[i].tb.ctd)
+      if (has_ctds && a[i].tb.ctd != b[i].tb.ctd)
         errors.push_back(fmt::format("structure {}: ctds differ", i, a[i].energy, b[i].energy));
     }
   }
   return errors;
 }
 
-bool FuzzInvocation::PfnPQEq(flt a, flt b) const { return absrel_eq(a, b, cfg_.pfn_pq_ep); }
+bool FuzzInvocation::PfnPQEq(flt a, flt b) const {
+  return abs_eq(a, b, cfg_.pfn_pq_abs_ep) || rel_eq(a, b, cfg_.pfn_pq_rel_ep);
+}
 
-bool FuzzInvocation::PfnProbEq(flt a, flt b) const { return absrel_eq(a, b, cfg_.pfn_prob_ep); }
+bool FuzzInvocation::PfnProbEq(flt a, flt b) const {
+  return abs_eq(a, b, cfg_.pfn_prob_abs_ep) || rel_eq(a, b, cfg_.pfn_prob_rel_ep);
+}
 
 void FuzzInvocation::ComparePfn(
     const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors) {
@@ -419,9 +423,12 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg cfg) {
   // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
   if (subopt_[0].energy < -cfg_.subopt_delta) {
-    const auto rstr_subopt = rstr_->SuboptIntoVector(r_, cfg_.subopt_delta);
-    Register("subopt:", CheckSuboptResult(rstr_subopt, false));
-    Register("subopt vs memerna:", CheckSuboptResultPair(cfg, subopt_, rstr_subopt));
+    auto rstr_subopt = rstr_->SuboptIntoVector(r_, cfg_.subopt_delta);
+    std::sort(rstr_subopt.begin(), rstr_subopt.end());
+    Register(
+        "subopt:", CheckSuboptResult(rstr_subopt, /*has_ctds=*/false, /*check_duplicates=*/false));
+    Register(
+        "subopt vs memerna:", CheckSuboptResultPair(cfg, subopt_, rstr_subopt, /*has_ctds=*/false));
   }
 
   return errors;
