@@ -45,7 +45,7 @@ TraceResult Traceback(
 
     if (en == -1) {
       // Case: No pair starting here
-      if (a == EXT && st + 1 < N && ext[st + 1][EXT] == ext[st][EXT]) {
+      if (a == EXT && st + 1 < N && ext[st + 1][EXT] + m->pf.Unpaired(st) == ext[st][EXT]) {
         q.emplace_back(st + 1, -1, EXT);
         goto loopend;
       }
@@ -64,7 +64,8 @@ TraceResult Traceback(
         // (   )<.( * ). > Right coax backward
         if (m->cfg().UseDangleMismatch() && a == EXT_RC) {
           // Don't set CTDs here since they will have already been set.
-          if (base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT] ==
+          if (base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) +
+                  m->pf.Unpaired(en) + ext[en + 1][EXT] ==
               ext[st][EXT_RC]) {
             q.emplace_back(st + 1, en - 1, DP_P);
             q.emplace_back(en + 1, -1, EXT);
@@ -91,21 +92,25 @@ TraceResult Traceback(
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3'
-          if (base01 + m->dangle3[en1b][enb][stb] + ext[en + 1][EXT] == ext[st][EXT]) {
+          if (base01 + m->dangle3[en1b][enb][stb] + m->pf.Unpaired(en) + ext[en + 1][EXT] ==
+              ext[st][EXT]) {
             res.ctd[st] = CTD_3_DANGLE;
             q.emplace_back(st, en - 1, DP_P);
             q.emplace_back(en + 1, -1, EXT);
             goto loopend;
           }
           // 5(   )<   > 5'
-          if (base10 + m->dangle5[enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
+          if (base10 + m->dangle5[enb][stb][st1b] + m->pf.Unpaired(st) + ext[en + 1][EXT] ==
+              ext[st][EXT]) {
             res.ctd[st + 1] = CTD_5_DANGLE;
             q.emplace_back(st + 1, en, DP_P);
             q.emplace_back(en + 1, -1, EXT);
             goto loopend;
           }
           // .(   ).<   > Terminal mismatch
-          if (base11 + m->terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
+          if (base11 + m->terminal[en1b][enb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(en) +
+                  ext[en + 1][EXT] ==
+              ext[st][EXT]) {
             res.ctd[st + 1] = CTD_MISMATCH;
             q.emplace_back(st + 1, en - 1, DP_P);
             q.emplace_back(en + 1, -1, EXT);
@@ -115,7 +120,8 @@ TraceResult Traceback(
 
         if (m->cfg().UseCoaxialStacking() && en < N - 1) {
           // .(   ).<(   ) > Left coax  x
-          val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b);
+          val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) +
+              m->pf.Unpaired(en);
           if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
@@ -184,8 +190,8 @@ TraceResult Traceback(
           }
         }
 
-        const auto base_branch_cost =
-            m->AuGuPenalty(stb, enb) + m->multiloop_hack_a + m->multiloop_hack_b;
+        const auto base_branch_cost = m->AuGuPenalty(stb, enb) + m->pf.Paired(st, en) +
+            m->multiloop_hack_a + m->multiloop_hack_b;
         // (<   ><    >)
         if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == dp[st][en][DP_P]) {
           res.ctd[en] = CTD_UNUSED;
@@ -195,21 +201,24 @@ TraceResult Traceback(
 
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
-          if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] ==
+          if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
+                  m->pf.Unpaired(st + 1) ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_3_DANGLE;
             q.emplace_back(st + 2, en - 1, DP_U2);
             goto loopend;
           }
           // (<   ><   >5) 5'
-          if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] ==
+          if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
+                  m->pf.Unpaired(en - 1) ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_5_DANGLE;
             q.emplace_back(st + 1, en - 2, DP_U2);
             goto loopend;
           }
           // (.<   ><   >.) Terminal mismatch
-          if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] ==
+          if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_MISMATCH;
             q.emplace_back(st + 2, en - 2, DP_U2);
@@ -225,7 +234,8 @@ TraceResult Traceback(
             const Base pr1b = r[piv + 2];
 
             // (.(   )   .) Left outer coax - P
-            const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb);
+            const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
+                m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
             if (base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_hack_b +
                     m->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
                 dp[st][en][DP_P]) {
@@ -249,7 +259,8 @@ TraceResult Traceback(
             // (.(   ).   ) Left inner coax
             if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_hack_b +
                     m->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
-                    m->MismatchCoaxial(pl1b, plb, st1b, st2b) ==
+                    m->MismatchCoaxial(pl1b, plb, st1b, st2b) + m->pf.Unpaired(st + 1) +
+                    m->pf.Unpaired(piv) ==
                 dp[st][en][DP_P]) {
               res.ctd[en] = CTD_RC_WITH_NEXT;
               res.ctd[st + 2] = CTD_RC_WITH_PREV;
@@ -260,7 +271,8 @@ TraceResult Traceback(
             // (   .(   ).) Right inner coax
             if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_hack_b +
                     m->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
-                    m->MismatchCoaxial(en2b, en1b, prb, pr1b) ==
+                    m->MismatchCoaxial(en2b, en1b, prb, pr1b) + m->pf.Unpaired(piv + 1) +
+                    m->pf.Unpaired(en - 1) ==
                 dp[st][en][DP_P]) {
               res.ctd[en] = CTD_LCOAX_WITH_PREV;
               res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
@@ -300,7 +312,8 @@ TraceResult Traceback(
 
       // Deal with the rest of the cases:
       // Left unpaired. Either DP_U or DP_U2.
-      if (st + 1 < en && (a == DP_U || a == DP_U2) && dp[st + 1][en][a] == dp[st][en][a]) {
+      if (st + 1 < en && (a == DP_U || a == DP_U2) &&
+          dp[st + 1][en][a] + m->pf.Unpaired(st) == dp[st][en][a]) {
         q.emplace_back(st + 1, en, a);
         goto loopend;
       }
@@ -321,12 +334,13 @@ TraceResult Traceback(
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.
         auto right_unpaired = dp[piv + 1][en][DP_U];
-        if (a != DP_U2) right_unpaired = std::min(right_unpaired, ZERO_E);
+        if (a != DP_U2) right_unpaired = std::min(right_unpaired, m->pf.UnpairedCum(piv + 1, en));
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
         if (m->cfg().UseCoaxialStacking() && a == DP_U_RC) {
-          if (base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + right_unpaired ==
+          if (base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
+                  m->pf.Unpaired(piv) + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             q.emplace_back(st + 1, piv - 1, DP_P);
@@ -354,21 +368,25 @@ TraceResult Traceback(
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
-          if (base01 + m->dangle3[pl1b][pb][stb] + right_unpaired == dp[st][en][a]) {
+          if (base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + right_unpaired ==
+              dp[st][en][a]) {
             res.ctd[st] = CTD_3_DANGLE;
             q.emplace_back(st, piv - 1, DP_P);
             if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
           // 5(   )<   > 5' - U, U2
-          if (base10 + m->dangle5[pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
+          if (base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + right_unpaired ==
+              dp[st][en][a]) {
             res.ctd[st + 1] = CTD_5_DANGLE;
             q.emplace_back(st + 1, piv, DP_P);
             if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
           // .(   ).<   > Terminal mismatch - U, U2
-          if (base11 + m->terminal[pl1b][pb][stb][st1b] + right_unpaired == dp[st][en][a]) {
+          if (base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+                  right_unpaired ==
+              dp[st][en][a]) {
             res.ctd[st + 1] = CTD_MISMATCH;
             q.emplace_back(st + 1, piv - 1, DP_P);
             if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
@@ -378,7 +396,8 @@ TraceResult Traceback(
 
         if (m->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
-          auto val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b);
+          auto val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
+              m->pf.Unpaired(piv);
           if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;

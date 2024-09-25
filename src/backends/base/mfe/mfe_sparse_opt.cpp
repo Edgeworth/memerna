@@ -27,6 +27,7 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
+  m->pf.Verify(r);
 
   spdlog::debug("base {} with cfg {}", funcname(), m->cfg());
 
@@ -64,7 +65,8 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         mins[DP_P] = std::min(mins[DP_P], pc.Hairpin(st, en));
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const auto base_branch_cost = pc.augubranch[stb][enb] + m->multiloop_hack_a;
+        const auto base_branch_cost =
+            pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_hack_a;
 
         // (<   ><   >)
         mins[DP_P] = std::min(mins[DP_P], base_branch_cost + dp[st + 1][en - 1][DP_U2]);
@@ -72,14 +74,19 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
           mins[DP_P] = std::min(mins[DP_P],
-              base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb]);
+              base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
+                  m->pf.Unpaired(st + 1));
           // (<   ><   >5) 5'
           mins[DP_P] = std::min(mins[DP_P],
-              base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb]);
+              base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
+                  m->pf.Unpaired(en - 1));
           // (.<   ><   >.) Terminal mismatch
           mins[DP_P] = std::min(mins[DP_P],
-              base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb]);
+              base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1));
         }
+
+        // TODO: how to handle candidates here.
 
         if (m->cfg().UseCoaxialStacking()) {
           // (.(   ).   ) Left inner coax
@@ -87,7 +94,8 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
             mins[DP_P] =
                 std::min(mins[DP_P], base_branch_cost + cand.energy + dp[cand.idx][en - 1][DP_U]);
           // (.(   )   .) Left outer coax
-          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb);
+          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
           for (auto cand : cand_st[CAND_P_LOC])
             mins[DP_P] = std::min(mins[DP_P],
                 base_branch_cost + cand.energy - pc.min_mismatch_coax + outer_coax +
