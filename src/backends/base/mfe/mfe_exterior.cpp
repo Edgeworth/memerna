@@ -32,7 +32,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
   ext[N][EXT] = ZERO_E;
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
-    ext[st][EXT] = ext[st + 1][EXT];
+    ext[st][EXT] = ext[st + 1][EXT] + m->pf.Unpaired(st);
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
@@ -56,24 +56,30 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
 
       if (m->cfg().UseDangleMismatch()) {
         // (   )3<   > 3'
-        e = std::min(e, base01 + m->dangle3[en1b][enb][stb] + ext[en + 1][EXT]);
+        e = std::min(
+            e, base01 + m->dangle3[en1b][enb][stb] + m->pf.Unpaired(en) + ext[en + 1][EXT]);
         // 5(   )<   > 5'
-        e = std::min(e, base10 + m->dangle5[enb][stb][st1b] + ext[en + 1][EXT]);
+        e = std::min(
+            e, base10 + m->dangle5[enb][stb][st1b] + m->pf.Unpaired(st) + ext[en + 1][EXT]);
         // .(   ).<   > Terminal mismatch
-        e = std::min(e, base11 + m->terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT]);
+        e = std::min(e,
+            base11 + m->terminal[en1b][enb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(en) +
+                ext[en + 1][EXT]);
       }
 
       if (m->cfg().UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
-        val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b);
+        val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) +
+            m->pf.Unpaired(en);
         e = std::min(e, val + ext[en + 1][EXT_GU]);
         e = std::min(e, val + ext[en + 1][EXT_WC]);
 
         // (   )<.(   ). > Right coax forward
         e = std::min(e, base00 + ext[en + 1][EXT_RC]);
         // (   )<.( * ). > Right coax backward
-        ext[st][EXT_RC] = std::min(
-            ext[st][EXT_RC], base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT]);
+        ext[st][EXT_RC] = std::min(ext[st][EXT_RC],
+            base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) +
+                m->pf.Unpaired(en) + ext[en + 1][EXT]);
 
         // (   )(<   ) > Flush coax
         e = std::min(e, base01 + m->stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC]);
