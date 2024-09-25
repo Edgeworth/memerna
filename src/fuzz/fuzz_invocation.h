@@ -31,7 +31,10 @@ class FuzzInvocation {
   Error Run();
 
 #ifdef USE_RNASTRUCTURE
-  void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) { rstr_ = std::move(rstr); }
+  void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) {
+    verify(ENERGY_PRECISION == 1, "ENERGY_PRECISION must be 1 for RNAstructure");
+    rstr_ = std::move(rstr);
+  }
 #endif  // USE_RNASTRUCTURE
 
  private:
@@ -63,9 +66,11 @@ class FuzzInvocation {
   Error CheckSubopt();
 
   static bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
-  Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds);
+  Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds = true,
+      bool check_duplicates = true);
   static Error CheckSuboptResultPair(subopt::SuboptCfg cfg,
-      const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b);
+      const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b,
+      bool has_ctds = true);
 
   [[nodiscard]] bool PfnPQEq(flt a, flt b) const;
   [[nodiscard]] bool PfnProbEq(flt a, flt b) const;
