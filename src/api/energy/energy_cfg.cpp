@@ -17,6 +17,7 @@ void RegisterOptsEnergyCfg(ArgParse* args) {
 EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   EnergyCfg cfg;
   args.MaybeSet(OPT_LONELY_PAIRS, &cfg.lonely_pairs);
+  args.MaybeSet(OPT_BULGE_STATES, &cfg.bulge_states);
   args.MaybeSet(OPT_CTD, &cfg.ctd);
   return cfg;
 }
