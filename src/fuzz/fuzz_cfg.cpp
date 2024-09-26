@@ -26,6 +26,7 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_SUBOPT_DELTA);
   args->RegisterOpt(OPT_FUZZ_PFN);
   args->RegisterOpt(OPT_FUZZ_PFN_RNASTRUCTURE);
+  args->RegisterOpt(OPT_FUZZ_PFN_SUBOPT);
   args->RegisterOpt(OPT_FUZZ_PFN_PQ_REL_EP);
   args->RegisterOpt(OPT_FUZZ_PFN_PQ_ABS_EP);
   args->RegisterOpt(OPT_FUZZ_PFN_PROB_REL_EP);
@@ -48,6 +49,7 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("subopt_delta: {}\n", subopt_delta);
   desc += fmt::format("pfn: {}\n", pfn);
   desc += fmt::format("pfn_rnastructure: {}\n", pfn_rnastructure);
+  desc += fmt::format("pfn_subopt: {}\n", pfn_subopt);
   desc += fmt::format("pfn_pq_rel_ep: {}\n", pfn_pq_rel_ep);
   desc += fmt::format("pfn_pq_abs_ep: {}\n", pfn_pq_abs_ep);
   desc += fmt::format("pfn_prob_rel_ep: {}\n", pfn_prob_rel_ep);
@@ -79,6 +81,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
 
   args.MaybeSet(OPT_FUZZ_PFN, &cfg.pfn);
   args.MaybeSet(OPT_FUZZ_PFN_RNASTRUCTURE, &cfg.pfn_rnastructure);
+  args.MaybeSet(OPT_FUZZ_PFN_SUBOPT, &cfg.pfn_subopt);
   args.MaybeSet(OPT_FUZZ_PFN_PQ_REL_EP, &cfg.pfn_pq_rel_ep);
   args.MaybeSet(OPT_FUZZ_PFN_PQ_ABS_EP, &cfg.pfn_pq_abs_ep);
   args.MaybeSet(OPT_FUZZ_PFN_PROB_REL_EP, &cfg.pfn_prob_rel_ep);
@@ -86,7 +89,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
 
   cfg.mfe = cfg.mfe || cfg.mfe_rnastructure;
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure;
-  cfg.pfn = cfg.pfn || cfg.pfn_rnastructure;
+  cfg.pfn = cfg.pfn || cfg.pfn_rnastructure || cfg.pfn_subopt;
 
   args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
   args.MaybeSet(OPT_FUZZ_RANDOM_PSEUDOFREE, &cfg.random_pseudofree);

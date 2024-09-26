@@ -63,6 +63,11 @@ inline const Opt OPT_FUZZ_PFN_RNASTRUCTURE = Opt(Opt::FLAG)
                                                  .LongName("pfn-rnastructure")
                                                  .Default(0)
                                                  .Help("fuzz RNAstructure partition function");
+inline const Opt OPT_FUZZ_PFN_SUBOPT =
+    Opt(Opt::ARG)
+        .LongName("pfn-subopt")
+        .Default(0)
+        .Help("fuzz partition q value vs suboptimal folding max length");
 inline const Opt OPT_FUZZ_PFN_PQ_REL_EP =
     Opt(Opt::ARG)
         .LongName("pfn-pq-rel-ep")
@@ -104,6 +109,7 @@ struct FuzzCfg {
   // Partition function configuration.
   bool pfn = false;
   bool pfn_rnastructure = false;
+  int pfn_subopt = 0;
   flt pfn_pq_rel_ep = EP;
   flt pfn_pq_abs_ep = EP;
   flt pfn_prob_rel_ep = EP;

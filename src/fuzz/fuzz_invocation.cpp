@@ -94,6 +94,8 @@ FuzzInvocation::FuzzInvocation(
 }
 
 Error FuzzInvocation::Run() {
+  if (cfg_.pfn_subopt)
+    verify(!cfg_.energy_cfg.bulge_states, "bulge states must be disabled for pfn subopt fuzzing");
   if (cfg_.mfe) Register("mfe:", CheckMfe());
   if (cfg_.subopt) Register("subopt:", CheckSubopt());
   if (cfg_.pfn) Register("pfn:", CheckPfn());
@@ -355,6 +357,20 @@ Error FuzzInvocation::CheckPfn() {
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i)
     ComparePfn(results[i].pfn, results[0].pfn, fmt::format("memerna[{}]", i), errors);
+
+  if (N < cfg_.pfn_subopt) {
+    subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
+    const Ctx ctx(ms_.front(), CtxCfg{});
+    auto subopts = ctx.SuboptIntoVector(r_, subopt_cfg);
+    flt subopt_q{};
+    for (const auto& res : subopts) subopt_q += res.energy.Boltz();
+
+    for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+      if (!PfnPQEq(subopt_q, results[i].pfn.q))
+        errors.push_back(fmt::format("subopt q: {} != memerna[{}] pfn q: {}, diff: {}", subopt_q, i,
+            results[i].pfn.q, subopt_q - results[i].pfn.q));
+    }
+  }
 
   pfn_ = std::move(results[0]);
 
