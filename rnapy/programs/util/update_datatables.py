@@ -21,16 +21,16 @@ def update_internal_loop_end_penalties(
             mid = 4
         else:
             raise ValueError(f"invalid internal loop: {s}")
-        if remove_au and (s[0] == "A" and s[-1] == "U" or s[0] == "U" and s[-1] == "A"):
+        if remove_au and ((s[0] == "A" and s[-1] == "U") or (s[0] == "U" and s[-1] == "A")):
             e -= AU_PENALTY
-        if remove_gu and (s[0] == "G" and s[-1] == "U" or s[0] == "U" and s[-1] == "G"):
+        if remove_gu and ((s[0] == "G" and s[-1] == "U") or (s[0] == "U" and s[-1] == "G")):
             e -= GU_PENALTY
         if remove_au and (
-            s[mid - 1] == "A" and s[mid] == "U" or s[mid - 1] == "U" and s[mid] == "A"
+            (s[mid - 1] == "A" and s[mid] == "U") or (s[mid - 1] == "U" and s[mid] == "A")
         ):
             e -= AU_PENALTY
         if remove_gu and (
-            s[mid - 1] == "G" and s[mid] == "U" or s[mid - 1] == "U" and s[mid] == "G"
+            (s[mid - 1] == "G" and s[mid] == "U") or (s[mid - 1] == "U" and s[mid] == "G")
         ):
             e -= GU_PENALTY
         out += f"{s} {e:.2f}\n"

@@ -11,6 +11,9 @@ namespace mrna::md::base {
 
 class Precomp : public PrecompBase<Model> {
  public:
+  Energy min_pf_unpaired{};
+  Energy sum_neg_pf{};
+
   Precomp(Primary r, Model::Ptr m);
 
   [[nodiscard]] Energy TwoLoop(int ost, int oen, int ist, int ien) const;

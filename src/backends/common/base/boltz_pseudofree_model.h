@@ -21,14 +21,14 @@ class BoltzPseudofreeModel {
   }
 
   // Inclusive range, unlike pf_unpaired_cum directly.
-  [[nodiscard]] constexpr BoltzEnergy UnpairedCum(int st, int en) const {
-    assert(st <= en);
+  [[nodiscard]] BoltzEnergy UnpairedCum(int st, int en) const {
+    assert(st <= en + 1);
     if (unpaired.empty()) return ONE_B;
     return exp(unpaired_cum_log[en + 1] - unpaired_cum_log[st]);
   }
 
   [[nodiscard]] constexpr BoltzEnergy Paired(int st, int en) const {
-    assert(st <= en);
+    assert(st <= en + 1);
     if (paired.empty()) return ONE_B;
     return paired[st] * paired[en];
   }
