@@ -4,7 +4,9 @@
 namespace mrna::md::base {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bm)
-    : BoltzPrecompBase(std::move(r), std::move(bm)) {}
+    : BoltzPrecompBase(std::move(r), std::move(bm)) {
+  bm_->pf.Verify(r_);
+}
 
 BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   const auto& m = bm_->m();

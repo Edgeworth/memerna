@@ -36,6 +36,7 @@ struct __attribute__((packed, aligned(4))) Energy {
   [[nodiscard]] std::string ToString() const noexcept;
   [[nodiscard]] inline double ToDouble() const noexcept { return v / static_cast<double>(FACTOR); }
   [[nodiscard]] inline BoltzEnergy Boltz() const noexcept;
+  [[nodiscard]] inline BoltzEnergy LogBoltz() const noexcept;
 
   inline constexpr auto operator<=>(const Energy&) const noexcept = default;
 
@@ -73,12 +74,19 @@ inline constexpr Energy CAP_E = Energy::FromRaw(0x07070707);
 
 inline constexpr Energy ZERO_E = Energy::FromRaw(0);
 
+inline const BoltzEnergy ZERO_B{0.0};
+inline const BoltzEnergy ONE_B{1.0};
+
 // Ninio maximum asymmetry.
 inline const Energy NINIO_MAX_ASYM = E(3.0);
 
 [[nodiscard]] inline BoltzEnergy Energy::Boltz() const noexcept {
   if (*this >= CAP_E) return 0;
   return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
+}
+
+[[nodiscard]] inline BoltzEnergy Energy::LogBoltz() const noexcept {
+  return BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T));
 }
 
 std::vector<Energy> RandomEnergies(

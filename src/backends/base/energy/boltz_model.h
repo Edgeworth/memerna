@@ -6,12 +6,15 @@
 
 #include "backends/base/energy/model.h"
 #include "backends/common/base/boltz_model_base.h"
+#include "backends/common/base/boltz_pseudofree_model.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {
 
 class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
  public:
+  BoltzPseudofreeModel pf;
+
   BoltzModel() = delete;
 
   // ModelMixin:
@@ -20,7 +23,9 @@ class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
  private:
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzModel(const Model::Ptr& m) : BoltzModelBase(m) {}
+  explicit BoltzModel(const Model::Ptr& m) : BoltzModelBase(m) {
+    pf.Load(m->pf.paired, m->pf.unpaired);
+  }
 };
 
 }  // namespace mrna::md::base

@@ -216,6 +216,8 @@ set(MEMERNA_SOURCE
   src/backends/brute/brute.h
   src/backends/common/base/boltz_model_base.h
   src/backends/common/base/boltz_precomp_base.h
+  src/backends/common/base/boltz_pseudofree_model.cpp
+  src/backends/common/base/boltz_pseudofree_model.h
   src/backends/common/base/branch.cpp
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
@@ -244,8 +246,6 @@ set(MEMERNA_SOURCE
   src/backends/stack/subopt/subopt_persistent.h
   src/backends/stack/trace/trace.cpp
   src/backends/stack/trace/trace.h
-  src/programs/print.cpp
-  src/programs/print.h
   src/fuzz/fuzz_cfg.cpp
   src/fuzz/fuzz_cfg.h
   src/fuzz/fuzz_harness.cpp
@@ -266,6 +266,8 @@ set(MEMERNA_SOURCE
   src/model/secondary.h
   src/model/structure.cpp
   src/model/structure.h
+  src/programs/print.cpp
+  src/programs/print.h
   src/util/argparse.cpp
   src/util/argparse.h
   src/util/array.h

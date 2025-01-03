@@ -3,17 +3,21 @@
 
 namespace mrna::md::base {
 
-Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {}
+Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {
+  m_->pf.Verify(r_);
+}
 
 Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
-  if (toplen == 0 && botlen == 0) return m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
+
+  if (toplen == 0 && botlen == 0)
+    return m_->pf.Paired(ost, oen) + m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
   if (toplen == 0 || botlen == 0) return m_->Bulge(r_, ost, oen, ist, ien);
 
-  Energy energy = ZERO_E;
-  energy += m_->AuGuPenalty(r_[ost], r_[oen]);
-  energy += m_->AuGuPenalty(r_[ist], r_[ien]);
+  Energy energy = m_->AuGuPenalty(r_[ost], r_[oen]) + m_->AuGuPenalty(r_[ist], r_[ien]) +
+      m_->pf.Paired(ost, oen) + m_->pf.UnpairedCum(ost + 1, ist - 1) +
+      m_->pf.UnpairedCum(ien + 1, oen - 1);
 
   if (toplen == 1 && botlen == 1)
     return energy + m_->internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
@@ -51,15 +55,17 @@ Energy Precomp::Hairpin(int st, int en) const {
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
 
+  Energy energy = m_->pf.UnpairedCum(en - 1, st + 1) + m_->pf.Paired(st, en);
+
   // AU/GU penalty baked into precomputed special table.
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)
-    return hairpin[st].special[length];
+    return energy + hairpin[st].special[length];
 
   const Base stb = r_[st];
   const Base st1b = r_[st + 1];
   const Base en1b = r_[en - 1];
   const Base enb = r_[en];
-  Energy energy = m_->HairpinInitiation(length) + m_->AuGuPenalty(stb, enb);
+  energy += m_->HairpinInitiation(length) + m_->AuGuPenalty(stb, enb);
   const bool all_c = hairpin[st + 1].num_c >= length;
 
   if (length == 3) {
