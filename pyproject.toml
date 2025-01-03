@@ -8,22 +8,22 @@ version = "0.1.0"
 
 [tool.poetry.dependencies]
 bidict = ">=0.23.1"
-click = ">=8.1.7"
+click = ">=8.1.8"
 click-params = ">=0.5.0"
 click_log = ">=0.4.0"
 cloup = ">=3.0.5"
-libtmux = ">=0.37.0"
-pandas = ">=2.2.2"
+libtmux = ">=0.40.1"
+pandas = ">=2.2.3"
 python = ">=3.11,<4.0"
 python-dotenv = ">=1.0.1"
-scipy = ">=1.14.0"
+scipy = ">=1.14.1"
 seaborn = ">=0.13.2"
-statsmodels = ">=0.14.2"
-viennarna = ">=2.6.4"
+statsmodels = ">=0.14.4"
+viennarna = ">=2.7.0"
 
 [tool.poetry.dev-dependencies]
-mypy = ">=1.11.0"
-poetry-plugin-up = ">=0.7.2"
+mypy = ">=1.14.1"
+poetry-plugin-up = ">=0.8.0"
 
 [tool.mypy]
 show_column_numbers = true
@@ -50,7 +50,7 @@ warn_unused_ignores = true
 show_error_codes = true
 
 # Set python version.
-python_version = '3.12'
+python_version = '3.13'
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
