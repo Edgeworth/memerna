@@ -40,12 +40,9 @@ struct CtxCfg {
     switch (kind) {
     case BackendKind::BASE:
       return {
-          MfeAlg::AUTO,
-          MfeAlg::BRUTE,
-          MfeAlg::DEBUG,
-          MfeAlg::OPT,
-          MfeAlg::SPARSE_OPT,
-          MfeAlg::LYNGSO_SPARSE_OPT,
+          MfeAlg::AUTO, MfeAlg::BRUTE, MfeAlg::DEBUG, MfeAlg::OPT, MfeAlg::SPARSE_OPT,
+          // TODO: undo
+          // MfeAlg::LYNGSO_SPARSE_OPT,
       };
     case BackendKind::BASEOPT:
       return {

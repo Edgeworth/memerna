@@ -77,8 +77,6 @@ skip-magic-trailing-comma = true
 [tool.ruff.lint]
 ignore = [
   "A003", # allow attribute shadowing builtins 'eval', 'sorted' etc
-  "ANN101", # no need to annotate self
-  "ANN102", # no need to annotate cls self
   "ANN401", # allow Any type annotation
   "BLE001", # allow except Exception
   "C901", # ignore too complex code
@@ -118,7 +116,7 @@ ignore = [
 ]
 select = ["ALL"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "**/tests/**/*.py" = [
   "SLF001", # allow private member access
 ]

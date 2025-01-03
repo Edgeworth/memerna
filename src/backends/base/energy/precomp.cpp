@@ -5,6 +5,17 @@ namespace mrna::md::base {
 
 Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {
   m_->pf.Verify(r_);
+
+  if (!m_->pf.unpaired.empty()) {
+    min_pf_unpaired = m_->pf.unpaired[0];
+    for (const auto& e : m_->pf.unpaired) {
+      min_pf_unpaired = std::min(min_pf_unpaired, e);
+      if (e < ZERO_E) sum_neg_pf += e;
+    }
+  }
+  if (!m_->pf.paired.empty())
+    for (const auto& e : m_->pf.paired)
+      if (e < ZERO_E) sum_neg_pf += e;
 }
 
 Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
@@ -55,7 +66,7 @@ Energy Precomp::Hairpin(int st, int en) const {
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
 
-  Energy energy = m_->pf.UnpairedCum(en - 1, st + 1) + m_->pf.Paired(st, en);
+  Energy energy = m_->pf.UnpairedCum(st + 1, en - 1) + m_->pf.Paired(st, en);
 
   // AU/GU penalty baked into precomputed special table.
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)

@@ -334,7 +334,11 @@ TraceResult Traceback(
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.
         auto right_unpaired = dp[piv + 1][en][DP_U];
-        if (a != DP_U2) right_unpaired = std::min(right_unpaired, m->pf.UnpairedCum(piv + 1, en));
+        bool is_right_filled = true;
+        if (a != DP_U2 && m->pf.UnpairedCum(piv + 1, en) < right_unpaired) {
+          right_unpaired = m->pf.UnpairedCum(piv + 1, en);
+          is_right_filled = false;
+        }
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
@@ -344,7 +348,7 @@ TraceResult Traceback(
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             q.emplace_back(st + 1, piv - 1, DP_P);
-            if (right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
+            if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
         }
@@ -359,7 +363,7 @@ TraceResult Traceback(
           // already set.
           if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
           q.emplace_back(st, piv, DP_P);
-          if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
+          if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;
         }
 
@@ -372,7 +376,7 @@ TraceResult Traceback(
               dp[st][en][a]) {
             res.ctd[st] = CTD_3_DANGLE;
             q.emplace_back(st, piv - 1, DP_P);
-            if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
+            if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
           // 5(   )<   > 5' - U, U2
@@ -380,7 +384,7 @@ TraceResult Traceback(
               dp[st][en][a]) {
             res.ctd[st + 1] = CTD_5_DANGLE;
             q.emplace_back(st + 1, piv, DP_P);
-            if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
+            if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
           // .(   ).<   > Terminal mismatch - U, U2
@@ -389,7 +393,7 @@ TraceResult Traceback(
               dp[st][en][a]) {
             res.ctd[st + 1] = CTD_MISMATCH;
             q.emplace_back(st + 1, piv - 1, DP_P);
-            if (a == DP_U2 || right_unpaired != ZERO_E) q.emplace_back(piv + 1, en, DP_U);
+            if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
         }
