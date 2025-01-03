@@ -23,11 +23,13 @@ class PseudofreeModel {
 
   // Inclusive range, unlike pf_unpaired_cum directly.
   [[nodiscard]] constexpr Energy UnpairedCum(int st, int en) const {
+    assert(st <= en);
     if (unpaired.empty()) return ZERO_E;
     return unpaired_cum[en + 1] - unpaired_cum[st];
   }
 
   [[nodiscard]] constexpr Energy Paired(int st, int en) const {
+    assert(st <= en);
     if (paired.empty()) return ZERO_E;
     return paired[st] + paired[en];
   }
