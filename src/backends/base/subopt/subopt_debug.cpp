@@ -80,7 +80,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
     if (en == -1) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
-      const Energy base_energy = node.res.energy - dp_.ext[st][a];
+      const Energy base_energy = node.res.energy + m_->pf.Unpaired(st) - dp_.ext[st][a];
       if (a == EXT) {
         // Base case: do nothing.
         if (st == N)
@@ -105,7 +105,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         // (   )<.( * ). > Right coax backward
         if (m_->cfg().UseDangleMismatch() && a == EXT_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
-              dp_.ext[en + 1][EXT];
+              m_->pf.Unpaired(st) + m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P});
         }
@@ -130,15 +130,18 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
         if (m_->cfg().UseDangleMismatch()) {
           // (   )3<   > 3'
-          energy = base_energy + base01 + m_->dangle3[en1b][enb][stb] + dp_.ext[en + 1][EXT];
+          energy = base_energy + base01 + m_->dangle3[en1b][enb][stb] + m_->pf.Unpaired(en) +
+              dp_.ext[en + 1][EXT];
           Expand(energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE});
 
           // 5(   )<   > 5'
-          energy = base_energy + base10 + m_->dangle5[enb][stb][st1b] + dp_.ext[en + 1][EXT];
+          energy = base_energy + base10 + m_->dangle5[enb][stb][st1b] + m_->pf.Unpaired(st) +
+              dp_.ext[en + 1][EXT];
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE});
 
           // .(   ).<   > Terminal mismatch
-          energy = base_energy + base11 + m_->terminal[en1b][enb][stb][st1b] + dp_.ext[en + 1][EXT];
+          energy = base_energy + base11 + m_->terminal[en1b][enb][stb][st1b] + m_->pf.Unpaired(st) +
+              m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
         }
 
@@ -157,7 +160,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
           if (en < N - 1) {
             // .(   ).<(   ) > Left coax
-            energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b);
+            energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
+                m_->pf.Unpaired(st) + m_->pf.Unpaired(en);
             Expand(energy + dp_.ext[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
                 {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
             Expand(energy + dp_.ext[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
@@ -203,22 +207,24 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       energy = base_energy + m_->Hairpin(r_, st, en);
       Expand(energy);
 
-      auto base_and_branch =
-          base_energy + m_->AuGuPenalty(stb, enb) + m_->multiloop_hack_a + m_->multiloop_hack_b;
+      auto base_and_branch = base_energy + m_->AuGuPenalty(stb, enb) + m_->pf.Paired(st, en) +
+          m_->multiloop_hack_a + m_->multiloop_hack_b;
       // (<   ><    >)
       energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
       Expand(energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED});
 
       if (m_->cfg().UseDangleMismatch()) {
         // (3<   ><   >) 3'
-        energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb];
+        energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
+            m_->pf.Unpaired(st + 1);
         Expand(energy, {st + 2, en - 1, DP_U2}, {en, CTD_3_DANGLE});
         // (<   ><   >5) 5'
-        energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb];
+        energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb] +
+            m_->pf.Unpaired(en - 1);
         Expand(energy, {st + 1, en - 2, DP_U2}, {en, CTD_5_DANGLE});
         // (.<   ><   >.) Terminal mismatch
-        energy =
-            base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] + m_->terminal[stb][st1b][en1b][enb];
+        energy = base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] +
+            m_->terminal[stb][st1b][en1b][enb] + m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1);
         Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
       }
 
@@ -230,7 +236,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
           const Base pr1b = r_[piv + 2];
 
           // (.(   )   .) Left outer coax - P
-          auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb);
+          auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->pf.Unpaired(st + 1) +
+              m_->pf.Unpaired(en - 1);
           energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
               m_->AuGuPenalty(st2b, plb) + dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
           Expand(energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},
@@ -245,14 +252,16 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
           // (.(   ).   ) Left inner coax
           energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + m_->multiloop_hack_b +
               m_->AuGuPenalty(st2b, pl1b) + dp_.dp[piv + 1][en - 1][DP_U] +
-              m_->MismatchCoaxial(pl1b, plb, st1b, st2b);
+              m_->MismatchCoaxial(pl1b, plb, st1b, st2b) + m_->pf.Unpaired(st + 1) +
+              m_->pf.Unpaired(piv);
           Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U},
               {st + 2, CTD_RC_WITH_PREV}, {en, CTD_RC_WITH_NEXT});
 
           // (   .(   ).) Right inner coax
           energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
               m_->AuGuPenalty(pr1b, en2b) + dp_.dp[piv + 2][en - 2][DP_P] +
-              m_->MismatchCoaxial(en2b, en1b, prb, pr1b);
+              m_->MismatchCoaxial(en2b, en1b, prb, pr1b) + m_->pf.Unpaired(piv + 1) +
+              m_->pf.Unpaired(en - 1);
           Expand(energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P},
               {piv + 2, CTD_LCOAX_WITH_NEXT}, {en, CTD_LCOAX_WITH_PREV});
 
@@ -274,7 +283,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
     } else {
       // Left unpaired. Either DP_U or DP_U2.
       if (st + 1 < en && (a == DP_U || a == DP_U2)) {
-        energy = base_energy + dp_.dp[st + 1][en][a];
+        energy = base_energy + m_->pf.Unpaired(st) + dp_.dp[st + 1][en][a];
         Expand(energy, {st + 1, en, a});
       }
 
@@ -292,13 +301,18 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         auto base11 =
             dp_.dp[st + 1][piv - 1][DP_P] + m_->AuGuPenalty(st1b, pl1b) + m_->multiloop_hack_b;
 
+        const auto right_paired = dp_.dp[piv + 1][en][DP_U];
+        // This is only usable if a != DP_U2 since this leaves everything unpaired.
+        const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en);
+
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
         if (m_->cfg().UseCoaxialStacking() && a == DP_U_RC) {
-          energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b);
+          energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
+              m_->pf.Unpaired(st) + m_->pf.Unpaired(piv);
           // Our ctds will have already been set by now.
-          Expand(energy, {st + 1, piv - 1, DP_P});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U});
+          Expand(energy + right_unpaired, {st + 1, piv - 1, DP_P});
+          Expand(energy + right_paired, {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U});
         }
 
         // DP_U_RC is only the above case.
@@ -309,19 +323,17 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         // (   )<   > - U, U2, U_WC?, U_GU?
         energy = base_energy + base00;
         if (a == DP_U) {
-          Expand(energy, {st, piv, DP_P}, {st, CTD_UNUSED});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U},
-              {st, CTD_UNUSED});
+          Expand(energy + right_unpaired, {st, piv, DP_P}, {st, CTD_UNUSED});
+          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
         }
 
         if (a == DP_U2)
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U},
-              {st, CTD_UNUSED});
+          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
 
         // Make sure we don't form any branches that are not the right type of pair.
         if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
-          Expand(energy, {st, piv, DP_P});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv, DP_P}, {piv + 1, en, DP_U});
+          Expand(energy + right_unpaired, {st, piv, DP_P});
+          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U});
         }
 
         // The rest of the cases are for U and U2.
@@ -329,28 +341,32 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
         if (m_->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
-          energy = base_energy + base01 + m_->dangle3[pl1b][pb][stb];
+          energy = base_energy + base01 + m_->dangle3[pl1b][pb][stb] + m_->pf.Unpaired(piv);
           // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
-          if (a == DP_U) Expand(energy, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st, piv - 1, DP_P}, {piv + 1, en, DP_U},
-              {st, CTD_3_DANGLE});
+          if (a == DP_U) Expand(energy + right_unpaired, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE});
+          Expand(
+              energy + right_paired, {st, piv - 1, DP_P}, {piv + 1, en, DP_U}, {st, CTD_3_DANGLE});
 
           // 5(   )<   > 5' - U, U2
-          energy = base_energy + base10 + m_->dangle5[pb][stb][st1b];
-          if (a == DP_U) Expand(energy, {st + 1, piv, DP_P}, {st + 1, CTD_5_DANGLE});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st + 1, piv, DP_P}, {piv + 1, en, DP_U},
+          energy = base_energy + base10 + m_->dangle5[pb][stb][st1b] + m_->pf.Unpaired(st);
+          if (a == DP_U)
+            Expand(energy + right_unpaired, {st + 1, piv, DP_P}, {st + 1, CTD_5_DANGLE});
+          Expand(energy + right_paired, {st + 1, piv, DP_P}, {piv + 1, en, DP_U},
               {st + 1, CTD_5_DANGLE});
 
           // .(   ).<   > Terminal mismatch - U, U2
-          energy = base_energy + base11 + m_->terminal[pl1b][pb][stb][st1b];
-          if (a == DP_U) Expand(energy, {st + 1, piv - 1, DP_P}, {st + 1, CTD_MISMATCH});
-          Expand(energy + dp_.dp[piv + 1][en][DP_U], {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U},
+          energy = base_energy + base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->pf.Unpaired(st) +
+              m_->pf.Unpaired(piv);
+          if (a == DP_U)
+            Expand(energy + right_unpaired, {st + 1, piv - 1, DP_P}, {st + 1, CTD_MISMATCH});
+          Expand(energy + right_paired, {st + 1, piv - 1, DP_P}, {piv + 1, en, DP_U},
               {st + 1, CTD_MISMATCH});
         }
 
         if (m_->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
-          energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b);
+          energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
+              m_->pf.Unpaired(st) + m_->pf.Unpaired(piv);
           Expand(energy + dp_.dp[piv + 1][en][DP_U_WC], {st + 1, piv - 1, DP_P},
               {piv + 1, en, DP_U_WC}, {st + 1, CTD_LCOAX_WITH_NEXT},
               {piv + 1, CTD_LCOAX_WITH_PREV});
