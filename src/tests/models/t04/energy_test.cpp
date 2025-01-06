@@ -45,7 +45,7 @@ TEST_P(EnergyTestT04, T04P1) {
 #elif ENERGY_PRECISION == 2
 
 TEST_P(EnergyTestT04, T04P2) {
-  auto m = t04_ms[GetParam()];
+  const auto& m = t04_ms[GetParam()];
 
   EXPECT_EQ(E(4.45), GetEnergy(m, "GCAAAGCC", "((...).)"));
   EXPECT_EQ(E(5.71), GetEnergy(m, "CCCAAAAUG", ".(.(...))"));

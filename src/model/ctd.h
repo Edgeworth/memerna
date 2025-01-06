@@ -97,7 +97,7 @@ class Ctds {
 
   void reset() { std::fill(data_.begin(), data_.end(), CTD_NA); }
 
-  [[nodiscard]] std::string ToString(const Secondary& s) const;
+  [[nodiscard]] std::string ToString(const Secondary& s, bool use_d2) const;
   static bool IsCtdString(const std::string& ctd_str);
 
  private:
@@ -134,7 +134,7 @@ struct IndexCtd {
 };
 
 std::tuple<Primary, Secondary, Ctds> ParseSeqCtdString(
-    const std::string& prim_str, const std::string& ctd_str);
+    const std::string& prim_str, const std::string& ctd_str, bool use_d2);
 
 }  // namespace mrna
 

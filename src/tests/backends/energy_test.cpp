@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "backends/common/branch.h"
 #include "gtest/gtest.h"
+#include "model/branch.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 

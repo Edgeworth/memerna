@@ -471,7 +471,7 @@ TEST_P(SuboptTestT04, T04P1) {
 
 TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();
-  auto m = t04_ms[i];
+  const auto& m = t04_ms[i];
   if (!Contains(CtxCfg::SuboptAlgsForBackend(m), alg)) return;
 
   Subopt(m, "CCUCCGGG",

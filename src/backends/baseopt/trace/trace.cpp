@@ -182,6 +182,10 @@ TraceResult Traceback(
           }
         }
 
+        if (m->Hairpin(r, st, en) == dp[st][en][DP_P]) {
+          goto loopend;
+        }
+
         const auto base_branch_cost =
             m->AuGuPenalty(stb, enb) + m->multiloop_hack_a + m->multiloop_hack_b;
         // (<   ><    >)

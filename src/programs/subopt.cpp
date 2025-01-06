@@ -9,7 +9,6 @@
 #include "api/ctx/ctx_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
-#include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
@@ -35,9 +34,10 @@ int main(int argc, char* argv[]) {
 
   mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
   if (should_print) {
+    const auto& m = ctx.m();
     if (ctd_data) {
-      fn = [](const mrna::subopt::SuboptResult& c) {
-        fmt::print("{} {}\n", c.energy, c.tb.ctd.ToString(c.tb.s));
+      fn = [m](const mrna::subopt::SuboptResult& c) {
+        fmt::print("{} {}\n", c.energy, mrna::BackendEnergyCfg(m).ToCtdString(c.tb.s, c.tb.ctd));
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {

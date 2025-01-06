@@ -32,7 +32,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT12);
 
 TEST_P(MfeTestT12, T12P2) {
   auto [i, alg] = GetParam();
-  auto m = t12_ms[i];
+  const auto& m = t12_ms[i];
   if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:

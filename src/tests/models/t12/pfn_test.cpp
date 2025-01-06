@@ -32,7 +32,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(PfnTestT12);
 
 TEST_P(PfnTestT12, T12P2) {
   auto [i, alg] = GetParam();
-  auto m = t12_ms[i];
+  const auto& m = t12_ms[i];
   if (!Contains(CtxCfg::PfnAlgsForBackend(m), alg)) return;
 
   EXPECT_REL_EQ(FLT(4.06569633368939134129842956017929466372263904011), Pfn(m, "CCUCCGGG").pfn.q);

@@ -27,7 +27,7 @@ BackendModelPtr BackendFromArgParse(const ArgParse& args);
 
 BackendModelPtr BackendFromBackendCfg(const BackendCfg& cfg);
 
-inline constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
+constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
   auto vis = overloaded{
       [](const md::base::Model::Ptr&) { return BackendKind::BASE; },
       [](const md::base::opt::Model::Ptr&) { return BackendKind::BASEOPT; },
@@ -42,7 +42,7 @@ BackendModelPtr Random(BackendKind kind, uint_fast32_t seed);
 BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
 
 // Gets energy configuration for the given energy model.
-[[nodiscard]] inline constexpr erg::EnergyCfg BackendEnergyCfg(const BackendModelPtr& m) {
+[[nodiscard]] constexpr erg::EnergyCfg BackendEnergyCfg(const BackendModelPtr& m) {
   return std::visit([&](const auto& m) { return m->cfg(); }, m);
 }
 

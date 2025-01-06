@@ -55,7 +55,8 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::OFF, erg::EnergyCfg::LonelyPairs::HEURISTIC,
           erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m.cfg());
 
@@ -166,9 +167,27 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
       UPDATE_CACHE(0, i + 1, 0, i, m.dangle5[rb][lub][lb], CTD_5_DANGLE);
     }
 
+    auto val = ZERO_E;
+    auto val_ctd = CTD_UNUSED;
+    if (m.cfg().UseD2()) {
+      // Note that D2 can overlap with anything.
+      if (li[i] != 0 && ri[i] != RSZ - 1) {
+        val += m.terminal[rb][r[rui[i]]][r[lui[i]]][lb];
+        val_ctd = CTD_MISMATCH;
+      } else if (ri[i] != RSZ - 1) {
+        // Right dangle (3').
+        val += m.dangle3[rb][r[rui[i]]][lb];
+        val_ctd = CTD_3_DANGLE;
+      } else if (li[i] != 0) {
+        // 5' dangle.
+        val += m.dangle5[rb][r[lui[i]]][lb];
+        val_ctd = CTD_5_DANGLE;
+      }
+    }
+
     // Have the option of doing nothing.
-    UPDATE_CACHE(0, i + 1, 0, i, ZERO_E, CTD_UNUSED);
-    UPDATE_CACHE(0, i + 1, 1, i, ZERO_E, CTD_UNUSED);
+    UPDATE_CACHE(0, i + 1, 0, i, val, val_ctd);
+    UPDATE_CACHE(0, i + 1, 1, i, val, val_ctd);
   }
 
   std::tuple<bool, int, Energy, Ctd> state{false, N, ZERO_E, CTD_NA};
@@ -261,7 +280,7 @@ Energy AddBaseCtdsToBranchCtds(const T& m, const Primary& r, const Secondary& s,
     default:
       // Should never happen
       fatal("unexpected CTD value {} at index {}, primary: {}, secondary: {}, ctds: {}",
-          ctd[branch], branch, r.ToSeq(), s.ToDb(), ctd.ToString(s));
+          ctd[branch], branch, r.ToSeq(), s.ToDb(), m.cfg().ToCtdString(s, ctd));
     }
     branch_ctd->emplace_back(ctd[branch], energy);
     total_energy += energy;

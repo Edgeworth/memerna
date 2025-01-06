@@ -75,8 +75,8 @@ class FuzzInvocation {
   [[nodiscard]] bool PfnPQEq(flt a, flt b) const;
   [[nodiscard]] bool PfnProbEq(flt a, flt b) const;
 
-  void ComparePfn(
-      const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors);
+  void ComparePfn(const PfnTables& got, const PfnTables& want, const std::string& name_got,
+      const std::string& name_want, Error& errors);
 
   Error CheckPfn();
 };

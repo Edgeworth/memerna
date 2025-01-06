@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "model/ctd.h"
 #include "util/argparse.h"
 #include "util/container.h"
 #include "util/string.h"
@@ -26,11 +27,14 @@ struct EnergyCfg {
   );
 
   MAKE_NESTED_ENUM(Ctd,
-      NONE,  //  Do not use CTDs in efn, folding, subopt, partition, etc.
-      D2,  // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
-      NO_COAX,  //  Use only terminal mismatches and dangling ends in folding, subopt, partition
-      ALL  //  Use CTDs in folding, subopt, partition, etc.
-  );
+      //  Do not use CTDs in efn, folding, subopt, partition, etc. Like "d0".
+      NONE,
+      // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
+      D2,
+      //  Use only terminal mismatches and dangling ends in folding, subopt, partition. Like "d1".
+      NO_COAX,
+      //  Use CTDs in folding, subopt, partition, etc. Like "d3".
+      ALL);
 
   // Whether to allow lonely pairs in folding, subopt, partition, etc.
   LonelyPairs lonely_pairs = LonelyPairs::HEURISTIC;
@@ -50,6 +54,17 @@ struct EnergyCfg {
 
   [[nodiscard]] constexpr bool UseDangleMismatch() const {
     return ctd == Ctd::ALL || ctd == Ctd::NO_COAX;
+  }
+
+  [[nodiscard]] constexpr bool UseD2() const { return ctd == Ctd::D2; }
+
+  [[nodiscard]] auto ParseSeqCtdString(
+      const std::string& prim_str, const std::string& ctd_str) const {
+    return ::mrna::ParseSeqCtdString(prim_str, ctd_str, UseD2());
+  }
+
+  [[nodiscard]] auto ToCtdString(const Secondary& s, const Ctds& ctds) const {
+    return ctds.ToString(s, UseD2());
   }
 };
 

@@ -30,7 +30,8 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
   m->pf.Verify(r);
@@ -67,7 +68,13 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
             m->multiloop_hack_a + m->multiloop_hack_b;
 
         // (<   ><   >)
-        UPDATE_CACHE(DP_P, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
+        auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
+        if (m->cfg().UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val += m->terminal[stb][st1b][en1b][enb];
+        }
+        UPDATE_CACHE(DP_P, val);
 
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
@@ -154,8 +161,27 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
         const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en));
 
         // (   )<   > - U, U_WC?, U_GU?
-        UPDATE_CACHE(DP_U2, base00 + dp[piv + 1][en][DP_U]);
+        auto u2_val = base00 + dp[piv + 1][en][DP_U];
         auto val = base00 + right_unpaired;
+
+        if (m->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U
+            val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
+            u2_val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
+          } else if (piv != N - 1) {
+            // (   )<3   > 3' - U
+            val += m->dangle3[pb][r[piv + 1]][stb];
+            u2_val += m->dangle3[pb][r[piv + 1]][stb];
+          } else if (st != 0) {
+            // 5(   )<   > 5' - U
+            val += m->dangle5[pb][r[st - 1]][stb];
+            u2_val += m->dangle5[pb][r[st - 1]][stb];
+          }
+        }
+
+        UPDATE_CACHE(DP_U2, u2_val);
         UPDATE_CACHE(DP_U, val);
         if (IsGuPair(stb, pb))
           UPDATE_CACHE(DP_U_GU, val);

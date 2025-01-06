@@ -29,15 +29,15 @@ int main(int argc, char* argv[]) {
   const auto& ss = args.Pos(1);
   mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
-    const auto [r, s, ctd] = mrna::ParseSeqCtdString(rs, ss);
+    const auto [r, s, ctd] = mrna::BackendEnergyCfg(m).ParseSeqCtdString(rs, ss);
     res = mrna::TotalEnergy(m, r, s, &ctd, true);
     fmt::print("{}\n", res.energy);
-    fmt::print("{}\n", res.ctd.ToString(s));
+    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
     res = mrna::TotalEnergy(m, r, s, nullptr, true);
     fmt::print("{}\n", res.energy);
-    fmt::print("{}\n", res.ctd.ToString(s));
+    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
   }
 
   if (args.GetOr(OPT_DETAIL)) {

@@ -15,9 +15,9 @@
 #include "backends/baseopt/energy/precomp.h"
 #include "backends/common/base/branch.h"
 #include "backends/common/base/model_base.h"
-#include "backends/common/branch.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
+#include "model/branch.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/primary.h"
@@ -40,12 +40,12 @@ class EnergyTestBaseOpt : public testing::TestWithParam<int> {
 };
 
 TEST_P(EnergyTestBaseOpt, MultiloopEnergy) {
-  auto m = baseopt_ms[GetParam()];
+  const auto& m = baseopt_ms[GetParam()];
   EXPECT_EQ(m->multiloop_hack_a + 4 * m->multiloop_hack_b, m->MultiloopInitiation(4));
 }
 
 TEST_P(EnergyTestBaseOpt, NNDBHairpinLoopExamples) {
-  auto m = baseopt_ms[GetParam()];
+  const auto& m = baseopt_ms[GetParam()];
 
   EXPECT_EQ(m->stack[C][A][U][G] + m->stack[A][C][G][U] + m->stack[C][A][U][G] + m->au_penalty +
           m->terminal[A][A][A][U] + m->HairpinInitiation(6),
@@ -102,7 +102,7 @@ TEST_P(EnergyTestBaseOpt, NNDBHairpinLoopExamples) {
 }
 
 TEST_P(EnergyTestBaseOpt, NNDBBulgeLoopExamples) {
-  auto m = baseopt_ms[GetParam()];
+  const auto& m = baseopt_ms[GetParam()];
 
   EXPECT_EQ(m->stack[G][C][G][C] + m->stack[C][C][G][G] + m->BulgeInitiation(1) +
           m->bulge_special_c + m->stack[C][G][C][G] + m->HairpinInitiation(3) - E(R * T * log(3)),
@@ -113,7 +113,7 @@ TEST_P(EnergyTestBaseOpt, NNDBBulgeLoopExamples) {
 }
 
 TEST_P(EnergyTestBaseOpt, NNDBInternalLoopExamples) {
-  auto m = baseopt_ms[GetParam()];
+  const auto& m = baseopt_ms[GetParam()];
 
   EXPECT_EQ(m->stack[C][A][U][G] + m->stack[C][G][C][G] + m->InternalLoopInitiation(5) +
           std::min(m->internal_asym, NINIO_MAX_ASYM) + m->internal_2x3_mismatch[A][G][G][U] +
@@ -130,16 +130,15 @@ TEST_P(EnergyTestBaseOpt, NNDBInternalLoopExamples) {
 }
 
 TEST_P(EnergyTestBaseOpt, BaseCases) {
-  auto m = baseopt_ms[GetParam()];
+  const auto& m = baseopt_ms[GetParam()];
 
   EXPECT_EQ(
       m->au_penalty + m->stack[G][A][U][C] + m->hairpin_init[3], GetEnergy("GAAAAUC", "((...))"));
   EXPECT_EQ(m->au_penalty + m->gu_penalty + m->stack[G][A][U][U] + m->hairpin_init[3],
       GetEnergy("GAAAAUU", "((...))"));
   EXPECT_EQ(m->au_penalty * 2 + m->HairpinInitiation(3) +
-          std::min(ZERO_E,
-              std::min(
-                  m->terminal[U][A][A][A], std::min(m->dangle3[U][A][A], m->dangle5[U][A][A]))),
+          std::min({ZERO_E, m->terminal[U][A][A][A],
+              std::min(m->dangle3[U][A][A], m->dangle5[U][A][A])}),
       GetEnergy("AAAAAUA", ".(...)."));
   EXPECT_EQ(m->au_penalty * 2 + m->HairpinInitiation(3), GetEnergy("AAAAU", "(...)"));
   EXPECT_EQ(m->stack[G][C][G][C] + m->stack[C][U][A][G] + m->BulgeInitiation(1) +
@@ -205,78 +204,104 @@ struct CtdTest {
   std::deque<int> branches;
 };
 
+namespace {
+
 std::function<CtdTest(const Model::Ptr&)> CTD_TESTS[] = {
-    [](const Model::Ptr&) -> CtdTest { return {{}, {}, {}, {}, {}}; },
     [](const Model::Ptr&) -> CtdTest {
-      return {Primary::FromSeq("A"), Secondary::FromDb("."), Ctds{CTD_NA}, {}, {}};
+      return {.r = {}, .s = {}, .ctd = {}, .branch_ctd = {}, .branches = {}};
     },
     [](const Model::Ptr&) -> CtdTest {
-      return {Primary::FromSeq("AG"), Secondary::FromDb(".."), Ctds{CTD_NA, CTD_NA}, {}, {}};
+      return {.r = Primary::FromSeq("A"),
+          .s = Secondary::FromDb("."),
+          .ctd = Ctds{CTD_NA},
+          .branch_ctd = {},
+          .branches = {}};
     },
     [](const Model::Ptr&) -> CtdTest {
-      return {
-          Primary::FromSeq("GUA"), Secondary::FromDb("..."), Ctds{CTD_NA, CTD_NA, CTD_NA}, {}, {}};
+      return {.r = Primary::FromSeq("AG"),
+          .s = Secondary::FromDb(".."),
+          .ctd = Ctds{CTD_NA, CTD_NA},
+          .branch_ctd = {},
+          .branches = {}};
     },
     [](const Model::Ptr&) -> CtdTest {
-      return {Primary::FromSeq("GUAC"), Secondary::FromDb("...."),
-          Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA}, {}, {}};
+      return {.r = Primary::FromSeq("GUA"),
+          .s = Secondary::FromDb("..."),
+          .ctd = Ctds{CTD_NA, CTD_NA, CTD_NA},
+          .branch_ctd = {},
+          .branches = {}};
+    },
+    [](const Model::Ptr&) -> CtdTest {
+      return {.r = Primary::FromSeq("GUAC"),
+          .s = Secondary::FromDb("...."),
+          .ctd = Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA},
+          .branch_ctd = {},
+          .branches = {}};
     },
     // 3' dangle inside the branch.
     [](const Model::Ptr& m) -> CtdTest {
-      return {Primary::FromSeq("GAAAC"), Secondary::FromDb("(...)"),
-          Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE}, {{CTD_3_DANGLE, m->dangle3[G][A][C]}},
-          {4}};
+      return {.r = Primary::FromSeq("GAAAC"),
+          .s = Secondary::FromDb("(...)"),
+          .ctd = Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE},
+          .branch_ctd = {{CTD_3_DANGLE, m->dangle3[G][A][C]}},
+          .branches = {4}};
     },
     [](const Model::Ptr&) -> CtdTest {
-      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDb("(...).((...).(...)).(...)."), Ctds(26), {}, {}};
+      return {.r = Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          .s = Secondary::FromDb("(...).((...).(...)).(...)."),
+          .ctd = Ctds(26),
+          .branch_ctd = {},
+          .branches = {}};
     },
     [](const Model::Ptr& m) -> CtdTest {
-      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDb("(...).((...).(...)).(...)."),
-          Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA,
+      return {.r = Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          .s = Secondary::FromDb("(...).((...).(...)).(...)."),
+          .ctd = Ctds{CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT, CTD_NA,
               CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-              CTD_NA, CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
-          {{CTD_UNUSED, ZERO_E}, {CTD_RC_WITH_NEXT, m->MismatchCoaxial(C, A, A, G)},
+              CTD_NA, CTD_NA, CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
+          .branch_ctd = {{CTD_UNUSED, ZERO_E}, {CTD_RC_WITH_NEXT, m->MismatchCoaxial(C, A, A, G)},
               {CTD_RC_WITH_PREV, m->MismatchCoaxial(C, A, A, G)}},
-          {0, 6, 20}};
+          .branches = {0, 6, 20}};
     },
     [](const Model::Ptr& m) -> CtdTest {
-      return {Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
-          Secondary::FromDb("(...).((...).(...)).(...)."),
-          Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV, CTD_NA,
-              CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+      return {.r = Primary::FromSeq("GAAACAGAAAAUGGAAACCAGAAACA"),
+          .s = Secondary::FromDb("(...).((...).(...)).(...)."),
+          .ctd = Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV,
+              CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_5_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
               CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA},
-          {{CTD_FCOAX_WITH_NEXT, m->stack[G][A][U][C]}, {CTD_FCOAX_WITH_PREV, m->stack[G][A][U][C]},
-              {CTD_5_DANGLE, m->dangle5[C][G][G]}},
-          {18, 7, 13}};
+          .branch_ctd = {{CTD_FCOAX_WITH_NEXT, m->stack[G][A][U][C]},
+              {CTD_FCOAX_WITH_PREV, m->stack[G][A][U][C]}, {CTD_5_DANGLE, m->dangle5[C][G][G]}},
+          .branches = {18, 7, 13}};
     },
     [](const Model::Ptr& m) -> CtdTest {
-      return {Primary::FromSeq("GGAAACGAAACC"), Secondary::FromDb("((...)(...))"),
-          Ctds{CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA,
-              CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
-          {{CTD_UNUSED, ZERO_E}, {CTD_FCOAX_WITH_NEXT, m->stack[G][G][C][C]},
+      return {.r = Primary::FromSeq("GGAAACGAAACC"),
+          .s = Secondary::FromDb("((...)(...))"),
+          .ctd = Ctds{CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT,
+              CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
+          .branch_ctd = {{CTD_UNUSED, ZERO_E}, {CTD_FCOAX_WITH_NEXT, m->stack[G][G][C][C]},
               {CTD_FCOAX_WITH_PREV, m->stack[G][G][C][C]}},
-          {1, 6, 11}};
+          .branches = {1, 6, 11}};
     },
     [](const Model::Ptr& m) -> CtdTest {
-      return {Primary::FromSeq("UUAGAAACGCAAAGAGGUCCAAAGA"),
-          Secondary::FromDb("(..(...).(...).....(...))"),
-          Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-              CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
-              CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV},
-          {{CTD_FCOAX_WITH_PREV, m->stack[U][C][G][A]},
+      return {.r = Primary::FromSeq("UUAGAAACGCAAAGAGGUCCAAAGA"),
+          .s = Secondary::FromDb("(..(...).(...).....(...))"),
+          .ctd = Ctds{CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+              CTD_FCOAX_WITH_PREV},
+          .branch_ctd = {{CTD_FCOAX_WITH_PREV, m->stack[U][C][G][A]},
               {CTD_LCOAX_WITH_NEXT, m->MismatchCoaxial(C, G, A, G)},
               {CTD_LCOAX_WITH_PREV, m->MismatchCoaxial(C, G, A, G)},
               {CTD_FCOAX_WITH_NEXT, m->stack[U][C][G][A]}},
-          {24, 3, 9, 19}};
+          .branches = {24, 3, 9, 19}};
     }};
+}  // namespace
 
 class CtdsTestBaseOpt
     : public testing::TestWithParam<std::tuple<int, std::function<CtdTest(const Model::Ptr&)>>> {};
 
 TEST_P(CtdsTestBaseOpt, BaseBranchBase) {
-  auto m = baseopt_ms[std::get<0>(GetParam())];
+  const auto& m = baseopt_ms[std::get<0>(GetParam())];
   auto ctd_test = std::get<1>(GetParam())(m);
   // Convert base representation to branch representation.
   BranchCtd computed_branch_ctd;

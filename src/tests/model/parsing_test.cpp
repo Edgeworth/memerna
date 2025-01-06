@@ -112,60 +112,60 @@ class ParsingTest : public testing::Test {
 };
 
 TEST_F(ParsingTest, SecondaryCtdToCtdString) {
-  EXPECT_EQ(kCtdString1, kCtd1.ToString(kSecondary1));
-  EXPECT_EQ(kCtdString2, kCtd2.ToString(kSecondary2));
-  EXPECT_EQ(kCtdString3, kCtd3.ToString(kSecondary3));
-  EXPECT_EQ(kCtdString4, kCtd4.ToString(kSecondary4));
-  EXPECT_EQ(kCtdString5, kCtd5.ToString(kSecondary5));
-  EXPECT_EQ(kCtdString6, kCtd6.ToString(kSecondary6));
-  EXPECT_EQ(kCtdString7, kCtd7.ToString(kSecondary7));
-  EXPECT_EQ(kCtdString8, kCtd8.ToString(kSecondary8));
-  EXPECT_EQ(kCtdString9, kCtd9.ToString(kSecondary9));
-  EXPECT_EQ(kCtdString10, kCtd10.ToString(kSecondary10));
-  EXPECT_EQ(kCtdString11, kCtd11.ToString(kSecondary11));
-  EXPECT_EQ(kCtdString12, kCtd12.ToString(kSecondary12));
-  EXPECT_EQ(kCtdString13, kCtd13.ToString(kSecondary13));
-  EXPECT_EQ(kCtdString14, kCtd14.ToString(kSecondary14));
-  EXPECT_EQ(kCtdString15, kCtd15.ToString(kSecondary15));
-  EXPECT_EQ(kCtdString16, kCtd16.ToString(kSecondary16));
-  EXPECT_EQ(kCtdString17, kCtd17.ToString(kSecondary17));
+  EXPECT_EQ(kCtdString1, kCtd1.ToString(kSecondary1, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString2, kCtd2.ToString(kSecondary2, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString3, kCtd3.ToString(kSecondary3, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString4, kCtd4.ToString(kSecondary4, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString5, kCtd5.ToString(kSecondary5, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString6, kCtd6.ToString(kSecondary6, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString7, kCtd7.ToString(kSecondary7, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString8, kCtd8.ToString(kSecondary8, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString9, kCtd9.ToString(kSecondary9, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString10, kCtd10.ToString(kSecondary10, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString11, kCtd11.ToString(kSecondary11, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString12, kCtd12.ToString(kSecondary12, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString13, kCtd13.ToString(kSecondary13, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString14, kCtd14.ToString(kSecondary14, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString15, kCtd15.ToString(kSecondary15, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString16, kCtd16.ToString(kSecondary16, /*use_d2=*/false));
+  EXPECT_EQ(kCtdString17, kCtd17.ToString(kSecondary17, /*use_d2=*/false));
 }
 
 TEST_F(ParsingTest, ParseCtd) {
   EXPECT_EQ(std::make_tuple(kPrimary1, kSecondary1, kCtd1),
-      ParseSeqCtdString(kPrimary1.ToSeq(), kCtdString1));
+      ParseSeqCtdString(kPrimary1.ToSeq(), kCtdString1, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary2, kSecondary2, kCtd2),
-      ParseSeqCtdString(kPrimary2.ToSeq(), kCtdString2));
+      ParseSeqCtdString(kPrimary2.ToSeq(), kCtdString2, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary3, kSecondary3, kCtd3),
-      ParseSeqCtdString(kPrimary3.ToSeq(), kCtdString3));
+      ParseSeqCtdString(kPrimary3.ToSeq(), kCtdString3, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary4, kSecondary4, kCtd4),
-      ParseSeqCtdString(kPrimary4.ToSeq(), kCtdString4));
+      ParseSeqCtdString(kPrimary4.ToSeq(), kCtdString4, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary5, kSecondary5, kCtd5),
-      ParseSeqCtdString(kPrimary5.ToSeq(), kCtdString5));
+      ParseSeqCtdString(kPrimary5.ToSeq(), kCtdString5, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary6, kSecondary6, kCtd6),
-      ParseSeqCtdString(kPrimary6.ToSeq(), kCtdString6));
+      ParseSeqCtdString(kPrimary6.ToSeq(), kCtdString6, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary7, kSecondary7, kCtd7),
-      ParseSeqCtdString(kPrimary7.ToSeq(), kCtdString7));
+      ParseSeqCtdString(kPrimary7.ToSeq(), kCtdString7, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary8, kSecondary8, kCtd8),
-      ParseSeqCtdString(kPrimary8.ToSeq(), kCtdString8));
+      ParseSeqCtdString(kPrimary8.ToSeq(), kCtdString8, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary9, kSecondary9, kCtd9),
-      ParseSeqCtdString(kPrimary9.ToSeq(), kCtdString9));
+      ParseSeqCtdString(kPrimary9.ToSeq(), kCtdString9, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary10, kSecondary10, kCtd10),
-      ParseSeqCtdString(kPrimary10.ToSeq(), kCtdString10));
+      ParseSeqCtdString(kPrimary10.ToSeq(), kCtdString10, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary11, kSecondary11, kCtd11),
-      ParseSeqCtdString(kPrimary11.ToSeq(), kCtdString11));
+      ParseSeqCtdString(kPrimary11.ToSeq(), kCtdString11, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary12, kSecondary12, kCtd12),
-      ParseSeqCtdString(kPrimary12.ToSeq(), kCtdString12));
+      ParseSeqCtdString(kPrimary12.ToSeq(), kCtdString12, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary13, kSecondary13, kCtd13),
-      ParseSeqCtdString(kPrimary13.ToSeq(), kCtdString13));
+      ParseSeqCtdString(kPrimary13.ToSeq(), kCtdString13, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary14, kSecondary14, kCtd14),
-      ParseSeqCtdString(kPrimary14.ToSeq(), kCtdString14));
+      ParseSeqCtdString(kPrimary14.ToSeq(), kCtdString14, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary15, kSecondary15, kCtd15),
-      ParseSeqCtdString(kPrimary15.ToSeq(), kCtdString15));
+      ParseSeqCtdString(kPrimary15.ToSeq(), kCtdString15, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary16, kSecondary16, kCtd16),
-      ParseSeqCtdString(kPrimary16.ToSeq(), kCtdString16));
+      ParseSeqCtdString(kPrimary16.ToSeq(), kCtdString16, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary17, kSecondary17, kCtd17),
-      ParseSeqCtdString(kPrimary17.ToSeq(), kCtdString17));
+      ParseSeqCtdString(kPrimary17.ToSeq(), kCtdString17, /*use_d2=*/false));
 }
 
 TEST_F(ParsingTest, IsCtdString) {

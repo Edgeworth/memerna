@@ -34,7 +34,10 @@ class SuboptDebug {
     std::vector<DpIndex> history;
     SuboptResult res;  // Stores the minimum energy this state could have.
 
-    [[nodiscard]] Node copy() const { return Node{not_yet_expanded, history, SuboptResult(res)}; }
+    [[nodiscard]] Node copy() const {
+      return Node{
+          .not_yet_expanded = not_yet_expanded, .history = history, .res = SuboptResult(res)};
+    }
 
     bool operator<(const Node& o) const { return res.energy < o.res.energy; }
   };

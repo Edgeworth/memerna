@@ -47,14 +47,14 @@ class Brute {
 
  private:
   // Pfn function:
-  inline constexpr static uint32_t PT_MAX_BITS = 5;
-  inline constexpr static uint32_t CTD_MAX_BITS = 4;
-  inline constexpr static uint32_t PT_MASK = (1 << PT_MAX_BITS) - 1;
-  inline constexpr static uint32_t CTD_MASK = (1 << CTD_MAX_BITS) - 1;
+  constexpr static uint32_t PT_MAX_BITS = 5;
+  constexpr static uint32_t CTD_MAX_BITS = 4;
+  constexpr static uint32_t PT_MASK = (1 << PT_MAX_BITS) - 1;
+  constexpr static uint32_t CTD_MASK = (1 << CTD_MAX_BITS) - 1;
 
   struct SubstructureId {
-    inline constexpr static uint32_t BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
-    inline constexpr static uint32_t BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
+    constexpr static uint32_t BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
+    constexpr static uint32_t BYTES = BITS / 8 + (BITS % 8 ? 1 : 0);
     uint16_t bits[BYTES / 2];
 
     constexpr auto operator<=>(const SubstructureId&) const = default;

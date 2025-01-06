@@ -25,31 +25,29 @@ struct __attribute__((packed, aligned(4))) Energy {
   static constexpr int FACTOR = powi(10, ENERGY_PRECISION);
   static constexpr int EXPONENT = ENERGY_PRECISION;
 
-  [[nodiscard]] inline static constexpr Energy FromRaw(int32_t v) noexcept {
-    return Energy{.v = v};
-  }
+  [[nodiscard]] static constexpr Energy FromRaw(int32_t v) noexcept { return Energy{.v = v}; }
 
   // Converts a floating point energy value in kcal/mol to an integer energy value.
   [[nodiscard]] static Energy FromDouble(double energy);
   [[nodiscard]] static Energy FromString(const std::string& s);
 
   [[nodiscard]] std::string ToString() const noexcept;
-  [[nodiscard]] inline double ToDouble() const noexcept { return v / static_cast<double>(FACTOR); }
+  [[nodiscard]] double ToDouble() const noexcept { return v / static_cast<double>(FACTOR); }
   [[nodiscard]] inline BoltzEnergy Boltz() const noexcept;
   [[nodiscard]] inline BoltzEnergy LogBoltz() const noexcept;
 
-  inline constexpr auto operator<=>(const Energy&) const noexcept = default;
+  constexpr auto operator<=>(const Energy&) const noexcept = default;
 
-  inline constexpr Energy operator-() const noexcept { return FromRaw(-v); }
+  constexpr Energy operator-() const noexcept { return FromRaw(-v); }
 
-  inline constexpr Energy operator+(const Energy& o) const noexcept { return FromRaw(v + o.v); }
-  inline constexpr Energy operator+=(const Energy& o) noexcept {
+  constexpr Energy operator+(const Energy& o) const noexcept { return FromRaw(v + o.v); }
+  constexpr Energy operator+=(const Energy& o) noexcept {
     v += o.v;
     return *this;
   }
 
-  inline constexpr Energy operator-(const Energy& o) const noexcept { return FromRaw(v - o.v); }
-  inline constexpr Energy operator-=(const Energy& o) {
+  constexpr Energy operator-(const Energy& o) const noexcept { return FromRaw(v - o.v); }
+  constexpr Energy operator-=(const Energy& o) {
     v -= o.v;
     return *this;
   }

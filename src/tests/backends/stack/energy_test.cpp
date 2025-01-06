@@ -31,12 +31,12 @@ class EnergyTestStack : public testing::TestWithParam<int> {
 };
 
 TEST_P(EnergyTestStack, MultiloopEnergy) {
-  auto m = stack_ms[GetParam()];
+  const auto& m = stack_ms[GetParam()];
   EXPECT_EQ(m->multiloop_hack_a + 4 * m->multiloop_hack_b, m->MultiloopInitiation(4));
 }
 
 TEST_P(EnergyTestStack, NNDBHairpinLoopExamples) {
-  auto m = stack_ms[GetParam()];
+  const auto& m = stack_ms[GetParam()];
 
   EXPECT_EQ(m->stack[C][A][U][G] + m->stack[A][C][G][U] + m->stack[C][A][U][G] + m->au_penalty +
           m->terminal[A][A][A][U] + m->HairpinInitiation(6) + m->penultimate_stack[C][A][U][G] +
@@ -66,7 +66,7 @@ TEST_P(EnergyTestStack, NNDBHairpinLoopExamples) {
 }
 
 TEST_P(EnergyTestStack, NNDBBulgeLoopExamples) {
-  auto m = stack_ms[GetParam()];
+  const auto& m = stack_ms[GetParam()];
 
   EXPECT_EQ(m->stack[G][C][G][C] + m->stack[C][C][G][G] + m->BulgeInitiation(1) +
           m->bulge_special_c + m->stack[C][G][C][G] + m->HairpinInitiation(3) - E(R * T * log(3)) +
@@ -79,7 +79,7 @@ TEST_P(EnergyTestStack, NNDBBulgeLoopExamples) {
 }
 
 TEST_P(EnergyTestStack, NNDBInternalLoopExamples) {
-  auto m = stack_ms[GetParam()];
+  const auto& m = stack_ms[GetParam()];
 
   EXPECT_EQ(m->stack[C][A][U][G] + m->stack[C][G][C][G] + m->InternalLoopInitiation(5) +
           std::min(m->internal_asym, NINIO_MAX_ASYM) + m->internal_2x3_mismatch[A][G][G][U] +
@@ -102,7 +102,7 @@ TEST_P(EnergyTestStack, NNDBInternalLoopExamples) {
 }
 
 TEST_P(EnergyTestStack, BaseCases) {
-  auto m = stack_ms[GetParam()];
+  const auto& m = stack_ms[GetParam()];
 
   EXPECT_EQ(m->au_penalty + m->stack[G][A][U][C] + m->hairpin_init[3] +
           m->penultimate_stack[G][A][U][C] + m->penultimate_stack[U][C][G][A],
@@ -111,9 +111,7 @@ TEST_P(EnergyTestStack, BaseCases) {
           m->penultimate_stack[G][A][U][U] + m->penultimate_stack[U][U][G][A],
       GetEnergy("GAAAAUU", "((...))"));
   EXPECT_EQ(m->au_penalty * 2 + m->HairpinInitiation(3) +
-          std::min(ZERO_E,
-              std::min(
-                  m->terminal[U][A][A][A], std::min(m->dangle3[U][A][A], m->dangle5[U][A][A]))),
+          std::min({ZERO_E, m->terminal[U][A][A][A], m->dangle3[U][A][A], m->dangle5[U][A][A]}),
       GetEnergy("AAAAAUA", ".(...)."));
   EXPECT_EQ(m->au_penalty * 2 + m->HairpinInitiation(3), GetEnergy("AAAAU", "(...)"));
   EXPECT_EQ(m->stack[G][C][G][C] + m->stack[C][U][A][G] + m->BulgeInitiation(1) +

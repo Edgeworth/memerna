@@ -32,7 +32,8 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
 
@@ -65,7 +66,13 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
             (pc.augubranch[stb][enb] + m->multiloop_hack_a).Boltz();
 
         // (<   ><   >)
-        p += base_branch_cost * dp[st + 1][en - 1][PT_U2];
+        BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
+        if (m->cfg().UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val *= m->terminal[stb][st1b][en1b][enb].Boltz();
+        }
+        p += val;
 
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
@@ -135,8 +142,27 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
         const BoltzEnergy base11 = dp[st + 1][piv - 1][PT_P] * pc.augubranch[st1b][pl1b].Boltz();
 
         // (   )<   > - U, U_WC?, U_GU?
-        u2 += base00 * dp[piv + 1][en][PT_U];
+        BoltzEnergy u2_val = base00 * dp[piv + 1][en][PT_U];
         BoltzEnergy val = base00 + base00 * dp[piv + 1][en][PT_U];
+
+        if (m->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U
+            val *= m->terminal[pb][r[piv + 1]][r[st - 1]][stb].Boltz();
+            u2_val *= m->terminal[pb][r[piv + 1]][r[st - 1]][stb].Boltz();
+          } else if (piv != N - 1) {
+            // (   )<3   > 3' - U
+            val *= m->dangle3[pb][r[piv + 1]][stb].Boltz();
+            u2_val *= m->dangle3[pb][r[piv + 1]][stb].Boltz();
+          } else if (st != 0) {
+            // 5(   )<   > 5' - U
+            val *= m->dangle5[pb][r[st - 1]][stb].Boltz();
+            u2_val *= m->dangle5[pb][r[st - 1]][stb].Boltz();
+          }
+        }
+
+        u2 += u2_val;
         u += val;
         if (IsGuPair(stb, pb))
           gu += val;
@@ -240,10 +266,24 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
           const BoltzEnergy lext = rspace ? ext[en - 1][PTEXT_L] : BoltzEnergy{1};
           const BoltzEnergy l1ext = rspace > 1 ? ext[en - 2][PTEXT_L] : BoltzEnergy{1};
 
+          BoltzEnergy d2_val = ONE_B;
+          if (m->cfg().UseD2()) {
+            if (st != N - 1 && en != 0) {
+              // |<   >)   (<   >| Terminal mismatch
+              d2_val *= m->terminal[stb][st1b][en1b][enb].Boltz();
+            } else if (st != N - 1) {
+              // |<   >)   (<3   >| 3'
+              d2_val *= m->dangle3[stb][st1b][enb].Boltz();
+            } else if (en != 0) {
+              // |<   5>)   (<   >| 5'
+              d2_val *= m->dangle5[stb][en1b][enb].Boltz();
+            }
+          }
           // |<   >)   (<   >| - Exterior loop
-          p += augu * lext * rext;
+          p += augu * lext * rext * d2_val;
+
           // |   >)   (<   | - Enclosing loop
-          if (lspace && rspace) p += base_branch_cost * dp[st + 1][en - 1][PT_U2];
+          if (lspace && rspace) p += base_branch_cost * dp[st + 1][en - 1][PT_U2] * d2_val;
 
           if (m->cfg().UseDangleMismatch()) {
             if (lspace) {
@@ -410,6 +450,7 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
 
         dp[st][en][PT_P] = p;
       }
+
       BoltzEnergy u{0};
       BoltzEnergy u2{0};
       BoltzEnergy rcoax{0};
@@ -440,21 +481,30 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
         BoltzEnergy val{0};
 
         if (straddling) {
+          BoltzEnergy d2_val = ONE_B;
+          if (m->cfg().UseD2()) {
+            // |  >>   m<(   )<m  | Terminal mismatch
+            // tpiv != N-1 && st != 0, so we can always do a terminal mismatch.
+            d2_val *= m->terminal[pb][prb][r[st - 1]][stb].Boltz();
+          }
+
           // |  >>   <(   )<  |
-          val = base00 * dp[pr][en][PT_U];
+          val = base00 * dp[pr][en][PT_U] * d2_val;
           u2 += val;
           u += val;
           if (IsGuPair(stb, pb))
             gu += val;
           else
             wc += val;
+
           // U must cross the boundary to have the rest of it be nothing.
           if (tpiv >= N) {
-            u += base00;
+            val = base00 * d2_val;
+            u += val;
             if (IsGuPair(stb, pb))
-              gu += base00;
+              gu += val;
             else
-              wc += base00;
+              wc += val;
           }
 
           if (m->cfg().UseCoaxialStacking()) {
@@ -499,7 +549,7 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
           }
 
           if (m->cfg().UseDangleMismatch() && dot_straddling) {
-            // |  >>   <.(   ).<  | Terminal mismatch
+            // |  >>   <m(   )m<  | Terminal mismatch
             // lspace > 0 && dot_straddling
             val = base11 * m->terminal[pl1b][pb][stb][st1b].Boltz();
             if (tpiv >= N) u += val;

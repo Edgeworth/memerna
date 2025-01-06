@@ -20,7 +20,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EnergyTestT12);
 #elif ENERGY_PRECISION == 2
 
 TEST_P(EnergyTestT12, T12P2) {
-  auto m = t12_ms[GetParam()];
+  const auto& m = t12_ms[GetParam()];
 
   // Example from https://doi.org/10.1093/nar/gkac261
   EXPECT_EQ(E(-1.74), GetEnergy(m, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));

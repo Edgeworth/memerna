@@ -11,7 +11,6 @@
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
-#include "model/ctd.h"
 #include "model/secondary.h"
 #include "programs/print.h"
 #include "util/argparse.h"
@@ -38,14 +37,14 @@ int main(int argc, char* argv[]) {
     const auto& mfe = *res.subopts.begin();
     fmt::print("{}\n", mfe.energy);
     fmt::print("{}\n", mfe.tb.s.ToDb());
-    fmt::print("{}\n", mfe.tb.ctd.ToString(mfe.tb.s));
+    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(mfe.tb.s, mfe.tb.ctd));
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
       fmt::print("{}\n", s.energy);
       fmt::print("{}\n", s.tb.s.ToDb());
-      fmt::print("{}\n", s.tb.ctd.ToString(s.tb.s));
+      fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s.tb.s, s.tb.ctd));
     }
   }
 

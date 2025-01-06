@@ -13,6 +13,7 @@
 #include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
+#include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/error.h"
 
@@ -28,7 +29,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m_->cfg());
 
@@ -103,7 +105,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         curnode_ = node.copy();
 
         // (   )<.( * ). > Right coax backward
-        if (m_->cfg().UseDangleMismatch() && a == EXT_RC) {
+        if (m_->cfg().UseCoaxialStacking() && a == EXT_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
               m_->pf.Unpaired(st) + m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
@@ -115,9 +117,27 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
         // Cases for EXT, EXT_WC, EXT_GU.
         // (   )<   >
-        // If we are at EXT then this is unused.
         energy = base_energy + base00 + dp_.ext[en + 1][EXT];
-        if (a == EXT) Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P}, {st, CTD_UNUSED});
+        Ctd val_ctd = CTD_UNUSED;
+
+        if (m_->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && en != N - 1) {
+            // (   )<   > Terminal mismatch
+            energy += m_->terminal[enb][r_[en + 1]][r_[st - 1]][stb];
+            val_ctd = CTD_MISMATCH;
+          } else if (en != N - 1) {
+            // (   )<3   > 3'
+            energy += m_->dangle3[enb][r_[en + 1]][stb];
+            val_ctd = CTD_3_DANGLE;
+          } else if (st != 0) {
+            // 5(   )<   > 5'
+            energy += m_->dangle5[enb][r_[st - 1]][stb];
+            val_ctd = CTD_5_DANGLE;
+          }
+        }
+
+        if (a == EXT) Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P}, {st, val_ctd});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
@@ -209,9 +229,17 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
       auto base_and_branch = base_energy + m_->AuGuPenalty(stb, enb) + m_->pf.Paired(st, en) +
           m_->multiloop_hack_a + m_->multiloop_hack_b;
+
       // (<   ><    >)
       energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
-      Expand(energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED});
+      Ctd val_ctd = CTD_UNUSED;
+      if (m_->cfg().UseD2()) {
+        // D2 can overlap terminal mismatches with anything.
+        // (<   ><   >) Terminal mismatch
+        energy += m_->terminal[stb][st1b][en1b][enb];
+        val_ctd = CTD_MISMATCH;
+      }
+      Expand(energy, {st + 1, en - 1, DP_U2}, {en, val_ctd});
 
       if (m_->cfg().UseDangleMismatch()) {
         // (3<   ><   >) 3'
@@ -322,13 +350,31 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
         // (   )<   > - U, U2, U_WC?, U_GU?
         energy = base_energy + base00;
+        Ctd val_ctd = CTD_UNUSED;
+        if (m_->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U, U2
+            energy += m_->terminal[pb][r_[piv + 1]][r_[st - 1]][stb];
+            val_ctd = CTD_MISMATCH;
+          } else if (piv != N - 1) {
+            // (   )<3   > 3' - U, U2
+            energy += m_->dangle3[pb][r_[piv + 1]][stb];
+            val_ctd = CTD_3_DANGLE;
+          } else if (st != 0) {
+            // 5(   )<   > 5' - U, U2
+            energy += m_->dangle5[pb][r_[st - 1]][stb];
+            val_ctd = CTD_5_DANGLE;
+          }
+        }
+
         if (a == DP_U) {
-          Expand(energy + right_unpaired, {st, piv, DP_P}, {st, CTD_UNUSED});
-          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
+          Expand(energy + right_unpaired, {st, piv, DP_P}, {st, val_ctd});
+          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, val_ctd});
         }
 
         if (a == DP_U2)
-          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, CTD_UNUSED});
+          Expand(energy + right_paired, {st, piv, DP_P}, {piv + 1, en, DP_U}, {st, val_ctd});
 
         // Make sure we don't form any branches that are not the right type of pair.
         if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
