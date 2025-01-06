@@ -218,7 +218,6 @@ set(MEMERNA_SOURCE
   src/backends/common/base/boltz_precomp_base.h
   src/backends/common/base/boltz_pseudofree_model.cpp
   src/backends/common/base/boltz_pseudofree_model.h
-  src/backends/common/base/branch.cpp
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
   src/backends/common/base/model_base.h
@@ -227,8 +226,6 @@ set(MEMERNA_SOURCE
   src/backends/common/base/pseudofree_model.cpp
   src/backends/common/base/pseudofree_model.h
   src/backends/common/boltz.h
-  src/backends/common/branch.cpp
-  src/backends/common/branch.h
   src/backends/common/energy.h
   src/backends/common/model_mixin.h
   src/backends/common/parse.cpp
@@ -254,6 +251,8 @@ set(MEMERNA_SOURCE
   src/fuzz/fuzz_invocation.h
   src/model/base.cpp
   src/model/base.h
+  src/model/branch.cpp
+  src/model/branch.h
   src/model/constants.h
   src/model/ctd.cpp
   src/model/ctd.h

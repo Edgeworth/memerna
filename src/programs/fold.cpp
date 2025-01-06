@@ -6,7 +6,6 @@
 #include "api/mfe.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
-#include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
@@ -25,5 +24,5 @@ int main(int argc, char* argv[]) {
 
   fmt::print("{}\n", res.mfe.energy);
   fmt::print("{}\n", res.tb.s.ToDb());
-  fmt::print("{}\n", res.tb.ctd.ToString(res.tb.s));
+  fmt::print("{}\n", mrna::BackendEnergyCfg(ctx.m()).ToCtdString(res.tb.s, res.tb.ctd));
 }

@@ -26,7 +26,8 @@ TraceResult Traceback(
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
   verify(!cfg.random, "random traceback is not supported in this energy model");
@@ -62,7 +63,7 @@ TraceResult Traceback(
         const auto base11 = dp[st + 1][en - 1][DP_P] + m->AuGuPenalty(st1b, en1b);
 
         // (   )<.( * ). > Right coax backward
-        if (m->cfg().UseDangleMismatch() && a == EXT_RC) {
+        if (m->cfg().UseCoaxialStacking() && a == EXT_RC) {
           // Don't set CTDs here since they will have already been set.
           if (base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) +
                   m->pf.Unpaired(en) + ext[en + 1][EXT] ==
@@ -78,10 +79,29 @@ TraceResult Traceback(
 
         // (   )<   >
         auto val = base00 + ext[en + 1][EXT];
+        Ctd val_ctd = CTD_UNUSED;
+
+        if (m->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && en != N - 1) {
+            // (   )<   > Terminal mismatch
+            val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
+            val_ctd = CTD_MISMATCH;
+          } else if (en != N - 1) {
+            // (   )<3   > 3'
+            val += m->dangle3[enb][r[en + 1]][stb];
+            val_ctd = CTD_3_DANGLE;
+          } else if (st != 0) {
+            // 5(   )<   > 5'
+            val += m->dangle5[enb][r[st - 1]][stb];
+            val_ctd = CTD_5_DANGLE;
+          }
+        }
+
         if (val == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
             (a != EXT_GU || IsGuPair(stb, enb))) {
           // EXT_WC and EXT_GU will have already had their ctds set.
-          if (a == EXT) res.ctd[st] = CTD_UNUSED;
+          if (a == EXT) res.ctd[st] = val_ctd;
           q.emplace_back(st, en, DP_P);
           q.emplace_back(en + 1, -1, EXT);
           goto loopend;
@@ -190,11 +210,24 @@ TraceResult Traceback(
           }
         }
 
+        if (m->Hairpin(r, st, en) == dp[st][en][DP_P]) {
+          goto loopend;
+        }
+
         const auto base_branch_cost = m->AuGuPenalty(stb, enb) + m->pf.Paired(st, en) +
             m->multiloop_hack_a + m->multiloop_hack_b;
+
         // (<   ><    >)
-        if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == dp[st][en][DP_P]) {
-          res.ctd[en] = CTD_UNUSED;
+        auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
+        Ctd val_ctd = CTD_UNUSED;
+        if (m->cfg().UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val += m->terminal[stb][st1b][en1b][enb];
+          val_ctd = CTD_MISMATCH;
+        }
+        if (val == dp[st][en][DP_P]) {
+          res.ctd[en] = val_ctd;
           q.emplace_back(st + 1, en - 1, DP_U2);
           goto loopend;
         }
@@ -357,11 +390,31 @@ TraceResult Traceback(
         if (a == DP_U_RC) continue;
 
         // (   )<   > - U, U2, U_WC?, U_GU?
-        if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
+        auto val = base00 + right_unpaired;
+        Ctd val_ctd = CTD_UNUSED;
+
+        if (m->cfg().UseD2()) {
+          // Note that D2 can overlap with anything.
+          if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U, U2
+            val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
+            val_ctd = CTD_MISMATCH;
+          } else if (piv != N - 1) {
+            // (   )<3   > 3' - U, U2
+            val += m->dangle3[pb][r[piv + 1]][stb];
+            val_ctd = CTD_3_DANGLE;
+          } else if (st != 0) {
+            // 5(   )<   > 5' - U, U2
+            val += m->dangle5[pb][r[st - 1]][stb];
+            val_ctd = CTD_5_DANGLE;
+          }
+        }
+
+        if (val == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
             (a != DP_U_GU || IsGuPair(stb, pb))) {
           // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were
           // already set.
-          if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = CTD_UNUSED;
+          if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = val_ctd;
           q.emplace_back(st, piv, DP_P);
           if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
           goto loopend;

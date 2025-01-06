@@ -21,7 +21,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EnergyTestT22);
 #elif ENERGY_PRECISION == 2
 
 TEST_P(EnergyTestT22, T22P2) {
-  auto m = t22_ms[GetParam()];
+  const auto& m = t22_ms[GetParam()];
 
   // Example from https://doi.org/10.1093/nar/gkac261
   EXPECT_EQ(E(-3.65), GetEnergy(m, "UGUCGAUACCCUGUCGAUA", "((((((((...))))))))"));
@@ -197,7 +197,7 @@ TEST_P(EnergyTestT22, T22P2) {
 }
 
 TEST_P(EnergyTestT22, T22P2Pseudofree) {
-  auto m = t22_ms[GetParam()];
+  const auto& m = t22_ms[GetParam()];
 
   {
     // Example from https://doi.org/10.1093/nar/gkac261

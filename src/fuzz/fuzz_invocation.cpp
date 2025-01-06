@@ -124,6 +124,7 @@ Error FuzzInvocation::CheckMfe() {
 
   // Run memerna folds.
   std::vector<FoldResult> results;
+  std::vector<std::string> tags;
   std::vector<Energy> ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> opt_efns;  // Efn using optimal CTDs.
   for (const auto& m : ms_) {
@@ -141,6 +142,7 @@ Error FuzzInvocation::CheckMfe() {
       // of CTD structure.
       opt_efns.push_back(TotalEnergy(m, r_, res.tb.s, nullptr).energy);
       results.emplace_back(std::move(res));
+      tags.push_back(fmt::format("{}-{}", GetBackendKind(m), mfe_alg));
     }
   }
 
@@ -161,8 +163,8 @@ Error FuzzInvocation::CheckMfe() {
     if (cmp_res.mfe.energy != results[i].mfe.energy || cmp_res.mfe.energy != ctd_efns[i] ||
         cmp_res.mfe.energy != opt_efns[i]) {
       errors.emplace_back("mfe/efn energy mismatch:");
-      errors.push_back(fmt::format("  alg {}: {} (dp) {} (ctd efn) {} (opt efn) != alg {} mfe {}",
-          i, results[i].mfe.energy, ctd_efns[i], opt_efns[i], cmp_idx, cmp_res.mfe.energy));
+      errors.push_back(fmt::format("  {}: {} (dp) {} (ctd efn) {} (opt efn) != {} mfe {}", tags[i],
+          results[i].mfe.energy, ctd_efns[i], opt_efns[i], tags[cmp_idx], cmp_res.mfe.energy));
     }
 
     if (cfg_.mfe_table && base_dp) {
@@ -196,8 +198,11 @@ Error FuzzInvocation::CheckSubopt() {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
   std::vector<std::pair<subopt::SuboptCfg, std::vector<std::vector<subopt::SuboptResult>>>> results;
-  for (auto cfg : cfgs) {
+  std::vector<std::vector<std::string>> tags;
+  for (int cfg_idx = 0; cfg_idx < static_cast<int>(std::size(cfgs)); ++cfg_idx) {
+    const auto& cfg = cfgs[cfg_idx];
     results.push_back({cfg, {}});
+    tags.emplace_back();
     for (const auto& m : ms_) {
       for (auto subopt_alg : CtxCfg::SuboptAlgsForBackend(m)) {
         if (subopt_alg == CtxCfg::SuboptAlg::AUTO) continue;
@@ -206,9 +211,10 @@ Error FuzzInvocation::CheckSubopt() {
         const Ctx ctx(m, CtxCfg{.subopt_alg = subopt_alg});
         auto res = ctx.SuboptIntoVector(r_, cfg);
         // Sort them to make the sorted=false configurations comparable between
-        // algoritms.
+        // algorithms.
         std::sort(res.begin(), res.end());
         results.back().second.push_back(std::move(res));
+        tags.back().push_back(fmt::format("{}-{}-{}", GetBackendKind(m), subopt_alg, cfg_idx));
       }
     }
   }
@@ -218,8 +224,8 @@ Error FuzzInvocation::CheckSubopt() {
     auto desc = fmt::format(
         "subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta, cfg.strucs, cfg.sorted, i);
     for (int alg = 0; alg < static_cast<int>(res.size()); ++alg) {
-      Register(fmt::format("alg {}, cfg: {}", alg, desc), CheckSuboptResult(res[alg]));
-      Register(fmt::format("alg {} vs alg 0, cfg: {}", alg, desc),
+      Register(fmt::format("{}, cfg: {}", tags[i][alg], desc), CheckSuboptResult(res[alg]));
+      Register(fmt::format("{} vs {}, cfg: {}", tags[i][alg], tags[i][0], desc),
           CheckSuboptResultPair(cfg, res[0], res[alg]));
     }
   }
@@ -271,10 +277,18 @@ Error FuzzInvocation::CheckSuboptResult(
       }
 
       // Incidentally test ctd parsing.
-      auto parsed = ParseSeqCtdString(r_.ToSeq(), sub.tb.ctd.ToString(sub.tb.s));
-      if (std::get<Primary>(parsed) != r_ || std::get<Secondary>(parsed) != sub.tb.s ||
-          std::get<Ctds>(parsed) != sub.tb.ctd) {
-        errors.push_back(fmt::format("structure {}: bug in parsing code", i));
+      auto ctd_string = BackendEnergyCfg(ms_[0]).ToCtdString(sub.tb.s, sub.tb.ctd);
+      auto parsed = BackendEnergyCfg(ms_[0]).ParseSeqCtdString(r_.ToSeq(), ctd_string);
+      if (std::get<Primary>(parsed) != r_) {
+        errors.push_back(fmt::format("structure {}: bug in primary parsing code", i));
+        break;
+      }
+      if (std::get<Secondary>(parsed) != sub.tb.s) {
+        errors.push_back(fmt::format("structure {}: bug in secondary parsing code", i));
+        break;
+      }
+      if (std::get<Ctds>(parsed) != sub.tb.ctd) {
+        errors.push_back(fmt::format("structure {}: bug in CTD parsing code", i));
         break;
       }
     }
@@ -315,27 +329,27 @@ bool FuzzInvocation::PfnProbEq(flt a, flt b) const {
   return abs_eq(a, b, cfg_.pfn_prob_abs_ep) || rel_eq(a, b, cfg_.pfn_prob_rel_ep);
 }
 
-void FuzzInvocation::ComparePfn(
-    const PfnTables& got, const PfnTables& want, const std::string& name_got, Error& errors) {
+void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
+    const std::string& name_got, const std::string& name_want, Error& errors) {
   const int N = static_cast<int>(want.p.size());
   verify(want.prob.size() == want.prob.size(), "bug");
   verify(got.p.size() == want.prob.size(), "bug");
 
   if (!PfnPQEq(got.q, want.q)) {
-    errors.push_back(
-        fmt::format("{} q: {} != {}; diff: {}", name_got, got.q, want.q, got.q - want.q));
+    errors.push_back(fmt::format(
+        "{} q: {} != {} q: {}; diff: {}", name_got, got.q, name_want, want.q, got.q - want.q));
   }
 
   for (int st = 0; st < N; ++st) {
     for (int en = 0; en < N; ++en) {
       if (!PfnPQEq(got.p[st][en], want.p[st][en])) {
-        errors.push_back(fmt::format("{} p at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
-            got.p[st][en], want.p[st][en], got.p[st][en] - want.p[st][en]));
+        errors.push_back(fmt::format("{} p at [{}, {}]: {} != {} {}; diff: {}", name_got, st, en,
+            got.p[st][en], name_want, want.p[st][en], got.p[st][en] - want.p[st][en]));
       }
 
       if (!PfnProbEq(got.prob[st][en], want.prob[st][en])) {
-        errors.push_back(fmt::format("{} prob at [{}, {}]: {} != {}; diff: {}", name_got, st, en,
-            got.prob[st][en], want.prob[st][en], got.prob[st][en] - want.prob[st][en]));
+        errors.push_back(fmt::format("{} prob at [{}, {}]: {} != {} {}; diff: {}", name_got, st, en,
+            got.prob[st][en], name_want, want.prob[st][en], got.prob[st][en] - want.prob[st][en]));
       }
     }
   }
@@ -345,6 +359,7 @@ Error FuzzInvocation::CheckPfn() {
   const int N = static_cast<int>(r_.size());
   Error errors;
   std::vector<pfn::PfnResult> results;
+  std::vector<std::string> tags;
   for (const auto& m : ms_) {
     for (auto pfn_alg : CtxCfg::PfnAlgsForBackend(m)) {
       if (pfn_alg == CtxCfg::PfnAlg::AUTO) continue;
@@ -352,11 +367,12 @@ Error FuzzInvocation::CheckPfn() {
 
       const Ctx ctx(m, CtxCfg{.pfn_alg = pfn_alg});
       results.emplace_back(ctx.Pfn(r_));
+      tags.push_back(fmt::format("{}-{}", GetBackendKind(m), pfn_alg));
     }
   }
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i)
-    ComparePfn(results[i].pfn, results[0].pfn, fmt::format("memerna[{}]", i), errors);
+    ComparePfn(results[i].pfn, results[0].pfn, tags[i], tags[0], errors);
 
   if (N < cfg_.pfn_subopt) {
     subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
@@ -367,7 +383,7 @@ Error FuzzInvocation::CheckPfn() {
 
     for (int i = 0; i < static_cast<int>(results.size()); ++i) {
       if (!PfnPQEq(subopt_q, results[i].pfn.q))
-        errors.push_back(fmt::format("subopt q: {} != memerna[{}] pfn q: {}, diff: {}", subopt_q, i,
+        errors.push_back(fmt::format("subopt q: {} != {} pfn q: {}, diff: {}", subopt_q, tags[i],
             results[i].pfn.q, subopt_q - results[i].pfn.q));
     }
   }
@@ -454,7 +470,7 @@ Error FuzzInvocation::CheckPfnRNAstructure() {
   Error errors;
   auto rstr_pfn = rstr_->Pfn(r_);
 
-  ComparePfn(rstr_pfn.pfn, pfn_.pfn, "RNAstructure", errors);
+  ComparePfn(rstr_pfn.pfn, pfn_.pfn, "RNAstructure", "memerna", errors);
 
   return errors;
 }

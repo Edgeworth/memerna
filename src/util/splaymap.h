@@ -185,7 +185,7 @@ class SplayMap {
   std::vector<Key> Keys() { return KeysInternal(root); }
 
  private:
-  inline static constexpr int NONE = 0, TMP = 1;
+  static constexpr int NONE = 0, TMP = 1;
 
   struct Node {
     Key k;

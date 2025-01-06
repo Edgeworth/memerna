@@ -15,7 +15,7 @@ class BoltzPseudofreeModel {
   // Cumulative sum of size N+1 (first element is nothing).
   std::vector<BoltzEnergy> unpaired_cum_log;
 
-  [[nodiscard]] constexpr BoltzEnergy Unpaired(int n) const {
+  [[nodiscard]] BoltzEnergy Unpaired(int n) const {
     if (unpaired.empty()) return ONE_B;
     return unpaired[n];
   }
@@ -27,7 +27,7 @@ class BoltzPseudofreeModel {
     return exp(unpaired_cum_log[en + 1] - unpaired_cum_log[st]);
   }
 
-  [[nodiscard]] constexpr BoltzEnergy Paired(int st, int en) const {
+  [[nodiscard]] BoltzEnergy Paired(int st, int en) const {
     assert(st <= en + 1);
     if (paired.empty()) return ONE_B;
     return paired[st] * paired[en];

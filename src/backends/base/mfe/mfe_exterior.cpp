@@ -21,7 +21,8 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
 
@@ -48,6 +49,20 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
 
       // (   )<   >
       auto val = base00 + ext[en + 1][EXT];
+
+      if (m->cfg().UseD2()) {
+        if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch - U
+          val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
+        } else if (en != N - 1) {
+          // (   )<3   > 3' - U
+          val += m->dangle3[enb][r[en + 1]][stb];
+        } else if (st != 0) {
+          // 5(   )<   > 5' - U
+          val += m->dangle5[enb][r[st - 1]][stb];
+        }
+      }
+
       e = std::min(e, val);
       if (IsGuPair(stb, enb))
         ext[st][EXT_GU] = std::min(ext[st][EXT_GU], val);

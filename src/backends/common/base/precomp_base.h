@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "backends/common/branch.h"
 #include "backends/common/energy.h"
 #include "model/base.h"
+#include "model/branch.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "util/error.h"

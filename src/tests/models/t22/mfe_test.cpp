@@ -39,7 +39,7 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
 
 TEST_P(MfeTestT22, T22P2) {
   auto [i, alg] = GetParam();
-  auto m = t22_ms[i];
+  const auto& m = t22_ms[i];
   if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
@@ -121,7 +121,7 @@ TEST_P(MfeTestT22, T22P2) {
 
 TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
   auto [i, alg] = GetParam();
-  auto m = t22_ms[i];
+  const auto& m = t22_ms[i];
   if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:

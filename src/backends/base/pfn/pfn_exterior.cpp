@@ -16,7 +16,8 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m.cfg());
 
@@ -42,6 +43,20 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
 
       // (   )<   >
       BoltzEnergy val = base00 * ext[en + 1][PTEXT_R];
+
+      if (m.cfg().UseD2()) {
+        if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch - U
+          val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
+        } else if (en != N - 1) {
+          // (   )<3   > 3' - U
+          val *= m.dangle3[enb][r[en + 1]][stb].Boltz();
+        } else if (st != 0) {
+          // 5(   )<   > 5' - U
+          val *= m.dangle5[enb][r[st - 1]][stb].Boltz();
+        }
+      }
+
       ext[st][PTEXT_R] += val;
       if (IsGuPair(stb, enb))
         ext[st][PTEXT_R_GU] += val;
@@ -107,7 +122,21 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
 
       // <   >(   )
       BoltzEnergy val = base00 * ptextl;
+
+      if (m.cfg().UseD2()) {
+        if (st != 0 && en != N - 1) {
+          // <   m>(   )m Terminal mismatch
+          val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
+        } else if (en != N - 1) {
+          // <   >(   )3 3'
+          val *= m.dangle3[enb][r[en + 1]][stb].Boltz();
+        } else if (st != 0) {
+          // <   5>(   ) 5'
+          val *= m.dangle5[enb][r[st - 1]][stb].Boltz();
+        }
+      }
       ext[en][PTEXT_L] += val;
+
       if (IsGuPair(stb, enb))
         ext[en][PTEXT_L_GU] += val;
       else

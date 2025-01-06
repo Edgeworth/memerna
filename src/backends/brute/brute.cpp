@@ -8,7 +8,7 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
-#include "backends/common/branch.h"
+#include "model/branch.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "util/error.h"
@@ -21,7 +21,8 @@ Brute::Brute(const Primary& r, BackendModelPtr m, BruteCfg cfg)
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
 
   support.VerifySupported(funcname(), energy_cfg_);
@@ -138,8 +139,21 @@ void Brute::AddAllCombinations(int idx) {
           (ctd_[s_[idx] + 2] != CTD_5_DANGLE && ctd_[s_[idx] + 2] != CTD_MISMATCH &&
               ctd_[s_[idx] + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
-  // CTD_UNUSED
-  ctd_[idx] = CTD_UNUSED;
+
+  // CTD_NONE or D2 CTD;
+  Ctd none_ctd = CTD_UNUSED;
+  if (energy_cfg_.UseD2()) {
+    const bool lspace = idx > 0;
+    const bool rspace = s_[idx] + 1 < N;
+    if (lspace && rspace) {
+      none_ctd = CTD_MISMATCH;
+    } else if (rspace) {
+      none_ctd = CTD_3_DANGLE;
+    } else if (lspace) {
+      none_ctd = CTD_5_DANGLE;
+    }
+  }
+  ctd_[idx] = none_ctd;
   AddAllCombinations(idx + 1);
 
   if (energy_cfg_.UseDangleMismatch()) {

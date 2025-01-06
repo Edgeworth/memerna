@@ -70,7 +70,7 @@ class ModelBase {
 
   void SetEnergyCfg(const erg::EnergyCfg& cfg) { cfg_ = cfg; }
 
-  [[nodiscard]] inline constexpr bool CanPair(const Primary& r, int st, int en) const {
+  [[nodiscard]] constexpr bool CanPair(const Primary& r, int st, int en) const {
     if (cfg_.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&

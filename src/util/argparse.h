@@ -87,7 +87,7 @@ struct Opt {
 
   [[nodiscard]] std::string Desc() const;
 
-  [[nodiscard]] bool IsInverted() const { return longname_.rfind("no-", 0) == 0; }
+  [[nodiscard]] bool IsInverted() const { return longname_.starts_with("no-"); }
 
   auto operator<=>(const Opt&) const = default;
 

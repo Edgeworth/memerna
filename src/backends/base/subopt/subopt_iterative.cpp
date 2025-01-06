@@ -29,7 +29,8 @@ int SuboptIterative::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m_->cfg());
 
@@ -193,7 +194,7 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
           dp_.dp[st + 1][en - 1][DP_P] + m_->AuGuPenalty(st1b, en1b) - dp_.ext[st][a];
 
       // (   )<.( * ). > Right coax backward
-      if (m_->cfg().UseDangleMismatch() && a == EXT_RC) {
+      if (m_->cfg().UseCoaxialStacking() && a == EXT_RC) {
         energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta)
@@ -207,12 +208,29 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
       // (   )<   >
       // If we are at EXT then this is unused.
       energy = base00 + dp_.ext[en + 1][EXT];
+      Ctd val_ctd = CTD_UNUSED;
+
+      if (m_->cfg().UseD2()) {
+        // Note that D2 can overlap with anything.
+        if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch
+          energy += m_->terminal[enb][r_[en + 1]][r_[st - 1]][stb];
+          val_ctd = CTD_MISMATCH;
+        } else if (en != N - 1) {
+          // (   )<3   > 3'
+          energy += m_->dangle3[enb][r_[en + 1]][stb];
+          val_ctd = CTD_3_DANGLE;
+        } else if (st != 0) {
+          // 5(   )<   > 5'
+          energy += m_->dangle5[enb][r_[st - 1]][stb];
+          val_ctd = CTD_5_DANGLE;
+        }
+      }
+
       if (energy <= delta) {
         if (a == EXT)
-          exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
-              .idx1{st, en, DP_P},
-              .ctd0{st, CTD_UNUSED}});
+          exps.push_back(
+              {.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st, en, DP_P}, .ctd0{st, val_ctd}});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
@@ -327,10 +345,18 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
     if (energy <= delta) exps.push_back({.delta = energy});
 
     auto base_and_branch = pc_.augubranch[stb][enb] + m_->multiloop_hack_a - dp_.dp[st][en][a];
+
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
+    Ctd val_ctd = CTD_UNUSED;
+    if (m_->cfg().UseD2()) {
+      // D2 can overlap terminal mismatches with anything.
+      // (<   ><   >) Terminal mismatch
+      energy += m_->terminal[stb][st1b][en1b][enb];
+      val_ctd = CTD_MISMATCH;
+    }
     if (energy <= delta)
-      exps.push_back({.delta = energy, .idx0{st + 1, en - 1, DP_U2}, .ctd0{en, CTD_UNUSED}});
+      exps.push_back({.delta = energy, .idx0{st + 1, en - 1, DP_U2}, .ctd0{en, val_ctd}});
 
     if (m_->cfg().UseDangleMismatch()) {
       // (3<   ><   >) 3'
@@ -456,21 +482,39 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
     // (   )<   > - U, U2, U_WC?, U_GU?
     energy = base00;
+    Ctd val_ctd = CTD_UNUSED;
+    if (m_->cfg().UseD2()) {
+      // Note that D2 can overlap with anything.
+      if (st != 0 && piv != N - 1) {
+        // (   )<   > Terminal mismatch - U, U2
+        energy += m_->terminal[pb][r_[piv + 1]][r_[st - 1]][stb];
+        val_ctd = CTD_MISMATCH;
+      } else if (piv != N - 1) {
+        // (   )<3   > 3' - U, U2
+        energy += m_->dangle3[pb][r_[piv + 1]][stb];
+        val_ctd = CTD_3_DANGLE;
+      } else if (st != 0) {
+        // 5(   )<   > 5' - U, U2
+        energy += m_->dangle5[pb][r_[st - 1]][stb];
+        val_ctd = CTD_5_DANGLE;
+      }
+    }
+
     if (a == DP_U) {
       if (energy <= delta)
-        exps.push_back({.delta = energy, .idx0{st, piv, DP_P}, .ctd0{st, CTD_UNUSED}});
+        exps.push_back({.delta = energy, .idx0{st, piv, DP_P}, .ctd0{st, val_ctd}});
       if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
         exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
             .idx0{st, piv, DP_P},
             .idx1{piv + 1, en, DP_U},
-            .ctd0{st, CTD_UNUSED}});
+            .ctd0{st, val_ctd}});
     }
 
     if (a == DP_U2 && energy + dp_.dp[piv + 1][en][DP_U] <= delta)
       exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
           .idx0{st, piv, DP_P},
           .idx1{piv + 1, en, DP_U},
-          .ctd0{st, CTD_UNUSED}});
+          .ctd0{st, val_ctd}});
 
     if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
       if (energy <= delta) exps.push_back({.delta = energy, .idx0{st, piv, DP_P}});

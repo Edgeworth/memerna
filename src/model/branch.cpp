@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "backends/common/branch.h"
+#include "model/branch.h"
 
 #include <algorithm>
 #include <cassert>
@@ -7,7 +7,7 @@
 
 #include "model/base.h"
 
-namespace mrna::md {
+namespace mrna {
 
 std::vector<int> GetBranchCounts(const Secondary& s) {
   std::vector<int> branch_count(s.size(), 0);
@@ -66,4 +66,4 @@ int MaxNumContiguous(const Primary& r) {
   return max_num_contig;
 }
 
-}  // namespace mrna::md
+}  // namespace mrna

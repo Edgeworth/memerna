@@ -21,7 +21,7 @@ seaborn = ">=0.13.2"
 statsmodels = ">=0.14.4"
 viennarna = ">=2.7.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 mypy = ">=1.14.1"
 poetry-plugin-up = ">=0.8.0"
 

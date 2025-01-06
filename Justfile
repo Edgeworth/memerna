@@ -30,20 +30,32 @@ fuzz $fuzz_exec:
   #!/usr/bin/env -S parallel --shebang --ungroup --verbose
   $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 30
   $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --random-models 1 200
   $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base,baseopt --random-models 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --backends base,baseopt --random-models 1 200
   $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd d2 1 30
   $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd no-coax 1 30
   $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd none 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd no-coax 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd all 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd none 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd no-coax 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd none 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd no-coax 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --backends stack --random-models --random-pf --ctd all 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --random-pf --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --random-pf --ctd d2 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --random-pf --ctd no-coax 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --pfn --backends base --random-models --random-pf --ctd all 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd d2 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd no-coax 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd all 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd none 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --ctd d2 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd no-coax 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --ctd all 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd none 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --random-pf --ctd d2 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd no-coax 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd all 1 30
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd none 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base --random-models --random-pf --ctd d2 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd no-coax 1 200
+  $fuzz_exec --mfe --mfe-table --subopt --backends base,stack --random-models --random-pf --ctd all 1 200
 
 fix:
   pre-commit run --all-files

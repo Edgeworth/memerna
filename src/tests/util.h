@@ -33,7 +33,7 @@ inline Energy GetEnergy(const BackendModelPtr& m, const std::string& r, const st
 inline std::tuple<Energy, std::string> GetMfe(
     const BackendModelPtr& m, CtxCfg::MfeAlg alg, const Primary& r) {
   auto res = Ctx(m, CtxCfg{.mfe_alg = alg}).Fold(r, {});
-  return {res.mfe.energy, res.tb.ctd.ToString(res.tb.s)};
+  return {res.mfe.energy, mrna::BackendEnergyCfg(m).ToCtdString(res.tb.s, res.tb.ctd)};
 }
 
 inline std::tuple<Energy, std::string> GetMfe(

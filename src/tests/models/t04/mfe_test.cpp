@@ -108,7 +108,7 @@ TEST_P(MfeTestT04, T04P1) {
 
 TEST_P(MfeTestT04, T04P2) {
   auto [i, alg] = GetParam();
-  auto m = t04_ms[i];
+  const auto& m = t04_ms[i];
   if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:

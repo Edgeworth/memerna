@@ -24,7 +24,8 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
+      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
+          erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
   m->pf.Verify(r);
@@ -68,7 +69,15 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
             pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_hack_a;
 
         // (<   ><   >)
-        mins[DP_P] = std::min(mins[DP_P], base_branch_cost + dp[st + 1][en - 1][DP_U2]);
+        auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
+
+        if (m->cfg().UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val += m->terminal[stb][st1b][en1b][enb];
+        }
+
+        mins[DP_P] = std::min(mins[DP_P], val);
 
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
@@ -192,7 +201,22 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       // begin means that the whole interaction starts at st. e.g. .(   ). starts one before the
       // paren.
       // (   ) - Normal - U, U2
-      const auto normal_base = dp[st][en][DP_P] + pc.augubranch[stb][enb];
+      auto normal_base = dp[st][en][DP_P] + pc.augubranch[stb][enb];
+
+      if (m->cfg().UseD2()) {
+        // Note that D2 can overlap with anything.
+        if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch - U
+          normal_base += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
+        } else if (en != N - 1) {
+          // (   )<3   > 3' - U
+          normal_base += m->dangle3[enb][r[en + 1]][stb];
+        } else if (st != 0) {
+          // 5(   )<   > 5' - U
+          normal_base += m->dangle5[enb][r[st - 1]][stb];
+        }
+      }
+
       if (normal_base < dp[st][en][DP_U] && normal_base < cand_st_u) cand_st_u = normal_base;
 
       // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare them to
