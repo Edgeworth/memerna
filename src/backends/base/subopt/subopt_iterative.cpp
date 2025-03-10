@@ -178,7 +178,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
         exps.push_back({.delta = ZERO_E});
       else
         // Case: No pair starting here (for EXT only)
-        exps.push_back({.delta = dp_.ext[st + 1][EXT] - dp_.ext[st][a], .idx0{st + 1, -1, EXT}});
+        exps.push_back({.delta = dp_.ext[st + 1][EXT] + m_->pf.Unpaired(st) - dp_.ext[st][a],
+            .idx0{st + 1, -1, EXT}});
     }
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
@@ -195,7 +196,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
       // (   )<.( * ). > Right coax backward
       if (m_->cfg().UseCoaxialStacking() && a == EXT_RC) {
-        energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + dp_.ext[en + 1][EXT];
+        energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->pf.Unpaired(st) +
+            m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta)
           exps.push_back({.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st + 1, en - 1, DP_P}});
@@ -244,7 +246,7 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
       if (m_->cfg().UseDangleMismatch()) {
         // (   )3<   > 3'
-        energy = base01 + m_->dangle3[en1b][enb][stb] + dp_.ext[en + 1][EXT];
+        energy = base01 + m_->dangle3[en1b][enb][stb] + m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{en + 1, -1, EXT},
@@ -252,7 +254,7 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
               .ctd0{st, CTD_3_DANGLE}});
 
         // 5(   )<   > 5'
-        energy = base10 + m_->dangle5[enb][stb][st1b] + dp_.ext[en + 1][EXT];
+        energy = base10 + m_->dangle5[enb][stb][st1b] + m_->pf.Unpaired(st) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{en + 1, -1, EXT},
@@ -260,7 +262,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
               .ctd0{st + 1, CTD_5_DANGLE}});
 
         // .(   ).<   > Terminal mismatch
-        energy = base11 + m_->terminal[en1b][enb][stb][st1b] + dp_.ext[en + 1][EXT];
+        energy = base11 + m_->terminal[en1b][enb][stb][st1b] + m_->pf.Unpaired(st) +
+            m_->pf.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{en + 1, -1, EXT},
@@ -271,7 +274,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
       if (m_->cfg().UseCoaxialStacking()) {
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
-          energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b);
+          energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + m_->pf.Unpaired(st) +
+              m_->pf.Unpaired(en);
           if (energy + dp_.ext[en + 1][EXT_GU] <= delta)
             exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_GU],
                 .idx0{en + 1, -1, EXT_GU},
@@ -344,7 +348,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
     energy = pc_.Hairpin(st, en) - dp_.dp[st][en][a];
     if (energy <= delta) exps.push_back({.delta = energy});
 
-    auto base_and_branch = pc_.augubranch[stb][enb] + m_->multiloop_hack_a - dp_.dp[st][en][a];
+    auto base_and_branch =
+        pc_.augubranch[stb][enb] + m_->pf.Paired(st, en) + m_->multiloop_hack_a - dp_.dp[st][en][a];
 
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
@@ -360,15 +365,18 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
     if (m_->cfg().UseDangleMismatch()) {
       // (3<   ><   >) 3'
-      energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb];
+      energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
+          m_->pf.Unpaired(st + 1);
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 2, en - 1, DP_U2}, .ctd0{en, CTD_3_DANGLE}});
       // (<   ><   >5) 5'
-      energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb];
+      energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb] +
+          m_->pf.Unpaired(en - 1);
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 1, en - 2, DP_U2}, .ctd0{en, CTD_5_DANGLE}});
       // (.<   ><   >.) Terminal mismatch
-      energy = base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] + m_->terminal[stb][st1b][en1b][enb];
+      energy = base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] +
+          m_->terminal[stb][st1b][en1b][enb] + m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1);
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 2, en - 2, DP_U2}, .ctd0{en, CTD_MISMATCH}});
     }
@@ -381,7 +389,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
         const Base pr1b = r_[piv + 2];
 
         // (.(   )   .) Left outer coax - P
-        const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb);
+        const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) +
+            m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1);
         energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
             dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
         if (energy <= delta)
@@ -403,7 +412,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
         // (.(   ).   ) Left inner coax
         energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
-            dp_.dp[piv + 1][en - 1][DP_U] + m_->MismatchCoaxial(pl1b, plb, st1b, st2b);
+            dp_.dp[piv + 1][en - 1][DP_U] + m_->MismatchCoaxial(pl1b, plb, st1b, st2b) +
+            m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(piv);
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{st + 2, piv - 1, DP_P},
@@ -413,7 +423,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
         // (   .(   ).) Right inner coax
         energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
-            dp_.dp[piv + 2][en - 2][DP_P] + m_->MismatchCoaxial(en2b, en1b, prb, pr1b);
+            dp_.dp[piv + 2][en - 2][DP_P] + m_->MismatchCoaxial(en2b, en1b, prb, pr1b) +
+            m_->pf.Unpaired(piv + 1) + m_->pf.Unpaired(en - 1);
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{st + 1, piv, DP_U},
@@ -447,7 +458,7 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
   // Left unpaired. Either DP_U or DP_U2.
   if (st + 1 < en && (a == DP_U || a == DP_U2)) {
-    energy = dp_.dp[st + 1][en][a] - dp_.dp[st][en][a];
+    energy = dp_.dp[st + 1][en][a] + m_->pf.Unpaired(st) - dp_.dp[st][en][a];
     if (energy <= delta) exps.push_back({.delta = energy, .idx0{st + 1, en, a}});
   }
 
@@ -463,14 +474,20 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
     auto base10 = dp_.dp[st + 1][piv][DP_P] + pc_.augubranch[st1b][pb] - dp_.dp[st][en][a];
     auto base11 = dp_.dp[st + 1][piv - 1][DP_P] + pc_.augubranch[st1b][pl1b] - dp_.dp[st][en][a];
 
+    const auto right_paired = dp_.dp[piv + 1][en][DP_U];
+    // This is only usable if a != DP_U2 since this leaves everything unpaired.
+    const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en);
+
     // Check a == U_RC:
     // (   )<.( ** ). > Right coax backward
     if (m_->cfg().UseCoaxialStacking() && a == DP_U_RC) {
-      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b);
+      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.Unpaired(st) +
+          m_->pf.Unpaired(piv);
       // Our ctds will have already been set by now.
-      if (energy <= delta) exps.push_back({.delta = energy, .idx0{st + 1, piv - 1, DP_P}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+      if (energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired, .idx0{st + 1, piv - 1, DP_P}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
             .idx0{st + 1, piv - 1, DP_P},
             .idx1{piv + 1, en, DP_U}});
     }
@@ -499,29 +516,29 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
         val_ctd = CTD_5_DANGLE;
       }
     }
-
     if (a == DP_U) {
-      if (energy <= delta)
-        exps.push_back({.delta = energy, .idx0{st, piv, DP_P}, .ctd0{st, val_ctd}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+      if (energy + right_unpaired <= delta)
+        exps.push_back(
+            {.delta = energy + right_unpaired, .idx0{st, piv, DP_P}, .ctd0{st, val_ctd}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
             .idx0{st, piv, DP_P},
             .idx1{piv + 1, en, DP_U},
             .ctd0{st, val_ctd}});
     }
 
-    if (a == DP_U2 && energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-      exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+    if (a == DP_U2 && energy + right_paired <= delta)
+      exps.push_back({.delta = energy + right_paired,
           .idx0{st, piv, DP_P},
           .idx1{piv + 1, en, DP_U},
           .ctd0{st, val_ctd}});
 
     if ((a == DP_U_WC && IsWcPair(stb, pb)) || (a == DP_U_GU && IsGuPair(stb, pb))) {
-      if (energy <= delta) exps.push_back({.delta = energy, .idx0{st, piv, DP_P}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
-            .idx0{st, piv, DP_P},
-            .idx1{piv + 1, en, DP_U}});
+      if (energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired, .idx0{st, piv, DP_P}});
+      if (energy + right_paired <= delta)
+        exps.push_back(
+            {.delta = energy + right_paired, .idx0{st, piv, DP_P}, .idx1{piv + 1, en, DP_U}});
     }
 
     // The rest of the cases are for U and U2.
@@ -529,33 +546,38 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
     if (m_->cfg().UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
-      energy = base01 + m_->dangle3[pl1b][pb][stb];
+      energy = base01 + m_->dangle3[pl1b][pb][stb] + m_->pf.Unpaired(piv);
       // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
-      if (a == DP_U && energy <= delta)
-        exps.push_back({.delta = energy, .idx0{st, piv - 1, DP_P}, .ctd0{st, CTD_3_DANGLE}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back(
+            {.delta = energy + right_unpaired, .idx0{st, piv - 1, DP_P}, .ctd0{st, CTD_3_DANGLE}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
             .idx0{st, piv - 1, DP_P},
             .idx1{piv + 1, en, DP_U},
             .ctd0{st, CTD_3_DANGLE}});
 
       // 5(   )<   > 5' - U, U2
-      energy = base10 + m_->dangle5[pb][stb][st1b];
-      if (a == DP_U && energy <= delta)
-        exps.push_back({.delta = energy, .idx0{st + 1, piv, DP_P}, .ctd0{st + 1, CTD_5_DANGLE}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+      energy = base10 + m_->dangle5[pb][stb][st1b] + m_->pf.Unpaired(st);
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired,
+            .idx0{st + 1, piv, DP_P},
+            .ctd0{st + 1, CTD_5_DANGLE}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
             .idx0{st + 1, piv, DP_P},
             .idx1{piv + 1, en, DP_U},
             .ctd0{st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch - U, U2
-      energy = base11 + m_->terminal[pl1b][pb][stb][st1b];
-      if (a == DP_U && energy <= delta)
-        exps.push_back(
-            {.delta = energy, .idx0{st + 1, piv - 1, DP_P}, .ctd0{st + 1, CTD_MISMATCH}});
-      if (energy + dp_.dp[piv + 1][en][DP_U] <= delta)
-        exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U],
+      energy =
+          base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->pf.Unpaired(st) + m_->pf.Unpaired(piv);
+      if (a == DP_U && energy + right_unpaired <= delta)
+        exps.push_back({.delta = energy + right_unpaired,
+            .idx0{st + 1, piv - 1, DP_P},
+            .ctd0{st + 1, CTD_MISMATCH}});
+      if (energy + right_paired <= delta)
+        exps.push_back({.delta = energy + right_paired,
             .idx0{st + 1, piv - 1, DP_P},
             .idx1{piv + 1, en, DP_U},
             .ctd0{st + 1, CTD_MISMATCH}});
@@ -563,7 +585,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
     if (m_->cfg().UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
-      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b);
+      energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.Unpaired(st) +
+          m_->pf.Unpaired(piv);
       if (energy + dp_.dp[piv + 1][en][DP_U_WC] <= delta)
         exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U_WC],
             .idx0{st + 1, piv - 1, DP_P},

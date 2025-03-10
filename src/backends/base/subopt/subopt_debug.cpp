@@ -82,14 +82,14 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
     if (en == -1) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
-      const Energy base_energy = node.res.energy + m_->pf.Unpaired(st) - dp_.ext[st][a];
+      const Energy base_energy = node.res.energy - dp_.ext[st][a];
       if (a == EXT) {
         // Base case: do nothing.
         if (st == N)
           Expand(base_energy);
         else
           // Case: No pair starting here (for EXT only)
-          Expand(base_energy + dp_.ext[st + 1][EXT], {st + 1, -1, EXT});
+          Expand(base_energy + m_->pf.Unpaired(st) + dp_.ext[st + 1][EXT], {st + 1, -1, EXT});
       }
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         // .   .   .   (   .   .   .   )   <   >
