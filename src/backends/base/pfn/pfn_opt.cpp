@@ -30,6 +30,7 @@ PfnTables PfnOpt(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state) {
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), bm->m().cfg());
+  bm->m().pf.Verify(r);
 
   spdlog::debug("base {} with cfg {}", funcname(), bm->m().cfg());
 

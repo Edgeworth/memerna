@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "backends/common/base/branch.h"
-#include "backends/common/model_mixin.h"
 #include "backends/common/parse.h"
 #include "model/base.h"
 #include "model/branch.h"

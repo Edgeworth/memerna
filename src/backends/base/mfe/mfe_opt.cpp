@@ -87,6 +87,8 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         }
 
         if (m->cfg().UseCoaxialStacking()) {
+          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
@@ -97,8 +99,6 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
             // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
             // (.(   )   .) Left outer coax - P
-            const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-                m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
             p_min = std::min(p_min,
                 base_branch_cost + dp[st + 2][piv][DP_P] + pc.augubranch[st2b][plb] +
                     dp[piv + 1][en - 2][DP_U] + outer_coax);

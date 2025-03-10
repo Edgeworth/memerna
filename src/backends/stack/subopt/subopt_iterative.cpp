@@ -432,6 +432,8 @@ std::vector<Expansion> SuboptIterative::PairedOrNoStackExpansions(
   }
 
   if (m_->cfg().UseCoaxialStacking()) {
+    const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->pf.Unpaired(st + 1) +
+        m_->pf.Unpaired(en - 1);
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
       const Base pl1b = r_[piv - 1];
       const Base plb = r_[piv];
@@ -439,9 +441,6 @@ std::vector<Expansion> SuboptIterative::PairedOrNoStackExpansions(
       const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->pf.Unpaired(st + 1) +
-          m_->pf.Unpaired(en - 1);
-
       energy = base_branch_cost + dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
           m_->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)

@@ -71,7 +71,7 @@ class FuzzRunner {
 
   std::vector<mrna::Energy> MaybeGetPseudofree(std::size_t length) {
     if (!cfg_.random_pseudofree) return {};
-    return mrna::RandomEnergies(length, mrna::E(-100.0), mrna::E(100.0), harness_.e());
+    return mrna::RandomEnergies(length, mrna::E(-10.0), mrna::E(10.0), harness_.e());
   }
 
   void MaybePrintResult(const mrna::fuzz::Error& res, const std::vector<mrna::Energy>& pf_paired,

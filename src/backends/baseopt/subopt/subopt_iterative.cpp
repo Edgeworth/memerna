@@ -340,6 +340,7 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
     if (energy <= delta)
       exps.push_back({.delta = energy, .idx0{st + 2, en - 2, DP_U2}, .ctd0{en, CTD_MISMATCH}});
 
+    const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb);
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
       const Base pl1b = r_[piv - 1];
       const Base plb = r_[piv];
@@ -347,7 +348,6 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
       const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb);
       energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + pc_.augubranch[st2b][plb] +
           dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
