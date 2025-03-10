@@ -1,7 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/energy/energy_cfg.h"
 #include "backends/base/pfn/pfn.h"
-#include "backends/common/base/model_base.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -10,7 +9,7 @@
 
 namespace mrna::md::base {
 
-void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
+void PfnExterior(const Primary& r, const Model& m, PfnState& state) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -20,15 +19,16 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m.cfg());
+  m.pf.Verify(r);
 
   const auto& dp = state.dp;
-  state.ext = BoltzExtArray(r.size() + 1, 0);
+  state.ext = BoltzExtArray(r.size() + 1, ZERO_B);
   auto& ext = state.ext;
 
-  ext[N][PTEXT_R] = 1;
+  ext[N][PTEXT_R] = ONE_B;
   for (int st = N - 1; st >= 0; --st) {
     // Case: No pair starting here
-    ext[st][PTEXT_R] += ext[st + 1][PTEXT_R];
+    ext[st][PTEXT_R] += ext[st + 1][PTEXT_R] * m.pf.Unpaired(st).Boltz();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
       //           stb  st1b   en1b  enb   rem
@@ -65,25 +65,32 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
 
       if (m.cfg().UseDangleMismatch()) {
         // (   )3<   > 3'
-        ext[st][PTEXT_R] += base01 * m.dangle3[en1b][enb][stb].Boltz() * ext[en + 1][PTEXT_R];
-        // 5(   )<   > 5'
-        ext[st][PTEXT_R] += base10 * m.dangle5[enb][stb][st1b].Boltz() * ext[en + 1][PTEXT_R];
-        // .(   ).<   > Terminal mismatch
         ext[st][PTEXT_R] +=
-            base11 * m.terminal[en1b][enb][stb][st1b].Boltz() * ext[en + 1][PTEXT_R];
+            base01 * (m.dangle3[en1b][enb][stb] + m.pf.Unpaired(en)).Boltz() * ext[en + 1][PTEXT_R];
+        // 5(   )<   > 5'
+        ext[st][PTEXT_R] +=
+            base10 * (m.dangle5[enb][stb][st1b] + m.pf.Unpaired(st)).Boltz() * ext[en + 1][PTEXT_R];
+        // .(   ).<   > Terminal mismatch
+        ext[st][PTEXT_R] += base11 *
+            (m.terminal[en1b][enb][stb][st1b] + m.pf.Unpaired(st) + m.pf.Unpaired(en)).Boltz() *
+            ext[en + 1][PTEXT_R];
       }
 
       if (m.cfg().UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
-        val = base11 * m.MismatchCoaxial(en1b, enb, stb, st1b).Boltz();
+        val = base11 *
+            (m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.Unpaired(st) + m.pf.Unpaired(en))
+                .Boltz();
         ext[st][PTEXT_R] += val * ext[en + 1][PTEXT_R_GU];
         ext[st][PTEXT_R] += val * ext[en + 1][PTEXT_R_WC];
 
         // (   )<.(   ). > Right coax forward
         ext[st][PTEXT_R] += base00 * ext[en + 1][PTEXT_R_RC];
         // (   )<.( * ). > Right coax backward
-        ext[st][PTEXT_R_RC] +=
-            base11 * m.MismatchCoaxial(en1b, enb, stb, st1b).Boltz() * ext[en + 1][PTEXT_R];
+        ext[st][PTEXT_R_RC] += base11 *
+            (m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.Unpaired(st) + m.pf.Unpaired(en))
+                .Boltz() *
+            ext[en + 1][PTEXT_R];
 
         // (   )(<   ) > Flush coax
         ext[st][PTEXT_R] +=
@@ -95,10 +102,10 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
     }
   }
 
-  ext[0][PTEXT_L] = 1;
+  ext[0][PTEXT_L] = m.pf.Unpaired(0).Boltz();
   for (int en = 1; en < N; ++en) {
     // Case: No pair ending here
-    ext[en][PTEXT_L] += ext[en - 1][PTEXT_L];
+    ext[en][PTEXT_L] += ext[en - 1][PTEXT_L] * m.pf.Unpaired(en).Boltz();
     for (int st = 0; st < en - HAIRPIN_MIN_SZ; ++st) {
       const auto stb = r[st];
       const auto st1b = r[st + 1];
@@ -144,23 +151,32 @@ void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state) {
 
       if (m.cfg().UseDangleMismatch()) {
         // <   >(   )3 3'
-        ext[en][PTEXT_L] += base01 * m.dangle3[en1b][enb][stb].Boltz() * ptextl;
+        ext[en][PTEXT_L] +=
+            base01 * (m.dangle3[en1b][enb][stb] + m.pf.Unpaired(en)).Boltz() * ptextl;
         // <   >5(   ) 5'
-        ext[en][PTEXT_L] += base10 * m.dangle5[enb][stb][st1b].Boltz() * ptextl;
+        ext[en][PTEXT_L] +=
+            base10 * (m.dangle5[enb][stb][st1b] + m.pf.Unpaired(st)).Boltz() * ptextl;
         // <   >.(   ). Terminal mismatch
-        ext[en][PTEXT_L] += base11 * m.terminal[en1b][enb][stb][st1b].Boltz() * ptextl;
+        ext[en][PTEXT_L] += base11 *
+            (m.terminal[en1b][enb][stb][st1b] + m.pf.Unpaired(st) + m.pf.Unpaired(en)).Boltz() *
+            ptextl;
       }
 
       if (m.cfg().UseCoaxialStacking()) {
         // <  (   )>.(   ). Right coax
-        val = base11 * m.MismatchCoaxial(en1b, enb, stb, st1b).Boltz();
+        val = base11 *
+            (m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.Unpaired(st) + m.pf.Unpaired(en))
+                .Boltz();
         ext[en][PTEXT_L] += val * ptextlgu;
         ext[en][PTEXT_L] += val * ptextlwc;
 
         // <  .(   ).>(   ) Left coax forward
         ext[en][PTEXT_L] += base00 * ptextllcoaxx;
         // <  .( * ).>(   ) Left coax backward
-        ext[en][PTEXT_L_LCOAX] += base11 * m.MismatchCoaxial(en1b, enb, stb, st1b).Boltz() * ptextl;
+        ext[en][PTEXT_L_LCOAX] += base11 *
+            (m.MismatchCoaxial(en1b, enb, stb, st1b) + m.pf.Unpaired(st) + m.pf.Unpaired(en))
+                .Boltz() *
+            ptextl;
 
         // < (   >)(   ) Flush coax
         ext[en][PTEXT_L] +=

@@ -13,7 +13,13 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
 
 PfnTables PfnOpt(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state);
 
-void PfnExterior(const Primary& r, const ModelBase& m, PfnState& state);
+void PfnExterior(const Primary& r, const Model& m, PfnState& state);
+
+inline BoltzEnergy PairedWithPf(const Model::Ptr& m, const BoltzDpArray& dp, int st, int en) {
+  BoltzEnergy res = dp[st][en][PT_P];
+  if (st > en) res *= m->pf.Paired(en, st).Boltz();
+  return res;
+}
 
 }  // namespace mrna::md::base
 

@@ -77,6 +77,7 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
         UPDATE_CACHE(
             DP_P, base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb]);
 
+        const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           // Paired coaxial stacking cases:
           const Base pl1b = r[piv - 1];
@@ -87,7 +88,6 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
           // stb st1b st2b          pl1b  plb     prb  pr1b         en2b en1b enb
 
           // (.(   )   .) Left outer coax - P
-          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb);
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_hack_b +
                   m->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);

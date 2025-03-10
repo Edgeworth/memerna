@@ -33,6 +33,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m_->cfg());
+  m_->pf.Verify(r_);
 
   spdlog::debug("base {} with cfg {}", funcname(), m_->cfg());
   auto start_time = std::chrono::steady_clock::now();
@@ -257,6 +258,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       }
 
       if (m_->cfg().UseCoaxialStacking()) {
+        const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) +
+            m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1);
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
           const Base pl1b = r_[piv - 1];
           const Base plb = r_[piv];
@@ -264,8 +267,6 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
           const Base pr1b = r_[piv + 2];
 
           // (.(   )   .) Left outer coax - P
-          auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->pf.Unpaired(st + 1) +
-              m_->pf.Unpaired(en - 1);
           energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
               m_->AuGuPenalty(st2b, plb) + dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
           Expand(energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U},

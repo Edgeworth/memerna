@@ -260,6 +260,8 @@ TraceResult Traceback(
         }
 
         if (m->cfg().UseCoaxialStacking()) {
+          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             const Base pl1b = r[piv - 1];
             const Base plb = r[piv];
@@ -267,8 +269,6 @@ TraceResult Traceback(
             const Base pr1b = r[piv + 2];
 
             // (.(   )   .) Left outer coax - P
-            const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-                m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
             if (base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_hack_b +
                     m->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
                 dp[st][en][DP_P]) {

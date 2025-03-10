@@ -25,6 +25,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
+  m->pf.Verify(r);
 
   state.ext = ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state;
