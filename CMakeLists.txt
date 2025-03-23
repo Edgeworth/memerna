@@ -227,6 +227,7 @@ set(MEMERNA_SOURCE
   src/backends/common/base/pseudofree_model.h
   src/backends/common/boltz.h
   src/backends/common/energy.h
+  src/backends/common/expansion_cache.h
   src/backends/common/model_mixin.h
   src/backends/common/parse.cpp
   src/backends/common/parse.h
@@ -274,6 +275,7 @@ set(MEMERNA_SOURCE
   src/util/error.cpp
   src/util/error.h
   src/util/float.h
+  src/util/lru_vector_cache.h
   src/util/splaymap.h
   src/util/string.cpp
   src/util/string.h

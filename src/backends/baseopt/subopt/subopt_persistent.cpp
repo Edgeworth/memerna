@@ -25,10 +25,13 @@ constexpr int CHECK_TIME_FREQ = 10000;
 
 }  // namespace
 
-SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg) {}
+template <bool UseLru>
+SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg),
+      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
-int SuboptPersistent::Run(const SuboptCallback& fn) {
+template <bool UseLru>
+int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
@@ -41,7 +44,6 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   q_.clear();
   pq_ = {};  // priority queue has no clear method
   q_.reserve(r_.size() * r_.size());
-  cache_.resize(DpIndex::MaxLinearIndex(r_.size()));
 
   const DpIndex start_idx{0, -1, EXT};
   const Energy mfe = dp_.Index(start_idx);
@@ -73,7 +75,8 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   return num_strucs;
 }
 
-std::pair<Energy, int> SuboptPersistent::RunInternal() {
+template <bool UseLru>
+std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();
@@ -137,7 +140,8 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
   return {ZERO_E, -1};
 }
 
-void SuboptPersistent::GenerateResult(int idx) {
+template <bool UseLru>
+void SuboptPersistent<UseLru>::GenerateResult(int idx) {
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 
@@ -160,7 +164,8 @@ void SuboptPersistent::GenerateResult(int idx) {
   }
 }
 
-std::vector<Expansion> SuboptPersistent::GenerateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;
@@ -551,5 +556,8 @@ std::vector<Expansion> SuboptPersistent::GenerateExpansions(
 
   return exps;
 }
+
+template class SuboptPersistent<false>;
+template class SuboptPersistent<true>;
 
 }  // namespace mrna::md::base::opt

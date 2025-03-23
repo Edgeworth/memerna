@@ -36,13 +36,15 @@ constexpr int CHECK_TIME_FREQ = 10000;
 
 }  // namespace
 
-SuboptPersistent::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), dp_(std::move(dp)), cfg_(cfg) {}
+template <bool UseLru>
+SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), dp_(std::move(dp)), cfg_(cfg),
+      cache_(r_, MaxLinearIndex(r_.size())) {}
 
-int SuboptPersistent::Run(const SuboptCallback& fn) {
+template <bool UseLru>
+int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
-  cache_.resize(MaxLinearIndex(r_.size()));
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
@@ -56,7 +58,6 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   q_.clear();
   pq_ = {};  // priority queue has no clear method
   q_.reserve(r_.size() * r_.size());
-  cache_.resize(MaxLinearIndex(r_.size()));
 
   const auto start_idx = base::DpIndex(0, -1, EXT);
   const Energy mfe = dp_.base.Index(start_idx);
@@ -86,7 +87,8 @@ int SuboptPersistent::Run(const SuboptCallback& fn) {
   return num_strucs;
 }
 
-std::pair<Energy, int> SuboptPersistent::RunInternal() {
+template <bool UseLru>
+std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();
@@ -133,7 +135,8 @@ std::pair<Energy, int> SuboptPersistent::RunInternal() {
   return {ZERO_E, -1};
 }
 
-void SuboptPersistent::GenerateResult(int idx) {
+template <bool UseLru>
+void SuboptPersistent<UseLru>::GenerateResult(int idx) {
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 
@@ -153,7 +156,8 @@ void SuboptPersistent::GenerateResult(int idx) {
   }
 }
 
-std::vector<Expansion> SuboptPersistent::GenerateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   if (std::holds_alternative<base::DpIndex>(to_expand)) {
     auto idx = std::get<base::DpIndex>(to_expand);
@@ -179,7 +183,8 @@ std::vector<Expansion> SuboptPersistent::GenerateExpansions(
   return PairedOrNoStackExpansions(st, en, /*is_nostack=*/true, delta);
 }
 
-std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy delta) const {
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::ExtExpansions(int st, int a, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const auto& dp = dp_.base.dp;
   const auto& ext = dp_.base.ext;
@@ -319,7 +324,8 @@ std::vector<Expansion> SuboptPersistent::ExtExpansions(int st, int a, Energy del
   return exps;
 }
 
-std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::PairedOrNoStackExpansions(
     int st, int en, bool is_nostack, Energy delta) const {
   const auto& dp = dp_.base.dp;
   const auto& nostack = dp_.nostack;
@@ -525,7 +531,8 @@ std::vector<Expansion> SuboptPersistent::PairedOrNoStackExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::UnpairedExpansions(
     int st, int en, int a, Energy delta) const {
   const auto& dp = dp_.base.dp;
   std::vector<Expansion> exps;
@@ -719,7 +726,8 @@ std::vector<Expansion> SuboptPersistent::UnpairedExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptPersistent::PenultimateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptPersistent<UseLru>::PenultimateExpansions(
     int st, int en, int length, Energy delta) const {
   const auto& nostack = dp_.nostack;
   const auto& penult = dp_.penult;
@@ -770,5 +778,8 @@ std::vector<Expansion> SuboptPersistent::PenultimateExpansions(
 
   return exps;
 }
+
+template class SuboptPersistent<false>;
+template class SuboptPersistent<true>;
 
 }  // namespace mrna::md::stack

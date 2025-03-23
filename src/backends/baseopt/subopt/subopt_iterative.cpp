@@ -18,13 +18,15 @@
 
 namespace mrna::md::base::opt {
 
-SuboptIterative::SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg) {}
+template <bool UseLru>
+SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg),
+      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
-int SuboptIterative::Run(const SuboptCallback& fn) {
+template <bool UseLru>
+int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
-  cache_.resize(DpIndex::MaxLinearIndex(r_.size()));
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
@@ -55,7 +57,8 @@ int SuboptIterative::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptIterative::RunInternal(
+template <bool UseLru>
+std::pair<int, Energy> SuboptIterative<UseLru>::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
@@ -160,7 +163,8 @@ std::pair<int, Energy> SuboptIterative::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expansion> SuboptIterative::GenerateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const int st = to_expand.st;
@@ -551,5 +555,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
 
   return exps;
 }
+
+template class SuboptIterative<false>;
+template class SuboptIterative<true>;
 
 }  // namespace mrna::md::base::opt

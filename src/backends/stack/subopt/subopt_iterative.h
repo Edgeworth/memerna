@@ -9,6 +9,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/mfe.h"
 #include "backends/stack/trace/trace.h"
@@ -21,6 +22,7 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
+template <bool UseLru>
 class SuboptIterative {
  public:
   SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
@@ -43,7 +45,7 @@ class SuboptIterative {
   DpState dp_;
   SuboptCfg cfg_;
 
-  std::vector<std::vector<Expansion>> cache_;
+  ExpansionCache<DpIndex, Expansion, UseLru> cache_;
   std::vector<Node> q_;
   std::vector<DpIndex> unexpanded_;
 
@@ -51,14 +53,13 @@ class SuboptIterative {
       const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
-    auto idx = LinearIndex(to_expand, r_.size());
-    if (cache_[idx].empty()) {
-      auto exps = GenerateExpansions(to_expand, cfg_.delta);
-      std::sort(exps.begin(), exps.end());
-      assert(!exps.empty());
-      cache_[idx] = std::move(exps);
-    }
-    return cache_[idx];
+    auto key = LinearIndex(to_expand, r_.size());
+    if (const auto& val = cache_.Get(key); !val.empty()) return val;
+
+    auto exps = GenerateExpansions(to_expand, cfg_.delta);
+    std::sort(exps.begin(), exps.end());
+    assert(!exps.empty());
+    return cache_.Insert(key, std::move(exps));
   }
 
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(

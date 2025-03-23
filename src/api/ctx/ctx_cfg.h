@@ -14,7 +14,8 @@ void RegisterOpts(ArgParse* args);
 
 struct CtxCfg {
   MAKE_NESTED_ENUM(MfeAlg, AUTO, BRUTE, DEBUG, OPT, SPARSE_OPT, LYNGSO_SPARSE_OPT);
-  MAKE_NESTED_ENUM(SuboptAlg, AUTO, BRUTE, DEBUG, ITERATIVE, PERSISTENT);
+  MAKE_NESTED_ENUM(
+      SuboptAlg, AUTO, BRUTE, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
   MAKE_NESTED_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
 
   MfeAlg mfe_alg = MfeAlg::AUTO;
@@ -74,7 +75,9 @@ struct CtxCfg {
           SuboptAlg::BRUTE,
           SuboptAlg::DEBUG,
           SuboptAlg::ITERATIVE,
+          SuboptAlg::ITERATIVE_LOWMEM,
           SuboptAlg::PERSISTENT,
+          SuboptAlg::PERSISTENT_LOWMEM,
       };
     case BackendKind::BASEOPT:
       return {
@@ -82,14 +85,18 @@ struct CtxCfg {
           SuboptAlg::BRUTE,
           SuboptAlg::DEBUG,
           SuboptAlg::ITERATIVE,
+          SuboptAlg::ITERATIVE_LOWMEM,
           SuboptAlg::PERSISTENT,
+          SuboptAlg::PERSISTENT_LOWMEM,
       };
     case BackendKind::STACK:
       return {
           SuboptAlg::AUTO,
           SuboptAlg::BRUTE,
           SuboptAlg::ITERATIVE,
+          SuboptAlg::ITERATIVE_LOWMEM,
           SuboptAlg::PERSISTENT,
+          SuboptAlg::PERSISTENT_LOWMEM,
       };
     }
     unreachable();
