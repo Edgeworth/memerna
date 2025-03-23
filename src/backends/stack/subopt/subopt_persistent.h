@@ -11,6 +11,7 @@
 
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/trace/trace.h"
 #include "model/energy.h"
@@ -23,6 +24,7 @@ using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
 // Subopt folding based on a persistent data structure algorithm.
+template <bool UseLru>
 class SuboptPersistent {
  public:
   SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
@@ -52,7 +54,7 @@ class SuboptPersistent {
   SuboptCfg cfg_;
   SuboptResult res_;
 
-  std::vector<std::vector<Expansion>> cache_;
+  ExpansionCache<DpIndex, Expansion, UseLru> cache_;
   std::vector<Node> q_;
   std::priority_queue<std::pair<Energy, int>> pq_;
 
@@ -62,14 +64,13 @@ class SuboptPersistent {
   void GenerateResult(int idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
-    auto idx = LinearIndex(to_expand, r_.size());
-    if (cache_[idx].empty()) {
-      auto exps = GenerateExpansions(to_expand, cfg_.delta);
-      std::sort(exps.begin(), exps.end());
-      assert(!exps.empty());
-      cache_[idx] = std::move(exps);
-    }
-    return cache_[idx];
+    auto key = LinearIndex(to_expand, r_.size());
+    if (const auto& val = cache_.Get(key); !val.empty()) return val;
+
+    auto exps = GenerateExpansions(to_expand, cfg_.delta);
+    std::sort(exps.begin(), exps.end());
+    assert(!exps.empty());
+    return cache_.Insert(key, std::move(exps));
   }
 
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(

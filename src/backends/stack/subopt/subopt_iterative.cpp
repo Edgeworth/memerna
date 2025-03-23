@@ -29,13 +29,15 @@ using base::EXT_GU;
 using base::EXT_RC;
 using base::EXT_WC;
 
-SuboptIterative::SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), dp_(std::move(dp)), cfg_(cfg) {}
+template <bool UseLru>
+SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), dp_(std::move(dp)), cfg_(cfg),
+      cache_(r_, MaxLinearIndex(r_.size())) {}
 
-int SuboptIterative::Run(const SuboptCallback& fn) {
+template <bool UseLru>
+int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
-  cache_.resize(MaxLinearIndex(r_.size()));
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
@@ -65,7 +67,8 @@ int SuboptIterative::Run(const SuboptCallback& fn) {
   return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
 }
 
-std::pair<int, Energy> SuboptIterative::RunInternal(
+template <bool UseLru>
+std::pair<int, Energy> SuboptIterative<UseLru>::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
   int count = 0;
   Energy next_seen = MAX_E;
@@ -143,7 +146,8 @@ std::pair<int, Energy> SuboptIterative::RunInternal(
   return {count, next_seen};
 }
 
-std::vector<Expansion> SuboptIterative::GenerateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   if (std::holds_alternative<base::DpIndex>(to_expand)) {
     auto idx = std::get<base::DpIndex>(to_expand);
@@ -169,7 +173,8 @@ std::vector<Expansion> SuboptIterative::GenerateExpansions(
   return PairedOrNoStackExpansions(st, en, /*is_nostack=*/true, delta);
 }
 
-std::vector<Expansion> SuboptIterative::ExtExpansions(int st, int a, Energy delta) const {
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Energy delta) const {
   const int N = static_cast<int>(r_.size());
   const auto& dp = dp_.base.dp;
   const auto& ext = dp_.base.ext;
@@ -309,7 +314,8 @@ std::vector<Expansion> SuboptIterative::ExtExpansions(int st, int a, Energy delt
   return exps;
 }
 
-std::vector<Expansion> SuboptIterative::PairedOrNoStackExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
     int st, int en, bool is_nostack, Energy delta) const {
   const auto& dp = dp_.base.dp;
   const auto& nostack = dp_.nostack;
@@ -515,7 +521,8 @@ std::vector<Expansion> SuboptIterative::PairedOrNoStackExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptIterative::UnpairedExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
     int st, int en, int a, Energy delta) const {
   const auto& dp = dp_.base.dp;
   std::vector<Expansion> exps;
@@ -709,7 +716,8 @@ std::vector<Expansion> SuboptIterative::UnpairedExpansions(
   return exps;
 }
 
-std::vector<Expansion> SuboptIterative::PenultimateExpansions(
+template <bool UseLru>
+std::vector<Expansion> SuboptIterative<UseLru>::PenultimateExpansions(
     int st, int en, int length, Energy delta) const {
   const auto& nostack = dp_.nostack;
   const auto& penult = dp_.penult;
@@ -760,5 +768,8 @@ std::vector<Expansion> SuboptIterative::PenultimateExpansions(
 
   return exps;
 }
+
+template class SuboptIterative<false>;
+template class SuboptIterative<true>;
 
 }  // namespace mrna::md::stack
