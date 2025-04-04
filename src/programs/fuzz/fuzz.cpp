@@ -24,9 +24,19 @@ class FuzzRunner {
  public:
   explicit FuzzRunner(mrna::fuzz::FuzzCfg cfg) : cfg_(std::move(cfg)), harness_(cfg_) {}
 
-  void RunSingle(const mrna::Primary& r) {
+  void RunSingle(const mrna::Primary& r, int interval) {
     fmt::print("Running single fuzz on {}\n", r.ToSeq());
-    RunInvocation(r);
+    auto start_time = std::chrono::steady_clock::now();
+    for (int64_t i = 0;; ++i) {
+      if (interval > 0 &&
+          std::chrono::duration_cast<std::chrono::seconds>(
+              std::chrono::steady_clock::now() - start_time)
+                  .count() > interval) {
+        fmt::print("Fuzzed {} times\n", i);
+        start_time = std::chrono::steady_clock::now();
+      }
+      RunInvocation(r);
+    }
   }
 
   void RunEnumerate(int min_len, int max_len) {
@@ -130,7 +140,7 @@ int main(int argc, char* argv[]) {
   auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
   auto runner = FuzzRunner(fuzz_cfg);
   if (!seq.empty()) {
-    runner.RunSingle(mrna::Primary::FromSeq(seq));
+    runner.RunSingle(mrna::Primary::FromSeq(seq), interval);
   } else if (enumerate) {
     runner.RunEnumerate(min_len, max_len);
   } else {
