@@ -25,7 +25,7 @@ namespace mrna::md {
     auto dp = reinterpret_cast<Energy*>(&((m).d));                 \
     /* NOLINTNEXTLINE */                                           \
     for (unsigned int i = 0; i < sizeof((m).d) / sizeof(*dp); ++i) \
-      dp[i] = Energy::FromDouble(energy_dist(eng));                \
+      dp[i] = Energy::FromFlt(energy_dist(eng));                \
   } while (0)
 
 template <typename T>
