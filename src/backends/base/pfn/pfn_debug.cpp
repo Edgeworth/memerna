@@ -217,7 +217,7 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
           val = base11 *
               (m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(piv))
                   .Boltz();
-          rcoax += val * right_paired + val * right_unpaired;
+          rcoax += val * right_unpaired + val * right_paired;
 
           // (   )(<   ) > Flush coax - U
           val = base01 * m->stack[pl1b][pb][WcPair(pb)][stb].Boltz() * dp[piv][en][PT_U_WC];

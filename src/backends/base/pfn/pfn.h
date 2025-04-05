@@ -21,6 +21,12 @@ inline BoltzEnergy PairedWithPf(const Model::Ptr& m, const BoltzDpArray& dp, int
   return res;
 }
 
+inline BoltzEnergy PairedWithPf(const BoltzModel::Ptr& bm, const BoltzDpArray& dp, int st, int en) {
+  BoltzEnergy res = dp[st][en][PT_P];
+  if (st > en) res *= bm->pf.Paired(en, st);
+  return res;
+}
+
 }  // namespace mrna::md::base
 
 #endif  // BACKENDS_BASE_PFN_PFN_H_
