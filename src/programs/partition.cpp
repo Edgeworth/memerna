@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto res = ctx.Pfn(r);
-  fmt::print("q: {}\np:\n", res.pfn.q);
+  fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
   mrna::PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");
   mrna::PrintBoltzProbs(res.pfn.prob);
