@@ -1,3 +1,4 @@
+// Copyright 2025 Eliot Courtney.
 #include <benchmark/benchmark.h>
 
 #include <boost/preprocessor/cat.hpp>

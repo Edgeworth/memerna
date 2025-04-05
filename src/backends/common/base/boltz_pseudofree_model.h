@@ -1,3 +1,4 @@
+// Copyright 2025 Eliot Courtney.
 #ifndef BACKENDS_COMMON_BASE_BOLTZ_PSEUDOFREE_MODEL_H_
 #define BACKENDS_COMMON_BASE_BOLTZ_PSEUDOFREE_MODEL_H_
 #include <vector>
