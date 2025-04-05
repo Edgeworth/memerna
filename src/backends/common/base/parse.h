@@ -103,7 +103,7 @@ void LoadRandomModel(M& m, std::mt19937& eng, double min_energy, double max_ener
   RANDOMISE_DATA(m, internal_2x3_mismatch);
   RANDOMISE_DATA(m, internal_other_mismatch);
   // This needs to be non-negative for some optimisations.
-  m.internal_asym = Energy::FromDouble(nonneg_energy_dist(eng));
+  m.internal_asym = Energy::FromFlt(nonneg_energy_dist(eng));
   RANDOMISE_DATA(m, internal_au_penalty);
   RANDOMISE_DATA(m, internal_gu_penalty);
   RANDOMISE_DATA(m, bulge_init);
@@ -123,7 +123,7 @@ void LoadRandomModel(M& m, std::mt19937& eng, double min_energy, double max_ener
   const int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
     auto hp = Primary::Random(hairpin_size_dist(eng), eng).ToSeq();
-    m.hairpin[hp] = Energy::FromDouble(energy_dist(eng));
+    m.hairpin[hp] = Energy::FromFlt(energy_dist(eng));
   }
 
   RANDOMISE_DATA(m, multiloop_hack_a);

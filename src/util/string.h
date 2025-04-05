@@ -13,6 +13,8 @@
 
 #include "util/error.h"
 
+#define STRINGIFY(x) #x
+
 #define MAKE_ENUM(name, ...) BOOST_DEFINE_ENUM_CLASS(name, __VA_ARGS__)
 #define MAKE_NESTED_ENUM(name, ...) \
   enum class name { __VA_ARGS__ };  \

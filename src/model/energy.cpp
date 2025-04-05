@@ -11,8 +11,8 @@
 
 namespace mrna {
 
-Energy Energy::FromDouble(double energy) {
-  auto rounded = std::round(energy * Energy::FACTOR);
+Energy Energy::FromFlt(flt energy) {
+  auto rounded = round(energy * Energy::FACTOR);
   auto res = Energy::FromRaw(static_cast<int32_t>(rounded));
   verify(res < CAP_E, "energy value out of range: {}", energy);
   return res;

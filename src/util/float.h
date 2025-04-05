@@ -10,6 +10,8 @@
 
 #include <boost/multiprecision/mpfr.hpp>
 
+#include "util/string.h"
+
 namespace boost {
 
 inline void throw_exception(const std::exception& e) {
@@ -32,7 +34,9 @@ constexpr int powi(int base, int exp) {
 
 using flt =
     boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_PRECISION>>;
-#define FLTFMT "{:.20f}"
+
+#define _STRHELP(x) STRINGIFY(x)
+#define FLTFMT "{:." _STRHELP(FLOAT_PRECISION) "f}"
 
 // Stringify to ensure
 #define FLT(x) static_cast<flt>(#x)

@@ -28,11 +28,11 @@ struct __attribute__((packed, aligned(4))) Energy {
   [[nodiscard]] static constexpr Energy FromRaw(int32_t v) noexcept { return Energy{.v = v}; }
 
   // Converts a floating point energy value in kcal/mol to an integer energy value.
-  [[nodiscard]] static Energy FromDouble(double energy);
+  [[nodiscard]] static Energy FromFlt(flt energy);
   [[nodiscard]] static Energy FromString(const std::string& s);
 
   [[nodiscard]] std::string ToString() const noexcept;
-  [[nodiscard]] double ToDouble() const noexcept { return v / static_cast<double>(FACTOR); }
+  [[nodiscard]] flt ToFlt() const noexcept { return v / flt(FACTOR); }
   [[nodiscard]] inline BoltzEnergy Boltz() const noexcept;
   [[nodiscard]] inline BoltzEnergy LogBoltz() const noexcept;
 
@@ -61,7 +61,7 @@ constexpr Energy operator*(int o, const Energy& e) noexcept { return Energy::Fro
 std::istream& operator>>(std::istream& str, Energy& o);
 std::ostream& operator<<(std::ostream& out, const Energy& o);
 
-[[nodiscard]] inline Energy E(double energy) { return Energy::FromDouble(energy); }
+[[nodiscard]] inline Energy E(flt energy) { return Energy::FromFlt(energy); }
 
 // Don't change these values. Plays nice with memset.
 // Used for infinite/sentinel energy values, e.g. in DP tables.
@@ -80,11 +80,11 @@ inline const Energy NINIO_MAX_ASYM = E(3.0);
 
 [[nodiscard]] inline BoltzEnergy Energy::Boltz() const noexcept {
   if (*this >= CAP_E) return 0;
-  return exp(BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T)));
+  return exp(BoltzEnergy(-ToFlt()) / (BoltzEnergy(R) * BoltzEnergy(T)));
 }
 
 [[nodiscard]] inline BoltzEnergy Energy::LogBoltz() const noexcept {
-  return BoltzEnergy(-ToDouble()) / (BoltzEnergy(R) * BoltzEnergy(T));
+  return BoltzEnergy(-ToFlt()) / (BoltzEnergy(R) * BoltzEnergy(T));
 }
 
 std::vector<Energy> RandomEnergies(
