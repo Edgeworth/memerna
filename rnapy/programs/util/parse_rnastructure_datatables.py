@@ -210,9 +210,7 @@ def parse_6_1x1_internal_loop(data: str) -> str:
         matrix_lines = [[j.strip() for j in v.split()[1:]] for v in lines[i + 10 : i + 14]]
         for r, c in itertools.product(range(4), range(4)):
             val = parse_number(matrix_lines[r][c])
-            out += (
-                f"{t3prime[0]}{ORDER[r]}{t3prime[1]}{t5prime[1]}" f"{ORDER[c]}{t5prime[0]} {val}\n"
-            )
+            out += f"{t3prime[0]}{ORDER[r]}{t3prime[1]}{t5prime[1]}{ORDER[c]}{t5prime[0]} {val}\n"
     return out
 
 

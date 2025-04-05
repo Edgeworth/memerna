@@ -1,3 +1,4 @@
+// Copyright 2025 E.
 #include "backends/common/base/boltz_pseudofree_model.h"
 
 #include "util/error.h"

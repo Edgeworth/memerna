@@ -12,15 +12,17 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   const auto& m = bm_->m();
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
+
+  BoltzEnergy energy = bm_->pf.UnpairedCum(st + 1, en - 1) * bm_->pf.Paired(st, en);
+
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] > -1)
-    return hairpin[st].special[length];
+    return energy * hairpin[st].special[length];
+
   const Base stb = r_[st];
   const Base st1b = r_[st + 1];
   const Base en1b = r_[en - 1];
   const Base enb = r_[en];
-
-  BoltzEnergy energy = (m.HairpinInitiation(length) + m.AuGuPenalty(stb, enb)).Boltz();
-
+  energy *= (m.HairpinInitiation(length) + m.AuGuPenalty(stb, enb)).Boltz();
   const bool all_c = hairpin[st + 1].num_c >= length;
 
   if (length == 3) {
@@ -43,10 +45,13 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const auto& m = bm_->m();
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
-  if (toplen == 0 && botlen == 0) return bm_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
+  if (toplen == 0 && botlen == 0)
+    return bm_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]] * bm_->pf.Paired(ost, oen);
   if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, ost, oen, ist, ien);
 
-  BoltzEnergy energy = bm_->AuGuPenalty(r_[ost], r_[oen]) * bm_->AuGuPenalty(r_[ist], r_[ien]);
+  BoltzEnergy energy = bm_->AuGuPenalty(r_[ost], r_[oen]) * bm_->AuGuPenalty(r_[ist], r_[ien]) *
+      bm_->pf.Paired(ost, oen) * bm_->pf.UnpairedCum(ost + 1, ist - 1) *
+      bm_->pf.UnpairedCum(ien + 1, oen - 1);
 
   if (toplen == 1 && botlen == 1)
     return energy * bm_->internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];

@@ -1,3 +1,4 @@
+// Copyright 2025 E.
 #ifndef BACKENDS_BASE_ENERGY_MODEL_H_
 #define BACKENDS_BASE_ENERGY_MODEL_H_
 

@@ -106,10 +106,10 @@ struct CtxCfg {
     switch (kind) {
     case BackendKind::BASE:
       return {
-          // TODO(-1): undo
-          // PfnAlg::AUTO,
-          PfnAlg::BRUTE, PfnAlg::DEBUG,
-          // PfnAlg::OPT,
+          PfnAlg::AUTO,
+          PfnAlg::BRUTE,
+          PfnAlg::DEBUG,
+          PfnAlg::OPT,
       };
     case BackendKind::BASEOPT:
       return {

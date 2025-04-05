@@ -60,6 +60,7 @@ static_assert(false, "unknown float precision");
 // MPFR happy.
 inline flt fabs(flt v) { return std::abs(v); }
 inline flt exp(flt v) { return std::exp(v); }
+inline flt round(flt v) { return std::round(v); }
 
 // Just pass through for built in types. Make literals long doubles.
 #define FLT(x) static_cast<flt>(x##l)
