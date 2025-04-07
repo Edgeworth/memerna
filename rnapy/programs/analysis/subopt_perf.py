@@ -26,7 +26,6 @@ from rnapy.data.memevault import MemeVault
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
     required=True,
 )
-@cloup.option("--delta/--no-delta", default=True)
 def run_subopt_perf(
     time_sec_limit: int | None,
     mem_bytes_limit: int | None,
@@ -34,7 +33,6 @@ def run_subopt_perf(
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
-    delta: bool,
     memerna: MemeRna,
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
@@ -47,7 +45,6 @@ def run_subopt_perf(
         num_tries=num_tries,
         memevault=memevault,
         output_dir=output_dir,
-        delta=delta,
         memerna=memerna,
         rnastructure=rnastructure,
         viennarna=viennarna,
