@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+import copy
 from decimal import Decimal
 from pathlib import Path
 
@@ -19,7 +20,6 @@ class SuboptPerfRunner:
     num_tries: int
     memevault: MemeVault
     output_dir: Path
-    delta: bool
     programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg]]
 
     def __init__(
@@ -30,7 +30,6 @@ class SuboptPerfRunner:
         mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
-        delta: bool,
         memerna: MemeRna,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
@@ -38,7 +37,6 @@ class SuboptPerfRunner:
         self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
-        self.delta = delta
         self.programs = [
             (
                 rnastructure,
@@ -68,6 +66,36 @@ class SuboptPerfRunner:
             (
                 memerna,
                 EnergyCfg(
+                    ctd=CtdCfg.D2,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="base",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="iterative"),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="baseopt",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="iterative-lowmem"),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.D2,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="base",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="iterative-lowmem"),
+            ),
+            (
+                memerna,
+                EnergyCfg(
                     ctd=CtdCfg.ALL,
                     lonely_pairs=LonelyPairs.HEURISTIC,
                     energy_model="t04",
@@ -75,36 +103,69 @@ class SuboptPerfRunner:
                 ),
                 SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent"),
             ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.D2,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="base",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent"),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="baseopt",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent-lowmem"),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.D2,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="base",
+                ),
+                SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent-lowmem"),
+            ),
         ]
         for program, _, _ in self.programs:
             program.limits.mem_bytes = mem_bytes_limit
             program.limits.time_sec = time_sec_limit
 
     @staticmethod
-    def _max_delta(length: int) -> Decimal:
-        max_delta = 3000 * Decimal(length) ** Decimal("-1.06")
-        return SuboptPerfRunner._trunc_delta(max_delta)
-
-    @staticmethod
-    def _trunc_delta(delta: Decimal) -> Decimal:
+    def _trunc_delta(delta: float) -> Decimal:
         # Round down to nearest 0.1
         return Decimal(int(delta * 10)) / Decimal(10)
 
     @staticmethod
-    def _deltas(length: int, count: int) -> list[Decimal]:
-        max_delta = SuboptPerfRunner._max_delta(length)
-        space = np.linspace(0.1, float(max_delta), count)
-        values = [SuboptPerfRunner._trunc_delta(value) for value in space]
+    def _deltas() -> list[Decimal]:
+        # We keep running until we time out.
+        space = np.arange(0.1, 10.0, 0.1)
+        values = [SuboptPerfRunner._trunc_delta(float(value)) for value in space]
         return sorted(set(values))
 
+    @staticmethod
+    def _num_strucs() -> list[int]:
+        # We keep running until we time out.
+        return [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
+
     def _run_once(
-        self,
-        program: RnaPackage,
-        energy_cfg: EnergyCfg,
-        subopt_cfg: SuboptCfg,
-        output_path: Path,
-        rna: Rna,
+        self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
     ) -> bool:
+        desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
+        dataset = self.memevault.dataset
+        click.echo(f"Benchmarking folding with {desc} on {dataset}")
+        output_path = self.output_dir / f"{dataset}_{desc}.results"
+        if output_path.exists():
+            click.echo(f"Output path {output_path} already exists, skipping")
+            return True
+
         for run_idx in range(self.num_tries):
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
@@ -118,9 +179,9 @@ class SuboptPerfRunner:
                     "name": rna.name,
                     "run_idx": run_idx,
                     "length": len(rna),
-                    "delta": subopt_cfg.delta,
-                    "num": subopt_cfg.strucs,
-                    "num_strucs": rna_count,
+                    "input_delta": subopt_cfg.delta,
+                    "input_strucs": subopt_cfg.strucs,
+                    "output_strucs": rna_count,
                     "maxrss_bytes": cmd_res.maxrss_bytes,
                     "user_sec": cmd_res.user_sec,
                     "sys_sec": cmd_res.sys_sec,
@@ -137,23 +198,31 @@ class SuboptPerfRunner:
             )
         return True
 
-    def run(self) -> None:
-        for program, energy_cfg, subopt_cfg in self.programs:
-            desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
-            dataset = self.memevault.dataset
-            click.echo(f"Benchmarking folding with {desc} on {dataset}")
-            kind = "delta" if self.delta else "num-strucs"
-            output_path = self.output_dir / f"{dataset}_{desc}_{kind}.results"
-            if output_path.exists():
-                click.echo(f"Output path {output_path} already exists, skipping")
-                continue
+    def _run(
+        self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfgs: list[SuboptCfg]
+    ) -> None:
+        for rna_idx, rna in enumerate(self.memevault):
+            for cfg in subopt_cfgs:
+                click.echo(f"Running {program} on {rna_idx} {rna.name}, cfg {cfg}")
+                # Stop looking at larger cfgs (e.g. larger deltas) once a program fails once.
+                if not self._run_once(program, energy_cfg, cfg, rna):
+                    click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
+                    break
 
-            for rna_idx, rna in enumerate(self.memevault):
-                deltas = self._deltas(len(rna), count=5)
-                for delta in deltas:
-                    click.echo(f"Running {program} on {rna_idx} {rna.name}, delta {delta}")
-                    subopt_cfg.delta = delta
-                    # Stop looking at larger deltas once a program fails once.
-                    if not self._run_once(program, energy_cfg, subopt_cfg, output_path, rna):
-                        click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
-                        break
+    def run(self) -> None:
+        for program, energy_cfg, base_cfg in self.programs:
+            cfgs = []
+            for delta in self._deltas():
+                cfg = copy.deepcopy(base_cfg)
+                cfg.delta = delta
+                cfgs.append(cfg)
+
+            self._run(program, energy_cfg, cfgs)
+
+            cfgs = []
+            for num_strucs in self._num_strucs():
+                cfg = copy.deepcopy(base_cfg)
+                cfg.strucs = num_strucs
+                cfgs.append(cfg)
+
+            self._run(program, energy_cfg, cfgs)
