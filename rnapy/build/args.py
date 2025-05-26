@@ -6,6 +6,7 @@ import cloup
 
 from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.build_cfg import BuildCfg, BuildKind, Compiler, Sanitizer
+from rnapy.util.util import enum_choice
 
 build_cfg_options = cloup.option_group(
     "Build config options",
@@ -23,9 +24,9 @@ build_cfg_options = cloup.option_group(
         default=Path.home() / "bin",
         help="Where to place build directory",
     ),
-    cloup.option("--kind", type=cloup.Choice(list(BuildKind)), default="debug"),
-    cloup.option("--compiler", type=cloup.Choice(list(Compiler)), default="default"),
-    cloup.option("--sanitizer", type=cloup.Choice(list(Sanitizer)), default="none"),
+    cloup.option("--kind", type=enum_choice(BuildKind), default="debug"),
+    cloup.option("--compiler", type=enum_choice(Compiler), default="default"),
+    cloup.option("--sanitizer", type=enum_choice(Sanitizer), default="none"),
     cloup.option(
         "--iwyu/--no-iwyu", default=False, help="Whether to build with include-what-you-use"
     ),

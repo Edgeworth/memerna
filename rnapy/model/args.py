@@ -6,18 +6,17 @@ import cloup
 from click_params import DECIMAL
 
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
+from rnapy.util.util import enum_choice
 
 energy_options = cloup.option_group(
     "Energy options",
     cloup.option(
         "--lonely-pairs",
-        type=cloup.Choice(list(LonelyPairs)),
+        type=enum_choice(LonelyPairs),
         default=LonelyPairs.HEURISTIC,
         help="allow lonely pairs",
     ),
-    cloup.option(
-        "--ctd", type=cloup.Choice(list(CtdCfg)), default=CtdCfg.ALL, help="whether to use CTDs"
-    ),
+    cloup.option("--ctd", type=enum_choice(CtdCfg), default=CtdCfg.ALL, help="whether to use CTDs"),
     cloup.option(
         "--energy-model",
         type=str,
