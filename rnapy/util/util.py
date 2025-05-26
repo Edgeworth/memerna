@@ -1,10 +1,15 @@
 # Copyright 2022 Eliot Courtney.
+import enum
 import hashlib
 import inspect
 import json
 import tempfile
+from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any
+
+import click
+import cloup
 
 from rnapy.util.command import run_cmd
 
@@ -62,3 +67,23 @@ def named_tmpfile(mode: str, directory: Path | None = None) -> IO[Any]:
         # TODO(-1): Find a better way for this - tmp files too large for tmpfs.
         directory = resolve_path("~/tmp")
     return tempfile.NamedTemporaryFile(mode, dir=directory)
+
+
+class EnumChoice(cloup.Choice):
+    """A custom Choice class for StrEnum types."""
+
+    def normalize_choice(self, choice: StrEnum, ctx: click.Context | None) -> str:
+        normed_value = choice.value if isinstance(choice, enum.Enum) else str(choice)
+
+        if ctx is not None and ctx.token_normalize_func is not None:
+            normed_value = ctx.token_normalize_func(normed_value)
+
+        if not self.case_sensitive:
+            normed_value = normed_value.casefold()
+
+        return normed_value
+
+
+def enum_choice(enum: type[StrEnum]) -> cloup.Choice:
+    """Returns a list of choices for a StrEnum."""
+    return EnumChoice(list(enum))

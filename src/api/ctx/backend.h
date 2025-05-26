@@ -1,6 +1,7 @@
 // Copyright 2024 Eliot Courtney.
 #ifndef API_CTX_BACKEND_H_
 #define API_CTX_BACKEND_H_
+#include <variant>
 #include <vector>
 
 #include "api/energy/energy.h"
