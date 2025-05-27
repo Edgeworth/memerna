@@ -28,15 +28,13 @@ class SuboptDebug {
 
  private:
   struct Node {
-    // State should be fully defined by `not_yet_expanded`, `history`, and `ctd` which denote
+    // State should be fully defined by `not_yet_expanded` and `ctd` which denote
     // what it has done so far, and what it can do from now.
     std::vector<DpIndex> not_yet_expanded;
-    std::vector<DpIndex> history;
     SuboptResult res;  // Stores the minimum energy this state could have.
 
     [[nodiscard]] Node copy() const {
-      return Node{
-          .not_yet_expanded = not_yet_expanded, .history = history, .res = SuboptResult(res)};
+      return Node{.not_yet_expanded = not_yet_expanded, .res = SuboptResult(res)};
     }
 
     bool operator<(const Node& o) const { return res.energy < o.res.energy; }
