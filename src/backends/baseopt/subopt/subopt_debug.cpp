@@ -41,7 +41,6 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert({.not_yet_expanded = {{0, -1, EXT}},
-      .history{},
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
@@ -66,7 +65,6 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
     auto to_expand = node.not_yet_expanded.back();
     node.not_yet_expanded.pop_back();
-    node.history.push_back(to_expand);  // Add to history.
     const int st = to_expand.st;
     int en = to_expand.en;
     const int a = to_expand.a;
