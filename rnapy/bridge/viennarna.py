@@ -87,8 +87,10 @@ class ViennaRna(RnaPackage):
                 "./src/bin/RNAfold", *args, "--noPS", "-i", f.name, stdout_to_str=True
             )
             seq, db = res.stdout.strip().split("\n")
-            db = db.split(" ")[0]
-            predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
+            db, energy_str = db.split(" ")
+            predicted = RnaParser.parse(
+                name=rna.name, seq=seq.strip(), db=db.strip(), energy=energy_str.strip("() ")
+            )
         return predicted, res
 
     @override

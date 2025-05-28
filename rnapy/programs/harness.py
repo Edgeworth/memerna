@@ -30,7 +30,7 @@ from rnapy.util.util import fn_args
     "-s", "--subopt/--no-subopt", default=False, help="Run suboptimal folding on the given RNA"
 )
 @cloup.option(
-    "-p",
+    "-x",
     "--programs",
     multiple=True,
     type=cloup.Choice(
@@ -55,10 +55,16 @@ def harness(
     for p in packages:
         if efn:
             energy, res = p.efn(rna, energy_cfg)
-            click.echo(f"Energy of RNA {rna.name} with {p}: {energy:f}\n  {res}")
+            click.echo(f"Energy of RNA {rna.name} with {p}")
+            click.echo(f"{res}")
+            click.echo(f"{energy:f}")
         if fold:
             frna, res = p.fold(rna, energy_cfg)
-            click.echo(f"Folding RNA {rna.name} with {p}: {frna.db()}\n  {res}")
+            click.echo(f"Fold of RNA {rna.name} with {p}")
+            click.echo(f"{res}")
+            if frna.energy is not None:
+                click.echo(f"Energy: {frna.energy:f}")
+            click.echo(f"{frna.db()}")
         if partition:
             raise NotImplementedError
         if subopt:
