@@ -62,11 +62,9 @@ def resolve_path(path: Path | str) -> Path:
     return Path(path).expanduser().resolve()
 
 
-def named_tmpfile(mode: str, directory: Path | None = None) -> IO[Any]:
-    if directory is None:
-        # TODO(-1): Find a better way for this - tmp files too large for tmpfs.
-        directory = resolve_path("~/tmp")
-    return tempfile.NamedTemporaryFile(mode, dir=directory)
+def named_tmpfile(mode: str) -> IO[Any]:
+    # If this runs out of space, use TMPDIR to change it.
+    return tempfile.NamedTemporaryFile(mode)
 
 
 class EnumChoice(cloup.Choice):

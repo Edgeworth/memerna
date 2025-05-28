@@ -61,8 +61,8 @@ class MemeRna(RnaPackage):
         if rna.r is None:
             raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd("./fold", *args, rna.r, stdout_to_str=True)
-        _, db, _ = res.stdout.strip().split("\n")
-        return Rna(rna.name, rna.r, db_to_secondary(db)), res
+        energy_str, db, _ = res.stdout.strip().split("\n")
+        return Rna(rna.name, rna.r, db_to_secondary(db), energy=Decimal(energy_str)), res
 
     @override
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:

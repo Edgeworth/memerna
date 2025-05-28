@@ -11,10 +11,19 @@ from rnapy.model.rna import Rna
 
 class RnaParser:
     @staticmethod
+    def _extract_energy(data: str) -> Decimal | None:
+        pattern = r"ENERGY\s*=\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+))"
+        match = re.search(pattern, data, re.IGNORECASE)
+        if not match:
+            return None
+        return Decimal(match.group(1))
+
+    @staticmethod
     def from_ct_file(data: str) -> Rna:
         lines = data.strip().splitlines()
 
-        name = re.split(r"\s+", lines[0].strip())[1]
+        name = lines[0].strip().split(maxsplit=1)[-1]
+        energy = RnaParser._extract_energy(name)
         line_fields = [re.split(r"\s+", i.strip()) for i in lines[1:] if i]
         seq = "".join(i[1] for i in line_fields)
         pairs = [-1 for i in range(len(seq))]
@@ -32,7 +41,7 @@ class RnaParser:
             if pair_idx != 0:
                 pairs[pair_idx - 1] = base_idx - 1
                 pairs[base_idx - 1] = pair_idx - 1
-        return Rna(name=name, r=seq, s=pairs)
+        return Rna(name=name, r=seq, s=pairs, energy=energy)
 
     @staticmethod
     def parse(

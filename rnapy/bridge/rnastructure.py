@@ -105,6 +105,5 @@ class RNAstructure(RnaPackage):
                 return count // divisor, res
 
             output = fout.read()
-            # TODO(3): does not extract energy yet
             subopts = RnaParser.multi_from_ct_file(output)
         return subopts, res
