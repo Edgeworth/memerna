@@ -39,7 +39,7 @@ def build(
 
     if bench:
         cmd = "./run_benchmark"
-        if bench_output:
+        if bench_output is not None:
             # Move old benchmark output to .old file, if it exists
             if bench_output.exists():
                 bench_output.rename(bench_output.with_suffix(bench_output.suffix + ".old"))

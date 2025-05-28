@@ -18,21 +18,21 @@ class Rna:
 
     def __str__(self) -> str:
         res = ""
-        if self.name:
+        if self.name is not None:
             res += f"{self.name}\n"
-        if self.r:
+        if self.r is not None:
             res += f"{self.r}\n"
-        if self.s:
+        if self.s is not None:
             res += f"{self.db()}\n"
-        if self.energy:
+        if self.energy is not None:
             res += f"{self.energy}\n"
         return res
 
     # Used by command line parsing, for example.
     def __len__(self) -> int:
-        if self.r:
+        if self.r is not None:
             return len(self.r)
-        if self.s:
+        if self.s is not None:
             return len(self.s)
         return 0
 

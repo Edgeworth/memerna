@@ -16,9 +16,9 @@ class RnaPackage:
 
     def desc(self, *, energy_cfg: EnergyCfg | None, subopt_cfg: SuboptCfg | None) -> str:
         desc = self.package_name()
-        if energy_cfg:
+        if energy_cfg is not None:
             desc += f"-{energy_cfg.desc()}"
-        if subopt_cfg:
+        if subopt_cfg is not None:
             desc += f"-{subopt_cfg.desc()}"
         return desc
 

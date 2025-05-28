@@ -140,7 +140,7 @@ class AflFuzzCfg:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
         cmd += f"--memerna-data {self.build_cfg.src / 'data'} "
         cmd += f"--max-len {self.fuzz_max_len} "
-        if self.fuzz_seed:
+        if self.fuzz_seed is not None:
             cmd += f"--seed {self.fuzz_seed} "
         if self.fuzz_random_models:
             cmd += "--random-models "

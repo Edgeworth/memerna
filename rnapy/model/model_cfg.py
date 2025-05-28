@@ -29,9 +29,9 @@ class EnergyCfg:
 
     def desc(self) -> str:
         desc = f"ctd:{self.ctd}-lp:{self.lonely_pairs}"
-        if self.energy_model:
+        if self.energy_model is not None:
             desc += f"-{self.energy_model}"
-        if self.backend:
+        if self.backend is not None:
             desc += f"-{self.backend}"
         return desc
 
@@ -48,14 +48,14 @@ class SuboptCfg:
 
     def desc(self) -> str:
         desc = "subopt"
-        if self.delta:
+        if self.delta is not None:
             desc += f"-delta:{self.delta}"
-        if self.strucs:
+        if self.strucs is not None:
             desc += f"-strucs:{self.strucs}"
-        if self.time_secs:
+        if self.time_secs is not None:
             desc += f"-time:{self.time_secs}"
         if self.sorted_strucs:
             desc += "-sorted"
-        if self.algorithm:
+        if self.algorithm is not None:
             desc += f"-alg:{self.algorithm}"
         return desc

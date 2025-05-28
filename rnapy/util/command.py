@@ -48,17 +48,17 @@ def try_cmd(
     cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd)
 
     def preexec_fn() -> None:
-        if limits.mem_bytes:
+        if limits.mem_bytes is not None:
             resource.setrlimit(resource.RLIMIT_AS, (limits.mem_bytes, limits.mem_bytes))
-        if limits.time_sec:
+        if limits.time_sec is not None:
             resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
 
     env = os.environ.copy()
-    if extra_env:
+    if extra_env is not None:
         env.update(extra_env)
 
     stdout: Any
-    if stdout_path:
+    if stdout_path is not None:
         stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
@@ -90,7 +90,7 @@ def try_cmd(
         last_line = stderr_str.strip().rsplit("\n", maxsplit=1)[-1].split(" ")
         real_sec, user_sec, sys_sec, maxrss_kb = (float(i) for i in last_line)
 
-        if stdout_path:
+        if stdout_path is not None:
             stdout.flush()
             stdout.close()
 
@@ -139,7 +139,7 @@ def run_shell(cmd: str, cwd: Path | None = None, extra_env: dict[str, str] | Non
     prev_cwd = Path.cwd()
     if cwd is not None:
         os.chdir(cwd)
-    if extra_env:
+    if extra_env is not None:
         cmd = f"{' '.join(f'{k}={v}' for k, v in extra_env.items())} {cmd}"
     print(f"cmd: {cmd}, cwd: {cwd}")
     ret_code = os.system(cmd)
