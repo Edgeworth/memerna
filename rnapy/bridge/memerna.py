@@ -17,9 +17,9 @@ class MemeRna(RnaPackage):
     def _energy_cfg_args(self, cfg: EnergyCfg) -> list[str]:
         args = []
 
-        if cfg.energy_model:
+        if cfg.energy_model is not None:
             args += ["--energy-model", f"{cfg.energy_model}"]
-        if cfg.backend:
+        if cfg.backend is not None:
             args += ["--backend", f"{cfg.backend}"]
         args += ["--ctd", f"{cfg.ctd}"]
         args += ["--lonely-pairs", f"{cfg.lonely_pairs}"]
@@ -27,17 +27,17 @@ class MemeRna(RnaPackage):
 
     def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
-        if cfg.delta:
+        if cfg.delta is not None:
             args += ["--subopt-delta", str(cfg.delta)]
-        if cfg.strucs:
+        if cfg.strucs is not None:
             args += ["--subopt-strucs", str(cfg.strucs)]
-        if cfg.time_secs:
+        if cfg.time_secs is not None:
             args += ["--subopt-time-secs", str(cfg.time_secs)]
         if cfg.sorted_strucs:
             args += ["--subopt-sorted"]
         else:
             args += ["--no-subopt-sorted"]
-        if cfg.algorithm:
+        if cfg.algorithm is not None:
             args += ["--subopt-alg", f"{cfg.algorithm}"]
         args += ["--no-ctd-output"]
         return args

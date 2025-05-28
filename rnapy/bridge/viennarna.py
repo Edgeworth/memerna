@@ -45,13 +45,13 @@ class ViennaRna(RnaPackage):
 
     def _subopt_cfg_args(self, cfg: SuboptCfg) -> list[str]:
         args = []
-        if cfg.delta:
+        if cfg.delta is not None:
             args += ["--deltaEnergy", f"{cfg.delta}"]
-        if cfg.strucs:
+        if cfg.strucs is not None:
             raise NotImplementedError(
                 "ViennaRNA does not support reporting a maximum number of suboptimal structures"
             )
-        if cfg.time_secs:
+        if cfg.time_secs is not None:
             raise NotImplementedError("ViennaRNA does not support reporting a maximum running time")
         if cfg.sorted_strucs:
             args += ["--sorted"]
