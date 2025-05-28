@@ -32,9 +32,9 @@ class MemeVault:
                 print(f"Found duplicate RNAs: {rna.name}")
             self.add(rna)
 
-    def add_random(self, length: int) -> None:
+    def add_random(self, length: int, name: str) -> None:
         seq = "".join(random.choice("GUAC") for _ in range(length))
-        rna = Rna(name=f"len_{length}", r=seq, s=[-1] * length)
+        rna = Rna(name=name, r=seq, s=[-1] * length)
         self.add(rna)
 
     def __contains__(self, item: Rna) -> bool:

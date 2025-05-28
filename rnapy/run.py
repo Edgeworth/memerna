@@ -15,6 +15,7 @@ from rnapy.programs.build import build
 from rnapy.programs.harness import harness
 from rnapy.programs.util.convert_format import convert_format
 from rnapy.programs.util.crop_image import crop_image
+from rnapy.programs.util.generate_random_dataset import generate_random_dataset
 from rnapy.programs.util.parse_rnastructure_datatables import parse_rnastructure_datatables
 from rnapy.programs.util.update_datatables import update_datatables
 
@@ -49,7 +50,12 @@ cli.section(
 )
 cli.section("Build", build, afl_fuzz, afl_fuzz_min)
 cli.section(
-    "Conversion", convert_format, crop_image, parse_rnastructure_datatables, update_datatables
+    "Conversion",
+    convert_format,
+    crop_image,
+    parse_rnastructure_datatables,
+    update_datatables,
+    generate_random_dataset,
 )
 
 if __name__ == "__main__":
