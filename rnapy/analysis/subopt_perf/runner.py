@@ -26,8 +26,6 @@ class SuboptPerfRunner:
         self,
         *,
         num_tries: int,
-        time_sec_limit: int | None,
-        mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
         memerna: MemeRna,
@@ -134,9 +132,6 @@ class SuboptPerfRunner:
                 SuboptCfg(sorted_strucs=True, count_only=True, algorithm="persistent-lowmem"),
             ),
         ]
-        for program, _, _ in self.programs:
-            program.limits.mem_bytes = mem_bytes_limit
-            program.limits.time_sec = time_sec_limit
 
     @staticmethod
     def _trunc_delta(delta: float) -> Decimal:

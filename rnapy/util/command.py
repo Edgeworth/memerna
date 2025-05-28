@@ -15,6 +15,7 @@ from rnapy.util.format import human_size
 class CmdLimits:
     time_sec: int | None = None  # limit to time in seconds
     mem_bytes: int | None = None  # limit for rss in bytes
+    cpu_affinity: set[int] | None = None  # set of CPU IDs to run using
 
 
 @dataclass
@@ -52,6 +53,8 @@ def try_cmd(
             resource.setrlimit(resource.RLIMIT_AS, (limits.mem_bytes, limits.mem_bytes))
         if limits.time_sec is not None:
             resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
+        if limits.cpu_affinity is not None:
+            os.sched_setaffinity(0, limits.cpu_affinity)
 
     env = os.environ.copy()
     if extra_env is not None:
