@@ -141,14 +141,15 @@ class SuboptPerfRunner:
     @staticmethod
     def _deltas() -> list[Decimal]:
         # We keep running until we time out.
-        space = np.arange(0.1, 10.0, 0.1)
+        space = np.arange(0.1, 100.0, 0.1)
         values = [SuboptPerfRunner._trunc_delta(float(value)) for value in space]
         return sorted(set(values))
 
     @staticmethod
     def _num_strucs() -> list[int]:
         # We keep running until we time out.
-        return [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
+        space = np.logspace(0, 9, num=10, base=10, dtype=int)
+        return [int(value) for value in space]
 
     def _run_once(
         self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
