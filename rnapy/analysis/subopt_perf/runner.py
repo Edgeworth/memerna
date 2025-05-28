@@ -4,7 +4,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import click
-import numpy as np
 import pandas as pd
 
 from rnapy.bridge.memerna import MemeRna
@@ -14,6 +13,7 @@ from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.rna import Rna
+from rnapy.util.util import keyed_row_exists, strict_merge
 
 
 class SuboptPerfRunner:
@@ -134,57 +134,62 @@ class SuboptPerfRunner:
         ]
 
     @staticmethod
-    def _trunc_delta(delta: float) -> Decimal:
-        # Round down to nearest 0.1
-        return Decimal(int(delta * 10)) / Decimal(10)
-
-    @staticmethod
     def _deltas() -> list[Decimal]:
-        # We keep running until we time out.
-        space = np.arange(0.1, 100.0, 0.1)
-        values = [SuboptPerfRunner._trunc_delta(float(value)) for value in space]
-        return sorted(set(values))
+        deltas = (
+            "0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.2,1.4,1.5,1.8,2,3,4,5,6,7,8,9,10,"
+            "15,20,25,30,35,45,60,75,100"
+        )
+        return sorted({Decimal(d) for d in deltas.split(",")})
 
     @staticmethod
     def _num_strucs() -> list[int]:
-        # We keep running until we time out.
-        space = np.logspace(0, 9, num=10, base=10, dtype=int)
-        return [int(value) for value in space]
+        return [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000]
 
     def _run_once(
         self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
     ) -> bool:
         desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
-        dataset = self.memevault.dataset
-        click.echo(f"Benchmarking folding with {desc} on {dataset}")
-        output_path = self.output_dir / f"{dataset}_{desc}.results"
-        if output_path.exists():
-            click.echo(f"Output path {output_path} already exists, skipping")
-            return True
+        click.echo(f"Benchmarking folding with {desc} on {self.memevault.dataset}")
+        output_path = self.output_dir / "subopt.results"
 
         for run_idx in range(self.num_tries):
+            data_keys = strict_merge(
+                desc,
+                {
+                    "dataset": self.memevault.dataset,
+                    "rna_name": rna.name,
+                    "rna_length": len(rna),
+                    "run_idx": run_idx,
+                },
+            )
+
+            if keyed_row_exists(output_path, data_keys):
+                click.echo(f"Skipping run {data_keys} as it already exists in {output_path}")
+                continue
+
+            failed = False
+            data_values: dict = {}
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
+                failed = cmd_res.ret_code != 0
+                data_values = strict_merge(
+                    data_values,
+                    {
+                        "output_strucs": rna_count,
+                        "maxrss_bytes": cmd_res.maxrss_bytes,
+                        "user_sec": cmd_res.user_sec,
+                        "sys_sec": cmd_res.sys_sec,
+                        "real_sec": cmd_res.real_sec,
+                    },
+                )
             except Exception as e:
                 click.echo(f"Error running {program} on {rna.name}: {e}")
-                return False
+                failed = True
             assert isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
 
-            df = pd.DataFrame(
-                {
-                    "name": rna.name,
-                    "run_idx": run_idx,
-                    "length": len(rna),
-                    "input_delta": subopt_cfg.delta,
-                    "input_strucs": subopt_cfg.strucs,
-                    "output_strucs": rna_count,
-                    "maxrss_bytes": cmd_res.maxrss_bytes,
-                    "user_sec": cmd_res.user_sec,
-                    "sys_sec": cmd_res.sys_sec,
-                    "real_sec": cmd_res.real_sec,
-                },
-                index=[0],
-            )
+            data = strict_merge(data_keys, data_values, {"failed": failed})
+
+            df = pd.DataFrame(data, index=[0])
             df.to_csv(
                 output_path,
                 mode="a",
@@ -192,6 +197,9 @@ class SuboptPerfRunner:
                 index=False,
                 float_format="%g",
             )
+
+            if failed:
+                return False
         return True
 
     def _run(

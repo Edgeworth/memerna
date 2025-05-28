@@ -46,6 +46,8 @@ def generate_random_dataset(
     **_kwargs: Any,
 ) -> None:
     memevault = MemeVault(memevault_path, dataset_name)
+    memevault.maybe_create()
+    memevault.clear()
 
     lengths = set(extra_lengths)
     if use_range:

@@ -6,6 +6,7 @@ from pathlib import Path
 from rnapy.model.model_cfg import EnergyCfg, SuboptCfg
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdLimits, CmdResult, run_cmd
+from rnapy.util.util import strict_merge
 
 
 @dataclass
@@ -14,12 +15,12 @@ class RnaPackage:
     limits: CmdLimits = field(default_factory=CmdLimits)
     env: dict[str, str] = field(default_factory=dict)
 
-    def desc(self, *, energy_cfg: EnergyCfg | None, subopt_cfg: SuboptCfg | None) -> str:
-        desc = self.package_name()
+    def desc(self, *, energy_cfg: EnergyCfg | None, subopt_cfg: SuboptCfg | None) -> dict[str, str]:
+        desc = {"package_name": self.package_name()}
         if energy_cfg is not None:
-            desc += f"-{energy_cfg.desc()}"
+            desc = strict_merge(desc, energy_cfg.desc())
         if subopt_cfg is not None:
-            desc += f"-{subopt_cfg.desc()}"
+            desc = strict_merge(desc, subopt_cfg.desc())
         return desc
 
     def package_name(self) -> str:
