@@ -27,13 +27,13 @@ class EnergyCfg:
     energy_model: str | None = None
     backend: str | None = None
 
-    def desc(self) -> str:
-        desc = f"ctd:{self.ctd}-lp:{self.lonely_pairs}"
-        if self.energy_model is not None:
-            desc += f"-{self.energy_model}"
-        if self.backend is not None:
-            desc += f"-{self.backend}"
-        return desc
+    def desc(self) -> dict[str, str]:
+        return {
+            "ctd": self.ctd.value,
+            "lonely_pairs": self.lonely_pairs.value,
+            "energy_model": self.energy_model or "",
+            "backend": self.backend or "",
+        }
 
 
 @dataclass
@@ -46,16 +46,12 @@ class SuboptCfg:
     # Program specific suboptimal folding algorithm option.
     algorithm: str | None = None
 
-    def desc(self) -> str:
-        desc = "subopt"
-        if self.delta is not None:
-            desc += f"-delta:{self.delta}"
-        if self.strucs is not None:
-            desc += f"-strucs:{self.strucs}"
-        if self.time_secs is not None:
-            desc += f"-time:{self.time_secs}"
-        if self.sorted_strucs:
-            desc += "-sorted"
-        if self.algorithm is not None:
-            desc += f"-alg:{self.algorithm}"
-        return desc
+    def desc(self) -> dict[str, str]:
+        return {
+            "sorted_strucs": str(self.sorted_strucs),
+            "delta": str(self.delta) if self.delta is not None else "",
+            "strucs": str(self.strucs) if self.strucs is not None else "",
+            "time_secs": str(self.time_secs) if self.time_secs is not None else "",
+            "count_only": str(self.count_only),
+            "algorithm": self.algorithm or "",
+        }

@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+import copy
 import enum
 import hashlib
 import inspect
@@ -10,8 +11,33 @@ from typing import IO, Any
 
 import click
 import cloup
+import pandas as pd
 
 from rnapy.util.command import run_cmd
+
+
+def strict_merge(*dicts: dict) -> dict:
+    merged = {}
+    for curdict in dicts:
+        for key, value in curdict.items():
+            if key in merged:
+                raise ValueError(f"Key '{key}' exists in both dictionaries.")
+            merged[copy.deepcopy(key)] = copy.deepcopy(value)
+    return merged
+
+
+def keyed_row_exists(csv_path: Path, data_keys: dict) -> bool:
+    """Checks if a row with the given keys exists in the CSV file."""
+    if not csv_path.exists():
+        return False
+
+    df = pd.read_csv(csv_path)
+    for key, value in data_keys.items():
+        if key not in df.columns:
+            return False
+        df = df[df[key] == value]
+
+    return not df.empty
 
 
 def fn_args() -> dict[str, Any]:

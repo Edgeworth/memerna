@@ -15,6 +15,17 @@ class MemeVault:
         self.db = sqlite3.connect(path)
         self.dataset = dataset
 
+    def maybe_create(self) -> None:
+        self.db.execute(
+            f"CREATE TABLE IF NOT EXISTS {self.dataset} "
+            "(name TEXT PRIMARY KEY, seq TEXT NOT NULL, db TEXT NOT NULL)"
+        )
+        self.db.commit()
+
+    def clear(self) -> None:
+        self.db.execute(f"DELETE FROM {self.dataset}")
+        self.db.commit()
+
     def add(self, rna: Rna) -> None:
         self.db.execute(f"INSERT INTO {self.dataset} VALUES (?, ?, ?)", (rna.name, rna.r, rna.db()))
         self.db.commit()
