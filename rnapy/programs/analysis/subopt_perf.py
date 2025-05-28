@@ -12,14 +12,15 @@ from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.args import memevault_options
 from rnapy.data.memevault import MemeVault
+from rnapy.util.args import init_package_limits, limit_options
+from rnapy.util.util import fn_args
 
 
 @cloup.command()
 @bridge_options
 @memevault_options
+@limit_options
 @cloup.option("--dataset", default="random", type=str)
-@cloup.option("--time-sec-limit", type=int, required=False)
-@cloup.option("--mem-bytes-limit", type=int, required=False)
 @cloup.option("--num-tries", default=5, type=int)
 @cloup.option(
     "--output-dir",
@@ -27,8 +28,6 @@ from rnapy.data.memevault import MemeVault
     required=True,
 )
 def run_subopt_perf(
-    time_sec_limit: int | None,
-    mem_bytes_limit: int | None,
     num_tries: int,
     memevault_path: Path,
     dataset: str,
@@ -38,10 +37,9 @@ def run_subopt_perf(
     viennarna: ViennaRna,
     **_kwargs: Any,
 ) -> None:
+    init_package_limits(**fn_args())
     memevault = MemeVault(memevault_path, dataset)
     analyser = SuboptPerfRunner(
-        time_sec_limit=time_sec_limit,
-        mem_bytes_limit=mem_bytes_limit,
         num_tries=num_tries,
         memevault=memevault,
         output_dir=output_dir,

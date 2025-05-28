@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
-from typing import Any
 
 import click
 import cloup
@@ -8,7 +7,6 @@ import cloup
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.memerna01 import MemeRna01
-from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMFEFold
 from rnapy.bridge.sparsernafold import SparseRNAFolD
@@ -73,10 +71,6 @@ def validate_sparsernafold(
 
 bridge_options = cloup.option_group(
     "Bridge options",
-    cloup.option("--time-limit-seconds", type=int, help="maximum time to run any bridge packages"),
-    cloup.option(
-        "--memory-limit-bytes", type=int, help="maximum memory to use for any bridge packages"
-    ),
     cloup.option(
         "--memerna-path",
         "memerna",
@@ -138,12 +132,3 @@ bridge_options = cloup.option_group(
         type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
     ),
 )
-
-
-def init_package_limits(
-    time_limit_seconds: int | None, memory_limit_bytes: int | None, **kwargs: Any
-) -> None:
-    for v in kwargs.values():
-        if isinstance(v, RnaPackage):
-            v.limits.time_sec = time_limit_seconds
-            v.limits.mem_bytes = memory_limit_bytes

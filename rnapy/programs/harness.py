@@ -13,6 +13,7 @@ from rnapy.model.args import (
     subopt_cfg_from_args,
     subopt_options,
 )
+from rnapy.util.args import init_package_limits, limit_options
 from rnapy.util.util import fn_args
 
 
@@ -21,6 +22,7 @@ from rnapy.util.util import fn_args
 @subopt_options
 @bridge_options
 @data_options
+@limit_options
 @cloup.option("-e", "--efn/--no-efn", default=False, help="Run efn the given RNA")
 @cloup.option("-f", "--fold/--no-fold", default=False, help="Fold the given RNA")
 @cloup.option(
@@ -41,16 +43,17 @@ from rnapy.util.util import fn_args
 def harness(
     programs: list[str], efn: bool, fold: bool, partition: bool, subopt: bool, **kwargs: Any
 ) -> None:
+    init_package_limits(**fn_args())
     energy_cfg = energy_cfg_from_args(**fn_args())
     subopt_cfg = subopt_cfg_from_args(**fn_args())
     rna = rna_from_args(**fn_args())
     packages: list[RnaPackage] = []
 
     for program in programs:
-        package = kwargs.get(program)
+        package: RnaPackage | None = kwargs.get(program)
         if package is None:
             raise click.UsageError(f"Path for program {program} not found")
-        packages.append(kwargs[program])
+        packages.append(package)
 
     for p in packages:
         if efn:

@@ -25,8 +25,6 @@ class FoldPerfRunner:
         self,
         *,
         num_tries: int,
-        time_sec_limit: int | None,
-        mem_bytes_limit: int | None,
         memevault: MemeVault,
         output_dir: Path,
         memerna01: MemeRna01,
@@ -58,9 +56,6 @@ class FoldPerfRunner:
             (sparsemfefold, EnergyCfg(ctd=CtdCfg.NONE, lonely_pairs=LonelyPairs.HEURISTIC)),
             (sparsernafold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
         ]
-        for program, _ in self.programs:
-            program.limits.mem_bytes = mem_bytes_limit
-            program.limits.time_sec = time_sec_limit
 
     def run(self) -> None:
         for program, cfg in self.programs:
