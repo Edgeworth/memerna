@@ -44,6 +44,7 @@ class LruVectorCache {
       auto key = lru_.back();
       total_ -= cache_[key].first.size();
       cache_[key].first.clear();
+      cache_[key].first.shrink_to_fit();
       cache_[key].second = lru_.end();
       lru_.pop_back();
     }
