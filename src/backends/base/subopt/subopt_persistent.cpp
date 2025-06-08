@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
@@ -108,10 +109,8 @@ std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
 
     // If we still have expansions to process, update the energy of the current node with what
     // the best we could do is with the next (worse) expansion.
-    // TODO(0): Use update key here for more performance?
-    if (s.expand_idx != static_cast<int>(exps.size())) {
+    if (s.expand_idx != static_cast<int>(exps.size()))
       pq_.emplace(neg_delta + exp.delta - exps[s.expand_idx].delta, idx);
-    }
 
     if (exp.idx0.st == -1 && s.unexpanded_idx != -1) {
       // Ran out of expansions at this node but we still have unexpanded DpIndexes to process.

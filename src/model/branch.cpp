@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <deque>
 #include <vector>
 
 #include "model/base.h"

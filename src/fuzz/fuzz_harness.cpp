@@ -4,6 +4,8 @@
 #include <fmt/core.h>
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "api/ctx/backend.h"
 #include "fuzz/fuzz_cfg.h"

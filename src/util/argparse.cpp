@@ -5,6 +5,9 @@
 #include <spdlog/common.h>
 
 #include <cstdlib>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "api/options.h"
 #include "spdlog/spdlog.h"

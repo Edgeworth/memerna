@@ -1,7 +1,6 @@
 // Copyright 2024 E.
 #include "model/energy.h"
 
-#include <cmath>
 #include <string>
 
 #include "gtest/gtest.h"

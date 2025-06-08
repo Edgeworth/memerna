@@ -116,7 +116,7 @@ DEFINE_PARTITION_BENCH(baseopt_t04, DEBUG, OPT);
 
 DEFINE_MFE_BENCH(stack_t04, DEBUG);
 DEFINE_SUBOPT_BENCH(stack_t04, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
-// TODO(0): Add more when partition is implemented.
+// TODO(2): Add when partition is implemented for stack model.
 
 // NEWMODEL/NEWBACKEND: Add new benches here.
 

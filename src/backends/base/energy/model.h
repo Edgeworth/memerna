@@ -2,6 +2,12 @@
 #ifndef BACKENDS_BASE_ENERGY_MODEL_H_
 #define BACKENDS_BASE_ENERGY_MODEL_H_
 
+#include <deque>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
 #include "backends/common/base/pseudofree_model.h"

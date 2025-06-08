@@ -1,4 +1,5 @@
 // Copyright 2022 E.
+#include <string>
 #include <utility>
 
 #include "fuzz/fuzz_cfg.h"

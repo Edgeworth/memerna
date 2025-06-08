@@ -1,6 +1,7 @@
 // Copyright 2022 E.
 #include "api/energy/energy.h"
 
+#include <memory>
 #include <utility>
 
 #include "model/structure.h"

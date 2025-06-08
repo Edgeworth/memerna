@@ -2,6 +2,7 @@
 #ifndef BACKENDS_COMMON_BASE_BOLTZ_PRECOMP_BASE_H_
 #define BACKENDS_COMMON_BASE_BOLTZ_PRECOMP_BASE_H_
 
+#include <utility>
 #include <vector>
 
 #include "backends/common/base/precomp_base.h"

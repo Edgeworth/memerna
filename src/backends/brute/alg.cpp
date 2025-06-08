@@ -3,6 +3,7 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "api/subopt/subopt_cfg.h"
 #include "backends/brute/brute.h"

@@ -179,7 +179,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
   ComputeMfe(r, dp);
   ComputeMfeExterior(r, dp);
 
-  auto vis = overloaded{// fix clang-format comment
+  auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) mutable -> int {
         auto state = std::get<md::base::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {

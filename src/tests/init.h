@@ -4,6 +4,7 @@
 
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "api/ctx/backend.h"
 #include "backends/stack/energy/model.h"

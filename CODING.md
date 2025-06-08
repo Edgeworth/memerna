@@ -67,3 +67,25 @@ Contains Python code. Organised as follows:
 ## tests directory
 
 Structure should mirror the source directory.
+
+## Releasing
+
+Update version numbers in CMakeLists.txt, pyproject.toml, and util/version.h.
+
+Create a new branch from main - branch has major.minor version number.
+
+```bash
+git checkout -b release/0.2
+```
+
+Add a tag for the release, using the format `release-tag/0.2.0` - it contains
+the full version number, including patch.
+
+```bash
+git tag -a release-tag/0.2.0
+git push origin release/0.2
+git push origin release-tag/0.2.0
+```
+
+Then create a release on GitHub, using the tag `release-tag/0.2` and the branch
+`release/0.2`. The release should be a draft, and should include the following.

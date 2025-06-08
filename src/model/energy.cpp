@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <istream>
 #include <random>
+#include <string>
+#include <vector>
 
 #include "util/error.h"
 

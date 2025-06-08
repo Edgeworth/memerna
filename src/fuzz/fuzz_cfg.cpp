@@ -3,6 +3,8 @@
 
 #include <fmt/core.h>
 
+#include <string>
+
 #include "api/bridge/bridge.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"

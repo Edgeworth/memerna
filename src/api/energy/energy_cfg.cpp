@@ -2,6 +2,7 @@
 #include "api/energy/energy_cfg.h"
 
 #include <ostream>
+#include <string>
 
 #include "util/error.h"
 #include "util/util.h"

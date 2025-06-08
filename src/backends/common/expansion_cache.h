@@ -2,6 +2,9 @@
 #ifndef BACKENDS_COMMON_EXPANSION_CACHE_H_
 #define BACKENDS_COMMON_EXPANSION_CACHE_H_
 
+#include <utility>
+#include <vector>
+
 #include "model/primary.h"
 #include "util/lru_vector_cache.h"
 

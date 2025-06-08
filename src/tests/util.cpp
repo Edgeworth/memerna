@@ -1,6 +1,10 @@
 // Copyright 2024 E.
 #include "tests/util.h"
 
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "api/ctx/backend.h"
 namespace mrna {
 

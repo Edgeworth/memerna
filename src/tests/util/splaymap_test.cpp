@@ -5,6 +5,8 @@
 #include <limits>
 #include <random>
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "gtest/gtest.h"
 #include "util/error.h"
