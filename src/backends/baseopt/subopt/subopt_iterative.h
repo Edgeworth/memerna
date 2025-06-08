@@ -1,6 +1,6 @@
 // Copyright 2016 Eliot Courtney.
-#ifndef BACKENDS_OPT_SUBOPT_SUBOPT_ITERATIVE_H_
-#define BACKENDS_OPT_SUBOPT_SUBOPT_ITERATIVE_H_
+#ifndef BACKENDS_BASEOPT_SUBOPT_SUBOPT_ITERATIVE_H_
+#define BACKENDS_BASEOPT_SUBOPT_SUBOPT_ITERATIVE_H_
 
 #include <algorithm>
 #include <cassert>
@@ -78,4 +78,4 @@ class SuboptIterative {
 
 }  // namespace mrna::md::base::opt
 
-#endif  // BACKENDS_OPT_SUBOPT_SUBOPT_ITERATIVE_H_
+#endif  // BACKENDS_BASEOPT_SUBOPT_SUBOPT_ITERATIVE_H_
