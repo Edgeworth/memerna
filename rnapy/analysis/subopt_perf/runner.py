@@ -150,7 +150,7 @@ class SuboptPerfRunner:
     ) -> bool:
         desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
         click.echo(f"Benchmarking folding with {desc} on {self.memevault.dataset}")
-        output_path = self.output_dir / "subopt.results"
+        output_path = self.output_dir / "subopt.json"
 
         for run_idx in range(self.num_tries):
             data_keys = strict_merge(
@@ -185,18 +185,12 @@ class SuboptPerfRunner:
             except Exception as e:
                 click.echo(f"Error running {program} on {rna.name}: {e}")
                 failed = True
-            assert isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
+
+            assert failed or isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
 
             data = strict_merge(data_keys, data_values, {"failed": failed})
-
             df = pd.DataFrame(data, index=[0])
-            df.to_csv(
-                output_path,
-                mode="a",
-                header=not output_path.exists(),
-                index=False,
-                float_format="%g",
-            )
+            df.to_json(output_path, orient="records", lines=True, mode="a")
 
             if failed:
                 return False

@@ -26,17 +26,16 @@ def strict_merge(*dicts: dict) -> dict:
     return merged
 
 
-def keyed_row_exists(csv_path: Path, data_keys: dict) -> bool:
-    """Checks if a row with the given keys exists in the CSV file."""
-    if not csv_path.exists():
+def keyed_row_exists(json_path: Path, data_keys: dict) -> bool:
+    """Checks if a row with the given keys exists in the JSON file."""
+    if not json_path.exists():
         return False
 
-    df = pd.read_csv(csv_path)
+    df = pd.read_json(json_path, orient="records", precise_float=True, lines=True, dtype=False)
     for key, value in data_keys.items():
         if key not in df.columns:
             return False
         df = df[df[key] == value]
-
     return not df.empty
 
 
