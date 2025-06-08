@@ -1,6 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "backends/baseopt/energy/boltz_precomp.h"
 
+#include <algorithm>
+#include <utility>
+
 namespace mrna::md::base::opt {
 
 BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bm)

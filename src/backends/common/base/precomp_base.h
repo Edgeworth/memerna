@@ -3,6 +3,7 @@
 #define BACKENDS_COMMON_BASE_PRECOMP_BASE_H_
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "backends/common/energy.h"

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <random>
+#include <string>
 
 #include "util/error.h"
 

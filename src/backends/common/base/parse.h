@@ -2,6 +2,8 @@
 #ifndef BACKENDS_COMMON_BASE_PARSE_H_
 #define BACKENDS_COMMON_BASE_PARSE_H_
 
+#include <string>
+
 #include "backends/common/boltz.h"
 #include "backends/common/model_mixin.h"
 #include "backends/common/parse.h"

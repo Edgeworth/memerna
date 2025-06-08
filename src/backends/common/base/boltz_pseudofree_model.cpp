@@ -1,6 +1,8 @@
 // Copyright 2025 Eliot Courtney.
 #include "backends/common/base/boltz_pseudofree_model.h"
 
+#include <vector>
+
 #include "util/error.h"
 
 namespace mrna::md::base {

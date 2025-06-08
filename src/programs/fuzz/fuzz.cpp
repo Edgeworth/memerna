@@ -4,6 +4,8 @@
 #include <chrono>
 #include <random>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_harness.h"

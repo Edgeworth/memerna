@@ -2,11 +2,13 @@
 #include "util/error.h"
 
 #include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
-#include <cstdio>
 #include <cstdlib>
 #include <exception>
 #include <ios>
+
+#include "util/version.h"
 
 #ifdef USE_BOOST
 #include <boost/stacktrace.hpp>
@@ -42,6 +44,7 @@ namespace mrna {
 void InitProgram() {
   std::ios_base::sync_with_stdio(false);
   std::set_terminate(terminate_handler);
+  spdlog::info("memerna version {}", VERSION.ToString());
 }
 
 }  // namespace mrna

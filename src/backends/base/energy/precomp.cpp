@@ -1,6 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "backends/base/energy/precomp.h"
 
+#include <algorithm>
+#include <utility>
+
 namespace mrna::md::base {
 
 Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {

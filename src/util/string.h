@@ -64,9 +64,10 @@ constexpr int EnumCount() {
 using boost::describe::operators::operator==;
 using boost::describe::operators::operator!=;
 
-template <typename T,
-    typename std::enable_if_t<boost::describe::has_describe_enumerators<T>::value, bool> = true>
-std::istream& operator>>(std::istream& is, T& value) {
+template <typename T>
+std::istream& operator>>(std::istream& is, T& value)
+  requires boost::describe::has_describe_enumerators<T>::value
+{
   std::string s;
   is >> s;
   s = mrna::NormalizeEnumName(s);
@@ -79,9 +80,10 @@ std::istream& operator>>(std::istream& is, T& value) {
   fatal("invalid enum value {}", s);
 }
 
-template <typename T,
-    typename std::enable_if_t<boost::describe::has_describe_enumerators<T>::value, bool> = true>
-std::ostream& operator<<(std::ostream& str, const T& value) {
+template <typename T>
+std::ostream& operator<<(std::ostream& str, const T& value)
+  requires boost::describe::has_describe_enumerators<T>::value
+{
   auto name = boost::describe::enum_to_string(value, nullptr);
   verify(name != nullptr, "invalid enum value");
   return str << mrna::NormalizeEnumName(name);

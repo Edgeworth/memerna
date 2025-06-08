@@ -1,4 +1,5 @@
 // Copyright 2022 Eliot Courtney.
+#include <string>
 #include <utility>
 
 #include "fuzz/fuzz_cfg.h"

@@ -1,7 +1,9 @@
-#ifndef UTIL_LRU_CACHE_H_
-#define UTIL_LRU_CACHE_H_
+// Copyright 2025 Eliot Courtney.
+#ifndef UTIL_LRU_VECTOR_CACHE_H_
+#define UTIL_LRU_VECTOR_CACHE_H_
 
 #include <list>
+#include <utility>
 #include <vector>
 
 namespace mrna {
@@ -53,4 +55,4 @@ class LruVectorCache {
 
 }  // namespace mrna
 
-#endif  // UTIL_LRU_CACHE_H_
+#endif  // UTIL_LRU_VECTOR_CACHE_H_

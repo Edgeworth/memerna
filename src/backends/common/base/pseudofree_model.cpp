@@ -1,4 +1,8 @@
+// Copyright 2025 Eliot Courtney.
 #include "backends/common/base/pseudofree_model.h"
+
+#include <utility>
+#include <vector>
 
 #include "util/error.h"
 

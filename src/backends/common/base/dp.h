@@ -1,5 +1,8 @@
+// Copyright 2025 Eliot Courtney.
 #ifndef BACKENDS_COMMON_BASE_DP_H_
 #define BACKENDS_COMMON_BASE_DP_H_
+
+#include <algorithm>
 
 #include "api/trace/trace.h"
 #include "util/array.h"

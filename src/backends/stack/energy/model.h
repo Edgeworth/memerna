@@ -5,11 +5,12 @@
 #include <fmt/core.h>
 
 #include <cassert>
-#include <cmath>
 #include <deque>
 #include <memory>
 #include <random>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "api/energy/energy.h"
 #include "backends/common/base/model_base.h"

@@ -3,6 +3,7 @@
 #define API_CTX_BACKEND_CFG_H_
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"

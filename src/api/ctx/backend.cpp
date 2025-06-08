@@ -1,6 +1,9 @@
 // Copyright 2024 Eliot Courtney.
 #include "api/ctx/backend.h"
 
+#include <utility>
+#include <vector>
+
 #include "util/error.h"
 
 namespace mrna {

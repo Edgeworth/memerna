@@ -1,6 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "tests/init.h"
 
+#include <string>
+#include <tuple>
+
 #include "api/ctx/backend.h"
 #include "api/energy/energy_cfg.h"
 #include "util/string.h"

@@ -9,6 +9,7 @@
 #include <deque>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 
 #include "api/energy/energy_cfg.h"

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #ifdef USE_MPFR
 #include <fmt/ostream.h>
@@ -41,6 +42,8 @@ using flt =
 // Stringify to ensure
 #define FLT(x) static_cast<flt>(#x)
 
+inline flt ParseFlt(const std::string& str) { return flt(str); }
+
 #else
 
 #if FLOAT_PRECISION == 6
@@ -61,9 +64,12 @@ static_assert(false, "unknown float precision");
 inline flt fabs(flt v) { return std::abs(v); }
 inline flt exp(flt v) { return std::exp(v); }
 inline flt round(flt v) { return std::round(v); }
+inline flt isnan(flt v) { return std::isnan(v); }
 
 // Just pass through for built in types. Make literals long doubles.
 #define FLT(x) static_cast<flt>(x##l)
+
+inline flt ParseFlt(const std::string& str) { return static_cast<flt>(std::stold(str)); }
 
 #endif  // USE_MPFR
 
@@ -103,23 +109,55 @@ struct formatter<T> {
 
  public:
   constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
-    auto end = parse_format_specs(ctx.begin(), ctx.end(), specs_, ctx, detail::type::float_type);
-    detail::parse_float_type_spec(specs_);
-    return end;
+    return parse_format_specs(ctx.begin(), ctx.end(), specs_, ctx, detail::type::float_type);
   }
 
-  auto format(const T& c, format_context& ctx) const -> auto {
-    std::stringstream out;
-    int precision = specs_.precision;
-    detail::handle_dynamic_spec<detail::precision_checker>(precision, specs_.precision_ref, ctx);
-    if (precision > 0) out << std::setprecision(precision);
-    if (specs_.width > 0) out << std::setw(specs_.width);
-    if (specs_.type == presentation_type::fixed) out << std::fixed;
-    if (specs_.type == presentation_type::exp) out << std::scientific;
-    out << c;
-    return format_to(ctx.out(), "{}", out.str());
+  auto format(const T& val, format_context& ctx) const -> auto {
+    auto specs = specs_;
+
+    detail::handle_dynamic_spec(specs.dynamic_width(), specs.width, specs.width_ref, ctx);
+    detail::handle_dynamic_spec(
+        specs.dynamic_precision(), specs.precision, specs.precision_ref, ctx);
+
+    if (!boost::multiprecision::isfinite(val)) {
+      sign s = boost::multiprecision::signbit(val) ? sign::minus : specs.sign();
+      return detail::write_nonfinite<char>(ctx.out(), boost::multiprecision::isnan(val), specs, s);
+    }
+
+    int precision = specs.precision >= 0 ? specs.precision : 6;
+    std::ios_base::fmtflags flags = std::ios_base::dec;
+    if (specs.type() == presentation_type::fixed)
+      flags |= std::ios_base::fixed;
+    else if (specs.type() == presentation_type::exp)
+      flags |= std::ios_base::scientific;
+
+    std::string num = mrna::flt(val).str(precision, flags);
+
+    const char* prefix = "";
+    if (boost::multiprecision::signbit(val)) {
+      prefix = "-";
+      if (!num.empty() && num[0] == '-') num.erase(0, 1);
+    } else {
+      switch (specs.sign()) {
+      case sign::plus: prefix = "+"; break;
+      case sign::space: prefix = " "; break;
+      default: break;
+      }
+    }
+
+    size_t num_size = num.size();
+    size_t prefix_size = std::strlen(prefix);
+    size_t total_size = num_size + prefix_size;
+
+    using iterator = decltype(ctx.out());
+    return detail::write_padded<char>(ctx.out(), specs, total_size, total_size, [&](iterator it) {
+      if (prefix_size != 0) it = std::copy_n(prefix, prefix_size, it);
+      it = std::copy_n(num.data(), num_size, it);
+      return it;
+    });
   }
 };
+
 }  // namespace fmt
 
 #endif  // USE_MPFR

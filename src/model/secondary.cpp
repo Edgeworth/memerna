@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/secondary.h"
 
+#include <string>
+#include <tuple>
 #include <vector>
 
 #include "model/primary.h"

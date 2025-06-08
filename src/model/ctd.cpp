@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/ctd.h"
 
+#include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 

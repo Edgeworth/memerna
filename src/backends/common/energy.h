@@ -2,6 +2,8 @@
 #ifndef BACKENDS_COMMON_ENERGY_H_
 #define BACKENDS_COMMON_ENERGY_H_
 
+#include <algorithm>
+
 #include "model/energy.h"
 
 namespace mrna::md {

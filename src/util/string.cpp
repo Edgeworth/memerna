@@ -7,6 +7,8 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/type_index/type_index_facade.hpp>
 #include <cctype>
+#include <string>
+#include <vector>
 
 namespace mrna {
 

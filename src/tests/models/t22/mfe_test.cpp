@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "api/ctx/backend.h"
 #include "api/ctx/ctx_cfg.h"

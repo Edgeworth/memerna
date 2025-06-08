@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"

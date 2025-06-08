@@ -1,6 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include "api/energy/energy.h"
 
+#include <memory>
 #include <utility>
 
 #include "model/structure.h"

@@ -1,5 +1,11 @@
+// Copyright 2025 Eliot Courtney.
 #ifndef BACKENDS_BASEOPT_ENERGY_MODEL_H_
 #define BACKENDS_BASEOPT_ENERGY_MODEL_H_
+
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"

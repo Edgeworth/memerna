@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/bridge.h"
 
+#include <memory>
+
 #include "api/bridge/memerna.h"
 #include "api/ctx/ctx_cfg.h"
 #include "util/error.h"

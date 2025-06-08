@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(memerna VERSION 0.1 LANGUAGES CXX)
+project(memerna VERSION 0.2.0 LANGUAGES CXX)
 
 # Supress warning messages about unused variables:
 set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
@@ -74,17 +74,17 @@ endif()
 CPMAddPackage(
   NAME benchmark
   GITHUB_REPOSITORY google/benchmark
-  VERSION 1.9.2
+  VERSION 1.9.4
   OPTIONS "BENCHMARK_ENABLE_TESTING Off"
 )
 
 # fmt
-CPMAddPackage("gh:fmtlib/fmt#11.0.2")
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 
 # spdlog should reuse existing fmtlib.
 CPMAddPackage(
   GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.15.2
+  VERSION 1.15.3
   OPTIONS "SPDLOG_FMT_EXTERNAL 1"
 )
 
@@ -92,7 +92,7 @@ CPMAddPackage(
 CPMAddPackage(
   NAME googletest
   GITHUB_REPOSITORY google/googletest
-  VERSION 1.16.0
+  VERSION 1.17.0
   OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt"
 )
 
@@ -280,6 +280,7 @@ set(MEMERNA_SOURCE
   src/util/string.cpp
   src/util/string.h
   src/util/util.h
+  src/util/version.h
 )
 set(TEST_SOURCE
   src/tests/backends/energy_test.cpp
@@ -299,6 +300,7 @@ set(TEST_SOURCE
   src/tests/models/t04/subopt_test.cpp
   src/tests/models/t04/pfn_test.cpp
   src/tests/models/t04/mfe_test.cpp
+  src/tests/util/float_test.cpp
   src/tests/util/splaymap_test.cpp
   src/tests/util.cpp
   src/tests/util.h
