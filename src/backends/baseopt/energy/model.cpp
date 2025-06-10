@@ -338,7 +338,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, int st, int 
       if (struc) struc->AddNote("{}e - closing GU penalty at {} {}", gu_penalty, st, en);
       energy += gu_penalty;
     }
-    Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1));
+    Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1), num_unpaired);
     if (struc) struc->AddNote("{}e - initiation", initiation);
     energy += initiation;
 

@@ -104,8 +104,8 @@ class ModelBase {
     return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
-  [[nodiscard]] constexpr Energy MultiloopInitiation(int num_branches) const {
-    return multiloop_a + num_branches * multiloop_b;
+  [[nodiscard]] constexpr Energy MultiloopInitiation(int num_branches, int num_unpaired) const {
+    return multiloop_a + num_branches * multiloop_b + num_unpaired * multiloop_c;
   }
 
   [[nodiscard]] constexpr Energy AuGuPenalty(Base stb, Base enb) const {
