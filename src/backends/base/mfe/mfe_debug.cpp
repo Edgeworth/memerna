@@ -64,8 +64,8 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const auto base_branch_cost = m->AuGuPenalty(stb, enb) + m->pf.Paired(st, en) +
-            m->multiloop_hack_a + m->multiloop_hack_b;
+        const auto base_branch_cost =
+            m->AuGuPenalty(stb, enb) + m->pf.Paired(st, en) + m->multiloop_a + m->multiloop_b;
 
         // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
@@ -105,34 +105,34 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
 
             // (.(   )   .) Left outer coax - P
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_b +
                     m->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax);
             // (.   (   ).) Right outer coax
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 2][piv][DP_U] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 2][piv][DP_U] + m->multiloop_b +
                     m->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax);
 
             // (.(   ).   ) Left inner coax
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_b +
                     m->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                     m->MismatchCoaxial(pl1b, plb, st1b, st2b) + m->pf.Unpaired(st + 1) +
                     m->pf.Unpaired(piv));
             // (   .(   ).) Right inner coax
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                     m->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                     m->MismatchCoaxial(en2b, en1b, prb, pr1b) + m->pf.Unpaired(piv + 1) +
                     m->pf.Unpaired(en - 1));
 
             // ((   )   ) Left flush coax
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 1][piv][DP_P] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 1][piv][DP_P] + m->multiloop_b +
                     m->AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
                     m->stack[stb][st1b][plb][enb]);
             // (   (   )) Right flush coax
             UPDATE_CACHE(DP_P,
-                base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_hack_b +
+                base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                     m->AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
                     m->stack[stb][prb][en1b][enb]);
           }
@@ -152,11 +152,10 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_hack_b;
-        const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_hack_b;
-        const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_hack_b;
-        const auto base11 =
-            dp[st + 1][piv - 1][DP_P] + m->AuGuPenalty(st1b, pl1b) + m->multiloop_hack_b;
+        const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_b;
+        const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_b;
+        const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;
+        const auto base11 = dp[st + 1][piv - 1][DP_P] + m->AuGuPenalty(st1b, pl1b) + m->multiloop_b;
         // Min is for either placing another unpaired or leaving it as nothing.
         const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en));
 

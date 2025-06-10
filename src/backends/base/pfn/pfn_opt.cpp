@@ -58,7 +58,7 @@ PfnTables PfnOpt(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state) {
         p += bpc.Hairpin(st, en);
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const BoltzEnergy base_branch_cost =
-            bpc.augubranch[stb][enb] * bm->pf.Paired(st, en) * bm->multiloop_hack_a;
+            bpc.augubranch[stb][enb] * bm->pf.Paired(st, en) * bm->multiloop_a;
 
         // (<   ><   >)
         BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
@@ -253,7 +253,7 @@ PfnTables PfnOpt(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state) {
           for (int oen = en - 1; oen >= oen_min; --oen)
             p += bpc.TwoLoop(oen, ost, en, st) * dp[ost][oen][PT_P];
         }
-        const BoltzEnergy base_branch_cost = bpc.augubranch[stb][enb] * bm->multiloop_hack_a;
+        const BoltzEnergy base_branch_cost = bpc.augubranch[stb][enb] * bm->multiloop_a;
         const BoltzEnergy outer_coax = lspace && rspace
             ? bm->MismatchCoaxial(stb, st1b, en1b, enb) * bm->pf.Unpaired(st + 1) *
                 bm->pf.Unpaired(en - 1)

@@ -146,7 +146,7 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         mins[DP_P] = std::min(mins[DP_P], pc.Hairpin(st, en));
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
-        const auto base_branch_cost = pc.augubranch[stb][enb] + m->multiloop_hack_a;
+        const auto base_branch_cost = pc.augubranch[stb][enb] + m->multiloop_a;
 
         // (<   ><   >)
         mins[DP_P] = std::min(mins[DP_P], base_branch_cost + dp[st + 1][en - 1][DP_U2]);

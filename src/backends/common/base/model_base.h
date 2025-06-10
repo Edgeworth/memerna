@@ -53,9 +53,10 @@ class ModelBase {
   Energy hairpin_all_c_a = {};
   Energy hairpin_all_c_b = {};
   std::unordered_map<std::string, Energy> hairpin;
-  // Multiloop hack model:
-  Energy multiloop_hack_a = {};
-  Energy multiloop_hack_b = {};
+  // Multiloop model:
+  Energy multiloop_a = {};
+  Energy multiloop_b = {};
+  Energy multiloop_c = {};
   // Dangles:
   Energy dangle5[4][4][4] = {};
   Energy dangle3[4][4][4] = {};
@@ -104,7 +105,7 @@ class ModelBase {
   }
 
   [[nodiscard]] constexpr Energy MultiloopInitiation(int num_branches) const {
-    return multiloop_hack_a + num_branches * multiloop_hack_b;
+    return multiloop_a + num_branches * multiloop_b;
   }
 
   [[nodiscard]] constexpr Energy AuGuPenalty(Base stb, Base enb) const {

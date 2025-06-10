@@ -326,7 +326,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     energy = pc_.Hairpin(st, en) - dp_.dp[st][en][a];
     if (energy <= delta) exps.push_back({.delta = energy});
 
-    auto base_and_branch = pc_.augubranch[stb][enb] + m_->multiloop_hack_a - dp_.dp[st][en][a];
+    auto base_and_branch = pc_.augubranch[stb][enb] + m_->multiloop_a - dp_.dp[st][en][a];
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
     if (energy <= delta)

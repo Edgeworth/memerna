@@ -60,7 +60,7 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const auto base_branch_cost =
-            pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_hack_a;
+            pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_a;
 
         // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];

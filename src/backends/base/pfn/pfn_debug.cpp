@@ -65,7 +65,7 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const BoltzEnergy base_branch_cost =
-            (pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_hack_a).Boltz();
+            (pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_a).Boltz();
 
         // (<   ><   >)
         BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
@@ -267,8 +267,7 @@ PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& stat
             p += pc.TwoLoop(oen, ost, en, st).Boltz() * dp[ost][oen][PT_P];
           }
         }
-        const BoltzEnergy base_branch_cost =
-            (pc.augubranch[stb][enb] + m->multiloop_hack_a).Boltz();
+        const BoltzEnergy base_branch_cost = (pc.augubranch[stb][enb] + m->multiloop_a).Boltz();
         const Energy outer_coax = lspace && rspace ? m->MismatchCoaxial(stb, st1b, en1b, enb) +
                 m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1)
                                                    : MAX_E;

@@ -354,7 +354,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     if (energy <= delta) exps.push_back({.delta = energy});
 
     auto base_and_branch =
-        pc_.augubranch[stb][enb] + m_->pf.Paired(st, en) + m_->multiloop_hack_a - dp_.dp[st][en][a];
+        pc_.augubranch[stb][enb] + m_->pf.Paired(st, en) + m_->multiloop_a - dp_.dp[st][en][a];
 
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
