@@ -80,20 +80,20 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
           // (3<   ><   >) 3'
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
-                  m->pf.Unpaired(st + 1));
+                  m->pf.Unpaired(st + 1) + m->multiloop_c);
           // (<   ><   >5) 5'
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
-                  m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(en - 1) + m->multiloop_c);
           // (.<   ><   >.) Terminal mismatch
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
-                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
@@ -117,13 +117,13 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
                 base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_b +
                     m->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                     m->MismatchCoaxial(pl1b, plb, st1b, st2b) + m->pf.Unpaired(st + 1) +
-                    m->pf.Unpaired(piv));
+                    m->pf.Unpaired(piv) + 2 * m->multiloop_c);
             // (   .(   ).) Right inner coax
             UPDATE_CACHE(DP_P,
                 base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                     m->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                     m->MismatchCoaxial(en2b, en1b, prb, pr1b) + m->pf.Unpaired(piv + 1) +
-                    m->pf.Unpaired(en - 1));
+                    m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
 
             // ((   )   ) Left flush coax
             UPDATE_CACHE(DP_P,
@@ -157,7 +157,8 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
         const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;
         const auto base11 = dp[st + 1][piv - 1][DP_P] + m->AuGuPenalty(st1b, pl1b) + m->multiloop_b;
         // Min is for either placing another unpaired or leaving it as nothing.
-        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en));
+        const auto right_unpaired = std::min(
+            dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en) + (en - piv) * m->multiloop_c);
 
         // (   )<   > - U, U_WC?, U_GU?
         auto u2_val = base00 + dp[piv + 1][en][DP_U];
@@ -189,28 +190,33 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U
-          UPDATE_CACHE(
-              DP_U, base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + right_unpaired);
+          UPDATE_CACHE(DP_U,
+              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c +
+                  right_unpaired);
           UPDATE_CACHE(DP_U2,
-              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + dp[piv + 1][en][DP_U]);
+              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c +
+                  dp[piv + 1][en][DP_U]);
           // 5(   )<   > 5' - U
-          UPDATE_CACHE(
-              DP_U, base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + right_unpaired);
+          UPDATE_CACHE(DP_U,
+              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c +
+                  right_unpaired);
           UPDATE_CACHE(DP_U2,
-              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + dp[piv + 1][en][DP_U]);
+              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c +
+                  dp[piv + 1][en][DP_U]);
           // .(   ).<   > Terminal mismatch - U
           UPDATE_CACHE(DP_U,
               base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
-                  right_unpaired);
+                  2 * m->multiloop_c + right_unpaired);
           UPDATE_CACHE(DP_U2,
               base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
-                  dp[piv + 1][en][DP_U]);
+                  2 * m->multiloop_c + dp[piv + 1][en][DP_U]);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-              m->pf.Unpaired(piv) + std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
+              m->pf.Unpaired(piv) + 2 * m->multiloop_c +
+              std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
           UPDATE_CACHE(DP_U, val);
           UPDATE_CACHE(DP_U2, val);
 
@@ -220,7 +226,7 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
           UPDATE_CACHE(DP_U2, val);
           UPDATE_CACHE(DP_U_RC,
               base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-                  m->pf.Unpaired(piv) + right_unpaired);
+                  m->pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired);
 
           // (   )(<   ) > Flush coax - U
           val = base01 + m->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];

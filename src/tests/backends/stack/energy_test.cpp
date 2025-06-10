@@ -32,7 +32,7 @@ class EnergyTestStack : public testing::TestWithParam<int> {
 
 TEST_P(EnergyTestStack, MultiloopEnergy) {
   const auto& m = stack_ms[GetParam()];
-  EXPECT_EQ(m->multiloop_a + 4 * m->multiloop_b, m->MultiloopInitiation(4));
+  EXPECT_EQ(m->multiloop_a + 4 * m->multiloop_b + 3 * m->multiloop_c, m->MultiloopInitiation(4, 3));
 }
 
 TEST_P(EnergyTestStack, NNDBHairpinLoopExamples) {

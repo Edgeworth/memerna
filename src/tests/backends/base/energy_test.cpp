@@ -42,7 +42,7 @@ class EnergyTestBase : public testing::TestWithParam<int> {
 
 TEST_P(EnergyTestBase, MultiloopEnergy) {
   const auto& m = base_ms[GetParam()];
-  EXPECT_EQ(m->multiloop_a + 4 * m->multiloop_b, m->MultiloopInitiation(4));
+  EXPECT_EQ(m->multiloop_a + 4 * m->multiloop_b + 3 * m->multiloop_c, m->MultiloopInitiation(4, 3));
 }
 
 TEST_P(EnergyTestBase, NNDBHairpinLoopExamples) {
