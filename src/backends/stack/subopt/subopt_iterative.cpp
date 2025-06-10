@@ -397,7 +397,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
   if (energy <= delta) exps.push_back({.delta = energy, .pair{st, en}});
 
   const auto base_branch_cost = m_->AuGuPenalty(stb, enb) + m_->pf.Paired(st, en) +
-      m_->multiloop_hack_a + m_->multiloop_hack_b - target;
+      m_->multiloop_a + m_->multiloop_b - target;
   // (<   ><    >)
   energy = base_branch_cost + dp[st + 1][en - 1][DP_U2];
   if (energy <= delta)
@@ -447,7 +447,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
       const Base pr1b = r_[piv + 2];
 
       // (.(   )   .) Left outer coax - P
-      energy = base_branch_cost + dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 2][piv][DP_P] + m_->multiloop_b +
           m_->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax;
       if (energy <= delta)
         exps.push_back({.delta = energy,
@@ -458,7 +458,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
             .pair{st, en}});
 
       // (.   (   ).) Right outer coax
-      energy = base_branch_cost + dp[st + 2][piv][DP_U] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 2][piv][DP_U] + m_->multiloop_b +
           m_->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax;
       if (energy <= delta)
         exps.push_back({.delta = energy,
@@ -469,7 +469,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
             .pair{st, en}});
 
       // (.(   ).   ) Left inner coax
-      energy = base_branch_cost + dp[st + 2][piv - 1][DP_P] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 2][piv - 1][DP_P] + m_->multiloop_b +
           m_->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
           m_->MismatchCoaxial(pl1b, plb, st1b, st2b) + m_->pf.Unpaired(st + 1) +
           m_->pf.Unpaired(piv);
@@ -482,7 +482,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
             .pair{st, en}});
 
       // (   .(   ).) Right inner coax
-      energy = base_branch_cost + dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 1][piv][DP_U] + m_->multiloop_b +
           m_->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
           m_->MismatchCoaxial(en2b, en1b, prb, pr1b) + m_->pf.Unpaired(piv + 1) +
           m_->pf.Unpaired(en - 1);
@@ -495,7 +495,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
             .pair{st, en}});
 
       // ((   )   ) Left flush coax
-      energy = base_branch_cost + dp[st + 1][piv][DP_P] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 1][piv][DP_P] + m_->multiloop_b +
           m_->AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] + m_->stack[stb][st1b][plb][enb];
       if (energy <= delta)
         exps.push_back({.delta = energy,
@@ -506,7 +506,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
             .pair{st, en}});
 
       // (   (   )) Right flush coax
-      energy = base_branch_cost + dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
+      energy = base_branch_cost + dp[st + 1][piv][DP_U] + m_->multiloop_b +
           m_->AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] + m_->stack[stb][prb][en1b][enb];
       if (energy <= delta)
         exps.push_back({.delta = energy,
@@ -546,13 +546,13 @@ std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
     // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
     // right.
     const auto base00 =
-        dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_hack_b - dp[st][en][a];
+        dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_b - dp[st][en][a];
     const auto base01 =
-        dp[st][piv - 1][DP_P] + m_->AuGuPenalty(stb, pl1b) + m_->multiloop_hack_b - dp[st][en][a];
+        dp[st][piv - 1][DP_P] + m_->AuGuPenalty(stb, pl1b) + m_->multiloop_b - dp[st][en][a];
     const auto base10 =
-        dp[st + 1][piv][DP_P] + m_->AuGuPenalty(st1b, pb) + m_->multiloop_hack_b - dp[st][en][a];
-    const auto base11 = dp[st + 1][piv - 1][DP_P] + m_->AuGuPenalty(st1b, pl1b) +
-        m_->multiloop_hack_b - dp[st][en][a];
+        dp[st + 1][piv][DP_P] + m_->AuGuPenalty(st1b, pb) + m_->multiloop_b - dp[st][en][a];
+    const auto base11 =
+        dp[st + 1][piv - 1][DP_P] + m_->AuGuPenalty(st1b, pl1b) + m_->multiloop_b - dp[st][en][a];
 
     const auto right_paired = dp[piv + 1][en][DP_U];
     // This is only usable if a != DP_U2 since this leaves everything unpaired.

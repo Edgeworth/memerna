@@ -34,13 +34,21 @@ class BoltzModelBase {
   BoltzEnergy bulge_init[ModelBase::INITIATION_CACHE_SZ]{};
   BoltzEnergy bulge_special_c{};
   BoltzEnergy hairpin_init[ModelBase::INITIATION_CACHE_SZ]{};
-  BoltzEnergy hairpin_uu_ga_first_mismatch{}, hairpin_gg_first_mismatch{},
-      hairpin_special_gu_closure{}, hairpin_c3_loop{}, hairpin_all_c_a{}, hairpin_all_c_b{};
+  BoltzEnergy hairpin_uu_ga_first_mismatch{};
+  BoltzEnergy hairpin_gg_first_mismatch{};
+  BoltzEnergy hairpin_special_gu_closure{};
+  BoltzEnergy hairpin_c3_loop{};
+  BoltzEnergy hairpin_all_c_a{};
+  BoltzEnergy hairpin_all_c_b{};
   std::unordered_map<std::string, BoltzEnergy> hairpin;
-  BoltzEnergy multiloop_hack_a{}, multiloop_hack_b{};
+  BoltzEnergy multiloop_a{};
+  BoltzEnergy multiloop_b{};
+  BoltzEnergy multiloop_c{};
   BoltzEnergy dangle5[4][4][4]{};
   BoltzEnergy dangle3[4][4][4]{};
-  BoltzEnergy coax_mismatch_non_contiguous{}, coax_mismatch_wc_bonus{}, coax_mismatch_gu_bonus{};
+  BoltzEnergy coax_mismatch_non_contiguous{};
+  BoltzEnergy coax_mismatch_wc_bonus{};
+  BoltzEnergy coax_mismatch_gu_bonus{};
   BoltzEnergy au_penalty{};
   BoltzEnergy gu_penalty{};
 

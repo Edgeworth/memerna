@@ -82,10 +82,10 @@ Add a tag for the release, using the format `release-tag/0.2.0` - it contains
 the full version number, including patch.
 
 ```bash
-git tag -a release-tag/0.2.0
+git tag release-tag/0.2.0
 git push origin release/0.2
 git push origin release-tag/0.2.0
 ```
 
-Then create a release on GitHub, using the tag `release-tag/0.2` and the branch
-`release/0.2`. The release should be a draft, and should include the following.
+Then create a release on GitHub, using the tag `release-tag/0.2.0` and the
+title "v0.2.0" and description "Release 0.2.0".

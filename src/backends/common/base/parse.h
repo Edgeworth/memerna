@@ -48,8 +48,9 @@ void ParseMiscDataFromFile(M& m, const std::string& filename) {
   READ_DATA(internal_gu_penalty);
 
   // Multiloop data.
-  READ_DATA(multiloop_hack_a);
-  READ_DATA(multiloop_hack_b);
+  READ_DATA(multiloop_a);
+  READ_DATA(multiloop_b);
+  READ_DATA(multiloop_c);
 
   // AU/GU penalty
   READ_DATA(au_penalty);
@@ -129,8 +130,9 @@ void LoadRandomModel(M& m, std::mt19937& eng, double min_energy, double max_ener
     m.hairpin[hp] = Energy::FromFlt(energy_dist(eng));
   }
 
-  RANDOMISE_DATA(m, multiloop_hack_a);
-  RANDOMISE_DATA(m, multiloop_hack_b);
+  RANDOMISE_DATA(m, multiloop_a);
+  RANDOMISE_DATA(m, multiloop_b);
+  RANDOMISE_DATA(m, multiloop_c);
   RANDOMISE_DATA(m, dangle5);
   RANDOMISE_DATA(m, dangle3);
   RANDOMISE_DATA(m, coax_mismatch_non_contiguous);
@@ -214,8 +216,9 @@ void LoadBoltzModel(BM& bm) {
   FILL_BOLTZ(bm, hairpin_c3_loop);
   FILL_BOLTZ(bm, hairpin_all_c_a);
   FILL_BOLTZ(bm, hairpin_all_c_b);
-  FILL_BOLTZ(bm, multiloop_hack_a);
-  FILL_BOLTZ(bm, multiloop_hack_b);
+  FILL_BOLTZ(bm, multiloop_a);
+  FILL_BOLTZ(bm, multiloop_b);
+  FILL_BOLTZ(bm, multiloop_c);
   FILL_BOLTZ(bm, dangle5);
   FILL_BOLTZ(bm, dangle3);
   FILL_BOLTZ(bm, coax_mismatch_non_contiguous);

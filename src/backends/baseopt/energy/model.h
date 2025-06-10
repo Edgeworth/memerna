@@ -10,6 +10,7 @@
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
 #include "backends/common/model_mixin.h"
+#include "model/energy.h"
 
 namespace mrna::md::base::opt {
 

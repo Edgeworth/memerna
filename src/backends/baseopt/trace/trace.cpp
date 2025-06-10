@@ -186,8 +186,7 @@ TraceResult Traceback(
           goto loopend;
         }
 
-        const auto base_branch_cost =
-            m->AuGuPenalty(stb, enb) + m->multiloop_hack_a + m->multiloop_hack_b;
+        const auto base_branch_cost = m->AuGuPenalty(stb, enb) + m->multiloop_a + m->multiloop_b;
         // (<   ><    >)
         if (base_branch_cost + dp[st + 1][en - 1][DP_U2] == dp[st][en][DP_P]) {
           res.ctd[en] = CTD_UNUSED;
@@ -224,7 +223,7 @@ TraceResult Traceback(
           const Base pr1b = r[piv + 2];
 
           // (.(   )   .) Left outer coax - P
-          if (base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 2][piv][DP_P] + m->multiloop_b +
                   m->AuGuPenalty(st2b, plb) + dp[piv + 1][en - 2][DP_U] + outer_coax ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_LCOAX_WITH_NEXT;
@@ -234,7 +233,7 @@ TraceResult Traceback(
             goto loopend;
           }
           // (.   (   ).) Right outer coax
-          if (base_branch_cost + dp[st + 2][piv][DP_U] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 2][piv][DP_U] + m->multiloop_b +
                   m->AuGuPenalty(prb, en2b) + dp[piv + 1][en - 2][DP_P] + outer_coax ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_RC_WITH_PREV;
@@ -245,7 +244,7 @@ TraceResult Traceback(
           }
 
           // (.(   ).   ) Left inner coax
-          if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_b +
                   m->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                   m->MismatchCoaxial(pl1b, plb, st1b, st2b) ==
               dp[st][en][DP_P]) {
@@ -256,7 +255,7 @@ TraceResult Traceback(
             goto loopend;
           }
           // (   .(   ).) Right inner coax
-          if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                   m->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                   m->MismatchCoaxial(en2b, en1b, prb, pr1b) ==
               dp[st][en][DP_P]) {
@@ -268,7 +267,7 @@ TraceResult Traceback(
           }
 
           // ((   )   ) Left flush coax
-          if (base_branch_cost + dp[st + 1][piv][DP_P] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 1][piv][DP_P] + m->multiloop_b +
                   m->AuGuPenalty(st1b, plb) + dp[piv + 1][en - 1][DP_U] +
                   m->stack[stb][st1b][plb][enb] ==
               dp[st][en][DP_P]) {
@@ -279,7 +278,7 @@ TraceResult Traceback(
             goto loopend;
           }
           // (   (   )) Right flush coax
-          if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_hack_b +
+          if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                   m->AuGuPenalty(prb, en1b) + dp[piv + 1][en - 1][DP_P] +
                   m->stack[stb][prb][en1b][enb] ==
               dp[st][en][DP_P]) {
@@ -309,11 +308,10 @@ TraceResult Traceback(
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_hack_b;
-        const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_hack_b;
-        const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_hack_b;
-        const auto base11 =
-            dp[st + 1][piv - 1][DP_P] + m->AuGuPenalty(st1b, pl1b) + m->multiloop_hack_b;
+        const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_b;
+        const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_b;
+        const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;
+        const auto base11 = dp[st + 1][piv - 1][DP_P] + m->AuGuPenalty(st1b, pl1b) + m->multiloop_b;
 
         // Min is for either placing another unpaired or leaving it as nothing.
         // If we're at U2, don't allow leaving as nothing.

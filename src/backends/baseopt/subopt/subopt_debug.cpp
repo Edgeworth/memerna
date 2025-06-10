@@ -198,7 +198,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       Expand(energy);
 
       auto base_and_branch =
-          base_energy + m_->AuGuPenalty(stb, enb) + m_->multiloop_hack_a + m_->multiloop_hack_b;
+          base_energy + m_->AuGuPenalty(stb, enb) + m_->multiloop_a + m_->multiloop_b;
       // (<   ><    >)
       energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
       Expand(energy, {st + 1, en - 1, DP_U2}, {en, CTD_UNUSED});
@@ -220,40 +220,40 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         const Base pr1b = r_[piv + 2];
 
         // (.(   )   .) Left outer coax - P
-        energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 2][piv][DP_P] + m_->multiloop_b +
             m_->AuGuPenalty(st2b, plb) + dp_.dp[piv + 1][en - 2][DP_U] + outer_coax;
         Expand(energy, {st + 2, piv, DP_P}, {piv + 1, en - 2, DP_U}, {st + 2, CTD_LCOAX_WITH_PREV},
             {en, CTD_LCOAX_WITH_NEXT});
 
         // (.   (   ).) Right outer coax
-        energy = base_and_branch + dp_.dp[st + 2][piv][DP_U] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 2][piv][DP_U] + m_->multiloop_b +
             m_->AuGuPenalty(prb, en2b) + dp_.dp[piv + 1][en - 2][DP_P] + outer_coax;
         Expand(energy, {st + 2, piv, DP_U}, {piv + 1, en - 2, DP_P}, {piv + 1, CTD_RC_WITH_NEXT},
             {en, CTD_RC_WITH_PREV});
 
         // (.(   ).   ) Left inner coax
-        energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + m_->multiloop_b +
             m_->AuGuPenalty(st2b, pl1b) + dp_.dp[piv + 1][en - 1][DP_U] +
             m_->MismatchCoaxial(pl1b, plb, st1b, st2b);
         Expand(energy, {st + 2, piv - 1, DP_P}, {piv + 1, en - 1, DP_U}, {st + 2, CTD_RC_WITH_PREV},
             {en, CTD_RC_WITH_NEXT});
 
         // (   .(   ).) Right inner coax
-        energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + m_->multiloop_b +
             m_->AuGuPenalty(pr1b, en2b) + dp_.dp[piv + 2][en - 2][DP_P] +
             m_->MismatchCoaxial(en2b, en1b, prb, pr1b);
         Expand(energy, {st + 1, piv, DP_U}, {piv + 2, en - 2, DP_P}, {piv + 2, CTD_LCOAX_WITH_NEXT},
             {en, CTD_LCOAX_WITH_PREV});
 
         // ((   )   ) Left flush coax
-        energy = base_and_branch + dp_.dp[st + 1][piv][DP_P] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 1][piv][DP_P] + m_->multiloop_b +
             m_->AuGuPenalty(st1b, plb) + dp_.dp[piv + 1][en - 1][DP_U] +
             m_->stack[stb][st1b][plb][enb];
         Expand(energy, {st + 1, piv, DP_P}, {piv + 1, en - 1, DP_U}, {st + 1, CTD_FCOAX_WITH_PREV},
             {en, CTD_FCOAX_WITH_NEXT});
 
         // (   (   )) Right flush coax
-        energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + m_->multiloop_hack_b +
+        energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + m_->multiloop_b +
             m_->AuGuPenalty(prb, en1b) + dp_.dp[piv + 1][en - 1][DP_P] +
             m_->stack[stb][prb][en1b][enb];
         Expand(energy, {st + 1, piv, DP_U}, {piv + 1, en - 1, DP_P}, {piv + 1, CTD_FCOAX_WITH_NEXT},
@@ -274,11 +274,10 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         auto pl1b = r_[piv - 1];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
         // right.
-        auto base00 = dp_.dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_hack_b;
-        auto base01 = dp_.dp[st][piv - 1][DP_P] + m_->AuGuPenalty(stb, pl1b) + m_->multiloop_hack_b;
-        auto base10 = dp_.dp[st + 1][piv][DP_P] + m_->AuGuPenalty(st1b, pb) + m_->multiloop_hack_b;
-        auto base11 =
-            dp_.dp[st + 1][piv - 1][DP_P] + m_->AuGuPenalty(st1b, pl1b) + m_->multiloop_hack_b;
+        auto base00 = dp_.dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_b;
+        auto base01 = dp_.dp[st][piv - 1][DP_P] + m_->AuGuPenalty(stb, pl1b) + m_->multiloop_b;
+        auto base10 = dp_.dp[st + 1][piv][DP_P] + m_->AuGuPenalty(st1b, pb) + m_->multiloop_b;
+        auto base11 = dp_.dp[st + 1][piv - 1][DP_P] + m_->AuGuPenalty(st1b, pl1b) + m_->multiloop_b;
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward

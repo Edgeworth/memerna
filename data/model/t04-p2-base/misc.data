@@ -42,6 +42,9 @@
 // Note that RNAstructure uses -0.6 instead of -0.9, for the hack model.
 // b constant
 -0.6
+// Unpaired base cost
+// c constant
+0.0
 
 // 7. AU penalty - note we are using 0.5 instead of the higher precision 0.45
 0.5

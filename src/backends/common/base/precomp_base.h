@@ -75,7 +75,7 @@ class PrecompBase {
   void PrecomputeData() {
     // Initialise fast AUGU branch table
     for (Base i = 0; i < 4; ++i)
-      for (Base j = 0; j < 4; ++j) augubranch[i][j] = m_->multiloop_hack_b + m_->AuGuPenalty(i, j);
+      for (Base j = 0; j < 4; ++j) augubranch[i][j] = m_->multiloop_b + m_->AuGuPenalty(i, j);
 
     const auto min_stack = MinEnergy(&m_->stack[0][0][0][0], sizeof(m_->stack));
 

@@ -27,8 +27,7 @@ struct BoltzPrecompBase {
  private:
   void PrecomputeData() {
     for (Base i = 0; i < 4; ++i)
-      for (Base j = 0; j < 4; ++j)
-        augubranch[i][j] = bm_->multiloop_hack_b * bm_->AuGuPenalty(i, j);
+      for (Base j = 0; j < 4; ++j) augubranch[i][j] = bm_->multiloop_b * bm_->AuGuPenalty(i, j);
     hairpin = PrecomputeHairpin<HairpinPrecomp<BoltzEnergy>, /*is_boltz=*/true>(r_, *bm_, -1.0);
   }
 };
