@@ -38,15 +38,12 @@ repos:
       - id: mypy
         additional_dependencies:
           [
-            bidict,
             click,
             click-params,
             click_log,
             cloup,
             pandas,
             python-dotenv,
-            seaborn,
-            statsmodels,
           ]
   # C++ related hooks:
   - repo: https://github.com/cmake-lint/cmake-lint

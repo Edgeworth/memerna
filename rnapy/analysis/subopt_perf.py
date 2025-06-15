@@ -13,7 +13,7 @@ from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.rna import Rna
-from rnapy.util.util import keyed_row_exists, strict_merge
+from rnapy.util.util import row_by_key, strict_merge
 
 
 class SuboptPerfRunner:
@@ -163,12 +163,17 @@ class SuboptPerfRunner:
                 },
             )
 
-            if keyed_row_exists(output_path, data_keys):
-                click.echo(f"Skipping run {data_keys} as it already exists in {output_path}")
+            row = row_by_key(output_path, data_keys)
+            if row is not None:
+                if row["failed"]:
+                    click.echo(f"Skipping run {row} as it failed previously.")
+                    return False
+                click.echo(f"Skipping run {row} as it already exists in {output_path}")
                 continue
 
             failed = False
             data_values: dict = {}
+            rna_count = None
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
                 failed = cmd_res.ret_code != 0

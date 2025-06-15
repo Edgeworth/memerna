@@ -4,8 +4,7 @@ from typing import Any
 
 import cloup
 
-from rnapy.analysis.subopt_perf.plotter import SuboptPerfPlotter
-from rnapy.analysis.subopt_perf.runner import SuboptPerfRunner
+from rnapy.analysis.subopt_perf import SuboptPerfRunner
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnastructure import RNAstructure
@@ -48,19 +47,3 @@ def run_subopt_perf(
         viennarna=viennarna,
     )
     analyser.run()
-
-
-@cloup.command()
-@cloup.option(
-    "--input-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
-    required=True,
-)
-@cloup.option(
-    "--output-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
-    required=True,
-)
-def plot_subopt_perf(input_dir: Path, output_dir: Path) -> None:
-    plotter = SuboptPerfPlotter(input_dir, output_dir)
-    plotter.run()

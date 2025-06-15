@@ -45,6 +45,7 @@ def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
     cfgs = afl_fuzz_cfgs(afl_cfg, num_procs)
 
     # Use libtmux to set up a session with a random name.
+    session = None
     try:
         server = libtmux.Server()
         session_name = "afl_fuzz"
@@ -61,5 +62,6 @@ def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
         session.attach_session()
     except Exception:
         click.echo("Error occurred, killing session")
-        session.kill_session()
+        if session is not None:
+            session.kill_session()
         raise
