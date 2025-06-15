@@ -7,7 +7,7 @@ import json
 import tempfile
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, cast
 
 import click
 import cloup
@@ -26,17 +26,19 @@ def strict_merge(*dicts: dict) -> dict:
     return merged
 
 
-def keyed_row_exists(json_path: Path, data_keys: dict) -> bool:
+def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
     """Checks if a row with the given keys exists in the JSON file."""
     if not json_path.exists():
-        return False
+        return None
 
     df = pd.read_json(json_path, orient="records", precise_float=True, lines=True, dtype=False)
     for key, value in data_keys.items():
         if key not in df.columns:
-            return False
+            return None
         df = df[df[key] == value]
-    return not df.empty
+    if df.empty:
+        return None
+    return cast(dict[str, Any], df.iloc[0].to_dict())
 
 
 def fn_args() -> dict[str, Any]:

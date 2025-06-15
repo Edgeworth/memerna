@@ -72,7 +72,7 @@ class RNAstructure(RnaPackage):
         return predicted, res
 
     @override
-    def partition(self, _: Rna, cfg: EnergyCfg) -> None:
+    def partition(self, rna: Rna, cfg: EnergyCfg) -> None:
         self.check_energy_cfg(cfg)
         raise NotImplementedError
 

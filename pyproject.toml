@@ -3,11 +3,15 @@ authors = ["Eliot Courtney <edgeworth.dev@gmail.com>"]
 classifiers = ["License :: OSI Approved :: GPL-3.0-only"]
 description = "memerna"
 name = "rnapy"
+packages = [{include = "rnapy"}]
 readme = "README.md"
 version = "0.2.0"
 
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
 [tool.poetry.dependencies]
-bidict = ">=0.23.1"
 click = ">=8.2.1"
 click-params = ">=0.5.0"
 click_log = ">=0.4.0"
@@ -16,10 +20,6 @@ libtmux = ">=0.46.2"
 pandas = ">=2.3.0"
 python = ">=3.11,<4.0"
 python-dotenv = ">=1.1.0"
-scipy = ">=1.15.3"
-seaborn = ">=0.13.2"
-statsmodels = ">=0.14.4"
-viennarna = ">=2.7.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.16.0"
@@ -56,19 +56,12 @@ python_version = '3.13'
 ignore_missing_imports = true
 module = [
   "click_log.*",
-  "numpy.*",
-  "ViennaRNA.*",
-  "pandas.*",
-  "matplotlib.*",
-  "seaborn.*",
-  "statsmodels.*",
   "click_params.*",
-  "scipy.*",
 ]
 
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.format]
 # Make sure lists etc can go back onto one line if they get shorter.

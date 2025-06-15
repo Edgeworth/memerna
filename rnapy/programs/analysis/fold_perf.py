@@ -4,8 +4,7 @@ from typing import Any
 
 import cloup
 
-from rnapy.analysis.fold_perf.plotter import FoldPerfPlotter
-from rnapy.analysis.fold_perf.runner import FoldPerfRunner
+from rnapy.analysis.fold_perf import FoldPerfRunner
 from rnapy.bridge.args import bridge_options
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna01 import MemeRna01
@@ -57,19 +56,3 @@ def run_fold_perf(
         sparsernafold=sparsernafold,
     )
     analyser.run()
-
-
-@cloup.command()
-@cloup.option(
-    "--input-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
-    required=True,
-)
-@cloup.option(
-    "--output-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
-    required=True,
-)
-def plot_fold_perf(input_dir: Path, output_dir: Path) -> None:
-    plotter = FoldPerfPlotter(input_dir, output_dir)
-    plotter.run()
