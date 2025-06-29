@@ -1,15 +1,19 @@
-[tool.poetry]
-authors = ["Eliot Courtney <edgeworth.dev@gmail.com>"]
-classifiers = ["License :: OSI Approved :: GPL-3.0-only"]
+[project]
+authors = [{name = "Eliot Courtney", email = "edgeworth.dev@gmail.com"}]
 description = "memerna"
+dynamic = ["dependencies"]
+license = {text = "GPL-3.0-only"}
 name = "rnapy"
-packages = [{include = "rnapy"}]
 readme = "README.md"
+requires-python = ">=3.13,<4.0"
 version = "0.2.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
+
+[tool.poetry]
+packages = [{include = "rnapy"}]
 
 [tool.poetry.dependencies]
 click = ">=8.2.1"
@@ -18,7 +22,6 @@ click_log = ">=0.4.0"
 cloup = ">=3.0.7"
 libtmux = ">=0.46.2"
 pandas = ">=2.3.0"
-python = ">=3.11,<4.0"
 python-dotenv = ">=1.1.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -92,6 +95,7 @@ ignore = [
   "PD901", # allow 'df'
   "PLR0912", # allow more branches in functions
   "PLR0913", # allow more arguments in functions
+  "PLR0915", # allow more statements in functions
   "PLR2004", # allow magic numbers
   "PYI021", # allow docstrings in stubs
   "RET504", # allow return statements after assignment of variable
