@@ -2,13 +2,14 @@
 from pathlib import Path
 
 import click
-import pandas as pd
+import polars as pl
 
 from rnapy.analysis.metrics import RnaAccuracy
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
+from rnapy.util.util import append_csv
 
 
 class FoldAccuracyRunner:
@@ -74,20 +75,13 @@ class FoldAccuracyRunner:
                     raise ValueError(f"RNA name is empty: {rna}")
                 pred, _ = program.fold(rna, cfg)
                 accuracy = RnaAccuracy.from_rna(rna, pred)
-                df = pd.DataFrame(
+                df = pl.DataFrame(
                     {
-                        "name": rna.name,
-                        "family": self.extract_family(rna.name),
-                        "ppv": accuracy.ppv,
-                        "sensitivity": accuracy.sensitivity,
-                        "f1": accuracy.f1_score(),
-                    },
-                    index=[0],
+                        "name": [rna.name],
+                        "family": [self.extract_family(rna.name)],
+                        "ppv": [accuracy.ppv],
+                        "sensitivity": [accuracy.sensitivity],
+                        "f1": [accuracy.f1_score()],
+                    }
                 )
-                df.to_csv(
-                    output_path,
-                    mode="a",
-                    header=not output_path.exists(),
-                    index=False,
-                    float_format="%g",
-                )
+                append_csv(output_path, df)

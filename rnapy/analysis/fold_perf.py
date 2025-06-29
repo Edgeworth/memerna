@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import click
-import pandas as pd
+import polars as pl
 
 from rnapy.bridge.linearfold import LinearFold
 from rnapy.bridge.memerna01 import MemeRna01
@@ -13,6 +13,7 @@ from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
+from rnapy.util.util import append_csv
 
 
 class FoldPerfRunner:
@@ -76,25 +77,18 @@ class FoldPerfRunner:
                         click.echo(f"Error running {program} on {rna.name}: {e}")
                         failed = True
                         break
-                    df = pd.DataFrame(
+                    df = pl.DataFrame(
                         {
-                            "name": rna.name,
-                            "run_idx": run_idx,
-                            "length": len(rna),
-                            "maxrss_bytes": res.maxrss_bytes,
-                            "user_sec": res.user_sec,
-                            "sys_sec": res.sys_sec,
-                            "real_sec": res.real_sec,
-                        },
-                        index=[0],
+                            "name": [rna.name],
+                            "run_idx": [run_idx],
+                            "length": [len(rna)],
+                            "maxrss_bytes": [res.maxrss_bytes],
+                            "user_sec": [res.user_sec],
+                            "sys_sec": [res.sys_sec],
+                            "real_sec": [res.real_sec],
+                        }
                     )
-                    df.to_csv(
-                        output_path,
-                        mode="a",
-                        header=not output_path.exists(),
-                        index=False,
-                        float_format="%g",
-                    )
+                    append_csv(output_path, df)
                 if failed:
                     click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
                     break

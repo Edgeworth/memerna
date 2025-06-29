@@ -21,7 +21,7 @@ click-params = ">=0.5.0"
 click_log = ">=0.4.0"
 cloup = ">=3.0.7"
 libtmux = ">=0.46.2"
-pandas = ">=2.3.0"
+polars = ">=1.31.0"
 python-dotenv = ">=1.1.0"
 
 [tool.poetry.group.dev.dependencies]
