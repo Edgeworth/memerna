@@ -11,7 +11,7 @@ from typing import IO, Any, cast
 
 import click
 import cloup
-import pandas as pd
+import polars as pl
 
 from rnapy.util.command import run_cmd
 
@@ -31,14 +31,26 @@ def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
     if not json_path.exists():
         return None
 
-    df = pd.read_json(json_path, orient="records", precise_float=True, lines=True, dtype=False)
+    df = pl.read_ndjson(json_path)
     for key, value in data_keys.items():
         if key not in df.columns:
             return None
-        df = df[df[key] == value]
-    if df.empty:
+        df = df.filter(pl.col(key) == value)
+    if df.is_empty():
         return None
-    return cast(dict[str, Any], df.iloc[0].to_dict())
+    return cast(dict[str, Any], df.row(0, named=True))
+
+
+def append_ndjson(path: Path, df: pl.DataFrame) -> None:
+    """Appends a DataFrame as a new line in an NDJSON file."""
+    with path.open(mode="a") as f:
+        df.write_ndjson(f)
+
+
+def append_csv(path: Path, df: pl.DataFrame) -> None:
+    include_header = not path.exists() or path.stat().st_size == 0
+    with path.open(mode="a") as f:
+        df.write_csv(f, include_header=include_header)
 
 
 def fn_args() -> dict[str, Any]:

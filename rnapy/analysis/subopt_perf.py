@@ -4,7 +4,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import click
-import pandas as pd
+import polars as pl
 
 from rnapy.bridge.memerna import MemeRna
 from rnapy.bridge.rnapackage import RnaPackage
@@ -13,7 +13,7 @@ from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.rna import Rna
-from rnapy.util.util import row_by_key, strict_merge
+from rnapy.util.util import append_ndjson, row_by_key, strict_merge
 
 
 class SuboptPerfRunner:
@@ -194,8 +194,7 @@ class SuboptPerfRunner:
             assert failed or isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
 
             data = strict_merge(data_keys, data_values, {"failed": failed})
-            df = pd.DataFrame(data, index=[0])
-            df.to_json(output_path, orient="records", lines=True, mode="a")
+            append_ndjson(output_path, pl.DataFrame([data]))
 
             if failed:
                 return False

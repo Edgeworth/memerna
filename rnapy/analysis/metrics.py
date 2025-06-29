@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 
-import pandas as pd
+import polars as pl
 
 from rnapy.model.rna import Rna
 
@@ -12,7 +12,7 @@ from rnapy.model.rna import Rna
 @dataclass
 class Dataset:
     name: str
-    dfs: dict[str, pd.DataFrame] = field(default_factory=dict)
+    dfs: dict[str, pl.DataFrame] = field(default_factory=dict)
 
     def __len__(self) -> int:
         return len(self.dfs)
@@ -20,13 +20,13 @@ class Dataset:
     def __iter__(self) -> Iterator[str]:
         return iter(self.dfs)
 
-    def __getitem__(self, key: str) -> pd.DataFrame:
+    def __getitem__(self, key: str) -> pl.DataFrame:
         return self.dfs[key]
 
     def concat(self, other: Dataset) -> Dataset:
         # Concat shared dataframes:
         shared = self.keys() & other.keys()
-        dfs = {k: pd.concat([self[k], other[k]]) for k in shared}
+        dfs = {k: pl.concat([self[k], other[k]]) for k in shared}
         # Add unique dataframes:
         dfs.update({k: v for k, v in self.dfs.items() if k not in shared})
         dfs.update({k: v for k, v in other.dfs.items() if k not in shared})
