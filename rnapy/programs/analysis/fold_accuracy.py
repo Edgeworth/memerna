@@ -19,14 +19,12 @@ from rnapy.util.util import fn_args
 @limit_options
 @cloup.option("--dataset", default="random", type=str)
 @cloup.option(
-    "--output-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
-    required=True,
+    "--output-path", type=cloup.Path(file_okay=True, dir_okay=False, path_type=Path), required=True
 )
 def run_fold_accuracy(
-    memevault_path: Path, dataset: str, output_dir: Path, memerna: MemeRna, **_kwargs: Any
+    memevault_path: Path, dataset: str, output_path: Path, memerna: MemeRna, **_kwargs: Any
 ) -> None:
     init_package_limits(**fn_args())
     memevault = MemeVault(memevault_path, dataset)
-    analyser = FoldAccuracyRunner(memevault, output_dir, memerna)
+    analyser = FoldAccuracyRunner(memevault=memevault, output_path=output_path, memerna=memerna)
     analyser.run()

@@ -57,7 +57,7 @@ class MemeVault:
         name, seq, db = c.fetchone()
         return RnaParser.parse(name=name, seq=seq, db=db)
 
-    def __iter__(self) -> Generator[Rna, None, None]:
+    def __iter__(self) -> Generator[Rna]:
         c = self.db.execute(f"SELECT * FROM {self.dataset}")
         for name, seq, db in c.fetchall():
             yield RnaParser.parse(name=name, seq=seq, db=db)

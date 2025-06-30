@@ -22,15 +22,15 @@ from rnapy.util.util import fn_args
 @cloup.option("--dataset", default="random", type=str)
 @cloup.option("--num-tries", default=5, type=int)
 @cloup.option(
-    "--output-dir",
-    type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
+    "--output-path",
+    type=cloup.Path(dir_okay=False, file_okay=True, exists=False, path_type=Path),
     required=True,
 )
 def run_subopt_perf(
     num_tries: int,
     memevault_path: Path,
     dataset: str,
-    output_dir: Path,
+    output_path: Path,
     memerna: MemeRna,
     rnastructure: RNAstructure,
     viennarna: ViennaRna,
@@ -41,7 +41,7 @@ def run_subopt_perf(
     analyser = SuboptPerfRunner(
         num_tries=num_tries,
         memevault=memevault,
-        output_dir=output_dir,
+        output_path=output_path,
         memerna=memerna,
         rnastructure=rnastructure,
         viennarna=viennarna,

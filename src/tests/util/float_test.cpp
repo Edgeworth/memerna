@@ -3,6 +3,10 @@
 
 #include <fmt/format.h>
 
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "gtest/gtest.h"
 
 namespace mrna {

@@ -19,7 +19,7 @@ from rnapy.util.util import append_ndjson, row_by_key, strict_merge
 class SuboptPerfRunner:
     num_tries: int
     memevault: MemeVault
-    output_dir: Path
+    output_path: Path
     programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg]]
 
     def __init__(
@@ -27,14 +27,14 @@ class SuboptPerfRunner:
         *,
         num_tries: int,
         memevault: MemeVault,
-        output_dir: Path,
+        output_path: Path,
         memerna: MemeRna,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
     ) -> None:
         self.num_tries = num_tries
         self.memevault = memevault
-        self.output_dir = output_dir
+        self.output_path = output_path
         self.programs = [
             (
                 rnastructure,
@@ -150,7 +150,6 @@ class SuboptPerfRunner:
     ) -> bool:
         desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
         click.echo(f"Benchmarking folding with {desc} on {self.memevault.dataset}")
-        output_path = self.output_dir / "subopt.json"
 
         for run_idx in range(self.num_tries):
             data_keys = strict_merge(
@@ -163,12 +162,12 @@ class SuboptPerfRunner:
                 },
             )
 
-            row = row_by_key(output_path, data_keys)
+            row = row_by_key(self.output_path, data_keys)
             if row is not None:
                 if row["failed"]:
                     click.echo(f"Skipping run {row} as it failed previously.")
                     return False
-                click.echo(f"Skipping run {row} as it already exists in {output_path}")
+                click.echo(f"Skipping run {row} as it already exists in {self.output_path}")
                 continue
 
             failed = False
@@ -194,7 +193,7 @@ class SuboptPerfRunner:
             assert failed or isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"
 
             data = strict_merge(data_keys, data_values, {"failed": failed})
-            append_ndjson(output_path, pl.DataFrame([data]))
+            append_ndjson(self.output_path, pl.DataFrame([data]))
 
             if failed:
                 return False

@@ -4,7 +4,6 @@ description = "memerna"
 dynamic = ["dependencies"]
 license = {text = "GPL-3.0-only"}
 name = "rnapy"
-readme = "README.md"
 requires-python = ">=3.13,<4.0"
 version = "0.2.0"
 

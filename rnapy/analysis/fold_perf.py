@@ -13,13 +13,14 @@ from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs
-from rnapy.util.util import append_csv
+from rnapy.model.rna import Rna
+from rnapy.util.util import append_ndjson, row_by_key, strict_merge
 
 
 class FoldPerfRunner:
     num_tries: int
     memevault: MemeVault
-    output_dir: Path
+    output_path: Path
     programs: list[tuple[RnaPackage, EnergyCfg]]
 
     def __init__(
@@ -27,7 +28,7 @@ class FoldPerfRunner:
         *,
         num_tries: int,
         memevault: MemeVault,
-        output_dir: Path,
+        output_path: Path,
         memerna01: MemeRna01,
         linearfold: LinearFold,
         rnastructure: RNAstructure,
@@ -37,7 +38,7 @@ class FoldPerfRunner:
     ) -> None:
         self.num_tries = num_tries
         self.memevault = memevault
-        self.output_dir = output_dir
+        self.output_path = output_path
         self.programs = [
             (
                 memerna01,
@@ -58,37 +59,55 @@ class FoldPerfRunner:
             (sparsernafold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
         ]
 
+    def _run_once(self, program: RnaPackage, cfg: EnergyCfg, rna: Rna) -> None:
+        dataset = self.memevault.dataset
+        desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
+
+        for run_idx in range(self.num_tries):
+            data_keys = strict_merge(
+                desc,
+                {
+                    "dataset": dataset,
+                    "rna_name": rna.name,
+                    "rna_length": len(rna),
+                    "run_idx": run_idx,
+                },
+            )
+
+            row = row_by_key(self.output_path, data_keys)
+            if row is not None:
+                if row["failed"]:
+                    click.echo(f"Skipping run {row} as it failed previously.")
+                    return
+                click.echo(f"Skipping run {row} as it already exists in {self.output_path}")
+                continue
+
+            failed = False
+            data_values: dict = {}
+            try:
+                folded, res = program.fold(rna, cfg)
+                data_values = {
+                    "energy": folded.energy,
+                    "maxrss_bytes": res.maxrss_bytes,
+                    "user_sec": res.user_sec,
+                    "sys_sec": res.sys_sec,
+                    "real_sec": res.real_sec,
+                }
+            except Exception as e:
+                click.echo(f"Error running {program} on {rna.name}: {e}")
+                failed = True
+
+            data = strict_merge(data_keys, data_values, {"failed": failed})
+            append_ndjson(self.output_path, pl.DataFrame([data]))
+
+            if failed:
+                return
+
     def run(self) -> None:
         for program, cfg in self.programs:
             desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {desc} on {dataset}")
-            output_path = self.output_dir / f"{dataset}_{desc}.results"
-            if output_path.exists():
-                raise RuntimeError(f"Output path {output_path} already exists")
-
             for rna_idx, rna in enumerate(self.memevault):
                 click.echo(f"Running {program} on {rna_idx} {rna.name}")
-                failed = False
-                for run_idx in range(self.num_tries):
-                    try:
-                        _, res = program.fold(rna, cfg)
-                    except Exception as e:
-                        click.echo(f"Error running {program} on {rna.name}: {e}")
-                        failed = True
-                        break
-                    df = pl.DataFrame(
-                        {
-                            "name": [rna.name],
-                            "run_idx": [run_idx],
-                            "length": [len(rna)],
-                            "maxrss_bytes": [res.maxrss_bytes],
-                            "user_sec": [res.user_sec],
-                            "sys_sec": [res.sys_sec],
-                            "real_sec": [res.real_sec],
-                        }
-                    )
-                    append_csv(output_path, df)
-                if failed:
-                    click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
-                    break
+                self._run_once(program, cfg, rna)
