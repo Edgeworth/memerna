@@ -35,7 +35,13 @@ class Model : public ModelBase, public ModelMixin<Model> {
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       bool build_structure = false) const;
 
-  bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
+  bool IsValid(std::string* reason = nullptr) const {
+    if (multiloop_c != ZERO_E) {
+      if (reason) *reason = "multiloop_c must be zero";
+      return false;
+    }
+    return base::ModelIsValid(*this, reason);
+  }
 
   // NOLINTNEXTLINE
   void LoadPseudofreeEnergy(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {

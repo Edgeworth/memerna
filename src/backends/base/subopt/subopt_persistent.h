@@ -33,13 +33,13 @@ class SuboptPersistent {
 
  private:
   struct Node {
-    // Index of the parent DfsState in the expand tree.
+    // Index of the parent Node in the expand tree.
     int parent_idx{-1};
-    // Index of the expansion this DfsState used w.r.t. the parent state's `to_expand`.
+    // Index of the expansion this Node used w.r.t. the parent state's `to_expand`.
     int parent_expand_idx{-1};
-    // Index of the next DfsState who's expansion contains an unexpanded DpIndex we need to process.
+    // Index of the next Node who's expansion contains an unexpanded DpIndex we need to process.
     int unexpanded_idx{-1};
-    // Index of the expansion to use for `unexpanded_idx`'s DfsState.
+    // Index of the expansion to use for `unexpanded_idx`'s Node.
     int unexpanded_expand_idx{-1};
     // Index of the child expansion of `to_expand` we should process. This gets updated in place
     // (saves time and memory), which is why we need to keep `parent_expand_idx` around as well.

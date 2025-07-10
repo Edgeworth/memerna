@@ -285,8 +285,11 @@ set(MEMERNA_SOURCE
 set(TEST_SOURCE
   src/tests/backends/energy_test.cpp
   src/tests/backends/baseopt/energy_test.cpp
+  src/tests/backends/baseopt/model_test.cpp
   src/tests/backends/stack/energy_test.cpp
+  src/tests/backends/stack/model_test.cpp
   src/tests/backends/base/energy_test.cpp
+  src/tests/backends/base/model_test.cpp
   src/tests/model/base_test.cpp
   src/tests/model/parsing_test.cpp
   src/tests/model/model_test.cpp
