@@ -1,5 +1,4 @@
 // Copyright 2016 Eliot Courtney.
-#include "backends/common/base/model_base.h"
 #include "gtest/gtest.h"
 #include "tests/init.h"
 

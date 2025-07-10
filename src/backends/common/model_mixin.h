@@ -10,8 +10,6 @@
 
 namespace mrna::md {
 
-// TODO(1): Get rid of these global macros.
-
 #define CHECK_COND(cond, reason_str)                           \
   do {                                                         \
     if (!(cond)) {                                             \

@@ -142,8 +142,8 @@ void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
       // Update unpaired.
       // Choose `st` to be unpaired.
       if (st + 1 < en) {
-        UPDATE_CACHE(DP_U, dp[st + 1][en][DP_U] + m->pf.Unpaired(st));
-        UPDATE_CACHE(DP_U2, dp[st + 1][en][DP_U2] + m->pf.Unpaired(st));
+        UPDATE_CACHE(DP_U, dp[st + 1][en][DP_U] + m->pf.Unpaired(st) + m->multiloop_c);
+        UPDATE_CACHE(DP_U2, dp[st + 1][en][DP_U2] + m->pf.Unpaired(st) + m->multiloop_c);
       }
       // Pair here.
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {

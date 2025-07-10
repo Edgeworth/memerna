@@ -36,10 +36,7 @@ class Model : public ModelBase, public ModelMixin<Model> {
       bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const {
-    if (multiloop_c != ZERO_E) {
-      if (reason) *reason = "multiloop_c must be zero";
-      return false;
-    }
+    CHECK_COND(multiloop_c == ZERO_E, "multiloop_c must be zero");
     return base::ModelIsValid(*this, reason);
   }
 
@@ -54,6 +51,7 @@ class Model : public ModelBase, public ModelMixin<Model> {
   void LoadRandom(std::mt19937& eng) {
     LoadRandomModel(
         *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
+    multiloop_c = ZERO_E;  // baseopt doesn't support multiloop_c.
   }
 
  private:

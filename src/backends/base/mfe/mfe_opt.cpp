@@ -75,20 +75,20 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
           // (3<   ><   >) 3'
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
-                  m->pf.Unpaired(st + 1));
+                  m->pf.Unpaired(st + 1) + m->multiloop_c);
           // (<   ><   >5) 5'
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
-                  m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(en - 1) + m->multiloop_c);
           // (.<   ><   >.) Terminal mismatch
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
-                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
@@ -111,12 +111,12 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
             p_min = std::min(p_min,
                 base_branch_cost + dp[st + 2][piv - 1][DP_P] + pc.augubranch[st2b][pl1b] +
                     dp[piv + 1][en - 1][DP_U] + m->MismatchCoaxial(pl1b, plb, st1b, st2b) +
-                    m->pf.Unpaired(st + 1) + m->pf.Unpaired(piv));
+                    m->pf.Unpaired(st + 1) + m->pf.Unpaired(piv) + 2 * m->multiloop_c);
             // (   .(   ).) Right inner coax
             p_min = std::min(p_min,
                 base_branch_cost + dp[st + 1][piv][DP_U] + pc.augubranch[pr1b][en2b] +
                     dp[piv + 2][en - 2][DP_P] + m->MismatchCoaxial(en2b, en1b, prb, pr1b) +
-                    m->pf.Unpaired(piv + 1) + m->pf.Unpaired(en - 1));
+                    m->pf.Unpaired(piv + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
 
             // ((   )   ) Left flush coax
             p_min = std::min(p_min,
@@ -139,8 +139,8 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       // Update unpaired.
       // Choose `st` to be unpaired.
       if (st + 1 < en) {
-        u_min = std::min(u_min, dp[st + 1][en][DP_U] + m->pf.Unpaired(st));
-        u2_min = std::min(u2_min, dp[st + 1][en][DP_U2] + m->pf.Unpaired(st));
+        u_min = std::min(u_min, dp[st + 1][en][DP_U] + m->pf.Unpaired(st) + m->multiloop_c);
+        u2_min = std::min(u2_min, dp[st + 1][en][DP_U2] + m->pf.Unpaired(st) + m->multiloop_c);
       }
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
         //   (   .   )<   (
@@ -153,7 +153,8 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         const auto base10 = dp[st + 1][piv][DP_P] + pc.augubranch[st1b][pb];
         const auto base11 = dp[st + 1][piv - 1][DP_P] + pc.augubranch[st1b][pl1b];
         // Min is for either placing another unpaired or leaving it as nothing.
-        const auto right_unpaired = std::min(dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en));
+        const auto right_unpaired = std::min(
+            dp[piv + 1][en][DP_U], m->pf.UnpairedCum(piv + 1, en) + (en - piv) * m->multiloop_c);
 
         // (   )<   > - U, U_WC?, U_GU?
         auto u2_val = base00 + dp[piv + 1][en][DP_U];
@@ -185,28 +186,33 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U
-          u_min = std::min(
-              u_min, base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + right_unpaired);
+          u_min = std::min(u_min,
+              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c +
+                  right_unpaired);
           u2_min = std::min(u2_min,
-              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + dp[piv + 1][en][DP_U]);
+              base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c +
+                  dp[piv + 1][en][DP_U]);
           // 5(   )<   > 5' - U
-          u_min = std::min(
-              u_min, base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + right_unpaired);
+          u_min = std::min(u_min,
+              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c +
+                  right_unpaired);
           u2_min = std::min(u2_min,
-              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + dp[piv + 1][en][DP_U]);
+              base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c +
+                  dp[piv + 1][en][DP_U]);
           // .(   ).<   > Terminal mismatch - U
           u_min = std::min(u_min,
               base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
-                  right_unpaired);
+                  2 * m->multiloop_c + right_unpaired);
           u2_min = std::min(u2_min,
               base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
-                  dp[piv + 1][en][DP_U]);
+                  2 * m->multiloop_c + dp[piv + 1][en][DP_U]);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-              m->pf.Unpaired(piv) + std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
+              m->pf.Unpaired(piv) + 2 * m->multiloop_c +
+              std::min(dp[piv + 1][en][DP_U_WC], dp[piv + 1][en][DP_U_GU]);
           u_min = std::min(u_min, val);
           u2_min = std::min(u2_min, val);
 
@@ -216,7 +222,7 @@ void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
           u2_min = std::min(u2_min, val);
           rcoax_min = std::min(rcoax_min,
               base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-                  m->pf.Unpaired(piv) + right_unpaired);
+                  m->pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired);
 
           // (   )(<   ) > Flush coax - U
           val = base01 + m->stack[pl1b][pb][WcPair(pb)][stb] + dp[piv][en][DP_U_WC];

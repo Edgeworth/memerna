@@ -57,10 +57,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
       bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const {
-    if (multiloop_c != ZERO_E) {
-      if (reason) *reason = "multiloop_c must be zero";
-      return false;
-    }
+    CHECK_COND(multiloop_c == ZERO_E, "multiloop_c must be zero");
     return base::ModelIsValid(*this, reason);
   }
 
