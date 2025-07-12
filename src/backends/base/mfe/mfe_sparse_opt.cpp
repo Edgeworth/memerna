@@ -83,15 +83,15 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
           // (3<   ><   >) 3'
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
-                  m->pf.Unpaired(st + 1));
+                  m->pf.Unpaired(st + 1) + m->multiloop_c);
           // (<   ><   >5) 5'
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
-                  m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(en - 1) + m->multiloop_c);
           // (.<   ><   >.) Terminal mismatch
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
-                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
@@ -131,8 +131,10 @@ void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       // Update unpaired.
       // Choose `st` to be unpaired.
       if (st + 1 < en) {
-        mins[DP_U] = std::min(mins[DP_U], dp[st + 1][en][DP_U] + m->pf.Unpaired(st));
-        mins[DP_U2] = std::min(mins[DP_U2], dp[st + 1][en][DP_U2] + m->pf.Unpaired(st));
+        mins[DP_U] =
+            std::min(mins[DP_U], dp[st + 1][en][DP_U] + m->pf.Unpaired(st) + m->multiloop_c);
+        mins[DP_U2] =
+            std::min(mins[DP_U2], dp[st + 1][en][DP_U2] + m->pf.Unpaired(st) + m->multiloop_c);
       }
       for (auto cand : cand_st[CAND_U]) {
         mins[DP_U] = std::min(mins[DP_U],

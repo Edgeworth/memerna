@@ -371,24 +371,25 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     if (m_->cfg().UseDangleMismatch()) {
       // (3<   ><   >) 3'
       energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
-          m_->pf.Unpaired(st + 1);
+          m_->pf.Unpaired(st + 1) + m_->multiloop_c;
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 2, en - 1, DP_U2}, .ctd0{en, CTD_3_DANGLE}});
       // (<   ><   >5) 5'
       energy = base_and_branch + dp_.dp[st + 1][en - 2][DP_U2] + m_->dangle5[stb][en1b][enb] +
-          m_->pf.Unpaired(en - 1);
+          m_->pf.Unpaired(en - 1) + m_->multiloop_c;
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 1, en - 2, DP_U2}, .ctd0{en, CTD_5_DANGLE}});
       // (.<   ><   >.) Terminal mismatch
       energy = base_and_branch + dp_.dp[st + 2][en - 2][DP_U2] +
-          m_->terminal[stb][st1b][en1b][enb] + m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1);
+          m_->terminal[stb][st1b][en1b][enb] + m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(en - 1) +
+          2 * m_->multiloop_c;
       if (energy <= delta)
         exps.push_back({.delta = energy, .idx0{st + 2, en - 2, DP_U2}, .ctd0{en, CTD_MISMATCH}});
     }
 
     if (m_->cfg().UseCoaxialStacking()) {
       const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + m_->pf.Unpaired(st + 1) +
-          m_->pf.Unpaired(en - 1);
+          m_->pf.Unpaired(en - 1) + 2 * m_->multiloop_c;
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
         const Base pl1b = r_[piv - 1];
         const Base plb = r_[piv];
@@ -418,7 +419,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         // (.(   ).   ) Left inner coax
         energy = base_and_branch + dp_.dp[st + 2][piv - 1][DP_P] + pc_.augubranch[st2b][pl1b] +
             dp_.dp[piv + 1][en - 1][DP_U] + m_->MismatchCoaxial(pl1b, plb, st1b, st2b) +
-            m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(piv);
+            m_->pf.Unpaired(st + 1) + m_->pf.Unpaired(piv) + 2 * m_->multiloop_c;
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{st + 2, piv - 1, DP_P},
@@ -429,7 +430,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         // (   .(   ).) Right inner coax
         energy = base_and_branch + dp_.dp[st + 1][piv][DP_U] + pc_.augubranch[pr1b][en2b] +
             dp_.dp[piv + 2][en - 2][DP_P] + m_->MismatchCoaxial(en2b, en1b, prb, pr1b) +
-            m_->pf.Unpaired(piv + 1) + m_->pf.Unpaired(en - 1);
+            m_->pf.Unpaired(piv + 1) + m_->pf.Unpaired(en - 1) + 2 * m_->multiloop_c;
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0{st + 1, piv, DP_U},
@@ -463,7 +464,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 
   // Left unpaired. Either DP_U or DP_U2.
   if (st + 1 < en && (a == DP_U || a == DP_U2)) {
-    energy = dp_.dp[st + 1][en][a] + m_->pf.Unpaired(st) - dp_.dp[st][en][a];
+    energy = dp_.dp[st + 1][en][a] + m_->pf.Unpaired(st) + m_->multiloop_c - dp_.dp[st][en][a];
     if (energy <= delta) exps.push_back({.delta = energy, .idx0{st + 1, en, a}});
   }
 
@@ -481,13 +482,13 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 
     const auto right_paired = dp_.dp[piv + 1][en][DP_U];
     // This is only usable if a != DP_U2 since this leaves everything unpaired.
-    const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en);
+    const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en) + (en - piv - 1) * m_->multiloop_c;
 
     // Check a == U_RC:
     // (   )<.( ** ). > Right coax backward
     if (m_->cfg().UseCoaxialStacking() && a == DP_U_RC) {
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.Unpaired(st) +
-          m_->pf.Unpaired(piv);
+          m_->pf.Unpaired(piv) + 2 * m_->multiloop_c;
       // Our ctds will have already been set by now.
       if (energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired, .idx0{st + 1, piv - 1, DP_P}});
@@ -551,7 +552,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 
     if (m_->cfg().UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
-      energy = base01 + m_->dangle3[pl1b][pb][stb] + m_->pf.Unpaired(piv);
+      energy = base01 + m_->dangle3[pl1b][pb][stb] + m_->pf.Unpaired(piv) + m_->multiloop_c;
       // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back(
@@ -563,7 +564,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
             .ctd0{st, CTD_3_DANGLE}});
 
       // 5(   )<   > 5' - U, U2
-      energy = base10 + m_->dangle5[pb][stb][st1b] + m_->pf.Unpaired(st);
+      energy = base10 + m_->dangle5[pb][stb][st1b] + m_->pf.Unpaired(st) + m_->multiloop_c;
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired,
             .idx0{st + 1, piv, DP_P},
@@ -575,8 +576,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
             .ctd0{st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch - U, U2
-      energy =
-          base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->pf.Unpaired(st) + m_->pf.Unpaired(piv);
+      energy = base11 + m_->terminal[pl1b][pb][stb][st1b] + m_->pf.Unpaired(st) +
+          m_->pf.Unpaired(piv) + 2 * m_->multiloop_c;
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back({.delta = energy + right_unpaired,
             .idx0{st + 1, piv - 1, DP_P},
@@ -591,7 +592,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     if (m_->cfg().UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + m_->pf.Unpaired(st) +
-          m_->pf.Unpaired(piv);
+          m_->pf.Unpaired(piv) + 2 * m_->multiloop_c;
       if (energy + dp_.dp[piv + 1][en][DP_U_WC] <= delta)
         exps.push_back({.delta = energy + dp_.dp[piv + 1][en][DP_U_WC],
             .idx0{st + 1, piv - 1, DP_P},
