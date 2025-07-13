@@ -29,6 +29,7 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
+  m->pf.Verify(r);
 
   spdlog::debug("base {} with cfg {}", funcname(), m->cfg());
 
@@ -173,15 +174,15 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
           // (3<   ><   >) 3'
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
-                  m->pf.Unpaired(st + 1));
+                  m->pf.Unpaired(st + 1) + m->multiloop_c);
           // (<   ><   >5) 5'
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
-                  m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(en - 1) + m->multiloop_c);
           // (.<   ><   >.) Terminal mismatch
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
-                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1));
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
         if (m->cfg().UseCoaxialStacking()) {
@@ -221,12 +222,16 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       // Update unpaired.
       // Choose `st` to be unpaired.
       if (st + 1 < en) {
-        mins[DP_U] = std::min(mins[DP_U], dp[st + 1][en][DP_U] + m->pf.Unpaired(st));
-        mins[DP_U2] = std::min(mins[DP_U2], dp[st + 1][en][DP_U2] + m->pf.Unpaired(st));
+        mins[DP_U] =
+            std::min(mins[DP_U], dp[st + 1][en][DP_U] + m->pf.Unpaired(st) + m->multiloop_c);
+        mins[DP_U2] =
+            std::min(mins[DP_U2], dp[st + 1][en][DP_U2] + m->pf.Unpaired(st) + m->multiloop_c);
       }
       for (auto cand : cand_st[CAND_U]) {
         mins[DP_U] = std::min(mins[DP_U],
-            cand.energy + std::min(dp[cand.idx][en][DP_U], m->pf.UnpairedCum(cand.idx, en)));
+            cand.energy +
+                std::min(dp[cand.idx][en][DP_U],
+                    m->pf.UnpairedCum(cand.idx, en) + (en - cand.idx + 1) * m->multiloop_c));
         mins[DP_U2] = std::min(mins[DP_U2], cand.energy + dp[cand.idx][en][DP_U]);
       }
 
@@ -240,8 +245,8 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         }
         for (auto cand : cand_st[CAND_U_RC_FWD]) {
           // |(   )|<.(   ). > Right coax forward
-          const auto val = cand.energy - pc.min_mismatch_coax - pc.min_pf_unpaired * 2 +
-              dp[cand.idx][en][DP_U_RC];
+          const auto val = cand.energy - pc.min_mismatch_coax - 2 * pc.min_pf_unpaired -
+              2 * m->multiloop_c + dp[cand.idx][en][DP_U_RC];
           mins[DP_U] = std::min(mins[DP_U], val);
           mins[DP_U2] = std::min(mins[DP_U2], val);
         }
@@ -261,14 +266,20 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
 
       for (auto cand : cand_st[CAND_U_WC])
         mins[DP_U_WC] = std::min(mins[DP_U_WC],
-            cand.energy + std::min(dp[cand.idx][en][DP_U], m->pf.UnpairedCum(cand.idx, en)));
+            cand.energy +
+                std::min(dp[cand.idx][en][DP_U],
+                    m->pf.UnpairedCum(cand.idx, en) + (en - cand.idx + 1) * m->multiloop_c));
       for (auto cand : cand_st[CAND_U_GU])
         mins[DP_U_GU] = std::min(mins[DP_U_GU],
-            cand.energy + std::min(dp[cand.idx][en][DP_U], m->pf.UnpairedCum(cand.idx, en)));
+            cand.energy +
+                std::min(dp[cand.idx][en][DP_U],
+                    m->pf.UnpairedCum(cand.idx, en) + (en - cand.idx + 1) * m->multiloop_c));
       for (auto cand : cand_st[CAND_U_RC]) {
         // (   )<.( * ). > Right coax backward
         mins[DP_U_RC] = std::min(mins[DP_U_RC],
-            cand.energy + std::min(dp[cand.idx][en][DP_U], m->pf.UnpairedCum(cand.idx, en)));
+            cand.energy +
+                std::min(dp[cand.idx][en][DP_U],
+                    m->pf.UnpairedCum(cand.idx, en) + (en - cand.idx + 1) * m->multiloop_c));
       }
 
       // Set these so we can use sparse folding.
@@ -315,8 +326,10 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       if (IsGuPair(stb, enb)) {
         const auto* cand_st_u_gu_last =
             cand_st[CAND_U_GU].empty() ? nullptr : &cand_st[CAND_U_GU].back();
-        const Energy cand_st_u_gu_unpaired_cum =
-            cand_st_u_gu_last ? m->pf.UnpairedCum(cand_st_u_gu_last->idx, en) : ZERO_E;
+        const Energy cand_st_u_gu_unpaired_cum = cand_st_u_gu_last
+            ? m->pf.UnpairedCum(cand_st_u_gu_last->idx, en) +
+                (en - cand_st_u_gu_last->idx + 1) * m->multiloop_c
+            : ZERO_E;
         if (normal_base < CAP_E && normal_base < dp[st][en][DP_U_GU] &&
             (!cand_st_u_gu_last ||
                 normal_base < cand_st_u_gu_last->energy + cand_st_u_gu_unpaired_cum))
@@ -326,8 +339,10 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       } else {
         const auto* cand_st_u_wc_last =
             cand_st[CAND_U_WC].empty() ? nullptr : &cand_st[CAND_U_WC].back();
-        const Energy cand_st_u_wc_unpaired_cum =
-            cand_st_u_wc_last ? m->pf.UnpairedCum(cand_st_u_wc_last->idx, en) : ZERO_E;
+        const Energy cand_st_u_wc_unpaired_cum = cand_st_u_wc_last
+            ? m->pf.UnpairedCum(cand_st_u_wc_last->idx, en) +
+                (en - cand_st_u_wc_last->idx + 1) * m->multiloop_c
+            : ZERO_E;
         if (normal_base < CAP_E && normal_base < dp[st][en][DP_U_WC] &&
             (!cand_st_u_wc_last ||
                 normal_base < cand_st_u_wc_last->energy + cand_st_u_wc_unpaired_cum))
@@ -342,15 +357,16 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       if (m->cfg().UseDangleMismatch()) {
         // (   ). - 3' - U, U2
         const auto dangle3_base = dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] +
-            m->dangle3[en1b][enb][stb] + m->pf.Unpaired(en);
+            m->dangle3[en1b][enb][stb] + m->pf.Unpaired(en) + m->multiloop_c;
         if (dangle3_base < dp[st][en][DP_U] && dangle3_base < cand_st_u) cand_st_u = dangle3_base;
         // .(   ) - 5' - U, U2
         const auto dangle5_base = dp[st + 1][en][DP_P] + pc.augubranch[st1b][enb] +
-            m->dangle5[enb][stb][st1b] + m->pf.Unpaired(st);
+            m->dangle5[enb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c;
         if (dangle5_base < dp[st][en][DP_U] && dangle5_base < cand_st_u) cand_st_u = dangle5_base;
         // .(   ). - Terminal mismatch - U, U2
         const auto terminal_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
-            m->terminal[en1b][enb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(en);
+            m->terminal[en1b][enb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(en) +
+            2 * m->multiloop_c;
         if (terminal_base < dp[st][en][DP_U] && terminal_base < cand_st_u)
           cand_st_u = terminal_base;
       }
@@ -358,8 +374,10 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       // Add potentials to the candidate lists. Need to adjust by the unpaired pseudofree energy if
       // it exists to maintain the monotonicity property.
       const auto* cand_st_u_last = cand_st[CAND_U].empty() ? nullptr : &cand_st[CAND_U].back();
-      const Energy cand_st_u_unpaired_cum =
-          cand_st_u_last ? m->pf.UnpairedCum(cand_st_u_last->idx, en) : ZERO_E;
+      const Energy cand_st_u_unpaired_cum = cand_st_u_last
+          ? m->pf.UnpairedCum(cand_st_u_last->idx, en) +
+              (en - cand_st_u_last->idx + 1) * m->multiloop_c
+          : ZERO_E;
       if (cand_st_u < CAP_E &&
           (!cand_st_u_last || cand_st_u < cand_st_u_last->energy + cand_st_u_unpaired_cum))
         cand_st[CAND_U].push_back({cand_st_u, en + 1});
@@ -367,13 +385,14 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
       if (m->cfg().UseCoaxialStacking()) {
         // .(   ).<(   ) > - Left coax - U, U2
         const auto lcoax_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
-            m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(en);
+            m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(en) +
+            2 * m->multiloop_c;
         if (lcoax_base < CAP_E && lcoax_base < dp[st][en][DP_U])
           cand_st[CAND_U_LC].push_back({lcoax_base, en + 1});
 
         // (   )<.(   ). > Right coax forward - U, U2
         const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax +
-            pc.min_pf_unpaired * 2;
+            2 * pc.min_pf_unpaired + 2 * m->multiloop_c;
         if (rcoaxf_base < CAP_E && rcoaxf_base < dp[st][en][DP_U])
           cand_st[CAND_U_RC_FWD].push_back({rcoaxf_base, en + 1});
 
@@ -381,11 +400,14 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         // Again, we can't replace RC with U, we'd have to replace it with RC, so compare to
         // itself.
         const auto rcoaxb_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
-            m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(en);
+            m->MismatchCoaxial(en1b, enb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(en) +
+            2 * m->multiloop_c;
         const auto* cand_st_u_rc_last =
             cand_st[CAND_U_RC].empty() ? nullptr : &cand_st[CAND_U_RC].back();
-        const Energy cand_st_u_rc_unpaired_cum =
-            cand_st_u_rc_last ? m->pf.UnpairedCum(cand_st_u_rc_last->idx, en) : ZERO_E;
+        const Energy cand_st_u_rc_unpaired_cum = cand_st_u_rc_last
+            ? m->pf.UnpairedCum(cand_st_u_rc_last->idx, en) +
+                (en - cand_st_u_rc_last->idx + 1) * m->multiloop_c
+            : ZERO_E;
         if (rcoaxb_base < CAP_E && rcoaxb_base < dp[st][en][DP_U_RC] &&
             (!cand_st_u_rc_last ||
                 rcoaxb_base < cand_st_u_rc_last->energy + cand_st_u_rc_unpaired_cum))
@@ -410,22 +432,24 @@ void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
         // Since we assumed the minimum energy coax stack and made this structure self contained,
         // we could potentially replace it with U[st + 1][en].
         const auto plocoax_base = dp[st + 2][en][DP_P] + pc.augubranch[st2b][enb] +
-            m->pf.Unpaired(st + 1) + pc.min_mismatch_coax + pc.min_pf_unpaired;
+            m->pf.Unpaired(st + 1) + 2 * m->multiloop_c + pc.min_mismatch_coax + pc.min_pf_unpaired;
         if (plocoax_base < CAP_E && plocoax_base < dp[st + 1][en][DP_U])
           cand_st[CAND_P_LOC].push_back({plocoax_base, en + 1});
         // (.   (   ).) Right outer coax
         const auto procoax_base = dp[st][en - 2][DP_P] + pc.augubranch[stb][en2b] +
-            m->pf.Unpaired(en - 1) + pc.min_mismatch_coax + pc.min_pf_unpaired;
+            m->pf.Unpaired(en - 1) + 2 * m->multiloop_c + pc.min_mismatch_coax + pc.min_pf_unpaired;
         if (procoax_base < CAP_E && procoax_base < dp[st][en - 1][DP_U])
           p_cand_en[CAND_EN_P_ROC][en].push_back({procoax_base, st - 1});
         // (.(   ).   ) Left inner coax
         const auto plrcoax_base = dp[st + 2][en - 1][DP_P] + pc.augubranch[st2b][en1b] +
-            m->MismatchCoaxial(en1b, enb, st1b, st2b) + m->pf.Unpaired(st + 1) + m->pf.Unpaired(en);
+            m->MismatchCoaxial(en1b, enb, st1b, st2b) + m->pf.Unpaired(st + 1) +
+            m->pf.Unpaired(en) + 2 * m->multiloop_c;
         if (plrcoax_base < CAP_E && plrcoax_base < dp[st + 1][en][DP_U])
           cand_st[CAND_P_LIC].push_back({plrcoax_base, en + 1});
         // (   .(   ).) Right inner coax
         const auto prlcoax_base = dp[st + 1][en - 2][DP_P] + pc.augubranch[st1b][en2b] +
-            m->MismatchCoaxial(en2b, en1b, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(en - 1);
+            m->MismatchCoaxial(en2b, en1b, stb, st1b) + m->pf.Unpaired(st) +
+            m->pf.Unpaired(en - 1) + 2 * m->multiloop_c;
         if (prlcoax_base < CAP_E && prlcoax_base < dp[st][en - 1][DP_U])
           p_cand_en[CAND_EN_P_RIC][en].push_back({prlcoax_base, st - 1});
         // ((   )   ) Left flush coax

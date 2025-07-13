@@ -482,7 +482,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
 
     const auto right_paired = dp_.dp[piv + 1][en][DP_U];
     // This is only usable if a != DP_U2 since this leaves everything unpaired.
-    const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en) + (en - piv - 1) * m_->multiloop_c;
+    const auto right_unpaired = m_->pf.UnpairedCum(piv + 1, en) + (en - piv) * m_->multiloop_c;
 
     // Check a == U_RC:
     // (   )<.( ** ). > Right coax backward

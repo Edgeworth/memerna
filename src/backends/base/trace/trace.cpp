@@ -235,7 +235,7 @@ TraceResult Traceback(
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
           if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
-                  m->pf.Unpaired(st + 1) ==
+                  m->pf.Unpaired(st + 1) + m->multiloop_c ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_3_DANGLE;
             q.emplace_back(st + 2, en - 1, DP_U2);
@@ -243,7 +243,7 @@ TraceResult Traceback(
           }
           // (<   ><   >5) 5'
           if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
-                  m->pf.Unpaired(en - 1) ==
+                  m->pf.Unpaired(en - 1) + m->multiloop_c ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_5_DANGLE;
             q.emplace_back(st + 1, en - 2, DP_U2);
@@ -251,7 +251,7 @@ TraceResult Traceback(
           }
           // (.<   ><   >.) Terminal mismatch
           if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
-                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) ==
+                  m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c ==
               dp[st][en][DP_P]) {
             res.ctd[en] = CTD_MISMATCH;
             q.emplace_back(st + 2, en - 2, DP_U2);
@@ -261,7 +261,7 @@ TraceResult Traceback(
 
         if (m->cfg().UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1);
+              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             const Base pl1b = r[piv - 1];
             const Base plb = r[piv];
@@ -293,7 +293,7 @@ TraceResult Traceback(
             if (base_branch_cost + dp[st + 2][piv - 1][DP_P] + m->multiloop_b +
                     m->AuGuPenalty(st2b, pl1b) + dp[piv + 1][en - 1][DP_U] +
                     m->MismatchCoaxial(pl1b, plb, st1b, st2b) + m->pf.Unpaired(st + 1) +
-                    m->pf.Unpaired(piv) ==
+                    m->pf.Unpaired(piv) + 2 * m->multiloop_c ==
                 dp[st][en][DP_P]) {
               res.ctd[en] = CTD_RC_WITH_NEXT;
               res.ctd[st + 2] = CTD_RC_WITH_PREV;
@@ -305,7 +305,7 @@ TraceResult Traceback(
             if (base_branch_cost + dp[st + 1][piv][DP_U] + m->multiloop_b +
                     m->AuGuPenalty(pr1b, en2b) + dp[piv + 2][en - 2][DP_P] +
                     m->MismatchCoaxial(en2b, en1b, prb, pr1b) + m->pf.Unpaired(piv + 1) +
-                    m->pf.Unpaired(en - 1) ==
+                    m->pf.Unpaired(en - 1) + 2 * m->multiloop_c ==
                 dp[st][en][DP_P]) {
               res.ctd[en] = CTD_LCOAX_WITH_PREV;
               res.ctd[piv + 2] = CTD_LCOAX_WITH_NEXT;
@@ -346,7 +346,7 @@ TraceResult Traceback(
       // Deal with the rest of the cases:
       // Left unpaired. Either DP_U or DP_U2.
       if (st + 1 < en && (a == DP_U || a == DP_U2) &&
-          dp[st + 1][en][a] + m->pf.Unpaired(st) == dp[st][en][a]) {
+          dp[st + 1][en][a] + m->pf.Unpaired(st) + m->multiloop_c == dp[st][en][a]) {
         q.emplace_back(st + 1, en, a);
         goto loopend;
       }
@@ -367,8 +367,9 @@ TraceResult Traceback(
         // If we're at U2, don't allow leaving as nothing.
         auto right_unpaired = dp[piv + 1][en][DP_U];
         bool is_right_filled = true;
-        if (a != DP_U2 && m->pf.UnpairedCum(piv + 1, en) < right_unpaired) {
-          right_unpaired = m->pf.UnpairedCum(piv + 1, en);
+        if (a != DP_U2 &&
+            m->pf.UnpairedCum(piv + 1, en) + (en - piv) * m->multiloop_c < right_unpaired) {
+          right_unpaired = m->pf.UnpairedCum(piv + 1, en) + (en - piv) * m->multiloop_c;
           is_right_filled = false;
         }
 
@@ -376,7 +377,7 @@ TraceResult Traceback(
         // (   )<.( ** ). > Right coax backward
         if (m->cfg().UseCoaxialStacking() && a == DP_U_RC) {
           if (base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-                  m->pf.Unpaired(piv) + right_unpaired ==
+                  m->pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired ==
               dp[st][en][DP_U_RC]) {
             // Ctds were already set from the recurrence that called this.
             q.emplace_back(st + 1, piv - 1, DP_P);
@@ -424,7 +425,8 @@ TraceResult Traceback(
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
-          if (base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + right_unpaired ==
+          if (base01 + m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c +
+                  right_unpaired ==
               dp[st][en][a]) {
             res.ctd[st] = CTD_3_DANGLE;
             q.emplace_back(st, piv - 1, DP_P);
@@ -432,7 +434,8 @@ TraceResult Traceback(
             goto loopend;
           }
           // 5(   )<   > 5' - U, U2
-          if (base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + right_unpaired ==
+          if (base10 + m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c +
+                  right_unpaired ==
               dp[st][en][a]) {
             res.ctd[st + 1] = CTD_5_DANGLE;
             q.emplace_back(st + 1, piv, DP_P);
@@ -440,8 +443,8 @@ TraceResult Traceback(
             goto loopend;
           }
           // .(   ).<   > Terminal mismatch - U, U2
-          if (base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
-                  right_unpaired ==
+          if (base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) +
+                  m->pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired ==
               dp[st][en][a]) {
             res.ctd[st + 1] = CTD_MISMATCH;
             q.emplace_back(st + 1, piv - 1, DP_P);
@@ -453,7 +456,7 @@ TraceResult Traceback(
         if (m->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
           auto val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-              m->pf.Unpaired(piv);
+              m->pf.Unpaired(piv) + 2 * m->multiloop_c;
           if (val + dp[piv + 1][en][DP_U_WC] == dp[st][en][a]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[piv + 1] = CTD_LCOAX_WITH_PREV;
