@@ -18,6 +18,8 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_ENERGY_PRECISION);
   args->RegisterOpt(OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_SEED);
+  args->RegisterOpt(OPT_PAIRED_PSEUDOFREE);
+  args->RegisterOpt(OPT_UNPAIRED_PSEUDOFREE);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -102,6 +104,10 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
   cfg.energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL);
   cfg.backends = args.GetMultiple<BackendKind>(OPT_FUZZ_BACKENDS);
+  cfg.pf_paired = args.GetMultipleOr<Energy>(OPT_PAIRED_PSEUDOFREE);
+  cfg.pf_unpaired = args.GetMultipleOr<Energy>(OPT_UNPAIRED_PSEUDOFREE);
+  verify(!cfg.random_pseudofree || (cfg.pf_paired.empty() && cfg.pf_unpaired.empty()),
+      "cannot set pseudofree energies with random pseudofree");
 
   cfg.data_dir = args.Get<std::string>(OPT_MEMERNA_DATA);
 

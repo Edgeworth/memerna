@@ -126,6 +126,8 @@ struct FuzzCfg {
   erg::EnergyCfg energy_cfg{};
   erg::EnergyModelKind energy_model{};
   std::vector<BackendKind> backends{};
+  std::vector<Energy> pf_paired{};
+  std::vector<Energy> pf_unpaired{};
 
   std::string data_dir{};
   std::string rnastructure_data_dir{};

@@ -75,10 +75,20 @@ class FuzzRunner {
   mrna::fuzz::FuzzHarness harness_;
 
   void RunInvocation(const mrna::Primary& r) {
-    auto pf_paired = MaybeGetPseudofree(r.size());
-    auto pf_unpaired = MaybeGetPseudofree(r.size());
+    auto pf_paired = MaybeGetPairedPseudofree(r.size());
+    auto pf_unpaired = MaybeGetUnpairedPseudofree(r.size());
     auto invoc = harness_.CreateInvocation(r, pf_paired, pf_unpaired);
     MaybePrintResult(invoc.Run(), pf_paired, pf_unpaired);
+  }
+
+  std::vector<mrna::Energy> MaybeGetPairedPseudofree(std::size_t length) {
+    if (!cfg_.pf_paired.empty()) return cfg_.pf_paired;
+    return MaybeGetPseudofree(length);
+  }
+
+  std::vector<mrna::Energy> MaybeGetUnpairedPseudofree(std::size_t length) {
+    if (!cfg_.pf_unpaired.empty()) return cfg_.pf_unpaired;
+    return MaybeGetPseudofree(length);
   }
 
   std::vector<mrna::Energy> MaybeGetPseudofree(std::size_t length) {
