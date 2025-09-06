@@ -35,6 +35,8 @@ class LruVectorCache {
     return cache_[key].first;
   }
 
+  constexpr std::size_t Size() const { return total_; }
+
  private:
   mutable std::list<Key> lru_;
   std::vector<std::pair<std::vector<Value>, std::list<Key>::iterator>> cache_;

@@ -2,6 +2,7 @@
 #ifndef BACKENDS_COMMON_EXPANSION_CACHE_H_
 #define BACKENDS_COMMON_EXPANSION_CACHE_H_
 
+#include <cstddef>
 #include <utility>
 #include <vector>
 
@@ -36,6 +37,18 @@ class ExpansionCache {
       return cache_.Insert(key, std::move(value));
     } else {
       return cache_[key] = std::move(value);
+    }
+  }
+
+  [[nodiscard]] constexpr std::size_t Size() const {
+    if constexpr (UseLru) {
+      return cache_.Size();
+    } else {
+      std::size_t size = 0;
+      for (const auto& v : cache_) {
+        size += v.size();
+      }
+      return size;
     }
   }
 
