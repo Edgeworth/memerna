@@ -8,6 +8,7 @@
 #include <exception>
 #include <ios>
 
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "util/version.h"
 
 #ifdef USE_BOOST
@@ -44,6 +45,8 @@ namespace mrna {
 void InitProgram() {
   std::ios_base::sync_with_stdio(false);
   std::set_terminate(terminate_handler);
+  auto logger = spdlog::stderr_color_mt("stderr");
+  spdlog::set_default_logger(logger);
   spdlog::info("memerna version {}", VERSION.ToString());
 }
 
