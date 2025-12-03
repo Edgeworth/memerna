@@ -5,6 +5,36 @@ for folding, suboptimal folding, and the partition function. memerna is very
 performant, as it uses both fast algorithms and a highly optimized
 implementation.
 
+## Citation
+
+Please cite the following for the memerna software package:
+
+```
+@software{memerna2025,
+  author = {Courtney, Eliot and Ward, Max},
+  year = {2025},
+  month = {7},
+  title = {{memerna Software Package}},
+  url = {https://github.com/Edgeworth/memerna},
+  version = {0.2.0},
+}
+```
+
+Please cite the following for sparse folding including coaxial stacking:
+
+```
+@article{courtney2025memerna,
+  title={memerna: Sparse RNA folding including coaxial stacking},
+  author={Courtney, Eliot and Datta, Amitava and Mathews, David H and Ward, Max},
+  journal={Journal of Molecular Biology},
+  volume={437},
+  number={3},
+  pages={168819},
+  year={2025},
+  publisher={Elsevier}
+}
+```
+
 ## Building
 
 memerna was tested to build and run in Ubuntu 2022.04 LTS with up to date
