@@ -63,6 +63,7 @@ static_assert(false, "unknown float precision");
 // MPFR happy.
 inline flt fabs(flt v) { return std::abs(v); }
 inline flt exp(flt v) { return std::exp(v); }
+inline flt pow(flt base, int exp) { return std::pow(base, exp); }
 inline flt round(flt v) { return std::round(v); }
 inline flt isnan(flt v) { return std::isnan(v); }
 

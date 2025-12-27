@@ -6,6 +6,7 @@ default:
   @just --list
 
 test:
+  poetry run pytest
   # Check various build configurations and run tests. Good to run before push.
   # Uses :::+ to match mpfr-rnastructure and no-mpfr-no-rnastructure etc to
   # save some compilations.

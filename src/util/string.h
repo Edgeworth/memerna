@@ -91,9 +91,10 @@ std::ostream& operator<<(std::ostream& str, const T& value)
 
 template <typename T>
 T Conv(const std::string& s) {
-  T t;
+  T t{};
   std::stringstream ss(s);
   ss >> t;
+  verify(ss && ss.eof(), "failed to convert '{}' to type", s);
   return t;
 }
 

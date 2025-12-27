@@ -32,7 +32,10 @@ class MemeVault:
 
     def get_with_seq(self, seq: str) -> Rna:
         c = self.db.execute(f"SELECT *  FROM {self.dataset} WHERE seq=?", (seq,))
-        name, seq, db = c.fetchone()
+        row = c.fetchone()
+        if row is None:
+            raise KeyError(seq)
+        name, seq, db = row
         return RnaParser.parse(name=name, seq=seq, db=db)
 
     def add_in_dir(self, dir_path: Path) -> None:

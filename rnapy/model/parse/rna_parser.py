@@ -67,6 +67,8 @@ class RnaParser:
 
     @staticmethod
     def from_any_file(data: str) -> Rna:
+        if not data:
+            raise ValueError("Empty input")
         if data[0] == ">":
             return RnaParser.from_db_file(data)
         return RnaParser.from_ct_file(data)
@@ -99,7 +101,8 @@ class RnaParser:
         ct = [f"{len(rna.r)}\t{name}"]
 
         for i, v in enumerate(rna.r):
-            ct.append(f"{i + 1}\t{v}\t{i}\t{i + 2}\t{rna.s[i] + 1}\t{i + 1}")
+            next_idx = i + 2 if i < len(rna.r) - 1 else 0
+            ct.append(f"{i + 1}\t{v}\t{i}\t{next_idx}\t{rna.s[i] + 1}\t{i + 1}")
 
         return "\n".join(ct)
 
@@ -110,4 +113,4 @@ class RnaParser:
     # See http://rna.urmc.rochester.edu/Text/File_Formats.html for this format.
     @staticmethod
     def to_seq_file(rna: Rna) -> str:
-        return f";\n{rna.name}\n{rna.r}1"
+        return f";\n{rna.name}\n{rna.r}1\n"

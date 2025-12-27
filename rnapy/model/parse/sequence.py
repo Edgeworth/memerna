@@ -31,11 +31,16 @@ def db_to_secondary(db: str, brackets: list[str] | None = None) -> list[int]:
             stack.setdefault(v, [])
             stack[v].append(i)
         elif v in closing:
-            pair = stack[closing[v]].pop()
+            o = closing[v]
+            if o not in stack or not stack[o]:
+                raise ValueError(f"Invalid character in DB: {v}")
+            pair = stack[o].pop()
             s[pair] = i
             s[i] = pair
         elif v != ".":
             raise ValueError(f"Invalid character in DB: {v}")
+    if any(stack.values()):
+        raise ValueError("Invalid character in DB: unmatched opening bracket")
     return s
 
 

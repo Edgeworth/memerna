@@ -65,7 +65,7 @@ class ModelMixin {
     return m;
   }
 
-  Ptr Clone() const { return std::make_shared<T>(*reinterpret_cast<const T*>(this)); }
+  Ptr Clone() const { return std::make_shared<T>(*static_cast<const T*>(this)); }
 };
 
 }  // namespace mrna::md

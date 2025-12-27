@@ -28,17 +28,17 @@ OpResult DoOperation(char op, int val, mrna::SplayMap<int, int>* h, std::set<int
   switch (op) {
   case 'i':
     splay_success = h->Insert(val, val);
-    set_success = (s->count(val) == 0);
+    set_success = !s->contains(val);
     s->insert(val);
     break;
   case 'd':
     splay_success = h->Delete(val);
-    set_success = (s->count(val) > 0);
+    set_success = s->contains(val);
     s->erase(val);
     break;
   case 's':
     splay_success = h->Find(val);
-    set_success = (s->find(val) != s->end());
+    set_success = s->contains(val);
     break;
   default: invalid = true;
   }

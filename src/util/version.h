@@ -22,11 +22,11 @@ struct VersionInfo {
   }
 };
 
-// Declaration of the global version object.
-// Its definition will come from a build-system-generated source file.
-// export // If in a module
-inline constexpr VersionInfo VERSION = {
-    .major = 0, .minor = 2, .patch = 0, .pre_release = "", .build_metadata = ""};
+inline constexpr VersionInfo VERSION = {.major = MEMERNA_VERSION_MAJOR,
+    .minor = MEMERNA_VERSION_MINOR,
+    .patch = MEMERNA_VERSION_PATCH,
+    .pre_release = "",
+    .build_metadata = ""};
 
 }  // namespace mrna
 

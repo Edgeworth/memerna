@@ -443,8 +443,8 @@ TraceResult Traceback(
             goto loopend;
           }
           // .(   ).<   > Terminal mismatch - U, U2
-          if (base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) +
-                  m->pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired ==
+          if (base11 + m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+                  2 * m->multiloop_c + right_unpaired ==
               dp[st][en][a]) {
             res.ctd[st + 1] = CTD_MISMATCH;
             q.emplace_back(st + 1, piv - 1, DP_P);

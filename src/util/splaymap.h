@@ -16,7 +16,7 @@ namespace mrna {
 template <typename Key, typename Value>
 class SplayMap {
  public:
-  SplayMap() : ns_(2), root(NONE) {}
+  SplayMap() : ns_(2) {}
   // Returns false if already in the tree.
   template <typename ValueRef>
   bool Insert(Key key, ValueRef&& value) {
@@ -194,7 +194,7 @@ class SplayMap {
   };
 
   std::vector<Node> ns_;
-  int root;
+  int root{NONE};
   std::size_t size_{0};
 
   std::vector<std::string> DescribeInternal(int node) {

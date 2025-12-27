@@ -21,7 +21,7 @@ void terminate_handler() {
   if (exptr) {
     try {
       std::rethrow_exception(exptr);
-    } catch (std::exception &ex) {
+    } catch (std::exception& ex) {
       fmt::print(stderr, "terminated due to exception: {}\n", ex.what());
     } catch (...) {
       fmt::print(stderr, "terminated due to unknown exception\n");

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(memerna VERSION 0.2.0 LANGUAGES CXX)
+project(memerna VERSION 0.2.1 LANGUAGES CXX)
 
 # Supress warning messages about unused variables:
 set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
@@ -79,12 +79,12 @@ CPMAddPackage(
 )
 
 # fmt
-CPMAddPackage("gh:fmtlib/fmt#11.2.0")
+CPMAddPackage("gh:fmtlib/fmt#12.1.0")
 
 # spdlog should reuse existing fmtlib.
 CPMAddPackage(
   GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.15.3
+  VERSION 1.16.0
   OPTIONS "SPDLOG_FMT_EXTERNAL 1"
 )
 
@@ -323,6 +323,12 @@ if(USE_RNASTRUCTURE)
 endif()
 
 add_library(memerna ${MEMERNA_SOURCE})
+
+target_compile_definitions(memerna PUBLIC
+  MEMERNA_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+  MEMERNA_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+  MEMERNA_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)
 
 add_executable(brute src/programs/brute.cpp)
 add_executable(efn src/programs/efn.cpp)

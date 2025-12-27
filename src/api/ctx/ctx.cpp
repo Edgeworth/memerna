@@ -209,7 +209,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
         case CtxCfg::SuboptAlg::ITERATIVE_LOWMEM:
           return md::base::opt::SuboptIterative<true>(Primary(r), m, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
-          return md::base::opt::SuboptPersistent<true>(Primary(r), m, std::move(state), cfg)
+          return md::base::opt::SuboptPersistent<false>(Primary(r), m, std::move(state), cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT_LOWMEM:
           return md::base::opt::SuboptPersistent<true>(Primary(r), m, std::move(state), cfg)
@@ -226,7 +226,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
         case CtxCfg::SuboptAlg::ITERATIVE_LOWMEM:
           return md::stack::SuboptIterative<true>(Primary(r), m, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
-          return md::stack::SuboptPersistent<true>(Primary(r), m, std::move(state), cfg).Run(fn);
+          return md::stack::SuboptPersistent<false>(Primary(r), m, std::move(state), cfg).Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT_LOWMEM:
           return md::stack::SuboptPersistent<true>(Primary(r), m, std::move(state), cfg).Run(fn);
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);

@@ -334,8 +334,9 @@ bool FuzzInvocation::PfnProbEq(flt a, flt b) const {
 void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
     const std::string& name_got, const std::string& name_want, Error& errors) {
   const int N = static_cast<int>(want.p.size());
-  verify(want.prob.size() == want.prob.size(), "bug");
+  verify(want.p.size() == want.prob.size(), "bug");
   verify(got.p.size() == want.prob.size(), "bug");
+  verify(got.p.size() == want.p.size(), "bug");
 
   if (!PfnPQEq(got.q, want.q)) {
     errors.push_back(fmt::format(

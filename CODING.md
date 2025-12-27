@@ -11,11 +11,6 @@ Set up pre-commit.
 - Prefer non-const pointer for output parameters, const-ref for params,
   const-pointer for optional references.
 
-## Python
-
-- Python 3.10
-- Format according to black -l 100
-
 ## Directories
 
 - cmake: CMake scripts
@@ -70,7 +65,7 @@ Structure should mirror the source directory.
 
 ## Releasing
 
-Update version numbers in CMakeLists.txt, pyproject.toml, and util/version.h.
+Update version numbers in CMakeLists.txt and pyproject.toml.
 
 Create a new branch from main - branch has major.minor version number.
 

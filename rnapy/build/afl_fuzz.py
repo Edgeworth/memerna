@@ -158,7 +158,7 @@ class AflFuzzCfg:
         )
         cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
         cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
-        cmd += "--pfn " if self.fuzz_pfn else "--no-pfn-rnastructure "
+        cmd += "--pfn " if self.fuzz_pfn else "--no-pfn "
         cmd += "--pfn-rnastructure " if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure "
 
         return cmd

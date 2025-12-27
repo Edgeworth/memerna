@@ -42,6 +42,6 @@ class RnaAccuracy:
 
     def __str__(self) -> str:
         return (
-            f"F1-Score: {self.f1_score:.2f} - PPV: {self.ppv:.2f}"
+            f"F1-Score: {self.f1_score():.2f} - PPV: {self.ppv:.2f}"
             f" - Sensitivity: {self.sensitivity:.2f}"
         )

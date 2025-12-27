@@ -17,12 +17,15 @@ Secondary Secondary::FromDb(const std::string& pairs_str) {
     if (pairs_str[i] == '(') {
       stk.push_back(i);
     } else if (pairs_str[i] == ')') {
-      verify(!stk.empty(), "unmatched bracket");
+      verify(!stk.empty(), "unmatched closing bracket at position {}", i);
       s[i] = stk.back();
       s[stk.back()] = i;
       stk.pop_back();
+    } else {
+      verify(pairs_str[i] == '.', "unexpected character '{}' at position {}", pairs_str[i], i);
     }
   }
+  verify(stk.empty(), "unmatched opening bracket at position {}", stk.empty() ? 0 : stk.back());
   return s;
 }
 

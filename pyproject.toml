@@ -5,7 +5,7 @@ dynamic = ["dependencies"]
 license = {text = "GPL-3.0-only"}
 name = "rnapy"
 requires-python = ">=3.13,<4.0"
-version = "0.2.0"
+version = "0.2.1"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -26,6 +26,12 @@ python-dotenv = ">=1.2.1"
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.19.1"
 poetry-plugin-up = ">=0.9.0"
+pytest = ">=9.0.2"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+pythonpath = ["."]
+testpaths = ["rnapy-tests"]
 
 [tool.mypy]
 show_column_numbers = true
@@ -91,11 +97,12 @@ ignore = [
   "N806", # allow uppercase variables
   "N812", # allow e.g. import torch.nn.functional as F
   "PD002", # allow pandas in place operations
-  "PD901", # allow 'df'
+  "PLR0911", # allow more returns in functions
   "PLR0912", # allow more branches in functions
   "PLR0913", # allow more arguments in functions
   "PLR0915", # allow more statements in functions
   "PLR2004", # allow magic numbers
+  "PT011", # allow broad exception matching in tests
   "PYI021", # allow docstrings in stubs
   "RET504", # allow return statements after assignment of variable
   "S101", # allow asserts
@@ -108,12 +115,11 @@ ignore = [
   "TCH", # don't use type-checking import blocks
   "TD", # no TODO related warnings
   "TRY003", # allow exceptions with string arguments
-  "PLR0911", # allow more returns in functions
 ]
 select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**/*.py" = [
+"**/rnapy-tests/**/*.py" = [
   "SLF001", # allow private member access
 ]
 

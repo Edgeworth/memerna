@@ -7,7 +7,7 @@ import json
 import tempfile
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, Any, cast
+from typing import IO, Any
 
 import click
 import cloup
@@ -38,7 +38,7 @@ def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
         df = df.filter(pl.col(key) == value)
     if df.is_empty():
         return None
-    return cast(dict[str, Any], df.row(0, named=True))
+    return df.row(0, named=True)
 
 
 def append_ndjson(path: Path, df: pl.DataFrame) -> None:

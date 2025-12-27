@@ -8,7 +8,7 @@ from typing import Any
 
 import click
 
-from rnapy.util.format import human_size
+from rnapy.util.util import human_size
 
 
 @dataclass
@@ -65,7 +65,7 @@ def try_cmd(
         stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
-    stdin = subprocess.PIPE if stdin_inp else None
+    stdin = subprocess.PIPE if stdin_inp is not None else None
 
     CMD_STR_LIM = 500
     cmd_str = " ".join(cmd)
@@ -94,8 +94,9 @@ def try_cmd(
         real_sec, user_sec, sys_sec, maxrss_kb = (float(i) for i in last_line)
 
         if stdout_path is not None:
-            stdout.flush()
-            stdout.close()
+            if not isinstance(stdout, int):
+                stdout.flush()
+                stdout.close()
 
             # We may want to not return the stdout if it's too big.
             if stdout_to_str:
