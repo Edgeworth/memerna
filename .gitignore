@@ -6,3 +6,5 @@ __pycache__
 memevault.db
 compile_commands.json
 .env
+/benchmark.json*
+/build

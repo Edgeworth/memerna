@@ -19,12 +19,12 @@ click = ">=8.3.1"
 click-params = ">=0.5.0"
 click_log = ">=0.4.0"
 cloup = ">=3.0.8"
-libtmux = ">=0.50.0"
-polars = ">=1.35.2"
+libtmux = ">=0.53.0"
+polars = ">=1.36.1"
 python-dotenv = ">=1.2.1"
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.19.0"
+mypy = ">=1.19.1"
 poetry-plugin-up = ">=0.9.0"
 
 [tool.mypy]

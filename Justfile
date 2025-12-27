@@ -24,7 +24,7 @@ test:
 bench:
   # Run benchmarks.
   poetry run python -m rnapy.run build --bench --bench-output \
-    ./data/benchmark.json --kind=release
+    ./benchmark.json --kind=release
 
 fuzz $fuzz_exec:
   #!/usr/bin/env -S parallel --shebang --ungroup --verbose
