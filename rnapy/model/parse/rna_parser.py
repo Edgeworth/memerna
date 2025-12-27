@@ -110,4 +110,4 @@ class RnaParser:
     # See http://rna.urmc.rochester.edu/Text/File_Formats.html for this format.
     @staticmethod
     def to_seq_file(rna: Rna) -> str:
-        return f";\n{rna.name}\n{rna.r}1"
+        return f";\n{rna.name}\n{rna.r}1\n"
