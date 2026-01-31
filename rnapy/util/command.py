@@ -8,7 +8,7 @@ from typing import Any
 
 import click
 
-from rnapy.util.util import human_size
+from rnapy.util.format import human_size
 
 
 @dataclass
