@@ -275,6 +275,7 @@ set(MEMERNA_SOURCE
   src/util/error.cpp
   src/util/error.h
   src/util/float.h
+  src/util/enum.h
   src/util/lru_vector_cache.h
   src/util/splaymap.h
   src/util/string.cpp
