@@ -15,7 +15,7 @@
 #include "api/energy/energy.h"
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
-#include "backends/common/base/pseudofree_model.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -31,7 +31,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::STACK;
 
-  base::PseudofreeModel pf;
+  erg::PseudofreeCfg pf;
   Energy penultimate_stack[4][4][4][4] = {};
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;

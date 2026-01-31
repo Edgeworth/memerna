@@ -151,6 +151,8 @@ set(MEMERNA_SOURCE
   src/api/energy/energy_cfg.h
   src/api/energy/energy.cpp
   src/api/energy/energy.h
+  src/api/energy/pseudofree_cfg.cpp
+  src/api/energy/pseudofree_cfg.h
   src/api/mfe.h
   src/api/options.h
   src/api/pfn.h
@@ -216,15 +218,11 @@ set(MEMERNA_SOURCE
   src/backends/brute/brute.h
   src/backends/common/base/boltz_model_base.h
   src/backends/common/base/boltz_precomp_base.h
-  src/backends/common/base/boltz_pseudofree_model.cpp
-  src/backends/common/base/boltz_pseudofree_model.h
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
   src/backends/common/base/model_base.h
   src/backends/common/base/parse.h
   src/backends/common/base/precomp_base.h
-  src/backends/common/base/pseudofree_model.cpp
-  src/backends/common/base/pseudofree_model.h
   src/backends/common/boltz.h
   src/backends/common/energy.h
   src/backends/common/expansion_cache.h

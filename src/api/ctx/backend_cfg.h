@@ -63,17 +63,6 @@ inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
 inline const Opt OPT_SEED =
     Opt(Opt::ARG).LongName("seed").Help("seed for random energy model for memerna");
 
-inline const Opt OPT_PAIRED_PSEUDOFREE =
-    Opt(Opt::ARG)
-        .LongName("pf-paired")
-        .Multiple()
-        .Help("comma separated energies for paired pseudofree energy");
-inline const Opt OPT_UNPAIRED_PSEUDOFREE =
-    Opt(Opt::ARG)
-        .LongName("pf-unpaired")
-        .Multiple()
-        .Help("comma separated energies for unpaired pseudofree energy");
-
 }  // namespace mrna
 
 #endif  // API_CTX_BACKEND_CFG_H_

@@ -11,7 +11,6 @@
 #include "model/ctd.h"
 #include "util/argparse.h"
 #include "util/container.h"
-#include "util/string.h"
 
 namespace mrna::erg {
 

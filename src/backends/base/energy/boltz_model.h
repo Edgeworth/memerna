@@ -6,14 +6,14 @@
 
 #include "backends/base/energy/model.h"
 #include "backends/common/base/boltz_model_base.h"
-#include "backends/common/base/boltz_pseudofree_model.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {
 
 class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
  public:
-  BoltzPseudofreeModel pf;
+  erg::BoltzPseudofreeCfg pf;
 
   BoltzModel() = delete;
 

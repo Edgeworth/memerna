@@ -10,7 +10,7 @@
 
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
-#include "backends/common/base/pseudofree_model.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {
@@ -19,7 +19,7 @@ class Model : public ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::BASE;
 
-  PseudofreeModel pf;
+  erg::PseudofreeCfg pf;
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
