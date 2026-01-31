@@ -8,6 +8,7 @@
 
 #include "api/brute/brute_cfg.h"
 #include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
@@ -31,7 +32,9 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto res = mrna::md::brute::Brute(r, m, cfg).Run();
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+  pf.Verify(r);
+  auto res = mrna::md::brute::Brute(r, m, pf, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
@@ -51,8 +54,8 @@ int main(int argc, char* argv[]) {
   if (args.GetOr(mrna::OPT_PFN)) {
     fmt::print("q: {}\n", res.pfn.q);
     fmt::print("p:\n");
-    PrintPfn(res.pfn.p);
+    mrna::PrintPfn(res.pfn.p);
     fmt::print("\nprobabilities:\n");
-    PrintBoltzProbs(res.pfn.prob);
+    mrna::PrintBoltzProbs(res.pfn.prob);
   }
 }

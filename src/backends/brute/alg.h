@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -12,12 +13,12 @@
 
 namespace mrna::md::brute {
 
-subopt::SuboptResult MfeBrute(const Primary& r, BackendModelPtr m);
+subopt::SuboptResult MfeBrute(const Primary& r, BackendModelPtr m, const erg::PseudofreeCfg& pf);
 
-pfn::PfnResult PfnBrute(const Primary& r, BackendModelPtr m);
+pfn::PfnResult PfnBrute(const Primary& r, BackendModelPtr m, const erg::PseudofreeCfg& pf);
 
 std::vector<subopt::SuboptResult> SuboptBrute(
-    const Primary& r, BackendModelPtr m, subopt::SuboptCfg cfg);
+    const Primary& r, BackendModelPtr m, const erg::PseudofreeCfg& pf, subopt::SuboptCfg cfg);
 
 }  // namespace mrna::md::brute
 

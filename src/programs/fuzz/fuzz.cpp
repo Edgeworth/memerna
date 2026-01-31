@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_harness.h"
 #include "fuzz/fuzz_invocation.h"
@@ -75,10 +76,10 @@ class FuzzRunner {
   mrna::fuzz::FuzzHarness harness_;
 
   void RunInvocation(const mrna::Primary& r) {
-    auto pf_paired = MaybeGetPairedPseudofree(r.size());
-    auto pf_unpaired = MaybeGetUnpairedPseudofree(r.size());
-    auto invoc = harness_.CreateInvocation(r, pf_paired, pf_unpaired);
-    MaybePrintResult(invoc.Run(), pf_paired, pf_unpaired);
+    mrna::erg::PseudofreeCfg pf(
+        MaybeGetPairedPseudofree(r.size()), MaybeGetUnpairedPseudofree(r.size()));
+    auto invoc = harness_.CreateInvocation(r, pf);
+    MaybePrintResult(invoc.Run(), pf);
   }
 
   std::vector<mrna::Energy> MaybeGetPairedPseudofree(std::size_t length) {
@@ -96,25 +97,24 @@ class FuzzRunner {
     return mrna::RandomEnergies(length, mrna::E(-10.0), mrna::E(10.0), harness_.e());
   }
 
-  void MaybePrintResult(const mrna::fuzz::Error& res, const std::vector<mrna::Energy>& pf_paired,
-      const std::vector<mrna::Energy>& pf_unpaired) {
+  void MaybePrintResult(const mrna::fuzz::Error& res, const mrna::erg::PseudofreeCfg& pf) {
     if (res.empty()) return;
     if (cfg_.random_models) fmt::print("Random model seed: {}\n", harness_.last_seed().value());
-    if (!pf_paired.empty()) {
+    if (!pf.paired.empty()) {
       fmt::print("Pseudofree paired energies: ");
-      PrintPseudofreeEnergy(pf_paired);
+      PrintPseudofreeEnergy(pf.paired);
     }
-    if (!pf_unpaired.empty()) {
+    if (!pf.unpaired.empty()) {
       fmt::print("Pseudofree unpaired energies: ");
-      PrintPseudofreeEnergy(pf_unpaired);
+      PrintPseudofreeEnergy(pf.unpaired);
     }
     for (const auto& s : res) fmt::print("{}\n", s);
     fmt::print("\n");
   }
 
-  static void PrintPseudofreeEnergy(const std::vector<mrna::Energy>& pf) {
+  static void PrintPseudofreeEnergy(const std::vector<mrna::Energy>& energies) {
     bool first = true;
-    for (const auto& e : pf) {
+    for (const auto& e : energies) {
       if (!first) fmt::print(",");
       first = false;
       fmt::print("{}", e);

@@ -19,9 +19,10 @@
 namespace mrna::md::base::opt {
 
 template <bool UseLru>
-SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg),
-      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+SuboptIterative<UseLru>::SuboptIterative(
+    Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_),
+      dp_(std::move(dp)), cfg_(cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
 int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
@@ -34,6 +35,7 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m_->cfg());
+  verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
 

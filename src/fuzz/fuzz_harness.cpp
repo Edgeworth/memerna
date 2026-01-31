@@ -28,33 +28,24 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
   };
 }
 
-FuzzInvocation FuzzHarness::CreateInvocation(
-    const Primary& r, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
-  MaybeLoadBackends(std::move(pf_paired), std::move(pf_unpaired));
+FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r, erg::PseudofreeCfg pf) {
+  MaybeLoadBackends();
 
-  FuzzInvocation invoc(r, ms_, fuzz_cfg_);
+  FuzzInvocation invoc(r, ms_, std::move(pf), fuzz_cfg_);
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE
   return invoc;
 }
 
-void FuzzHarness::MaybeLoadBackends(
-    std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired) {
+void FuzzHarness::MaybeLoadBackends() {
   // Don't reload if already loaded and not randomising.
-  if (!ms_.empty() && !fuzz_cfg_.random_models) {
-    bool pf_paired_changed = backend_cfg_.pf_paired != pf_paired;
-    bool pf_unpaired_changed = backend_cfg_.pf_unpaired != pf_unpaired;
-    if (!pf_paired_changed && !pf_unpaired_changed) return;
-  }
+  if (!ms_.empty() && !fuzz_cfg_.random_models) return;
   ms_.clear();
 
   backend_cfg_.seed = std::nullopt;
   if (fuzz_cfg_.seed >= 0) backend_cfg_.seed = fuzz_cfg_.seed;
   if (fuzz_cfg_.random_models) backend_cfg_.seed = e_();
-
-  backend_cfg_.pf_paired = std::move(pf_paired);
-  backend_cfg_.pf_unpaired = std::move(pf_unpaired);
 
   for (const auto& backend : fuzz_cfg_.backends) {
     backend_cfg_.backend = backend;

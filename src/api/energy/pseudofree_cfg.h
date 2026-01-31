@@ -28,21 +28,28 @@ void RegisterOptsPseudofree(ArgParse* args);
 class PseudofreeCfg {
  public:
   // Pseudofree energies. Ignored if empty.
-  std::vector<Energy> paired;
-  std::vector<Energy> unpaired;
+  const std::vector<Energy> paired{};
+  const std::vector<Energy> unpaired{};
   // Cumulative sum of size N+1 (first element is nothing).
-  std::vector<Energy> unpaired_cum;
+  const std::vector<Energy> unpaired_sum{};
+
+  PseudofreeCfg() = default;
+  PseudofreeCfg(std::vector<Energy> paired, std::vector<Energy> unpaired);
+
+  constexpr auto operator<=>(const PseudofreeCfg&) const = default;
+
+  [[nodiscard]] constexpr bool Empty() const { return paired.empty() && unpaired.empty(); }
 
   [[nodiscard]] constexpr Energy Unpaired(int n) const {
     if (unpaired.empty()) return ZERO_E;
     return unpaired[n];
   }
 
-  // Inclusive range, unlike pf_unpaired_cum directly.
-  [[nodiscard]] constexpr Energy UnpairedCum(int st, int en) const {
+  // Inclusive range, unlike unpaired_sum directly.
+  [[nodiscard]] constexpr Energy UnpairedSum(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired.empty()) return ZERO_E;
-    return unpaired_cum[en + 1] - unpaired_cum[st];
+    return unpaired_sum[en + 1] - unpaired_sum[st];
   }
 
   [[nodiscard]] constexpr Energy Paired(int st, int en) const {
@@ -51,7 +58,6 @@ class PseudofreeCfg {
     return paired[st] + paired[en];
   }
 
-  void Load(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
   void Verify(const Primary& r) const;
 
   static PseudofreeCfg FromArgParse(const ArgParse& args);
@@ -59,22 +65,25 @@ class PseudofreeCfg {
 
 class BoltzPseudofreeCfg {
  public:
-  // Pseudofree energies. Ignored if empty.
-  std::vector<BoltzEnergy> paired;
-  std::vector<BoltzEnergy> unpaired;
-  // Cumulative sum of size N+1 (first element is nothing).
-  std::vector<BoltzEnergy> unpaired_cum_log;
+  const std::vector<BoltzEnergy> paired{};
+  const std::vector<BoltzEnergy> unpaired{};
+  const std::vector<BoltzEnergy> unpaired_sum_log{};
+
+  BoltzPseudofreeCfg() = default;
+  explicit BoltzPseudofreeCfg(const PseudofreeCfg& pf);
+
+  [[nodiscard]] bool Empty() const { return paired.empty() && unpaired.empty(); }
 
   [[nodiscard]] BoltzEnergy Unpaired(int n) const {
     if (unpaired.empty()) return ONE_B;
     return unpaired[n];
   }
 
-  // Inclusive range, unlike pf_unpaired_cum directly.
-  [[nodiscard]] BoltzEnergy UnpairedCum(int st, int en) const {
+  // Inclusive range, unlike unpaired_sum_log directly.
+  [[nodiscard]] BoltzEnergy UnpairedProd(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired.empty()) return ONE_B;
-    return exp(unpaired_cum_log[en + 1] - unpaired_cum_log[st]);
+    return exp(unpaired_sum_log[en + 1] - unpaired_sum_log[st]);
   }
 
   [[nodiscard]] BoltzEnergy Paired(int st, int en) const {
@@ -83,7 +92,6 @@ class BoltzPseudofreeCfg {
     return paired[st] * paired[en];
   }
 
-  void Load(std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
   void Verify(const Primary& r) const;
 };
 

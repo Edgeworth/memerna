@@ -18,8 +18,8 @@
 
 namespace mrna::md::base::opt {
 
-SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), dp_(std::move(dp)), cfg_(cfg) {}
+SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)), cfg_(cfg) {}
 
 int SuboptDebug::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
@@ -31,6 +31,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m_->cfg());
+  verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
   auto start_time = std::chrono::steady_clock::now();

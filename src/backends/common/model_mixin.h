@@ -58,9 +58,6 @@ class ModelMixin {
     } else {
       m = FromModelPath(cfg.BackendDataPath());
     }
-    if (!cfg.pf_paired.empty() || !cfg.pf_unpaired.empty()) {
-      m->LoadPseudofreeEnergy(cfg.pf_paired, cfg.pf_unpaired);
-    }
     m->SetEnergyCfg(cfg.energy_cfg);
     return m;
   }

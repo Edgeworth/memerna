@@ -4,12 +4,14 @@
 #include <ostream>
 #include <string>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "util/error.h"
 #include "util/util.h"
 
 namespace mrna::erg {
 
 void RegisterOptsEnergyCfg(ArgParse* args) {
+  RegisterOptsPseudofree(args);
   args->RegisterOpt(OPT_LONELY_PAIRS);
   args->RegisterOpt(OPT_BULGE_STATES);
   args->RegisterOpt(OPT_CTD);

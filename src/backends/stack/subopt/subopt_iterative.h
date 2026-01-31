@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "backends/common/expansion_cache.h"
@@ -25,7 +26,7 @@ using mrna::subopt::SuboptResult;
 template <bool UseLru>
 class SuboptIterative {
  public:
-  SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
+  SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -41,6 +42,7 @@ class SuboptIterative {
 
   Primary r_;
   Model::Ptr m_;
+  erg::PseudofreeCfg pf_;
   SuboptResult res_;
   DpState dp_;
   SuboptCfg cfg_;

@@ -2,9 +2,9 @@
 #ifndef API_CTX_BACKEND_H_
 #define API_CTX_BACKEND_H_
 #include <variant>
-#include <vector>
 
 #include "api/energy/energy.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/boltz_model.h"
 #include "backends/base/energy/model.h"
 #include "backends/baseopt/energy/boltz_model.h"
@@ -12,7 +12,6 @@
 #include "backends/stack/energy/boltz_model.h"
 #include "backends/stack/energy/model.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
@@ -47,9 +46,6 @@ BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
   return std::visit([&](const auto& m) { return m->cfg(); }, m);
 }
 
-void LoadPseudofreeEnergy(
-    const BackendModelPtr& m, std::vector<Energy> pf_paired, std::vector<Energy> pf_unpaired);
-
 BackendModelPtr CloneBackend(const BackendModelPtr& m);
 
 // Returns the underlying non-Boltzmann energy model for the given Boltzmann
@@ -66,15 +62,17 @@ BackendModelPtr CloneBackend(const BackendModelPtr& m);
 }
 
 [[nodiscard]] inline erg::EnergyResult TotalEnergy(const BackendModelPtr& m, const Primary& r,
-    const Secondary& s, const Ctds* given_ctd, bool build_structure = false) {
+    const Secondary& s, const Ctds* given_ctd, const erg::PseudofreeCfg& pf,
+    bool build_structure = false) {
   return std::visit(
-      [&](const auto& m) { return m->TotalEnergy(r, s, given_ctd, build_structure); }, m);
+      [&](const auto& m) { return m->TotalEnergy(r, s, given_ctd, pf, build_structure); }, m);
 }
 
 [[nodiscard]] inline erg::EnergyResult SubEnergy(const BackendModelPtr& m, const Primary& r,
-    const Secondary& s, const Ctds* given_ctd, int st, int en, bool build_structure = false) {
+    const Secondary& s, const Ctds* given_ctd, const erg::PseudofreeCfg& pf, int st, int en,
+    bool build_structure = false) {
   return std::visit(
-      [&](const auto& m) { return m->SubEnergy(r, s, given_ctd, st, en, build_structure); }, m);
+      [&](const auto& m) { return m->SubEnergy(r, s, given_ctd, pf, st, en, build_structure); }, m);
 }
 
 }  // namespace mrna

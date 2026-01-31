@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include "api/energy/pseudofree_cfg.h"
-
 namespace mrna {
 
 BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
@@ -17,8 +15,6 @@ BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
       .data_dir = args.Get<std::string>(OPT_MEMERNA_DATA),
       .seed = args.MaybeGet<uint_fast32_t>(OPT_SEED),
       .energy_cfg = erg::EnergyCfg::FromArgParse(args),
-      .pf_paired = args.GetMultipleOr<Energy>(erg::OPT_PAIRED_PSEUDOFREE),
-      .pf_unpaired = args.GetMultipleOr<Energy>(erg::OPT_UNPAIRED_PSEUDOFREE),
   };
   verify(cfg.precision == ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
       cfg.precision, ENERGY_PRECISION);
@@ -36,7 +32,6 @@ void RegisterOptsBackendCfg(ArgParse* args) {
   args->RegisterOpt(OPT_BACKEND);
   args->RegisterOpt(OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_SEED);
-  erg::RegisterOptsPseudofree(args);
 }
 
 }  // namespace mrna

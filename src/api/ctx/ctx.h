@@ -7,6 +7,7 @@
 
 #include "api/ctx/ctx_cfg.h"
 #include "api/energy/energy.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
@@ -38,14 +39,15 @@ class Ctx {
   Ctx(const Ctx& o) = delete;
   Ctx& operator=(const Ctx&) = delete;
 
-  erg::EnergyResult Efn(const Primary& r, const Secondary& s, const Ctds* given_ctd = nullptr,
-      bool build_structure = false) const;
-  [[nodiscard]] FoldResult Fold(const Primary& r, const trace::TraceCfg& cfg) const;
+  erg::EnergyResult Efn(const Primary& r, const Secondary& s, const erg::PseudofreeCfg& pf = {},
+      const Ctds* given_ctd = nullptr, bool build_structure = false) const;
+  [[nodiscard]] FoldResult Fold(
+      const Primary& r, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(
-      const Primary& r, subopt::SuboptCfg cfg) const;
-  [[nodiscard]] int Subopt(
-      const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
-  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r) const;
+      const Primary& r, const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const;
+  [[nodiscard]] int Subopt(const Primary& r, const erg::PseudofreeCfg& pf,
+      const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const;
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, const erg::PseudofreeCfg& pf) const;
 
   [[nodiscard]] const BackendModelPtr& m() const { return m_; }
 
@@ -55,10 +57,10 @@ class Ctx {
   BackendModelPtr m_;
   CtxCfg cfg_;
 
-  void ComputeMfe(const Primary& r, mfe::DpState& dp) const;
-  Energy ComputeMfeExterior(const Primary& r, mfe::DpState& dp) const;
-  [[nodiscard]] trace::TraceResult ComputeTraceback(
-      const Primary& r, const trace::TraceCfg& cfg, const mfe::DpState& dp) const;
+  void ComputeMfe(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCfg& pf) const;
+  Energy ComputeMfeExterior(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] trace::TraceResult ComputeTraceback(const Primary& r, const mfe::DpState& dp,
+      const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const;
 };
 
 }  // namespace mrna

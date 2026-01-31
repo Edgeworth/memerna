@@ -3,6 +3,7 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "model/pfn.h"
 #include "model/primary.h"
@@ -27,9 +28,11 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+  pf.Verify(r);
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto res = ctx.Pfn(r);
+  auto res = ctx.Pfn(r, pf);
   fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
   mrna::PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");

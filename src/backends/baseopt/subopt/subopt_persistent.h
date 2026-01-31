@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "backends/baseopt/energy/model.h"
@@ -27,7 +28,7 @@ using mrna::subopt::SuboptResult;
 template <bool UseLru>
 class SuboptPersistent {
  public:
-  SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
+  SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -50,6 +51,7 @@ class SuboptPersistent {
 
   Primary r_;
   Model::Ptr m_;
+  erg::PseudofreeCfg pf_;
   Precomp pc_;
   DpState dp_;
   SuboptCfg cfg_;

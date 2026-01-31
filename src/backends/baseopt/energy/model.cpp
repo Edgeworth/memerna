@@ -438,8 +438,9 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
 
 // If (st, en) is not paired, treated as an exterior loop.
 // If `ctd` is non-null, use the given ctds.
-EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd, int st,
-    int en, bool build_structure) const {
+EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+    const erg::PseudofreeCfg& pf, int st, int en, bool build_structure) const {
+  verify(pf.Empty(), "pseudofree energy not supported in baseopt backend");
   ModelBase::Verify(r, s, given_ctd);
   const bool use_given_ctds = given_ctd;
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
@@ -450,9 +451,9 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
   return {energy, std::move(ctd), std::move(struc)};
 }
 
-EnergyResult Model::TotalEnergy(
-    const Primary& r, const Secondary& s, const Ctds* given_ctd, bool build_structure) const {
-  auto res = SubEnergy(r, s, given_ctd, 0, static_cast<int>(r.size()) - 1, build_structure);
+EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
+    const erg::PseudofreeCfg& pf, bool build_structure) const {
+  auto res = SubEnergy(r, s, given_ctd, pf, 0, static_cast<int>(r.size()) - 1, build_structure);
   if (s[0] == static_cast<int>(r.size() - 1) && IsAuPair(r[0], r[s[0]])) {
     res.energy += au_penalty;
     if (res.struc) {

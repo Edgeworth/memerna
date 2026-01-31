@@ -7,6 +7,7 @@
 #include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "model/structure.h"
@@ -30,12 +31,16 @@ int main(int argc, char* argv[]) {
   mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = mrna::BackendEnergyCfg(m).ParseSeqCtdString(rs, ss);
-    res = mrna::TotalEnergy(m, r, s, &ctd, true);
+    auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+    pf.Verify(r);
+    res = mrna::TotalEnergy(m, r, s, &ctd, pf, true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
-    res = mrna::TotalEnergy(m, r, s, nullptr, true);
+    auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+    pf.Verify(r);
+    res = mrna::TotalEnergy(m, r, s, nullptr, pf, true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
   }

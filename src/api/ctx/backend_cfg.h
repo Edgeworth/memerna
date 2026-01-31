@@ -4,10 +4,8 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 #include "api/energy/energy_cfg.h"
-#include "model/energy.h"
 #include "util/argparse.h"
 #include "util/string.h"
 
@@ -24,8 +22,6 @@ struct BackendCfg {
   std::string data_dir{};
   std::optional<uint_fast32_t> seed = std::nullopt;
   erg::EnergyCfg energy_cfg{};
-  std::vector<Energy> pf_paired{};
-  std::vector<Energy> pf_unpaired{};
 
   [[nodiscard]]
   static BackendCfg FromArgParse(const ArgParse& args);

@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
@@ -22,7 +23,7 @@ using mrna::subopt::SuboptResult;
 
 class SuboptDebug {
  public:
-  SuboptDebug(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
+  SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -42,6 +43,7 @@ class SuboptDebug {
 
   Primary r_;
   Model::Ptr m_;
+  erg::PseudofreeCfg pf_;
   DpState dp_;
   SuboptCfg cfg_;
 

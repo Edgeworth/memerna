@@ -19,8 +19,8 @@
 
 namespace mrna::md::base::opt {
 
-TraceResult Traceback(
-    const Primary& r, const Model::Ptr& m, const trace::TraceCfg& cfg, const DpState& state) {
+TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& cfg) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -30,6 +30,7 @@ TraceResult Traceback(
   };
   support.VerifySupported(funcname(), m->cfg());
   verify(!cfg.random, "random traceback is not supported in this energy model");
+  verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
 

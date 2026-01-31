@@ -10,6 +10,7 @@
 #include "api/brute/brute_cfg.h"
 #include "api/ctx/backend.h"
 #include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -41,7 +42,7 @@ struct BruteResult {
 
 class Brute {
  public:
-  Brute(const Primary& r, BackendModelPtr m, BruteCfg cfg);
+  Brute(const Primary& r, BackendModelPtr m, erg::PseudofreeCfg pf, BruteCfg cfg);
 
   BruteResult Run();
 
@@ -64,6 +65,7 @@ class Brute {
   BackendModelPtr m_;
   BackendBoltzModelPtr bm_;
   BackendModelPtr underlying_;
+  erg::PseudofreeCfg pf_;
   erg::EnergyCfg energy_cfg_;
   BruteCfg brute_cfg_;
 

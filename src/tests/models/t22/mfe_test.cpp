@@ -1,10 +1,13 @@
 // Copyright 2016 Eliot Courtney.
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "api/ctx/backend.h"
+#include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -23,16 +26,16 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
     return GetMfe(m, std::get<1>(GetParam()), r);
   }
 
-  static void TestMfePseudofree(const BackendModelPtr& base_em, Energy base_energy,
-      const std::string& r, const std::string& db) {
+  static void TestMfePseudofree(
+      const BackendModelPtr& m, Energy base_energy, const std::string& r, const std::string& db) {
     std::vector<Energy> pf_paired(r.size(), E(1.0));
     std::vector<Energy> pf_unpaired(r.size(), E(1.0));
     Energy extra_from_pseudofree = E(1.0) * int(r.size());
-    auto m = CloneBackend(base_em);
-    LoadPseudofreeEnergy(m, pf_paired, pf_unpaired);
-    auto [mfe_energy, mfe_db] = Mfe(m, r);
-    EXPECT_EQ(base_energy + extra_from_pseudofree, mfe_energy);
-    EXPECT_EQ(db, mfe_db);
+    erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
+    auto res = Ctx(m, CtxCfg{.mfe_alg = std::get<1>(GetParam())})
+                   .Fold(Primary::FromSeq(r), pf, /*trace_cfg=*/{});
+    EXPECT_EQ(base_energy + extra_from_pseudofree, res.mfe.energy);
+    EXPECT_EQ(db, mrna::BackendEnergyCfg(m).ToCtdString(res.tb.s, res.tb.ctd));
   }
 };
 

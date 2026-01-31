@@ -2,6 +2,7 @@
 #ifndef BACKENDS_STACK_TRACE_TRACE_H_
 #define BACKENDS_STACK_TRACE_TRACE_H_
 
+#include "api/energy/pseudofree_cfg.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
 #include "backends/stack/energy/model.h"
@@ -27,8 +28,8 @@ struct Expansion {
   bool operator<(const Expansion& o) const { return delta < o.delta; }
 };
 
-TraceResult Traceback(
-    const Primary& r, const Model::Ptr& m, const trace::TraceCfg& cfg, const DpState& state);
+TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& cfg);
 
 }  // namespace mrna::md::stack
 

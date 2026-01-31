@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "api/ctx/ctx.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -26,7 +27,8 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, const FuzzCfg& cfg);
+  FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, erg::PseudofreeCfg pf,
+      const FuzzCfg& fuzz_cfg);
 
   Error Run();
 
@@ -40,6 +42,7 @@ class FuzzInvocation {
  private:
   Primary r_;
   std::vector<BackendModelPtr> ms_;
+  erg::PseudofreeCfg pf_;
   FuzzCfg cfg_;
 
   // Store assumed to be correct answers for each problem type:
@@ -53,7 +56,7 @@ class FuzzInvocation {
   std::shared_ptr<bridge::RNAstructure> rstr_;
 
   Error CheckMfeRNAstructure();
-  Error CheckSuboptRNAstructure(subopt::SuboptCfg cfg);
+  Error CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg);
   Error CheckPfnRNAstructure();
 #endif  // USE_RNASTRUCTURE
 
@@ -68,7 +71,7 @@ class FuzzInvocation {
   static bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
   Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds = true,
       bool check_duplicates = true);
-  static Error CheckSuboptResultPair(subopt::SuboptCfg cfg,
+  static Error CheckSuboptResultPair(subopt::SuboptCfg subopt_cfg,
       const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b,
       bool has_ctds = true);
 

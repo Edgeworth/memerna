@@ -2,6 +2,7 @@
 #ifndef BACKENDS_BASEOPT_PFN_PFN_DEBUG_H_
 #define BACKENDS_BASEOPT_PFN_PFN_DEBUG_H_
 
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/baseopt/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/pfn.h"
@@ -11,7 +12,8 @@ namespace mrna::md::base::opt {
 
 class PfnDebug {
  public:
-  static PfnTables Run(const Primary& r, const Model::Ptr& initial_m, PfnState& state);
+  static PfnTables Run(
+      const Primary& r, const Model::Ptr& initial_m, PfnState& state, const erg::PseudofreeCfg& pf);
 };
 
 }  // namespace mrna::md::base::opt

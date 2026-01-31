@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         // Ignore. Probably a bad input.
         continue;
       }
-      auto invoc = harness.CreateInvocation(seq, {}, {});
+      auto invoc = harness.CreateInvocation(seq, /*pf=*/{});
       const auto res = invoc.Run();
       if (!res.empty()) {
         for (const auto& s : res) fmt::print("{}\n", s);

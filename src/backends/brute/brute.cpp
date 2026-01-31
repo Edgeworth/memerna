@@ -15,8 +15,8 @@
 
 namespace mrna::md::brute {
 
-Brute::Brute(const Primary& r, BackendModelPtr m, BruteCfg cfg)
-    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)),
+Brute::Brute(const Primary& r, BackendModelPtr m, erg::PseudofreeCfg pf, BruteCfg cfg)
+    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
       energy_cfg_(BackendEnergyCfg(m_)), brute_cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
@@ -90,7 +90,7 @@ void Brute::AddAllCombinations(int idx) {
   // Base case
   if (idx == N) {
     if (brute_cfg_.pfn) {
-      auto energy = TotalEnergy(underlying_, r_, s_, &ctd_).energy;
+      auto energy = TotalEnergy(underlying_, r_, s_, &ctd_, pf_).energy;
       res_.pfn.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -99,7 +99,8 @@ void Brute::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            const Energy inside_energy = SubEnergy(underlying_, r_, s_, &ctd_, i, s_[i]).energy;
+            const Energy inside_energy =
+                SubEnergy(underlying_, r_, s_, &ctd_, pf_, i, s_[i]).energy;
             if (inside_new) {
               res_.pfn.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -113,7 +114,7 @@ void Brute::AddAllCombinations(int idx) {
       }
     }
     if (brute_cfg_.subopt) {
-      auto energy = TotalEnergy(m_, r_, s_, &ctd_).energy;
+      auto energy = TotalEnergy(m_, r_, s_, &ctd_, pf_).energy;
       PruneInsertSubopt(energy);
     }
     return;

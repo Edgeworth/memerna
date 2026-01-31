@@ -3,15 +3,12 @@
 #define BACKENDS_COMMON_BASE_BOLTZ_MODEL_BASE_H_
 
 #include <cassert>
-#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "backends/common/base/model_base.h"
 #include "model/base.h"
 #include "model/energy.h"
-#include "model/primary.h"
-#include "model/structure.h"
 
 namespace mrna::md::base {
 
@@ -76,26 +73,6 @@ class BoltzModelBase {
     else if (IsGuPair(mismatch_top, mismatch_bot))
       coax *= coax_mismatch_gu_bonus;
     return coax;
-  }
-
-  BoltzEnergy Hairpin(
-      const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.Hairpin(r, st, en, s).Boltz();
-  }
-
-  BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.Bulge(r, ost, oen, ist, ien, s).Boltz();
-  }
-
-  BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.InternalLoop(r, ost, oen, ist, ien, s).Boltz();
-  }
-
-  BoltzEnergy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.TwoLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
   [[nodiscard]] const M& m() const { return m_; }

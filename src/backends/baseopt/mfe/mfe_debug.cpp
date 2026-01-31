@@ -25,7 +25,8 @@ namespace mrna::md::base::opt {
     }                                                                   \
   } while (0)
 
-void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state) {
+void MfeDebug::Run(
+    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -35,6 +36,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state) {
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m->cfg());
+  verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
 

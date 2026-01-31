@@ -20,7 +20,8 @@
 
 namespace mrna::md::base::opt {
 
-void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state) {
+void MfeLyngsoSparseOpt::Run(
+    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
@@ -30,6 +31,7 @@ void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& sta
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m->cfg());
+  verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
 

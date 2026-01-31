@@ -3,6 +3,7 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
@@ -20,7 +21,10 @@ int main(int argc, char* argv[]) {
 
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto trace_cfg = mrna::trace::TraceCfg::FromArgParse(args);
-  const auto res = ctx.Fold(mrna::Primary::FromSeq(args.Pos(0)), trace_cfg);
+  auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+  pf.Verify(r);
+  const auto res = ctx.Fold(r, pf, trace_cfg);
 
   fmt::print("{}\n", res.mfe.energy);
   fmt::print("{}\n", res.tb.s.ToDb());

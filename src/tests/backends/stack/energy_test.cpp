@@ -25,7 +25,7 @@ class EnergyTestStack : public testing::TestWithParam<int> {
 
   static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
     return stack_ms[GetParam()]
-        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr)
+        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr, /*pf=*/{})
         .energy;
   }
 };

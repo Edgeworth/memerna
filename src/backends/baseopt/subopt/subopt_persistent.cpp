@@ -27,9 +27,10 @@ constexpr int CHECK_TIME_FREQ = 10000;
 }  // namespace
 
 template <bool UseLru>
-SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pc_(Primary(r_), m_), dp_(std::move(dp)), cfg_(cfg),
-      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+SuboptPersistent<UseLru>::SuboptPersistent(
+    Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_),
+      dp_(std::move(dp)), cfg_(cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
 int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
@@ -39,6 +40,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m_->cfg());
+  verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
 

@@ -16,7 +16,8 @@
 
 namespace mrna::md::base::opt {
 
-Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
+Energy MfeExterior(
+    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -25,6 +26,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state) {
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), m->cfg());
+  verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
   state.ext = ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state;

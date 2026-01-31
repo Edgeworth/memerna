@@ -14,7 +14,7 @@ test:
   # themselves on a specfic compiler.
   # Use setarch -R to disable ASLR, which can cause issues with thread sanitizer.
   # See https://github.com/google/sanitizers/issues/1716.
-  parallel --progress --halt soon,fail=1 --jobs 8 setarch -R poetry run python -m rnapy.run \
+  parallel --progress --halt soon,fail=1 --jobs $(nproc) setarch -R poetry run python -m rnapy.run \
     build --test {} ">" /dev/null ::: \
     --kind=debug --kind=relwithdebinfo ::: --sanitizer=asan \
     --sanitizer=tsan --sanitizer=ubsan ::: --float-precision=15 --float-precision=18 :::+ \

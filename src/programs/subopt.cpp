@@ -7,6 +7,7 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
 #include "model/primary.h"
@@ -31,6 +32,9 @@ int main(int argc, char* argv[]) {
   const bool should_print = !args.GetOr(mrna::OPT_QUIET);
   const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
   const auto cfg = mrna::subopt::SuboptCfg::FromArgParse(args);
+  auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+  pf.Verify(r);
 
   mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
   if (should_print) {
@@ -45,6 +49,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Subopt(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
+  int strucs = ctx.Subopt(r, pf, fn, cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

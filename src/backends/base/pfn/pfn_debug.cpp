@@ -21,7 +21,8 @@
 
 namespace mrna::md::base {
 
-PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState& state) {
+PfnTables PfnDebug::Run(
+    const Primary& r, const Model::Ptr& initial_m, PfnState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -38,12 +39,12 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
           erg::EnergyCfg::Ctd::NONE},
   };
   support.VerifySupported(funcname(), m->cfg());
-  m->pf.Verify(r);
+  pf.Verify(r);
 
   spdlog::debug("base {} with cfg {}", funcname(), m->cfg());
 
   const int N = static_cast<int>(r.size());
-  const Precomp pc(Primary(r), m);
+  const Precomp pc(Primary(r), m, pf);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;
 
@@ -63,11 +64,11 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
             p += pc.TwoLoop(st, en, ist, ien).Boltz() * dp[ist][ien][PT_P];
         // Hairpin loops.
-        p += m->Hairpin(r, st, en).Boltz();
+        p += m->Hairpin(r, pf, st, en).Boltz();
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const BoltzEnergy base_branch_cost =
-            (pc.augubranch[stb][enb] + m->pf.Paired(st, en) + m->multiloop_a).Boltz();
+            (pc.augubranch[stb][enb] + pf.Paired(st, en) + m->multiloop_a).Boltz();
 
         // (<   ><   >)
         BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
@@ -81,20 +82,20 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
         if (m->cfg().UseDangleMismatch()) {
           // (3<   ><   >) 3'
           p += base_branch_cost * dp[st + 2][en - 1][PT_U2] *
-              (m->dangle3[stb][st1b][enb] + m->pf.Unpaired(st + 1) + m->multiloop_c).Boltz();
+              (m->dangle3[stb][st1b][enb] + pf.Unpaired(st + 1) + m->multiloop_c).Boltz();
           // (<   ><   >5) 5'
           p += base_branch_cost * dp[st + 1][en - 2][PT_U2] *
-              (m->dangle5[stb][en1b][enb] + m->pf.Unpaired(en - 1) + m->multiloop_c).Boltz();
+              (m->dangle5[stb][en1b][enb] + pf.Unpaired(en - 1) + m->multiloop_c).Boltz();
           // (.<   ><   >.) Terminal mismatch
           p += base_branch_cost * dp[st + 2][en - 2][PT_U2] *
-              (m->terminal[stb][st1b][en1b][enb] + m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) +
+              (m->terminal[stb][st1b][en1b][enb] + pf.Unpaired(st + 1) + pf.Unpaired(en - 1) +
                   2 * m->multiloop_c)
                   .Boltz();
         }
 
         if (m->cfg().UseCoaxialStacking()) {
-          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) +
-              m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c;
+          const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
+              pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
             // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
@@ -112,12 +113,12 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
             // (.(   ).   ) Left inner coax
             p += base_branch_cost * dp[st + 2][piv - 1][PT_P] * dp[piv + 1][en - 1][PT_U] *
                 (pc.augubranch[st2b][pl1b] + m->MismatchCoaxial(pl1b, plb, st1b, st2b) +
-                    m->pf.Unpaired(st + 1) + m->pf.Unpaired(piv) + 2 * m->multiloop_c)
+                    pf.Unpaired(st + 1) + pf.Unpaired(piv) + 2 * m->multiloop_c)
                     .Boltz();
             // (   .(   ).) Right inner coax
             p += base_branch_cost * dp[st + 1][piv][PT_U] * dp[piv + 2][en - 2][PT_P] *
                 (pc.augubranch[pr1b][en2b] + m->MismatchCoaxial(en2b, en1b, prb, pr1b) +
-                    m->pf.Unpaired(piv + 1) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c)
+                    pf.Unpaired(piv + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c)
                     .Boltz();
 
             // ((   )   ) Left flush coax
@@ -139,8 +140,8 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
       // Update unpaired.
       // Choose `st` to be unpaired.
       if (st + 1 < en) {
-        u += dp[st + 1][en][PT_U] * (m->pf.Unpaired(st) + m->multiloop_c).Boltz();
-        u2 += dp[st + 1][en][PT_U2] * (m->pf.Unpaired(st) + m->multiloop_c).Boltz();
+        u += dp[st + 1][en][PT_U] * (pf.Unpaired(st) + m->multiloop_c).Boltz();
+        u2 += dp[st + 1][en][PT_U2] * (pf.Unpaired(st) + m->multiloop_c).Boltz();
       }
 
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
@@ -156,7 +157,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
 
         const BoltzEnergy right_paired = dp[piv + 1][en][PT_U];
         const BoltzEnergy right_unpaired =
-            (m->pf.UnpairedCum(piv + 1, en) + (en - piv) * m->multiloop_c).Boltz();
+            (pf.UnpairedSum(piv + 1, en) + (en - piv) * m->multiloop_c).Boltz();
 
         // (   )<   > - U, U_WC?, U_GU?
         BoltzEnergy u2_val = base00 * right_paired;
@@ -188,18 +189,18 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
 
         if (m->cfg().UseDangleMismatch()) {
           // (   )3<   > 3' - U
-          val = base01 * (m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c).Boltz();
+          val = base01 * (m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c).Boltz();
           u += val * right_unpaired + val * right_paired;
           u2 += val * right_paired;
 
           // 5(   )<   > 5' - U
-          val = base10 * (m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c).Boltz();
+          val = base10 * (m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c).Boltz();
           u += val * right_unpaired + val * right_paired;
           u2 += val * right_paired;
 
           // .(   ).<   > Terminal mismatch - U
           val = base11 *
-              (m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+              (m->terminal[pl1b][pb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(piv) +
                   2 * m->multiloop_c)
                   .Boltz();
           u += val * right_unpaired + val * right_paired;
@@ -209,7 +210,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
         if (m->cfg().UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 *
-              (m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+              (m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(piv) +
                   2 * m->multiloop_c)
                   .Boltz() *
               (dp[piv + 1][en][PT_U_WC] + dp[piv + 1][en][PT_U_GU]);
@@ -222,7 +223,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
           u2 += val;
 
           val = base11 *
-              (m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+              (m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(piv) +
                   2 * m->multiloop_c)
                   .Boltz();
           rcoax += val * right_unpaired + val * right_paired;
@@ -247,7 +248,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, *m, state);
+  PfnExterior(r, *m, state, pf);
   const auto& ext = state.ext;
 
   // Fill the left triangle.
@@ -276,9 +277,9 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
           }
         }
         const BoltzEnergy base_branch_cost = (pc.augubranch[stb][enb] + m->multiloop_a).Boltz();
-        const Energy outer_coax = lspace && rspace ? m->MismatchCoaxial(stb, st1b, en1b, enb) +
-                m->pf.Unpaired(st + 1) + m->pf.Unpaired(en - 1)
-                                                   : MAX_E;
+        const Energy outer_coax = lspace && rspace
+            ? m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) + pf.Unpaired(en - 1)
+            : MAX_E;
         // Try being an exterior loop - coax cases handled in the loop after this.
         {
           const BoltzEnergy augu = m->AuGuPenalty(enb, stb).Boltz();
@@ -310,35 +311,32 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
             if (lspace) {
               // |<   >(   )3<   >| 3' - Exterior loop
               // lspace > 0
-              p += augu * lext * r1ext *
-                  (m->dangle3[stb][st1b][enb] + m->pf.Unpaired(st + 1)).Boltz();
+              p += augu * lext * r1ext * (m->dangle3[stb][st1b][enb] + pf.Unpaired(st + 1)).Boltz();
               // |  >5)   (<   | 5' - Enclosing loop
               if (rspace > 1)
                 p += base_branch_cost * dp[st + 1][en - 2][PT_U2] *
-                    (m->dangle5[stb][en1b][enb] + m->pf.Unpaired(en - 1) + m->multiloop_c).Boltz();
+                    (m->dangle5[stb][en1b][enb] + pf.Unpaired(en - 1) + m->multiloop_c).Boltz();
             }
             if (rspace) {
               // |<   >5(   )<   >| 5' - Exterior loop
               // rspace > 0
-              p += augu * l1ext * rext *
-                  (m->dangle5[stb][en1b][enb] + m->pf.Unpaired(en - 1)).Boltz();
+              p += augu * l1ext * rext * (m->dangle5[stb][en1b][enb] + pf.Unpaired(en - 1)).Boltz();
               // |   >)   (3<  | 3' - Enclosing loop
               if (lspace > 1)
                 p += base_branch_cost * dp[st + 2][en - 1][PT_U2] *
-                    (m->dangle3[stb][st1b][enb] + m->pf.Unpaired(st + 1) + m->multiloop_c).Boltz();
+                    (m->dangle3[stb][st1b][enb] + pf.Unpaired(st + 1) + m->multiloop_c).Boltz();
             }
             // |<   >m(   )m<   >| Terminal mismatch - Exterior loop
             if (lspace && rspace)
               p += augu * l1ext * r1ext *
-                  (m->terminal[stb][st1b][en1b][enb] + m->pf.Unpaired(st + 1) +
-                      m->pf.Unpaired(en - 1))
+                  (m->terminal[stb][st1b][en1b][enb] + pf.Unpaired(st + 1) + pf.Unpaired(en - 1))
                       .Boltz();
 
             // |  >m)   (m<  | Terminal mismatch - Enclosing loop
             if (lspace > 1 && rspace > 1)
               p += base_branch_cost * dp[st + 2][en - 2][PT_U2] *
-                  (m->terminal[stb][st1b][en1b][enb] + m->pf.Unpaired(st + 1) +
-                      m->pf.Unpaired(en - 1) + 2 * m->multiloop_c)
+                  (m->terminal[stb][st1b][en1b][enb] + pf.Unpaired(st + 1) + pf.Unpaired(en - 1) +
+                      2 * m->multiloop_c)
                       .Boltz();
           }
 
@@ -358,14 +356,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
                 const BoltzEnergy rp1ext = ext[piv + 1][PTEXT_R];
                 // |<   >)   (.(   ).<   >| Exterior loop - Left inner coax
                 // lspace > 1 && not enclosed
-                p += PairedWithPf(m, dp, st + 2, pl) * lext * rp1ext *
+                p += PairedWithPf(pf, dp, st + 2, pl) * lext * rp1ext *
                     (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(st2b, pl1b) +
-                        m->MismatchCoaxial(pl1b, plb, st1b, st2b) + m->pf.Unpaired(st + 1) +
-                        m->pf.Unpaired(piv))
+                        m->MismatchCoaxial(pl1b, plb, st1b, st2b) + pf.Unpaired(st + 1) +
+                        pf.Unpaired(piv))
                         .Boltz();
                 // |<   >)   ((   )<   >| Exterior loop - Left flush coax
                 // lspace > 0 && not enclosed
-                p += PairedWithPf(m, dp, st + 1, piv) * lext * rp1ext *
+                p += PairedWithPf(pf, dp, st + 1, piv) * lext * rp1ext *
                     (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(st1b, plb) +
                         m->stack[stb][st1b][plb][enb])
                         .Boltz();
@@ -373,7 +371,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
                 if (rspace) {
                   // |<   >.)   (.(   )<   >| Exterior loop - Left outer coax
                   // lspace > 0 && rspace > 0 && not enclosed
-                  p += PairedWithPf(m, dp, st + 2, piv) * l1ext * rp1ext *
+                  p += PairedWithPf(pf, dp, st + 2, piv) * l1ext * rp1ext *
                       (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(st2b, plb) + outer_coax).Boltz();
                 }
               }
@@ -382,14 +380,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
                 const BoltzEnergy lpext = piv > 0 ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
                 // |<   >.(   ).)   (<   >| Exterior loop - Right inner coax
                 // rspace > 1 && not enclosed
-                p += PairedWithPf(m, dp, pr, en - 2) * lpext * rext *
+                p += PairedWithPf(pf, dp, pr, en - 2) * lpext * rext *
                     (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(prb, en2b) +
-                        m->MismatchCoaxial(en2b, en1b, plb, prb) + m->pf.Unpaired(piv) +
-                        m->pf.Unpaired(en - 1))
+                        m->MismatchCoaxial(en2b, en1b, plb, prb) + pf.Unpaired(piv) +
+                        pf.Unpaired(en - 1))
                         .Boltz();
                 // |<   >(   ))   (<   >| Exterior loop - Right flush coax
                 // rspace > 0 && not enclosed
-                p += PairedWithPf(m, dp, piv, en - 1) * lpext * rext *
+                p += PairedWithPf(pf, dp, piv, en - 1) * lpext * rext *
                     (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(plb, en1b) +
                         m->stack[en1b][enb][stb][plb])
                         .Boltz();
@@ -397,7 +395,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
                 if (lspace) {
                   // |<   >(   ).)   (.<   >| Exterior loop - Right outer coax
                   // lspace > 0 && rspace > 1 && not enclosed
-                  p += PairedWithPf(m, dp, piv, en - 2) * lpext * r1ext *
+                  p += PairedWithPf(pf, dp, piv, en - 2) * lpext * r1ext *
                       (m->AuGuPenalty(stb, enb) + m->AuGuPenalty(plb, en2b) + outer_coax).Boltz();
                 }
               }
@@ -434,14 +432,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
               if (left_formable) {
                 // |  >.)   (.(   )<  | Enclosing loop - Left outer coax
                 // lspace > 1 && rspace > 1 && enclosed
-                p += base_branch_cost * PairedWithPf(m, dp, st + 2, piv) * dp[pr][en - 2][PT_U] *
+                p += base_branch_cost * PairedWithPf(pf, dp, st + 2, piv) * dp[pr][en - 2][PT_U] *
                     (pc.augubranch[st2b][plb] + outer_coax + 2 * m->multiloop_c).Boltz();
               }
 
               if (right_formable) {
                 // |  >(   ).)   (.<  | Enclosing loop - Right outer coax
                 // lspace > 1 && rspace > 1 && enclosed
-                p += base_branch_cost * dp[st + 2][piv][PT_U] * PairedWithPf(m, dp, pr, en - 2) *
+                p += base_branch_cost * dp[st + 2][piv][PT_U] * PairedWithPf(pf, dp, pr, en - 2) *
                     (pc.augubranch[prb][en2b] + outer_coax + 2 * m->multiloop_c).Boltz();
               }
             }
@@ -449,18 +447,18 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
             if (lspace > 1 && rspace && left_dot_formable) {
               // |  >)   (.(   ).<  | Enclosing loop - Left inner coax
               // lspace > 1 && rspace > 0 && enclosed && no dot split
-              p += base_branch_cost * PairedWithPf(m, dp, st + 2, pl) * dp[pr][en - 1][PT_U] *
+              p += base_branch_cost * PairedWithPf(pf, dp, st + 2, pl) * dp[pr][en - 1][PT_U] *
                   (pc.augubranch[st2b][pl1b] + m->MismatchCoaxial(pl1b, plb, st1b, st2b) +
-                      m->pf.Unpaired(st + 1) + m->pf.Unpaired(piv) + 2 * m->multiloop_c)
+                      pf.Unpaired(st + 1) + pf.Unpaired(piv) + 2 * m->multiloop_c)
                       .Boltz();
             }
 
             if (lspace && rspace > 1 && right_dot_formable) {
               // |  >.(   ).)   (<  | Enclosing loop - Right inner coax
               // lspace > 0 && rspace > 1 && enclosed && no dot split
-              p += base_branch_cost * dp[st + 1][piv][PT_U] * PairedWithPf(m, dp, pr1, en - 2) *
+              p += base_branch_cost * dp[st + 1][piv][PT_U] * PairedWithPf(pf, dp, pr1, en - 2) *
                   (pc.augubranch[pr1b][en2b] + m->MismatchCoaxial(en2b, en1b, prb, pr1b) +
-                      m->pf.Unpaired(pr) + m->pf.Unpaired(en - 1) + 2 * m->multiloop_c)
+                      pf.Unpaired(pr) + pf.Unpaired(en - 1) + 2 * m->multiloop_c)
                       .Boltz();
             }
 
@@ -468,14 +466,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
               if (left_formable) {
                 // |  >)   ((   )<  | Enclosing loop - Left flush coax
                 // lspace > 0 && rspace > 0 && enclosed
-                p += base_branch_cost * PairedWithPf(m, dp, st + 1, piv) * dp[pr][en - 1][PT_U] *
+                p += base_branch_cost * PairedWithPf(pf, dp, st + 1, piv) * dp[pr][en - 1][PT_U] *
                     (pc.augubranch[st1b][plb] + m->stack[stb][st1b][plb][enb]).Boltz();
               }
 
               if (right_formable) {
                 // |  >(   ))   (<  | Enclosing loop - Right flush coax
                 // lspace > 0 && rspace > 0 && enclosed
-                p += base_branch_cost * dp[st + 1][piv][PT_U] * PairedWithPf(m, dp, pr, en - 1) *
+                p += base_branch_cost * dp[st + 1][piv][PT_U] * PairedWithPf(pf, dp, pr, en - 1) *
                     (pc.augubranch[prb][en1b] + m->stack[en1b][enb][stb][prb]).Boltz();
               }
             }
@@ -494,8 +492,8 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
       // Choose `st` to be unpaired, but only if we can maintain the constraint that we have
       // an enclosing loop formed.
       if (st + 1 < N) {
-        u += dp[st + 1][en][PT_U] * (m->pf.Unpaired(st) + m->multiloop_c).Boltz();
-        u2 += dp[st + 1][en][PT_U2] * (m->pf.Unpaired(st) + m->multiloop_c).Boltz();
+        u += dp[st + 1][en][PT_U] * (pf.Unpaired(st) + m->multiloop_c).Boltz();
+        u2 += dp[st + 1][en][PT_U2] * (pf.Unpaired(st) + m->multiloop_c).Boltz();
       }
 
       for (int tpiv = st + 1; tpiv <= en + N; ++tpiv) {
@@ -506,13 +504,12 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
         const auto pl1b = r[pl];
         const auto prb = r[pr];
         // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
-        const BoltzEnergy base00 = PairedWithPf(m, dp, st, piv) * pc.augubranch[stb][pb].Boltz();
-        const BoltzEnergy base01 = PairedWithPf(m, dp, st, pl) * pc.augubranch[stb][pl1b].Boltz();
+        const BoltzEnergy base00 = PairedWithPf(pf, dp, st, piv) * pc.augubranch[stb][pb].Boltz();
+        const BoltzEnergy base01 = PairedWithPf(pf, dp, st, pl) * pc.augubranch[stb][pl1b].Boltz();
 
         const BoltzEnergy right_paired = dp[pr][en][PT_U];
-        const BoltzEnergy right_unpaired = tpiv >= N
-            ? (m->pf.UnpairedCum(pr, en) + (en - pr + 1) * m->multiloop_c).Boltz()
-            : ONE_B;
+        const BoltzEnergy right_unpaired =
+            tpiv >= N ? (pf.UnpairedSum(pr, en) + (en - pr + 1) * m->multiloop_c).Boltz() : ONE_B;
 
         // Must have an enclosing loop.
         const bool straddling = tpiv != N - 1;
@@ -567,7 +564,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
 
         if (m->cfg().UseDangleMismatch() && dot_straddling) {
           // |  >>   <(   )3<  | 3'
-          val = base01 * (m->dangle3[pl1b][pb][stb] + m->pf.Unpaired(piv) + m->multiloop_c).Boltz();
+          val = base01 * (m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c).Boltz();
           if (tpiv >= N) u += val * right_unpaired;
           val *= right_paired;
           u += val;
@@ -576,14 +573,13 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
 
         if (lspace) {
           const BoltzEnergy base10 =
-              PairedWithPf(m, dp, st + 1, piv) * pc.augubranch[st1b][pb].Boltz();
+              PairedWithPf(pf, dp, st + 1, piv) * pc.augubranch[st1b][pb].Boltz();
           const BoltzEnergy base11 =
-              PairedWithPf(m, dp, st + 1, pl) * pc.augubranch[st1b][pl1b].Boltz();
+              PairedWithPf(pf, dp, st + 1, pl) * pc.augubranch[st1b][pl1b].Boltz();
 
           if (m->cfg().UseDangleMismatch() && straddling) {
             // |  >>   <5(   )<  | 5'
-            val =
-                base10 * (m->dangle5[pb][stb][st1b] + m->pf.Unpaired(st) + m->multiloop_c).Boltz();
+            val = base10 * (m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c).Boltz();
             if (tpiv >= N) u += val * right_unpaired;
             val *= right_paired;
             u += val;
@@ -594,7 +590,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
             // |  >>   <m(   )m<  | Terminal mismatch
             // lspace > 0 && dot_straddling
             val = base11 *
-                (m->terminal[pl1b][pb][stb][st1b] + m->pf.Unpaired(st) + m->pf.Unpaired(piv) +
+                (m->terminal[pl1b][pb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(piv) +
                     2 * m->multiloop_c)
                     .Boltz();
             if (tpiv >= N) u += val * right_unpaired;
@@ -607,16 +603,16 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState&
             // |  )>>   <.(   ).<(  | Left coax
             // lspace > 0 && dot_straddling
             val = base11 *
-                (m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-                    m->pf.Unpaired(piv) + 2 * m->multiloop_c)
+                (m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(piv) +
+                    2 * m->multiloop_c)
                     .Boltz();
             val = val * (dp[pr][en][PT_U_WC] + dp[pr][en][PT_U_GU]);
             u += val;
             u2 += val;
             // |  ).  >>   <(   )<.(   | Right coax backward
             val = base11 *
-                (m->MismatchCoaxial(pl1b, pb, stb, st1b) + m->pf.Unpaired(st) +
-                    m->pf.Unpaired(piv) + 2 * m->multiloop_c)
+                (m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(piv) +
+                    2 * m->multiloop_c)
                     .Boltz();
             if (tpiv >= N) rcoax += val * right_unpaired;
             rcoax += val * right_paired;

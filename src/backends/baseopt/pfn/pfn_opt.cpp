@@ -21,7 +21,8 @@
 
 namespace mrna::md::base::opt {
 
-PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state) {
+PfnTables PfnOpt::Run(
+    const Primary& r, const BoltzModel::Ptr& bm, PfnState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -31,6 +32,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, PfnState& sta
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
   support.VerifySupported(funcname(), bm->m().cfg());
+  verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), bm->m().cfg());
 

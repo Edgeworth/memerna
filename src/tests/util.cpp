@@ -3,9 +3,12 @@
 
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
+
 namespace mrna {
 
 void CheckPfn(const PfnTables& got, const PfnTables& want) {
@@ -24,7 +27,7 @@ void CheckPfn(const PfnTables& got, const PfnTables& want) {
 }
 
 std::tuple<Energy, Energy> GetPseudofree(
-    const BackendModelPtr& m_base, const std::string& r, const std::string& db) {
+    const BackendModelPtr& m, const std::string& r, const std::string& db) {
   const auto paired_mul = E(100.0);
   const auto unpaired_mul = E(10.0);
   std::vector<Energy> pf_paired(r.size(), E(0.0));
@@ -40,9 +43,9 @@ std::tuple<Energy, Energy> GetPseudofree(
     }
   }
 
-  auto m_pf = CloneBackend(m_base);
-  LoadPseudofreeEnergy(m_pf, pf_paired, pf_unpaired);
-  auto energy = GetEnergy(m_pf, {Primary::FromSeq(r), Secondary::FromDb(db)});
+  erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
+  auto energy =
+      TotalEnergy(m, Primary::FromSeq(r), Secondary::FromDb(db), /*given_ctd=*/nullptr, pf).energy;
   return {energy, extra_from_pseudofree};
 }
 

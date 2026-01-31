@@ -2,13 +2,15 @@
 #ifndef BACKENDS_STACK_MFE_MFE_EXTERIOR_H_
 #define BACKENDS_STACK_MFE_MFE_EXTERIOR_H_
 
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/primary.h"
 
 namespace mrna::md::stack {
 
-Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state);
+Energy MfeExterior(
+    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf);
 
 }  // namespace mrna::md::stack
 

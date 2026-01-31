@@ -6,18 +6,19 @@
 
 namespace mrna::md::base {
 
-Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {
-  m_->pf.Verify(r_);
+Precomp::Precomp(Primary r, Model::Ptr m, erg::PseudofreeCfg pf_)
+    : PrecompBase(std::move(r), std::move(m)), pf(std::move(pf_)) {
+  pf.Verify(r_);
 
-  if (!m_->pf.unpaired.empty()) {
-    min_pf_unpaired = m_->pf.unpaired[0];
-    for (const auto& e : m_->pf.unpaired) {
+  if (!pf.unpaired.empty()) {
+    min_pf_unpaired = pf.unpaired[0];
+    for (const auto& e : pf.unpaired) {
       min_pf_unpaired = std::min(min_pf_unpaired, e);
       if (e < ZERO_E) sum_neg_pf += e;
     }
   }
-  if (!m_->pf.paired.empty())
-    for (const auto& e : m_->pf.paired)
+  if (!pf.paired.empty())
+    for (const auto& e : pf.paired)
       if (e < ZERO_E) sum_neg_pf += e;
 }
 
@@ -26,12 +27,11 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int botlen = oen - ien - 1;
 
   if (toplen == 0 && botlen == 0)
-    return m_->pf.Paired(ost, oen) + m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
-  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, ost, oen, ist, ien);
+    return pf.Paired(ost, oen) + m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
+  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, pf, ost, oen, ist, ien);
 
   Energy energy = m_->AuGuPenalty(r_[ost], r_[oen]) + m_->AuGuPenalty(r_[ist], r_[ien]) +
-      m_->pf.Paired(ost, oen) + m_->pf.UnpairedCum(ost + 1, ist - 1) +
-      m_->pf.UnpairedCum(ien + 1, oen - 1);
+      pf.Paired(ost, oen) + pf.UnpairedSum(ost + 1, ist - 1) + pf.UnpairedSum(ien + 1, oen - 1);
 
   if (toplen == 1 && botlen == 1)
     return energy + m_->internal_1x1[r_[ost]][r_[ost + 1]][r_[ist]][r_[ien]][r_[ien + 1]][r_[oen]];
@@ -69,7 +69,7 @@ Energy Precomp::Hairpin(int st, int en) const {
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
 
-  Energy energy = m_->pf.UnpairedCum(st + 1, en - 1) + m_->pf.Paired(st, en);
+  Energy energy = pf.UnpairedSum(st + 1, en - 1) + pf.Paired(st, en);
 
   // AU/GU penalty baked into precomputed special table.
   if (length <= MAX_SPECIAL_HAIRPIN_SZ && hairpin[st].special[length] != MAX_E)
