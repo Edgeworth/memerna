@@ -19,7 +19,7 @@
 
 namespace mrna::md::base::opt {
 
-PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& state) {
+PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& initial_m, PfnState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 

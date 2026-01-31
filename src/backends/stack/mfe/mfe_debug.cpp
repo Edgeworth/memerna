@@ -303,7 +303,7 @@ struct MfeInternal {
 
 }  // namespace
 
-void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state) {
+void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state) {
   MfeInternal(r, m, state).Compute();
 }
 

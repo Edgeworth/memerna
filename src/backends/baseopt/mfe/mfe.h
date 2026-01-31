@@ -9,16 +9,28 @@
 namespace mrna::md::base::opt {
 
 // Debug folding.
-void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state);
+class MfeDebug {
+ public:
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
+};
 
 // Basic MFE folding.
-void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state);
+class MfeOpt {
+ public:
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
+};
 
 // Sparse folding.
-void MfeSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state);
+class MfeSparseOpt {
+ public:
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
+};
 
 // Sparse folding with Lyngso's algorithm.
-void MfeLyngsoSparseOpt(const Primary& r, const Model::Ptr& m, DpState& state);
+class MfeLyngsoSparseOpt {
+ public:
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
+};
 
 Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state);
 

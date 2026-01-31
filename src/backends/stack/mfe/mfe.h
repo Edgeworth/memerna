@@ -87,7 +87,10 @@ constexpr std::size_t MaxLinearIndex(std::size_t n) {
       PenultimateIndex::MaxLinearIndex(n);
 }
 
-void MfeDebug(const Primary& r, const Model::Ptr& m, DpState& state);
+class MfeDebug {
+ public:
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
+};
 
 Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state);
 

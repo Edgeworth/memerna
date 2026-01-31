@@ -72,23 +72,23 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
       [&](const md::base::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::DEBUG: md::base::MfeDebug(r, m, state); break;
-        case CtxCfg::MfeAlg::OPT: md::base::MfeOpt(r, m, state); break;
+        case CtxCfg::MfeAlg::DEBUG: md::base::MfeDebug::Run(r, m, state); break;
+        case CtxCfg::MfeAlg::OPT: md::base::MfeOpt::Run(r, m, state); break;
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::MfeSparseOpt(r, m, state); break;
-        case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT: md::base::MfeLyngsoSparseOpt(r, m, state); break;
+        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::MfeSparseOpt::Run(r, m, state); break;
+        case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT: md::base::MfeLyngsoSparseOpt::Run(r, m, state); break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },
       [&](const md::base::opt::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::DEBUG: md::base::opt::MfeDebug(r, m, state); break;
-        case CtxCfg::MfeAlg::OPT: md::base::opt::MfeOpt(r, m, state); break;
+        case CtxCfg::MfeAlg::DEBUG: md::base::opt::MfeDebug::Run(r, m, state); break;
+        case CtxCfg::MfeAlg::OPT: md::base::opt::MfeOpt::Run(r, m, state); break;
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::opt::MfeSparseOpt(r, m, state); break;
+        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::opt::MfeSparseOpt::Run(r, m, state); break;
         case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT:
-          md::base::opt::MfeLyngsoSparseOpt(r, m, state);
+          md::base::opt::MfeLyngsoSparseOpt::Run(r, m, state);
           break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
@@ -97,7 +97,7 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
         auto& state = std::get<md::stack::DpState>(dp);
         switch (cfg_.mfe_alg) {
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::DEBUG: md::stack::MfeDebug(r, m, state); break;
+        case CtxCfg::MfeAlg::DEBUG: md::stack::MfeDebug::Run(r, m, state); break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },
@@ -246,20 +246,20 @@ pfn::PfnResult Ctx::Pfn(const Primary& r) const {
       [&](const md::base::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
         switch (cfg_.pfn_alg) {
-        case CtxCfg::PfnAlg::DEBUG: return md::base::PfnDebug(r, m, state);
+        case CtxCfg::PfnAlg::DEBUG: return md::base::PfnDebug::Run(r, m, state);
         case CtxCfg::PfnAlg::AUTO:
         case CtxCfg::PfnAlg::OPT:
-          return md::base::PfnOpt(r, md::base::BoltzModel::Create(m), state);
+          return md::base::PfnOpt::Run(r, md::base::BoltzModel::Create(m), state);
         default: fatal("unsupported partition algorithm for energy model: {}", cfg_.pfn_alg);
         }
       },
       [&](const md::base::opt::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
         switch (cfg_.pfn_alg) {
-        case CtxCfg::PfnAlg::DEBUG: return md::base::opt::PfnDebug(r, m, state);
+        case CtxCfg::PfnAlg::DEBUG: return md::base::opt::PfnDebug::Run(r, m, state);
         case CtxCfg::PfnAlg::AUTO:
         case CtxCfg::PfnAlg::OPT:
-          return md::base::opt::PfnOpt(r, md::base::opt::BoltzModel::Create(m), state);
+          return md::base::opt::PfnOpt::Run(r, md::base::opt::BoltzModel::Create(m), state);
         default: fatal("unsupported partition algorithm for energy model: {}", cfg_.pfn_alg);
         }
       },

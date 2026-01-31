@@ -9,9 +9,15 @@
 
 namespace mrna::md::base {
 
-PfnTables PfnDebug(const Primary& r, const Model::Ptr& initial_m, PfnState& state);
+class PfnDebug {
+ public:
+  static PfnTables Run(const Primary& r, const Model::Ptr& initial_m, PfnState& state);
+};
 
-PfnTables PfnOpt(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state);
+class PfnOpt {
+ public:
+  static PfnTables Run(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state);
+};
 
 void PfnExterior(const Primary& r, const Model& m, PfnState& state);
 

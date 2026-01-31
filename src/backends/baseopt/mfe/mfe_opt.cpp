@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include "backends/baseopt/mfe/mfe.h"
+
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
@@ -16,7 +18,7 @@
 
 namespace mrna::md::base::opt {
 
-void MfeOpt(const Primary& r, const Model::Ptr& m, DpState& state) {
+void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
