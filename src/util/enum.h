@@ -2,15 +2,14 @@
 #ifndef UTIL_ENUM_H_
 #define UTIL_ENUM_H_
 
+#include <fmt/core.h>
+
 #include <boost/describe.hpp>
 #include <cctype>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <vector>
-
-#include <fmt/core.h>
 
 #include "util/error.h"
 

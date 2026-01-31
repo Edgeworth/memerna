@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "util/enum.h"
 #include "util/error.h"
 #include "util/string.h"
 

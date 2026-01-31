@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "util/enum.h"
+#include "util/enum.h"  // IWYU pragma: keep - required for ADL to work for enum conversion.
 #include "util/error.h"
 
 namespace mrna {

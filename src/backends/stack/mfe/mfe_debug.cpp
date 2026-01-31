@@ -1,4 +1,6 @@
 // Copyright 2023 Eliot Courtney.
+#include "backends/stack/mfe/mfe_debug.h"
+
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
@@ -7,7 +9,6 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/dp.h"
 #include "backends/stack/energy/model.h"
-#include "backends/stack/mfe/mfe.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

@@ -1,4 +1,6 @@
 // Copyright 2016 Eliot Courtney.
+#include "backends/base/pfn/pfn_debug.h"
+
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
@@ -7,7 +9,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "backends/base/energy/precomp.h"
-#include "backends/base/pfn/pfn.h"
+#include "backends/base/pfn/pfn_exterior.h"
 #include "backends/common/base/dp.h"
 #include "model/base.h"
 #include "model/constants.h"

@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "backends/base/mfe/mfe.h"
+#include "backends/base/mfe/mfe_lyngso_sparse_opt.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>

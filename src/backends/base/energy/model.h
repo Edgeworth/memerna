@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {

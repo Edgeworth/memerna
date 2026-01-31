@@ -1,23 +1,12 @@
-// Copyright 2022 Eliot Courtney.
-#ifndef BACKENDS_BASE_PFN_PFN_H_
-#define BACKENDS_BASE_PFN_PFN_H_
+// Copyright 2026 Eliot Courtney.
+#ifndef BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
+#define BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
 
 #include "backends/base/energy/boltz_model.h"
 #include "backends/common/base/dp.h"
-#include "model/pfn.h"
 #include "model/primary.h"
 
 namespace mrna::md::base {
-
-class PfnDebug {
- public:
-  static PfnTables Run(const Primary& r, const Model::Ptr& initial_m, PfnState& state);
-};
-
-class PfnOpt {
- public:
-  static PfnTables Run(const Primary& r, const BoltzModel::Ptr& bm, PfnState& state);
-};
 
 void PfnExterior(const Primary& r, const Model& m, PfnState& state);
 
@@ -35,4 +24,4 @@ inline BoltzEnergy PairedWithPf(const BoltzModel::Ptr& bm, const BoltzDpArray& d
 
 }  // namespace mrna::md::base
 
-#endif  // BACKENDS_BASE_PFN_PFN_H_
+#endif  // BACKENDS_BASE_PFN_PFN_EXTERIOR_H_

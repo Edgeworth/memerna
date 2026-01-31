@@ -8,7 +8,6 @@
 #include "model/primary.h"
 #include "tests/init.h"
 #include "tests/util.h"
-#include "util/string.h"
 
 namespace mrna {
 

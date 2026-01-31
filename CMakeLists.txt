@@ -170,15 +170,21 @@ set(MEMERNA_SOURCE
   src/backends/base/energy/precomp.cpp
   src/backends/base/energy/precomp.h
   src/backends/base/mfe/mfe_debug.cpp
+  src/backends/base/mfe/mfe_debug.h
   src/backends/base/mfe/mfe_exterior.cpp
   src/backends/base/mfe/mfe_lyngso_sparse_opt.cpp
+  src/backends/base/mfe/mfe_lyngso_sparse_opt.h
   src/backends/base/mfe/mfe_opt.cpp
+  src/backends/base/mfe/mfe_opt.h
   src/backends/base/mfe/mfe_sparse_opt.cpp
-  src/backends/base/mfe/mfe.h
+  src/backends/base/mfe/mfe_sparse_opt.h
+  src/backends/base/mfe/mfe_exterior.h
   src/backends/base/pfn/pfn_debug.cpp
+  src/backends/base/pfn/pfn_debug.h
   src/backends/base/pfn/pfn_exterior.cpp
+  src/backends/base/pfn/pfn_exterior.h
   src/backends/base/pfn/pfn_opt.cpp
-  src/backends/base/pfn/pfn.h
+  src/backends/base/pfn/pfn_opt.h
   src/backends/base/subopt/subopt_debug.cpp
   src/backends/base/subopt/subopt_debug.h
   src/backends/base/subopt/subopt_iterative.cpp
@@ -195,15 +201,21 @@ set(MEMERNA_SOURCE
   src/backends/baseopt/energy/precomp.cpp
   src/backends/baseopt/energy/precomp.h
   src/backends/baseopt/mfe/mfe_debug.cpp
+  src/backends/baseopt/mfe/mfe_debug.h
   src/backends/baseopt/mfe/mfe_exterior.cpp
   src/backends/baseopt/mfe/mfe_lyngso_sparse_opt.cpp
+  src/backends/baseopt/mfe/mfe_lyngso_sparse_opt.h
   src/backends/baseopt/mfe/mfe_opt.cpp
+  src/backends/baseopt/mfe/mfe_opt.h
   src/backends/baseopt/mfe/mfe_sparse_opt.cpp
-  src/backends/baseopt/mfe/mfe.h
+  src/backends/baseopt/mfe/mfe_sparse_opt.h
+  src/backends/baseopt/mfe/mfe_exterior.h
   src/backends/baseopt/pfn/pfn_debug.cpp
+  src/backends/baseopt/pfn/pfn_debug.h
   src/backends/baseopt/pfn/pfn_exterior.cpp
+  src/backends/baseopt/pfn/pfn_exterior.h
   src/backends/baseopt/pfn/pfn_opt.cpp
-  src/backends/baseopt/pfn/pfn.h
+  src/backends/baseopt/pfn/pfn_opt.h
   src/backends/baseopt/subopt/subopt_debug.cpp
   src/backends/baseopt/subopt/subopt_debug.h
   src/backends/baseopt/subopt/subopt_iterative.cpp
@@ -233,9 +245,11 @@ set(MEMERNA_SOURCE
   src/backends/stack/energy/boltz_model.h
   src/backends/stack/energy/model.cpp
   src/backends/stack/energy/model.h
+  src/backends/stack/mfe/dp.h
   src/backends/stack/mfe/mfe_debug.cpp
+  src/backends/stack/mfe/mfe_debug.h
   src/backends/stack/mfe/mfe_exterior.cpp
-  src/backends/stack/mfe/mfe.h
+  src/backends/stack/mfe/mfe_exterior.h
   src/backends/stack/subopt/subopt_iterative.cpp
   src/backends/stack/subopt/subopt_iterative.h
   src/backends/stack/subopt/subopt_persistent.cpp

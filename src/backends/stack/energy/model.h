@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "api/energy/energy.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 #include "model/ctd.h"
 #include "model/energy.h"

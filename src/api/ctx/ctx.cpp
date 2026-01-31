@@ -12,15 +12,25 @@
 #include "api/pfn.h"
 #include "api/trace/trace_cfg.h"
 #include "backends/base/energy/boltz_model.h"
-#include "backends/base/mfe/mfe.h"
-#include "backends/base/pfn/pfn.h"
+#include "backends/base/mfe/mfe_debug.h"
+#include "backends/base/mfe/mfe_exterior.h"
+#include "backends/base/mfe/mfe_lyngso_sparse_opt.h"
+#include "backends/base/mfe/mfe_opt.h"
+#include "backends/base/mfe/mfe_sparse_opt.h"
+#include "backends/base/pfn/pfn_debug.h"
+#include "backends/base/pfn/pfn_opt.h"
 #include "backends/base/subopt/subopt_debug.h"
 #include "backends/base/subopt/subopt_iterative.h"
 #include "backends/base/subopt/subopt_persistent.h"
 #include "backends/base/trace/trace.h"
 #include "backends/baseopt/energy/boltz_model.h"
-#include "backends/baseopt/mfe/mfe.h"
-#include "backends/baseopt/pfn/pfn.h"
+#include "backends/baseopt/mfe/mfe_debug.h"
+#include "backends/baseopt/mfe/mfe_exterior.h"
+#include "backends/baseopt/mfe/mfe_lyngso_sparse_opt.h"
+#include "backends/baseopt/mfe/mfe_opt.h"
+#include "backends/baseopt/mfe/mfe_sparse_opt.h"
+#include "backends/baseopt/pfn/pfn_debug.h"
+#include "backends/baseopt/pfn/pfn_opt.h"
 #include "backends/baseopt/subopt/subopt_debug.h"
 #include "backends/baseopt/subopt/subopt_iterative.h"
 #include "backends/baseopt/subopt/subopt_persistent.h"
@@ -28,7 +38,9 @@
 #include "backends/brute/alg.h"
 #include "backends/common/base/dp.h"
 #include "backends/stack/energy/model.h"
-#include "backends/stack/mfe/mfe.h"
+#include "backends/stack/mfe/dp.h"
+#include "backends/stack/mfe/mfe_debug.h"
+#include "backends/stack/mfe/mfe_exterior.h"
 #include "backends/stack/subopt/subopt_iterative.h"
 #include "backends/stack/subopt/subopt_persistent.h"
 #include "backends/stack/trace/trace.h"
@@ -76,7 +88,9 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp) const {
         case CtxCfg::MfeAlg::OPT: md::base::MfeOpt::Run(r, m, state); break;
         case CtxCfg::MfeAlg::AUTO:
         case CtxCfg::MfeAlg::SPARSE_OPT: md::base::MfeSparseOpt::Run(r, m, state); break;
-        case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT: md::base::MfeLyngsoSparseOpt::Run(r, m, state); break;
+        case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT:
+          md::base::MfeLyngsoSparseOpt::Run(r, m, state);
+          break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },

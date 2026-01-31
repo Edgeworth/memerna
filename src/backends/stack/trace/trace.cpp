@@ -13,7 +13,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/dp.h"
-#include "backends/stack/mfe/mfe.h"
+#include "backends/stack/mfe/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"

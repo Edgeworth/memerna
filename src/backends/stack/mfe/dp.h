@@ -1,13 +1,11 @@
-// Copyright 2023 Eliot Courtney.
+// Copyright 2026 Eliot Courtney.
 
-#ifndef BACKENDS_STACK_MFE_MFE_H_
-#define BACKENDS_STACK_MFE_MFE_H_
+#ifndef BACKENDS_STACK_MFE_DP_H_
+#define BACKENDS_STACK_MFE_DP_H_
 
 #include <variant>
 
 #include "backends/common/base/dp.h"
-#include "backends/stack/energy/model.h"
-#include "model/primary.h"
 #include "util/util.h"
 
 namespace mrna::md::stack {
@@ -87,13 +85,6 @@ constexpr std::size_t MaxLinearIndex(std::size_t n) {
       PenultimateIndex::MaxLinearIndex(n);
 }
 
-class MfeDebug {
- public:
-  static void Run(const Primary& r, const Model::Ptr& m, DpState& state);
-};
-
-Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state);
-
 }  // namespace mrna::md::stack
 
-#endif  // BACKENDS_STACK_MFE_MFE_H_
+#endif  // BACKENDS_STACK_MFE_DP_H_

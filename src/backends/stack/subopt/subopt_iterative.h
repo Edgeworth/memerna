@@ -11,7 +11,7 @@
 #include "api/subopt/subopt_cfg.h"
 #include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
-#include "backends/stack/mfe/mfe.h"
+#include "backends/stack/mfe/dp.h"
 #include "backends/stack/trace/trace.h"
 #include "model/energy.h"
 #include "model/primary.h"

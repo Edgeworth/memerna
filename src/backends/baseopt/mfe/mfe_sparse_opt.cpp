@@ -1,5 +1,5 @@
 // Copyright 2016 Eliot Courtney.
-#include "backends/baseopt/mfe/mfe.h"
+#include "backends/baseopt/mfe/mfe_sparse_opt.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>

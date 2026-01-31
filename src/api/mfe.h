@@ -5,7 +5,7 @@
 #include <variant>
 
 #include "backends/common/base/dp.h"
-#include "backends/stack/mfe/mfe.h"
+#include "backends/stack/mfe/dp.h"
 #include "model/energy.h"
 
 namespace mrna::mfe {

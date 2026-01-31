@@ -4,9 +4,9 @@
 
 #include <cassert>
 
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/boltz_model_base.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/model_mixin.h"
 
 namespace mrna::md::base {

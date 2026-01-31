@@ -1,6 +1,6 @@
 // Copyright 2025 Eliot Courtney.
-#ifndef API_ENERGY_PSEUDOFREE_H_
-#define API_ENERGY_PSEUDOFREE_H_
+#ifndef API_ENERGY_PSEUDOFREE_CFG_H_
+#define API_ENERGY_PSEUDOFREE_CFG_H_
 
 #include <vector>
 
@@ -89,4 +89,4 @@ class BoltzPseudofreeCfg {
 
 }  // namespace mrna::erg
 
-#endif  // API_ENERGY_PSEUDOFREE_H_
+#endif  // API_ENERGY_PSEUDOFREE_CFG_H_

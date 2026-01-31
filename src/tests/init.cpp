@@ -6,7 +6,6 @@
 
 #include "api/ctx/backend.h"
 #include "api/energy/energy_cfg.h"
-#include "util/string.h"
 
 namespace mrna {
 

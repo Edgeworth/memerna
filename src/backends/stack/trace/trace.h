@@ -5,7 +5,7 @@
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
 #include "backends/stack/energy/model.h"
-#include "backends/stack/mfe/mfe.h"
+#include "backends/stack/mfe/dp.h"
 #include "model/primary.h"
 
 namespace mrna::md::stack {

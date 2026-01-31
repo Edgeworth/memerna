@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
+#include "backends/baseopt/pfn/pfn_exterior.h"
+
 #include "api/energy/energy_cfg.h"
-#include "backends/baseopt/pfn/pfn.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
