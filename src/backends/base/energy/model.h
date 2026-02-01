@@ -17,6 +17,9 @@ class Model : public ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::BASE;
 
+  static bool IsSupported(
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
   Energy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost, int oen,

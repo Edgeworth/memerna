@@ -24,6 +24,9 @@ using mrna::subopt::SuboptResult;
 
 class SuboptDebug {
  public:
+  static bool IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
+      const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
+
   SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 

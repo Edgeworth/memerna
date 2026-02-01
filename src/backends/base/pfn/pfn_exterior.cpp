@@ -13,14 +13,6 @@ namespace mrna::md::base {
 void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
     const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
-
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false},  // Bulge states with partition function doesn't make sense.
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
-          erg::EnergyCfg::Ctd::NONE},
-  };
-  support.VerifySupported(funcname(), cfg);
   pf.Verify(r);
 
   const auto& dp = state.dp;

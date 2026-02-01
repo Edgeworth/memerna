@@ -29,6 +29,9 @@ using mrna::subopt::SuboptResult;
 template <bool UseLru>
 class SuboptPersistent {
  public:
+  static bool IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
+      const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
+
   SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 

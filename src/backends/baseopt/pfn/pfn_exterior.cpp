@@ -13,13 +13,6 @@ namespace mrna::md::base::opt {
 void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state) {
   const int N = static_cast<int>(r.size());
 
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false},  // Bulge states with partition function doesn't make sense.
-      .ctd{erg::EnergyCfg::Ctd::ALL},
-  };
-  support.VerifySupported(funcname(), cfg);
-
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);
   auto& ext = state.ext;

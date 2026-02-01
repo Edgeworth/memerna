@@ -2,11 +2,15 @@
 #ifndef API_CTX_ALGORITHM_H_
 #define API_CTX_ALGORITHM_H_
 
-#include <vector>
+#include <optional>
+#include <string>
 
-#include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "util/argparse.h"
+#include "util/container.h"
 #include "util/enum.h"
 
 namespace mrna {
@@ -16,96 +20,28 @@ MAKE_ENUM(
     SuboptAlg, AUTO, BRUTE, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 MAKE_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
 
-[[nodiscard]] constexpr std::vector<MfeAlg> MfeAlgsForBackendKind(BackendKind kind) {
-  switch (kind) {
-  case BackendKind::BASE:
-    return {
-        MfeAlg::BRUTE,
-        MfeAlg::DEBUG,
-        MfeAlg::OPT,
-        MfeAlg::SPARSE_OPT,
-        MfeAlg::LYNGSO_SPARSE_OPT,
-    };
-  case BackendKind::BASEOPT:
-    return {
-        MfeAlg::BRUTE,
-        MfeAlg::DEBUG,
-        MfeAlg::OPT,
-        MfeAlg::SPARSE_OPT,
-        MfeAlg::LYNGSO_SPARSE_OPT,
-    };
-  case BackendKind::STACK:
-    return {
-        MfeAlg::BRUTE,
-        MfeAlg::OPT,
-    };
-  }
-  unreachable();
-}
+[[nodiscard]] bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
-[[nodiscard]] constexpr std::vector<SuboptAlg> SuboptAlgsForBackendKind(BackendKind kind) {
-  switch (kind) {
-  case BackendKind::BASE:
-    return {
-        SuboptAlg::BRUTE,
-        SuboptAlg::DEBUG,
-        SuboptAlg::ITERATIVE,
-        SuboptAlg::ITERATIVE_LOWMEM,
-        SuboptAlg::PERSISTENT,
-        SuboptAlg::PERSISTENT_LOWMEM,
-    };
-  case BackendKind::BASEOPT:
-    return {
-        SuboptAlg::BRUTE,
-        SuboptAlg::DEBUG,
-        SuboptAlg::ITERATIVE,
-        SuboptAlg::ITERATIVE_LOWMEM,
-        SuboptAlg::PERSISTENT,
-        SuboptAlg::PERSISTENT_LOWMEM,
-    };
-  case BackendKind::STACK:
-    return {
-        SuboptAlg::BRUTE,
-        SuboptAlg::ITERATIVE,
-        SuboptAlg::ITERATIVE_LOWMEM,
-        SuboptAlg::PERSISTENT,
-        SuboptAlg::PERSISTENT_LOWMEM,
-    };
-  }
-  unreachable();
-}
+[[nodiscard]] smallvec<MfeAlg, EnumCount<MfeAlg>()> MfePriorityForBackend(BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<SuboptAlg, EnumCount<SuboptAlg>()> SuboptPriorityForBackend(BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<PfnAlg, EnumCount<PfnAlg>()> PfnPriorityForBackend(BackendKind kind, bool include_brute);
 
-[[nodiscard]] constexpr std::vector<PfnAlg> PfnAlgsForBackendKind(BackendKind kind) {
-  switch (kind) {
-  case BackendKind::BASE:
-    return {
-        PfnAlg::BRUTE,
-        PfnAlg::DEBUG,
-        PfnAlg::OPT,
-    };
-  case BackendKind::BASEOPT:
-    return {
-        PfnAlg::BRUTE,
-        PfnAlg::DEBUG,
-        PfnAlg::OPT,
-    };
-  case BackendKind::STACK: return {PfnAlg::BRUTE};
-  }
-  unreachable();
-}
+[[nodiscard]] bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+[[nodiscard]] bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg,
+    std::string* reason = nullptr);
+[[nodiscard]] bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
-// Convenience functions that take BackendModelPtr
-[[nodiscard]] inline std::vector<MfeAlg> MfeAlgsForBackend(const BackendModelPtr& m) {
-  return MfeAlgsForBackendKind(GetBackendKind(m));
-}
-
-[[nodiscard]] inline std::vector<SuboptAlg> SuboptAlgsForBackend(const BackendModelPtr& m) {
-  return SuboptAlgsForBackendKind(GetBackendKind(m));
-}
-
-[[nodiscard]] inline std::vector<PfnAlg> PfnAlgsForBackend(const BackendModelPtr& m) {
-  return PfnAlgsForBackendKind(GetBackendKind(m));
-}
+[[nodiscard]] std::optional<MfeAlg> ResolveMfeAlg(BackendKind kind, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* log = nullptr);
+[[nodiscard]] std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg,
+    std::string* log = nullptr);
+[[nodiscard]] std::optional<PfnAlg> ResolvePfnAlg(BackendKind kind, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* log = nullptr);
 
 inline const Opt OPT_MFE_ALG = Opt(Opt::ARG)
                                    .LongName("dp-alg")

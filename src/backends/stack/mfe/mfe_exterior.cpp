@@ -27,13 +27,6 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
     const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
 
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
-  };
-  support.VerifySupported(funcname(), cfg);
-
   state.base.ext = base::ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state.base;
 

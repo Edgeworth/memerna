@@ -10,7 +10,6 @@
 
 #include "model/ctd.h"
 #include "util/argparse.h"
-#include "util/container.h"
 #include "util/enum.h"
 
 namespace mrna::erg {
@@ -66,15 +65,6 @@ struct EnergyCfg {
   [[nodiscard]] auto ToCtdString(const Secondary& s, const Ctds& ctds) const {
     return ctds.ToString(s, UseD2());
   }
-};
-
-// Description of the support of an algorithm for each energy configuration.
-struct EnergyCfgSupport {
-  smallvec<EnergyCfg::LonelyPairs, 10> lonely_pairs{};
-  smallvec<bool, 2> bulge_states{};
-  smallvec<EnergyCfg::Ctd, 10> ctd{};
-
-  void VerifySupported(const std::string& name, const EnergyCfg& cfg) const;
 };
 
 std::ostream& operator<<(std::ostream& str, const EnergyCfg& o);

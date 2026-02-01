@@ -25,6 +25,16 @@
 
 namespace mrna::md::stack {
 
+bool Model::IsSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL && cfg.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
+      cfg.ctd != erg::EnergyCfg::Ctd::NONE) {
+    if (reason) *reason = fmt::format("ctd={} not supported by stack backend", cfg.ctd);
+    return false;
+  }
+  return true;
+}
+
 Energy Model::Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
     std::unique_ptr<Structure>* s) const {
   assert(st < en);

@@ -25,6 +25,21 @@ using base::DP_U_GU;
 using base::DP_U_RC;
 using base::DP_U_WC;
 
+bool MfeOpt::IsSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+    return false;
+  }
+  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL && cfg.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
+      cfg.ctd != erg::EnergyCfg::Ctd::NONE) {
+    if (reason) *reason = fmt::format("ctd={} not supported", cfg.ctd);
+    return false;
+  }
+  return true;
+}
+
 namespace {
 
 struct MfeInternal {
@@ -46,12 +61,9 @@ struct MfeInternal {
     static_assert(
         HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-    static thread_local const erg::EnergyCfgSupport support{
-        .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-        .bulge_states{false, true},
-        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
-    };
-    support.VerifySupported(funcname(), cfg);
+    std::string reason;
+    verify(MfeOpt::IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
+        funcname(), reason);
     pf.Verify(r);
 
     spdlog::debug("stack {} with cfg {}", funcname(), cfg);

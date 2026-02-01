@@ -13,6 +13,9 @@ namespace mrna::md::base::opt {
 
 class PfnDebug {
  public:
+  static bool IsSupported(
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
   static PfnTables Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cfg, PfnState& state,
       const erg::PseudofreeCfg& pf);
 };

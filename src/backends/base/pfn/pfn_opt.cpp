@@ -21,18 +21,25 @@
 
 namespace mrna::md::base {
 
+bool PfnOpt::IsSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+    return false;
+  }
+  return true;
+}
+
 PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCfg cfg,
     PfnState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false},  // Bulge states with partition function doesn't make sense.
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
-          erg::EnergyCfg::Ctd::NONE},
-  };
-  support.VerifySupported(funcname(), cfg);
+  cfg.bulge_states = false;
+  std::string reason;
+  verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
   pf.Verify(r);
 
   spdlog::debug("base {} with cfg {}", funcname(), cfg);

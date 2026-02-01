@@ -101,17 +101,57 @@ const BackendModelPtr& Ctx::EnsureBackend() const {
   return *backends_[idx];
 }
 
-const BackendModelPtr& Ctx::BackendForFold([[maybe_unused]] MfeAlg alg) const {
-  return EnsureBackend();
+MfeBackend Ctx::BackendForFold(
+    MfeAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
+  const auto& m = EnsureBackend();
+  if (alg == MfeAlg::AUTO) {
+    if (auto resolved = ResolveMfeAlg(GetBackendKind(m), cfg, pf, nullptr)) {
+      alg = *resolved;
+    } else {
+      std::string log;
+      (void)ResolveMfeAlg(GetBackendKind(m), cfg, pf, &log);
+      fatal("No MFE algorithm supports configuration:\n{}", log);
+    }
+  }
+  return {.m = m, .alg = alg};
 }
 
-const BackendModelPtr& Ctx::BackendForSubopt(
-    [[maybe_unused]] SuboptAlg alg, [[maybe_unused]] MfeAlg mfe_alg) const {
-  return EnsureBackend();
+SuboptBackend Ctx::BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg) const {
+  if (alg == SuboptAlg::BRUTE) {
+    const auto& m = EnsureBackend();
+    return {.m = m, .alg = alg, .mfe_alg = mfe_alg};
+  }
+
+  auto [m, resolved_mfe_alg] = BackendForFold(mfe_alg, cfg, pf);
+  if (alg == SuboptAlg::AUTO) {
+    if (auto resolved = ResolveSuboptAlg(GetBackendKind(m), cfg, pf, subopt_cfg, nullptr)) {
+      alg = *resolved;
+    } else {
+      std::string log;
+      (void)ResolveSuboptAlg(GetBackendKind(m), cfg, pf, subopt_cfg, &log);
+      fatal("No subopt algorithm supports configuration:\n{}", log);
+    }
+  }
+  if (resolved_mfe_alg == MfeAlg::BRUTE) {
+    fatal("subopt algorithm {} does not support mfe_alg={}", alg, resolved_mfe_alg);
+  }
+  return {.m = m, .alg = alg, .mfe_alg = resolved_mfe_alg};
 }
 
-const BackendModelPtr& Ctx::BackendForPfn([[maybe_unused]] PfnAlg alg) const {
-  return EnsureBackend();
+PfnBackend Ctx::BackendForPfn(
+    PfnAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
+  const auto& m = EnsureBackend();
+  if (alg == PfnAlg::AUTO) {
+    if (auto resolved = ResolvePfnAlg(GetBackendKind(m), cfg, pf, nullptr)) {
+      alg = *resolved;
+    } else {
+      std::string log;
+      (void)ResolvePfnAlg(GetBackendKind(m), cfg, pf, &log);
+      fatal("No PFN algorithm supports configuration:\n{}", log);
+    }
+  }
+  return {.m = m, .alg = alg};
 }
 
 erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
@@ -133,7 +173,7 @@ void Ctx::ComputeMfe(const BackendModelPtr& m, const Primary& r, mfe::DpState& d
         case MfeAlg::LYNGSO_SPARSE_OPT:
           md::base::MfeLyngsoSparseOpt::Run(r, m, state, cfg, pf);
           break;
-        default: fatal("unsupported mfe algorithm for energy model: {}", alg);
+        case MfeAlg::BRUTE: fatal("unsupported mfe algorithm for energy model: {}", alg);
         }
       },
       [&](const md::base::opt::Model::Ptr& m) {
@@ -146,7 +186,7 @@ void Ctx::ComputeMfe(const BackendModelPtr& m, const Primary& r, mfe::DpState& d
         case MfeAlg::LYNGSO_SPARSE_OPT:
           md::base::opt::MfeLyngsoSparseOpt::Run(r, m, state, cfg, pf);
           break;
-        default: fatal("unsupported mfe algorithm for energy model: {}", alg);
+        case MfeAlg::BRUTE: fatal("unsupported mfe algorithm for energy model: {}", alg);
         }
       },
       [&](const md::stack::Model::Ptr& m) {
@@ -154,7 +194,10 @@ void Ctx::ComputeMfe(const BackendModelPtr& m, const Primary& r, mfe::DpState& d
         switch (alg) {
         case MfeAlg::AUTO:
         case MfeAlg::OPT: md::stack::MfeOpt::Run(r, m, state, cfg, pf); break;
-        default: fatal("unsupported mfe algorithm for energy model: {}", alg);
+        case MfeAlg::BRUTE:
+        case MfeAlg::DEBUG:
+        case MfeAlg::SPARSE_OPT:
+        case MfeAlg::LYNGSO_SPARSE_OPT: fatal("unsupported mfe algorithm for energy model: {}", alg);
         }
       },
   };
@@ -202,20 +245,15 @@ trace::TraceResult Ctx::ComputeTraceback(const BackendModelPtr& m, const Primary
 
 FoldResult Ctx::Fold(const Primary& r, MfeAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
     const trace::TraceCfg& trace_cfg) const {
-  const auto& m = BackendForFold(alg);
+  auto [m, resolved_alg] = BackendForFold(alg, cfg, pf);
 
-  // Resolve AUTO to the default for this backend
-  if (alg == MfeAlg::AUTO) {
-    alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::OPT : MfeAlg::SPARSE_OPT;
-  }
-
-  if (alg == MfeAlg::BRUTE) {
+  if (resolved_alg == MfeAlg::BRUTE) {
     auto subopt = md::brute::MfeBrute(r, m, cfg, pf);
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
   mfe::DpState dp = CreateDpState(m);
-  ComputeMfe(m, r, dp, alg, cfg, pf);
+  ComputeMfe(m, r, dp, resolved_alg, cfg, pf);
   auto energy = ComputeMfeExterior(m, r, dp, cfg, pf);
   auto tb = ComputeTraceback(m, r, dp, cfg, pf, trace_cfg);
   return FoldResult{
@@ -238,33 +276,23 @@ std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r, MfeAlg
 int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
     subopt::SuboptCfg subopt_cfg) const {
-  const auto& m = BackendForSubopt(alg, mfe_alg);
+  auto [m, resolved_alg, resolved_mfe_alg] = BackendForSubopt(alg, mfe_alg, cfg, pf, subopt_cfg);
 
-  // Resolve AUTO to the default for this backend
-  if (alg == SuboptAlg::AUTO) {
-    alg = SuboptAlg::ITERATIVE;
-  }
-
-  if (alg == SuboptAlg::BRUTE) {
+  if (resolved_alg == SuboptAlg::BRUTE) {
     // TODO(3): handle cases other than max structures.
     auto subopts = md::brute::SuboptBrute(r, m, cfg, pf, subopt_cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
 
-  // Resolve MfeAlg::AUTO to the default for this backend
-  if (mfe_alg == MfeAlg::AUTO) {
-    mfe_alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::OPT : MfeAlg::SPARSE_OPT;
-  }
-
   mfe::DpState dp = CreateDpState(m);
-  ComputeMfe(m, r, dp, mfe_alg, cfg, pf);
+  ComputeMfe(m, r, dp, resolved_mfe_alg, cfg, pf);
   ComputeMfeExterior(m, r, dp, cfg, pf);
 
   auto vis = overloaded{//
       [&](const md::base::Model::Ptr& m) mutable -> int {
         auto state = std::get<md::base::DpState>(std::move(dp));
-        switch (alg) {
+        switch (resolved_alg) {
         case SuboptAlg::DEBUG:
           return md::base::SuboptDebug(Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
@@ -284,12 +312,14 @@ int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg 
           return md::base::SuboptPersistent<true>(
               Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
-        default: fatal("unsupported subopt algorithm for energy model: {}", alg);
+        case SuboptAlg::AUTO:
+        case SuboptAlg::BRUTE: fatal("unsupported subopt algorithm for energy model: {}", resolved_alg);
         }
+        unreachable();
       },
       [&](const md::base::opt::Model::Ptr& m) mutable -> int {
         auto state = std::get<md::base::DpState>(std::move(dp));
-        switch (alg) {
+        switch (resolved_alg) {
         case SuboptAlg::DEBUG:
           return md::base::opt::SuboptDebug(Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
@@ -309,12 +339,14 @@ int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg 
           return md::base::opt::SuboptPersistent<true>(
               Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
-        default: fatal("unsupported subopt algorithm for energy model: {}", alg);
+        case SuboptAlg::AUTO:
+        case SuboptAlg::BRUTE: fatal("unsupported subopt algorithm for energy model: {}", resolved_alg);
         }
+        unreachable();
       },
       [&](const md::stack::Model::Ptr& m) mutable -> int {
         auto state = std::get<md::stack::DpState>(std::move(dp));
-        switch (alg) {
+        switch (resolved_alg) {
         case SuboptAlg::ITERATIVE:
           return md::stack::SuboptIterative<false>(
               Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
@@ -331,25 +363,20 @@ int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg 
           return md::stack::SuboptPersistent<true>(
               Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
-        default: fatal("unsupported subopt algorithm for energy model: {}", alg);
+        case SuboptAlg::AUTO:
+        case SuboptAlg::BRUTE:
+        case SuboptAlg::DEBUG: fatal("unsupported subopt algorithm for energy model: {}", resolved_alg);
         }
+        unreachable();
       }};
   return std::visit(vis, m);
 }
 
 pfn::PfnResult Ctx::Pfn(
     const Primary& r, PfnAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const {
-  const auto& m = BackendForPfn(alg);
+  auto [m, resolved_alg] = BackendForPfn(alg, cfg, pf);
 
-  // PFN algorithms require bulge_states = false
-  cfg.bulge_states = false;
-
-  // Resolve AUTO to the default for this backend
-  if (alg == PfnAlg::AUTO) {
-    alg = (GetBackendKind(m) == BackendKind::STACK) ? PfnAlg::BRUTE : PfnAlg::OPT;
-  }
-
-  if (alg == PfnAlg::BRUTE) {
+  if (resolved_alg == PfnAlg::BRUTE) {
     return md::brute::PfnBrute(r, m, cfg, pf);
   }
 
@@ -358,25 +385,36 @@ pfn::PfnResult Ctx::Pfn(
   auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
-        switch (alg) {
+        switch (resolved_alg) {
         case PfnAlg::DEBUG: return md::base::PfnDebug::Run(r, m, cfg, state, pf);
         case PfnAlg::OPT:
           return md::base::PfnOpt::Run(r, md::base::BoltzModel::Create(m), cfg, state, pf);
-        default: fatal("unsupported partition algorithm for energy model: {}", alg);
+        case PfnAlg::AUTO:
+        case PfnAlg::BRUTE: fatal("unsupported partition algorithm for energy model: {}", resolved_alg);
         }
+        unreachable();
       },
       [&](const md::base::opt::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
-        switch (alg) {
+        switch (resolved_alg) {
         case PfnAlg::DEBUG: return md::base::opt::PfnDebug::Run(r, m, cfg, state, pf);
         case PfnAlg::OPT:
           return md::base::opt::PfnOpt::Run(
               r, md::base::opt::BoltzModel::Create(m), cfg, state, pf);
-        default: fatal("unsupported partition algorithm for energy model: {}", alg);
+        case PfnAlg::AUTO:
+        case PfnAlg::BRUTE: fatal("unsupported partition algorithm for energy model: {}", resolved_alg);
         }
+        unreachable();
       },
-      // TODO(2): Implement partition for t22.
-      [&](const md::stack::Model::Ptr&) -> PfnTables { fatal("unimplemented"); },
+      [&](const md::stack::Model::Ptr&) -> PfnTables {
+        switch (resolved_alg) {
+        case PfnAlg::AUTO:
+        case PfnAlg::BRUTE:
+        case PfnAlg::DEBUG:
+        case PfnAlg::OPT: fatal("unsupported partition algorithm for energy model: {}", resolved_alg);
+        }
+        unreachable();
+      },
   };
   auto pfn = std::visit(vis, m);
 

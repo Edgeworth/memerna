@@ -27,6 +27,17 @@ constexpr int CHECK_TIME_FREQ = 10000;
 }  // namespace
 
 template <bool UseLru>
+bool SuboptPersistent<UseLru>::IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/,
+    const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+    return false;
+  }
+  return true;
+}
+
+template <bool UseLru>
 SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
     erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)),
@@ -35,13 +46,9 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
 
 template <bool UseLru>
 int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
-          erg::EnergyCfg::Ctd::NONE},
-  };
-  support.VerifySupported(funcname(), cfg_);
+  std::string reason;
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
   pf_.Verify(r_);
 
   spdlog::debug("base {} with cfg {}", funcname(), cfg_);

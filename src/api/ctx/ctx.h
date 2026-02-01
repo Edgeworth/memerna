@@ -32,6 +32,22 @@ struct FoldResult {
   trace::TraceResult tb;
 };
 
+struct MfeBackend {
+  const BackendModelPtr& m;
+  MfeAlg alg;
+};
+
+struct SuboptBackend {
+  const BackendModelPtr& m;
+  SuboptAlg alg;
+  MfeAlg mfe_alg;
+};
+
+struct PfnBackend {
+  const BackendModelPtr& m;
+  PfnAlg alg;
+};
+
 class Ctx {
  public:
   explicit Ctx(BackendCfg cfg) : cfg_(std::move(cfg)), backends_() {}
@@ -62,10 +78,13 @@ class Ctx {
   [[nodiscard]] pfn::PfnResult Pfn(
       const Primary& r, PfnAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const;
 
-  // Algorithm-specific backend selection methods
-  [[nodiscard]] const BackendModelPtr& BackendForFold(MfeAlg alg) const;
-  [[nodiscard]] const BackendModelPtr& BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg) const;
-  [[nodiscard]] const BackendModelPtr& BackendForPfn(PfnAlg alg) const;
+  [[nodiscard]] MfeBackend BackendForFold(
+      MfeAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] SuboptBackend BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg,
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
+      const subopt::SuboptCfg& subopt_cfg) const;
+  [[nodiscard]] PfnBackend BackendForPfn(
+      PfnAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
 
   static Ctx FromArgParse(const ArgParse& args);
 

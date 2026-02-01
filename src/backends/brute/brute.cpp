@@ -4,6 +4,7 @@
 #include <iterator>
 #include <utility>
 
+#include "api/ctx/algorithm.h"
 #include "api/energy/energy.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -20,14 +21,9 @@ Brute::Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::Pseud
     : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
       energy_cfg_(cfg), pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()),
       ctd_(r_.size()) {
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
-          erg::EnergyCfg::Ctd::NONE},
-  };
-
-  support.VerifySupported(funcname(), energy_cfg_);
+  std::string reason;
+  verify(BackendIsSupported(GetBackendKind(m_), energy_cfg_, pf_, &reason),
+      "backend {} does not support configuration {}: {}", GetBackendKind(m_), energy_cfg_, reason);
   pfn_energy_cfg_.bulge_states = false;
 
   verify(brute_cfg_.subopt_cfg.time_secs < 0,

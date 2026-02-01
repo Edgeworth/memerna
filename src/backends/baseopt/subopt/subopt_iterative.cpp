@@ -19,6 +19,25 @@
 namespace mrna::md::base::opt {
 
 template <bool UseLru>
+bool SuboptIterative<UseLru>::IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
+    const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+    return false;
+  }
+  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL) {
+    if (reason) *reason = fmt::format("ctd={} not supported", cfg.ctd);
+    return false;
+  }
+  if (!pf.Empty()) {
+    if (reason) *reason = "pseudofree energy not supported";
+    return false;
+  }
+  return true;
+}
+
+template <bool UseLru>
 SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
     erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), pc_(Primary(r_), m_, cfg_),
@@ -29,13 +48,9 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
 
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL},
-  };
-  support.VerifySupported(funcname(), cfg_);
-  verify(pf_.Empty(), "baseopt does not support pseudofree energy");
+  std::string reason;
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
 

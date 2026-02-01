@@ -556,13 +556,6 @@ struct TracebackInternal {
   }
 
   TraceResult Compute() {
-    static thread_local const erg::EnergyCfgSupport support{
-        .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-        .bulge_states{false, true},
-        .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
-    };
-    support.VerifySupported(funcname(), cfg);
-
     spdlog::debug("stack {} with cfg {}", funcname(), cfg);
 
     std::vector<DpIndex> q;

@@ -46,6 +46,6 @@ int main(int argc, char* argv[]) {
       fmt::print("\nInner stacking probabilities\n");
       mrna::PrintInnerStackProbs(r, res.pfn, *model);
     }};
-    std::visit(vis, ctx.BackendForPfn(pfn_alg));
+    std::visit(vis, ctx.BackendForPfn(pfn_alg, energy_cfg, pf).m);
   }
 }

@@ -25,6 +25,19 @@
 
 namespace mrna::md::base::opt {
 
+bool Model::IsSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason) {
+  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL) {
+    if (reason) *reason = fmt::format("ctd={} not supported by baseopt backend", cfg.ctd);
+    return false;
+  }
+  if (!pf.Empty()) {
+    if (reason) *reason = "pseudofree energy not supported by baseopt backend";
+    return false;
+  }
+  return true;
+}
+
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:

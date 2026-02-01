@@ -130,8 +130,9 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<Energy> ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> opt_efns;  // Efn using optimal CTDs.
   for (const auto& m : ms_) {
-    for (auto mfe_alg : MfeAlgsForBackend(m)) {
-      if (mfe_alg == MfeAlg::BRUTE && N > cfg_.brute_max) continue;
+    const auto kind = GetBackendKind(m);
+    auto maybe_run = [&](MfeAlg mfe_alg) {
+      if (!MfeAlgIsSupported(kind, mfe_alg, cfg_.energy_cfg, pf_, nullptr)) return;
 
       const Ctx ctx(m);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -144,8 +145,10 @@ Error FuzzInvocation::CheckMfe() {
       opt_efns.push_back(
           TotalEnergy(m, r_, res.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_).energy);
       results.emplace_back(std::move(res));
-      tags.push_back(fmt::format("{}-{}", GetBackendKind(m), mfe_alg));
-    }
+      tags.push_back(fmt::format("{}-{}", kind, mfe_alg));
+    };
+
+    for (auto mfe_alg : MfePriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(mfe_alg);
   }
 
   // Find first dp table that exists.
@@ -206,8 +209,9 @@ Error FuzzInvocation::CheckSubopt() {
     results.push_back({cfg, {}});
     tags.emplace_back();
     for (const auto& m : ms_) {
-      for (auto subopt_alg : SuboptAlgsForBackend(m)) {
-        if (subopt_alg == SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
+      const auto kind = GetBackendKind(m);
+      auto maybe_run = [&](SuboptAlg subopt_alg) {
+        if (!SuboptAlgIsSupported(kind, subopt_alg, cfg_.energy_cfg, pf_, cfg, nullptr)) return;
 
         const Ctx ctx(m);
         auto res = ctx.SuboptIntoVector(r_, MfeAlg::AUTO, subopt_alg, cfg_.energy_cfg, pf_, cfg);
@@ -215,8 +219,10 @@ Error FuzzInvocation::CheckSubopt() {
         // algorithms.
         std::sort(res.begin(), res.end());
         results.back().second.push_back(std::move(res));
-        tags.back().push_back(fmt::format("{}-{}-{}", GetBackendKind(m), subopt_alg, cfg_idx));
-      }
+        tags.back().push_back(fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx));
+      };
+
+      for (auto subopt_alg : SuboptPriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(subopt_alg);
     }
   }
 
@@ -363,13 +369,16 @@ Error FuzzInvocation::CheckPfn() {
   std::vector<pfn::PfnResult> results;
   std::vector<std::string> tags;
   for (const auto& m : ms_) {
-    for (auto pfn_alg : PfnAlgsForBackend(m)) {
-      if (pfn_alg == PfnAlg::BRUTE && N > cfg_.brute_max) continue;
+    const auto kind = GetBackendKind(m);
+    auto maybe_run = [&](PfnAlg pfn_alg) {
+      if (!PfnAlgIsSupported(kind, pfn_alg, cfg_.energy_cfg, pf_, nullptr)) return;
 
       const Ctx ctx(m);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
-      tags.push_back(fmt::format("{}-{}", GetBackendKind(m), pfn_alg));
-    }
+      tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
+    };
+
+    for (auto pfn_alg : PfnPriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(pfn_alg);
   }
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i)

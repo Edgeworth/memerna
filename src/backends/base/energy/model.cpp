@@ -25,6 +25,11 @@
 
 namespace mrna::md::base {
 
+bool Model::IsSupported(
+    const erg::EnergyCfg& /*cfg*/, const erg::PseudofreeCfg& /*pf*/, std::string* /*reason*/) {
+  return true;
+}
+
 // Indices are inclusive, include the initiating base pair.
 // N.B. This includes an ending AU/GU penalty.
 // Rules for hairpin energy:

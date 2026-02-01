@@ -32,7 +32,9 @@ class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> 
 TEST_P(SuboptTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!Contains(SuboptAlgsForBackend(m), alg)) return;
+  if (!SuboptAlgIsSupported(
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, nullptr))
+    return;
 
   Subopt(m, "CCUCCGGG",
       {
@@ -472,7 +474,9 @@ TEST_P(SuboptTestT04, T04P1) {
 TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!Contains(SuboptAlgsForBackend(m), alg)) return;
+  if (!SuboptAlgIsSupported(
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, nullptr))
+    return;
 
   Subopt(m, "CCUCCGGG",
       {

@@ -22,14 +22,6 @@ namespace mrna::md::base {
 TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg) {
   const int N = static_cast<int>(r.size());
-
-  static thread_local const erg::EnergyCfgSupport support{
-      .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
-      .bulge_states{false, true},
-      .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
-          erg::EnergyCfg::Ctd::NONE},
-  };
-  support.VerifySupported(funcname(), cfg);
   verify(!tcfg.random, "random traceback is not supported in this energy model");
 
   spdlog::debug("base {} with cfg {}", funcname(), cfg);

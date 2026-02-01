@@ -13,6 +13,9 @@ namespace mrna::md::base {
 
 class PfnOpt {
  public:
+  static bool IsSupported(
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
   static PfnTables Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCfg cfg,
       PfnState& state, const erg::PseudofreeCfg& pf);
 };

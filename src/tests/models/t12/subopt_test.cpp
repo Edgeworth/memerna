@@ -36,7 +36,9 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SuboptTestT12);
 TEST_P(SuboptTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!Contains(SuboptAlgsForBackend(m), alg)) return;
+  if (!SuboptAlgIsSupported(
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, nullptr))
+    return;
 
   Subopt(m, "CCUCCGGG",
       {

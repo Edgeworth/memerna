@@ -30,6 +30,9 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::STACK;
 
+  static bool IsSupported(
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
   Energy penultimate_stack[4][4][4][4] = {};
 
   Energy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,

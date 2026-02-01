@@ -32,7 +32,8 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT12);
 TEST_P(MfeTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!Contains(MfeAlgsForBackend(m), alg)) return;
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, nullptr))
+    return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.56), "[[....]]"};
