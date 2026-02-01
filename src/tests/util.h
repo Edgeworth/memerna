@@ -9,6 +9,7 @@
 #include "api/ctx/backend.h"
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -24,7 +25,9 @@ namespace mrna {
   } while (0)
 
 inline Energy GetEnergy(const BackendModelPtr& m, const std::tuple<Primary, Secondary>& s) {
-  return TotalEnergy(m, std::get<Primary>(s), std::get<Secondary>(s), nullptr, /*pf=*/{}).energy;
+  return TotalEnergy(m, std::get<Primary>(s), std::get<Secondary>(s), /*given_ctd=*/nullptr,
+      erg::EnergyCfg{}, erg::PseudofreeCfg{})
+      .energy;
 }
 
 inline Energy GetEnergy(const BackendModelPtr& m, const std::string& r, const std::string& db) {
@@ -33,8 +36,9 @@ inline Energy GetEnergy(const BackendModelPtr& m, const std::string& r, const st
 
 inline std::tuple<Energy, std::string> GetMfe(
     const BackendModelPtr& m, CtxCfg::MfeAlg alg, const Primary& r) {
-  auto res = Ctx(m, CtxCfg{.mfe_alg = alg}).Fold(r, /*pf=*/{}, /*trace_cfg=*/{});
-  return {res.mfe.energy, mrna::BackendEnergyCfg(m).ToCtdString(res.tb.s, res.tb.ctd)};
+  auto res = Ctx(m, CtxCfg{.mfe_alg = alg})
+                 .Fold(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
+  return {res.mfe.energy, erg::EnergyCfg{}.ToCtdString(res.tb.s, res.tb.ctd)};
 }
 
 inline std::tuple<Energy, std::string> GetMfe(
@@ -46,7 +50,8 @@ inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
     CtxCfg::SuboptAlg alg, const Primary& r, const std::vector<Energy>& energies) {
   const int n = static_cast<int>(energies.size());
   auto res = Ctx(m, CtxCfg{.subopt_alg = alg})
-                 .SuboptIntoVector(r, /*pf=*/{}, subopt::SuboptCfg{.strucs = n});
+                 .SuboptIntoVector(
+                     r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{.strucs = n});
   for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
   // for (int i = 0; i < n; ++i) fmt::print("E({}),\n", res[i].energy);
   return res;
@@ -58,7 +63,7 @@ inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
 }
 
 inline pfn::PfnResult GetPfn(const BackendModelPtr& m, CtxCfg::PfnAlg alg, const Primary& r) {
-  return Ctx(m, CtxCfg{.pfn_alg = alg}).Pfn(r, /*pf=*/{});
+  return Ctx(m, CtxCfg{.pfn_alg = alg}).Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{});
 }
 
 inline pfn::PfnResult GetPfn(const BackendModelPtr& m, CtxCfg::PfnAlg alg, const std::string& s) {

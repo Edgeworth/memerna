@@ -31,17 +31,17 @@ int main(int argc, char* argv[]) {
   auto ctx = mrna::Ctx::FromArgParse(args);
   const bool should_print = !args.GetOr(mrna::OPT_QUIET);
   const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
-  const auto cfg = mrna::subopt::SuboptCfg::FromArgParse(args);
+  const auto subopt_cfg = mrna::subopt::SuboptCfg::FromArgParse(args);
   auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
 
   mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
   if (should_print) {
-    const auto& m = ctx.m();
     if (ctd_data) {
-      fn = [m](const mrna::subopt::SuboptResult& c) {
-        fmt::print("{} {}\n", c.energy, mrna::BackendEnergyCfg(m).ToCtdString(c.tb.s, c.tb.ctd));
+      fn = [energy_cfg](const mrna::subopt::SuboptResult& c) {
+        fmt::print("{} {}\n", c.energy, energy_cfg.ToCtdString(c.tb.s, c.tb.ctd));
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
@@ -49,6 +49,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Subopt(r, pf, fn, cfg);
+  int strucs = ctx.Subopt(r, energy_cfg, pf, fn, subopt_cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

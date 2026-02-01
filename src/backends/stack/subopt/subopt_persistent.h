@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -28,7 +29,8 @@ using mrna::subopt::SuboptResult;
 template <bool UseLru>
 class SuboptPersistent {
  public:
-  SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg);
+  SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
+      SuboptCfg subopt_cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -51,9 +53,10 @@ class SuboptPersistent {
 
   Primary r_;
   Model::Ptr m_;
+  erg::EnergyCfg cfg_;
   erg::PseudofreeCfg pf_;
   DpState dp_;
-  SuboptCfg cfg_;
+  SuboptCfg subopt_cfg_;
   SuboptResult res_;
 
   ExpansionCache<DpIndex, Expansion, UseLru> cache_;
@@ -69,7 +72,7 @@ class SuboptPersistent {
     auto key = LinearIndex(to_expand, r_.size());
     if (const auto& val = cache_.Get(key); !val.empty()) return val;
 
-    auto exps = GenerateExpansions(to_expand, cfg_.delta);
+    auto exps = GenerateExpansions(to_expand, subopt_cfg_.delta);
     std::sort(exps.begin(), exps.end());
     assert(!exps.empty());
     return cache_.Insert(key, std::move(exps));

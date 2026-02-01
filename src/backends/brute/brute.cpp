@@ -15,9 +15,10 @@
 
 namespace mrna::md::brute {
 
-Brute::Brute(const Primary& r, BackendModelPtr m, erg::PseudofreeCfg pf, BruteCfg cfg)
+Brute::Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
+    BruteCfg brute_cfg)
     : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
-      energy_cfg_(BackendEnergyCfg(m_)), brute_cfg_(cfg), s_(r_.size()), ctd_(r_.size()) {
+      energy_cfg_(cfg), pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
@@ -26,6 +27,7 @@ Brute::Brute(const Primary& r, BackendModelPtr m, erg::PseudofreeCfg pf, BruteCf
   };
 
   support.VerifySupported(funcname(), energy_cfg_);
+  pfn_energy_cfg_.bulge_states = false;
 
   verify(brute_cfg_.subopt_cfg.time_secs < 0,
       "brute force does not support time limit for suboptimal folding");
@@ -44,7 +46,7 @@ BruteResult Brute::Run() {
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
-      if (CanPair(m_, r_, st, en)) pairs_.emplace_back(st, en);
+      if (CanPair(energy_cfg_, m_, r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
   Dfs(0);
@@ -90,7 +92,7 @@ void Brute::AddAllCombinations(int idx) {
   // Base case
   if (idx == N) {
     if (brute_cfg_.pfn) {
-      auto energy = TotalEnergy(underlying_, r_, s_, &ctd_, pf_).energy;
+      auto energy = TotalEnergy(underlying_, r_, s_, &ctd_, pfn_energy_cfg_, pf_).energy;
       res_.pfn.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
         if (i < s_[i]) {
@@ -100,7 +102,7 @@ void Brute::AddAllCombinations(int idx) {
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
             const Energy inside_energy =
-                SubEnergy(underlying_, r_, s_, &ctd_, pf_, i, s_[i]).energy;
+                SubEnergy(underlying_, r_, s_, &ctd_, pfn_energy_cfg_, pf_, i, s_[i]).energy;
             if (inside_new) {
               res_.pfn.p[i][s_[i]] += inside_energy.Boltz();
               substructure_map_.Insert(inside_structure, Nothing());
@@ -114,7 +116,7 @@ void Brute::AddAllCombinations(int idx) {
       }
     }
     if (brute_cfg_.subopt) {
-      auto energy = TotalEnergy(m_, r_, s_, &ctd_, pf_).energy;
+      auto energy = TotalEnergy(m_, r_, s_, &ctd_, energy_cfg_, pf_).energy;
       PruneInsertSubopt(energy);
     }
     return;

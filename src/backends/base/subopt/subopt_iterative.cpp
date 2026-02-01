@@ -19,10 +19,11 @@
 namespace mrna::md::base {
 
 template <bool UseLru>
-SuboptIterative<UseLru>::SuboptIterative(
-    Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_, pf_),
-      dp_(std::move(dp)), cfg_(cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)),
+      pc_(Primary(r_), m_, cfg_, pf_), dp_(std::move(dp)), subopt_cfg_(subopt_cfg),
+      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
 int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
@@ -35,29 +36,30 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
           erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m_->cfg());
+  support.VerifySupported(funcname(), cfg_);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with cfg {}", funcname(), m_->cfg());
+  spdlog::debug("base {} with cfg {}", funcname(), cfg_);
 
   // If require sorted output, or limited number of structures (requires sorting).
-  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
+  if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
+      subopt_cfg_.time_secs >= 0.0) {
     int count = 0;
     Energy delta = ZERO_E;
     auto start_time = std::chrono::steady_clock::now();
-    while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
-      if (cfg_.time_secs >= 0.0) {
+    while (count < subopt_cfg_.strucs && delta != MAX_E && delta <= subopt_cfg_.delta) {
+      if (subopt_cfg_.time_secs >= 0.0) {
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
             std::chrono::steady_clock::now() - start_time);
-        if (elapsed.count() >= cfg_.time_secs) break;
+        if (elapsed.count() >= subopt_cfg_.time_secs) break;
       }
-      auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
+      auto res = RunInternal(fn, delta, true, subopt_cfg_.strucs - count);
       count += res.first;
       delta = res.second;
     }
     return count;
   }
-  return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
+  return RunInternal(fn, subopt_cfg_.delta, false, subopt_cfg_.strucs).first;
 }
 
 template <bool UseLru>
@@ -201,7 +203,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
           dp_.dp[st + 1][en - 1][DP_P] + m_->AuGuPenalty(st1b, en1b) - dp_.ext[st][a];
 
       // (   )<.( * ). > Right coax backward
-      if (m_->cfg().UseCoaxialStacking() && a == EXT_RC) {
+      if (cfg_.UseCoaxialStacking() && a == EXT_RC) {
         energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) +
             pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
@@ -218,7 +220,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
       energy = base00 + dp_.ext[en + 1][EXT];
       Ctd val_ctd = CTD_UNUSED;
 
-      if (m_->cfg().UseD2()) {
+      if (cfg_.UseD2()) {
         // Note that D2 can overlap with anything.
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch
@@ -250,7 +252,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
       // Everything after this is only for EXT.
       if (a != EXT) continue;
 
-      if (m_->cfg().UseDangleMismatch()) {
+      if (cfg_.UseDangleMismatch()) {
         // (   )3<   > 3'
         energy = base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
@@ -277,7 +279,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
               .ctd0{st + 1, CTD_MISMATCH}});
       }
 
-      if (m_->cfg().UseCoaxialStacking()) {
+      if (cfg_.UseCoaxialStacking()) {
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
           energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) +
@@ -360,7 +362,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
     Ctd val_ctd = CTD_UNUSED;
-    if (m_->cfg().UseD2()) {
+    if (cfg_.UseD2()) {
       // D2 can overlap terminal mismatches with anything.
       // (<   ><   >) Terminal mismatch
       energy += m_->terminal[stb][st1b][en1b][enb];
@@ -369,7 +371,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     if (energy <= delta)
       exps.push_back({.delta = energy, .idx0{st + 1, en - 1, DP_U2}, .ctd0{en, val_ctd}});
 
-    if (m_->cfg().UseDangleMismatch()) {
+    if (cfg_.UseDangleMismatch()) {
       // (3<   ><   >) 3'
       energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
           pf_.Unpaired(st + 1) + m_->multiloop_c;
@@ -388,7 +390,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         exps.push_back({.delta = energy, .idx0{st + 2, en - 2, DP_U2}, .ctd0{en, CTD_MISMATCH}});
     }
 
-    if (m_->cfg().UseCoaxialStacking()) {
+    if (cfg_.UseCoaxialStacking()) {
       const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + pf_.Unpaired(st + 1) +
           pf_.Unpaired(en - 1) + 2 * m_->multiloop_c;
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -487,7 +489,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 
     // Check a == U_RC:
     // (   )<.( ** ). > Right coax backward
-    if (m_->cfg().UseCoaxialStacking() && a == DP_U_RC) {
+    if (cfg_.UseCoaxialStacking() && a == DP_U_RC) {
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(piv) + 2 * m_->multiloop_c;
       // Our ctds will have already been set by now.
@@ -507,7 +509,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     // (   )<   > - U, U2, U_WC?, U_GU?
     energy = base00;
     Ctd val_ctd = CTD_UNUSED;
-    if (m_->cfg().UseD2()) {
+    if (cfg_.UseD2()) {
       // Note that D2 can overlap with anything.
       if (st != 0 && piv != N - 1) {
         // (   )<   > Terminal mismatch - U, U2
@@ -551,7 +553,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
 
-    if (m_->cfg().UseDangleMismatch()) {
+    if (cfg_.UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
       energy = base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) + m_->multiloop_c;
       // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
@@ -590,7 +592,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
             .ctd0{st + 1, CTD_MISMATCH}});
     }
 
-    if (m_->cfg().UseCoaxialStacking()) {
+    if (cfg_.UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(piv) + 2 * m_->multiloop_c;

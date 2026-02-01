@@ -33,22 +33,23 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
-  auto res = mrna::md::brute::Brute(r, m, pf, cfg).Run();
+  auto res = mrna::md::brute::Brute(r, m, energy_cfg, pf, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();
     fmt::print("{}\n", mfe.energy);
     fmt::print("{}\n", mfe.tb.s.ToDb());
-    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(mfe.tb.s, mfe.tb.ctd));
+    fmt::print("{}\n", energy_cfg.ToCtdString(mfe.tb.s, mfe.tb.ctd));
   }
 
   if (args.GetOr(mrna::OPT_SUBOPT)) {
     for (const auto& s : res.subopts) {
       fmt::print("{}\n", s.energy);
       fmt::print("{}\n", s.tb.s.ToDb());
-      fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s.tb.s, s.tb.ctd));
+      fmt::print("{}\n", energy_cfg.ToCtdString(s.tb.s, s.tb.ctd));
     }
   }
 

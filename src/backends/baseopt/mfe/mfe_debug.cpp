@@ -25,8 +25,8 @@ namespace mrna::md::base::opt {
     }                                                                   \
   } while (0)
 
-void MfeDebug::Run(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -35,10 +35,10 @@ void MfeDebug::Run(
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
   state.dp = DpArray(r.size() + 1, MAX_E);
@@ -53,12 +53,12 @@ void MfeDebug::Run(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (m->CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (dp[ist][ien][DP_P] < CAP_E)
-              UPDATE_CACHE(DP_P, m->TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P]);
+              UPDATE_CACHE(DP_P, m->TwoLoop(r, cfg, st, en, ist, ien) + dp[ist][ien][DP_P]);
           }
         }
         // Hairpin loops.

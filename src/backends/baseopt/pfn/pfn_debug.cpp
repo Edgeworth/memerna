@@ -21,29 +21,23 @@
 
 namespace mrna::md::base::opt {
 
-PfnTables PfnDebug::Run(
-    const Primary& r, const Model::Ptr& initial_m, PfnState& state, const erg::PseudofreeCfg& pf) {
+PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cfg, PfnState& state,
+    const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
-
-  // Force bulge states off.
-  auto m = initial_m->Clone();
-  auto cfg = m->cfg();
-  cfg.bulge_states = false;
-  m->SetEnergyCfg(cfg);
 
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
-  const Precomp pc(Primary(r), m);
+  const Precomp pc(Primary(r), m, cfg);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;
 
@@ -56,7 +50,7 @@ PfnTables PfnDebug::Run(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (m->CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
@@ -195,7 +189,7 @@ PfnTables PfnDebug::Run(
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, *m, state);
+  PfnExterior(r, *m, cfg, state);
   const auto& ext = state.ext;
 
   // Fill the left triangle.
@@ -214,7 +208,7 @@ PfnTables PfnDebug::Run(
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      if (m->CanPair(r, en, st)) {
+      if (Model::CanPair(cfg, r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {

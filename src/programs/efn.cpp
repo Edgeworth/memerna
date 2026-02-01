@@ -27,23 +27,25 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
   const auto m = mrna::BackendFromArgParse(args);
+  const auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   const auto& rs = args.Pos(0);
   const auto& ss = args.Pos(1);
   mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
-    const auto [r, s, ctd] = mrna::BackendEnergyCfg(m).ParseSeqCtdString(rs, ss);
+    const auto [r, s, ctd] = energy_cfg.ParseSeqCtdString(rs, ss);
     auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
     pf.Verify(r);
-    res = mrna::TotalEnergy(m, r, s, &ctd, pf, true);
+    res = mrna::TotalEnergy(m, r, s, &ctd, energy_cfg, pf, true);
     fmt::print("{}\n", res.energy);
-    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
+    fmt::print("{}\n", energy_cfg.ToCtdString(s, res.ctd));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
     auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
     pf.Verify(r);
-    res = mrna::TotalEnergy(m, r, s, nullptr, pf, true);
+    res =
+        mrna::TotalEnergy(m, r, s, /*given_ctd=*/nullptr, energy_cfg, pf, /*build_structure=*/true);
     fmt::print("{}\n", res.energy);
-    fmt::print("{}\n", mrna::BackendEnergyCfg(m).ToCtdString(s, res.ctd));
+    fmt::print("{}\n", energy_cfg.ToCtdString(s, res.ctd));
   }
 
   if (args.GetOr(OPT_DETAIL)) {

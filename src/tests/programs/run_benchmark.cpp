@@ -10,7 +10,10 @@
 
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "tests/init.h"
@@ -27,7 +30,7 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.Fold(r, {}, {});
+    auto result = ctx.Fold(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -43,7 +46,7 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.SuboptIntoVector(r, {}, cfg);
+    auto result = ctx.SuboptIntoVector(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, cfg);
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -58,7 +61,7 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.Pfn(r, {});
+    auto result = ctx.Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }

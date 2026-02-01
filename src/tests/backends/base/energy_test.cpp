@@ -35,7 +35,8 @@ class EnergyTestBase : public testing::TestWithParam<int> {
 
   static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
     return base_ms[GetParam()]
-        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr, /*pf=*/{})
+        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), /*given_ctd=*/nullptr,
+            erg::EnergyCfg{}, erg::PseudofreeCfg{})
         .energy;
   }
 };
@@ -71,31 +72,36 @@ TEST_P(EnergyTestBase, NNDBHairpinLoopExamples) {
       GetEnergy(kNNDBHairpin5));
 
   {
-    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin1)), m, /*pf=*/{});
+    const Precomp pc(
+        Primary(std::get<Primary>(kNNDBHairpin1)), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     EXPECT_EQ(m->au_penalty + m->terminal[A][A][A][U] + m->HairpinInitiation(6), pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin2)), m, /*pf=*/{});
+    const Precomp pc(
+        Primary(std::get<Primary>(kNNDBHairpin2)), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     EXPECT_EQ(m->au_penalty + m->terminal[A][G][G][U] + m->hairpin_gg_first_mismatch +
             m->HairpinInitiation(5),
         pc.Hairpin(3, 9));
   }
 
   if (m->hairpin.contains("CCGAGG")) {
-    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin3)), m, /*pf=*/{});
+    const Precomp pc(
+        Primary(std::get<Primary>(kNNDBHairpin3)), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     EXPECT_EQ(m->hairpin["CCGAGG"], pc.Hairpin(3, 8));
   }
 
   {
-    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin4)), m, /*pf=*/{});
+    const Precomp pc(
+        Primary(std::get<Primary>(kNNDBHairpin4)), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     EXPECT_EQ(m->au_penalty + m->terminal[A][C][C][U] + m->HairpinInitiation(6) +
             m->hairpin_all_c_a * 6 + m->hairpin_all_c_b,
         pc.Hairpin(3, 10));
   }
 
   {
-    const Precomp pc(Primary(std::get<Primary>(kNNDBHairpin5)), m, /*pf=*/{});
+    const Precomp pc(
+        Primary(std::get<Primary>(kNNDBHairpin5)), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     EXPECT_EQ(m->gu_penalty + m->terminal[G][G][G][U] + m->hairpin_gg_first_mismatch +
             m->HairpinInitiation(5) + m->hairpin_special_gu_closure,
         pc.Hairpin(3, 9));
@@ -162,7 +168,7 @@ TEST(EnergyTestBase, T04) {
   EXPECT_EQ(E(6.8), m->BulgeInitiation(57));
   EXPECT_EQ(E(4.6), m->InternalLoopInitiation(67));
 
-  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), m, /*pf=*/{});
+  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
   EXPECT_EQ(E(-2.1 - 0.4 - 1.6), pc.min_mismatch_coax);
   EXPECT_EQ(E(-3.4), pc.min_flush_coax);
   EXPECT_EQ(E(-2.6), pc.min_twoloop_not_stack);
@@ -183,7 +189,7 @@ TEST(EnergyTestBase, T04) {
   EXPECT_EQ(E(6.79), m->BulgeInitiation(57));
   EXPECT_EQ(E(4.57), m->InternalLoopInitiation(67));
 
-  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), m, /*pf=*/{});
+  const Precomp pc(Primary::FromSeq("GGGGAAACCCC"), m, erg::EnergyCfg{}, erg::PseudofreeCfg{});
   EXPECT_EQ(E(-2.10 - 0.40 - 1.60), pc.min_mismatch_coax);
   EXPECT_EQ(E(-3.42), pc.min_flush_coax);
   EXPECT_EQ(E(-2.60), pc.min_twoloop_not_stack);
@@ -698,8 +704,8 @@ TEST_P(CtdsTestBase, BaseBranchBase) {
   auto ctd_test = std::get<1>(GetParam())(m);
   // Convert base representation to branch representation.
   BranchCtd computed_branch_ctd;
-  auto computed_energy = AddBaseCtdsToBranchCtds(
-      *m, ctd_test.r, ctd_test.s, ctd_test.ctd, ctd_test.branches, &computed_branch_ctd);
+  auto computed_energy = AddBaseCtdsToBranchCtds(*m, erg::EnergyCfg{}, ctd_test.r, ctd_test.s,
+      ctd_test.ctd, ctd_test.branches, &computed_branch_ctd);
   Energy test_energy = ZERO_E;
   for (const auto& branch_ctd : ctd_test.branch_ctd) {
     // Make sure each branch energy is only represented once.

@@ -8,6 +8,8 @@
 #include <tuple>
 #include <unordered_map>
 
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "gtest/gtest.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -25,7 +27,8 @@ class EnergyTestStack : public testing::TestWithParam<int> {
 
   static Energy GetEnergy(const std::tuple<Primary, Secondary>& s) {
     return stack_ms[GetParam()]
-        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), nullptr, /*pf=*/{})
+        ->TotalEnergy(std::get<Primary>(s), std::get<Secondary>(s), /*given_ctd=*/nullptr,
+            erg::EnergyCfg{}, erg::PseudofreeCfg{})
         .energy;
   }
 };

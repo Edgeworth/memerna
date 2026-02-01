@@ -18,8 +18,10 @@
 
 namespace mrna::md::base::opt {
 
-SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)), cfg_(cfg) {}
+SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), dp_(std::move(dp)),
+      subopt_cfg_(subopt_cfg) {}
 
 int SuboptDebug::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
@@ -30,10 +32,10 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m_->cfg());
+  support.VerifySupported(funcname(), cfg_);
   verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
@@ -45,10 +47,10 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
-    if (cfg_.time_secs >= 0.0) {
+    if (subopt_cfg_.time_secs >= 0.0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
-      if (elapsed.count() >= cfg_.time_secs) break;
+      if (elapsed.count() >= subopt_cfg_.time_secs) break;
     }
 
     node = std::move(q_.extract(q_.begin()).value());
@@ -60,7 +62,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
     // If we found a non-finished node, but `finished` is full, and the worst in `finished` is
     // as good as our current node (which is the best in `q`), then we can exit.
-    if (static_cast<int>(finished_.size()) >= cfg_.strucs &&
+    if (static_cast<int>(finished_.size()) >= subopt_cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;
 
@@ -189,7 +191,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
       for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
         for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-          energy = base_energy + m_->TwoLoop(r_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
+          energy = base_energy + m_->TwoLoop(r_, cfg_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
           Expand(energy, {ist, ien, DP_P});
         }
       }

@@ -12,8 +12,8 @@ namespace mrna::md::base {
 // Sparse folding.
 class MfeSparseOpt {
  public:
-  static void Run(
-      const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf);
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf);
 };
 
 }  // namespace mrna::md::base

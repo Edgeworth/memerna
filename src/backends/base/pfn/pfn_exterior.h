@@ -2,6 +2,7 @@
 #ifndef BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
 #define BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
 
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
@@ -9,7 +10,8 @@
 
 namespace mrna::md::base {
 
-void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::PseudofreeCfg& pf);
+void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
+    const erg::PseudofreeCfg& pf);
 
 inline BoltzEnergy PairedWithPf(
     const erg::PseudofreeCfg& pf, const BoltzDpArray& dp, int st, int en) {

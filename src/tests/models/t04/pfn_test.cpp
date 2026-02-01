@@ -212,15 +212,18 @@ TEST(PfnTestT04, PseudofreeMatchesBruteAndScalesQ) {
   const auto& m = t04_ms[0];  // BASE backend.
   const auto r = Primary::FromSeq("CCUCCGGG");
 
-  const auto no_pf = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE}).Pfn(r, {}).pfn;
+  const auto no_pf = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE})
+                         .Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{})
+                         .pfn;
 
   const Energy per_nt = E(0.5);
   std::vector<Energy> pf_paired(r.size(), per_nt);
   std::vector<Energy> pf_unpaired(r.size(), per_nt);
   const erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
 
-  const auto brute = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE}).Pfn(r, pf).pfn;
-  const auto opt = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::OPT}).Pfn(r, pf).pfn;
+  const auto brute =
+      Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE}).Pfn(r, erg::EnergyCfg{}, pf).pfn;
+  const auto opt = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::OPT}).Pfn(r, erg::EnergyCfg{}, pf).pfn;
   CheckPfn(opt, brute);
 
   const auto scale = (per_nt * static_cast<int>(r.size())).Boltz();

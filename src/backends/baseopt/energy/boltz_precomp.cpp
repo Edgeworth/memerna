@@ -6,8 +6,8 @@
 
 namespace mrna::md::base::opt {
 
-BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bm)
-    : BoltzPrecompBase(std::move(r), std::move(bm)) {}
+BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bm, erg::EnergyCfg cfg_)
+    : BoltzPrecompBase(std::move(r), std::move(bm)), cfg(cfg_) {}
 
 BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   const auto& m = bm_->m();
@@ -45,7 +45,7 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return bm_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
-  if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, cfg, ost, oen, ist, ien);
 
   BoltzEnergy energy = bm_->AuGuPenalty(r_[ost], r_[oen]) * bm_->AuGuPenalty(r_[ist], r_[ien]);
 

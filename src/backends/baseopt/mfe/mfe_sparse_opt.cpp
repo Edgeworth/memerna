@@ -19,8 +19,8 @@
 
 namespace mrna::md::base::opt {
 
-void MfeSparseOpt::Run(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -29,13 +29,13 @@ void MfeSparseOpt::Run(
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
-  const Precomp pc(Primary(r), m);
+  const Precomp pc(Primary(r), m, cfg);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
 
@@ -54,7 +54,7 @@ void MfeSparseOpt::Run(
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
-      if (m->CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         mins[DP_P] =
             std::min(mins[DP_P], m->stack[stb][st1b][en1b][enb] + dp[st + 1][en - 1][DP_P]);

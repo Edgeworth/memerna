@@ -19,8 +19,10 @@
 
 namespace mrna::md::base {
 
-SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)), cfg_(cfg) {}
+SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), dp_(std::move(dp)),
+      subopt_cfg_(subopt_cfg) {}
 
 int SuboptDebug::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
@@ -32,25 +34,25 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
           erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m_->cfg());
+  support.VerifySupported(funcname(), cfg_);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with cfg {}", funcname(), m_->cfg());
+  spdlog::debug("base {} with cfg {}", funcname(), cfg_);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
   // just one of them. Fully expanding one of them means there will be no duplicates in the tree.
   // Cull the ones not inside the window or when we have more than `max_structures`.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
-  // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
+  // be above subopt_cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
   q_.insert({.not_yet_expanded = {{0, -1, EXT}},
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
-    if (cfg_.time_secs >= 0.0) {
+    if (subopt_cfg_.time_secs >= 0.0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
-      if (elapsed.count() >= cfg_.time_secs) break;
+      if (elapsed.count() >= subopt_cfg_.time_secs) break;
     }
 
     node = std::move(q_.extract(q_.begin()).value());
@@ -62,7 +64,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
     // If we found a non-finished node, but `finished` is full, and the worst in `finished` is
     // as good as our current node (which is the best in `q`), then we can exit.
-    if (static_cast<int>(finished_.size()) >= cfg_.strucs &&
+    if (static_cast<int>(finished_.size()) >= subopt_cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;
 
@@ -104,7 +106,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         curnode_ = node.copy();
 
         // (   )<.( * ). > Right coax backward
-        if (m_->cfg().UseCoaxialStacking() && a == EXT_RC) {
+        if (cfg_.UseCoaxialStacking() && a == EXT_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
@@ -119,7 +121,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         energy = base_energy + base00 + dp_.ext[en + 1][EXT];
         Ctd val_ctd = CTD_UNUSED;
 
-        if (m_->cfg().UseD2()) {
+        if (cfg_.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && en != N - 1) {
             // (   )<   > Terminal mismatch
@@ -147,7 +149,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         // Everything after this is only for EXT.
         if (a != EXT) continue;
 
-        if (m_->cfg().UseDangleMismatch()) {
+        if (cfg_.UseDangleMismatch()) {
           // (   )3<   > 3'
           energy = base_energy + base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) +
               dp_.ext[en + 1][EXT];
@@ -164,7 +166,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
           Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
         }
 
-        if (m_->cfg().UseCoaxialStacking()) {
+        if (cfg_.UseCoaxialStacking()) {
           // (   )(<   ) > Flush coax
           energy =
               base_energy + base01 + m_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
@@ -217,7 +219,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
       for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
         for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
-          energy = base_energy + m_->TwoLoop(r_, pf_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
+          energy =
+              base_energy + m_->TwoLoop(r_, cfg_, pf_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
           Expand(energy, {ist, ien, DP_P});
         }
       }
@@ -232,7 +235,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       // (<   ><    >)
       energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
       Ctd val_ctd = CTD_UNUSED;
-      if (m_->cfg().UseD2()) {
+      if (cfg_.UseD2()) {
         // D2 can overlap terminal mismatches with anything.
         // (<   ><   >) Terminal mismatch
         energy += m_->terminal[stb][st1b][en1b][enb];
@@ -240,7 +243,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       }
       Expand(energy, {st + 1, en - 1, DP_U2}, {en, val_ctd});
 
-      if (m_->cfg().UseDangleMismatch()) {
+      if (cfg_.UseDangleMismatch()) {
         // (3<   ><   >) 3'
         energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
             pf_.Unpaired(st + 1) + m_->multiloop_c;
@@ -256,7 +259,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
       }
 
-      if (m_->cfg().UseCoaxialStacking()) {
+      if (cfg_.UseCoaxialStacking()) {
         const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + pf_.Unpaired(st + 1) +
             pf_.Unpaired(en - 1) + 2 * m_->multiloop_c;
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -334,7 +337,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
-        if (m_->cfg().UseCoaxialStacking() && a == DP_U_RC) {
+        if (cfg_.UseCoaxialStacking() && a == DP_U_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(piv) + 2 * m_->multiloop_c;
           // Our ctds will have already been set by now.
@@ -350,7 +353,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         // (   )<   > - U, U2, U_WC?, U_GU?
         energy = base_energy + base00;
         Ctd val_ctd = CTD_UNUSED;
-        if (m_->cfg().UseD2()) {
+        if (cfg_.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U, U2
@@ -384,7 +387,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
         // The rest of the cases are for U and U2.
         if (a != DP_U && a != DP_U2) continue;
 
-        if (m_->cfg().UseDangleMismatch()) {
+        if (cfg_.UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
           energy = base_energy + base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) +
               m_->multiloop_c;
@@ -410,7 +413,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
               {st + 1, CTD_MISMATCH});
         }
 
-        if (m_->cfg().UseCoaxialStacking()) {
+        if (cfg_.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
           energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(piv) + 2 * m_->multiloop_c;

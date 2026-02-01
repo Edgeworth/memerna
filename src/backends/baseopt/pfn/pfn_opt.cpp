@@ -21,8 +21,8 @@
 
 namespace mrna::md::base::opt {
 
-PfnTables PfnOpt::Run(
-    const Primary& r, const BoltzModel::Ptr& bm, PfnState& state, const erg::PseudofreeCfg& pf) {
+PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCfg cfg,
+    PfnState& state, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -31,13 +31,13 @@ PfnTables PfnOpt::Run(
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), bm->m().cfg());
+  support.VerifySupported(funcname(), cfg);
   verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), bm->m().cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
-  const BoltzPrecomp bpc(Primary(r), bm);
+  const BoltzPrecomp bpc(Primary(r), bm, cfg);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;
 
@@ -50,7 +50,7 @@ PfnTables PfnOpt::Run(
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (bm->m().CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
@@ -188,7 +188,7 @@ PfnTables PfnOpt::Run(
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, bm->m(), state);
+  PfnExterior(r, bm->m(), cfg, state);
   const auto& ext = state.ext;
 
   // Fill the left triangle.
@@ -207,7 +207,7 @@ PfnTables PfnOpt::Run(
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      if (bm->m().CanPair(r, en, st)) {
+      if (Model::CanPair(cfg, r, en, st)) {
         BoltzEnergy p{0};
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {

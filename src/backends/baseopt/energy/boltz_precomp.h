@@ -2,6 +2,7 @@
 #ifndef BACKENDS_BASEOPT_ENERGY_BOLTZ_PRECOMP_H_
 #define BACKENDS_BASEOPT_ENERGY_BOLTZ_PRECOMP_H_
 
+#include "api/energy/energy_cfg.h"
 #include "backends/baseopt/energy/boltz_model.h"
 #include "backends/common/base/boltz_precomp_base.h"
 #include "model/energy.h"
@@ -10,7 +11,9 @@
 namespace mrna::md::base::opt {
 
 struct BoltzPrecomp : public BoltzPrecompBase<BoltzModel> {
-  BoltzPrecomp(Primary r, BoltzModel::Ptr bm);
+  erg::EnergyCfg cfg;
+
+  BoltzPrecomp(Primary r, BoltzModel::Ptr bm, erg::EnergyCfg cfg);
 
   [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
 

@@ -28,11 +28,12 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto res = ctx.Pfn(r, pf);
+  auto res = ctx.Pfn(r, energy_cfg, pf);
   fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
   mrna::PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");

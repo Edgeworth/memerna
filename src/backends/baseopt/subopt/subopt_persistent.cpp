@@ -27,10 +27,10 @@ constexpr int CHECK_TIME_FREQ = 10000;
 }  // namespace
 
 template <bool UseLru>
-SuboptPersistent<UseLru>::SuboptPersistent(
-    Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_),
-      dp_(std::move(dp)), cfg_(cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), pc_(Primary(r_), m_, cfg_),
+      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
 int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
@@ -39,10 +39,10 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m_->cfg());
+  support.VerifySupported(funcname(), cfg_);
   verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method
@@ -57,15 +57,15 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
-    if (num_strucs >= cfg_.strucs) break;
+    if (num_strucs >= subopt_cfg_.strucs) break;
 
-    if (cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
+    if (subopt_cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
-      if (elapsed.count() >= cfg_.time_secs) break;
+      if (elapsed.count() >= subopt_cfg_.time_secs) break;
     }
     auto [delta, idx] = RunInternal();
-    if (idx == -1 || delta > cfg_.delta) break;
+    if (idx == -1 || delta > subopt_cfg_.delta) break;
 
     // TODO(2): We could expose an API that just has the index to avoid the cost of materialising
     // the full structure here.

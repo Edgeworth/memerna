@@ -82,14 +82,7 @@ class BoltzModelBase {
 
   // This is private to prevent construction on the stack, since this structure
   // can be very large if arbitrary precision floats are enabled.
-  explicit BoltzModelBase(const M::Ptr& m) : m_(*m) {
-    // Force this to be false to not include bulge states for the partition
-    // function.
-    auto cfg = m_.cfg();
-    cfg.bulge_states = false;
-    m_.SetEnergyCfg(cfg);
-    LoadBoltzModel(*this);
-  }
+  explicit BoltzModelBase(const M::Ptr& m) : m_(*m) { LoadBoltzModel(*this); }
 };
 
 }  // namespace mrna::md::base

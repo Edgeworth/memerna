@@ -21,7 +21,6 @@ struct BackendCfg {
   BackendKind backend = BackendKind::BASEOPT;
   std::string data_dir{};
   std::optional<uint_fast32_t> seed = std::nullopt;
-  erg::EnergyCfg energy_cfg{};
 
   [[nodiscard]]
   static BackendCfg FromArgParse(const ArgParse& args);

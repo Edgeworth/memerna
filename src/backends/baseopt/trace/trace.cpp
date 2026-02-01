@@ -20,7 +20,7 @@
 namespace mrna::md::base::opt {
 
 TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
-    const erg::PseudofreeCfg& pf, const trace::TraceCfg& cfg) {
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -28,11 +28,11 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m->cfg());
-  verify(!cfg.random, "random traceback is not supported in this energy model");
+  support.VerifySupported(funcname(), cfg);
+  verify(!tcfg.random, "random traceback is not supported in this energy model");
   verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
@@ -174,7 +174,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (dp[ist][ien][DP_P] < CAP_E) {
-              const auto val = m->TwoLoop(r, st, en, ist, ien) + dp[ist][ien][DP_P];
+              const auto val = m->TwoLoop(r, cfg, st, en, ist, ien) + dp[ist][ien][DP_P];
               if (val == dp[st][en][DP_P]) {
                 q.emplace_back(ist, ien, DP_P);
                 goto loopend;

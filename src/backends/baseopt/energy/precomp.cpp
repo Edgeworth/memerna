@@ -6,13 +6,14 @@
 
 namespace mrna::md::base::opt {
 
-Precomp::Precomp(Primary r, Model::Ptr m) : PrecompBase(std::move(r), std::move(m)) {}
+Precomp::Precomp(Primary r, Model::Ptr m, erg::EnergyCfg cfg_)
+    : PrecompBase(std::move(r), std::move(m)), cfg(cfg_) {}
 
 Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) return m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
-  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, cfg, ost, oen, ist, ien);
 
   Energy energy = ZERO_E;
   energy += m_->AuGuPenalty(r_[ost], r_[oen]);

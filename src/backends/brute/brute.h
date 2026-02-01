@@ -42,7 +42,8 @@ struct BruteResult {
 
 class Brute {
  public:
-  Brute(const Primary& r, BackendModelPtr m, erg::PseudofreeCfg pf, BruteCfg cfg);
+  Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
+      BruteCfg brute_cfg);
 
   BruteResult Run();
 
@@ -67,6 +68,7 @@ class Brute {
   BackendModelPtr underlying_;
   erg::PseudofreeCfg pf_;
   erg::EnergyCfg energy_cfg_;
+  erg::EnergyCfg pfn_energy_cfg_;
   BruteCfg brute_cfg_;
 
   Secondary s_;

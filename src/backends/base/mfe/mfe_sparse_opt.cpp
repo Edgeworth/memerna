@@ -19,8 +19,8 @@
 
 namespace mrna::md::base {
 
-void MfeSparseOpt::Run(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
@@ -30,13 +30,13 @@ void MfeSparseOpt::Run(
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
           erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   pf.Verify(r);
 
-  spdlog::debug("base {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("base {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
-  const Precomp pc(Primary(r), m, pf);
+  const Precomp pc(Primary(r), m, cfg, pf);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
   std::vector<std::vector<Cand>> p_cand_en[CAND_EN_SIZE];
@@ -54,7 +54,7 @@ void MfeSparseOpt::Run(
       Energy mins[] = {MAX_E, MAX_E, MAX_E, MAX_E, MAX_E, MAX_E};
       static_assert(sizeof(mins) / sizeof(mins[0]) == DP_SIZE, "array wrong size");
 
-      if (m->CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         mins[DP_P] = std::min(mins[DP_P],
             m->stack[stb][st1b][en1b][enb] + pf.Paired(st, en) + dp[st + 1][en - 1][DP_P]);
@@ -73,7 +73,7 @@ void MfeSparseOpt::Run(
         // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
 
-        if (m->cfg().UseD2()) {
+        if (cfg.UseD2()) {
           // D2 can overlap terminal mismatches with anything.
           // (<   ><   >) Terminal mismatch
           val += m->terminal[stb][st1b][en1b][enb];
@@ -81,7 +81,7 @@ void MfeSparseOpt::Run(
 
         mins[DP_P] = std::min(mins[DP_P], val);
 
-        if (m->cfg().UseDangleMismatch()) {
+        if (cfg.UseDangleMismatch()) {
           // (3<   ><   >) 3'
           mins[DP_P] = std::min(mins[DP_P],
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
@@ -96,7 +96,7 @@ void MfeSparseOpt::Run(
                   pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
-        if (m->cfg().UseCoaxialStacking()) {
+        if (cfg.UseCoaxialStacking()) {
           // (.(   ).   ) Left inner coax
           for (auto cand : cand_st[CAND_P_LIC])
             mins[DP_P] =
@@ -145,7 +145,7 @@ void MfeSparseOpt::Run(
         mins[DP_U2] = std::min(mins[DP_U2], cand.energy + dp[cand.idx][en][DP_U]);
       }
 
-      if (m->cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         for (auto cand : cand_st[CAND_U_LC]) {
           // |.(   ).|<(   ) > Left coaxial stack
           const auto val =
@@ -214,7 +214,7 @@ void MfeSparseOpt::Run(
       // (   ) - Normal - U, U2
       auto normal_base = dp[st][en][DP_P] + pc.augubranch[stb][enb];
 
-      if (m->cfg().UseD2()) {
+      if (cfg.UseD2()) {
         // Note that D2 can overlap with anything.
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch - U
@@ -264,7 +264,7 @@ void MfeSparseOpt::Run(
       // Can only merge candidate lists for monotonicity if
       // the right part of the pivot is the same (from the same array).
       // Can only apply monotonicity optimisation to ones ending with min(U, 0).
-      if (m->cfg().UseDangleMismatch()) {
+      if (cfg.UseDangleMismatch()) {
         // (   ). - 3' - U, U2
         const auto dangle3_base = dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] +
             m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + m->multiloop_c;
@@ -292,7 +292,7 @@ void MfeSparseOpt::Run(
           (!cand_st_u_last || cand_st_u < cand_st_u_last->energy + cand_st_u_unpaired_cum))
         cand_st[CAND_U].push_back({cand_st_u, en + 1});
 
-      if (m->cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         // .(   ).<(   ) > - Left coax - U, U2
         const auto lcoax_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
             m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en) +

@@ -67,12 +67,9 @@ class ModelBase {
   Energy au_penalty = {};
   Energy gu_penalty = {};
 
-  [[nodiscard]] const erg::EnergyCfg& cfg() const { return cfg_; }
-
-  void SetEnergyCfg(const erg::EnergyCfg& cfg) { cfg_ = cfg; }
-
-  [[nodiscard]] constexpr bool CanPair(const Primary& r, int st, int en) const {
-    if (cfg_.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
+  [[nodiscard]] static constexpr bool CanPair(
+      erg::EnergyCfg cfg, const Primary& r, int st, int en) {
+    if (cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
         ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
@@ -155,9 +152,6 @@ class ModelBase {
     if (given_ctd)
       verify(given_ctd->size() == r.size(), "given CTDs must be the same length as the seq");
   }
-
- private:
-  mrna::erg::EnergyCfg cfg_ = {};
 };
 
 }  // namespace mrna::md::base

@@ -22,11 +22,12 @@ int main(int argc, char* argv[]) {
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto trace_cfg = mrna::trace::TraceCfg::FromArgParse(args);
   auto r = mrna::Primary::FromSeq(args.Pos(0));
+  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
-  const auto res = ctx.Fold(r, pf, trace_cfg);
+  const auto res = ctx.Fold(r, energy_cfg, pf, trace_cfg);
 
   fmt::print("{}\n", res.mfe.energy);
   fmt::print("{}\n", res.tb.s.ToDb());
-  fmt::print("{}\n", mrna::BackendEnergyCfg(ctx.m()).ToCtdString(res.tb.s, res.tb.ctd));
+  fmt::print("{}\n", energy_cfg.ToCtdString(res.tb.s, res.tb.ctd));
 }

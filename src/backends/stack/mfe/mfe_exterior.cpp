@@ -23,8 +23,8 @@ using base::EXT_GU;
 using base::EXT_RC;
 using base::EXT_WC;
 
-Energy MfeExterior(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -32,7 +32,7 @@ Energy MfeExterior(
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
 
   state.base.ext = base::ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state.base;
@@ -63,7 +63,7 @@ Energy MfeExterior(
       else
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
 
-      if (m->cfg().UseDangleMismatch()) {
+      if (cfg.UseDangleMismatch()) {
         // (   )3<   > 3'
         e = std::min(e, base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT]);
         // 5(   )<   > 5'
@@ -74,7 +74,7 @@ Energy MfeExterior(
                 ext[en + 1][EXT]);
       }
 
-      if (m->cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
         val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en);
         e = std::min(e, val + ext[en + 1][EXT_GU]);

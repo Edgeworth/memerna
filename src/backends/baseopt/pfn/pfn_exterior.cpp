@@ -10,7 +10,7 @@
 
 namespace mrna::md::base::opt {
 
-void PfnExterior(const Primary& r, const Model& m, PfnState& state) {
+void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -18,7 +18,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state) {
       .bulge_states{false},  // Bulge states with partition function doesn't make sense.
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m.cfg());
+  support.VerifySupported(funcname(), cfg);
 
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);

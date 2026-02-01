@@ -74,22 +74,23 @@ pfn::PfnState CreatePfnState(const BackendModelPtr& m) {
 
 }  // namespace
 
-erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, const erg::PseudofreeCfg& pf,
-    const Ctds* given_ctd, bool build_structure) const {
-  return TotalEnergy(m(), r, s, given_ctd, pf, build_structure);
+erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool build_structure) const {
+  return TotalEnergy(m(), r, s, given_ctd, cfg, pf, build_structure);
 }
 
-void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCfg& pf) const {
+void Ctx::ComputeMfe(
+    const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::DEBUG: md::base::MfeDebug::Run(r, m, state, pf); break;
-        case CtxCfg::MfeAlg::OPT: md::base::MfeOpt::Run(r, m, state, pf); break;
+        case CtxCfg::MfeAlg::DEBUG: md::base::MfeDebug::Run(r, m, state, cfg, pf); break;
+        case CtxCfg::MfeAlg::OPT: md::base::MfeOpt::Run(r, m, state, cfg, pf); break;
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::MfeSparseOpt::Run(r, m, state, pf); break;
+        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::MfeSparseOpt::Run(r, m, state, cfg, pf); break;
         case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT:
-          md::base::MfeLyngsoSparseOpt::Run(r, m, state, pf);
+          md::base::MfeLyngsoSparseOpt::Run(r, m, state, cfg, pf);
           break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
@@ -97,12 +98,14 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCf
       [&](const md::base::opt::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
         switch (cfg_.mfe_alg) {
-        case CtxCfg::MfeAlg::DEBUG: md::base::opt::MfeDebug::Run(r, m, state, pf); break;
-        case CtxCfg::MfeAlg::OPT: md::base::opt::MfeOpt::Run(r, m, state, pf); break;
+        case CtxCfg::MfeAlg::DEBUG: md::base::opt::MfeDebug::Run(r, m, state, cfg, pf); break;
+        case CtxCfg::MfeAlg::OPT: md::base::opt::MfeOpt::Run(r, m, state, cfg, pf); break;
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::SPARSE_OPT: md::base::opt::MfeSparseOpt::Run(r, m, state, pf); break;
+        case CtxCfg::MfeAlg::SPARSE_OPT:
+          md::base::opt::MfeSparseOpt::Run(r, m, state, cfg, pf);
+          break;
         case CtxCfg::MfeAlg::LYNGSO_SPARSE_OPT:
-          md::base::opt::MfeLyngsoSparseOpt::Run(r, m, state, pf);
+          md::base::opt::MfeLyngsoSparseOpt::Run(r, m, state, cfg, pf);
           break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
@@ -111,7 +114,7 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCf
         auto& state = std::get<md::stack::DpState>(dp);
         switch (cfg_.mfe_alg) {
         case CtxCfg::MfeAlg::AUTO:
-        case CtxCfg::MfeAlg::DEBUG: md::stack::MfeDebug::Run(r, m, state, pf); break;
+        case CtxCfg::MfeAlg::DEBUG: md::stack::MfeDebug::Run(r, m, state, cfg, pf); break;
         default: fatal("unsupported mfe algorithm for energy model: {}", cfg_.mfe_alg);
         }
       },
@@ -120,101 +123,106 @@ void Ctx::ComputeMfe(const Primary& r, mfe::DpState& dp, const erg::PseudofreeCf
 }
 
 Energy Ctx::ComputeMfeExterior(
-    const Primary& r, mfe::DpState& dp, const erg::PseudofreeCfg& pf) const {
+    const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
-        return md::base::MfeExterior(r, m, state, pf);
+        return md::base::MfeExterior(r, m, state, cfg, pf);
       },
       [&](const md::base::opt::Model::Ptr& m) {
         auto& state = std::get<md::base::DpState>(dp);
-        return md::base::opt::MfeExterior(r, m, state, pf);
+        return md::base::opt::MfeExterior(r, m, state, cfg, pf);
       },
       [&](const md::stack::Model::Ptr& m) {
         auto& state = std::get<md::stack::DpState>(dp);
-        return md::stack::MfeExterior(r, m, state, pf);
+        return md::stack::MfeExterior(r, m, state, cfg, pf);
       },
   };
   return std::visit(vis, m_);
 }
 
 trace::TraceResult Ctx::ComputeTraceback(const Primary& r, const mfe::DpState& dp,
-    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) -> trace::TraceResult {
         const auto& state = std::get<md::base::DpState>(dp);
-        return md::base::Traceback(r, m, state, pf, trace_cfg);
+        return md::base::Traceback(r, m, state, cfg, pf, trace_cfg);
       },
       [&](const md::base::opt::Model::Ptr& m) {
         const auto& state = std::get<md::base::DpState>(dp);
-        return md::base::opt::Traceback(r, m, state, pf, trace_cfg);
+        return md::base::opt::Traceback(r, m, state, cfg, pf, trace_cfg);
       },
       [&](const md::stack::Model::Ptr& m) -> trace::TraceResult {
         const auto& state = std::get<md::stack::DpState>(dp);
-        return md::stack::Traceback(r, m, state, pf, trace_cfg);
+        return md::stack::Traceback(r, m, state, cfg, pf, trace_cfg);
       },
   };
   return std::visit(vis, m_);
 }
 
-FoldResult Ctx::Fold(
-    const Primary& r, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+FoldResult Ctx::Fold(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+    const trace::TraceCfg& trace_cfg) const {
   if (cfg_.mfe_alg == CtxCfg::MfeAlg::BRUTE) {
-    auto subopt = md::brute::MfeBrute(r, m_, pf);
+    auto subopt = md::brute::MfeBrute(r, m_, cfg, pf);
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
   mfe::DpState dp = CreateDpState(m_);
-  ComputeMfe(r, dp, pf);
-  auto energy = ComputeMfeExterior(r, dp, pf);
-  auto tb = ComputeTraceback(r, dp, pf, trace_cfg);
+  ComputeMfe(r, dp, cfg, pf);
+  auto energy = ComputeMfeExterior(r, dp, cfg, pf);
+  auto tb = ComputeTraceback(r, dp, cfg, pf, trace_cfg);
   return FoldResult{
       .mfe = {.dp = std::move(dp), .energy = energy},
       .tb = std::move(tb),
   };
 }
 
-std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(
-    const Primary& r, const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
+std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
   std::vector<subopt::SuboptResult> subopts;
   [[maybe_unused]] const int strucs = Subopt(
-      r, pf, [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
+      r, cfg, pf, [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); },
       subopt_cfg);
   assert(strucs == static_cast<int>(subopts.size()));
   return subopts;
 }
 
-int Ctx::Subopt(const Primary& r, const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-    subopt::SuboptCfg subopt_cfg) const {
+int Ctx::Subopt(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+    const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO(3): handle cases other than max structures.
-    auto subopts = md::brute::SuboptBrute(r, m_, pf, subopt_cfg);
+    auto subopts = md::brute::SuboptBrute(r, m_, cfg, pf, subopt_cfg);
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int>(subopts.size());
   }
 
   mfe::DpState dp = CreateDpState(m_);
-  ComputeMfe(r, dp, pf);
-  ComputeMfeExterior(r, dp, pf);
+  ComputeMfe(r, dp, cfg, pf);
+  ComputeMfeExterior(r, dp, cfg, pf);
 
   auto vis = overloaded{
       [&](const md::base::Model::Ptr& m) mutable -> int {
         auto state = std::get<md::base::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::DEBUG:
-          return md::base::SuboptDebug(Primary(r), m, std::move(state), pf, subopt_cfg).Run(fn);
+          return md::base::SuboptDebug(Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
+              .Run(fn);
         case CtxCfg::SuboptAlg::AUTO:
         case CtxCfg::SuboptAlg::ITERATIVE:
-          return md::base::SuboptIterative<false>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::base::SuboptIterative<false>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::ITERATIVE_LOWMEM:
-          return md::base::SuboptIterative<true>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::base::SuboptIterative<true>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
-          return md::base::SuboptPersistent<false>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::base::SuboptPersistent<false>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT_LOWMEM:
-          return md::base::SuboptPersistent<true>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::base::SuboptPersistent<true>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
@@ -223,24 +231,24 @@ int Ctx::Subopt(const Primary& r, const erg::PseudofreeCfg& pf, const subopt::Su
         auto state = std::get<md::base::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::DEBUG:
-          return md::base::opt::SuboptDebug(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::base::opt::SuboptDebug(Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::AUTO:
         case CtxCfg::SuboptAlg::ITERATIVE:
           return md::base::opt::SuboptIterative<false>(
-              Primary(r), m, std::move(state), pf, subopt_cfg)
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::ITERATIVE_LOWMEM:
           return md::base::opt::SuboptIterative<true>(
-              Primary(r), m, std::move(state), pf, subopt_cfg)
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
           return md::base::opt::SuboptPersistent<false>(
-              Primary(r), m, std::move(state), pf, subopt_cfg)
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT_LOWMEM:
           return md::base::opt::SuboptPersistent<true>(
-              Primary(r), m, std::move(state), pf, subopt_cfg)
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
@@ -250,16 +258,20 @@ int Ctx::Subopt(const Primary& r, const erg::PseudofreeCfg& pf, const subopt::Su
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::AUTO:
         case CtxCfg::SuboptAlg::ITERATIVE:
-          return md::stack::SuboptIterative<false>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::stack::SuboptIterative<false>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::ITERATIVE_LOWMEM:
-          return md::stack::SuboptIterative<true>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::stack::SuboptIterative<true>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT:
-          return md::stack::SuboptPersistent<false>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::stack::SuboptPersistent<false>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         case CtxCfg::SuboptAlg::PERSISTENT_LOWMEM:
-          return md::stack::SuboptPersistent<true>(Primary(r), m, std::move(state), pf, subopt_cfg)
+          return md::stack::SuboptPersistent<true>(
+              Primary(r), m, std::move(state), cfg, pf, subopt_cfg)
               .Run(fn);
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
@@ -267,9 +279,12 @@ int Ctx::Subopt(const Primary& r, const erg::PseudofreeCfg& pf, const subopt::Su
   return std::visit(vis, m_);
 }
 
-pfn::PfnResult Ctx::Pfn(const Primary& r, const erg::PseudofreeCfg& pf) const {
+pfn::PfnResult Ctx::Pfn(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const {
+  // PFN algorithms require bulge_states = false
+  cfg.bulge_states = false;
+
   if (cfg_.pfn_alg == CtxCfg::PfnAlg::BRUTE) {
-    return md::brute::PfnBrute(r, m_, pf);
+    return md::brute::PfnBrute(r, m_, cfg, pf);
   }
 
   pfn::PfnState dp = CreatePfnState(m_);
@@ -278,20 +293,21 @@ pfn::PfnResult Ctx::Pfn(const Primary& r, const erg::PseudofreeCfg& pf) const {
       [&](const md::base::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
         switch (cfg_.pfn_alg) {
-        case CtxCfg::PfnAlg::DEBUG: return md::base::PfnDebug::Run(r, m, state, pf);
+        case CtxCfg::PfnAlg::DEBUG: return md::base::PfnDebug::Run(r, m, cfg, state, pf);
         case CtxCfg::PfnAlg::AUTO:
         case CtxCfg::PfnAlg::OPT:
-          return md::base::PfnOpt::Run(r, md::base::BoltzModel::Create(m), state, pf);
+          return md::base::PfnOpt::Run(r, md::base::BoltzModel::Create(m), cfg, state, pf);
         default: fatal("unsupported partition algorithm for energy model: {}", cfg_.pfn_alg);
         }
       },
       [&](const md::base::opt::Model::Ptr& m) -> PfnTables {
         auto state = std::get<md::base::PfnState>(std::move(dp));
         switch (cfg_.pfn_alg) {
-        case CtxCfg::PfnAlg::DEBUG: return md::base::opt::PfnDebug::Run(r, m, state, pf);
+        case CtxCfg::PfnAlg::DEBUG: return md::base::opt::PfnDebug::Run(r, m, cfg, state, pf);
         case CtxCfg::PfnAlg::AUTO:
         case CtxCfg::PfnAlg::OPT:
-          return md::base::opt::PfnOpt::Run(r, md::base::opt::BoltzModel::Create(m), state, pf);
+          return md::base::opt::PfnOpt::Run(
+              r, md::base::opt::BoltzModel::Create(m), cfg, state, pf);
         default: fatal("unsupported partition algorithm for energy model: {}", cfg_.pfn_alg);
         }
       },

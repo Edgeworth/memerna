@@ -24,7 +24,6 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
       .energy_model = fuzz_cfg_.energy_model,
       .data_dir = fuzz_cfg_.data_dir,
       .seed = 0,
-      .energy_cfg = fuzz_cfg_.energy_cfg,
   };
 }
 

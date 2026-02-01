@@ -9,8 +9,8 @@
 
 namespace mrna::md::base::opt {
 
-Energy MfeExterior(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf);
+Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf);
 
 }  // namespace mrna::md::base::opt
 

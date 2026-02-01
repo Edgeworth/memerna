@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "api/ctx/backend.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 
 namespace mrna {
@@ -44,8 +45,9 @@ std::tuple<Energy, Energy> GetPseudofree(
   }
 
   erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
-  auto energy =
-      TotalEnergy(m, Primary::FromSeq(r), Secondary::FromDb(db), /*given_ctd=*/nullptr, pf).energy;
+  auto energy = TotalEnergy(
+      m, Primary::FromSeq(r), Secondary::FromDb(db), /*given_ctd=*/nullptr, erg::EnergyCfg{}, pf)
+                    .energy;
   return {energy, extra_from_pseudofree};
 }
 

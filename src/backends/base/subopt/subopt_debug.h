@@ -5,6 +5,7 @@
 #include <set>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -23,7 +24,8 @@ using mrna::subopt::SuboptResult;
 
 class SuboptDebug {
  public:
-  SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg);
+  SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
+      SuboptCfg subopt_cfg);
 
   int Run(const SuboptCallback& fn);
 
@@ -43,9 +45,10 @@ class SuboptDebug {
 
   Primary r_;
   Model::Ptr m_;
+  erg::EnergyCfg cfg_;
   erg::PseudofreeCfg pf_;
   DpState dp_;
-  SuboptCfg cfg_;
+  SuboptCfg subopt_cfg_;
 
   // This node is where we build intermediate results to be pushed onto the queue.
   Node curnode_;
@@ -53,11 +56,11 @@ class SuboptDebug {
   std::multiset<Node> q_;
 
   void PruneInsert(const Node& node, std::multiset<Node>* prune) {
-    if (node.res.energy <= dp_.ext[0][EXT] + cfg_.delta) {
-      if (static_cast<int>(prune->size()) >= cfg_.strucs &&
+    if (node.res.energy <= dp_.ext[0][EXT] + subopt_cfg_.delta) {
+      if (static_cast<int>(prune->size()) >= subopt_cfg_.strucs &&
           (--prune->end())->res.energy > node.res.energy)
         prune->erase(--prune->end());
-      if (static_cast<int>(prune->size()) < cfg_.strucs) prune->insert(node.copy());
+      if (static_cast<int>(prune->size()) < subopt_cfg_.strucs) prune->insert(node.copy());
     }
   }
 

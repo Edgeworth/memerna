@@ -6,8 +6,8 @@
 
 namespace mrna::md::base {
 
-Precomp::Precomp(Primary r, Model::Ptr m, erg::PseudofreeCfg pf_)
-    : PrecompBase(std::move(r), std::move(m)), pf(std::move(pf_)) {
+Precomp::Precomp(Primary r, Model::Ptr m, erg::EnergyCfg cfg_, erg::PseudofreeCfg pf_)
+    : PrecompBase(std::move(r), std::move(m)), cfg(cfg_), pf(std::move(pf_)) {
   pf.Verify(r_);
 
   if (!pf.unpaired.empty()) {
@@ -28,7 +28,7 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
 
   if (toplen == 0 && botlen == 0)
     return pf.Paired(ost, oen) + m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
-  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, pf, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, cfg, pf, ost, oen, ist, ien);
 
   Energy energy = m_->AuGuPenalty(r_[ost], r_[oen]) + m_->AuGuPenalty(r_[ist], r_[ien]) +
       pf.Paired(ost, oen) + pf.UnpairedSum(ost + 1, ist - 1) + pf.UnpairedSum(ien + 1, oen - 1);

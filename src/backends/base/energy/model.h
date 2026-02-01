@@ -19,21 +19,22 @@ class Model : public ModelBase, public ModelMixin<Model> {
 
   Energy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
       std::unique_ptr<Structure>* s = nullptr) const;
-  Energy Bulge(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
+  Energy Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost, int oen,
+      int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const;
   Energy InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist,
       int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  Energy TwoLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  Energy MultiloopEnergy(const Primary& r, const erg::PseudofreeCfg& pf, const Secondary& s, int st,
-      int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
-      std::unique_ptr<Structure>* sstruc = nullptr) const;
+  Energy TwoLoop(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
+      int oen, int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const;
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, int st, int en, std::deque<int>* branches, bool use_given_ctds,
+      Ctds* ctd, std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   // ModelMixin:
   EnergyResult SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      const erg::PseudofreeCfg& pf, int st, int en, bool build_structure = false) const;
+      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int st, int en,
+      bool build_structure = false) const;
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      const erg::PseudofreeCfg& pf, bool build_structure = false) const;
+      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
@@ -50,8 +51,9 @@ class Model : public ModelBase, public ModelMixin<Model> {
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 
-  Energy SubEnergyInternal(const Primary& r, const Secondary& s, const erg::PseudofreeCfg& pf,
-      int st, int en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
+  Energy SubEnergyInternal(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, int st, int en, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* struc) const;
 };
 
 }  // namespace mrna::md::base

@@ -19,10 +19,10 @@
 namespace mrna::md::base::opt {
 
 template <bool UseLru>
-SuboptIterative<UseLru>::SuboptIterative(
-    Primary r, Model::Ptr m, DpState dp, erg::PseudofreeCfg pf, SuboptCfg cfg)
-    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_),
-      dp_(std::move(dp)), cfg_(cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), pc_(Primary(r_), m_, cfg_),
+      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
 int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
@@ -34,29 +34,30 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m_->cfg());
+  support.VerifySupported(funcname(), cfg_);
   verify(pf_.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m_->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
 
   // If require sorted output, or limited number of structures (requires sorting).
-  if (cfg_.sorted || cfg_.strucs != SuboptCfg::MAX_STRUCTURES || cfg_.time_secs >= 0.0) {
+  if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
+      subopt_cfg_.time_secs >= 0.0) {
     int count = 0;
     Energy delta = ZERO_E;
     auto start_time = std::chrono::steady_clock::now();
-    while (count < cfg_.strucs && delta != MAX_E && delta <= cfg_.delta) {
-      if (cfg_.time_secs >= 0.0) {
+    while (count < subopt_cfg_.strucs && delta != MAX_E && delta <= subopt_cfg_.delta) {
+      if (subopt_cfg_.time_secs >= 0.0) {
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
             std::chrono::steady_clock::now() - start_time);
-        if (elapsed.count() >= cfg_.time_secs) break;
+        if (elapsed.count() >= subopt_cfg_.time_secs) break;
       }
-      auto res = RunInternal(fn, delta, true, cfg_.strucs - count);
+      auto res = RunInternal(fn, delta, true, subopt_cfg_.strucs - count);
       count += res.first;
       delta = res.second;
     }
     return count;
   }
-  return RunInternal(fn, cfg_.delta, false, cfg_.strucs).first;
+  return RunInternal(fn, subopt_cfg_.delta, false, subopt_cfg_.strucs).first;
 }
 
 template <bool UseLru>

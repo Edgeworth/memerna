@@ -117,7 +117,7 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
 }
 
 void FuzzInvocation::EnsureFoldResult() {
-  if (!fold_) fold_ = Ctx(ms_[0], CtxCfg{}).Fold(r_, pf_, {});
+  if (!fold_) fold_ = Ctx(ms_[0], CtxCfg{}).Fold(r_, cfg_.energy_cfg, pf_, {});
 }
 
 Error FuzzInvocation::CheckMfe() {
@@ -135,14 +135,15 @@ Error FuzzInvocation::CheckMfe() {
       if (mfe_alg == CtxCfg::MfeAlg::BRUTE && N > cfg_.brute_max) continue;
 
       const Ctx ctx(m, CtxCfg{.mfe_alg = mfe_alg});
-      auto res = ctx.Fold(r_, pf_, {});
+      auto res = ctx.Fold(r_, cfg_.energy_cfg, pf_, {});
       // First compute with the CTDs that fold returned to check the energy.
-      ctd_efns.push_back(TotalEnergy(m, r_, res.tb.s, &res.tb.ctd, pf_).energy);
+      ctd_efns.push_back(TotalEnergy(m, r_, res.tb.s, &res.tb.ctd, cfg_.energy_cfg, pf_).energy);
 
       // Also check that the optimal CTD configuration has the same energy.
       // Note that it might not be the same, so we can't do an peqality check
       // of CTD structure.
-      opt_efns.push_back(TotalEnergy(m, r_, res.tb.s, nullptr, pf_).energy);
+      opt_efns.push_back(
+          TotalEnergy(m, r_, res.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_).energy);
       results.emplace_back(std::move(res));
       tags.push_back(fmt::format("{}-{}", GetBackendKind(m), mfe_alg));
     }
@@ -211,7 +212,7 @@ Error FuzzInvocation::CheckSubopt() {
         if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
         const Ctx ctx(m, CtxCfg{.subopt_alg = subopt_alg});
-        auto res = ctx.SuboptIntoVector(r_, pf_, cfg);
+        auto res = ctx.SuboptIntoVector(r_, cfg_.energy_cfg, pf_, cfg);
         // Sort them to make the sorted=false configurations comparable between
         // algorithms.
         std::sort(res.begin(), res.end());
@@ -271,7 +272,7 @@ Error FuzzInvocation::CheckSuboptResult(
   if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
-      auto suboptimal_efn = TotalEnergy(ms_[0], r_, sub.tb.s, &sub.tb.ctd, pf_);
+      auto suboptimal_efn = TotalEnergy(ms_[0], r_, sub.tb.s, &sub.tb.ctd, cfg_.energy_cfg, pf_);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
             fmt::format("structure {}: energy {} != efn {}", i, sub.energy, suboptimal_efn.energy));
@@ -279,8 +280,8 @@ Error FuzzInvocation::CheckSuboptResult(
       }
 
       // Incidentally test ctd parsing.
-      auto ctd_string = BackendEnergyCfg(ms_[0]).ToCtdString(sub.tb.s, sub.tb.ctd);
-      auto parsed = BackendEnergyCfg(ms_[0]).ParseSeqCtdString(r_.ToSeq(), ctd_string);
+      auto ctd_string = cfg_.energy_cfg.ToCtdString(sub.tb.s, sub.tb.ctd);
+      auto parsed = cfg_.energy_cfg.ParseSeqCtdString(r_.ToSeq(), ctd_string);
       if (std::get<Primary>(parsed) != r_) {
         errors.push_back(fmt::format("structure {}: bug in primary parsing code", i));
         break;
@@ -369,7 +370,7 @@ Error FuzzInvocation::CheckPfn() {
       if (pfn_alg == CtxCfg::PfnAlg::BRUTE && N > cfg_.brute_max) continue;
 
       const Ctx ctx(m, CtxCfg{.pfn_alg = pfn_alg});
-      results.emplace_back(ctx.Pfn(r_, pf_));
+      results.emplace_back(ctx.Pfn(r_, cfg_.energy_cfg, pf_));
       tags.push_back(fmt::format("{}-{}", GetBackendKind(m), pfn_alg));
     }
   }
@@ -380,7 +381,7 @@ Error FuzzInvocation::CheckPfn() {
   if (N < cfg_.pfn_subopt) {
     subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
     const Ctx ctx(ms_.front(), CtxCfg{});
-    auto subopts = ctx.SuboptIntoVector(r_, pf_, subopt_cfg);
+    auto subopts = ctx.SuboptIntoVector(r_, cfg_.energy_cfg, pf_, subopt_cfg);
     flt subopt_q{};
     for (const auto& res : subopts) subopt_q += res.energy.Boltz();
 
@@ -423,7 +424,8 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   // Also check that the optimal CTD configuration has the same energy.
   // Note that it might not be the same, so we can't do an peqality check
   // of CTD structure.
-  auto opt_efn = TotalEnergy(ms_[0], r_, fold.tb.s, nullptr, pf_).energy;
+  auto opt_efn =
+      TotalEnergy(ms_[0], r_, fold.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_).energy;
   if (opt_efn != fold.mfe.energy) {
     errors.emplace_back("mfe/efn energy mismatch:");
     errors.push_back(fmt::format("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));

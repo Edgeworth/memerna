@@ -20,8 +20,8 @@
 
 namespace mrna::md::base::opt {
 
-void MfeLyngsoSparseOpt::Run(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state,
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 3, "Minimum hairpin size >= 3 is relied upon in some expressions.");
 
@@ -30,13 +30,13 @@ void MfeLyngsoSparseOpt::Run(
       .bulge_states{false, true},
       .ctd{erg::EnergyCfg::Ctd::ALL},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   verify(pf.Empty(), "baseopt does not support pseudofree energy");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), m->cfg());
+  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
 
   const int N = static_cast<int>(r.size());
-  const Precomp pc(Primary(r), m);
+  const Precomp pc(Primary(r), m, cfg);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
 
@@ -76,16 +76,16 @@ void MfeLyngsoSparseOpt::Run(
                 dp[st + 1][en - l - 1][DP_P]);
       }
 
-      if (m->CanPair(r, st, en)) {
+      if (Model::CanPair(cfg, r, st, en)) {
         // Stacking
         mins[DP_P] =
             std::min(mins[DP_P], m->stack[stb][st1b][en1b][enb] + dp[st + 1][en - 1][DP_P]);
         // Bulge
         for (int isz = 1; isz <= max_inter; ++isz) {
           mins[DP_P] = std::min(mins[DP_P],
-              m->Bulge(r, st, en, st + 1 + isz, en - 1) + dp[st + 1 + isz][en - 1][DP_P]);
+              m->Bulge(r, cfg, st, en, st + 1 + isz, en - 1) + dp[st + 1 + isz][en - 1][DP_P]);
           mins[DP_P] = std::min(mins[DP_P],
-              m->Bulge(r, st, en, st + 1, en - 1 - isz) + dp[st + 1][en - 1 - isz][DP_P]);
+              m->Bulge(r, cfg, st, en, st + 1, en - 1 - isz) + dp[st + 1][en - 1 - isz][DP_P]);
         }
 
         // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have

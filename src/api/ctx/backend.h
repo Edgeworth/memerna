@@ -41,38 +41,34 @@ BackendModelPtr Random(BackendKind kind, uint_fast32_t seed);
 // Creates the Boltzmann energy model from the given energy model.
 BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
 
-// Gets energy configuration for the given energy model.
-[[nodiscard]] constexpr erg::EnergyCfg BackendEnergyCfg(const BackendModelPtr& m) {
-  return std::visit([&](const auto& m) { return m->cfg(); }, m);
-}
-
 BackendModelPtr CloneBackend(const BackendModelPtr& m);
 
 // Returns the underlying non-Boltzmann energy model for the given Boltzmann
-// energy model. Note that this may be different to the original energy model,
-// i.e. m != BoltzUnderlying(Boltz(m)). For example, Boltzing an energy model turns
-// off bulge loop C state calculation.
-// This may create a new energy model, so it's expensive.
+// energy model. This returns a clone and can be expensive.
 [[nodiscard]] inline BackendModelPtr Underlying(const BackendBoltzModelPtr& bm) {
   return std::visit([](const auto& bm) -> BackendModelPtr { return bm->m().Clone(); }, bm);
 }
 
-[[nodiscard]] inline bool CanPair(const BackendModelPtr& m, const Primary& r, int st, int en) {
-  return std::visit([&](const auto& m) { return m->CanPair(r, st, en); }, m);
+[[nodiscard]] inline bool CanPair(
+    erg::EnergyCfg cfg, const BackendModelPtr& m, const Primary& r, int st, int en) {
+  return std::visit([&](const auto& m) { return m->CanPair(cfg, r, st, en); }, m);
 }
 
 [[nodiscard]] inline erg::EnergyResult TotalEnergy(const BackendModelPtr& m, const Primary& r,
-    const Secondary& s, const Ctds* given_ctd, const erg::PseudofreeCfg& pf,
+    const Secondary& s, const Ctds* given_ctd, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
     bool build_structure = false) {
   return std::visit(
-      [&](const auto& m) { return m->TotalEnergy(r, s, given_ctd, pf, build_structure); }, m);
+      [&](const auto& m) { return m->TotalEnergy(r, s, given_ctd, cfg, pf, build_structure); }, m);
 }
 
 [[nodiscard]] inline erg::EnergyResult SubEnergy(const BackendModelPtr& m, const Primary& r,
-    const Secondary& s, const Ctds* given_ctd, const erg::PseudofreeCfg& pf, int st, int en,
-    bool build_structure = false) {
+    const Secondary& s, const Ctds* given_ctd, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+    int st, int en, bool build_structure = false) {
   return std::visit(
-      [&](const auto& m) { return m->SubEnergy(r, s, given_ctd, pf, st, en, build_structure); }, m);
+      [&](const auto& m) {
+        return m->SubEnergy(r, s, given_ctd, cfg, pf, st, en, build_structure);
+      },
+      m);
 }
 
 }  // namespace mrna

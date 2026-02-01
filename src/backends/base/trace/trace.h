@@ -2,6 +2,7 @@
 #ifndef BACKENDS_BASE_TRACE_TRACE_H_
 #define BACKENDS_BASE_TRACE_TRACE_H_
 
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "backends/base/energy/model.h"
@@ -11,7 +12,7 @@
 namespace mrna::md::base {
 
 TraceResult Traceback(const Primary& r, const base::Model::Ptr& m, const DpState& state,
-    const erg::PseudofreeCfg& pf, const trace::TraceCfg& cfg);
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg);
 
 }  // namespace mrna::md::base
 

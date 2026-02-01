@@ -106,8 +106,8 @@ Energy Model::Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, in
   return energy;
 }
 
-Energy Model::Bulge(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist,
-    int ien, std::unique_ptr<Structure>* s) const {
+Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
+    int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
@@ -166,7 +166,7 @@ Energy Model::Bulge(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int
     energy += bulge_special_c;
   }
 
-  if (cfg().bulge_states) {
+  if (cfg.bulge_states) {
     int num_states = 0;
     for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
@@ -278,8 +278,8 @@ Energy Model::InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int o
   return energy;
 }
 
-Energy Model::TwoLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist,
-    int ien, std::unique_ptr<Structure>* s) const {
+Energy Model::TwoLoop(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
+    int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
@@ -296,12 +296,12 @@ Energy Model::TwoLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, i
     return energy;
   }
   if (toplen >= 1 && botlen >= 1) return InternalLoop(r, pf, ost, oen, ist, ien, s);
-  return Bulge(r, pf, ost, oen, ist, ien, s);
+  return Bulge(r, cfg, pf, ost, oen, ist, ien, s);
 }
 
-Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const erg::PseudofreeCfg& pf,
-    int st, int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
-    std::unique_ptr<Structure>* sstruc) const {
+Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, int st, int en, std::deque<int>* branches, bool use_given_ctds,
+    Ctds* ctd, std::unique_ptr<Structure>* sstruc) const {
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
 
@@ -356,9 +356,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const erg::P
   Energy ctd_energy = ZERO_E;
   if (exterior_loop) {
     if (use_given_ctds) {
-      ctd_energy = base::AddBaseCtdsToBranchCtds(*this, r, s, *ctd, *branches, &branch_ctd);
+      ctd_energy = base::AddBaseCtdsToBranchCtds(*this, cfg, r, s, *ctd, *branches, &branch_ctd);
     } else {
-      ctd_energy = base::ComputeOptimalCtds(*this, r, s, *branches, true, &branch_ctd);
+      ctd_energy = base::ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &branch_ctd);
       AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
     }
   } else {
@@ -376,25 +376,25 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const erg::P
 
     if (use_given_ctds) {
       branches->push_front(en);
-      ctd_energy = base::AddBaseCtdsToBranchCtds(*this, r, s, *ctd, *branches, &branch_ctd);
+      ctd_energy = base::AddBaseCtdsToBranchCtds(*this, cfg, r, s, *ctd, *branches, &branch_ctd);
       branches->pop_front();
     } else {
       BranchCtd config_ctds[4] = {};
       std::pair<Energy, int> config_energies[4] = {};
       branches->push_front(en);
       config_energies[0] = {
-          base::ComputeOptimalCtds(*this, r, s, *branches, true, &config_ctds[0]), 0};
+          base::ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &config_ctds[0]), 0};
       config_energies[1] = {
-          base::ComputeOptimalCtds(*this, r, s, *branches, false, &config_ctds[1]), 1};
+          base::ComputeOptimalCtds(*this, cfg, r, s, *branches, false, &config_ctds[1]), 1};
       branches->pop_front();
       branches->push_back(en);
       config_energies[2] = {
-          base::ComputeOptimalCtds(*this, r, s, *branches, true, &config_ctds[2]), 2};
+          base::ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &config_ctds[2]), 2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
       config_energies[3] = {
-          base::ComputeOptimalCtds(*this, r, s, *branches, false, &config_ctds[3]), 3};
+          base::ComputeOptimalCtds(*this, cfg, r, s, *branches, false, &config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
       branches->pop_back();
@@ -422,9 +422,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const erg::P
   return energy;
 }
 
-Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const erg::PseudofreeCfg& pf,
-    int st, int en, int stack_st, int stack_en, bool use_given_ctds, Ctds* ctd,
-    std::unique_ptr<Structure>* struc) const {
+Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, int st, int en, int stack_st, int stack_en, bool use_given_ctds,
+    Ctds* ctd, std::unique_ptr<Structure>* struc) const {
   assert(en >= st);
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
@@ -444,7 +444,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const erg:
   bool continuous = false;
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(r, s, pf, st, en, &branches, use_given_ctds, ctd, struc);
+    energy += MultiloopEnergy(r, s, cfg, pf, st, en, &branches, use_given_ctds, ctd, struc);
 
     // Current stack is terminated.
     if (stack_st != -1 && stack_st != st)
@@ -465,7 +465,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const erg:
     assert(branches.size() == 1);
     const int loop_st = branches.front();
     const int loop_en = s[branches.front()];
-    energy += TwoLoop(r, pf, st, en, loop_st, loop_en, struc);
+    energy += TwoLoop(r, cfg, pf, st, en, loop_st, loop_en, struc);
 
     // Current stack is terminated if it's not continuous, otherwise it's extended.
     if (!IsContinuous(st, en, loop_st, loop_en)) {
@@ -485,10 +485,10 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const erg:
     const int nen = continuous ? stack_en : s[i];
     if (struc) {
       std::unique_ptr<Structure> sstruc;
-      energy += SubEnergyInternal(r, s, pf, i, s[i], nst, nen, use_given_ctds, ctd, &sstruc);
+      energy += SubEnergyInternal(r, s, cfg, pf, i, s[i], nst, nen, use_given_ctds, ctd, &sstruc);
       (*struc)->AddBranch(std::move(sstruc));
     } else {
-      energy += SubEnergyInternal(r, s, pf, i, s[i], nst, nen, use_given_ctds, ctd, nullptr);
+      energy += SubEnergyInternal(r, s, cfg, pf, i, s[i], nst, nen, use_given_ctds, ctd, nullptr);
     }
   }
   if (struc) (*struc)->set_total_energy(energy);
@@ -523,7 +523,7 @@ constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int o
 // If (st, en) is not paired, treated as an exterior loop.
 // If `ctd` is non-null, use the given ctds.
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-    const erg::PseudofreeCfg& pf, int st, int en, bool build_structure) const {
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int st, int en, bool build_structure) const {
   ModelBase::Verify(r, s, given_ctd);
   pf.Verify(r);
 
@@ -535,14 +535,15 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
   const int stack_en = exterior_loop ? -1 : en;
 
   std::unique_ptr<Structure> struc;
-  auto energy = SubEnergyInternal(r, s, pf, st, en, stack_st, stack_en, use_given_ctds, &ctd,
+  auto energy = SubEnergyInternal(r, s, cfg, pf, st, en, stack_st, stack_en, use_given_ctds, &ctd,
       build_structure ? &struc : nullptr);
   return {energy, std::move(ctd), std::move(struc)};
 }
 
 EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-    const erg::PseudofreeCfg& pf, bool build_structure) const {
-  auto res = SubEnergy(r, s, given_ctd, pf, 0, static_cast<int>(r.size()) - 1, build_structure);
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure) const {
+  auto res =
+      SubEnergy(r, s, given_ctd, cfg, pf, 0, static_cast<int>(r.size()) - 1, build_structure);
   if (s[0] == static_cast<int>(r.size() - 1)) {
     auto extra_energy = ZERO_E;
     if (IsAuPair(r[0], r[s[0]])) {

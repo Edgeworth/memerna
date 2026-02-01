@@ -10,7 +10,8 @@
 
 namespace mrna::md::base {
 
-void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::PseudofreeCfg& pf) {
+void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
+    const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -19,7 +20,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
           erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m.cfg());
+  support.VerifySupported(funcname(), cfg);
   pf.Verify(r);
 
   const auto& dp = state.dp;
@@ -45,7 +46,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
       // (   )<   >
       BoltzEnergy val = base00 * ext[en + 1][PTEXT_R];
 
-      if (m.cfg().UseD2()) {
+      if (cfg.UseD2()) {
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch - U
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
@@ -64,7 +65,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
       else
         ext[st][PTEXT_R_WC] += val;
 
-      if (m.cfg().UseDangleMismatch()) {
+      if (cfg.UseDangleMismatch()) {
         // (   )3<   > 3'
         ext[st][PTEXT_R] +=
             base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ext[en + 1][PTEXT_R];
@@ -77,7 +78,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
             ext[en + 1][PTEXT_R];
       }
 
-      if (m.cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
         val = base11 *
             (m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en)).Boltz();
@@ -129,7 +130,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
       // <   >(   )
       BoltzEnergy val = base00 * ptextl;
 
-      if (m.cfg().UseD2()) {
+      if (cfg.UseD2()) {
         if (st != 0 && en != N - 1) {
           // <   m>(   )m Terminal mismatch
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
@@ -148,7 +149,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
       else
         ext[en][PTEXT_L_WC] += val;
 
-      if (m.cfg().UseDangleMismatch()) {
+      if (cfg.UseDangleMismatch()) {
         // <   >(   )3 3'
         ext[en][PTEXT_L] += base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ptextl;
         // <   >5(   ) 5'
@@ -158,7 +159,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const erg::P
             (m.terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en)).Boltz() * ptextl;
       }
 
-      if (m.cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         // <  (   )>.(   ). Right coax
         val = base11 *
             (m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en)).Boltz();

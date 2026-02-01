@@ -23,9 +23,9 @@ class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
     return m_.Hairpin(r, st, en, s).Boltz();
   }
 
-  BoltzEnergy Bulge(const Primary& r, int ost, int oen, int ist, int ien,
+  BoltzEnergy Bulge(const Primary& r, erg::EnergyCfg cfg, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.Bulge(r, ost, oen, ist, ien, s).Boltz();
+    return m_.Bulge(r, cfg, ost, oen, ist, ien, s).Boltz();
   }
 
   BoltzEnergy InternalLoop(const Primary& r, int ost, int oen, int ist, int ien,
@@ -33,9 +33,9 @@ class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
     return m_.InternalLoop(r, ost, oen, ist, ien, s).Boltz();
   }
 
-  BoltzEnergy TwoLoop(const Primary& r, int ost, int oen, int ist, int ien,
+  BoltzEnergy TwoLoop(const Primary& r, erg::EnergyCfg cfg, int ost, int oen, int ist, int ien,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.TwoLoop(r, ost, oen, ist, ien, s).Boltz();
+    return m_.TwoLoop(r, cfg, ost, oen, ist, ien, s).Boltz();
   }
 
  private:

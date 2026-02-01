@@ -6,8 +6,9 @@
 
 namespace mrna::md::base {
 
-BoltzPrecomp::BoltzPrecomp(Primary r, BoltzModel::Ptr bm, erg::PseudofreeCfg pf_)
-    : BoltzPrecompBase(std::move(r), std::move(bm)), pf(std::move(pf_)), bpf(pf) {
+BoltzPrecomp::BoltzPrecomp(
+    Primary r, BoltzModel::Ptr bm, erg::EnergyCfg cfg_, erg::PseudofreeCfg pf_)
+    : BoltzPrecompBase(std::move(r), std::move(bm)), cfg(cfg_), pf(std::move(pf_)), bpf(pf) {
   bpf.Verify(r_);
 }
 
@@ -50,7 +51,7 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0)
     return bm_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]] * bpf.Paired(ost, oen);
-  if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, pf, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, cfg, pf, ost, oen, ist, ien);
 
   BoltzEnergy energy = bm_->AuGuPenalty(r_[ost], r_[oen]) * bm_->AuGuPenalty(r_[ist], r_[ien]) *
       bpf.Paired(ost, oen) * bpf.UnpairedProd(ost + 1, ist - 1) *

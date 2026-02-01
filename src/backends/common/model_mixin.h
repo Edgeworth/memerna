@@ -52,14 +52,8 @@ class ModelMixin {
 
   static Ptr FromBackendCfg(const BackendCfg& cfg) {
     verify(cfg.backend == T::KIND, "expected backend kind: {}, got: {}", T::KIND, cfg.backend);
-    Ptr m;
-    if (cfg.seed.has_value()) {
-      m = Random(*cfg.seed);
-    } else {
-      m = FromModelPath(cfg.BackendDataPath());
-    }
-    m->SetEnergyCfg(cfg.energy_cfg);
-    return m;
+    if (cfg.seed.has_value()) return Random(*cfg.seed);
+    return FromModelPath(cfg.BackendDataPath());
   }
 
   Ptr Clone() const { return std::make_shared<T>(*static_cast<const T*>(this)); }

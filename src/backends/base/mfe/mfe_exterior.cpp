@@ -17,8 +17,8 @@
 
 namespace mrna::md::base {
 
-Energy MfeExterior(
-    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
+Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
 
   static thread_local const erg::EnergyCfgSupport support{
@@ -27,7 +27,7 @@ Energy MfeExterior(
       .ctd{erg::EnergyCfg::Ctd::ALL, erg::EnergyCfg::Ctd::NO_COAX, erg::EnergyCfg::Ctd::D2,
           erg::EnergyCfg::Ctd::NONE},
   };
-  support.VerifySupported(funcname(), m->cfg());
+  support.VerifySupported(funcname(), cfg);
   pf.Verify(r);
 
   state.ext = ExtArray(r.size() + 1, MAX_E);
@@ -54,7 +54,7 @@ Energy MfeExterior(
       // (   )<   >
       auto val = base00 + ext[en + 1][EXT];
 
-      if (m->cfg().UseD2()) {
+      if (cfg.UseD2()) {
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch - U
           val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
@@ -73,7 +73,7 @@ Energy MfeExterior(
       else
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
 
-      if (m->cfg().UseDangleMismatch()) {
+      if (cfg.UseDangleMismatch()) {
         // (   )3<   > 3'
         e = std::min(e, base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT]);
         // 5(   )<   > 5'
@@ -84,7 +84,7 @@ Energy MfeExterior(
                 ext[en + 1][EXT]);
       }
 
-      if (m->cfg().UseCoaxialStacking()) {
+      if (cfg.UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
         val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en);
         e = std::min(e, val + ext[en + 1][EXT_GU]);

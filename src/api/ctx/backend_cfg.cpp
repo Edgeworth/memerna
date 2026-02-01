@@ -14,7 +14,6 @@ BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
       .backend = args.Get<BackendKind>(OPT_BACKEND),
       .data_dir = args.Get<std::string>(OPT_MEMERNA_DATA),
       .seed = args.MaybeGet<uint_fast32_t>(OPT_SEED),
-      .energy_cfg = erg::EnergyCfg::FromArgParse(args),
   };
   verify(cfg.precision == ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
       cfg.precision, ENERGY_PRECISION);

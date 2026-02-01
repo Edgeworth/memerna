@@ -8,6 +8,7 @@
 #include "api/ctx/ctx.h"
 #include "api/ctx/ctx_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -33,9 +34,9 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
     Energy extra_from_pseudofree = E(1.0) * int(r.size());
     erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
     auto res = Ctx(m, CtxCfg{.mfe_alg = std::get<1>(GetParam())})
-                   .Fold(Primary::FromSeq(r), pf, /*trace_cfg=*/{});
+                   .Fold(Primary::FromSeq(r), erg::EnergyCfg{}, pf, trace::TraceCfg{});
     EXPECT_EQ(base_energy + extra_from_pseudofree, res.mfe.energy);
-    EXPECT_EQ(db, mrna::BackendEnergyCfg(m).ToCtdString(res.tb.s, res.tb.ctd));
+    EXPECT_EQ(db, erg::EnergyCfg{}.ToCtdString(res.tb.s, res.tb.ctd));
   }
 };
 
