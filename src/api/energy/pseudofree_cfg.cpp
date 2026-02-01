@@ -1,7 +1,6 @@
 // Copyright 2025 Eliot Courtney.
 #include "api/energy/pseudofree_cfg.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 

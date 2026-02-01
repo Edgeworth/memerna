@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
   mrna::InitProgram();
   mrna::ArgParse args;
   mrna::RegisterOptsBackendCfg(&args);
+  mrna::erg::RegisterOptsPseudofree(&args);
   args.RegisterOpt(OPT_DETAIL);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");

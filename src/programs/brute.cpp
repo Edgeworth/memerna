@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
   mrna::InitProgram();
   mrna::ArgParse args;
   mrna::brute::RegisterOpts(&args);
+  mrna::erg::RegisterOptsPseudofree(&args);
   args.ParseOrExit(argc, argv);
   const auto m = mrna::BackendFromArgParse(args);
   auto cfg = mrna::brute::BruteCfg::FromArgParse(args);

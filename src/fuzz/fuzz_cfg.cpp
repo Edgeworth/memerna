@@ -15,6 +15,7 @@ namespace mrna::fuzz {
 
 void RegisterOpts(ArgParse* args) {
   erg::RegisterOptsEnergyCfg(args);
+  erg::RegisterOptsPseudofree(args);
   args->RegisterOpt(OPT_ENERGY_MODEL);
   args->RegisterOpt(OPT_ENERGY_PRECISION);
   args->RegisterOpt(OPT_MEMERNA_DATA);

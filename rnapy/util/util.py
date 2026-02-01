@@ -31,14 +31,14 @@ def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
     if not json_path.exists():
         return None
 
-    df = pl.read_ndjson(json_path)
+    ndjson = pl.read_ndjson(json_path)
     for key, value in data_keys.items():
-        if key not in df.columns:
+        if key not in ndjson.columns:
             return None
-        df = df.filter(pl.col(key) == value)
-    if df.is_empty():
+        ndjson = ndjson.filter(pl.col(key) == value)
+    if ndjson.is_empty():
         return None
-    return df.row(0, named=True)
+    return ndjson.row(0, named=True)
 
 
 def append_ndjson(path: Path, df: pl.DataFrame) -> None:

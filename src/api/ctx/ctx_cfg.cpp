@@ -8,6 +8,7 @@ namespace mrna {
 
 void RegisterOpts(ArgParse* args) {
   RegisterOptsBackendCfg(args);
+  erg::RegisterOptsPseudofree(args);
   trace::RegisterOpts(args);
   subopt::RegisterOpts(args);
   args->RegisterOpt(OPT_MFE_ALG);
