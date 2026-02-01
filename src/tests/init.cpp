@@ -37,15 +37,15 @@ void InitTest(const std::string& data_dir) {
   // All backends support T04 and T12.
   for (auto backend : EnumValues<BackendKind>()) {
     t04_ms.push_back(BackendFromBackendCfg(BackendCfg{
-        .energy_model = erg::EnergyModelKind::T04, .backend = backend, .data_dir = data_dir}));
+        .energy_model = erg::EnergyModelKind::T04, .backend = backend, .data_src = data_dir}));
     t12_ms.push_back(BackendFromBackendCfg(BackendCfg{
-        .energy_model = erg::EnergyModelKind::T12, .backend = backend, .data_dir = data_dir}));
+        .energy_model = erg::EnergyModelKind::T12, .backend = backend, .data_src = data_dir}));
   }
 
   // Only STACK supports T22.
   t22_ms.push_back(BackendFromBackendCfg(BackendCfg{.energy_model = erg::EnergyModelKind::T22,
       .backend = BackendKind::STACK,
-      .data_dir = data_dir}));
+      .data_src = data_dir}));
 
   verify(t04_ms.size() == NUM_T04_MODELS, "t04_ms.size() == NUM_T04_MODELS");
   verify(t12_ms.size() == NUM_T12_MODELS, "t12_ms.size() == NUM_T12_MODELS");
@@ -53,7 +53,7 @@ void InitTest(const std::string& data_dir) {
 
   base_t04 = md::base::Model::FromBackendCfg(BackendCfg{.energy_model = erg::EnergyModelKind::T04,
       .backend = BackendKind::BASE,
-      .data_dir = data_dir});
+      .data_src = data_dir});
   base_ms.push_back(base_t04);
   while (base_ms.size() < NUM_TEST_MODELS)
     base_ms.push_back(md::base::Model::Random(base_ms.size()));
@@ -61,14 +61,14 @@ void InitTest(const std::string& data_dir) {
   baseopt_t04 =
       md::base::opt::Model::FromBackendCfg(BackendCfg{.energy_model = erg::EnergyModelKind::T04,
           .backend = BackendKind::BASEOPT,
-          .data_dir = data_dir});
+          .data_src = data_dir});
   baseopt_ms.push_back(baseopt_t04);
   while (baseopt_ms.size() < NUM_TEST_MODELS)
     baseopt_ms.push_back(md::base::opt::Model::Random(baseopt_ms.size()));
 
   stack_t04 = md::stack::Model::FromBackendCfg(BackendCfg{.energy_model = erg::EnergyModelKind::T04,
       .backend = BackendKind::STACK,
-      .data_dir = data_dir});
+      .data_src = data_dir});
   stack_ms.push_back(stack_t04);
   while (stack_ms.size() < NUM_TEST_MODELS)
     stack_ms.push_back(md::stack::Model::Random(stack_ms.size()));

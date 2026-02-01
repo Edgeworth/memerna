@@ -5,8 +5,10 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <variant>
 
 #include "api/ctx/backend_cfg.h"
+#include "util/util.h"
 
 namespace mrna::md {
 
@@ -52,8 +54,11 @@ class ModelMixin {
 
   static Ptr FromBackendCfg(const BackendCfg& cfg) {
     verify(cfg.backend == T::KIND, "expected backend kind: {}, got: {}", T::KIND, cfg.backend);
-    if (cfg.seed.has_value()) return Random(*cfg.seed);
-    return FromModelPath(cfg.BackendDataPath());
+    return std::visit(overloaded{
+                          [&](const std::string&) { return FromModelPath(*cfg.ModelPath()); },
+                          [](uint_fast32_t seed) { return Random(seed); },
+                      },
+        cfg.data_src);
   }
 
   Ptr Clone() const { return std::make_shared<T>(*static_cast<const T*>(this)); }

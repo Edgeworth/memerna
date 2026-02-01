@@ -43,8 +43,6 @@ int main(int argc, char* argv[]) {
   const bool pfn = args.GetOr(mrna::OPT_PFN);
 
   verify(efn + fold + subopt + pfn == 1, "require exactly one program flag\n{}", args.Usage());
-  verify(args.Has(mrna::OPT_SEED) + args.Has(mrna::OPT_MEMERNA_DATA) == 1,
-      "require exactly one seed or memerna-data flag\n{}", args.Usage());
 
   auto package = mrna::bridge::RnaPackage::FromArgParse(args);
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());

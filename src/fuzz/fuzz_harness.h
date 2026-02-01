@@ -4,13 +4,17 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <random>
+#include <string>
+#include <variant>
 #include <vector>
 
 #include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"
+#include "util/util.h"
 
 #ifdef USE_RNASTRUCTURE
 #include "api/bridge/rnastructure.h"
@@ -26,7 +30,12 @@ class FuzzHarness {
   std::mt19937& e() { return e_; }
 
   [[nodiscard]] constexpr std::optional<uint_fast32_t> last_seed() const {
-    return backend_cfg_.seed;
+    return std::visit(
+        overloaded{
+            [](const std::string&) -> std::optional<uint_fast32_t> { return std::nullopt; },
+            [](uint_fast32_t seed) -> std::optional<uint_fast32_t> { return seed; },
+        },
+        backend_cfg_.data_src);
   }
 
  private:

@@ -18,7 +18,8 @@ namespace mrna::md::brute {
 Brute::Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
     BruteCfg brute_cfg)
     : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
-      energy_cfg_(cfg), pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
+      energy_cfg_(cfg), pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()),
+      ctd_(r_.size()) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},

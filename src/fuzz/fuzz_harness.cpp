@@ -22,8 +22,7 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
 
   backend_cfg_ = BackendCfg{
       .energy_model = fuzz_cfg_.energy_model,
-      .data_dir = fuzz_cfg_.data_dir,
-      .seed = 0,
+      .data_src = fuzz_cfg_.data_dir,
   };
 }
 
@@ -42,9 +41,13 @@ void FuzzHarness::MaybeLoadBackends() {
   if (!ms_.empty() && !fuzz_cfg_.random_models) return;
   ms_.clear();
 
-  backend_cfg_.seed = std::nullopt;
-  if (fuzz_cfg_.seed >= 0) backend_cfg_.seed = fuzz_cfg_.seed;
-  if (fuzz_cfg_.random_models) backend_cfg_.seed = e_();
+  if (fuzz_cfg_.seed >= 0) {
+    backend_cfg_.data_src = static_cast<uint_fast32_t>(fuzz_cfg_.seed);
+  } else if (fuzz_cfg_.random_models) {
+    backend_cfg_.data_src = static_cast<uint_fast32_t>(e_());
+  } else {
+    backend_cfg_.data_src = fuzz_cfg_.data_dir;
+  }
 
   for (const auto& backend : fuzz_cfg_.backends) {
     backend_cfg_.backend = backend;

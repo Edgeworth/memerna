@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "util/util.h"
+
 namespace mrna {
 
 BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
@@ -12,16 +14,24 @@ BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
       .energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL),
       .precision = args.Get<int>(OPT_ENERGY_PRECISION),
       .backend = args.Get<BackendKind>(OPT_BACKEND),
-      .data_dir = args.Get<std::string>(OPT_MEMERNA_DATA),
-      .seed = args.MaybeGet<uint_fast32_t>(OPT_SEED),
+      .data_src = args.Has(OPT_SEED)
+          ? std::variant<std::string, uint_fast32_t>{args.Get<uint_fast32_t>(OPT_SEED)}
+          : std::variant<std::string, uint_fast32_t>{args.Get<std::string>(OPT_MEMERNA_DATA)},
   };
   verify(cfg.precision == ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
       cfg.precision, ENERGY_PRECISION);
   return cfg;
 }
 
-std::string BackendCfg::BackendDataPath() const {
-  return fmt::format("{}/model/{}-p{}-{}", data_dir, energy_model, precision, backend);
+std::optional<std::string> BackendCfg::ModelPath() const {
+  return std::visit(overloaded{
+                        [this](const std::string& data_dir) -> std::optional<std::string> {
+                          return fmt::format(
+                              "{}/model/{}-p{}-{}", data_dir, energy_model, precision, backend);
+                        },
+                        [](uint_fast32_t) -> std::optional<std::string> { return std::nullopt; },
+                    },
+      data_src);
 }
 
 void RegisterOptsBackendCfg(ArgParse* args) {

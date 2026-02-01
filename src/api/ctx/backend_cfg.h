@@ -3,7 +3,9 @@
 #define API_CTX_BACKEND_CFG_H_
 
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <variant>
 
 #include "api/energy/energy_cfg.h"
 #include "util/argparse.h"
@@ -19,14 +21,14 @@ struct BackendCfg {
   erg::EnergyModelKind energy_model = erg::EnergyModelKind::T04;
   int precision = ENERGY_PRECISION;
   BackendKind backend = BackendKind::BASEOPT;
-  std::string data_dir{};
-  std::optional<uint_fast32_t> seed = std::nullopt;
+  std::variant<std::string, uint_fast32_t> data_src;
 
   [[nodiscard]]
   static BackendCfg FromArgParse(const ArgParse& args);
 
+  // Returns the model path if data_src is a data directory, nullopt if it's a seed.
   [[nodiscard]]
-  std::string BackendDataPath() const;
+  std::optional<std::string> ModelPath() const;
 };
 
 inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
