@@ -1,6 +1,6 @@
 // Copyright 2026 Eliot Courtney.
-#ifndef BACKENDS_STACK_MFE_MFE_DEBUG_H_
-#define BACKENDS_STACK_MFE_MFE_DEBUG_H_
+#ifndef BACKENDS_STACK_MFE_MFE_OPT_H_
+#define BACKENDS_STACK_MFE_MFE_OPT_H_
 
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/stack/energy/model.h"
@@ -9,7 +9,7 @@
 
 namespace mrna::md::stack {
 
-class MfeDebug {
+class MfeOpt {
  public:
   static void Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf);
@@ -17,4 +17,4 @@ class MfeDebug {
 
 }  // namespace mrna::md::stack
 
-#endif  // BACKENDS_STACK_MFE_MFE_DEBUG_H_
+#endif  // BACKENDS_STACK_MFE_MFE_OPT_H_

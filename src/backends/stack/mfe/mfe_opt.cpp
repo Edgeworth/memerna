@@ -1,5 +1,5 @@
 // Copyright 2023 Eliot Courtney.
-#include "backends/stack/mfe/mfe_debug.h"
+#include "backends/stack/mfe/mfe_opt.h"
 
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
@@ -306,7 +306,7 @@ struct MfeInternal {
 
 }  // namespace
 
-void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
+void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf) {
   MfeInternal(r, m, cfg, pf, state).Compute();
 }

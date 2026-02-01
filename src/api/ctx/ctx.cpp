@@ -40,7 +40,7 @@
 #include "backends/common/base/dp.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
-#include "backends/stack/mfe/mfe_debug.h"
+#include "backends/stack/mfe/mfe_opt.h"
 #include "backends/stack/mfe/mfe_exterior.h"
 #include "backends/stack/subopt/subopt_iterative.h"
 #include "backends/stack/subopt/subopt_persistent.h"
@@ -153,7 +153,7 @@ void Ctx::ComputeMfe(const BackendModelPtr& m, const Primary& r, mfe::DpState& d
         auto& state = std::get<md::stack::DpState>(dp);
         switch (alg) {
         case MfeAlg::AUTO:
-        case MfeAlg::DEBUG: md::stack::MfeDebug::Run(r, m, state, cfg, pf); break;
+        case MfeAlg::OPT: md::stack::MfeOpt::Run(r, m, state, cfg, pf); break;
         default: fatal("unsupported mfe algorithm for energy model: {}", alg);
         }
       },
@@ -206,7 +206,7 @@ FoldResult Ctx::Fold(const Primary& r, MfeAlg alg, erg::EnergyCfg cfg, const erg
 
   // Resolve AUTO to the default for this backend
   if (alg == MfeAlg::AUTO) {
-    alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::DEBUG : MfeAlg::SPARSE_OPT;
+    alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::OPT : MfeAlg::SPARSE_OPT;
   }
 
   if (alg == MfeAlg::BRUTE) {
@@ -254,7 +254,7 @@ int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg 
 
   // Resolve MfeAlg::AUTO to the default for this backend
   if (mfe_alg == MfeAlg::AUTO) {
-    mfe_alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::DEBUG : MfeAlg::SPARSE_OPT;
+    mfe_alg = (GetBackendKind(m) == BackendKind::STACK) ? MfeAlg::OPT : MfeAlg::SPARSE_OPT;
   }
 
   mfe::DpState dp = CreateDpState(m);

@@ -37,7 +37,7 @@ MAKE_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
   case BackendKind::STACK:
     return {
         MfeAlg::BRUTE,
-        MfeAlg::DEBUG,
+        MfeAlg::OPT,
     };
   }
   unreachable();

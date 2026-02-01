@@ -246,8 +246,8 @@ set(MEMERNA_SOURCE
   src/backends/stack/energy/model.cpp
   src/backends/stack/energy/model.h
   src/backends/stack/mfe/dp.h
-  src/backends/stack/mfe/mfe_debug.cpp
-  src/backends/stack/mfe/mfe_debug.h
+  src/backends/stack/mfe/mfe_opt.cpp
+  src/backends/stack/mfe/mfe_opt.h
   src/backends/stack/mfe/mfe_exterior.cpp
   src/backends/stack/mfe/mfe_exterior.h
   src/backends/stack/subopt/subopt_iterative.cpp
