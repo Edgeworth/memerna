@@ -31,6 +31,7 @@
 #include "backends/stack/mfe/mfe_opt.h"
 #include "backends/stack/subopt/subopt_iterative.h"
 #include "backends/stack/subopt/subopt_persistent.h"
+#include "backends/brute/brute.h"
 #include "util/error.h"
 
 namespace mrna {
@@ -140,7 +141,7 @@ bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const erg::EnergyCfg& cfg,
     return false;
   }
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == MfeAlg::BRUTE) return true;
+  if (alg == MfeAlg::BRUTE) return md::brute::Brute::IsSupported(cfg, pf, reason);
 
   switch (kind) {
   case BackendKind::BASE:
@@ -187,7 +188,7 @@ bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const erg::EnergyCfg&
     return false;
   }
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == SuboptAlg::BRUTE) return true;
+  if (alg == SuboptAlg::BRUTE) return md::brute::Brute::IsSupported(cfg, pf, reason);
 
   switch (kind) {
   case BackendKind::BASE:
@@ -248,7 +249,7 @@ bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
     return false;
   }
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == PfnAlg::BRUTE) return true;
+  if (alg == PfnAlg::BRUTE) return md::brute::Brute::IsSupported(cfg, pf, reason);
 
   switch (kind) {
   case BackendKind::BASE:

@@ -1,6 +1,7 @@
 // Copyright 2021 Eliot Courtney.
 #include "backends/brute/brute.h"
 
+#include <fmt/core.h>
 #include <iterator>
 #include <utility>
 
@@ -15,6 +16,16 @@
 #include "util/error.h"
 
 namespace mrna::md::brute {
+
+bool Brute::IsSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+    return false;
+  }
+  return true;
+}
 
 Brute::Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
     BruteCfg brute_cfg)

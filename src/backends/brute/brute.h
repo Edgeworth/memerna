@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -42,6 +43,9 @@ struct BruteResult {
 
 class Brute {
  public:
+  static bool IsSupported(
+      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
   Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       BruteCfg brute_cfg);
 
