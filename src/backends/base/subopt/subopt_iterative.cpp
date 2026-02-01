@@ -60,13 +60,13 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
             std::chrono::steady_clock::now() - start_time);
         if (elapsed.count() >= subopt_cfg_.time_secs) break;
       }
-      auto res = RunInternal(fn, delta, true, subopt_cfg_.strucs - count);
+      auto res = RunInternal(fn, delta, /*exact_energy=*/true, subopt_cfg_.strucs - count);
       count += res.first;
       delta = res.second;
     }
     return count;
   }
-  return RunInternal(fn, subopt_cfg_.delta, false, subopt_cfg_.strucs).first;
+  return RunInternal(fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs).first;
 }
 
 template <bool UseLru>

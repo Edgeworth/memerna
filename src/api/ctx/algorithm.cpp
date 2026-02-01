@@ -282,7 +282,7 @@ bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
 
 std::optional<MfeAlg> ResolveMfeAlg(
     BackendKind kind, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log) {
-  for (MfeAlg alg : MfePriorityForBackend(kind, false)) {
+  for (MfeAlg alg : MfePriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
     if (MfeAlgIsSupported(kind, alg, cfg, pf, log ? &reason : nullptr)) {
       return alg;
@@ -294,7 +294,7 @@ std::optional<MfeAlg> ResolveMfeAlg(
 
 std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log) {
-  for (SuboptAlg alg : SuboptPriorityForBackend(kind, false)) {
+  for (SuboptAlg alg : SuboptPriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
     if (SuboptAlgIsSupported(kind, alg, cfg, pf, subopt_cfg, log ? &reason : nullptr)) {
       return alg;
@@ -306,7 +306,7 @@ std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg
 
 std::optional<PfnAlg> ResolvePfnAlg(
     BackendKind kind, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log) {
-  for (PfnAlg alg : PfnPriorityForBackend(kind, false)) {
+  for (PfnAlg alg : PfnPriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
     if (PfnAlgIsSupported(kind, alg, cfg, pf, log ? &reason : nullptr)) {
       return alg;

@@ -339,7 +339,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
     if (use_given_ctds) {
       ctd_energy = AddBaseCtdsToBranchCtds(*this, cfg, r, s, *ctd, *branches, &branch_ctd);
     } else {
-      ctd_energy = ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &branch_ctd);
+      ctd_energy = ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &branch_ctd);
       AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
     }
   } else {
@@ -364,18 +364,18 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
       std::pair<Energy, int> config_energies[4] = {};
       branches->push_front(en);
       config_energies[0] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &config_ctds[0]), 0};
+          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &config_ctds[0]), 0};
       config_energies[1] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, false, &config_ctds[1]), 1};
+          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/false, &config_ctds[1]), 1};
       branches->pop_front();
       branches->push_back(en);
       config_energies[2] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, true, &config_ctds[2]), 2};
+          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &config_ctds[2]), 2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
       config_energies[3] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, false, &config_ctds[3]), 3};
+          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/false, &config_ctds[3]), 3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
       branches->pop_back();

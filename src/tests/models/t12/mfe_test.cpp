@@ -32,7 +32,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT12);
 TEST_P(MfeTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, nullptr))
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
     return;
 
   // Fast enough for brute force:

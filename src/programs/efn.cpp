@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
     const auto [r, s, ctd] = energy_cfg.ParseSeqCtdString(rs, ss);
     auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
     pf.Verify(r);
-    res = mrna::TotalEnergy(m, r, s, &ctd, energy_cfg, pf, true);
+    res = mrna::TotalEnergy(m, r, s, &ctd, energy_cfg, pf, /*build_structure=*/true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", energy_cfg.ToCtdString(s, res.ctd));
   } else {

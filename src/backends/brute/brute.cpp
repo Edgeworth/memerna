@@ -260,11 +260,11 @@ Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
 }
 
 Brute::SubstructureId Brute::BuildInsideStructure(int st, int en, int N) {
-  return WriteBits(st, en, N, true);
+  return WriteBits(st, en, N, /*inside=*/true);
 }
 
 Brute::SubstructureId Brute::BuildOutsideStructure(int st, int en, int N) {
-  return WriteBits(st, en, N, false);
+  return WriteBits(st, en, N, /*inside=*/false);
 }
 
 }  // namespace mrna::md::brute

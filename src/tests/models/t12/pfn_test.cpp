@@ -33,7 +33,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(PfnTestT12);
 TEST_P(PfnTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, nullptr))
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
     return;
 
   EXPECT_REL_EQ(FLT(4.06569633368939134129842956017929466372263904011), Pfn(m, "CCUCCGGG").pfn.q);

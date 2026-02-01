@@ -191,7 +191,7 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r, const S
 }
 
 RNAstructure RNAstructure::FromArgParse(const ArgParse& args) {
-  return {args.Get(OPT_RNASTRUCTURE_DATA), false};
+  return {args.Get(OPT_RNASTRUCTURE_DATA), /*use_lyngso=*/false};
 }
 
 }  // namespace mrna::bridge

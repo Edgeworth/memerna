@@ -105,7 +105,7 @@ MfeBackend Ctx::BackendForFold(
     MfeAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
   const auto& m = EnsureBackend();
   if (alg == MfeAlg::AUTO) {
-    if (auto resolved = ResolveMfeAlg(GetBackendKind(m), cfg, pf, nullptr)) {
+    if (auto resolved = ResolveMfeAlg(GetBackendKind(m), cfg, pf, /*log=*/nullptr)) {
       alg = *resolved;
     } else {
       std::string log;
@@ -125,7 +125,7 @@ SuboptBackend Ctx::BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg, const erg::En
 
   auto [m, resolved_mfe_alg] = BackendForFold(mfe_alg, cfg, pf);
   if (alg == SuboptAlg::AUTO) {
-    if (auto resolved = ResolveSuboptAlg(GetBackendKind(m), cfg, pf, subopt_cfg, nullptr)) {
+    if (auto resolved = ResolveSuboptAlg(GetBackendKind(m), cfg, pf, subopt_cfg, /*log=*/nullptr)) {
       alg = *resolved;
     } else {
       std::string log;
@@ -143,7 +143,7 @@ PfnBackend Ctx::BackendForPfn(
     PfnAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
   const auto& m = EnsureBackend();
   if (alg == PfnAlg::AUTO) {
-    if (auto resolved = ResolvePfnAlg(GetBackendKind(m), cfg, pf, nullptr)) {
+    if (auto resolved = ResolvePfnAlg(GetBackendKind(m), cfg, pf, /*log=*/nullptr)) {
       alg = *resolved;
     } else {
       std::string log;

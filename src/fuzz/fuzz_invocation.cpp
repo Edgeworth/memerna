@@ -132,7 +132,7 @@ Error FuzzInvocation::CheckMfe() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](MfeAlg mfe_alg) {
-      if (!MfeAlgIsSupported(kind, mfe_alg, cfg_.energy_cfg, pf_, nullptr)) return;
+      if (!MfeAlgIsSupported(kind, mfe_alg, cfg_.energy_cfg, pf_, /*reason=*/nullptr)) return;
 
       const Ctx ctx(m);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -211,7 +211,7 @@ Error FuzzInvocation::CheckSubopt() {
     for (const auto& m : ms_) {
       const auto kind = GetBackendKind(m);
       auto maybe_run = [&](SuboptAlg subopt_alg) {
-        if (!SuboptAlgIsSupported(kind, subopt_alg, cfg_.energy_cfg, pf_, cfg, nullptr)) return;
+        if (!SuboptAlgIsSupported(kind, subopt_alg, cfg_.energy_cfg, pf_, cfg, /*reason=*/nullptr)) return;
 
         const Ctx ctx(m);
         auto res = ctx.SuboptIntoVector(r_, MfeAlg::AUTO, subopt_alg, cfg_.energy_cfg, pf_, cfg);
@@ -371,7 +371,7 @@ Error FuzzInvocation::CheckPfn() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](PfnAlg pfn_alg) {
-      if (!PfnAlgIsSupported(kind, pfn_alg, cfg_.energy_cfg, pf_, nullptr)) return;
+      if (!PfnAlgIsSupported(kind, pfn_alg, cfg_.energy_cfg, pf_, /*reason=*/nullptr)) return;
 
       const Ctx ctx(m);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));

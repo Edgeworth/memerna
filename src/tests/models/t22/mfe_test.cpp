@@ -45,7 +45,7 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
 TEST_P(MfeTestT22, T22P2) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, nullptr))
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
     return;
 
   // Fast enough for brute force:
@@ -128,7 +128,7 @@ TEST_P(MfeTestT22, T22P2) {
 TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, nullptr))
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
     return;
 
   // Fast enough for brute force:
