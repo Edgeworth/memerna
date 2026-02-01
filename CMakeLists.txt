@@ -139,12 +139,12 @@ set(MEMERNA_SOURCE
   src/api/bridge/memerna.h
   src/api/brute/brute_cfg.cpp
   src/api/brute/brute_cfg.h
+  src/api/ctx/algorithm.cpp
+  src/api/ctx/algorithm.h
   src/api/ctx/backend_cfg.cpp
   src/api/ctx/backend_cfg.h
   src/api/ctx/backend.cpp
   src/api/ctx/backend.h
-  src/api/ctx/ctx_cfg.cpp
-  src/api/ctx/ctx_cfg.h
   src/api/ctx/ctx.cpp
   src/api/ctx/ctx.h
   src/api/energy/energy_cfg.cpp

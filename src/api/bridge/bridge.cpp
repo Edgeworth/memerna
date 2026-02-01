@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "api/bridge/memerna.h"
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/ctx.h"
 #include "util/error.h"
 
 #ifdef USE_RNASTRUCTURE

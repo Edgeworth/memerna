@@ -2,7 +2,7 @@
 #include <string>
 #include <tuple>
 
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/algorithm.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -11,7 +11,7 @@
 
 namespace mrna {
 
-class MfeTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>> {
+class MfeTestT04 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
  public:
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const std::string& s) {
     return GetMfe(m, std::get<1>(GetParam()), s);
@@ -27,7 +27,7 @@ class MfeTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
 TEST_P(MfeTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
+  if (!Contains(MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.6), "[[....]]"};
@@ -50,7 +50,7 @@ TEST_P(MfeTestT04, T04P1) {
   EXPECT_EQ(ans, Mfe(m, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (alg == CtxCfg::MfeAlg::BRUTE) return;
+  if (alg == MfeAlg::BRUTE) return;
   ans = {E(-5.1), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.3), ".....n[[[...]]]]mp[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]]M."};
@@ -109,7 +109,7 @@ TEST_P(MfeTestT04, T04P1) {
 TEST_P(MfeTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
+  if (!Contains(MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.56), "[[....]]"};
@@ -132,7 +132,7 @@ TEST_P(MfeTestT04, T04P2) {
   EXPECT_EQ(ans, Mfe(m, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (alg == CtxCfg::MfeAlg::BRUTE) return;
+  if (alg == MfeAlg::BRUTE) return;
   ans = {E(-5.05), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.32), "....n[[[[...]]]]]p[[[[[3...............mn[[[[[...]]]]]]Mp[....]]]]]]]].."};
@@ -193,7 +193,6 @@ TEST_P(MfeTestT04, T04P2) {
 #endif
 
 INSTANTIATE_TEST_SUITE_P(MfeTest, MfeTestT04,
-    testing::Combine(
-        testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<CtxCfg::MfeAlg>())));
+    testing::Combine(testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<MfeAlg>())));
 
 }  // namespace mrna

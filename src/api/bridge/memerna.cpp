@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/trace/trace_cfg.h"
 #include "model/primary.h"
 #include "model/structure.h"
@@ -26,21 +27,21 @@ erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string
 }
 
 FoldResult Memerna::Fold(const Primary& r) const {
-  return ctx_.Fold(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
+  return ctx_.Fold(r, MfeAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
 }
 
 int Memerna::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
-  return ctx_.Subopt(
-      r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, fn, {.delta = delta, .sorted = true});
+  return ctx_.Subopt(r, MfeAlg::AUTO, SuboptAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{}, fn,
+      {.delta = delta, .sorted = true});
 }
 
 std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r, Energy delta) const {
-  return ctx_.SuboptIntoVector(
-      r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = delta, .sorted = true});
+  return ctx_.SuboptIntoVector(r, MfeAlg::AUTO, SuboptAlg::AUTO, erg::EnergyCfg{},
+      erg::PseudofreeCfg{}, {.delta = delta, .sorted = true});
 }
 
 pfn::PfnResult Memerna::Pfn(const Primary& r) const {
-  return ctx_.Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+  return ctx_.Pfn(r, PfnAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{});
 }
 
 Memerna Memerna::FromArgParse(const ArgParse& args) { return Memerna(Ctx::FromArgParse(args)); }

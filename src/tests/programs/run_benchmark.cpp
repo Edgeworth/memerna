@@ -8,8 +8,8 @@
 #include <tuple>
 #include <utility>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt_cfg.h"
@@ -25,12 +25,13 @@ namespace mrna {
 template <class... Args>
 void Mfe(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args), CtxCfg{.mfe_alg = std::get<1>(args)});
+  const Ctx ctx(*std::get<0>(args));
+  auto mfe_alg = std::get<1>(args);
   std::mt19937 eng(0);
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.Fold(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
+    auto result = ctx.Fold(r, mfe_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -40,13 +41,15 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Subopt(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args), CtxCfg{.subopt_alg = std::get<1>(args)});
+  const Ctx ctx(*std::get<0>(args));
+  auto subopt_alg = std::get<1>(args);
   auto cfg = std::get<2>(args);
   std::mt19937 eng(0);
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.SuboptIntoVector(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, cfg);
+    auto result = ctx.SuboptIntoVector(
+        r, MfeAlg::AUTO, subopt_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, cfg);
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -56,12 +59,13 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Pfn(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args), CtxCfg{.pfn_alg = std::get<1>(args)});
+  const Ctx ctx(*std::get<0>(args));
+  auto pfn_alg = std::get<1>(args);
   std::mt19937 eng(0);
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+    auto result = ctx.Pfn(r, pfn_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -72,38 +76,38 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
 
 #define FORCE_EVAL(...) __VA_ARGS__
 
-#define DEFINE_MFE_BENCH1(r, m, kind)                        \
-  BENCHMARK_CAPTURE(Mfe, m kind, &(m), CtxCfg::MfeAlg::kind) \
-      ->RangeMultiplier(2)                                   \
-      ->Range(16, 512)                                       \
-      ->Complexity()                                         \
+#define DEFINE_MFE_BENCH1(r, m, kind)                \
+  BENCHMARK_CAPTURE(Mfe, m kind, &(m), MfeAlg::kind) \
+      ->RangeMultiplier(2)                           \
+      ->Range(16, 512)                               \
+      ->Complexity()                                 \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_MFE_BENCH(m, ...) \
   BOOST_PP_SEQ_FOR_EACH(DEFINE_MFE_BENCH1, m, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
-#define DEFINE_SUBOPT_BENCH1(r, m, kind)                                                         \
-  BENCHMARK_CAPTURE(                                                                             \
-      Subopt, m kind 100strucs, &(m), CtxCfg::SuboptAlg::kind, subopt::SuboptCfg{.strucs = 100}) \
-      ->RangeMultiplier(2)                                                                       \
-      ->Range(16, 512)                                                                           \
-      ->Complexity()                                                                             \
-      ->Unit(benchmark::kMillisecond);                                                           \
-  BENCHMARK_CAPTURE(                                                                             \
-      Subopt, m kind delta, &(m), CtxCfg::SuboptAlg::kind, subopt::SuboptCfg{.delta = E(0.2)})   \
-      ->RangeMultiplier(2)                                                                       \
-      ->Range(16, 512)                                                                           \
-      ->Complexity()                                                                             \
+#define DEFINE_SUBOPT_BENCH1(r, m, kind)                                                 \
+  BENCHMARK_CAPTURE(                                                                     \
+      Subopt, m kind 100strucs, &(m), SuboptAlg::kind, subopt::SuboptCfg{.strucs = 100}) \
+      ->RangeMultiplier(2)                                                               \
+      ->Range(16, 512)                                                                   \
+      ->Complexity()                                                                     \
+      ->Unit(benchmark::kMillisecond);                                                   \
+  BENCHMARK_CAPTURE(                                                                     \
+      Subopt, m kind delta, &(m), SuboptAlg::kind, subopt::SuboptCfg{.delta = E(0.2)})   \
+      ->RangeMultiplier(2)                                                               \
+      ->Range(16, 512)                                                                   \
+      ->Complexity()                                                                     \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_SUBOPT_BENCH(m, ...) \
   BOOST_PP_SEQ_FOR_EACH(DEFINE_SUBOPT_BENCH1, m, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
-#define DEFINE_PARTITION_BENCH1(r, m, kind)                  \
-  BENCHMARK_CAPTURE(Pfn, m kind, &(m), CtxCfg::PfnAlg::kind) \
-      ->RangeMultiplier(2)                                   \
-      ->Range(16, 512)                                       \
-      ->Complexity()                                         \
+#define DEFINE_PARTITION_BENCH1(r, m, kind)          \
+  BENCHMARK_CAPTURE(Pfn, m kind, &(m), PfnAlg::kind) \
+      ->RangeMultiplier(2)                           \
+      ->Range(16, 512)                               \
+      ->Complexity()                                 \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_PARTITION_BENCH(m, ...) \

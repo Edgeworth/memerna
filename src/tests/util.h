@@ -6,9 +6,9 @@
 #include <tuple>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
@@ -35,38 +35,36 @@ inline Energy GetEnergy(const BackendModelPtr& m, const std::string& r, const st
 }
 
 inline std::tuple<Energy, std::string> GetMfe(
-    const BackendModelPtr& m, CtxCfg::MfeAlg alg, const Primary& r) {
-  auto res = Ctx(m, CtxCfg{.mfe_alg = alg})
-                 .Fold(r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
+    const BackendModelPtr& m, MfeAlg alg, const Primary& r) {
+  auto res = Ctx(m).Fold(r, alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
   return {res.mfe.energy, erg::EnergyCfg{}.ToCtdString(res.tb.s, res.tb.ctd)};
 }
 
 inline std::tuple<Energy, std::string> GetMfe(
-    const BackendModelPtr& m, CtxCfg::MfeAlg alg, const std::string& s) {
+    const BackendModelPtr& m, MfeAlg alg, const std::string& s) {
   return GetMfe(m, alg, Primary::FromSeq(s));
 }
 
-inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
-    CtxCfg::SuboptAlg alg, const Primary& r, const std::vector<Energy>& energies) {
+inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m, SuboptAlg alg,
+    const Primary& r, const std::vector<Energy>& energies) {
   const int n = static_cast<int>(energies.size());
-  auto res = Ctx(m, CtxCfg{.subopt_alg = alg})
-                 .SuboptIntoVector(
-                     r, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{.strucs = n});
+  auto res = Ctx(m).SuboptIntoVector(
+      r, MfeAlg::AUTO, alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{.strucs = n});
   for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
   // for (int i = 0; i < n; ++i) fmt::print("E({}),\n", res[i].energy);
   return res;
 }
 
-inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
-    CtxCfg::SuboptAlg alg, const std::string& s, const std::vector<Energy>& energies) {
+inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m, SuboptAlg alg,
+    const std::string& s, const std::vector<Energy>& energies) {
   return CheckSubopt(m, alg, Primary::FromSeq(s), energies);
 }
 
-inline pfn::PfnResult GetPfn(const BackendModelPtr& m, CtxCfg::PfnAlg alg, const Primary& r) {
-  return Ctx(m, CtxCfg{.pfn_alg = alg}).Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+inline pfn::PfnResult GetPfn(const BackendModelPtr& m, PfnAlg alg, const Primary& r) {
+  return Ctx(m).Pfn(r, alg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
 }
 
-inline pfn::PfnResult GetPfn(const BackendModelPtr& m, CtxCfg::PfnAlg alg, const std::string& s) {
+inline pfn::PfnResult GetPfn(const BackendModelPtr& m, PfnAlg alg, const std::string& s) {
   return GetPfn(m, alg, Primary::FromSeq(s));
 }
 

@@ -6,7 +6,6 @@
 #include <string>
 
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
@@ -29,6 +28,8 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
   auto ctx = mrna::Ctx::FromArgParse(args);
+  auto mfe_alg = args.Get<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
+  auto subopt_alg = args.Get<mrna::SuboptAlg>(mrna::OPT_SUBOPT_ALG);
   const bool should_print = !args.GetOr(mrna::OPT_QUIET);
   const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
   const auto subopt_cfg = mrna::subopt::SuboptCfg::FromArgParse(args);
@@ -49,6 +50,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Subopt(r, energy_cfg, pf, fn, subopt_cfg);
+  int strucs = ctx.Subopt(r, mfe_alg, subopt_alg, energy_cfg, pf, fn, subopt_cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

@@ -5,7 +5,7 @@
 #include <tuple>
 #include <vector>
 
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/algorithm.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -14,7 +14,7 @@
 
 namespace mrna {
 
-class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::SuboptAlg>> {
+class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> {
  public:
   static std::vector<subopt::SuboptResult> Subopt(
       const BackendModelPtr& m, const std::string& s, const std::vector<Energy>& energies) {
@@ -32,7 +32,7 @@ class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::Subo
 TEST_P(SuboptTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!Contains(CtxCfg::SuboptAlgsForBackend(m), alg)) return;
+  if (!Contains(SuboptAlgsForBackend(m), alg)) return;
 
   Subopt(m, "CCUCCGGG",
       {
@@ -165,7 +165,7 @@ TEST_P(SuboptTestT04, T04P1) {
       });
 
   // Too slow for brute force:
-  if (alg == CtxCfg::SuboptAlg::BRUTE) return;
+  if (alg == SuboptAlg::BRUTE) return;
   Subopt(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       {
           E(-5.1),
@@ -472,7 +472,7 @@ TEST_P(SuboptTestT04, T04P1) {
 TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!Contains(CtxCfg::SuboptAlgsForBackend(m), alg)) return;
+  if (!Contains(SuboptAlgsForBackend(m), alg)) return;
 
   Subopt(m, "CCUCCGGG",
       {
@@ -605,7 +605,7 @@ TEST_P(SuboptTestT04, T04P2) {
       });
 
   // Too slow for brute force:
-  if (alg == CtxCfg::SuboptAlg::BRUTE) return;
+  if (alg == SuboptAlg::BRUTE) return;
   Subopt(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       {
           E(-5.05),
@@ -911,6 +911,6 @@ TEST_P(SuboptTestT04, T04P2) {
 
 INSTANTIATE_TEST_SUITE_P(SuboptTest, SuboptTestT04,
     testing::Combine(
-        testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<CtxCfg::SuboptAlg>())));
+        testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<SuboptAlg>())));
 
 }  // namespace mrna

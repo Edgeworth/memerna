@@ -4,7 +4,7 @@
 #include <string>
 #include <tuple>
 
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/algorithm.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "tests/init.h"
@@ -13,7 +13,7 @@
 
 namespace mrna {
 
-class PfnTestT12 : public testing::TestWithParam<std::tuple<int, CtxCfg::PfnAlg>> {
+class PfnTestT12 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
  public:
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const std::string& s) {
     return GetPfn(m, std::get<1>(GetParam()), s);
@@ -33,7 +33,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(PfnTestT12);
 TEST_P(PfnTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!Contains(CtxCfg::PfnAlgsForBackend(m), alg)) return;
+  if (!Contains(PfnAlgsForBackend(m), alg)) return;
 
   EXPECT_REL_EQ(FLT(4.06569633368939134129842956017929466372263904011), Pfn(m, "CCUCCGGG").pfn.q);
   EXPECT_REL_EQ(FLT(3.99326566300301791033216574191242303938854885947), Pfn(m, "CGGAAACGG").pfn.q);
@@ -52,7 +52,7 @@ TEST_P(PfnTestT12, T12P2) {
       Pfn(m, "CUGAAACUGGAAACAGAAAUG").pfn.q);
 
   // Too slow for brute force:
-  if (alg == CtxCfg::PfnAlg::BRUTE) return;
+  if (alg == PfnAlg::BRUTE) return;
   EXPECT_REL_EQ(FLT(489568270.164770419074506176947118047561497788815),
       Pfn(m, "CCGGGCCAGCCCGCUCCUACGGGGGGUC").pfn.q);
   EXPECT_REL_EQ(FLT(187180.833955420153362511796970009127830070133408),
@@ -105,7 +105,6 @@ TEST_P(PfnTestT12, T12P2) {
 #endif
 
 INSTANTIATE_TEST_SUITE_P(PfnTest, PfnTestT12,
-    testing::Combine(
-        testing::Range(0, NUM_T12_MODELS), testing::ValuesIn(EnumValues<CtxCfg::PfnAlg>())));
+    testing::Combine(testing::Range(0, NUM_T12_MODELS), testing::ValuesIn(EnumValues<PfnAlg>())));
 
 }  // namespace mrna

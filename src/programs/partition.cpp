@@ -2,7 +2,6 @@
 #include <fmt/core.h>
 
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "model/pfn.h"
@@ -33,7 +32,8 @@ int main(int argc, char* argv[]) {
   pf.Verify(r);
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto res = ctx.Pfn(r, energy_cfg, pf);
+  auto pfn_alg = args.Get<mrna::PfnAlg>(mrna::OPT_PFN_ALG);
+  auto res = ctx.Pfn(r, pfn_alg, energy_cfg, pf);
   fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
   mrna::PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");

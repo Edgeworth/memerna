@@ -2,7 +2,7 @@
 #include <string>
 #include <tuple>
 
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/algorithm.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -11,7 +11,7 @@
 
 namespace mrna {
 
-class MfeTestT12 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>> {
+class MfeTestT12 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
  public:
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const std::string& s) {
     return GetMfe(m, std::get<1>(GetParam()), s);
@@ -32,7 +32,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT12);
 TEST_P(MfeTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
+  if (!Contains(MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.56), "[[....]]"};
@@ -55,7 +55,7 @@ TEST_P(MfeTestT12, T12P2) {
   EXPECT_EQ(ans, Mfe(m, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (alg == CtxCfg::MfeAlg::BRUTE) return;
+  if (alg == MfeAlg::BRUTE) return;
   ans = {E(-5.19), "......m[[[[...[[[..[[[...]]]...]]].]]]]M...................."};
   EXPECT_EQ(ans, Mfe(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-12.94), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
@@ -116,7 +116,6 @@ TEST_P(MfeTestT12, T12P2) {
 #endif
 
 INSTANTIATE_TEST_SUITE_P(MfeTest, MfeTestT12,
-    testing::Combine(
-        testing::Range(0, NUM_T12_MODELS), testing::ValuesIn(EnumValues<CtxCfg::MfeAlg>())));
+    testing::Combine(testing::Range(0, NUM_T12_MODELS), testing::ValuesIn(EnumValues<MfeAlg>())));
 
 }  // namespace mrna

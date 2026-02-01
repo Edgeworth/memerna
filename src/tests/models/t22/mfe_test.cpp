@@ -4,9 +4,9 @@
 #include <utility>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
@@ -17,7 +17,7 @@
 
 namespace mrna {
 
-class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>> {
+class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
  public:
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const std::string& s) {
     return GetMfe(m, std::get<1>(GetParam()), s);
@@ -33,8 +33,8 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
     std::vector<Energy> pf_unpaired(r.size(), E(1.0));
     Energy extra_from_pseudofree = E(1.0) * int(r.size());
     erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
-    auto res = Ctx(m, CtxCfg{.mfe_alg = std::get<1>(GetParam())})
-                   .Fold(Primary::FromSeq(r), erg::EnergyCfg{}, pf, trace::TraceCfg{});
+    auto res = Ctx(m).Fold(
+        Primary::FromSeq(r), std::get<1>(GetParam()), erg::EnergyCfg{}, pf, trace::TraceCfg{});
     EXPECT_EQ(base_energy + extra_from_pseudofree, res.mfe.energy);
     EXPECT_EQ(db, erg::EnergyCfg{}.ToCtdString(res.tb.s, res.tb.ctd));
   }
@@ -45,7 +45,7 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, CtxCfg::MfeAlg>
 TEST_P(MfeTestT22, T22P2) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
+  if (!Contains(MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.58), "[[....]]"};
@@ -68,7 +68,7 @@ TEST_P(MfeTestT22, T22P2) {
   EXPECT_EQ(ans, Mfe(m, "CUGAAACUGGAAACAGAAAUG"));
 
   // Too slow for brute force:
-  if (alg == CtxCfg::MfeAlg::BRUTE) return;
+  if (alg == MfeAlg::BRUTE) return;
   ans = {E(-5.31), ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]]."};
   EXPECT_EQ(ans, Mfe(m, "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA"));
   ans = {E(-13.48), "....n[[[[...]]]]]p[[[[[............[[..[[[...]]]..]]............]]]]]].."};
@@ -127,7 +127,7 @@ TEST_P(MfeTestT22, T22P2) {
 TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!Contains(CtxCfg::MfeAlgsForBackend(m), alg)) return;
+  if (!Contains(MfeAlgsForBackend(m), alg)) return;
 
   // Fast enough for brute force:
   TestMfePseudofree(m, E(-0.58), "CCUCCGGG", "[[....]]");
@@ -141,7 +141,7 @@ TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
   TestMfePseudofree(m, E(-2.08), "CUGAAACUGGAAACAGAAAUG", "......[[[....]]]3....");
 
   // Too slow for brute force:
-  if (alg == CtxCfg::MfeAlg::BRUTE) return;
+  if (alg == MfeAlg::BRUTE) return;
   TestMfePseudofree(m, E(-5.31), "UUGAAAAGCGGUUCCGUUCAGUCCUACUCACACGUCCGUCACACAUUAUGCCGGUAGAUA",
       ".mn[...[[[....]]]]]Mp[[.[[[[..[[................]]..]]]]]]].");
   TestMfePseudofree(m, E(-13.48),
@@ -200,7 +200,6 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT22);
 #endif
 
 INSTANTIATE_TEST_SUITE_P(MfeTest, MfeTestT22,
-    testing::Combine(
-        testing::Range(0, NUM_T22_MODELS), testing::ValuesIn(EnumValues<CtxCfg::MfeAlg>())));
+    testing::Combine(testing::Range(0, NUM_T22_MODELS), testing::ValuesIn(EnumValues<MfeAlg>())));
 
 }  // namespace mrna

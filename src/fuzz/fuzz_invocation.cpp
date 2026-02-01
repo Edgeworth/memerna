@@ -10,8 +10,8 @@
 #include <variant>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/energy.h"
 #include "api/mfe.h"
 #include "api/pfn.h"
@@ -117,7 +117,7 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
 }
 
 void FuzzInvocation::EnsureFoldResult() {
-  if (!fold_) fold_ = Ctx(ms_[0], CtxCfg{}).Fold(r_, cfg_.energy_cfg, pf_, {});
+  if (!fold_) fold_ = Ctx(ms_[0]).Fold(r_, MfeAlg::AUTO, cfg_.energy_cfg, pf_, {});
 }
 
 Error FuzzInvocation::CheckMfe() {
@@ -130,12 +130,11 @@ Error FuzzInvocation::CheckMfe() {
   std::vector<Energy> ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> opt_efns;  // Efn using optimal CTDs.
   for (const auto& m : ms_) {
-    for (auto mfe_alg : CtxCfg::MfeAlgsForBackend(m)) {
-      if (mfe_alg == CtxCfg::MfeAlg::AUTO) continue;
-      if (mfe_alg == CtxCfg::MfeAlg::BRUTE && N > cfg_.brute_max) continue;
+    for (auto mfe_alg : MfeAlgsForBackend(m)) {
+      if (mfe_alg == MfeAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      const Ctx ctx(m, CtxCfg{.mfe_alg = mfe_alg});
-      auto res = ctx.Fold(r_, cfg_.energy_cfg, pf_, {});
+      const Ctx ctx(m);
+      auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
       // First compute with the CTDs that fold returned to check the energy.
       ctd_efns.push_back(TotalEnergy(m, r_, res.tb.s, &res.tb.ctd, cfg_.energy_cfg, pf_).energy);
 
@@ -207,12 +206,11 @@ Error FuzzInvocation::CheckSubopt() {
     results.push_back({cfg, {}});
     tags.emplace_back();
     for (const auto& m : ms_) {
-      for (auto subopt_alg : CtxCfg::SuboptAlgsForBackend(m)) {
-        if (subopt_alg == CtxCfg::SuboptAlg::AUTO) continue;
-        if (subopt_alg == CtxCfg::SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
+      for (auto subopt_alg : SuboptAlgsForBackend(m)) {
+        if (subopt_alg == SuboptAlg::BRUTE && N > cfg_.brute_max) continue;
 
-        const Ctx ctx(m, CtxCfg{.subopt_alg = subopt_alg});
-        auto res = ctx.SuboptIntoVector(r_, cfg_.energy_cfg, pf_, cfg);
+        const Ctx ctx(m);
+        auto res = ctx.SuboptIntoVector(r_, MfeAlg::AUTO, subopt_alg, cfg_.energy_cfg, pf_, cfg);
         // Sort them to make the sorted=false configurations comparable between
         // algorithms.
         std::sort(res.begin(), res.end());
@@ -365,12 +363,11 @@ Error FuzzInvocation::CheckPfn() {
   std::vector<pfn::PfnResult> results;
   std::vector<std::string> tags;
   for (const auto& m : ms_) {
-    for (auto pfn_alg : CtxCfg::PfnAlgsForBackend(m)) {
-      if (pfn_alg == CtxCfg::PfnAlg::AUTO) continue;
-      if (pfn_alg == CtxCfg::PfnAlg::BRUTE && N > cfg_.brute_max) continue;
+    for (auto pfn_alg : PfnAlgsForBackend(m)) {
+      if (pfn_alg == PfnAlg::BRUTE && N > cfg_.brute_max) continue;
 
-      const Ctx ctx(m, CtxCfg{.pfn_alg = pfn_alg});
-      results.emplace_back(ctx.Pfn(r_, cfg_.energy_cfg, pf_));
+      const Ctx ctx(m);
+      results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
       tags.push_back(fmt::format("{}-{}", GetBackendKind(m), pfn_alg));
     }
   }
@@ -380,8 +377,9 @@ Error FuzzInvocation::CheckPfn() {
 
   if (N < cfg_.pfn_subopt) {
     subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
-    const Ctx ctx(ms_.front(), CtxCfg{});
-    auto subopts = ctx.SuboptIntoVector(r_, cfg_.energy_cfg, pf_, subopt_cfg);
+    const Ctx ctx(ms_.front());
+    auto subopts =
+        ctx.SuboptIntoVector(r_, MfeAlg::AUTO, SuboptAlg::AUTO, cfg_.energy_cfg, pf_, subopt_cfg);
     flt subopt_q{};
     for (const auto& res : subopts) subopt_q += res.energy.Boltz();
 

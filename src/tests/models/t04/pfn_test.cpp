@@ -6,7 +6,8 @@
 #include <utility>
 #include <vector>
 
-#include "api/ctx/ctx_cfg.h"
+#include "api/ctx/algorithm.h"
+#include "api/ctx/ctx.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "gtest/gtest.h"
 #include "model/primary.h"
@@ -16,7 +17,7 @@
 
 namespace mrna {
 
-class PfnTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::PfnAlg>> {
+class PfnTestT04 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
  public:
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const std::string& s) {
     return GetPfn(m, std::get<1>(GetParam()), s);
@@ -32,7 +33,7 @@ class PfnTestT04 : public testing::TestWithParam<std::tuple<int, CtxCfg::PfnAlg>
 TEST_P(PfnTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!Contains(CtxCfg::PfnAlgsForBackend(m), alg)) return;
+  if (!Contains(PfnAlgsForBackend(m), alg)) return;
 
   EXPECT_REL_EQ(FLT(4.2481601382949495665565296828679689667765375832), Pfn(m, "CCUCCGGG").pfn.q);
   EXPECT_REL_EQ(FLT(4.17979557041608366287852107192666645517291810433), Pfn(m, "CGGAAACGG").pfn.q);
@@ -51,7 +52,7 @@ TEST_P(PfnTestT04, T04P1) {
       Pfn(m, "CUGAAACUGGAAACAGAAAUG").pfn.q);
 
   // Too slow for brute force:
-  if (alg == CtxCfg::PfnAlg::BRUTE) return;
+  if (alg == PfnAlg::BRUTE) return;
   EXPECT_REL_EQ(FLT(573963557.832690101314804611565712243969839876608),
       Pfn(m, "CCGGGCCAGCCCGCUCCUACGGGGGGUC").pfn.q);
   EXPECT_REL_EQ(FLT(226979.219096921172665125564673329771324145408152),
@@ -106,7 +107,7 @@ TEST_P(PfnTestT04, T04P1) {
 TEST_P(PfnTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!Contains(CtxCfg::PfnAlgsForBackend(m), alg)) return;
+  if (!Contains(PfnAlgsForBackend(m), alg)) return;
 
   // Regression tests:
   auto pfn = Pfn(m, "GGCGACCGGCGG").pfn;
@@ -155,7 +156,7 @@ TEST_P(PfnTestT04, T04P2) {
       Pfn(m, "CUGAAACUGGAAACAGAAAUG").pfn.q);
 
   // Too slow for brute force:
-  if (alg == CtxCfg::PfnAlg::BRUTE) return;
+  if (alg == PfnAlg::BRUTE) return;
   EXPECT_REL_EQ(FLT(485598279.6070418149352955163452483973488643105),
       Pfn(m, "CCGGGCCAGCCCGCUCCUACGGGGGGUC").pfn.q);
   EXPECT_REL_EQ(FLT(185629.387202844402235328214859370318079740293414),
@@ -212,18 +213,15 @@ TEST(PfnTestT04, PseudofreeMatchesBruteAndScalesQ) {
   const auto& m = t04_ms[0];  // BASE backend.
   const auto r = Primary::FromSeq("CCUCCGGG");
 
-  const auto no_pf = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE})
-                         .Pfn(r, erg::EnergyCfg{}, erg::PseudofreeCfg{})
-                         .pfn;
+  const auto no_pf = Ctx(m).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, erg::PseudofreeCfg{}).pfn;
 
   const Energy per_nt = E(0.5);
   std::vector<Energy> pf_paired(r.size(), per_nt);
   std::vector<Energy> pf_unpaired(r.size(), per_nt);
   const erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
 
-  const auto brute =
-      Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::BRUTE}).Pfn(r, erg::EnergyCfg{}, pf).pfn;
-  const auto opt = Ctx(m, CtxCfg{.pfn_alg = CtxCfg::PfnAlg::OPT}).Pfn(r, erg::EnergyCfg{}, pf).pfn;
+  const auto brute = Ctx(m).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, pf).pfn;
+  const auto opt = Ctx(m).Pfn(r, PfnAlg::OPT, erg::EnergyCfg{}, pf).pfn;
   CheckPfn(opt, brute);
 
   const auto scale = (per_nt * static_cast<int>(r.size())).Boltz();
@@ -231,7 +229,6 @@ TEST(PfnTestT04, PseudofreeMatchesBruteAndScalesQ) {
 }
 
 INSTANTIATE_TEST_SUITE_P(PfnTest, PfnTestT04,
-    testing::Combine(
-        testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<CtxCfg::PfnAlg>())));
+    testing::Combine(testing::Range(0, NUM_T04_MODELS), testing::ValuesIn(EnumValues<PfnAlg>())));
 
 }  // namespace mrna

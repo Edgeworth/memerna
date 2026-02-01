@@ -2,7 +2,6 @@
 #include <fmt/core.h>
 
 #include "api/ctx/ctx.h"
-#include "api/ctx/ctx_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
 #include "api/trace/trace.h"
@@ -20,12 +19,13 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
   auto ctx = mrna::Ctx::FromArgParse(args);
+  auto mfe_alg = args.Get<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
   auto trace_cfg = mrna::trace::TraceCfg::FromArgParse(args);
   auto r = mrna::Primary::FromSeq(args.Pos(0));
   auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
-  const auto res = ctx.Fold(r, energy_cfg, pf, trace_cfg);
+  const auto res = ctx.Fold(r, mfe_alg, energy_cfg, pf, trace_cfg);
 
   fmt::print("{}\n", res.mfe.energy);
   fmt::print("{}\n", res.tb.s.ToDb());
