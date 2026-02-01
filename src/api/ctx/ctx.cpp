@@ -101,6 +101,19 @@ const BackendModelPtr& Ctx::EnsureBackend() const {
   return *backends_[idx];
 }
 
+const BackendModelPtr& Ctx::BackendForFold([[maybe_unused]] MfeAlg alg) const {
+  return EnsureBackend();
+}
+
+const BackendModelPtr& Ctx::BackendForSubopt(
+    [[maybe_unused]] SuboptAlg alg, [[maybe_unused]] MfeAlg mfe_alg) const {
+  return EnsureBackend();
+}
+
+const BackendModelPtr& Ctx::BackendForPfn([[maybe_unused]] PfnAlg alg) const {
+  return EnsureBackend();
+}
+
 erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool build_structure) const {
   const auto& m = EnsureBackend();
@@ -189,7 +202,7 @@ trace::TraceResult Ctx::ComputeTraceback(const BackendModelPtr& m, const Primary
 
 FoldResult Ctx::Fold(const Primary& r, MfeAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
     const trace::TraceCfg& trace_cfg) const {
-  const auto& m = EnsureBackend();
+  const auto& m = BackendForFold(alg);
 
   // Resolve AUTO to the default for this backend
   if (alg == MfeAlg::AUTO) {
@@ -225,7 +238,7 @@ std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r, MfeAlg
 int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
     subopt::SuboptCfg subopt_cfg) const {
-  const auto& m = EnsureBackend();
+  const auto& m = BackendForSubopt(alg, mfe_alg);
 
   // Resolve AUTO to the default for this backend
   if (alg == SuboptAlg::AUTO) {
@@ -326,7 +339,7 @@ int Ctx::Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg 
 
 pfn::PfnResult Ctx::Pfn(
     const Primary& r, PfnAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const {
-  const auto& m = EnsureBackend();
+  const auto& m = BackendForPfn(alg);
 
   // PFN algorithms require bulge_states = false
   cfg.bulge_states = false;

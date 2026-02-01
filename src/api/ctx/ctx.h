@@ -62,8 +62,10 @@ class Ctx {
   [[nodiscard]] pfn::PfnResult Pfn(
       const Primary& r, PfnAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const;
 
-  // Access the backend model (loads if necessary)
-  [[nodiscard]] const BackendModelPtr& m() const { return EnsureBackend(); }
+  // Algorithm-specific backend selection methods
+  [[nodiscard]] const BackendModelPtr& BackendForFold(MfeAlg alg) const;
+  [[nodiscard]] const BackendModelPtr& BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg) const;
+  [[nodiscard]] const BackendModelPtr& BackendForPfn(PfnAlg alg) const;
 
   static Ctx FromArgParse(const ArgParse& args);
 
