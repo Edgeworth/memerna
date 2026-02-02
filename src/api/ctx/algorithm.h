@@ -2,13 +2,20 @@
 #ifndef API_CTX_ALGORITHM_H_
 #define API_CTX_ALGORITHM_H_
 
+#include <functional>
 #include <optional>
 #include <string>
 
+#include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
+#include "api/mfe.h"
+#include "api/pfn.h"
+#include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace.h"
+#include "api/trace/trace_cfg.h"
 #include "util/argparse.h"
 #include "util/container.h"
 #include "util/enum.h"
@@ -20,12 +27,26 @@ MAKE_ENUM(
     SuboptAlg, AUTO, BRUTE, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 MAKE_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
 
-[[nodiscard]] bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+using MfeFn = std::function<void(const BackendModelPtr&, const Primary&, mfe::DpState&,
+    erg::EnergyCfg, const erg::PseudofreeCfg&)>;
 
-[[nodiscard]] smallvec<MfeAlg, EnumCount<MfeAlg>()> MfePriorityForBackend(BackendKind kind, bool include_brute);
-[[nodiscard]] smallvec<SuboptAlg, EnumCount<SuboptAlg>()> SuboptPriorityForBackend(BackendKind kind, bool include_brute);
-[[nodiscard]] smallvec<PfnAlg, EnumCount<PfnAlg>()> PfnPriorityForBackend(BackendKind kind, bool include_brute);
+using MfeExteriorFn = std::function<Energy(const BackendModelPtr&, const Primary&, mfe::DpState&,
+    erg::EnergyCfg, const erg::PseudofreeCfg&)>;
+
+using TraceFn = std::function<trace::TraceResult(const BackendModelPtr&, const Primary&,
+    const mfe::DpState&, erg::EnergyCfg, const erg::PseudofreeCfg&, const trace::TraceCfg&)>;
+
+using SuboptFn = std::function<int(const BackendModelPtr&, Primary, mfe::DpState, erg::EnergyCfg,
+    const erg::PseudofreeCfg&, const subopt::SuboptCallback&, subopt::SuboptCfg)>;
+
+using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pfn::PfnState&,
+    erg::EnergyCfg, const erg::PseudofreeCfg&)>;
+
+[[nodiscard]] std::optional<MfeFn> GetMfeFn(BackendKind kind, MfeAlg alg);
+[[nodiscard]] MfeExteriorFn GetMfeExteriorFn(BackendKind kind);
+[[nodiscard]] TraceFn GetTraceFn(BackendKind kind);
+[[nodiscard]] std::optional<SuboptFn> GetSuboptFn(BackendKind kind, SuboptAlg alg);
+[[nodiscard]] std::optional<PfnFn> GetPfnFn(BackendKind kind, PfnAlg alg);
 
 [[nodiscard]] bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
@@ -35,11 +56,20 @@ MAKE_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
 [[nodiscard]] bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
+[[nodiscard]] bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+
+[[nodiscard]] smallvec<MfeAlg, EnumCount<MfeAlg>()> MfePriorityForBackend(
+    BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<SuboptAlg, EnumCount<SuboptAlg>()> SuboptPriorityForBackend(
+    BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<PfnAlg, EnumCount<PfnAlg>()> PfnPriorityForBackend(
+    BackendKind kind, bool include_brute);
+
 [[nodiscard]] std::optional<MfeAlg> ResolveMfeAlg(BackendKind kind, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* log = nullptr);
 [[nodiscard]] std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg,
-    std::string* log = nullptr);
+    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log = nullptr);
 [[nodiscard]] std::optional<PfnAlg> ResolvePfnAlg(BackendKind kind, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* log = nullptr);
 

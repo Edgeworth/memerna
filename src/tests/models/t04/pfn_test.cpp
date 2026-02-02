@@ -33,8 +33,7 @@ class PfnTestT04 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
 TEST_P(PfnTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
-    return;
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
 
   EXPECT_REL_EQ(FLT(4.2481601382949495665565296828679689667765375832), Pfn(m, "CCUCCGGG").pfn.q);
   EXPECT_REL_EQ(FLT(4.17979557041608366287852107192666645517291810433), Pfn(m, "CGGAAACGG").pfn.q);
@@ -108,8 +107,7 @@ TEST_P(PfnTestT04, T04P1) {
 TEST_P(PfnTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*reason=*/nullptr))
-    return;
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
 
   // Regression tests:
   auto pfn = Pfn(m, "GGCGACCGGCGG").pfn;

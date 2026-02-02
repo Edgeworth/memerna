@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -46,8 +47,8 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
   verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
 
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
+      "{} does not support the given configuration: {}", funcname(), reason);
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
   auto start_time = std::chrono::steady_clock::now();

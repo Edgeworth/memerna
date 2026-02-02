@@ -2,7 +2,9 @@
 #include "backends/brute/brute.h"
 
 #include <fmt/core.h>
+
 #include <iterator>
+#include <string>
 #include <utility>
 
 #include "api/ctx/algorithm.h"

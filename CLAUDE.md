@@ -3,6 +3,16 @@
 RNA secondary structure prediction library with MFE, suboptimal folding, and
 partition function algorithms. Optimized for performance with sparse algorithms.
 
+## Coding notes
+
+- Parameters to functions that are hard to understand, e.g. nullptr should be
+  written with the parameter name: `Function(param1, /*important_param=*/
+  nullptr);`
+- Exhaustive returning switch cases should not use `default:` and should have
+  `unreachable()` after them.
+- Do not use braces for single-line if/else bodies, unless at least one branch
+  is multi-line.
+
 ## Critical Invariants
 
 - `Energy` is a 4-byte aligned int32_t. MAX_E (0x0F0F0F0F) and CAP_E (0x07070707)

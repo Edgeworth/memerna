@@ -2,6 +2,8 @@
 #ifndef BACKENDS_BASE_PFN_PFN_DEBUG_H_
 #define BACKENDS_BASE_PFN_PFN_DEBUG_H_
 
+#include <string>
+
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"

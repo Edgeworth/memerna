@@ -132,7 +132,7 @@ Error FuzzInvocation::CheckMfe() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](MfeAlg mfe_alg) {
-      if (!MfeAlgIsSupported(kind, mfe_alg, cfg_.energy_cfg, pf_, /*reason=*/nullptr)) return;
+      if (!MfeAlgIsSupported(kind, mfe_alg, cfg_.energy_cfg, pf_)) return;
 
       const Ctx ctx(m);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -211,7 +211,7 @@ Error FuzzInvocation::CheckSubopt() {
     for (const auto& m : ms_) {
       const auto kind = GetBackendKind(m);
       auto maybe_run = [&](SuboptAlg subopt_alg) {
-        if (!SuboptAlgIsSupported(kind, subopt_alg, cfg_.energy_cfg, pf_, cfg, /*reason=*/nullptr)) return;
+        if (!SuboptAlgIsSupported(kind, subopt_alg, cfg_.energy_cfg, pf_, cfg)) return;
 
         const Ctx ctx(m);
         auto res = ctx.SuboptIntoVector(r_, MfeAlg::AUTO, subopt_alg, cfg_.energy_cfg, pf_, cfg);
@@ -222,7 +222,8 @@ Error FuzzInvocation::CheckSubopt() {
         tags.back().push_back(fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx));
       };
 
-      for (auto subopt_alg : SuboptPriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(subopt_alg);
+      for (auto subopt_alg : SuboptPriorityForBackend(kind, N <= cfg_.brute_max))
+        maybe_run(subopt_alg);
     }
   }
 
@@ -371,7 +372,7 @@ Error FuzzInvocation::CheckPfn() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](PfnAlg pfn_alg) {
-      if (!PfnAlgIsSupported(kind, pfn_alg, cfg_.energy_cfg, pf_, /*reason=*/nullptr)) return;
+      if (!PfnAlgIsSupported(kind, pfn_alg, cfg_.energy_cfg, pf_)) return;
 
       const Ctx ctx(m);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));

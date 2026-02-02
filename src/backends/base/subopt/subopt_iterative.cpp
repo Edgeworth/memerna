@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -19,8 +20,8 @@
 namespace mrna::md::base {
 
 template <bool UseLru>
-bool SuboptIterative<UseLru>::IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/,
-    const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+bool SuboptIterative<UseLru>::IsSupported(const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
   if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
       cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
     if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
@@ -42,8 +43,8 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   q_.reserve(r_.size());  // Reasonable reservation.
 
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
+      "{} does not support the given configuration: {}", funcname(), reason);
   pf_.Verify(r_);
 
   spdlog::debug("base {} with cfg {}", funcname(), cfg_);

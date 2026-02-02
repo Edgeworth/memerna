@@ -13,7 +13,6 @@
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "util/error.h"
 
 namespace mrna::md::stack {
 

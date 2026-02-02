@@ -33,7 +33,7 @@ TEST_P(SuboptTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
   if (!SuboptAlgIsSupported(
-          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, /*reason=*/nullptr))
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}))
     return;
 
   Subopt(m, "CCUCCGGG",
@@ -475,7 +475,7 @@ TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
   if (!SuboptAlgIsSupported(
-          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, /*reason=*/nullptr))
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}))
     return;
 
   Subopt(m, "CCUCCGGG",

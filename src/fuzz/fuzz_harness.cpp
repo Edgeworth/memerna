@@ -16,7 +16,8 @@ namespace mrna::fuzz {
 FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
     : fuzz_cfg_(std::move(fuzz_cfg)), e_(std::random_device{}()) {
 #ifdef USE_RNASTRUCTURE
-  rstr_ = std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
+  rstr_ =
+      std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
 #endif  // USE_RNASTRUCTURE
   fmt::print("Fuzzing with config: {}\n", fuzz_cfg_.Desc());
 

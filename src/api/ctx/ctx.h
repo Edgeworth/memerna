@@ -20,7 +20,6 @@
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
 #include "model/ctd.h"
-#include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
@@ -35,17 +34,24 @@ struct FoldResult {
 struct MfeBackend {
   const BackendModelPtr& m;
   MfeAlg alg;
+  MfeFn mfe_fn;
+  MfeExteriorFn mfe_exterior_fn;
+  TraceFn trace_fn;
 };
 
 struct SuboptBackend {
   const BackendModelPtr& m;
   SuboptAlg alg;
   MfeAlg mfe_alg;
+  SuboptFn subopt_fn;
+  MfeFn mfe_fn;
+  MfeExteriorFn mfe_exterior_fn;
 };
 
 struct PfnBackend {
   const BackendModelPtr& m;
   PfnAlg alg;
+  PfnFn pfn_fn;
 };
 
 class Ctx {
@@ -94,14 +100,6 @@ class Ctx {
   mutable std::array<std::once_flag, EnumCount<BackendKind>()> backend_once_;
 
   [[nodiscard]] const BackendModelPtr& EnsureBackend() const;
-
-  void ComputeMfe(const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, MfeAlg alg,
-      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const;
-  Energy ComputeMfeExterior(const BackendModelPtr& m, const Primary& r, mfe::DpState& dp,
-      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const;
-  [[nodiscard]] trace::TraceResult ComputeTraceback(const BackendModelPtr& m, const Primary& r,
-      const mfe::DpState& dp, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-      const trace::TraceCfg& trace_cfg) const;
 };
 
 void RegisterOpts(ArgParse* args);

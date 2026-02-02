@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -54,8 +55,8 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
 template <bool UseLru>
 int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
+      "{} does not support the given configuration: {}", funcname(), reason);
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
 

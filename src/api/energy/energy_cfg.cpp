@@ -3,8 +3,6 @@
 
 #include <ostream>
 
-#include "util/util.h"
-
 namespace mrna::erg {
 
 void RegisterOptsEnergyCfg(ArgParse* args) {

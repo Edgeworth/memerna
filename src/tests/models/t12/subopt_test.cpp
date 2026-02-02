@@ -37,7 +37,7 @@ TEST_P(SuboptTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
   if (!SuboptAlgIsSupported(
-          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}, /*reason=*/nullptr))
+          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}))
     return;
 
   Subopt(m, "CCUCCGGG",

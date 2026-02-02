@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -49,8 +50,8 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   q_.reserve(r_.size());  // Reasonable reservation.
 
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
+      "{} does not support the given configuration: {}", funcname(), reason);
 
   spdlog::debug("baseopt {} with cfg {}", funcname(), cfg_);
 

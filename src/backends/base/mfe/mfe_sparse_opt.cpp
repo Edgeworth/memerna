@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"

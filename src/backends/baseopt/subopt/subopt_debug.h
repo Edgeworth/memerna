@@ -3,6 +3,7 @@
 #define BACKENDS_BASEOPT_SUBOPT_SUBOPT_DEBUG_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
