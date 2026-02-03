@@ -25,7 +25,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
   verify(!tcfg.random, "random traceback is not supported in this energy model");
   verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
+  spdlog::debug("baseopt {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));

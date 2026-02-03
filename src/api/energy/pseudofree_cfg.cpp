@@ -1,6 +1,7 @@
 // Copyright 2025 Eliot Courtney.
 #include "api/energy/pseudofree_cfg.h"
 
+#include <ostream>
 #include <utility>
 #include <vector>
 
@@ -68,6 +69,11 @@ void BoltzPseudofreeCfg::Verify(const Primary& r) const {
     verify(paired.size() == r.size(), "pseudofree paired must be same length as seq");
   if (!unpaired.empty())
     verify(unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+}
+
+std::ostream& operator<<(std::ostream& str, const PseudofreeCfg& o) {
+  return str << "PseudofreeCfg{paired=" << o.paired.size() << ", unpaired=" << o.unpaired.size()
+             << "}";
 }
 
 }  // namespace mrna::erg

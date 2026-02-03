@@ -43,7 +43,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCf
       funcname(), reason);
   pf.Verify(r);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg);
+  spdlog::debug("base {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bm, cfg, pf);

@@ -53,7 +53,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
+  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   state.dp = DpArray(r.size() + 1, MAX_E);

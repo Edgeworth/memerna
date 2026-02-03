@@ -47,7 +47,7 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
       "{} does not support the given configuration: {}", funcname(), reason);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg_);
+  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||

@@ -50,7 +50,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCf
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
+  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bm, cfg);

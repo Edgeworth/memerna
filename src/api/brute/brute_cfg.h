@@ -2,6 +2,11 @@
 #ifndef API_BRUTE_BRUTE_CFG_H_
 #define API_BRUTE_BRUTE_CFG_H_
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
+#include <iosfwd>
+
 #include "api/subopt/subopt_cfg.h"
 #include "util/argparse.h"
 
@@ -19,6 +24,11 @@ struct BruteCfg {
   static BruteCfg FromArgParse(const ArgParse& args);
 };
 
+std::ostream& operator<<(std::ostream& str, const BruteCfg& o);
+
 }  // namespace mrna::brute
+
+template <>
+struct fmt::formatter<mrna::brute::BruteCfg> : ostream_formatter {};
 
 #endif  // API_BRUTE_BRUTE_CFG_H_

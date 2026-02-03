@@ -44,7 +44,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
       "{} does not support the given configuration: {}", funcname(), reason);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg_);
+  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand

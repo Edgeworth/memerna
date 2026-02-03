@@ -1,6 +1,8 @@
 // Copyright 2022 Eliot Courtney.
 #include "api/subopt/subopt_cfg.h"
 
+#include <ostream>
+
 #include "api/ctx/backend_cfg.h"
 
 namespace mrna::subopt {
@@ -20,6 +22,11 @@ SuboptCfg SuboptCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_SUBOPT_TIME_SECS, &cfg.time_secs);
   args.MaybeSet(OPT_SUBOPT_SORTED, &cfg.sorted);
   return cfg;
+}
+
+std::ostream& operator<<(std::ostream& str, const SuboptCfg& o) {
+  return str << "SuboptCfg{delta=" << o.delta << ", strucs=" << o.strucs
+             << ", time_secs=" << o.time_secs << ", sorted=" << o.sorted << "}";
 }
 
 }  // namespace mrna::subopt

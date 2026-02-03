@@ -48,7 +48,7 @@ void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& sta
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with cfg {}", funcname(), cfg);
+  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), m, cfg);

@@ -46,7 +46,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
       funcname(), reason);
   pf.Verify(r);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg);
+  spdlog::debug("base {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   state.dp = DpArray(r.size() + 1, MAX_E);

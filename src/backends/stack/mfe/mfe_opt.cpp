@@ -67,7 +67,7 @@ struct MfeInternal {
         funcname(), reason);
     pf.Verify(r);
 
-    spdlog::debug("stack {} with cfg {}", funcname(), cfg);
+    spdlog::debug("stack {} with {}, {}", funcname(), cfg, pf);
 
     dp = base::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);

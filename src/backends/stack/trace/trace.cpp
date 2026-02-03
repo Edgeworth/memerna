@@ -556,7 +556,7 @@ struct TracebackInternal {
   }
 
   TraceResult Compute() {
-    spdlog::debug("stack {} with cfg {}", funcname(), cfg);
+    spdlog::debug("stack {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
     std::vector<DpIndex> q;
     q.emplace_back(base::DpIndex(0, -1, EXT));

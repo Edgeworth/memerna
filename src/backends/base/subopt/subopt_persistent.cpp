@@ -52,7 +52,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
       "{} does not support the given configuration: {}", funcname(), reason);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg_);
+  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method

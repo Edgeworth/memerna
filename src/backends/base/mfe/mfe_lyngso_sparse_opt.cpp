@@ -41,7 +41,7 @@ void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& sta
       funcname(), reason);
   pf.Verify(r);
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg);
+  spdlog::debug("base {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), m, cfg, pf);

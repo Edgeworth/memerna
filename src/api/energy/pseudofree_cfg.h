@@ -2,6 +2,10 @@
 #ifndef API_ENERGY_PSEUDOFREE_CFG_H_
 #define API_ENERGY_PSEUDOFREE_CFG_H_
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
+#include <iosfwd>
 #include <vector>
 
 #include "model/energy.h"
@@ -63,6 +67,8 @@ class PseudofreeCfg {
   static PseudofreeCfg FromArgParse(const ArgParse& args);
 };
 
+std::ostream& operator<<(std::ostream& str, const PseudofreeCfg& o);
+
 class BoltzPseudofreeCfg {
  public:
   const std::vector<BoltzEnergy> paired{};
@@ -96,5 +102,8 @@ class BoltzPseudofreeCfg {
 };
 
 }  // namespace mrna::erg
+
+template <>
+struct fmt::formatter<mrna::erg::PseudofreeCfg> : ostream_formatter {};
 
 #endif  // API_ENERGY_PSEUDOFREE_CFG_H_

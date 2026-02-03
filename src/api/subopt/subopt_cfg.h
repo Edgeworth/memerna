@@ -2,6 +2,10 @@
 #ifndef API_SUBOPT_SUBOPT_CFG_H_
 #define API_SUBOPT_SUBOPT_CFG_H_
 
+#include <fmt/core.h>
+#include <fmt/ostream.h>
+
+#include <iosfwd>
 #include <limits>
 
 #include "model/energy.h"
@@ -35,6 +39,11 @@ struct SuboptCfg {
   static SuboptCfg FromArgParse(const ArgParse& args);
 };
 
+std::ostream& operator<<(std::ostream& str, const SuboptCfg& o);
+
 }  // namespace mrna::subopt
+
+template <>
+struct fmt::formatter<mrna::subopt::SuboptCfg> : ostream_formatter {};
 
 #endif  // API_SUBOPT_SUBOPT_CFG_H_

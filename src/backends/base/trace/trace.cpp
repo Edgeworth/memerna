@@ -24,7 +24,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
   const int N = static_cast<int>(r.size());
   verify(!tcfg.random, "random traceback is not supported in this energy model");
 
-  spdlog::debug("base {} with cfg {}", funcname(), cfg);
+  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
