@@ -27,6 +27,24 @@ MAKE_ENUM(
     SuboptAlg, AUTO, BRUTE, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 MAKE_ENUM(PfnAlg, AUTO, BRUTE, DEBUG, OPT);
 
+struct BackendMfePriority {
+  BackendKind backend;
+  MfeAlg alg;
+  int priority;
+};
+
+struct BackendSuboptPriority {
+  BackendKind backend;
+  SuboptAlg alg;
+  int priority;
+};
+
+struct BackendPfnPriority {
+  BackendKind backend;
+  PfnAlg alg;
+  int priority;
+};
+
 using MfeFn = std::function<void(const BackendModelPtr&, const Primary&, mfe::DpState&,
     erg::EnergyCfg, const erg::PseudofreeCfg&)>;
 
@@ -59,19 +77,23 @@ using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pf
 [[nodiscard]] bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
-[[nodiscard]] smallvec<MfeAlg, EnumCount<MfeAlg>()> MfePriorityForBackend(
-    BackendKind kind, bool include_brute);
-[[nodiscard]] smallvec<SuboptAlg, EnumCount<SuboptAlg>()> SuboptPriorityForBackend(
-    BackendKind kind, bool include_brute);
-[[nodiscard]] smallvec<PfnAlg, EnumCount<PfnAlg>()> PfnPriorityForBackend(
-    BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<BackendMfePriority,
+    static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<MfeAlg>())>
+MfePriorityForBackend(BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<BackendSuboptPriority,
+    static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<SuboptAlg>())>
+SuboptPriorityForBackend(BackendKind kind, bool include_brute);
+[[nodiscard]] smallvec<BackendPfnPriority,
+    static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<PfnAlg>())>
+PfnPriorityForBackend(BackendKind kind, bool include_brute);
 
-[[nodiscard]] std::optional<MfeAlg> ResolveMfeAlg(BackendKind kind, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* log = nullptr);
-[[nodiscard]] std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log = nullptr);
-[[nodiscard]] std::optional<PfnAlg> ResolvePfnAlg(BackendKind kind, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* log = nullptr);
+[[nodiscard]] std::optional<BackendMfePriority> ResolveMfeAlg(BackendKind kind,
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log = nullptr);
+[[nodiscard]] std::optional<BackendSuboptPriority> ResolveSuboptAlg(BackendKind kind,
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg,
+    std::string* log = nullptr);
+[[nodiscard]] std::optional<BackendPfnPriority> ResolvePfnAlg(BackendKind kind,
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log = nullptr);
 
 inline const Opt OPT_MFE_ALG = Opt(Opt::ARG)
                                    .LongName("dp-alg")

@@ -3,7 +3,7 @@
 
 #include <fmt/core.h>
 
-#include <iterator>
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -50,62 +50,127 @@ namespace mrna {
 
 namespace {
 
-constexpr MfeAlg MFE_PRIORITY_BASE[] = {
-    MfeAlg::SPARSE_OPT,
-    MfeAlg::LYNGSO_SPARSE_OPT,
-    MfeAlg::OPT,
-    MfeAlg::DEBUG,
-};
+constexpr int MfePriority(BackendKind backend, MfeAlg alg) {
+  switch (backend) {
+  case BackendKind::AUTO: return 0;
+  case BackendKind::BASE:
+    switch (alg) {
+    case MfeAlg::AUTO: return 0;
+    case MfeAlg::BRUTE: return 912;
+    case MfeAlg::DEBUG: return 321;
+    case MfeAlg::OPT: return 221;
+    case MfeAlg::SPARSE_OPT: return 121;
+    case MfeAlg::LYNGSO_SPARSE_OPT: return 122;
+    }
+    break;
+  case BackendKind::BASEOPT:
+    switch (alg) {
+    case MfeAlg::AUTO: return 0;
+    case MfeAlg::BRUTE: return 911;
+    case MfeAlg::DEBUG: return 311;
+    case MfeAlg::OPT: return 211;
+    case MfeAlg::SPARSE_OPT: return 111;
+    case MfeAlg::LYNGSO_SPARSE_OPT: return 112;
+    }
+    break;
+  case BackendKind::STACK:
+    switch (alg) {
+    case MfeAlg::AUTO: return 0;
+    case MfeAlg::BRUTE: return 913;
+    case MfeAlg::DEBUG: return 0;
+    case MfeAlg::OPT: return 231;
+    case MfeAlg::SPARSE_OPT: return 0;
+    case MfeAlg::LYNGSO_SPARSE_OPT: return 0;
+    }
+    break;
+  }
+  unreachable();
+}
 
-constexpr MfeAlg MFE_PRIORITY_BASEOPT[] = {
-    MfeAlg::SPARSE_OPT,
-    MfeAlg::LYNGSO_SPARSE_OPT,
-    MfeAlg::OPT,
-    MfeAlg::DEBUG,
-};
+constexpr int SuboptPriority(BackendKind backend, SuboptAlg alg) {
+  switch (backend) {
+  case BackendKind::AUTO: return 0;
+  case BackendKind::BASE:
+    switch (alg) {
+    case SuboptAlg::AUTO: return 0;
+    case SuboptAlg::BRUTE: return 912;
+    case SuboptAlg::DEBUG: return 421;
+    case SuboptAlg::ITERATIVE: return 211;
+    case SuboptAlg::ITERATIVE_LOWMEM: return 221;
+    case SuboptAlg::PERSISTENT: return 212;
+    case SuboptAlg::PERSISTENT_LOWMEM: return 222;
+    }
+    break;
+  case BackendKind::BASEOPT:
+    switch (alg) {
+    case SuboptAlg::AUTO: return 0;
+    case SuboptAlg::BRUTE: return 911;
+    case SuboptAlg::DEBUG: return 411;
+    case SuboptAlg::ITERATIVE: return 111;
+    case SuboptAlg::ITERATIVE_LOWMEM: return 121;
+    case SuboptAlg::PERSISTENT: return 112;
+    case SuboptAlg::PERSISTENT_LOWMEM: return 122;
+    }
+    break;
+  case BackendKind::STACK:
+    switch (alg) {
+    case SuboptAlg::AUTO: return 0;
+    case SuboptAlg::BRUTE: return 913;
+    case SuboptAlg::DEBUG: return 0;
+    case SuboptAlg::ITERATIVE: return 311;
+    case SuboptAlg::ITERATIVE_LOWMEM: return 321;
+    case SuboptAlg::PERSISTENT: return 312;
+    case SuboptAlg::PERSISTENT_LOWMEM: return 322;
+    }
+    break;
+  }
+  unreachable();
+}
 
-constexpr MfeAlg MFE_PRIORITY_STACK[] = {
-    MfeAlg::OPT,
-};
-
-constexpr SuboptAlg SUBOPT_PRIORITY_BASE[] = {
-    SuboptAlg::ITERATIVE,
-    SuboptAlg::PERSISTENT,
-    SuboptAlg::ITERATIVE_LOWMEM,
-    SuboptAlg::PERSISTENT_LOWMEM,
-    SuboptAlg::DEBUG,
-};
-
-constexpr SuboptAlg SUBOPT_PRIORITY_BASEOPT[] = {
-    SuboptAlg::ITERATIVE,
-    SuboptAlg::PERSISTENT,
-    SuboptAlg::ITERATIVE_LOWMEM,
-    SuboptAlg::PERSISTENT_LOWMEM,
-    SuboptAlg::DEBUG,
-};
-
-constexpr SuboptAlg SUBOPT_PRIORITY_STACK[] = {
-    SuboptAlg::ITERATIVE,
-    SuboptAlg::PERSISTENT,
-    SuboptAlg::ITERATIVE_LOWMEM,
-    SuboptAlg::PERSISTENT_LOWMEM,
-};
-
-constexpr PfnAlg PFN_PRIORITY_BASE[] = {
-    PfnAlg::OPT,
-    PfnAlg::DEBUG,
-};
-
-constexpr PfnAlg PFN_PRIORITY_BASEOPT[] = {
-    PfnAlg::OPT,
-    PfnAlg::DEBUG,
-};
+constexpr int PfnPriority(BackendKind backend, PfnAlg alg) {
+  switch (backend) {
+  case BackendKind::AUTO: return 0;
+  case BackendKind::BASE:
+    switch (alg) {
+    case PfnAlg::AUTO: return 0;
+    case PfnAlg::BRUTE: return 912;
+    case PfnAlg::DEBUG: return 221;
+    case PfnAlg::OPT: return 121;
+    }
+    break;
+  case BackendKind::BASEOPT:
+    switch (alg) {
+    case PfnAlg::AUTO: return 0;
+    case PfnAlg::BRUTE: return 911;
+    case PfnAlg::DEBUG: return 211;
+    case PfnAlg::OPT: return 111;
+    }
+    break;
+  case BackendKind::STACK:
+    switch (alg) {
+    case PfnAlg::AUTO: return 0;
+    case PfnAlg::BRUTE: return 913;
+    case PfnAlg::DEBUG: return 0;
+    case PfnAlg::OPT: return 0;
+    }
+    break;
+  }
+  unreachable();
+}
 
 }  // namespace
 
 bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
     std::string* reason) {
   switch (kind) {
+  case BackendKind::AUTO:
+    for (int b = 0; b < EnumCount<BackendKind>(); ++b) {
+      auto backend = static_cast<BackendKind>(b);
+      if (backend == BackendKind::AUTO) continue;
+      if (BackendIsSupported(backend, cfg, pf, nullptr)) return true;
+    }
+    if (reason) *reason = "no backend supports this configuration";
+    return false;
   case BackendKind::BASE: return md::base::Model::IsSupported(cfg, pf, reason);
   case BackendKind::BASEOPT: return md::base::opt::Model::IsSupported(cfg, pf, reason);
   case BackendKind::STACK: return md::stack::Model::IsSupported(cfg, pf, reason);
@@ -113,58 +178,96 @@ bool BackendIsSupported(BackendKind kind, const erg::EnergyCfg& cfg, const erg::
   unreachable();
 }
 
-smallvec<MfeAlg, EnumCount<MfeAlg>()> MfePriorityForBackend(BackendKind kind, bool include_brute) {
-  smallvec<MfeAlg, EnumCount<MfeAlg>()> result;
-  switch (kind) {
-  case BackendKind::BASE:
-    result.assign(std::begin(MFE_PRIORITY_BASE), std::end(MFE_PRIORITY_BASE));
-    break;
-  case BackendKind::BASEOPT:
-    result.assign(std::begin(MFE_PRIORITY_BASEOPT), std::end(MFE_PRIORITY_BASEOPT));
-    break;
-  case BackendKind::STACK:
-    result.assign(std::begin(MFE_PRIORITY_STACK), std::end(MFE_PRIORITY_STACK));
-    break;
+smallvec<BackendMfePriority, static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<MfeAlg>())>
+MfePriorityForBackend(BackendKind kind, bool include_brute) {
+  smallvec<BackendMfePriority, static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<MfeAlg>())>
+      result;
+
+  for (int b = 0; b < EnumCount<BackendKind>(); ++b) {
+    auto backend = static_cast<BackendKind>(b);
+    if (backend == BackendKind::AUTO) continue;
+    if (kind != BackendKind::AUTO && backend != kind) continue;
+
+    for (int a = 0; a < EnumCount<MfeAlg>(); ++a) {
+      auto alg = static_cast<MfeAlg>(a);
+      if (alg == MfeAlg::AUTO) continue;
+      if (alg == MfeAlg::BRUTE && !include_brute) continue;
+      int priority = MfePriority(backend, alg);
+      if (priority > 0) result.push_back({.backend = backend, .alg = alg, .priority = priority});
+    }
   }
-  if (include_brute) result.push_back(MfeAlg::BRUTE);
+  std::sort(result.begin(), result.end(),
+      [](const auto& a, const auto& b) {
+        if (a.priority != b.priority) return a.priority < b.priority;
+        if (a.backend != b.backend)
+          return static_cast<int>(a.backend) < static_cast<int>(b.backend);
+        return static_cast<int>(a.alg) < static_cast<int>(b.alg);
+      });
   return result;
 }
 
-smallvec<SuboptAlg, EnumCount<SuboptAlg>()> SuboptPriorityForBackend(
-    BackendKind kind, bool include_brute) {
-  smallvec<SuboptAlg, EnumCount<SuboptAlg>()> result;
-  switch (kind) {
-  case BackendKind::BASE:
-    result.assign(std::begin(SUBOPT_PRIORITY_BASE), std::end(SUBOPT_PRIORITY_BASE));
-    break;
-  case BackendKind::BASEOPT:
-    result.assign(std::begin(SUBOPT_PRIORITY_BASEOPT), std::end(SUBOPT_PRIORITY_BASEOPT));
-    break;
-  case BackendKind::STACK:
-    result.assign(std::begin(SUBOPT_PRIORITY_STACK), std::end(SUBOPT_PRIORITY_STACK));
-    break;
+smallvec<BackendSuboptPriority,
+    static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<SuboptAlg>())>
+SuboptPriorityForBackend(BackendKind kind, bool include_brute) {
+  smallvec<BackendSuboptPriority,
+      static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<SuboptAlg>())>
+      result;
+
+  for (int b = 0; b < EnumCount<BackendKind>(); ++b) {
+    auto backend = static_cast<BackendKind>(b);
+    if (backend == BackendKind::AUTO) continue;
+    if (kind != BackendKind::AUTO && backend != kind) continue;
+
+    for (int a = 0; a < EnumCount<SuboptAlg>(); ++a) {
+      auto alg = static_cast<SuboptAlg>(a);
+      if (alg == SuboptAlg::AUTO) continue;
+      if (alg == SuboptAlg::BRUTE && !include_brute) continue;
+      int priority = SuboptPriority(backend, alg);
+      if (priority > 0) result.push_back({.backend = backend, .alg = alg, .priority = priority});
+    }
   }
-  if (include_brute) result.push_back(SuboptAlg::BRUTE);
+  std::sort(result.begin(), result.end(),
+      [](const auto& a, const auto& b) {
+        if (a.priority != b.priority) return a.priority < b.priority;
+        if (a.backend != b.backend)
+          return static_cast<int>(a.backend) < static_cast<int>(b.backend);
+        return static_cast<int>(a.alg) < static_cast<int>(b.alg);
+      });
   return result;
 }
 
-smallvec<PfnAlg, EnumCount<PfnAlg>()> PfnPriorityForBackend(BackendKind kind, bool include_brute) {
-  smallvec<PfnAlg, EnumCount<PfnAlg>()> result;
-  switch (kind) {
-  case BackendKind::BASE:
-    result.assign(std::begin(PFN_PRIORITY_BASE), std::end(PFN_PRIORITY_BASE));
-    break;
-  case BackendKind::BASEOPT:
-    result.assign(std::begin(PFN_PRIORITY_BASEOPT), std::end(PFN_PRIORITY_BASEOPT));
-    break;
-  case BackendKind::STACK: break;
+smallvec<BackendPfnPriority, static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<PfnAlg>())>
+PfnPriorityForBackend(BackendKind kind, bool include_brute) {
+  smallvec<BackendPfnPriority, static_cast<size_t>(EnumCount<BackendKind>() * EnumCount<PfnAlg>())>
+      result;
+
+  for (int b = 0; b < EnumCount<BackendKind>(); ++b) {
+    auto backend = static_cast<BackendKind>(b);
+    if (backend == BackendKind::AUTO) continue;
+    if (kind != BackendKind::AUTO && backend != kind) continue;
+
+    for (int a = 0; a < EnumCount<PfnAlg>(); ++a) {
+      auto alg = static_cast<PfnAlg>(a);
+      if (alg == PfnAlg::AUTO) continue;
+      if (alg == PfnAlg::BRUTE && !include_brute) continue;
+      int priority = PfnPriority(backend, alg);
+      if (priority > 0) result.push_back({.backend = backend, .alg = alg, .priority = priority});
+    }
   }
-  if (include_brute) result.push_back(PfnAlg::BRUTE);
+  std::sort(result.begin(), result.end(),
+      [](const auto& a, const auto& b) {
+        if (a.priority != b.priority) return a.priority < b.priority;
+        if (a.backend != b.backend)
+          return static_cast<int>(a.backend) < static_cast<int>(b.backend);
+        return static_cast<int>(a.alg) < static_cast<int>(b.alg);
+      });
   return result;
 }
 
 std::optional<MfeFn> GetMfeFn(BackendKind kind, MfeAlg alg) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling GetMfeFn");
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case MfeAlg::DEBUG:
@@ -246,10 +349,13 @@ std::optional<MfeFn> GetMfeFn(BackendKind kind, MfeAlg alg) {
 
 bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* reason) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling MfeAlgIsSupported");
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == MfeAlg::AUTO || alg == MfeAlg::BRUTE) return true;
+  if (alg == MfeAlg::BRUTE) return true;
+  if (alg == MfeAlg::AUTO) return ResolveMfeAlg(kind, cfg, pf, nullptr).has_value();
 
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case MfeAlg::DEBUG: return md::base::MfeDebug::IsSupported(cfg, pf, reason);
@@ -288,7 +394,9 @@ bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const erg::EnergyCfg& cfg,
 }
 
 MfeExteriorFn GetMfeExteriorFn(BackendKind kind) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling GetMfeExteriorFn");
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg,
                const erg::PseudofreeCfg& pf) {
@@ -296,10 +404,10 @@ MfeExteriorFn GetMfeExteriorFn(BackendKind kind) {
       return md::base::MfeExterior(r, std::get<md::base::Model::Ptr>(m), state, cfg, pf);
     };
   case BackendKind::BASEOPT:
-    return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg,
+    return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg /*cfg*/,
                const erg::PseudofreeCfg& pf) {
       auto& state = std::get<md::base::DpState>(dp);
-      return md::base::opt::MfeExterior(r, std::get<md::base::opt::Model::Ptr>(m), state, cfg, pf);
+      return md::base::opt::MfeExterior(r, std::get<md::base::opt::Model::Ptr>(m), state, pf);
     };
   case BackendKind::STACK:
     return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg,
@@ -312,7 +420,9 @@ MfeExteriorFn GetMfeExteriorFn(BackendKind kind) {
 }
 
 TraceFn GetTraceFn(BackendKind kind) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling GetTraceFn");
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     return [](const BackendModelPtr& m, const Primary& r, const mfe::DpState& dp,
                erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) {
@@ -337,7 +447,9 @@ TraceFn GetTraceFn(BackendKind kind) {
 }
 
 std::optional<SuboptFn> GetSuboptFn(BackendKind kind, SuboptAlg alg) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling GetSuboptFn");
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case SuboptAlg::DEBUG:
@@ -479,10 +591,15 @@ std::optional<SuboptFn> GetSuboptFn(BackendKind kind, SuboptAlg alg) {
 
 bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* reason) {
+  verify(
+      kind != BackendKind::AUTO, "must resolve AUTO backend before calling SuboptAlgIsSupported");
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == SuboptAlg::AUTO || alg == SuboptAlg::BRUTE) return true;
+  if (alg == SuboptAlg::BRUTE) return true;
+  if (alg == SuboptAlg::AUTO)
+    return ResolveSuboptAlg(kind, cfg, pf, subopt_cfg, nullptr).has_value();
 
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case SuboptAlg::DEBUG: return md::base::SuboptDebug::IsSupported(cfg, pf, subopt_cfg, reason);
@@ -535,7 +652,9 @@ bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const erg::EnergyCfg&
 }
 
 std::optional<PfnFn> GetPfnFn(BackendKind kind, PfnAlg alg) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling GetPfnFn");
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case PfnAlg::DEBUG:
@@ -583,10 +702,13 @@ std::optional<PfnFn> GetPfnFn(BackendKind kind, PfnAlg alg) {
 
 bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, std::string* reason) {
+  verify(kind != BackendKind::AUTO, "must resolve AUTO backend before calling PfnAlgIsSupported");
   if (!BackendIsSupported(kind, cfg, pf, reason)) return false;
-  if (alg == PfnAlg::AUTO || alg == PfnAlg::BRUTE) return true;
+  if (alg == PfnAlg::BRUTE) return true;
+  if (alg == PfnAlg::AUTO) return ResolvePfnAlg(kind, cfg, pf, nullptr).has_value();
 
   switch (kind) {
+  case BackendKind::AUTO: unreachable();
   case BackendKind::BASE:
     switch (alg) {
     case PfnAlg::DEBUG: return md::base::PfnDebug::IsSupported(cfg, pf, reason);
@@ -609,38 +731,42 @@ bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const erg::EnergyCfg& cfg,
   return false;
 }
 
-std::optional<MfeAlg> ResolveMfeAlg(
+std::optional<BackendMfePriority> ResolveMfeAlg(
     BackendKind kind, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log) {
-  for (MfeAlg alg : MfePriorityForBackend(kind, /*include_brute=*/false)) {
+  for (const auto& entry : MfePriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
-    if (MfeAlgIsSupported(kind, alg, cfg, pf, log ? &reason : nullptr)) {
-      return alg;
+    if (!MfeAlgIsSupported(entry.backend, entry.alg, cfg, pf, log ? &reason : nullptr)) {
+      if (log) *log += fmt::format("  {}/{}: {}\n", entry.backend, entry.alg, reason);
+      continue;
     }
-    if (log) *log += fmt::format("  {}: {}\n", alg, reason);
+    return entry;
   }
   return std::nullopt;
 }
 
-std::optional<SuboptAlg> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
+std::optional<BackendSuboptPriority> ResolveSuboptAlg(BackendKind kind, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log) {
-  for (SuboptAlg alg : SuboptPriorityForBackend(kind, /*include_brute=*/false)) {
+  for (const auto& entry : SuboptPriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
-    if (SuboptAlgIsSupported(kind, alg, cfg, pf, subopt_cfg, log ? &reason : nullptr)) {
-      return alg;
+    if (!SuboptAlgIsSupported(
+            entry.backend, entry.alg, cfg, pf, subopt_cfg, log ? &reason : nullptr)) {
+      if (log) *log += fmt::format("  {}/{}: {}\n", entry.backend, entry.alg, reason);
+      continue;
     }
-    if (log) *log += fmt::format("  {}: {}\n", alg, reason);
+    return entry;
   }
   return std::nullopt;
 }
 
-std::optional<PfnAlg> ResolvePfnAlg(
+std::optional<BackendPfnPriority> ResolvePfnAlg(
     BackendKind kind, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* log) {
-  for (PfnAlg alg : PfnPriorityForBackend(kind, /*include_brute=*/false)) {
+  for (const auto& entry : PfnPriorityForBackend(kind, /*include_brute=*/false)) {
     std::string reason;
-    if (PfnAlgIsSupported(kind, alg, cfg, pf, log ? &reason : nullptr)) {
-      return alg;
+    if (!PfnAlgIsSupported(entry.backend, entry.alg, cfg, pf, log ? &reason : nullptr)) {
+      if (log) *log += fmt::format("  {}/{}: {}\n", entry.backend, entry.alg, reason);
+      continue;
     }
-    if (log) *log += fmt::format("  {}: {}\n", alg, reason);
+    return entry;
   }
   return std::nullopt;
 }

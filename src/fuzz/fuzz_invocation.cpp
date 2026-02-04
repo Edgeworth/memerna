@@ -148,7 +148,7 @@ Error FuzzInvocation::CheckMfe() {
       tags.push_back(fmt::format("{}-{}", kind, mfe_alg));
     };
 
-    for (auto mfe_alg : MfePriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(mfe_alg);
+    for (const auto& entry : MfePriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(entry.alg);
   }
 
   // Find first dp table that exists.
@@ -222,8 +222,8 @@ Error FuzzInvocation::CheckSubopt() {
         tags.back().push_back(fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx));
       };
 
-      for (auto subopt_alg : SuboptPriorityForBackend(kind, N <= cfg_.brute_max))
-        maybe_run(subopt_alg);
+      for (const auto& entry : SuboptPriorityForBackend(kind, N <= cfg_.brute_max))
+        maybe_run(entry.alg);
     }
   }
 
@@ -379,7 +379,7 @@ Error FuzzInvocation::CheckPfn() {
       tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
     };
 
-    for (auto pfn_alg : PfnPriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(pfn_alg);
+    for (const auto& entry : PfnPriorityForBackend(kind, N <= cfg_.brute_max)) maybe_run(entry.alg);
   }
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i)

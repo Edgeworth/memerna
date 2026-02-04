@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "api/energy/energy_cfg.h"
 #include "backends/baseopt/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/constants.h"
@@ -16,8 +15,8 @@
 
 namespace mrna::md::base::opt {
 
-Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf) {
+Energy MfeExterior(
+    const Primary& r, const Model::Ptr& m, DpState& state, const erg::PseudofreeCfg& pf) {
   const int N = static_cast<int>(r.size());
   verify(pf.Empty(), "baseopt does not support pseudofree energy");
 

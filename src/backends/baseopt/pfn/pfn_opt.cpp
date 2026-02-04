@@ -204,7 +204,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCf
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, bm->m(), cfg, state);
+  PfnExterior(r, bm->m(), state);
   const auto& ext = state.ext;
 
   // Fill the left triangle.

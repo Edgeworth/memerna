@@ -3,6 +3,10 @@
 RNA secondary structure prediction library with MFE, suboptimal folding, and
 partition function algorithms. Optimized for performance with sparse algorithms.
 
+## Build notes
+- Test using `just test`
+- Check code using `just check`
+
 ## Coding notes
 
 - Parameters to functions that are hard to understand, e.g. nullptr should be

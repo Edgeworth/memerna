@@ -1,16 +1,14 @@
 // Copyright 2016 Eliot Courtney.
 #include "backends/baseopt/pfn/pfn_exterior.h"
 
-#include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
-#include "util/error.h"
 
 namespace mrna::md::base::opt {
 
-void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state) {
+void PfnExterior(const Primary& r, const Model& m, PfnState& state) {
   const int N = static_cast<int>(r.size());
 
   const auto& dp = state.dp;

@@ -10,5 +10,4 @@ compile_commands.json
 /benchmark.json*
 /build
 .claude
-.jj
 build/

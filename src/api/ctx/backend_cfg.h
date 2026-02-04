@@ -15,12 +15,12 @@ namespace mrna {
 
 void RegisterOptsBackendCfg(ArgParse* args);
 
-MAKE_ENUM(BackendKind, BASE, BASEOPT, STACK);
+MAKE_ENUM(BackendKind, AUTO, BASE, BASEOPT, STACK);
 
 struct BackendCfg {
   erg::EnergyModelKind energy_model = erg::EnergyModelKind::T04;
   int precision = ENERGY_PRECISION;
-  BackendKind backend = BackendKind::BASEOPT;
+  BackendKind backend = BackendKind::AUTO;
   std::variant<std::string, uint_fast32_t> data_src;
 
   [[nodiscard]]
@@ -48,7 +48,7 @@ inline const Opt OPT_BACKEND = Opt(Opt::ARG)
                                    .LongName("backend")
                                    .ShortName("b")
                                    .ChoiceEnum<BackendKind>()
-                                   .Default(BackendKind::BASEOPT)
+                                   .Default(BackendKind::AUTO)
                                    .Help("backend to use");
 
 inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)

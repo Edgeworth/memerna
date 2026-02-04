@@ -36,6 +36,7 @@ std::tuple<Primary, Secondary> k16sHSapiens3 =
 void InitTest(const std::string& data_dir) {
   // All backends support T04 and T12.
   for (auto backend : EnumValues<BackendKind>()) {
+    if (backend == BackendKind::AUTO) continue;
     t04_ms.push_back(BackendFromBackendCfg(BackendCfg{
         .energy_model = erg::EnergyModelKind::T04, .backend = backend, .data_src = data_dir}));
     t12_ms.push_back(BackendFromBackendCfg(BackendCfg{

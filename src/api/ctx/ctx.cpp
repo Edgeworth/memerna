@@ -74,7 +74,7 @@ MfeBackend Ctx::BackendForFold(
   auto kind = GetBackendKind(m);
   if (alg == MfeAlg::AUTO) {
     if (auto resolved = ResolveMfeAlg(kind, cfg, pf, /*log=*/nullptr)) {
-      alg = *resolved;
+      alg = resolved->alg;
     } else {
       std::string log;
       (void)ResolveMfeAlg(kind, cfg, pf, &log);
@@ -104,7 +104,7 @@ SuboptBackend Ctx::BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg, const erg::En
   auto kind = GetBackendKind(mfe_backend.m);
   if (alg == SuboptAlg::AUTO) {
     if (auto resolved = ResolveSuboptAlg(kind, cfg, pf, subopt_cfg, /*log=*/nullptr)) {
-      alg = *resolved;
+      alg = resolved->alg;
     } else {
       std::string log;
       (void)ResolveSuboptAlg(kind, cfg, pf, subopt_cfg, &log);
@@ -128,7 +128,7 @@ PfnBackend Ctx::BackendForPfn(
   auto kind = GetBackendKind(m);
   if (alg == PfnAlg::AUTO) {
     if (auto resolved = ResolvePfnAlg(kind, cfg, pf, /*log=*/nullptr)) {
-      alg = *resolved;
+      alg = resolved->alg;
     } else {
       std::string log;
       (void)ResolvePfnAlg(kind, cfg, pf, &log);

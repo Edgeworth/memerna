@@ -205,7 +205,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, *m, cfg, state);
+  PfnExterior(r, *m, state);
   const auto& ext = state.ext;
 
   // Fill the left triangle.

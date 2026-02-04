@@ -10,16 +10,21 @@ BackendModelPtr BackendFromArgParse(const ArgParse& args) {
 }
 
 BackendModelPtr BackendFromBackendCfg(const BackendCfg& cfg) {
-  switch (cfg.backend) {
-  case BackendKind::BASE: return md::base::Model::FromBackendCfg(cfg);
-  case BackendKind::BASEOPT: return md::base::opt::Model::FromBackendCfg(cfg);
-  case BackendKind::STACK: return md::stack::Model::FromBackendCfg(cfg);
+  BackendCfg resolved = cfg;
+  if (resolved.backend == BackendKind::AUTO) resolved.backend = BackendKind::BASEOPT;
+  switch (resolved.backend) {
+  case BackendKind::AUTO: break;
+  case BackendKind::BASE: return md::base::Model::FromBackendCfg(resolved);
+  case BackendKind::BASEOPT: return md::base::opt::Model::FromBackendCfg(resolved);
+  case BackendKind::STACK: return md::stack::Model::FromBackendCfg(resolved);
   }
   unreachable();
 }
 
 BackendModelPtr Random(BackendKind kind, uint_fast32_t seed) {
+  if (kind == BackendKind::AUTO) kind = BackendKind::BASEOPT;
   switch (kind) {
+  case BackendKind::AUTO: break;
   case BackendKind::BASE: return md::base::Model::Random(seed);
   case BackendKind::BASEOPT: return md::base::opt::Model::Random(seed);
   case BackendKind::STACK: return md::stack::Model::Random(seed);
