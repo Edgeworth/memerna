@@ -60,10 +60,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
       erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure = false) const;
 
-  bool IsValid(std::string* reason = nullptr) const {
-    CHECK_COND(multiloop_c == ZERO_E, "multiloop_c must be zero");
-    return base::ModelIsValid(*this, reason);
-  }
+  bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
   void LoadFromModelPath(const std::string& path);
   void LoadRandom(const BackendCfg& cfg, std::mt19937& eng);

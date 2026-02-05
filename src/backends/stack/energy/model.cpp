@@ -588,7 +588,6 @@ void Model::LoadFromModelPath(const std::string& path) {
 void Model::LoadRandom(const BackendCfg& cfg, std::mt19937& eng) {
   base::LoadRandomModel(
       *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
-  multiloop_c = ZERO_E;  // stack doesn't support multiloop_c.
 
   // Only randomize penultimate_stack for T22, which uses penultimate stacking.
   if (cfg.energy_model == erg::EnergyModelKind::T22) {
