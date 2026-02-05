@@ -33,8 +33,6 @@ constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
   return std::visit(vis, m);
 }
 
-BackendModelPtr Random(BackendKind kind, uint_fast32_t seed);
-
 // Creates the Boltzmann energy model from the given energy model.
 BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
 

@@ -585,15 +585,18 @@ void Model::LoadFromModelPath(const std::string& path) {
   Parse4MapFromFile(path + "/penultimate_stacking.data", penultimate_stack);
 }
 
-void Model::LoadRandom(std::mt19937& eng) {
+void Model::LoadRandom(const BackendCfg& cfg, std::mt19937& eng) {
   base::LoadRandomModel(
       *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
   multiloop_c = ZERO_E;  // stack doesn't support multiloop_c.
 
-  // penultimate_stack is dependent on the direction, so 180 degree rotations
-  // don't have to be the same.
-  std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
-  RANDOMISE_DATA((*this), penultimate_stack);
+  // Only randomize penultimate_stack for T22, which uses penultimate stacking.
+  if (cfg.energy_model == erg::EnergyModelKind::T22) {
+    // penultimate_stack is dependent on the direction, so 180 degree rotations
+    // don't have to be the same.
+    std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+    RANDOMISE_DATA((*this), penultimate_stack);
+  }
 }
 
 }  // namespace mrna::md::stack

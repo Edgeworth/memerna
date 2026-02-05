@@ -9,7 +9,7 @@ class ModelTestBase : public testing::Test {};
 TEST_F(ModelTestBase, IsValid) {
   for (const auto& m : base_ms) EXPECT_TRUE(m->IsValid());
 
-  auto random_model = Model::Random(0);
+  auto random_model = Model::Random(kT04Cfg, 0);
   EXPECT_TRUE(random_model->IsValid());
   random_model->multiloop_c = E(1.0);
   EXPECT_TRUE(random_model->IsValid());

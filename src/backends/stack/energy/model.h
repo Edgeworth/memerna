@@ -66,7 +66,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
   }
 
   void LoadFromModelPath(const std::string& path);
-  void LoadRandom(std::mt19937& eng);
+  void LoadRandom(const BackendCfg& cfg, std::mt19937& eng);
 
  private:
   friend class ModelMixin<Model>;

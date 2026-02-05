@@ -44,7 +44,7 @@ class Model : public ModelBase, public ModelMixin<Model> {
 
   void LoadFromModelPath(const std::string& path) { base::LoadFromModelPath(*this, path); }
 
-  void LoadRandom(std::mt19937& eng) {
+  void LoadRandom(const BackendCfg& /*cfg*/, std::mt19937& eng) {
     LoadRandomModel(
         *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
   }

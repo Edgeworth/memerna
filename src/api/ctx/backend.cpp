@@ -14,15 +14,6 @@ BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg
   unreachable();
 }
 
-BackendModelPtr Random(BackendKind kind, uint_fast32_t seed) {
-  switch (kind) {
-  case BackendKind::BASE: return md::base::Model::Random(seed);
-  case BackendKind::BASEOPT: return md::base::opt::Model::Random(seed);
-  case BackendKind::STACK: return md::stack::Model::Random(seed);
-  }
-  unreachable();
-}
-
 BackendBoltzModelPtr Boltz(const BackendModelPtr& m) {
   auto vis = overloaded{
       [](const md::base::Model::Ptr& m) -> BackendBoltzModelPtr {
