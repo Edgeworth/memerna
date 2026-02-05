@@ -13,7 +13,6 @@ repos:
       - id: check-toml # check toml syntax
       - id: check-xml # check xml syntax
       - id: check-yaml # check yaml syntax
-      - id: check-yaml # check yaml syntax
       - id: debug-statements # checks for debugger imports and py37+ `breakpoint()` calls in python source.
       - id: destroyed-symlinks # detects symlinks which became the files they were pointing to
       - id: detect-private-key # detects the presence of private keys.

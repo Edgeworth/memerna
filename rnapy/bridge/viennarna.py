@@ -66,6 +66,8 @@ class ViennaRna(RnaPackage):
     @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd(
             "./src/bin/RNAeval", *args, stdin_inp=f"{rna.r}\n{rna.db()}", stdout_to_str=True
         )
@@ -86,10 +88,18 @@ class ViennaRna(RnaPackage):
             res = self._run_cmd(
                 "./src/bin/RNAfold", *args, "--noPS", "-i", f.name, stdout_to_str=True
             )
-            seq, db = res.stdout.strip().split("\n")
-            db, energy_str = db.split(" ")
+            lines = res.stdout.strip().splitlines()
+            if len(lines) < 2:
+                raise ValueError(f"Unexpected ViennaRNA RNAfold output: {res.stdout!r}")
+            seq = lines[0].strip()
+            db_line = lines[1].strip()
+            match = re.match(r"(?P<db>\S+)\s+\(\s*(?P<energy>[-+0-9.eE]+)\s*\)", db_line)
+            if match is None:
+                raise ValueError(f"Could not parse ViennaRNA RNAfold output line: {db_line!r}")
+            db = match.group("db")
+            energy_str = match.group("energy")
             predicted = RnaParser.parse(
-                name=rna.name, seq=seq.strip(), db=db.strip(), energy=energy_str.strip("() ")
+                name=rna.name, seq=seq, db=db, energy=energy_str
             )
         return predicted, res
 
@@ -103,6 +113,8 @@ class ViennaRna(RnaPackage):
     ) -> tuple[list[Rna] | int, CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
 
         with named_tmpfile("w") as f:
             stdout_path = Path(f.name)

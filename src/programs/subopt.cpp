@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto mfe_alg = args.Get<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
-  auto subopt_alg = args.Get<mrna::SuboptAlg>(mrna::OPT_SUBOPT_ALG);
+  auto mfe_alg = args.MaybeGet<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
+  auto subopt_alg = args.MaybeGet<mrna::SuboptAlg>(mrna::OPT_SUBOPT_ALG);
   const bool should_print = !args.GetOr(mrna::OPT_QUIET);
   const bool ctd_data = args.GetOr(OPT_CTD_OUTPUT);
   const auto subopt_cfg = mrna::subopt::SuboptCfg::FromArgParse(args);

@@ -52,12 +52,14 @@ class ModelMixin {
     return m;
   }
 
-  static Ptr FromBackendCfg(const BackendCfg& cfg) {
-    verify(cfg.backend == T::KIND, "expected backend kind: {}, got: {}", T::KIND, cfg.backend);
-    return std::visit(overloaded{
-                          [&](const std::string&) { return FromModelPath(*cfg.ModelPath()); },
-                          [](uint_fast32_t seed) { return Random(seed); },
-                      },
+  static Ptr FromBackendCfg(BackendKind backend, const BackendCfg& cfg) {
+    verify(backend == T::KIND, "expected backend kind: {}, got: {}", T::KIND, backend);
+    return std::visit(
+        overloaded{
+            [](std::monostate) -> Ptr { fatal("cannot create model without data source"); },
+            [&](const std::string&) { return FromModelPath(*cfg.ModelPath(backend)); },
+            [](uint_fast32_t seed) { return Random(seed); },
+        },
         cfg.data_src);
   }
 

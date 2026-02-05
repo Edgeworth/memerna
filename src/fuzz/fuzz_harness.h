@@ -32,6 +32,7 @@ class FuzzHarness {
   [[nodiscard]] constexpr std::optional<uint_fast32_t> last_seed() const {
     return std::visit(
         overloaded{
+            [](std::monostate) -> std::optional<uint_fast32_t> { return std::nullopt; },
             [](const std::string&) -> std::optional<uint_fast32_t> { return std::nullopt; },
             [](uint_fast32_t seed) -> std::optional<uint_fast32_t> { return seed; },
         },
@@ -40,7 +41,7 @@ class FuzzHarness {
 
  private:
   std::vector<BackendModelPtr> ms_;
-  BackendCfg backend_cfg_{};
+  BackendCfg backend_cfg_;
   FuzzCfg fuzz_cfg_;
   std::mt19937 e_;
 

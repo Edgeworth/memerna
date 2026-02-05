@@ -10,6 +10,7 @@
 #include <random>
 #include <string>
 
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
@@ -30,8 +31,8 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::STACK;
 
-  static bool IsSupported(
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+  static bool IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
+      const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
   Energy penultimate_stack[4][4][4][4] = {};
 

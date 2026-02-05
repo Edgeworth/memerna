@@ -1,47 +1,38 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/memerna.h"
 
-#include <memory>
-#include <string>
+#include <optional>
 #include <vector>
 
-#include "api/ctx/algorithm.h"
-#include "api/trace/trace_cfg.h"
 #include "model/primary.h"
-#include "model/structure.h"
 
 namespace mrna::bridge {
 
-erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
-  // TODO(2): Support pseudofree energy in the bridge API.
-  auto res = ctx_.Efn(r, s, erg::EnergyCfg{}, erg::PseudofreeCfg{}, /*given_ctd=*/nullptr,
-      /*build_structure=*/desc != nullptr);
-  if (desc) {
-    for (const auto& struc : res.struc->Description()) {
-      *desc += struc;
-      *desc += "\n";
-    }
-  }
-
-  return res;
+erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool build_structure) const {
+  return ctx_.Efn(r, s, cfg, pf, given_ctd, build_structure);
 }
 
-FoldResult Memerna::Fold(const Primary& r) const {
-  return ctx_.Fold(r, MfeAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{}, trace::TraceCfg{});
+FoldResult Memerna::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+  return ctx_.Fold(r, alg, cfg, pf, trace_cfg);
 }
 
-int Memerna::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
-  return ctx_.Subopt(r, MfeAlg::AUTO, SuboptAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{}, fn,
-      {.delta = delta, .sorted = true});
+int Memerna::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg,
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
+    subopt::SuboptCfg subopt_cfg) const {
+  return ctx_.Subopt(r, mfe_alg, alg, cfg, pf, fn, subopt_cfg);
 }
 
-std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r, Energy delta) const {
-  return ctx_.SuboptIntoVector(r, MfeAlg::AUTO, SuboptAlg::AUTO, erg::EnergyCfg{},
-      erg::PseudofreeCfg{}, {.delta = delta, .sorted = true});
+std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r,
+    std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
+  return ctx_.SuboptIntoVector(r, mfe_alg, alg, cfg, pf, subopt_cfg);
 }
 
-pfn::PfnResult Memerna::Pfn(const Primary& r) const {
-  return ctx_.Pfn(r, PfnAlg::AUTO, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+pfn::PfnResult Memerna::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) const {
+  return ctx_.Pfn(r, alg, cfg, pf);
 }
 
 Memerna Memerna::FromArgParse(const ArgParse& args) { return Memerna(Ctx::FromArgParse(args)); }

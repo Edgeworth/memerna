@@ -1,12 +1,9 @@
 // Copyright 2016 Eliot Courtney.
 #include <fmt/core.h>
 
-#include <memory>
 #include <string>
 
-#include "api/ctx/backend.h"
-#include "api/ctx/backend_cfg.h"
-#include "api/energy/energy.h"
+#include "api/ctx/ctx.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "model/ctd.h"
 #include "model/secondary.h"
@@ -20,30 +17,27 @@ inline const mrna::Opt OPT_DETAIL =
 int main(int argc, char* argv[]) {
   mrna::InitProgram();
   mrna::ArgParse args;
-  mrna::RegisterOptsBackendCfg(&args);
-  mrna::erg::RegisterOptsPseudofree(&args);
+  mrna::RegisterOpts(&args);
   args.RegisterOpt(OPT_DETAIL);
   args.ParseOrExit(argc, argv);
   verify(args.PosSize() == 2, "requires primary sequence and dot bracket");
 
-  const auto m = mrna::BackendFromArgParse(args);
+  auto ctx = mrna::Ctx::FromArgParse(args);
   const auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   const auto& rs = args.Pos(0);
   const auto& ss = args.Pos(1);
   mrna::erg::EnergyResult res;
   if (mrna::Ctds::IsCtdString(ss)) {
     const auto [r, s, ctd] = energy_cfg.ParseSeqCtdString(rs, ss);
-    auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
     pf.Verify(r);
-    res = mrna::TotalEnergy(m, r, s, &ctd, energy_cfg, pf, /*build_structure=*/true);
+    res = ctx.Efn(r, s, energy_cfg, pf, &ctd, /*build_structure=*/true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", energy_cfg.ToCtdString(s, res.ctd));
   } else {
     const auto [r, s] = mrna::ParseSeqDb(rs, ss);
-    auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
     pf.Verify(r);
-    res =
-        mrna::TotalEnergy(m, r, s, /*given_ctd=*/nullptr, energy_cfg, pf, /*build_structure=*/true);
+    res = ctx.Efn(r, s, energy_cfg, pf, /*given_ctd=*/nullptr, /*build_structure=*/true);
     fmt::print("{}\n", res.energy);
     fmt::print("{}\n", energy_cfg.ToCtdString(s, res.ctd));
   }

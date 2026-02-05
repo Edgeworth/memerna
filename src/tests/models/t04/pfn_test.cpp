@@ -20,11 +20,11 @@ namespace mrna {
 class PfnTestT04 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
  public:
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const std::string& s) {
-    return GetPfn(m, std::get<1>(GetParam()), s);
+    return GetPfn(m, kT04Cfg, std::get<1>(GetParam()), s);
   }
 
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const Primary& r) {
-    return GetPfn(m, std::get<1>(GetParam()), r);
+    return GetPfn(m, kT04Cfg, std::get<1>(GetParam()), r);
   }
 };
 
@@ -33,7 +33,8 @@ class PfnTestT04 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
 TEST_P(PfnTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   EXPECT_REL_EQ(FLT(4.2481601382949495665565296828679689667765375832), Pfn(m, "CCUCCGGG").pfn.q);
   EXPECT_REL_EQ(FLT(4.17979557041608366287852107192666645517291810433), Pfn(m, "CGGAAACGG").pfn.q);
@@ -107,7 +108,8 @@ TEST_P(PfnTestT04, T04P1) {
 TEST_P(PfnTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   // Regression tests:
   auto pfn = Pfn(m, "GGCGACCGGCGG").pfn;
@@ -213,15 +215,16 @@ TEST(PfnTestT04, PseudofreeMatchesBruteAndScalesQ) {
   const auto& m = t04_ms[0];  // BASE backend.
   const auto r = Primary::FromSeq("CCUCCGGG");
 
-  const auto no_pf = Ctx(m).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, erg::PseudofreeCfg{}).pfn;
+  const auto no_pf =
+      Ctx(m, kT04Cfg).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, erg::PseudofreeCfg{}).pfn;
 
   const Energy per_nt = E(0.5);
   std::vector<Energy> pf_paired(r.size(), per_nt);
   std::vector<Energy> pf_unpaired(r.size(), per_nt);
   const erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
 
-  const auto brute = Ctx(m).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, pf).pfn;
-  const auto opt = Ctx(m).Pfn(r, PfnAlg::OPT, erg::EnergyCfg{}, pf).pfn;
+  const auto brute = Ctx(m, kT04Cfg).Pfn(r, PfnAlg::BRUTE, erg::EnergyCfg{}, pf).pfn;
+  const auto opt = Ctx(m, kT04Cfg).Pfn(r, PfnAlg::OPT, erg::EnergyCfg{}, pf).pfn;
   CheckPfn(opt, brute);
 
   const auto scale = (per_nt * static_cast<int>(r.size())).Boltz();

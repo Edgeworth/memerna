@@ -27,8 +27,8 @@ using Error = std::deque<std::string>;
 
 class FuzzInvocation {
  public:
-  FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, erg::PseudofreeCfg pf,
-      const FuzzCfg& fuzz_cfg);
+  FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, BackendCfg backend_cfg,
+      erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg);
 
   Error Run();
 
@@ -42,6 +42,7 @@ class FuzzInvocation {
  private:
   Primary r_;
   std::vector<BackendModelPtr> ms_;
+  BackendCfg backend_cfg_;
   erg::PseudofreeCfg pf_;
   FuzzCfg cfg_;
 

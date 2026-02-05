@@ -4,12 +4,12 @@
 
 #include <cstdint>
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "api/brute/brute_cfg.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
@@ -43,11 +43,8 @@ struct BruteResult {
 
 class Brute {
  public:
-  static bool IsSupported(
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
-
-  Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
-      BruteCfg brute_cfg);
+  Brute(const Primary& r, BackendModelPtr m, BackendCfg backend_cfg, erg::EnergyCfg cfg,
+      erg::PseudofreeCfg pf, BruteCfg brute_cfg);
 
   BruteResult Run();
 
@@ -70,6 +67,7 @@ class Brute {
   BackendModelPtr m_;
   BackendBoltzModelPtr bm_;
   BackendModelPtr underlying_;
+  BackendCfg backend_cfg_;
   erg::PseudofreeCfg pf_;
   erg::EnergyCfg energy_cfg_;
   erg::EnergyCfg pfn_energy_cfg_;

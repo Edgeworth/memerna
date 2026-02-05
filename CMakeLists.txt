@@ -296,6 +296,7 @@ set(MEMERNA_SOURCE
   src/util/version.h
 )
 set(TEST_SOURCE
+  src/tests/api/ctx/algorithm_test.cpp
   src/tests/backends/energy_test.cpp
   src/tests/backends/baseopt/energy_test.cpp
   src/tests/backends/baseopt/model_test.cpp

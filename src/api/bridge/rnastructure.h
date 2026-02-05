@@ -3,6 +3,7 @@
 #define API_BRIDGE_RNASTRUCTURE_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -27,14 +28,24 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  erg::EnergyResult Efn(
-      const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
-  [[nodiscard]] FoldResult Fold(const Primary& r) const override;
-  [[nodiscard]] int Subopt(
-      subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
-  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(
-      const Primary& r, Energy delta) const override;
-  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r) const override;
+  erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, const Ctds* given_ctd = nullptr,
+      bool build_structure = false) const override;
+
+  [[nodiscard]] FoldResult Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const override;
+
+  [[nodiscard]] int Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
+      std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+      const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const override;
+
+  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(const Primary& r,
+      std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const override;
+
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf) const override;
+
   // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies in SuboptResult
   // are meaningless.
   [[nodiscard]] std::vector<subopt::SuboptResult> StochasticSampleIntoVector(

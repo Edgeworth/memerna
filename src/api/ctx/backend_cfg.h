@@ -15,20 +15,19 @@ namespace mrna {
 
 void RegisterOptsBackendCfg(ArgParse* args);
 
-MAKE_ENUM(BackendKind, AUTO, BASE, BASEOPT, STACK);
+MAKE_ENUM(BackendKind, BASE, BASEOPT, STACK);
 
 struct BackendCfg {
   erg::EnergyModelKind energy_model = erg::EnergyModelKind::T04;
   int precision = ENERGY_PRECISION;
-  BackendKind backend = BackendKind::AUTO;
-  std::variant<std::string, uint_fast32_t> data_src;
+  std::variant<std::monostate, std::string, uint_fast32_t> data_src = std::monostate{};
 
   [[nodiscard]]
   static BackendCfg FromArgParse(const ArgParse& args);
 
   // Returns the model path if data_src is a data directory, nullopt if it's a seed.
   [[nodiscard]]
-  std::optional<std::string> ModelPath() const;
+  std::optional<std::string> ModelPath(BackendKind backend) const;
 };
 
 inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
@@ -44,12 +43,9 @@ inline const Opt OPT_ENERGY_PRECISION = Opt(Opt::ARG)
                                             .Default(ENERGY_PRECISION)
                                             .Help("energy precision to use");
 
-inline const Opt OPT_BACKEND = Opt(Opt::ARG)
-                                   .LongName("backend")
-                                   .ShortName("b")
-                                   .ChoiceEnum<BackendKind>()
-                                   .Default(BackendKind::AUTO)
-                                   .Help("backend to use");
+inline const Opt OPT_BACKEND =
+    Opt(Opt::ARG).LongName("backend").ShortName("b").ChoiceEnum<BackendKind>().Help(
+        "backend to use (default: auto-select best)");
 
 inline const Opt OPT_MEMERNA_DATA = Opt(Opt::ARG)
                                         .LongName("memerna-data")

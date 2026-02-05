@@ -1,8 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/rnastructure.h"
 
-#include <functional>
-#include <iosfwd>
 #include <memory>
 #include <string>
 #include <utility>
@@ -82,6 +80,36 @@ PfnState RunPfn(structure* struc, datatable* data) {
   return state;
 }
 
+void VerifySupported(
+    std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
+  verify(!alg.has_value(), "Bridge for RNAstructure does not support algorithm selection");
+  verify(pf.Empty(), "Bridge for RNAstructure does not support pseudofree energies");
+  verify(cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC,
+      "Bridge for RNAstructure does not support lonely_pairs != HEURISTIC");
+  verify(
+      cfg.ctd == erg::EnergyCfg::Ctd::ALL, "Bridge for RNAstructure does not support ctd != ALL");
+}
+
+void VerifySupported(
+    std::optional<PfnAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
+  verify(!alg.has_value(), "Bridge for RNAstructure does not support algorithm selection");
+  verify(pf.Empty(), "Bridge for RNAstructure does not support pseudofree energies");
+  verify(cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC,
+      "Bridge for RNAstructure does not support lonely_pairs != HEURISTIC");
+  verify(
+      cfg.ctd == erg::EnergyCfg::Ctd::ALL, "Bridge for RNAstructure does not support ctd != ALL");
+}
+
+void VerifySupported(const trace::TraceCfg& trace_cfg) {
+  verify(!trace_cfg.random, "Bridge for RNAstructure does not support random trace");
+}
+
+void VerifySupported(const subopt::SuboptCfg& subopt_cfg) {
+  verify(subopt_cfg.strucs == subopt::SuboptCfg::MAX_STRUCTURES,
+      "Bridge for RNAstructure does not support strucs limit");
+  verify(subopt_cfg.time_secs < 0, "Bridge for RNAstructure does not support time limit");
+}
+
 }  // namespace
 
 RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
@@ -91,17 +119,21 @@ RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
-erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, std::string* desc) const {
-  const auto structure = LoadStructure(r, s);
+erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, const Ctds* /*given_ctd*/, bool /*build_structure*/) const {
+  VerifySupported(std::optional<MfeAlg>{}, cfg, pf);
+  const auto struc = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
-  std::stringstream sstr;
-  efn2(data_.get(), structure.get(), 1, linear_multiloop, desc ? &sstr : nullptr);
-  if (desc) *desc = sstr.str();
+  efn2(data_.get(), struc.get(), 1, linear_multiloop, static_cast<std::ostream*>(nullptr));
   // TODO(2): convert ctds and structure?
-  return {ToEnergy(structure->GetEnergy(1)), Ctds(), nullptr};
+  // Note: build_structure is ignored - RNAstructure bridge doesn't support Structure output.
+  return {ToEnergy(struc->GetEnergy(1)), Ctds(), nullptr};
 }
 
-FoldResult RNAstructure::Fold(const Primary& r) const {
+FoldResult RNAstructure::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+  VerifySupported(alg, cfg, pf);
+  VerifySupported(trace_cfg);
   dp_state_t state;
   return FoldAndDpTable(r, &state);
 }
@@ -123,21 +155,30 @@ FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) 
       .tb = trace::TraceResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
-  auto res = SuboptIntoVector(r, delta);
+int RNAstructure::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
+    std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+    const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const {
+  auto res = SuboptIntoVector(r, mfe_alg, alg, cfg, pf, subopt_cfg);
   for (const auto& subopt : res) fn(subopt);
   return static_cast<int>(res.size());
 }
 
-std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(
-    const Primary& r, Energy delta) const {
+std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(const Primary& r,
+    std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
+  VerifySupported(mfe_alg, cfg, pf);
+  verify(!alg.has_value(), "Bridge for RNAstructure does not support subopt algorithm selection");
+  VerifySupported(subopt_cfg);
   const auto structure = LoadStructure(r);
   // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
-  alltrace(structure.get(), data_.get(), 100, FromEnergy(delta), nullptr, nullptr, false);
+  alltrace(
+      structure.get(), data_.get(), 100, FromEnergy(subopt_cfg.delta), nullptr, nullptr, false);
   return StructureToSuboptVector(*structure);
 }
 
-pfn::PfnResult RNAstructure::Pfn(const Primary& r) const {
+pfn::PfnResult RNAstructure::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+    const erg::PseudofreeCfg& pf) const {
+  VerifySupported(alg, cfg, pf);
   const auto structure = LoadStructure(r);
   auto state = RunPfn(structure.get(), data_.get());
   const int N = static_cast<int>(r.size());

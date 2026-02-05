@@ -16,11 +16,11 @@ namespace mrna {
 class PfnTestT12 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
  public:
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const std::string& s) {
-    return GetPfn(m, std::get<1>(GetParam()), s);
+    return GetPfn(m, kT12Cfg, std::get<1>(GetParam()), s);
   }
 
   static pfn::PfnResult Pfn(const BackendModelPtr& m, const Primary& r) {
-    return GetPfn(m, std::get<1>(GetParam()), r);
+    return GetPfn(m, kT12Cfg, std::get<1>(GetParam()), r);
   }
 };
 
@@ -33,7 +33,8 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(PfnTestT12);
 TEST_P(PfnTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!PfnAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!PfnAlgIsSupported(GetBackendKind(m), alg, kT12Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   EXPECT_REL_EQ(FLT(4.06569633368939134129842956017929466372263904011), Pfn(m, "CCUCCGGG").pfn.q);
   EXPECT_REL_EQ(FLT(3.99326566300301791033216574191242303938854885947), Pfn(m, "CGGAAACGG").pfn.q);

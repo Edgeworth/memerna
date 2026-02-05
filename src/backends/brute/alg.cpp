@@ -10,21 +10,25 @@
 
 namespace mrna::md::brute {
 
-subopt::SuboptResult MfeBrute(
-    const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) {
-  return std::move(SuboptBrute(r, std::move(m), cfg, pf, subopt::SuboptCfg{.strucs = 1})[0]);
+subopt::SuboptResult MfeBrute(const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg,
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) {
+  return std::move(
+      SuboptBrute(r, std::move(m), backend_cfg, cfg, pf, subopt::SuboptCfg{.strucs = 1})[0]);
 }
 
-pfn::PfnResult PfnBrute(
-    const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) {
+pfn::PfnResult PfnBrute(const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg,
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) {
   // TODO(2): Allow lonely pairs for the partition function
-  auto res = Brute(r, std::move(m), cfg, pf, {.pfn = true}).Run();
+  auto res = Brute(r, std::move(m), backend_cfg, cfg, pf, {.pfn = true}).Run();
   return {.state{}, .pfn = std::move(res.pfn)};
 }
 
 std::vector<subopt::SuboptResult> SuboptBrute(const Primary& r, BackendModelPtr m,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) {
-  auto res = Brute(r, std::move(m), cfg, pf, {.subopt = true, .subopt_cfg = subopt_cfg}).Run();
+    const BackendCfg& backend_cfg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+    subopt::SuboptCfg subopt_cfg) {
+  auto res =
+      Brute(r, std::move(m), backend_cfg, cfg, pf, {.subopt = true, .subopt_cfg = subopt_cfg})
+          .Run();
   return {res.subopts.begin(), res.subopts.end()};
 }
 

@@ -20,23 +20,13 @@
 
 namespace mrna::md::brute {
 
-bool Brute::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
-    return false;
-  }
-  return true;
-}
-
-Brute::Brute(const Primary& r, BackendModelPtr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
-    BruteCfg brute_cfg)
-    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
-      energy_cfg_(cfg), pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()),
-      ctd_(r_.size()) {
+Brute::Brute(const Primary& r, BackendModelPtr m, BackendCfg backend_cfg, erg::EnergyCfg cfg,
+    erg::PseudofreeCfg pf, BruteCfg brute_cfg)
+    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)),
+      backend_cfg_(std::move(backend_cfg)), pf_(std::move(pf)), energy_cfg_(cfg),
+      pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
   std::string reason;
-  verify(BackendIsSupported(GetBackendKind(m_), energy_cfg_, pf_, &reason),
+  verify(BackendIsSupported(GetBackendKind(m_), backend_cfg_, energy_cfg_, pf_, &reason),
       "backend {} does not support configuration {}: {}", GetBackendKind(m_), energy_cfg_, reason);
   pfn_energy_cfg_.bulge_states = false;
 

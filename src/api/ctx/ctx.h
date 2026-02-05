@@ -56,8 +56,12 @@ struct PfnBackend {
 
 class Ctx {
  public:
-  explicit Ctx(BackendCfg cfg) : cfg_(std::move(cfg)), backends_() {}
-  explicit Ctx(BackendModelPtr m) : cfg_(std::nullopt), backends_() { backends_[0] = std::move(m); }
+  explicit Ctx(std::optional<BackendKind> backend, BackendCfg cfg)
+      : cfg_(std::move(cfg)), backend_(backend), backends_() {}
+  explicit Ctx(BackendModelPtr m, BackendCfg cfg)
+      : cfg_(std::move(cfg)), backend_(GetBackendKind(m)), backends_() {
+    backends_[static_cast<int>(*backend_)] = std::move(m);
+  }
   ~Ctx() = default;
 
   Ctx(Ctx&& o) noexcept;
@@ -70,36 +74,37 @@ class Ctx {
       const erg::PseudofreeCfg& pf = {}, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const;
 
-  [[nodiscard]] FoldResult Fold(const Primary& r, MfeAlg alg, erg::EnergyCfg cfg,
+  [[nodiscard]] FoldResult Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const;
 
-  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(const Primary& r, MfeAlg mfe_alg,
-      SuboptAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-      subopt::SuboptCfg subopt_cfg) const;
+  [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(const Primary& r,
+      std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const;
 
-  [[nodiscard]] int Subopt(const Primary& r, MfeAlg mfe_alg, SuboptAlg alg, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-      subopt::SuboptCfg subopt_cfg) const;
+  [[nodiscard]] int Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
+      std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
+      const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const;
 
-  [[nodiscard]] pfn::PfnResult Pfn(
-      const Primary& r, PfnAlg alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+      const erg::PseudofreeCfg& pf) const;
 
   [[nodiscard]] MfeBackend BackendForFold(
-      MfeAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
-  [[nodiscard]] SuboptBackend BackendForSubopt(SuboptAlg alg, MfeAlg mfe_alg,
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
+      std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] SuboptBackend BackendForSubopt(std::optional<SuboptAlg> alg,
+      std::optional<MfeAlg> mfe_alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCfg& subopt_cfg) const;
   [[nodiscard]] PfnBackend BackendForPfn(
-      PfnAlg alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
+      std::optional<PfnAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
 
   static Ctx FromArgParse(const ArgParse& args);
 
  private:
-  std::optional<BackendCfg> cfg_;
+  BackendCfg cfg_;
+  std::optional<BackendKind> backend_;
   mutable std::array<std::optional<BackendModelPtr>, EnumCount<BackendKind>()> backends_;
   mutable std::array<std::once_flag, EnumCount<BackendKind>()> backend_once_;
 
-  [[nodiscard]] const BackendModelPtr& EnsureBackend() const;
+  [[nodiscard]] const BackendModelPtr& EnsureBackend(BackendKind kind) const;
 };
 
 void RegisterOpts(ArgParse* args);

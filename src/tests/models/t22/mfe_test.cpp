@@ -20,11 +20,11 @@ namespace mrna {
 class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
  public:
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const std::string& s) {
-    return GetMfe(m, std::get<1>(GetParam()), s);
+    return GetMfe(m, kT22Cfg, std::get<1>(GetParam()), s);
   }
 
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const Primary& r) {
-    return GetMfe(m, std::get<1>(GetParam()), r);
+    return GetMfe(m, kT22Cfg, std::get<1>(GetParam()), r);
   }
 
   static void TestMfePseudofree(
@@ -33,8 +33,9 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
     std::vector<Energy> pf_unpaired(r.size(), E(1.0));
     Energy extra_from_pseudofree = E(1.0) * int(r.size());
     erg::PseudofreeCfg pf(std::move(pf_paired), std::move(pf_unpaired));
-    auto res = Ctx(m).Fold(
-        Primary::FromSeq(r), std::get<1>(GetParam()), erg::EnergyCfg{}, pf, trace::TraceCfg{});
+    auto res = Ctx(m, kT22Cfg)
+                   .Fold(Primary::FromSeq(r), std::get<1>(GetParam()), erg::EnergyCfg{}, pf,
+                       trace::TraceCfg{});
     EXPECT_EQ(base_energy + extra_from_pseudofree, res.mfe.energy);
     EXPECT_EQ(db, erg::EnergyCfg{}.ToCtdString(res.tb.s, res.tb.ctd));
   }
@@ -45,7 +46,8 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
 TEST_P(MfeTestT22, T22P2) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.58), "[[....]]"};
@@ -127,7 +129,8 @@ TEST_P(MfeTestT22, T22P2) {
 TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
   auto [i, alg] = GetParam();
   const auto& m = t22_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   // Fast enough for brute force:
   TestMfePseudofree(m, E(-0.58), "CCUCCGGG", "[[....]]");

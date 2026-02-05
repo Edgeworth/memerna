@@ -11,6 +11,20 @@ def test_from_db_file_parses_basic() -> None:
     assert rna.db() == "(())"
 
 
+def test_from_db_file_parses_header_without_space() -> None:
+    rna = RnaParser.from_db_file(">test\nGUAC\n(())\n")
+    assert rna.name == "test"
+    assert rna.r == "GUAC"
+    assert rna.db() == "(())"
+
+
+def test_from_db_file_strips_trailing_header_fields() -> None:
+    rna = RnaParser.from_db_file(">test some description\nGUAC\n(())\n")
+    assert rna.name == "test"
+    assert rna.r == "GUAC"
+    assert rna.db() == "(())"
+
+
 def test_to_db_file_roundtrip_basic() -> None:
     rna = RnaParser.parse(name="test", seq="GUAC", db="(())")
     data = RnaParser.to_db_file(rna)

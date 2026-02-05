@@ -14,11 +14,11 @@ namespace mrna {
 class MfeTestT12 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
  public:
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const std::string& s) {
-    return GetMfe(m, std::get<1>(GetParam()), s);
+    return GetMfe(m, kT12Cfg, std::get<1>(GetParam()), s);
   }
 
   static std::tuple<Energy, std::string> Mfe(const BackendModelPtr& m, const Primary& r) {
-    return GetMfe(m, std::get<1>(GetParam()), r);
+    return GetMfe(m, kT12Cfg, std::get<1>(GetParam()), r);
   }
 };
 
@@ -32,7 +32,8 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MfeTestT12);
 TEST_P(MfeTestT12, T12P2) {
   auto [i, alg] = GetParam();
   const auto& m = t12_ms[i];
-  if (!MfeAlgIsSupported(GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{})) return;
+  if (!MfeAlgIsSupported(GetBackendKind(m), alg, kT12Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{}))
+    return;
 
   // Fast enough for brute force:
   std::tuple<Energy, std::string> ans = {E(-0.56), "[[....]]"};

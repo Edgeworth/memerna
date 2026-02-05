@@ -33,10 +33,15 @@ class SparseMFEFold(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         self._check_energy_cfg(cfg)
+        if rna.r is None:
+            raise ValueError(f"RNA {rna.name} has no sequence")
         res = self._run_cmd("./src/SparseMFEFold", stdin_inp=rna.r, stdout_to_str=True)
-        seq, db = res.stdout.strip().split("\n")
-        db = db.split(" ")[0]
-        predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())
+        lines = res.stdout.strip().splitlines()
+        if len(lines) < 2:
+            raise ValueError(f"Unexpected SparseMFEFold output: {res.stdout!r}")
+        seq, db_line = lines[0].strip(), lines[1].strip()
+        db = db_line.split(maxsplit=1)[0]
+        predicted = RnaParser.parse(name=rna.name, seq=seq, db=db)
         return predicted, res
 
     @override

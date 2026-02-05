@@ -57,7 +57,7 @@ class PseudofreeCfg {
   }
 
   [[nodiscard]] constexpr Energy Paired(int st, int en) const {
-    assert(st <= en + 1);
+    assert(st <= en);
     if (paired.empty()) return ZERO_E;
     return paired[st] + paired[en];
   }
@@ -93,7 +93,7 @@ class BoltzPseudofreeCfg {
   }
 
   [[nodiscard]] BoltzEnergy Paired(int st, int en) const {
-    assert(st <= en + 1);
+    assert(st <= en);
     if (paired.empty()) return ONE_B;
     return paired[st] * paired[en];
   }

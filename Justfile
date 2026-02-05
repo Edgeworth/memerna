@@ -67,5 +67,5 @@ update:
 
 check:
   poetry check
-  poetry run mypy --install-types --non-interactive
+  poetry run mypy --install-types --non-interactive rnapy rnapy_tests
   pre-commit run --all-files

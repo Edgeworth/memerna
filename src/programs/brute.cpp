@@ -5,9 +5,12 @@
 #include <fmt/core.h>
 
 #include <algorithm>
+#include <string>
 
 #include "api/brute/brute_cfg.h"
+#include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"
@@ -23,7 +26,14 @@ int main(int argc, char* argv[]) {
   mrna::brute::RegisterOpts(&args);
   mrna::erg::RegisterOptsPseudofree(&args);
   args.ParseOrExit(argc, argv);
-  const auto m = mrna::BackendFromArgParse(args);
+  auto backend_cfg = mrna::BackendCfg::FromArgParse(args);
+  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
+  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
+  std::string log;
+  auto resolved = mrna::ResolveEfn(
+      args.MaybeGet<mrna::BackendKind>(mrna::OPT_BACKEND), backend_cfg, energy_cfg, pf, &log);
+  if (!resolved.has_value()) fatal("no backend supports this configuration:\n{}", log);
+  const auto m = mrna::BackendFromBackendCfg(resolved->backend, backend_cfg);
   auto cfg = mrna::brute::BruteCfg::FromArgParse(args);
   if (cfg.mfe) {
     cfg.subopt = true;
@@ -33,10 +43,8 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "requires primary sequence");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
-  auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
-  auto res = mrna::md::brute::Brute(r, m, energy_cfg, pf, cfg).Run();
+  auto res = mrna::md::brute::Brute(r, m, backend_cfg, energy_cfg, pf, cfg).Run();
 
   if (args.GetOr(mrna::OPT_FOLD)) {
     const auto& mfe = *res.subopts.begin();

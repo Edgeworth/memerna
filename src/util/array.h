@@ -171,8 +171,8 @@ struct Array3D {
   constexpr Array2DView<T> operator[](std::size_t idx) {
     return Array2DView(data_ + idx * size_ * size_, size_);
   }
-  constexpr Array2DView<T> operator[](std::size_t idx) const {
-    return Array2DView(data_ + idx * size_ * size_, size_);
+  constexpr Array2DView<const T> operator[](std::size_t idx) const {
+    return Array2DView<const T>(data_ + idx * size_ * size_, size_);
   }
 
   [[nodiscard]] constexpr std::size_t size() const { return size_; }

@@ -25,8 +25,9 @@
 
 namespace mrna::md::stack {
 
-bool Model::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+bool Model::IsSupported(const BackendCfg& /*backend_cfg*/, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
+  // STACK supports all energy models (T04, T12, T22).
   if (cfg.ctd != erg::EnergyCfg::Ctd::ALL && cfg.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
       cfg.ctd != erg::EnergyCfg::Ctd::NONE) {
     if (reason) *reason = fmt::format("ctd={} not supported by stack backend", cfg.ctd);

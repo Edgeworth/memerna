@@ -14,7 +14,6 @@
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
-#include "util/argparse.h"
 
 namespace mrna {
 
@@ -23,9 +22,7 @@ using BackendModelPtr =
 using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::base::opt::BoltzModel::Ptr,
     md::stack::BoltzModel::Ptr>;
 
-BackendModelPtr BackendFromArgParse(const ArgParse& args);
-
-BackendModelPtr BackendFromBackendCfg(const BackendCfg& cfg);
+BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg);
 
 constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
   auto vis = overloaded{

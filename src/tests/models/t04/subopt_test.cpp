@@ -18,12 +18,12 @@ class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> 
  public:
   static std::vector<subopt::SuboptResult> Subopt(
       const BackendModelPtr& m, const std::string& s, const std::vector<Energy>& energies) {
-    return CheckSubopt(m, std::get<1>(GetParam()), s, energies);
+    return CheckSubopt(m, kT04Cfg, std::get<1>(GetParam()), s, energies);
   }
 
   static std::vector<subopt::SuboptResult> Subopt(
       const BackendModelPtr& m, const Primary& r, const std::vector<Energy>& energies) {
-    return CheckSubopt(m, std::get<1>(GetParam()), r, energies);
+    return CheckSubopt(m, kT04Cfg, std::get<1>(GetParam()), r, energies);
   }
 };
 
@@ -32,8 +32,8 @@ class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> 
 TEST_P(SuboptTestT04, T04P1) {
   auto [i, alg] = GetParam();
   auto m = t04_ms[i];
-  if (!SuboptAlgIsSupported(
-          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}))
+  if (!SuboptAlgIsSupported(GetBackendKind(m), alg, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{},
+          subopt::SuboptCfg{}))
     return;
 
   Subopt(m, "CCUCCGGG",
@@ -474,8 +474,8 @@ TEST_P(SuboptTestT04, T04P1) {
 TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();
   const auto& m = t04_ms[i];
-  if (!SuboptAlgIsSupported(
-          GetBackendKind(m), alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt::SuboptCfg{}))
+  if (!SuboptAlgIsSupported(GetBackendKind(m), alg, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{},
+          subopt::SuboptCfg{}))
     return;
 
   Subopt(m, "CCUCCGGG",

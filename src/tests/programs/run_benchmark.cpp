@@ -22,10 +22,16 @@
 
 namespace mrna {
 
+// BackendCfg for benchmarks - uses T04 model with monostate data_src since
+// the model is already loaded.
+inline const BackendCfg kBenchmarkCfg{.energy_model = erg::EnergyModelKind::T04,
+    .precision = ENERGY_PRECISION,
+    .data_src = std::monostate{}};
+
 template <class... Args>
 void Mfe(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args));
+  const Ctx ctx(*std::get<0>(args), kBenchmarkCfg);
   auto mfe_alg = std::get<1>(args);
   std::mt19937 eng(0);
 
@@ -41,7 +47,7 @@ void Mfe(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Subopt(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args));
+  const Ctx ctx(*std::get<0>(args), kBenchmarkCfg);
   auto subopt_alg = std::get<1>(args);
   auto cfg = std::get<2>(args);
   std::mt19937 eng(0);
@@ -49,7 +55,7 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
     auto result = ctx.SuboptIntoVector(
-        r, MfeAlg::AUTO, subopt_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, cfg);
+        r, std::nullopt, subopt_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{}, cfg);
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -59,7 +65,7 @@ void Subopt(benchmark::State& state, Args&&... arglist) {
 template <class... Args>
 void Pfn(benchmark::State& state, Args&&... arglist) {
   auto args = std::make_tuple(std::move(arglist)...);
-  const Ctx ctx(*std::get<0>(args));
+  const Ctx ctx(*std::get<0>(args), kBenchmarkCfg);
   auto pfn_alg = std::get<1>(args);
   std::mt19937 eng(0);
 
@@ -121,7 +127,7 @@ DEFINE_MFE_BENCH(baseopt_t04, DEBUG, SPARSE_OPT);
 DEFINE_SUBOPT_BENCH(baseopt_t04, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 DEFINE_PARTITION_BENCH(baseopt_t04, DEBUG, OPT);
 
-DEFINE_MFE_BENCH(stack_t04, DEBUG);
+DEFINE_MFE_BENCH(stack_t04, OPT);
 DEFINE_SUBOPT_BENCH(stack_t04, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 // TODO(2): Add when partition is implemented for stack model.
 

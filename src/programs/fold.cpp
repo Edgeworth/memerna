@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
   verify(args.PosSize() == 1, "need primary sequence to fold");
 
   auto ctx = mrna::Ctx::FromArgParse(args);
-  auto mfe_alg = args.Get<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
+  auto mfe_alg = args.MaybeGet<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
   auto trace_cfg = mrna::trace::TraceCfg::FromArgParse(args);
   auto r = mrna::Primary::FromSeq(args.Pos(0));
   auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);

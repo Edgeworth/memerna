@@ -13,19 +13,21 @@ BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
   BackendCfg cfg{
       .energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL),
       .precision = args.Get<int>(OPT_ENERGY_PRECISION),
-      .backend = args.Get<BackendKind>(OPT_BACKEND),
       .data_src = args.Has(OPT_SEED)
-          ? std::variant<std::string, uint_fast32_t>{args.Get<uint_fast32_t>(OPT_SEED)}
-          : std::variant<std::string, uint_fast32_t>{args.Get<std::string>(OPT_MEMERNA_DATA)},
+          ? std::variant<std::monostate, std::string, uint_fast32_t>{args.Get<uint_fast32_t>(
+                OPT_SEED)}
+          : std::variant<std::monostate, std::string, uint_fast32_t>{args.Get<std::string>(
+                OPT_MEMERNA_DATA)},
   };
   verify(cfg.precision == ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
       cfg.precision, ENERGY_PRECISION);
   return cfg;
 }
 
-std::optional<std::string> BackendCfg::ModelPath() const {
+std::optional<std::string> BackendCfg::ModelPath(BackendKind backend) const {
   return std::visit(overloaded{
-                        [this](const std::string& data_dir) -> std::optional<std::string> {
+                        [](std::monostate) -> std::optional<std::string> { return std::nullopt; },
+                        [this, backend](const std::string& data_dir) -> std::optional<std::string> {
                           return fmt::format(
                               "{}/model/{}-p{}-{}", data_dir, energy_model, precision, backend);
                         },

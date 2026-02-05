@@ -5,26 +5,17 @@
 
 namespace mrna {
 
-BackendModelPtr BackendFromArgParse(const ArgParse& args) {
-  return BackendFromBackendCfg(BackendCfg::FromArgParse(args));
-}
-
-BackendModelPtr BackendFromBackendCfg(const BackendCfg& cfg) {
-  BackendCfg resolved = cfg;
-  if (resolved.backend == BackendKind::AUTO) resolved.backend = BackendKind::BASEOPT;
-  switch (resolved.backend) {
-  case BackendKind::AUTO: break;
-  case BackendKind::BASE: return md::base::Model::FromBackendCfg(resolved);
-  case BackendKind::BASEOPT: return md::base::opt::Model::FromBackendCfg(resolved);
-  case BackendKind::STACK: return md::stack::Model::FromBackendCfg(resolved);
+BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg) {
+  switch (backend) {
+  case BackendKind::BASE: return md::base::Model::FromBackendCfg(backend, cfg);
+  case BackendKind::BASEOPT: return md::base::opt::Model::FromBackendCfg(backend, cfg);
+  case BackendKind::STACK: return md::stack::Model::FromBackendCfg(backend, cfg);
   }
   unreachable();
 }
 
 BackendModelPtr Random(BackendKind kind, uint_fast32_t seed) {
-  if (kind == BackendKind::AUTO) kind = BackendKind::BASEOPT;
   switch (kind) {
-  case BackendKind::AUTO: break;
   case BackendKind::BASE: return md::base::Model::Random(seed);
   case BackendKind::BASEOPT: return md::base::opt::Model::Random(seed);
   case BackendKind::STACK: return md::stack::Model::Random(seed);

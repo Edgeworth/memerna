@@ -25,8 +25,12 @@
 
 namespace mrna::md::base::opt {
 
-bool Model::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason) {
+bool Model::IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, std::string* reason) {
+  if (backend_cfg.energy_model == erg::EnergyModelKind::T22) {
+    if (reason) *reason = "T22 energy model not supported by baseopt backend";
+    return false;
+  }
   if (cfg.ctd != erg::EnergyCfg::Ctd::ALL) {
     if (reason) *reason = fmt::format("ctd={} not supported by baseopt backend", cfg.ctd);
     return false;

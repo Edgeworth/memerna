@@ -60,9 +60,16 @@ class RnaParser:
 
     @staticmethod
     def from_db_file(data: str) -> Rna:
-        name, seq, db = data.strip().splitlines()
-        name, seq, db = name.strip(), seq.strip(), db.strip()
-        name = re.sub(r"^> ", "", name)
+        lines = [line.strip() for line in data.strip().splitlines() if line.strip()]
+        if len(lines) < 3:
+            raise ValueError("DB file must have at least 3 non-empty lines (header, seq, db)")
+
+        header, seq, db = lines[0], lines[1], lines[2]
+        if not header.startswith(">"):
+            raise ValueError("DB file header must start with '>'")
+
+        name = re.sub(r"^>\s*", "", header).strip()
+        name = name.split(maxsplit=1)[0] if name else ""
         return RnaParser.parse(name=name, seq=seq, db=db)
 
     @staticmethod

@@ -23,6 +23,7 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
 
   backend_cfg_ = BackendCfg{
       .energy_model = fuzz_cfg_.energy_model,
+      .precision = ENERGY_PRECISION,
       .data_src = fuzz_cfg_.data_dir,
   };
 }
@@ -30,7 +31,7 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
 FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r, erg::PseudofreeCfg pf) {
   MaybeLoadBackends();
 
-  FuzzInvocation invoc(r, ms_, std::move(pf), fuzz_cfg_);
+  FuzzInvocation invoc(r, ms_, backend_cfg_, std::move(pf), fuzz_cfg_);
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE
@@ -51,8 +52,7 @@ void FuzzHarness::MaybeLoadBackends() {
   }
 
   for (const auto& backend : fuzz_cfg_.backends) {
-    backend_cfg_.backend = backend;
-    ms_.push_back(BackendFromBackendCfg(backend_cfg_));
+    ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
   }
 }
 

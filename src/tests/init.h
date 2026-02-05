@@ -4,14 +4,30 @@
 
 #include <string>
 #include <tuple>
+#include <variant>
 #include <vector>
 
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "backends/stack/energy/model.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 
 namespace mrna {
+
+// BackendCfg constants for IsSupported checks in tests.
+// Uses monostate for data_src since we only need energy_model for checks.
+inline const BackendCfg kT04Cfg{.energy_model = erg::EnergyModelKind::T04,
+    .precision = ENERGY_PRECISION,
+    .data_src = std::monostate{}};
+
+inline const BackendCfg kT12Cfg{.energy_model = erg::EnergyModelKind::T12,
+    .precision = ENERGY_PRECISION,
+    .data_src = std::monostate{}};
+
+inline const BackendCfg kT22Cfg{.energy_model = erg::EnergyModelKind::T22,
+    .precision = ENERGY_PRECISION,
+    .data_src = std::monostate{}};
 
 extern std::tuple<Primary, Secondary> kNNDBHairpin1;
 extern std::tuple<Primary, Secondary> kNNDBHairpin2;

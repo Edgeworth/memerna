@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/common/base/model_base.h"
@@ -19,8 +20,8 @@ class Model : public ModelBase, public ModelMixin<Model> {
  public:
   static constexpr auto KIND = BackendKind::BASEOPT;
 
-  static bool IsSupported(
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+  static bool IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
+      const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
   Energy Hairpin(const Primary& r, int st, int en, std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, erg::EnergyCfg cfg, int ost, int oen, int ist, int ien,
