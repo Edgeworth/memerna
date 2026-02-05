@@ -28,7 +28,7 @@ using Error = std::deque<std::string>;
 class FuzzInvocation {
  public:
   FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms, BackendCfg backend_cfg,
-      erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg);
+      erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg, bool should_log);
 
   Error Run();
 
@@ -45,6 +45,7 @@ class FuzzInvocation {
   BackendCfg backend_cfg_;
   erg::PseudofreeCfg pf_;
   FuzzCfg cfg_;
+  bool should_log_;
 
   // Store assumed to be correct answers for each problem type:
   std::optional<FoldResult> fold_;

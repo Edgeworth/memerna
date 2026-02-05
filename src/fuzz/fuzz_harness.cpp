@@ -31,7 +31,8 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
 FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r, erg::PseudofreeCfg pf) {
   MaybeLoadBackends();
 
-  FuzzInvocation invoc(r, ms_, backend_cfg_, std::move(pf), fuzz_cfg_);
+  FuzzInvocation invoc(r, ms_, backend_cfg_, std::move(pf), fuzz_cfg_, first_invocation_);
+  first_invocation_ = false;
 #ifdef USE_RNASTRUCTURE
   invoc.set_rnastructure(rstr_);
 #endif  // USE_RNASTRUCTURE

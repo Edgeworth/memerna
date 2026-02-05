@@ -98,9 +98,7 @@ class ViennaRna(RnaPackage):
                 raise ValueError(f"Could not parse ViennaRNA RNAfold output line: {db_line!r}")
             db = match.group("db")
             energy_str = match.group("energy")
-            predicted = RnaParser.parse(
-                name=rna.name, seq=seq, db=db, energy=energy_str
-            )
+            predicted = RnaParser.parse(name=rna.name, seq=seq, db=db, energy=energy_str)
         return predicted, res
 
     @override

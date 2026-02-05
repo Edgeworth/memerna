@@ -44,6 +44,7 @@ class FuzzHarness {
   BackendCfg backend_cfg_;
   FuzzCfg fuzz_cfg_;
   std::mt19937 e_;
+  bool first_invocation_ = true;
 
 #ifdef USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;

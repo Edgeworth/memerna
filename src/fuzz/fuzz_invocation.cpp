@@ -2,6 +2,7 @@
 #include "fuzz/fuzz_invocation.h"
 
 #include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <set>
@@ -90,9 +91,9 @@ md::base::DpState* MaybeGetBaseDpState(mfe::DpState& dp) {
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms,
-    BackendCfg backend_cfg, erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg)
+    BackendCfg backend_cfg, erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg, bool should_log)
     : r_(r), ms_(std::move(ms)), backend_cfg_(std::move(backend_cfg)), pf_(std::move(pf)),
-      cfg_(fuzz_cfg) {
+      cfg_(fuzz_cfg), should_log_(should_log) {
   verify(!ms_.empty(), "must provide at least one energy model to fuzz");
 }
 
@@ -135,7 +136,12 @@ Error FuzzInvocation::CheckMfe() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](MfeAlg mfe_alg) {
-      if (!MfeAlgIsSupported(kind, mfe_alg, backend_cfg_, cfg_.energy_cfg, pf_)) return;
+      std::string reason;
+      if (!MfeAlgIsSupported(kind, mfe_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
+        if (should_log_) spdlog::warn("mfe NOT fuzzed: {}-{}: {}", kind, mfe_alg, reason);
+        return;
+      }
+      if (should_log_) spdlog::warn("mfe fuzzed: {}-{}", kind, mfe_alg);
 
       const Ctx ctx(m, backend_cfg_);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -215,8 +221,13 @@ Error FuzzInvocation::CheckSubopt() {
     for (const auto& m : ms_) {
       const auto kind = GetBackendKind(m);
       auto maybe_run = [&](SuboptAlg subopt_alg) {
-        if (!SuboptAlgIsSupported(kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg))
+        std::string reason;
+        if (!SuboptAlgIsSupported(
+                kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg, &reason)) {
+          if (should_log_) spdlog::warn("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
           return;
+        }
+        if (should_log_) spdlog::warn("subopt fuzzed: {}-{}", kind, subopt_alg);
 
         const Ctx ctx(m, backend_cfg_);
         auto res = ctx.SuboptIntoVector(
@@ -379,7 +390,12 @@ Error FuzzInvocation::CheckPfn() {
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](PfnAlg pfn_alg) {
-      if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, cfg_.energy_cfg, pf_)) return;
+      std::string reason;
+      if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
+        if (should_log_) spdlog::warn("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
+        return;
+      }
+      if (should_log_) spdlog::warn("pfn fuzzed: {}-{}", kind, pfn_alg);
 
       const Ctx ctx(m, backend_cfg_);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
