@@ -88,7 +88,13 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
     const char* s = argv[i];
     const bool is_opt = s[0] == '-';
     while (*s == '-') ++s;
-    const bool is_short = s - argv[i] == 1;
+    const auto num_dashes = s - argv[i];
+    if (num_dashes > 2) return fmt::format("invalid option {}", argv[i]);
+    if (is_opt && num_dashes == 1 && *s == '\0') {
+      pos_.emplace_back(argv[i]);
+      continue;
+    }
+    const bool is_short = num_dashes == 1;
 
     if (!is_opt) {
       pos_.emplace_back(s);

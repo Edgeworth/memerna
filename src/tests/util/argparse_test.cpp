@@ -73,4 +73,24 @@ TEST(ArgParseTest, ParseOrExitVerboseEnablesDebug) {
   spdlog::set_level(old_level);
 }
 
+TEST(ArgParseTest, ThreeDashesRejected) {
+  const auto opt = mrna::Opt(mrna::Opt::FLAG).LongName("verbose");
+  mrna::ArgParse args;
+  args.RegisterOpt(opt);
+
+  std::vector<std::string> argv_str = {"prog", "---verbose"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_NE("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+}
+
+TEST(ArgParseTest, BareDashIsPositional) {
+  mrna::ArgParse args;
+
+  std::vector<std::string> argv_str = {"prog", "-"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+  EXPECT_EQ(1, args.Pos().size());
+  EXPECT_EQ("-", args.Pos()[0]);
+}
+
 }  // namespace mrna

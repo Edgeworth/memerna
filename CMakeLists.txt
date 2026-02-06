@@ -345,7 +345,6 @@ target_compile_definitions(memerna PUBLIC
   MEMERNA_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
 
-add_executable(brute src/programs/brute.cpp)
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
 add_executable(fuzz src/programs/fuzz/fuzz.cpp)
@@ -354,13 +353,11 @@ add_executable(harness src/programs/harness.cpp)
 add_executable(partition src/programs/partition.cpp)
 add_executable(run_benchmark ${BENCHMARK_SOURCE} src/tests/programs/run_benchmark.cpp)
 add_executable(run_tests ${TEST_SOURCE} src/tests/programs/run_tests.cpp)
-add_executable(splay_explorer src/tests/programs/splay_explorer.cpp)
 add_executable(subopt src/programs/subopt.cpp)
 
 target_include_directories(memerna PUBLIC src)
 
 target_link_libraries(memerna PUBLIC fmt::fmt spdlog::spdlog)
-target_link_libraries(brute PRIVATE memerna)
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)
@@ -369,7 +366,6 @@ target_link_libraries(harness PRIVATE memerna)
 target_link_libraries(partition PRIVATE memerna)
 target_link_libraries(run_benchmark PRIVATE memerna Threads::Threads benchmark::benchmark)
 target_link_libraries(run_tests PRIVATE memerna Threads::Threads GTest::gtest)
-target_link_libraries(splay_explorer PRIVATE memerna)
 target_link_libraries(subopt PRIVATE memerna)
 
 # Use Boost if available
@@ -405,7 +401,6 @@ target_compile_definitions(memerna PUBLIC ENERGY_PRECISION=${ENERGY_PRECISION})
 
 # Add sanitizers
 add_sanitizers(memerna)
-add_sanitizers(brute)
 add_sanitizers(efn)
 add_sanitizers(fold)
 add_sanitizers(fuzz)
@@ -414,13 +409,11 @@ add_sanitizers(harness)
 add_sanitizers(partition)
 add_sanitizers(run_benchmark)
 add_sanitizers(run_tests)
-add_sanitizers(splay_explorer)
 add_sanitizers(subopt)
 
 # Add iwyu to targets if requested.
 if(USE_IWYU)
   set_target_properties(memerna PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
-  set_target_properties(brute PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(efn PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fold PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(fuzz PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
@@ -429,7 +422,6 @@ if(USE_IWYU)
   set_target_properties(partition PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(run_benchmark PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(run_tests PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
-  set_target_properties(splay_explorer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
   set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
 endif()
 
