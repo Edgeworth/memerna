@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   fmt::print("\nprobabilities:\n");
   mrna::PrintBoltzProbs(res.pfn.prob);
 
-  if (args.Has(mrna::OPT_PFN_PRINT_EXTRA_TABLES)) {
+  if (args.GetOr(mrna::OPT_PFN_PRINT_EXTRA_TABLES)) {
     auto vis = mrna::overloaded{[&](const auto& model) {
       fmt::print("\nHelix probabilities\n");
       mrna::PrintHelixProbs(r, res.pfn, *model);

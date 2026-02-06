@@ -138,10 +138,10 @@ Error FuzzInvocation::CheckMfe() {
     auto maybe_run = [&](MfeAlg mfe_alg) {
       std::string reason;
       if (!MfeAlgIsSupported(kind, mfe_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
-        if (should_log_) spdlog::warn("mfe NOT fuzzed: {}-{}: {}", kind, mfe_alg, reason);
+        if (should_log_) spdlog::info("mfe NOT fuzzed: {}-{}: {}", kind, mfe_alg, reason);
         return;
       }
-      if (should_log_) spdlog::warn("mfe fuzzed: {}-{}", kind, mfe_alg);
+      if (should_log_) spdlog::info("mfe fuzzed: {}-{}", kind, mfe_alg);
 
       const Ctx ctx(m, backend_cfg_);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -171,6 +171,8 @@ Error FuzzInvocation::CheckMfe() {
       break;
     }
   }
+
+  if (results.empty()) return errors;
 
   // Check memerna energies compared to themselves and to efn.
   auto& cmp_res = results[cmp_idx];
@@ -224,10 +226,10 @@ Error FuzzInvocation::CheckSubopt() {
         std::string reason;
         if (!SuboptAlgIsSupported(
                 kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg, &reason)) {
-          if (should_log_) spdlog::warn("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
+          if (should_log_) spdlog::info("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
           return;
         }
-        if (should_log_) spdlog::warn("subopt fuzzed: {}-{}", kind, subopt_alg);
+        if (should_log_) spdlog::info("subopt fuzzed: {}-{}", kind, subopt_alg);
 
         const Ctx ctx(m, backend_cfg_);
         auto res = ctx.SuboptIntoVector(
@@ -341,7 +343,7 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg subopt_cfg,
       if (a[i].tb.s != b[i].tb.s)
         errors.push_back(fmt::format("structure {}: secondaries differ", i));
       if (has_ctds && a[i].tb.ctd != b[i].tb.ctd)
-        errors.push_back(fmt::format("structure {}: ctds differ", i, a[i].energy, b[i].energy));
+        errors.push_back(fmt::format("structure {}: ctds differ", i));
     }
   }
   return errors;
@@ -392,10 +394,10 @@ Error FuzzInvocation::CheckPfn() {
     auto maybe_run = [&](PfnAlg pfn_alg) {
       std::string reason;
       if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
-        if (should_log_) spdlog::warn("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
+        if (should_log_) spdlog::info("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
         return;
       }
-      if (should_log_) spdlog::warn("pfn fuzzed: {}-{}", kind, pfn_alg);
+      if (should_log_) spdlog::info("pfn fuzzed: {}-{}", kind, pfn_alg);
 
       const Ctx ctx(m, backend_cfg_);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
@@ -405,6 +407,8 @@ Error FuzzInvocation::CheckPfn() {
     for (const auto& entry : PfnPriorityForBackend(kind, /*alg=*/std::nullopt, N <= cfg_.brute_max))
       maybe_run(entry.alg);
   }
+
+  if (results.empty()) return errors;
 
   for (int i = 0; i < static_cast<int>(results.size()); ++i)
     ComparePfn(results[i].pfn, results[0].pfn, tags[i], tags[0], errors);
@@ -491,6 +495,7 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg) {
   Error errors;
   // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
+  if (subopt_.empty()) return errors;
   if (subopt_[0].energy < -cfg_.subopt_delta) {
     auto rstr_subopt = rstr_->SuboptIntoVector(r_, /*mfe_alg=*/std::nullopt,
         /*alg=*/std::nullopt, erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = cfg_.subopt_delta});

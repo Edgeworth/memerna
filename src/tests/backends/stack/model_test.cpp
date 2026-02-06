@@ -11,6 +11,8 @@ TEST_F(ModelTestStack, IsValid) {
 
   auto random_model = Model::Random(kT04Cfg, 0);
   EXPECT_TRUE(random_model->IsValid());
+  random_model->multiloop_c = E(1.0);
+  EXPECT_TRUE(random_model->IsValid());
 }
 
 }  // namespace mrna::md::stack

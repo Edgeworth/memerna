@@ -84,6 +84,7 @@ inline const Energy NINIO_MAX_ASYM = E(3.0);
 }
 
 [[nodiscard]] inline BoltzEnergy Energy::LogBoltz() const noexcept {
+  if (*this >= CAP_E) return -BoltzEnergy(INFINITY);
   return BoltzEnergy(-ToFlt()) / (BoltzEnergy(R) * BoltzEnergy(T));
 }
 

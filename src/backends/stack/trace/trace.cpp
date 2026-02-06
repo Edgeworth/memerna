@@ -53,12 +53,17 @@ struct TracebackInternal {
   std::vector<Expansion> next;
   std::mt19937 eng;
 
-  // TODO(0): configurable seed
   TracebackInternal(const Primary& r_, const Model::Ptr& m_, const DpState& state_,
       erg::EnergyCfg cfg_, const erg::PseudofreeCfg& pf_, const trace::TraceCfg& tcfg_)
       : r(r_), m(*m_), cfg(cfg_), pf(pf_), tcfg(tcfg_), N(static_cast<int>(r_.size())),
         dp(state_.base.dp), ext(state_.base.ext), nostack(state_.nostack), penult(state_.penult),
-        res((Secondary(N)), Ctds(N)), eng(1234) {}
+        res((Secondary(N)), Ctds(N)), eng() {
+    if (tcfg.random) {
+      const auto seed = tcfg.seed.value_or(std::random_device{}());
+      eng.seed(seed);
+      spdlog::debug("trace random seed {}", seed);
+    }
+  }
 
   void ComputeExt(int st, int a) {
     // Case: No pair starting here

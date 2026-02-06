@@ -29,7 +29,7 @@ class Memerna : public RnaPackage {
   Memerna(const Memerna&) = delete;
   Memerna& operator=(const Memerna&) = delete;
 
-  erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+  [[nodiscard]] erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const override;
 

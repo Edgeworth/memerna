@@ -28,7 +28,7 @@ class RNAstructure : public RnaPackage {
   RNAstructure(const RNAstructure&) = delete;
   RNAstructure& operator=(const RNAstructure&) = delete;
 
-  erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+  [[nodiscard]] erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const override;
 
@@ -56,10 +56,13 @@ class RNAstructure : public RnaPackage {
 
   static RNAstructure FromArgParse(const ArgParse& args);
 
-  static Energy ToEnergy(int energy) { return Energy::FromRaw(energy * Energy::FACTOR / 10); }
+  static Energy ToEnergy(int energy) {
+    return Energy::FromRaw(
+        static_cast<int32_t>(static_cast<int64_t>(energy) * Energy::FACTOR / 10));
+  }
 
   static int16_t FromEnergy(Energy energy) {
-    auto rstr_energy = energy.v * 10 / Energy::FACTOR;
+    auto rstr_energy = static_cast<int64_t>(energy.v) * 10 / Energy::FACTOR;
     verify(int16_t(rstr_energy) == rstr_energy, "energy too big");
     return int16_t(rstr_energy);
   }

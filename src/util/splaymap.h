@@ -152,7 +152,12 @@ class SplayMap {
     return false;
   }
 
-  const Value& Get() {
+  const Value& Get() const {
+    assert(size_ > 0);
+    return ns_[root].v;
+  }
+
+  Value& Get() {
     assert(size_ > 0);
     return ns_[root].v;
   }
@@ -163,7 +168,7 @@ class SplayMap {
     return Get();
   }
 
-  std::size_t Size() { return size_; }
+  std::size_t Size() const { return size_; }
 
   void Reserve(std::size_t s) { ns_.reserve(s); }
 
@@ -175,14 +180,14 @@ class SplayMap {
   }
 
   // Testing / visualisation methods.
-  std::string Describe() {
+  std::string Describe() const {
     std::string ans = fmt::format(
         "Tree with {} nodes. Backing node size: {}, root at index {}\n", Size(), ns_.size(), root);
     for (const auto& s : DescribeInternal(root)) ans += s + "\n";
     return ans;
   }
 
-  std::vector<Key> Keys() { return KeysInternal(root); }
+  std::vector<Key> Keys() const { return KeysInternal(root); }
 
  private:
   static constexpr int NONE = 0, TMP = 1;
@@ -197,7 +202,7 @@ class SplayMap {
   int root{NONE};
   std::size_t size_{0};
 
-  std::vector<std::string> DescribeInternal(int node) {
+  std::vector<std::string> DescribeInternal(int node) const {
     if (node == NONE) return {""};
     const auto& n = ns_[node];
     std::vector<std::string> desc;
@@ -211,7 +216,7 @@ class SplayMap {
     return desc;
   }
 
-  std::vector<Key> KeysInternal(int node) {
+  std::vector<Key> KeysInternal(int node) const {
     if (node == NONE) return {};
     auto a = KeysInternal(ns_[node].l);
     a.push_back(ns_[node].k);

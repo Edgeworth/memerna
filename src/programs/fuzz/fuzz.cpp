@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
 
   const auto interval = args.Get<int>(OPT_PRINT_INTERVAL);
-  const auto enumerate = args.Has(OPT_ENUMERATE);
+  const auto enumerate = args.GetOr(OPT_ENUMERATE);
   int min_len = 0;
   int max_len = 0;
   std::string seq;

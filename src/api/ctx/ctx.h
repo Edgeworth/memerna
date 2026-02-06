@@ -70,7 +70,7 @@ class Ctx {
   Ctx(const Ctx& o) = delete;
   Ctx& operator=(const Ctx&) = delete;
 
-  erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
+  [[nodiscard]] erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf = {}, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const;
 

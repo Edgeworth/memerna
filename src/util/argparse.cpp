@@ -101,7 +101,9 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
       if (opt.kind() == Opt::ARG) {
         if (i + 1 == argc) return fmt::format("missing argument for option {}", opt.Desc());
         if (opt.multiple()) {
-          values_[opt] = std::string(argv[++i]);
+          auto& val = values_[opt];
+          if (!val.empty()) val += ",";
+          val += argv[++i];
         } else {
           values_[opt] = argv[++i];
         }
@@ -141,7 +143,7 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
     std::exit(1);  // NOLINT
   }
 
-  if (Has(OPT_VERBOSE)) {
+  if (GetOr(OPT_VERBOSE)) {
     spdlog::set_level(spdlog::level::debug);
   }
 }

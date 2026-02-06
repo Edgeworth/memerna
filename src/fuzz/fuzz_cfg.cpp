@@ -49,7 +49,7 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("mfe_table: {}\n", mfe_table);
   desc += fmt::format("subopt: {}\n", subopt);
   desc += fmt::format("subopt_rnastructure: {}\n", subopt_rnastructure);
-  desc += fmt::format("subopt_max: {}\n", subopt_strucs);
+  desc += fmt::format("subopt_strucs: {}\n", subopt_strucs);
   desc += fmt::format("subopt_delta: {}\n", subopt_delta);
   desc += fmt::format("pfn: {}\n", pfn);
   desc += fmt::format("pfn_rnastructure: {}\n", pfn_rnastructure);

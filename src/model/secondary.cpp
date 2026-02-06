@@ -25,7 +25,7 @@ Secondary Secondary::FromDb(const std::string& pairs_str) {
       verify(pairs_str[i] == '.', "unexpected character '{}' at position {}", pairs_str[i], i);
     }
   }
-  verify(stk.empty(), "unmatched opening bracket at position {}", stk.empty() ? 0 : stk.back());
+  verify(stk.empty(), "unmatched opening bracket at position {}", stk.back());
   return s;
 }
 

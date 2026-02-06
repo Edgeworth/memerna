@@ -89,10 +89,12 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
     case 2: {
       // Insert case
       const int val = val_dist(eng);
-      if (s.contains(val))
+      if (s.contains(val)) {
         EXPECT_FALSE(h.Insert(val, val));
-      else
+      } else {
         EXPECT_TRUE(h.Insert(val, val));
+        keys.push_back(val);
+      }
       s.insert(val);
       break;
     }
@@ -105,6 +107,7 @@ TEST_P(SplayMapRandomTest, CompareAgainstMap) {
         keys.pop_back();
         EXPECT_TRUE(s.count(key));
         EXPECT_TRUE(h.Delete(key));
+        s.erase(key);
       }
       break;
     case 4:

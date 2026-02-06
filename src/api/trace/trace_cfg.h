@@ -5,7 +5,9 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#include <cstdint>
 #include <iosfwd>
+#include <optional>
 #include <string>
 
 #include "util/argparse.h"
@@ -17,10 +19,15 @@ inline const auto OPT_TRACE_RANDOM = mrna::Opt(Opt::FLAG)
                                          .Default(false)
                                          .Help("take a random MFE trace instead of arbitrary");
 
+inline const auto OPT_TRACE_SEED = mrna::Opt(Opt::ARG)
+                                       .LongName("trace-seed")
+                                       .Help("seed for random traceback (requires --trace-random)");
+
 void RegisterOpts(ArgParse* args);
 
 struct TraceCfg {
   bool random = false;
+  std::optional<uint_fast32_t> seed;
 
   static TraceCfg FromArgParse(const ArgParse& args);
 };

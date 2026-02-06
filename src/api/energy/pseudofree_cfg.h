@@ -46,6 +46,7 @@ class PseudofreeCfg {
 
   [[nodiscard]] constexpr Energy Unpaired(int n) const {
     if (unpaired.empty()) return ZERO_E;
+    assert(n >= 0 && n < static_cast<int>(unpaired.size()));
     return unpaired[n];
   }
 
@@ -53,12 +54,14 @@ class PseudofreeCfg {
   [[nodiscard]] constexpr Energy UnpairedSum(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired.empty()) return ZERO_E;
+    assert(st >= 0 && en + 1 < static_cast<int>(unpaired_sum.size()));
     return unpaired_sum[en + 1] - unpaired_sum[st];
   }
 
   [[nodiscard]] constexpr Energy Paired(int st, int en) const {
     assert(st <= en);
     if (paired.empty()) return ZERO_E;
+    assert(st >= 0 && en < static_cast<int>(paired.size()));
     return paired[st] + paired[en];
   }
 
@@ -82,6 +85,7 @@ class BoltzPseudofreeCfg {
 
   [[nodiscard]] BoltzEnergy Unpaired(int n) const {
     if (unpaired.empty()) return ONE_B;
+    assert(n >= 0 && n < static_cast<int>(unpaired.size()));
     return unpaired[n];
   }
 
@@ -89,12 +93,14 @@ class BoltzPseudofreeCfg {
   [[nodiscard]] BoltzEnergy UnpairedProd(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired.empty()) return ONE_B;
+    assert(st >= 0 && en + 1 < static_cast<int>(unpaired_sum_log.size()));
     return exp(unpaired_sum_log[en + 1] - unpaired_sum_log[st]);
   }
 
   [[nodiscard]] BoltzEnergy Paired(int st, int en) const {
     assert(st <= en);
     if (paired.empty()) return ONE_B;
+    assert(st >= 0 && en < static_cast<int>(paired.size()));
     return paired[st] * paired[en];
   }
 

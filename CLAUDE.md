@@ -23,8 +23,8 @@ partition function algorithms. Optimized for performance with sparse algorithms.
   are magic values for memset - never change them.
 - ENERGY_PRECISION and FLOAT_PRECISION are compile-time only. Data files are
   precision-specific - mismatches will cause incorrect results.
-- `baseopt` and `stack` backends enforce `multiloop_c == ZERO_E`. Only `base`
-  supports non-zero multiloop closure costs.
+- `baseopt` backend enforces `multiloop_c == ZERO_E`. `base` and `stack`
+  support non-zero multiloop closure costs.
 - `stack` backend has no partition function support and no sparse algorithms.
 - CTDs have dual representation (per-base array and branch deque) that must
   stay synchronized. Per-base stores CTD on right side for outer loops, left

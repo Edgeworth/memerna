@@ -42,8 +42,8 @@ class RnaPackage {
   RnaPackage(const RnaPackage&) = delete;
   RnaPackage& operator=(const RnaPackage&) = delete;
 
-  virtual erg::EnergyResult Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf, const Ctds* given_ctd = nullptr,
+  [[nodiscard]] virtual erg::EnergyResult Efn(const Primary& r, const Secondary& s,
+      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const Ctds* given_ctd = nullptr,
       bool build_structure = false) const = 0;
 
   [[nodiscard]] virtual FoldResult Fold(const Primary& r, std::optional<MfeAlg> alg,

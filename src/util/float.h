@@ -65,7 +65,7 @@ inline flt fabs(flt v) { return std::abs(v); }
 inline flt exp(flt v) { return std::exp(v); }
 inline flt pow(flt base, int exp) { return std::pow(base, exp); }
 inline flt round(flt v) { return std::round(v); }
-inline flt isnan(flt v) { return std::isnan(v); }
+inline bool isnan(flt v) { return std::isnan(v); }
 
 // Just pass through for built in types. Make literals long doubles.
 #define FLT(x) static_cast<flt>(x##l)

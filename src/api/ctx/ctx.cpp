@@ -50,8 +50,14 @@ Ctx::Ctx(Ctx&& o) noexcept
 
 Ctx& Ctx::operator=(Ctx&& o) noexcept {
   if (this == &o) return *this;
-  this->~Ctx();
-  new (this) Ctx(std::move(o));
+  cfg_ = std::move(o.cfg_);
+  backend_ = o.backend_;
+  backends_ = std::move(o.backends_);
+  // std::once_flag is neither moveable nor assignable; reinitialize in place.
+  for (auto& f : backend_once_) {
+    f.~once_flag();
+    new (&f) std::once_flag();
+  }
   return *this;
 }
 

@@ -87,19 +87,6 @@ TEST_P(SuboptTestT04, T04P1) {
           E(-1.5),
           E(-1.5),
       });
-  Subopt(m, "GGGGAAACCCC",
-      {
-          E(-4.5),
-          E(-4.3),
-          E(-3.5),
-          E(-2.5),
-          E(-2.5),
-          E(-2.4),
-          E(-2.2),
-          E(-2.0),
-          E(-1.5),
-          E(-1.5),
-      });
   Subopt(m, "CUUAUAGUUAAGG",
       {
           E(-1.2),
@@ -515,19 +502,6 @@ TEST_P(SuboptTestT04, T04P2) {
           E(2.19),
           E(2.90),
           E(2.99),
-      });
-  Subopt(m, "GGGGAAACCCC",
-      {
-          E(-4.38),
-          E(-4.22),
-          E(-3.42),
-          E(-2.42),
-          E(-2.42),
-          E(-2.32),
-          E(-2.12),
-          E(-1.92),
-          E(-1.37),
-          E(-1.37),
       });
   Subopt(m, "GGGGAAACCCC",
       {

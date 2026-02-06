@@ -317,6 +317,7 @@ set(TEST_SOURCE
   src/tests/models/t04/subopt_test.cpp
   src/tests/models/t04/pfn_test.cpp
   src/tests/models/t04/mfe_test.cpp
+  src/tests/util/argparse_test.cpp
   src/tests/util/float_test.cpp
   src/tests/util/splaymap_test.cpp
   src/tests/util.cpp
