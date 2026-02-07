@@ -36,6 +36,7 @@ std::vector<int> GetBranchCounts(const Secondary& s) {
       }
       branch_count[s[i]] = count;
     } else {
+      assert(!q.empty());
       q.pop_back();
     }
   }

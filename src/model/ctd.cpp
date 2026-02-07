@@ -192,13 +192,21 @@ std::string Ctds::ToString(const Secondary& s, bool use_d2) const {
     switch (data_[i]) {
     case CTD_NA:
     case CTD_UNUSED: break;
-    case CTD_3_DANGLE: str[s[i] + 1] = '3'; break;
-    case CTD_5_DANGLE: str[i - 1] = '5'; break;
+    case CTD_3_DANGLE:
+      assert(s[i] + 1 < N);
+      str[s[i] + 1] = '3';
+      break;
+    case CTD_5_DANGLE:
+      assert(i > 0);
+      str[i - 1] = '5';
+      break;
     case CTD_MISMATCH:
+      assert(i > 0 && s[i] + 1 < N);
       str[i - 1] = 'm';
       str[s[i] + 1] = 'M';
       break;
     case CTD_LCOAX_WITH_NEXT:
+      assert(i > 0 && s[i] + 1 < N);
       str[i] = closing ? 'N' : 'n';
       str[i - 1] = 'm';
       str[s[i] + 1] = 'M';
@@ -206,6 +214,7 @@ std::string Ctds::ToString(const Secondary& s, bool use_d2) const {
     case CTD_LCOAX_WITH_PREV: str[i] = closing ? 'P' : 'p'; break;
     case CTD_RC_WITH_NEXT: str[i] = closing ? 'N' : 'n'; break;
     case CTD_RC_WITH_PREV:
+      assert(i > 0 && s[i] + 1 < N);
       str[i] = closing ? 'P' : 'p';
       str[i - 1] = 'm';
       str[s[i] + 1] = 'M';

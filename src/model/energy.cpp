@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <istream>
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
@@ -15,6 +16,9 @@ namespace mrna {
 
 Energy Energy::FromFlt(flt energy) {
   auto rounded = round(energy * Energy::FACTOR);
+  verify(rounded >= flt(std::numeric_limits<int32_t>::min()) &&
+          rounded <= flt(std::numeric_limits<int32_t>::max()),
+      "energy value out of range: {}", energy);
   auto res = Energy::FromRaw(static_cast<int32_t>(rounded));
   verify(res < CAP_E, "energy value out of range: {}", energy);
   return res;

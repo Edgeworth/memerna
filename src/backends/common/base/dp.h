@@ -166,7 +166,7 @@ struct DpIndex {
   }
 
   [[nodiscard]] constexpr static std::size_t MaxLinearIndex(std::size_t n) {
-    return MaxArrayCount() + MaxArrayCount() * (n + 1) + MaxArrayCount() * (n + 1) * (n + 1);
+    return MaxArrayCount() * (n + 1) * (n + 1);
   }
 
  private:

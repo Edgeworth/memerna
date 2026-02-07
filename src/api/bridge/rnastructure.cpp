@@ -17,6 +17,7 @@ namespace mrna::bridge {
 namespace {
 
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
+  verify(!path.empty() && path.back() == '/', "invalid data path");
   setDataPath(path.c_str());  // Set RNAstructure data path.
   auto dt = std::make_unique<datatable>();
   verify(dt->opendat(path.c_str(), "rna") == 1, "could not load RNAstructure data tables");
@@ -66,8 +67,8 @@ struct PfnState {
   std::unique_ptr<bool[]> mod;
 
   PfnState(int N, datatable* data)
-      : w(N), v(N), wmb(N), wl(N), wlc(N), wmbl(N), wcoax(N), w5(new PFPRECISION[N + 1]),
-        w3(new PFPRECISION[N + 2]), pfdata(new pfdatatable(data, scaling, double(T))),
+      : w(N), v(N), wmb(N), wl(N), wlc(N), wmbl(N), wcoax(N), w5(new PFPRECISION[N + 1]()),
+        w3(new PFPRECISION[N + 2]()), pfdata(new pfdatatable(data, scaling, double(T))),
         fce(new forceclass(N)), lfce(new bool[2 * N + 1]()), mod(new bool[2 * N + 1]()) {}
 };
 
@@ -114,13 +115,13 @@ void VerifySupported(const subopt::SuboptCfg& subopt_cfg) {
 
 RNAstructure::RNAstructure(const std::string& data_path, bool use_lyngso)
     : data_(LoadDatatable(data_path)), use_lyngso_(use_lyngso) {
-  verify(!data_path.empty() && data_path.back() == '/', "invalid data path");
   verify(data_->loadedTables, "BUG: data tables not loaded");
   verify(data_->loadedAlphabet, "BUG: alphabet not loaded");
 }
 
 erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf, const Ctds* /*given_ctd*/, bool /*build_structure*/) const {
+    const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool /*build_structure*/) const {
+  verify(given_ctd == nullptr, "Bridge for RNAstructure does not support given_ctd");
   VerifySupported(std::optional<MfeAlg>{}, cfg, pf);
   const auto struc = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.

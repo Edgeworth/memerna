@@ -23,6 +23,7 @@ struct PfnTables {
   [[nodiscard]] static BoltzProbs Prob(const BoltzSums& p, const BoltzEnergy& q) {
     const int N = static_cast<int>(p.size());
     BoltzProbs prob(N, 0);
+    if (q == BoltzEnergy(0)) return prob;
     for (int i = 0; i < N; ++i)
       for (int j = i; j < N; ++j) prob[i][j] = p[i][j] * p[j][i] / q;
     return prob;
