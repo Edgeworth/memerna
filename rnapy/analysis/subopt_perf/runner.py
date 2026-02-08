@@ -135,15 +135,16 @@ class SuboptPerfRunner:
 
     @staticmethod
     def _deltas() -> list[Decimal]:
-        deltas = (
-            "0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.2,1.4,1.5,1.8,2,3,4,5,6,7,8,9,10,"
-            "15,20,25,30,35,45,60,75,100"
-        )
-        return sorted({Decimal(d) for d in deltas.split(",")})
+        return [Decimal(i) / 10 for i in range(1001)]
 
     @staticmethod
     def _num_strucs() -> list[int]:
-        return [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000]
+        strucs: set[int] = set()
+        for k in range(10):
+            for d2 in range(10):
+                for d3 in range(10):
+                    strucs.add((100 + 10 * d2 + d3) * 10**k // 100)
+        return sorted(strucs)
 
     def _run_once(
         self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
