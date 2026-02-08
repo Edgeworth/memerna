@@ -26,17 +26,28 @@ def strict_merge(*dicts: dict) -> dict:
     return merged
 
 
-def keyed_row_exists(json_path: Path, data_keys: dict) -> bool:
-    """Checks if a row with the given keys exists in the JSON file."""
+def keyed_rows(json_path: Path, data_keys: dict) -> pd.DataFrame:
     if not json_path.exists():
-        return False
+        return pd.DataFrame()
 
     df = pd.read_json(json_path, orient="records", precise_float=True, lines=True, dtype=False)
     for key, value in data_keys.items():
         if key not in df.columns:
-            return False
+            return pd.DataFrame()
         df = df[df[key] == value]
-    return not df.empty
+    return df
+
+
+def keyed_row_exists(json_path: Path, data_keys: dict) -> bool:
+    return not keyed_rows(json_path, data_keys).empty
+
+
+def maybe_get_keyed_row(json_path: Path, data_keys: dict) -> pd.Series | None:
+    df = keyed_rows(json_path, data_keys)
+    assert len(df) <= 1, f"Expected 0 or 1 rows, got {len(df)} for {data_keys}"
+    if df.empty:
+        return None
+    return df.iloc[0]
 
 
 def fn_args() -> dict[str, Any]:
