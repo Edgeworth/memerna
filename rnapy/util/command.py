@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 import os
-import resource
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,16 +44,24 @@ def try_cmd(
     if isinstance(stdin_inp, str):
         stdin_inp = stdin_inp.encode("utf-8")
 
-    # Uses GNU time.
-    cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd)
+    cmd_list: list[str] = list(cmd)
+    if limits.cpu_affinity is not None:
+        cmd_list = [
+            "taskset",
+            "-c",
+            ",".join(str(c) for c in sorted(limits.cpu_affinity)),
+            *cmd_list,
+        ]
+    prlimit_args: list[str] = []
+    if limits.time_sec is not None:
+        prlimit_args.append(f"--cpu={limits.time_sec}")
+    if limits.mem_bytes is not None:
+        prlimit_args.append(f"--as={limits.mem_bytes}")
+    if prlimit_args:
+        cmd_list = ["prlimit", *prlimit_args, "--", *cmd_list]
 
-    def preexec_fn() -> None:
-        if limits.mem_bytes is not None:
-            resource.setrlimit(resource.RLIMIT_AS, (limits.mem_bytes, limits.mem_bytes))
-        if limits.time_sec is not None:
-            resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
-        if limits.cpu_affinity is not None:
-            os.sched_setaffinity(0, limits.cpu_affinity)
+    # Uses GNU time.
+    cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd_list)
 
     env = os.environ.copy()
     if extra_env is not None:
@@ -83,7 +90,6 @@ def try_cmd(
         stderr=subprocess.PIPE,
         cwd=cwd,
         env=env,
-        preexec_fn=preexec_fn,  # noqa: PLW1509
     ) as proc:
         stdout_bytes, stderr_bytes = proc.communicate(input=stdin_inp)
         ret_code = proc.wait()

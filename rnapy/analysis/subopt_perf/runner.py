@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 import copy
+import threading
 from decimal import Decimal
 from pathlib import Path
 
@@ -13,14 +14,19 @@ from rnapy.bridge.viennarna import ViennaRna
 from rnapy.data.memevault import MemeVault
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.rna import Rna
-from rnapy.util.util import maybe_get_keyed_row, strict_merge
+from rnapy.util.util import parallel_map, strict_merge
 
 
 class SuboptPerfRunner:
     num_tries: int
     memevault: MemeVault
     output_dir: Path
+    rna_length: int | None
+    jobs: int
+    rnas: list[Rna]
     programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg]]
+    _file_lock: threading.Lock
+    _cached: pd.DataFrame
 
     def __init__(
         self,
@@ -28,6 +34,8 @@ class SuboptPerfRunner:
         num_tries: int,
         memevault: MemeVault,
         output_dir: Path,
+        rna_length: int | None,
+        jobs: int,
         memerna: MemeRna,
         rnastructure: RNAstructure,
         viennarna: ViennaRna,
@@ -35,20 +43,33 @@ class SuboptPerfRunner:
         self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
+        self.rna_length = rna_length
+        self.jobs = jobs
+        self._file_lock = threading.Lock()
+        # Pre-materialize RNAs since sqlite3 connections aren't thread-safe.
+        self.rnas = [rna for rna in memevault if rna_length is None or len(rna) == rna_length]
+        # Load existing results once to avoid re-reading the file per run.
+        output_path = self.output_dir / "subopt.json"
+        if output_path.exists() and output_path.stat().st_size > 0:
+            self._cached = pd.read_json(
+                output_path, orient="records", precise_float=True, lines=True, dtype=False
+            )
+        else:
+            self._cached = pd.DataFrame()
         self.programs = [
             (
                 rnastructure,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, energy_model="t04"),
                 SuboptCfg(sorted_strucs=True, count_only=True),
             ),
             (
                 viennarna,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC),
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, energy_model="t04"),
                 SuboptCfg(sorted_strucs=True, count_only=True),
             ),
             (
                 viennarna,
-                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC),
+                EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC, energy_model="t04"),
                 SuboptCfg(sorted_strucs=True, count_only=True),
             ),
             (
@@ -142,9 +163,21 @@ class SuboptPerfRunner:
         strucs: set[int] = set()
         for k in range(10):
             for d2 in range(10):
-                for d3 in range(10):
-                    strucs.add((100 + 10 * d2 + d3) * 10**k // 100)
+                strucs.add((10 + 1 * d2) * 10**k // 10)
         return sorted(strucs)
+
+    def _lookup_cached(self, data_keys: dict) -> pd.Series | None:
+        df = self._cached
+        for key, value in data_keys.items():
+            if key not in df.columns:
+                return None
+            if value is None:
+                df = df[df[key].isna()]
+            else:
+                df = df[df[key] == value]
+        if df.empty:
+            return None
+        return df.iloc[0]
 
     def _run_once(
         self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
@@ -164,9 +197,9 @@ class SuboptPerfRunner:
                 },
             )
 
-            row = maybe_get_keyed_row(output_path, data_keys)
+            row = self._lookup_cached(data_keys)
             if row is not None:
-                click.echo(f"Skipping run {data_keys} as it already exists in {output_path}")
+                click.echo(f"Skipping run {data_keys} (cached)")
                 if row["failed"]:
                     return False
                 continue
@@ -194,37 +227,44 @@ class SuboptPerfRunner:
 
             data = strict_merge(data_keys, data_values, {"failed": failed})
             df = pd.DataFrame(data, index=[0])
-            df.to_json(output_path, orient="records", lines=True, mode="a")
+            with self._file_lock:
+                df.to_json(output_path, orient="records", lines=True, mode="a")
 
             if failed:
                 return False
         return True
 
-    def _run(
-        self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfgs: list[SuboptCfg]
+    def _run_rna(
+        self,
+        program: RnaPackage,
+        energy_cfg: EnergyCfg,
+        subopt_cfgs: list[SuboptCfg],
+        rna_idx: int,
+        rna: Rna,
     ) -> None:
-        for rna_idx, rna in enumerate(self.memevault):
-            for cfg in subopt_cfgs:
-                click.echo(f"Running {program} on {rna_idx} {rna.name}, cfg {cfg}")
-                # Stop looking at larger cfgs (e.g. larger deltas) once a program fails once.
-                if not self._run_once(program, energy_cfg, cfg, rna):
-                    click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
-                    break
+        for cfg in subopt_cfgs:
+            click.echo(f"Running {program} on {rna_idx} {rna.name}, cfg {cfg}")
+            if not self._run_once(program, energy_cfg, cfg, rna):
+                click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
+                break
 
     def run(self) -> None:
+        jobs: list[tuple[RnaPackage, EnergyCfg, list[SuboptCfg], int, Rna]] = []
         for program, energy_cfg, base_cfg in self.programs:
-            cfgs = []
+            delta_cfgs = []
             for delta in self._deltas():
                 cfg = copy.deepcopy(base_cfg)
                 cfg.delta = delta
-                cfgs.append(cfg)
+                delta_cfgs.append(cfg)
 
-            self._run(program, energy_cfg, cfgs)
-
-            cfgs = []
+            strucs_cfgs = []
             for num_strucs in self._num_strucs():
                 cfg = copy.deepcopy(base_cfg)
                 cfg.strucs = num_strucs
-                cfgs.append(cfg)
+                strucs_cfgs.append(cfg)
 
-            self._run(program, energy_cfg, cfgs)
+            for rna_idx, rna in enumerate(self.rnas):
+                jobs.append((program, energy_cfg, delta_cfgs, rna_idx, rna))
+                jobs.append((program, energy_cfg, strucs_cfgs, rna_idx, rna))
+
+        parallel_map(self._run_rna, jobs, max_workers=self.jobs)

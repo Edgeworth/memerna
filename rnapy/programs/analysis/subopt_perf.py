@@ -22,6 +22,8 @@ from rnapy.util.util import fn_args
 @limit_options
 @cloup.option("--dataset", default="random", type=str)
 @cloup.option("--num-tries", default=5, type=int)
+@cloup.option("--rna-length", default=None, type=int)
+@cloup.option("-j", "--jobs", default=1, type=int, help="number of parallel workers")
 @cloup.option(
     "--output-dir",
     type=cloup.Path(dir_okay=True, file_okay=False, exists=True, path_type=Path),
@@ -29,6 +31,8 @@ from rnapy.util.util import fn_args
 )
 def run_subopt_perf(
     num_tries: int,
+    rna_length: int | None,
+    jobs: int,
     memevault_path: Path,
     dataset: str,
     output_dir: Path,
@@ -41,6 +45,8 @@ def run_subopt_perf(
     memevault = MemeVault(memevault_path, dataset)
     analyser = SuboptPerfRunner(
         num_tries=num_tries,
+        rna_length=rna_length,
+        jobs=jobs,
         memevault=memevault,
         output_dir=output_dir,
         memerna=memerna,

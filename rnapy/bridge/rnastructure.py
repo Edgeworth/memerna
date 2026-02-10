@@ -25,8 +25,8 @@ class RNAstructure(RnaPackage):
             )
         if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("RNAstructure does not support turning off CTDs")
-        if cfg.energy_model is not None:
-            raise NotImplementedError("RNAstructure energy model configuration not supported")
+        if cfg.energy_model is not None and cfg.energy_model != "t04":
+            raise NotImplementedError("RNAstructure only supports the t04 energy model")
 
     def check_subopt_cfg(self, cfg: SuboptCfg) -> None:
         if cfg.delta is None:

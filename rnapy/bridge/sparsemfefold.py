@@ -19,8 +19,8 @@ class SparseMFEFold(RnaPackage):
             )
         if cfg.ctd != CtdCfg.NONE:
             raise NotImplementedError("SparseMFEFold does not support turning on any CTDs")
-        if cfg.energy_model is not None:
-            raise NotImplementedError("SparseMFEFold energy model configuration not supported")
+        if cfg.energy_model is not None and cfg.energy_model != "t04":
+            raise NotImplementedError("SparseMFEFold only supports the t04 energy model")
 
     @override
     def package_name(self) -> str:

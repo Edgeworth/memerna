@@ -32,8 +32,8 @@ class SparseRNAFolD(RnaPackage):
             case CtdCfg.ALL:
                 raise NotImplementedError("SparseRNAFolD does not support all CTDs")
 
-        if cfg.energy_model is not None:
-            raise NotImplementedError("SparseRNAFolD energy model configuration not supported")
+        if cfg.energy_model is not None and cfg.energy_model != "t04":
+            raise NotImplementedError("SparseRNAFolD only supports the t04 energy model")
         return args
 
     @override

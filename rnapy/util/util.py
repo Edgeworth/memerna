@@ -5,6 +5,8 @@ import hashlib
 import inspect
 import json
 import tempfile
+from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any
@@ -34,7 +36,10 @@ def keyed_rows(json_path: Path, data_keys: dict) -> pd.DataFrame:
     for key, value in data_keys.items():
         if key not in df.columns:
             return pd.DataFrame()
-        df = df[df[key] == value]
+        if value is None:
+            df = df[df[key].isna()]
+        else:
+            df = df[df[key] == value]
     return df
 
 
@@ -121,3 +126,26 @@ class EnumChoice(cloup.Choice):
 def enum_choice(enum: type[StrEnum]) -> cloup.Choice:
     """Returns a list of choices for a StrEnum."""
     return EnumChoice(list(enum))
+
+
+def parallel_map(fn: Callable[..., Any], jobs: list[tuple[Any, ...]], max_workers: int) -> None:
+    """Run fn(*args) for each args in jobs, using a thread pool if max_workers > 1.
+
+    Handles Ctrl-C cleanly by cancelling pending futures."""
+    if max_workers <= 1:
+        for args in jobs:
+            fn(*args)
+        return
+
+    pool = ThreadPoolExecutor(max_workers=max_workers)
+    futures: list[Future[Any]] = [pool.submit(fn, *args) for args in jobs]
+    try:
+        remaining = set(futures)
+        while remaining:
+            done, remaining = wait(remaining, timeout=1)
+            for f in done:
+                f.result()
+    except BaseException:
+        pool.shutdown(wait=False, cancel_futures=True)
+        raise
+    pool.shutdown()

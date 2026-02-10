@@ -25,7 +25,7 @@ inline const auto OPT_SUBOPT_SORTED = Opt(Opt::FLAG)
 void RegisterOpts(ArgParse* args);
 
 struct SuboptCfg {
-  constexpr static const int MAX_STRUCTURES = std::numeric_limits<int>::max() / 2;
+  constexpr static const int MAX_STRUCTURES = std::numeric_limits<int>::max();
 
   Energy delta = CAP_E;  // maximum energy delta from minimum
   int strucs = MAX_STRUCTURES;  // maximum number of structures to report

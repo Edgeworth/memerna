@@ -27,12 +27,12 @@ class EnergyCfg:
     energy_model: str | None = None
     backend: str | None = None
 
-    def desc(self) -> dict[str, str]:
+    def desc(self) -> dict[str, str | None]:
         return {
             "ctd": self.ctd.value,
             "lonely_pairs": self.lonely_pairs.value,
-            "energy_model": self.energy_model or "",
-            "backend": self.backend or "",
+            "energy_model": self.energy_model,
+            "backend": self.backend,
         }
 
 
@@ -46,12 +46,12 @@ class SuboptCfg:
     # Program specific suboptimal folding algorithm option.
     algorithm: str | None = None
 
-    def desc(self) -> dict[str, str]:
+    def desc(self) -> dict[str, str | None]:
         return {
             "sorted_strucs": str(self.sorted_strucs),
-            "delta": str(self.delta) if self.delta is not None else "",
-            "strucs": str(self.strucs) if self.strucs is not None else "",
-            "time_secs": str(self.time_secs) if self.time_secs is not None else "",
+            "delta": str(self.delta) if self.delta is not None else None,
+            "strucs": str(self.strucs) if self.strucs is not None else None,
+            "time_secs": str(self.time_secs) if self.time_secs is not None else None,
             "count_only": str(self.count_only),
-            "algorithm": self.algorithm or "",
+            "algorithm": self.algorithm,
         }
