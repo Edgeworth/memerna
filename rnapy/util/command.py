@@ -84,7 +84,7 @@ def try_cmd(
             stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
-    stdin = subprocess.PIPE if stdin_inp else None
+    stdin = subprocess.PIPE if stdin_inp is not None else None
 
     CMD_STR_LIM = 500
     cmd_str = " ".join(cmd)
@@ -132,10 +132,12 @@ def try_cmd(
             if stdout_to_str:
                 if compress_stdout:
                     decomp = subprocess.run(
-                        ["zstdcat", str(stdout_path)],
+                        ["zstd", "-dc", str(stdout_path)],
                         capture_output=True,
                         text=True,
                     )
+                    if decomp.returncode != 0:
+                        raise RuntimeError(f"zstd -dc failed: {decomp.stderr}")
                     stdout_str = decomp.stdout
                 else:
                     stdout_str = stdout_path.read_text()

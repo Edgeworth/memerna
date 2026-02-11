@@ -93,23 +93,25 @@ def stable_hash(val: Any) -> int:
 
 
 def fast_linecount(path: Path, compressed: bool = False) -> int:
-    cat_cmd = ["zstdcat", str(path)] if compressed else ["cat", str(path)]
-    cat_proc = subprocess.Popen(cat_cmd, stdout=subprocess.PIPE)
+    cat_cmd = ["zstd", "-dc", str(path)] if compressed else ["cat", str(path)]
+    cat_proc = subprocess.Popen(cat_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     wc_proc = subprocess.Popen(["wc", "-l"], stdin=cat_proc.stdout, stdout=subprocess.PIPE)
     cat_proc.stdout.close()
     wc_output, _ = wc_proc.communicate()
-    cat_proc.wait()
+    _, cat_stderr = cat_proc.communicate()
+    if cat_proc.returncode != 0:
+        raise RuntimeError(f"{cat_cmd[0]} failed: {cat_stderr.decode()}")
     return int(wc_output.strip())
 
 
 def read_compressed(path: Path) -> str:
     result = subprocess.run(
-        ["zstdcat", str(path)],
+        ["zstd", "-dc", str(path)],
         capture_output=True,
         text=True,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"zstdcat failed: {result.stderr}")
+        raise RuntimeError(f"zstd -dc failed: {result.stderr}")
     return result.stdout
 
 

@@ -156,15 +156,11 @@ class SuboptPerfRunner:
 
     @staticmethod
     def _deltas() -> list[Decimal]:
-        return [Decimal(i) / 10 for i in range(1001)]
+        return [Decimal(i) / 10 for i in range(61)]
 
     @staticmethod
     def _num_strucs() -> list[int]:
-        strucs: set[int] = set()
-        for k in range(10):
-            for d2 in range(10):
-                strucs.add((10 + 1 * d2) * 10**k // 10)
-        return sorted(strucs)
+        return list(range(100_000, 10_000_001, 100_000))
 
     def _lookup_cached(self, data_keys: dict) -> pd.Series | None:
         df = self._cached
