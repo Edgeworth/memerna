@@ -28,6 +28,11 @@ from rnapy.data.memevault import MemeVault
     show_default=True,
     help="Number of random RNAs to generate for each size.",
 )
+@cloup.option(
+    "--append/--no-append",
+    default=False,
+    help="Append to existing dataset, skipping entries that already exist.",
+)
 @cloup.argument(
     "extra-lengths",
     type=int,
@@ -42,12 +47,17 @@ def generate_random_dataset(
     end_length: int | None,
     step_size: int | None,
     count_per_size: int,
+    append: bool,
     extra_lengths: list[int],
     **_kwargs: Any,
 ) -> None:
     memevault = MemeVault(memevault_path, dataset_name)
     memevault.maybe_create()
-    memevault.clear()
+    if append:
+        existing_names = {rna.name for rna in memevault}
+    else:
+        memevault.clear()
+        existing_names = set()
 
     lengths = set(extra_lengths)
     if use_range:
@@ -64,5 +74,8 @@ def generate_random_dataset(
     for length in sorted(lengths):
         for i in range(count_per_size):
             name = f"random_len{length}_num{i + 1}"
+            if name in existing_names:
+                click.echo(f"Skipping {name} (exists)")
+                continue
             click.echo(f"Adding {name}")
             memevault.add_random(length, name=name)

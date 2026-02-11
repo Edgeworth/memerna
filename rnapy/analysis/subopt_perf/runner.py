@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 import copy
+import signal
 import threading
 from decimal import Decimal
 from pathlib import Path
@@ -204,6 +205,13 @@ class SuboptPerfRunner:
             data_values: dict = {}
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
+                # If the process was killed by SIGINT/SIGTERM (e.g. Ctrl-C), propagate
+                # the interruption instead of marking it as a failed run.
+                if cmd_res.ret_code < 0 and -cmd_res.ret_code in (
+                    signal.SIGINT,
+                    signal.SIGTERM,
+                ):
+                    raise KeyboardInterrupt()
                 failed = cmd_res.ret_code != 0
                 data_values = strict_merge(
                     data_values,
@@ -215,6 +223,8 @@ class SuboptPerfRunner:
                         "real_sec": cmd_res.real_sec,
                     },
                 )
+            except KeyboardInterrupt:
+                raise
             except Exception as e:
                 click.echo(f"Error running {program} on {rna.name}: {e}")
                 failed = True
