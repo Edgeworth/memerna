@@ -4,6 +4,7 @@ import enum
 import hashlib
 import inspect
 import json
+import subprocess
 import tempfile
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor, wait
@@ -14,8 +15,6 @@ from typing import IO, Any
 import click
 import cloup
 import pandas as pd
-
-from rnapy.util.command import run_cmd
 
 
 def strict_merge(*dicts: dict) -> dict:
@@ -93,10 +92,25 @@ def stable_hash(val: Any) -> int:
     return int.from_bytes(val, "big")
 
 
-def fast_linecount(path: Path) -> int:
-    res = run_cmd("wc", "-l", str(path))
-    count = int(res.stdout.strip().split()[0])
-    return count
+def fast_linecount(path: Path, compressed: bool = False) -> int:
+    cat_cmd = ["zstdcat", str(path)] if compressed else ["cat", str(path)]
+    cat_proc = subprocess.Popen(cat_cmd, stdout=subprocess.PIPE)
+    wc_proc = subprocess.Popen(["wc", "-l"], stdin=cat_proc.stdout, stdout=subprocess.PIPE)
+    cat_proc.stdout.close()
+    wc_output, _ = wc_proc.communicate()
+    cat_proc.wait()
+    return int(wc_output.strip())
+
+
+def read_compressed(path: Path) -> str:
+    result = subprocess.run(
+        ["zstdcat", str(path)],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"zstdcat failed: {result.stderr}")
+    return result.stdout
 
 
 def resolve_path(path: Path | str) -> Path:

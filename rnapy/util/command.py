@@ -36,6 +36,7 @@ def try_cmd(
     stdin_inp: str | bytes | None = None,
     stdout_to_str: bool = True,
     stdout_path: Path | None = None,
+    compress_stdout: bool = False,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
     limits: CmdLimits | None = None,
@@ -68,8 +69,19 @@ def try_cmd(
         env.update(extra_env)
 
     stdout: Any
+    zstd_proc: subprocess.Popen[bytes] | None = None
+    stdout_file: Any = None
     if stdout_path is not None:
-        stdout = stdout_path.open("wb")
+        if compress_stdout:
+            stdout_file = stdout_path.open("wb")
+            zstd_proc = subprocess.Popen(
+                ["zstd", "--fast", "-q"],
+                stdin=subprocess.PIPE,
+                stdout=stdout_file,
+            )
+            stdout = zstd_proc.stdin
+        else:
+            stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
     stdin = subprocess.PIPE if stdin_inp else None
@@ -80,7 +92,8 @@ def try_cmd(
         cmd_str = cmd_str[: CMD_STR_LIM // 2] + "..." + cmd_str[-CMD_STR_LIM // 2 :]
     print(
         f"try_cmd: {cmd_str}, cwd: {cwd}, extra_env: {extra_env}, "
-        f"stdout_to_str: {stdout_to_str}, stdout_path: {stdout_path}, limits: {limits}"
+        f"stdout_to_str: {stdout_to_str}, stdout_path: {stdout_path}, "
+        f"compress_stdout: {compress_stdout}, limits: {limits}"
     )
     with subprocess.Popen(
         cmd,
@@ -91,6 +104,10 @@ def try_cmd(
         cwd=cwd,
         env=env,
     ) as proc:
+        # Close parent's copy of zstd's stdin so zstd sees EOF when main proc exits.
+        if zstd_proc is not None:
+            zstd_proc.stdin.close()
+
         stdout_bytes, stderr_bytes = proc.communicate(input=stdin_inp)
         ret_code = proc.wait()
         stdout_str = stdout_bytes.decode("utf-8") if stdout_bytes else ""
@@ -100,12 +117,28 @@ def try_cmd(
         real_sec, user_sec, sys_sec, maxrss_kb = (float(i) for i in last_line)
 
         if stdout_path is not None:
-            stdout.flush()
-            stdout.close()
+            if zstd_proc is not None:
+                zstd_proc.wait()
+                stdout_file.close()
+                if zstd_proc.returncode != 0:
+                    raise RuntimeError(
+                        f"zstd compression failed with return code {zstd_proc.returncode}"
+                    )
+            else:
+                stdout.flush()
+                stdout.close()
 
             # We may want to not return the stdout if it's too big.
             if stdout_to_str:
-                stdout_str = stdout_path.read_text()
+                if compress_stdout:
+                    decomp = subprocess.run(
+                        ["zstdcat", str(stdout_path)],
+                        capture_output=True,
+                        text=True,
+                    )
+                    stdout_str = decomp.stdout
+                else:
+                    stdout_str = stdout_path.read_text()
 
         return CmdResult(
             stdout=stdout_str,
@@ -123,6 +156,7 @@ def run_cmd(
     stdin_inp: str | bytes | None = None,
     stdout_to_str: bool = True,
     stdout_path: Path | None = None,
+    compress_stdout: bool = False,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
     limits: CmdLimits | None = None,
@@ -133,6 +167,7 @@ def run_cmd(
         stdin_inp=stdin_inp,
         stdout_to_str=stdout_to_str,
         stdout_path=stdout_path,
+        compress_stdout=compress_stdout,
         cwd=cwd,
         extra_env=extra_env,
         limits=limits,
