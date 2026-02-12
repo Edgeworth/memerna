@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 import os
+import signal
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -175,6 +176,10 @@ def run_cmd(
         limits=limits,
     )
     if res.ret_code != 0:
+        # If killed by SIGINT/SIGTERM (e.g. Ctrl-C), propagate as KeyboardInterrupt
+        # so callers don't treat it as a failure.
+        if res.ret_code < 0 and -res.ret_code in (signal.SIGINT, signal.SIGTERM):
+            raise KeyboardInterrupt()
         click.echo(f"Running `{cmd}' failed with ret code {res.ret_code}.")
         click.echo(f"stderr: {res.stderr}")
         raise RuntimeError(f"Shell command failed: {cmd}")

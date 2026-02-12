@@ -1,6 +1,5 @@
 # Copyright 2022 Eliot Courtney.
 import copy
-import signal
 import threading
 from decimal import Decimal
 from pathlib import Path
@@ -22,7 +21,7 @@ class SuboptPerfRunner:
     num_tries: int
     memevault: MemeVault
     output_dir: Path
-    rna_length: int | None
+    rna_lengths: tuple[int, ...]
     jobs: int
     rnas: list[Rna]
     programs: list[tuple[RnaPackage, EnergyCfg, SuboptCfg]]
@@ -35,7 +34,7 @@ class SuboptPerfRunner:
         num_tries: int,
         memevault: MemeVault,
         output_dir: Path,
-        rna_length: int | None,
+        rna_lengths: tuple[int, ...],
         jobs: int,
         memerna: MemeRna,
         rnastructure: RNAstructure,
@@ -44,11 +43,13 @@ class SuboptPerfRunner:
         self.num_tries = num_tries
         self.memevault = memevault
         self.output_dir = output_dir
-        self.rna_length = rna_length
+        self.rna_lengths = rna_lengths
         self.jobs = jobs
         self._file_lock = threading.Lock()
         # Pre-materialize RNAs since sqlite3 connections aren't thread-safe.
-        self.rnas = [rna for rna in memevault if rna_length is None or len(rna) == rna_length]
+        self.rnas = [
+            rna for rna in memevault if not rna_lengths or len(rna) in rna_lengths
+        ]
         # Load existing results once to avoid re-reading the file per run.
         output_path = self.output_dir / "subopt.json"
         if output_path.exists() and output_path.stat().st_size > 0:
@@ -156,8 +157,9 @@ class SuboptPerfRunner:
         ]
 
     @staticmethod
-    def _deltas() -> list[Decimal]:
-        return [Decimal(i) / 10 for i in range(61)]
+    def _deltas(rna_length: int) -> list[Decimal]:
+        max_delta = 61 if rna_length < 500 else 31
+        return [Decimal(i) / 10 for i in range(max_delta)]
 
     @staticmethod
     def _num_strucs() -> list[int]:
@@ -205,13 +207,6 @@ class SuboptPerfRunner:
             data_values: dict = {}
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
-                # If the process was killed by SIGINT/SIGTERM (e.g. Ctrl-C), propagate
-                # the interruption instead of marking it as a failed run.
-                if cmd_res.ret_code < 0 and -cmd_res.ret_code in (
-                    signal.SIGINT,
-                    signal.SIGTERM,
-                ):
-                    raise KeyboardInterrupt()
                 failed = cmd_res.ret_code != 0
                 data_values = strict_merge(
                     data_values,
@@ -223,8 +218,6 @@ class SuboptPerfRunner:
                         "real_sec": cmd_res.real_sec,
                     },
                 )
-            except KeyboardInterrupt:
-                raise
             except Exception as e:
                 click.echo(f"Error running {program} on {rna.name}: {e}")
                 failed = True
@@ -257,12 +250,6 @@ class SuboptPerfRunner:
     def run(self) -> None:
         jobs: list[tuple[RnaPackage, EnergyCfg, list[SuboptCfg], int, Rna]] = []
         for program, energy_cfg, base_cfg in self.programs:
-            delta_cfgs = []
-            for delta in self._deltas():
-                cfg = copy.deepcopy(base_cfg)
-                cfg.delta = delta
-                delta_cfgs.append(cfg)
-
             strucs_cfgs = []
             for num_strucs in self._num_strucs():
                 cfg = copy.deepcopy(base_cfg)
@@ -270,6 +257,12 @@ class SuboptPerfRunner:
                 strucs_cfgs.append(cfg)
 
             for rna_idx, rna in enumerate(self.rnas):
+                delta_cfgs = []
+                for delta in self._deltas(len(rna)):
+                    cfg = copy.deepcopy(base_cfg)
+                    cfg.delta = delta
+                    delta_cfgs.append(cfg)
+
                 jobs.append((program, energy_cfg, delta_cfgs, rna_idx, rna))
                 jobs.append((program, energy_cfg, strucs_cfgs, rna_idx, rna))
 
