@@ -43,7 +43,7 @@ class Ctx {
   [[nodiscard]] FoldResult Fold(const Primary& r, const trace::TraceCfg& cfg) const;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(
       const Primary& r, subopt::SuboptCfg cfg) const;
-  [[nodiscard]] int Subopt(
+  [[nodiscard]] int64_t Subopt(
       const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const;
   [[nodiscard]] pfn::PfnResult Pfn(const Primary& r) const;
 

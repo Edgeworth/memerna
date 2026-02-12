@@ -30,7 +30,7 @@ class RNAstructure : public RnaPackage {
   erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const override;
   [[nodiscard]] FoldResult Fold(const Primary& r) const override;
-  [[nodiscard]] int Subopt(
+  [[nodiscard]] int64_t Subopt(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const override;
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(
       const Primary& r, Energy delta) const override;

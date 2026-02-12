@@ -24,7 +24,7 @@ erg::EnergyResult Memerna::Efn(const Primary& r, const Secondary& s, std::string
 
 FoldResult Memerna::Fold(const Primary& r) const { return ctx_.Fold(r, {}); }
 
-int Memerna::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+int64_t Memerna::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
   return ctx_.Subopt(r, fn, {.delta = delta, .sorted = true});
 }
 

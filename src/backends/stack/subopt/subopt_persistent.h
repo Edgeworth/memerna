@@ -29,7 +29,7 @@ class SuboptPersistent {
  public:
   SuboptPersistent(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
 
-  int Run(const SuboptCallback& fn);
+  int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {

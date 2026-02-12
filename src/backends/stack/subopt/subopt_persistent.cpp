@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -42,7 +43,7 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
       cache_(r_, MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
 
@@ -64,7 +65,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
   pq_.emplace(0, 0);
 
-  int num_strucs = 0;
+  int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
@@ -129,6 +130,8 @@ std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
       ns.to_expand = unexpanded_exp.idx1;
     }
 
+    verify(q_.size() < static_cast<size_t>(std::numeric_limits<int>::max()),
+        "persistent subopt node vector exceeded int32 capacity");
     pq_.emplace(neg_delta, static_cast<int>(q_.size()));
     q_.push_back(ns);
   }

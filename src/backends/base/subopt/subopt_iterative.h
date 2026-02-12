@@ -27,7 +27,7 @@ class SuboptIterative {
  public:
   SuboptIterative(Primary r, Model::Ptr m, DpState dp, SuboptCfg cfg);
 
-  int Run(const SuboptCallback& fn);
+  int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {
@@ -54,8 +54,8 @@ class SuboptIterative {
   // Incremental state - holds unexpanded Indexes for the current partial structure.
   std::vector<DpIndex> unexpanded_;
 
-  std::pair<int, Energy> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+  std::pair<int64_t, Energy> RunInternal(
+      const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the

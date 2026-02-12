@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -32,7 +33,7 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
       cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   static thread_local const erg::EnergyCfgSupport support{
       .lonely_pairs{erg::EnergyCfg::LonelyPairs::HEURISTIC, erg::EnergyCfg::LonelyPairs::ON},
       .bulge_states{false, true},
@@ -51,7 +52,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
   pq_.emplace(0, 0);
 
-  int num_strucs = 0;
+  int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
@@ -132,6 +133,8 @@ std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
     // functions as a depth counter. If we stored a depth value, the only advantage we would get is
     // starting from a lower internal node when we 'switch' to a new place in the tree to generate a
     // new structure, but the extra memory usage is not worth it.
+    verify(q_.size() < static_cast<size_t>(std::numeric_limits<int>::max()),
+        "persistent subopt node vector exceeded int32 capacity");
     pq_.emplace(neg_delta, static_cast<int>(q_.size()));
     // This is the only modification to `q_`, so access to `s` is valid until here.
     q_.push_back(ns);

@@ -2,6 +2,7 @@
 #ifndef API_SUBOPT_SUBOPT_CFG_H_
 #define API_SUBOPT_SUBOPT_CFG_H_
 
+#include <cstdint>
 #include <limits>
 
 #include "model/energy.h"
@@ -25,10 +26,10 @@ inline const auto OPT_SUBOPT_SORTED = Opt(Opt::FLAG)
 void RegisterOpts(ArgParse* args);
 
 struct SuboptCfg {
-  constexpr static const int MAX_STRUCTURES = std::numeric_limits<int>::max();
+  constexpr static const int64_t MAX_STRUCTURES = std::numeric_limits<int64_t>::max();
 
   Energy delta = CAP_E;  // maximum energy delta from minimum
-  int strucs = MAX_STRUCTURES;  // maximum number of structures to report
+  int64_t strucs = MAX_STRUCTURES;  // maximum number of structures to report
   float time_secs = -1.0;  // maximum time in seconds to run suboptimal folding for
   bool sorted = true;  // if the structures should be sorted
 

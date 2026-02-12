@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
       if (subopt) {
         auto delta = args.Get<mrna::Energy>(mrna::subopt::OPT_SUBOPT_DELTA);
-        int strucs = package->Subopt(
+        int64_t strucs = package->Subopt(
             [](const mrna::subopt::SuboptResult& c) {
               fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
             },

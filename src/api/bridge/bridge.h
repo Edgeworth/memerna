@@ -39,7 +39,7 @@ class RnaPackage {
   virtual erg::EnergyResult Efn(
       const Primary& r, const Secondary& s, std::string* desc = nullptr) const = 0;
   [[nodiscard]] virtual FoldResult Fold(const Primary& r) const = 0;
-  [[nodiscard]] virtual int Subopt(
+  [[nodiscard]] virtual int64_t Subopt(
       subopt::SuboptCallback fn, const Primary& r, Energy delta) const = 0;
   [[nodiscard]] virtual std::vector<subopt::SuboptResult> SuboptIntoVector(
       const Primary& r, Energy delta) const = 0;

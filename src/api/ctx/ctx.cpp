@@ -161,18 +161,18 @@ FoldResult Ctx::Fold(const Primary& r, const trace::TraceCfg& cfg) const {
 std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(
     const Primary& r, subopt::SuboptCfg cfg) const {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] const int strucs =
+  [[maybe_unused]] const int64_t strucs =
       Subopt(r, [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); }, cfg);
-  assert(strucs == static_cast<int>(subopts.size()));
+  assert(strucs == static_cast<int64_t>(subopts.size()));
   return subopts;
 }
 
-int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
+int64_t Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::SuboptCfg cfg) const {
   if (cfg_.subopt_alg == CtxCfg::SuboptAlg::BRUTE) {
     // TODO(3): handle cases other than max structures.
     auto subopts = md::brute::SuboptBrute(r, m_, cfg);
     for (const auto& subopt : subopts) fn(subopt);
-    return static_cast<int>(subopts.size());
+    return static_cast<int64_t>(subopts.size());
   }
 
   mfe::DpState dp = CreateDpState(m_);
@@ -180,7 +180,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
   ComputeMfeExterior(r, dp);
 
   auto vis = overloaded{
-      [&](const md::base::Model::Ptr& m) mutable -> int {
+      [&](const md::base::Model::Ptr& m) mutable -> int64_t {
         auto state = std::get<md::base::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::DEBUG:
@@ -197,7 +197,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
       },
-      [&](const md::base::opt::Model::Ptr& m) mutable -> int {
+      [&](const md::base::opt::Model::Ptr& m) mutable -> int64_t {
         auto state = std::get<md::base::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::DEBUG:
@@ -217,7 +217,7 @@ int Ctx::Subopt(const Primary& r, const subopt::SuboptCallback& fn, subopt::Subo
         default: fatal("unsupported subopt algorithm for energy model: {}", cfg_.subopt_alg);
         }
       },
-      [&](const md::stack::Model::Ptr& m) mutable -> int {
+      [&](const md::stack::Model::Ptr& m) mutable -> int64_t {
         auto state = std::get<md::stack::DpState>(std::move(dp));
         switch (cfg_.subopt_alg) {
         case CtxCfg::SuboptAlg::AUTO:

@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   auto cfg = mrna::brute::BruteCfg::FromArgParse(args);
   if (cfg.mfe) {
     cfg.subopt = true;
-    cfg.subopt_cfg.strucs = std::max(cfg.subopt_cfg.strucs, 1);
+    cfg.subopt_cfg.strucs = std::max(cfg.subopt_cfg.strucs, int64_t{1});
     cfg.subopt_cfg.sorted = true;
   }
 

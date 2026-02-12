@@ -44,9 +44,10 @@ inline std::tuple<Energy, std::string> GetMfe(
 
 inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
     CtxCfg::SuboptAlg alg, const Primary& r, const std::vector<Energy>& energies) {
-  const int n = static_cast<int>(energies.size());
-  auto res = Ctx(m, CtxCfg{.subopt_alg = alg}).SuboptIntoVector(r, subopt::SuboptCfg{.strucs = n});
-  for (int i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
+  const auto n = energies.size();
+  auto res = Ctx(m, CtxCfg{.subopt_alg = alg})
+                 .SuboptIntoVector(r, subopt::SuboptCfg{.strucs = static_cast<int64_t>(n)});
+  for (size_t i = 0; i < n; ++i) EXPECT_EQ(res[i].energy, energies[i]);
   // for (int i = 0; i < n; ++i) fmt::print("E({}),\n", res[i].energy);
   return res;
 }

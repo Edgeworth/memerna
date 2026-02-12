@@ -45,6 +45,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Subopt(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
+  int64_t strucs = ctx.Subopt(mrna::Primary::FromSeq(args.Pos(0)), fn, cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

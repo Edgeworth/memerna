@@ -123,10 +123,10 @@ FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) 
       .tb = trace::TraceResult(StructureToSecondary(*structure), Ctds())};
 }
 
-int RNAstructure::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
+int64_t RNAstructure::Subopt(subopt::SuboptCallback fn, const Primary& r, Energy delta) const {
   auto res = SuboptIntoVector(r, delta);
   for (const auto& subopt : res) fn(subopt);
-  return static_cast<int>(res.size());
+  return static_cast<int64_t>(res.size());
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(

@@ -306,11 +306,11 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg cfg,
     errors.push_back(
         fmt::format("first has {} structures != second has {} structures", a.size(), b.size()));
   } else {
-    for (int i = 0; i < static_cast<int>(a.size()); ++i) {
+    for (int64_t i = 0; i < static_cast<int64_t>(a.size()); ++i) {
       // If we were limited by number of structures and we are on the last energy value,
       // different algorithms may not have put the same subset of structures with
       // that energy value into their result, so break.
-      if (cfg.strucs == static_cast<int>(a.size()) && a[i].energy == a.back().energy) break;
+      if (cfg.strucs == static_cast<int64_t>(a.size()) && a[i].energy == a.back().energy) break;
       if (a[i].energy != b[i].energy)
         errors.push_back(
             fmt::format("structure {}: first {} != second {}", i, a[i].energy, b[i].energy));
