@@ -37,8 +37,8 @@ Please cite the following for sparse folding including coaxial stacking:
 
 ## Building
 
-memerna was tested to build and run in Ubuntu 2022.04 LTS with up to date
-packages. The following instructions assume you are using Ubuntu 2022.04 LTS.
+memerna was tested to build and run in Ubuntu 22.04 LTS with up to date
+packages. The following instructions assume you are using Ubuntu 22.04 LTS.
 However, memerna is mainly developed on Arch Linux, and is likely to work on any
 modern Linux distribution provided the toolchain is new enough.
 
@@ -50,7 +50,7 @@ Install the following packages:
 sudo apt install build-essential cmake git libboost-dev libmpfr-dev
 ```
 
-On Ubuntu 2022.04 LTS, the following packages are also required since the
+On Ubuntu 22.04 LTS, the following packages are also required since the
 toolchain version is too old (note that this is a PPA, so use at your own risk):
 
 ```sh
@@ -74,7 +74,7 @@ git submodule update --init --recursive
 ### Compiling
 
 memerna can be compiled directly with cmake. The following commands will build
-it for Ubuntu 2022.04 LTS:
+it for Ubuntu 22.04 LTS:
 
 ```sh
 CC=gcc-12 CXX=g++-12 cmake -B build -D CMAKE_BUILD_TYPE=Release .
@@ -97,11 +97,11 @@ configurations.
 
 | Compiler | Version | Supported |
 | -------- | ------- | --------- |
-| GCC      | <= 11   | ❌        |
-| GCC      | 12      | ✅        |
-| GCC      | 13      | ✅        |
-| Clang    | <= 15   | ❌        |
-| Clang    | 16      | ✅        |
+| GCC      | <= 11   | ❌         |
+| GCC      | 12      | ✅         |
+| GCC      | 13      | ✅         |
+| Clang    | <= 15   | ❌         |
+| Clang    | 16      | ✅         |
 
 Note that clang 14 and 15 will work with a sufficiently modern standard C++
 library (but not gcc 11's, or libc++ 14 or 15's).
@@ -163,19 +163,21 @@ There are several algorithms for suboptimal folding, which can be specified like
 ./subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
 ```
 
-Some of the algorithms are listed here (where k is the number of structures produced). The example
+Some of the algorithms are listed here (where K is the number of structures produced). The example
 runtime is based on a 100 nt sequence and 1000000 structures.
 
-| Algorithm  | Expected time | Expected memory | Example runtime |
-| ---------- | ------------- | --------------- | --------------- |
-| iterative  | O(N^2 + k)    | O(N^3)          | 12.78 seconds   |
-| persistent | O(N^2 + kN)   | O(N^3 + k)      | 2.71 seconds    |
+| Algorithm         | Expected time           | Expected memory | Example runtime |
+| ----------------- | ----------------------- | --------------- | --------------- |
+| iterative         | O(N^3 + KN)             | O(N^3)          | 12.78 seconds   |
+| persistent        | O(N^3 + KN + K log K)   | O(N^3 + K)      | 2.71 seconds    |
+| iterative-lowmem  | O(N^3 + KN^2)           | O(N^2)          |                 |
+| persistent-lowmem | O(N^3 + KN^2 + K log K) | O(N^2 + K)      |                 |
 
-The iterative algorithm will be faster and use less memory for longer sequences. It's theoretically
-possible to implement it using O(N^2) memory trading off for worse time performance, but this is not
-currently implemented.
+The iterative algorithm will be faster and use less memory for longer sequences. The lowmem variants
+use an LRU cache to reduce memory from O(N^3) to O(N^2), at the cost of increased time per structure
+from O(N) to O(N^2) due to cache misses.
 
-### Pfn function
+### Partition function
 
 memerna supports computing the partition function. For example:
 
@@ -234,7 +236,7 @@ Fuzzing for t22:
 
 ```bash
 ./fuzz --mfe --mfe-table --subopt --pfn --random-models --random-pf \
-  --energy-model t22 --backends stack  1 200
+  --energy-model t22 --backends stack 1 200
 ```
 
 ### Fuzzing in parallel
@@ -286,7 +288,7 @@ Fuzz memerna only, with faster settings:
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --num-procs 16 --mfe --mfe-table --subopt --subopt-strucs 100 \
- --subopt-delta 0.2 --seed 123 --max-len 200 --backends base,baseopt  \
+ --subopt-delta 0.2 --seed 123 --max-len 200 --backends base,baseopt
 ```
 
 Checking progress:
