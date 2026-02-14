@@ -60,7 +60,7 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
       subopt_cfg_(subopt_cfg), cache_(r_, MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
 
@@ -79,7 +79,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
   pq_.emplace(0, 0);
 
-  int num_strucs = 0;
+  int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
@@ -103,7 +103,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
 }
 
 template <bool UseLru>
-std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
+std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();
@@ -151,7 +151,7 @@ std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
 }
 
 template <bool UseLru>
-void SuboptPersistent<UseLru>::GenerateResult(int idx) {
+void SuboptPersistent<UseLru>::GenerateResult(int64_t idx) {
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 

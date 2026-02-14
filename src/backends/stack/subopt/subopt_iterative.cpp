@@ -53,7 +53,7 @@ SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, er
       subopt_cfg_(subopt_cfg), cache_(r_, MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
 
@@ -65,7 +65,7 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
 
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
       subopt_cfg_.time_secs >= 0.0) {
-    int count = 0;
+    int64_t count = 0;
     Energy delta = ZERO_E;
     auto start_time = std::chrono::steady_clock::now();
     while (count < subopt_cfg_.strucs && delta != MAX_E && delta <= subopt_cfg_.delta) {
@@ -84,9 +84,9 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
 }
 
 template <bool UseLru>
-std::pair<int, Energy> SuboptIterative<UseLru>::RunInternal(
-    const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
-  int count = 0;
+std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
+    const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max) {
+  int64_t count = 0;
   Energy next_seen = MAX_E;
   Energy energy = ZERO_E;
   Energy mfe = dp_.base.ext[0][EXT];

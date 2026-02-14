@@ -42,7 +42,7 @@ SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg
     : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), dp_(std::move(dp)),
       subopt_cfg_(subopt_cfg) {}
 
-int SuboptDebug::Run(const SuboptCallback& fn) {
+int64_t SuboptDebug::Run(const SuboptCallback& fn) {
   const int N = static_cast<int>(r_.size());
   verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
 
@@ -77,7 +77,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
 
     // If we found a non-finished node, but `finished` is full, and the worst in `finished` is
     // as good as our current node (which is the best in `q`), then we can exit.
-    if (static_cast<int>(finished_.size()) >= subopt_cfg_.strucs &&
+    if (static_cast<int64_t>(finished_.size()) >= subopt_cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;
 
@@ -384,7 +384,7 @@ int SuboptDebug::Run(const SuboptCallback& fn) {
     assert(struc.not_yet_expanded.empty());
     fn(struc.res);
   }
-  return static_cast<int>(finished_.size());
+  return static_cast<int64_t>(finished_.size());
 }
 
 }  // namespace mrna::md::base::opt

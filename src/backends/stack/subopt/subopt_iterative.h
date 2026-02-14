@@ -34,7 +34,7 @@ class SuboptIterative {
   SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 
-  int Run(const SuboptCallback& fn);
+  int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {
@@ -58,8 +58,8 @@ class SuboptIterative {
   std::vector<Node> q_;
   std::vector<DpIndex> unexpanded_;
 
-  std::pair<int, Energy> RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int max);
+  std::pair<int64_t, Energy> RunInternal(
+      const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     auto key = LinearIndex(to_expand, r_.size());

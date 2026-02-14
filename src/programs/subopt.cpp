@@ -50,6 +50,6 @@ int main(int argc, char* argv[]) {
       };
     }
   }
-  int strucs = ctx.Subopt(r, mfe_alg, subopt_alg, energy_cfg, pf, fn, subopt_cfg);
+  int64_t strucs = ctx.Subopt(r, mfe_alg, subopt_alg, energy_cfg, pf, fn, subopt_cfg);
   fmt::print("{} suboptimal structures\n", strucs);
 }

@@ -46,12 +46,14 @@ class RnaPackage:
         stdout_to_str: bool,
         stdin_inp: str | None = None,
         stdout_path: Path | None = None,
+        compress_stdout: bool = False,
     ) -> CmdResult:
         return run_cmd(
             *cmd,
             stdin_inp=stdin_inp,
             stdout_to_str=stdout_to_str,
             stdout_path=stdout_path,
+            compress_stdout=compress_stdout,
             limits=self.limits,
             cwd=self.path,
             extra_env=self.env,

@@ -36,7 +36,7 @@ class SuboptPersistent {
   SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 
-  int Run(const SuboptCallback& fn);
+  int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {
@@ -67,10 +67,10 @@ class SuboptPersistent {
   std::vector<Node> q_;
   std::priority_queue<std::pair<Energy, int>> pq_;
 
-  std::pair<Energy, int> RunInternal();
+  std::pair<Energy, int64_t> RunInternal();
 
   // Computes the suboptimal folding for the given subpath and puts it into `res_`.
-  void GenerateResult(int idx);
+  void GenerateResult(int64_t idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     auto key = LinearIndex(to_expand, r_.size());

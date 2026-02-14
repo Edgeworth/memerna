@@ -224,13 +224,13 @@ void Brute::AddAllCombinations(int idx) {
 }
 
 void Brute::PruneInsertSubopt(Energy e) {
-  const bool has_room = static_cast<int>(res_.subopts.size()) < brute_cfg_.subopt_cfg.strucs;
+  const bool has_room = static_cast<int64_t>(res_.subopts.size()) < brute_cfg_.subopt_cfg.strucs;
   const bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
   if (has_room || is_better)
     res_.subopts.insert(subopt::SuboptResult(e, trace::TraceResult(Secondary(s_), Ctds(ctd_))));
 
   // Prune values that exceed the number of structures:
-  if (static_cast<int>(res_.subopts.size()) > brute_cfg_.subopt_cfg.strucs)
+  if (static_cast<int64_t>(res_.subopts.size()) > brute_cfg_.subopt_cfg.strucs)
     res_.subopts.erase(--res_.subopts.end());
 
   // Prune values that exceed the delta:

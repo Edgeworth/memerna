@@ -59,7 +59,7 @@ class FoldAccuracyRunner:
 
     @staticmethod
     def _extract_family(name: str) -> str:
-        return name.split("_")[0]
+        return name.split("_", maxsplit=1)[0]
 
     def _run_once(self, program: RnaPackage, cfg: EnergyCfg, rna: Rna) -> None:
         desc = program.desc(energy_cfg=cfg, subopt_cfg=None)

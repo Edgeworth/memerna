@@ -81,7 +81,7 @@ class Ctx {
       std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const;
 
-  [[nodiscard]] int Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
+  [[nodiscard]] int64_t Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
       std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const;
 

@@ -46,7 +46,7 @@ SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, 
       cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   std::string reason;
   verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
       "{} does not support the given configuration: {}", funcname(), reason);
@@ -63,7 +63,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
   pq_.emplace(0, 0);
 
-  int num_strucs = 0;
+  int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
 
   while (!pq_.empty()) {
@@ -89,7 +89,7 @@ int SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
 }
 
 template <bool UseLru>
-std::pair<Energy, int> SuboptPersistent<UseLru>::RunInternal() {
+std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();

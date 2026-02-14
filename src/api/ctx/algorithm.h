@@ -58,8 +58,8 @@ using MfeExteriorFn = std::function<Energy(const BackendModelPtr&, const Primary
 using TraceFn = std::function<trace::TraceResult(const BackendModelPtr&, const Primary&,
     const mfe::DpState&, erg::EnergyCfg, const erg::PseudofreeCfg&, const trace::TraceCfg&)>;
 
-using SuboptFn = std::function<int(const BackendModelPtr&, Primary, mfe::DpState, erg::EnergyCfg,
-    const erg::PseudofreeCfg&, const subopt::SuboptCallback&, subopt::SuboptCfg)>;
+using SuboptFn = std::function<int64_t(const BackendModelPtr&, Primary, mfe::DpState,
+    erg::EnergyCfg, const erg::PseudofreeCfg&, const subopt::SuboptCallback&, subopt::SuboptCfg)>;
 
 using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pfn::PfnState&,
     erg::EnergyCfg, const erg::PseudofreeCfg&)>;

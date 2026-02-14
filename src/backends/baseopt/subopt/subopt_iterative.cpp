@@ -45,7 +45,7 @@ SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, er
       dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
 template <bool UseLru>
-int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
+int64_t SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());  // Reasonable reservation.
 
@@ -58,7 +58,7 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   // If require sorted output, or limited number of structures (requires sorting).
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
       subopt_cfg_.time_secs >= 0.0) {
-    int count = 0;
+    int64_t count = 0;
     Energy delta = ZERO_E;
     auto start_time = std::chrono::steady_clock::now();
     while (count < subopt_cfg_.strucs && delta != MAX_E && delta <= subopt_cfg_.delta) {
@@ -77,8 +77,8 @@ int SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
 }
 
 template <bool UseLru>
-std::pair<int, Energy> SuboptIterative<UseLru>::RunInternal(
-    const SuboptCallback& fn, Energy delta, bool exact_energy, int max) {
+std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
+    const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max) {
   // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
   // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
   // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
@@ -86,7 +86,7 @@ std::pair<int, Energy> SuboptIterative<UseLru>::RunInternal(
   // the CTDs or energy of the current state - that is rolled into the modification when that
   // unexpanded is originally generated.
 
-  int count = 0;
+  int64_t count = 0;
   // Store the smallest energy above delta we see. If we reach our `structure_limit` before
   // finishing, we might not see the smallest one, but it's okay since we won't be called again.
   // Otherwise, we will completely finish, and definitely see it.

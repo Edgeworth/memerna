@@ -104,7 +104,7 @@ class RnaParser:
         if rna.s is None:
             raise ValueError(f"RNA {rna.name} has no secondary structure")
 
-        name = rna.name if rna.name else "unnamed"
+        name = rna.name or "unnamed"
         ct = [f"{len(rna.r)}\t{name}"]
 
         for i, v in enumerate(rna.r):

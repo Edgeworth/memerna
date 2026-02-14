@@ -184,14 +184,14 @@ std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r,
     std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] const int strucs = Subopt(
+  [[maybe_unused]] const int64_t strucs = Subopt(
       r, mfe_alg, alg, cfg, pf,
       [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); }, subopt_cfg);
-  assert(strucs == static_cast<int>(subopts.size()));
+  assert(strucs == static_cast<int64_t>(subopts.size()));
   return subopts;
 }
 
-int Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg,
+int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
     subopt::SuboptCfg subopt_cfg) const {
   auto backend = BackendForSubopt(alg, mfe_alg, cfg, pf, subopt_cfg);
@@ -199,7 +199,7 @@ int Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<S
   if (backend.alg == SuboptAlg::BRUTE) {
     auto subopts = md::brute::SuboptBrute(r, backend.m, cfg_, cfg, pf, subopt_cfg);
     for (const auto& subopt : subopts) fn(subopt);
-    return static_cast<int>(subopts.size());
+    return static_cast<int64_t>(subopts.size());
   }
 
   mfe::DpState dp = CreateDpState(backend.m);

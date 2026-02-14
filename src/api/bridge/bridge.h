@@ -49,7 +49,7 @@ class RnaPackage {
   [[nodiscard]] virtual FoldResult Fold(const Primary& r, std::optional<MfeAlg> alg,
       erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const = 0;
 
-  [[nodiscard]] virtual int Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
+  [[nodiscard]] virtual int64_t Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
       std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const = 0;
 

@@ -103,7 +103,7 @@ struct FuzzCfg {
   // Subopt folding configuration.
   bool subopt = false;
   bool subopt_rnastructure = false;
-  int subopt_strucs = 10000;
+  int64_t subopt_strucs = 10000;
   Energy subopt_delta = E(0.6);
 
   // Partition function configuration.

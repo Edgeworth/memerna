@@ -1,6 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 import os
-import resource
+import signal
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -37,6 +37,7 @@ def try_cmd(
     stdin_inp: str | bytes | None = None,
     stdout_to_str: bool = True,
     stdout_path: Path | None = None,
+    compress_stdout: bool = False,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
     limits: CmdLimits | None = None,
@@ -45,24 +46,43 @@ def try_cmd(
     if isinstance(stdin_inp, str):
         stdin_inp = stdin_inp.encode("utf-8")
 
-    # Uses GNU time.
-    cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd)
+    cmd_list: list[str] = list(cmd)
+    if limits.cpu_affinity is not None:
+        cmd_list = [
+            "taskset",
+            "-c",
+            ",".join(str(c) for c in sorted(limits.cpu_affinity)),
+            *cmd_list,
+        ]
+    prlimit_args: list[str] = []
+    if limits.time_sec is not None:
+        prlimit_args.append(f"--cpu={limits.time_sec}")
+    if limits.mem_bytes is not None:
+        prlimit_args.append(f"--as={limits.mem_bytes}")
+    if prlimit_args:
+        cmd_list = ["prlimit", *prlimit_args, "--", *cmd_list]
 
-    def preexec_fn() -> None:
-        if limits.mem_bytes is not None:
-            resource.setrlimit(resource.RLIMIT_AS, (limits.mem_bytes, limits.mem_bytes))
-        if limits.time_sec is not None:
-            resource.setrlimit(resource.RLIMIT_CPU, (limits.time_sec, limits.time_sec))
-        if limits.cpu_affinity is not None:
-            os.sched_setaffinity(0, limits.cpu_affinity)
+    # Uses GNU time.
+    cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd_list)
 
     env = os.environ.copy()
     if extra_env is not None:
         env.update(extra_env)
 
     stdout: Any
+    zstd_proc: subprocess.Popen[bytes] | None = None
+    stdout_file: Any = None
     if stdout_path is not None:
-        stdout = stdout_path.open("wb")
+        if compress_stdout:
+            stdout_file = stdout_path.open("wb")
+            zstd_proc = subprocess.Popen(
+                ["zstd", "--fast", "-q"],  # noqa: S607
+                stdin=subprocess.PIPE,
+                stdout=stdout_file,
+            )
+            stdout = zstd_proc.stdin
+        else:
+            stdout = stdout_path.open("wb")
     else:
         stdout = subprocess.PIPE if stdout_to_str else subprocess.DEVNULL
     stdin = subprocess.PIPE if stdin_inp is not None else None
@@ -73,18 +93,16 @@ def try_cmd(
         cmd_str = cmd_str[: CMD_STR_LIM // 2] + "..." + cmd_str[-CMD_STR_LIM // 2 :]
     print(
         f"try_cmd: {cmd_str}, cwd: {cwd}, extra_env: {extra_env}, "
-        f"stdout_to_str: {stdout_to_str}, stdout_path: {stdout_path}, limits: {limits}"
+        f"stdout_to_str: {stdout_to_str}, stdout_path: {stdout_path}, "
+        f"compress_stdout: {compress_stdout}, limits: {limits}"
     )
     with subprocess.Popen(
-        cmd,
-        shell=False,
-        stdin=stdin,
-        stdout=stdout,
-        stderr=subprocess.PIPE,
-        cwd=cwd,
-        env=env,
-        preexec_fn=preexec_fn,  # noqa: PLW1509
+        cmd, shell=False, stdin=stdin, stdout=stdout, stderr=subprocess.PIPE, cwd=cwd, env=env
     ) as proc:
+        # Close parent's copy of zstd's stdin so zstd sees EOF when main proc exits.
+        if zstd_proc is not None and zstd_proc.stdin is not None:
+            zstd_proc.stdin.close()
+
         stdout_bytes, stderr_bytes = proc.communicate(input=stdin_inp)
         ret_code = proc.wait()
         stdout_str = stdout_bytes.decode("utf-8") if stdout_bytes else ""
@@ -94,13 +112,31 @@ def try_cmd(
         real_sec, user_sec, sys_sec, maxrss_kb = (float(i) for i in last_line)
 
         if stdout_path is not None:
-            if not isinstance(stdout, int):
+            if zstd_proc is not None:
+                zstd_proc.wait()
+                stdout_file.close()
+                if zstd_proc.returncode != 0:
+                    raise RuntimeError(
+                        f"zstd compression failed with return code {zstd_proc.returncode}"
+                    )
+            else:
                 stdout.flush()
                 stdout.close()
 
             # We may want to not return the stdout if it's too big.
             if stdout_to_str:
-                stdout_str = stdout_path.read_text()
+                if compress_stdout:
+                    decomp = subprocess.run(
+                        ["zstd", "-dc", str(stdout_path)],  # noqa: S607
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    if decomp.returncode != 0:
+                        raise RuntimeError(f"zstd -dc failed: {decomp.stderr}")
+                    stdout_str = decomp.stdout
+                else:
+                    stdout_str = stdout_path.read_text()
 
         return CmdResult(
             stdout=stdout_str,
@@ -118,6 +154,7 @@ def run_cmd(
     stdin_inp: str | bytes | None = None,
     stdout_to_str: bool = True,
     stdout_path: Path | None = None,
+    compress_stdout: bool = False,
     cwd: Path | None = None,
     extra_env: dict[str, str] | None = None,
     limits: CmdLimits | None = None,
@@ -128,11 +165,16 @@ def run_cmd(
         stdin_inp=stdin_inp,
         stdout_to_str=stdout_to_str,
         stdout_path=stdout_path,
+        compress_stdout=compress_stdout,
         cwd=cwd,
         extra_env=extra_env,
         limits=limits,
     )
     if res.ret_code != 0:
+        # If killed by SIGINT/SIGTERM (e.g. Ctrl-C), propagate as KeyboardInterrupt
+        # so callers don't treat it as a failure.
+        if res.ret_code < 0 and -res.ret_code in (signal.SIGINT, signal.SIGTERM):
+            raise KeyboardInterrupt
         click.echo(f"Running `{cmd}' failed with ret code {res.ret_code}.")
         click.echo(f"stderr: {res.stderr}")
         raise RuntimeError(f"Shell command failed: {cmd}")

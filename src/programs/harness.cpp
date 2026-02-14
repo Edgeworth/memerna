@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
       pf_cfg.Verify(r);
 
       if (subopt) {
-        int strucs = package->Subopt(
+        int64_t strucs = package->Subopt(
             r, mfe_alg, subopt_alg, energy_cfg, pf_cfg,
             [](const mrna::subopt::SuboptResult& c) {
               fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());

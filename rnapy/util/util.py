@@ -4,7 +4,10 @@ import enum
 import hashlib
 import inspect
 import json
+import subprocess
 import tempfile
+from collections.abc import Callable
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any
@@ -12,8 +15,6 @@ from typing import IO, Any
 import click
 import cloup
 import polars as pl
-
-from rnapy.util.command import run_cmd
 
 
 def strict_merge(*dicts: dict) -> dict:
@@ -35,7 +36,10 @@ def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
     for key, value in data_keys.items():
         if key not in ndjson.columns:
             return None
-        ndjson = ndjson.filter(pl.col(key) == value)
+        if value is None:
+            ndjson = ndjson.filter(pl.col(key).is_null())
+        else:
+            ndjson = ndjson.filter(pl.col(key) == value)
     if ndjson.is_empty():
         return None
     return ndjson.row(0, named=True)
@@ -73,10 +77,30 @@ def stable_hash(val: Any) -> int:
     return int.from_bytes(val, "big")
 
 
-def fast_linecount(path: Path) -> int:
-    res = run_cmd("wc", "-l", str(path))
-    count = int(res.stdout.strip().split()[0])
-    return count
+def fast_linecount(path: Path, compressed: bool = False) -> int:
+    cat_cmd = ["zstd", "-dc", str(path)] if compressed else ["cat", str(path)]
+    cat_proc = subprocess.Popen(cat_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    wc_cmd = ["wc", "-l"]
+    wc_proc = subprocess.Popen(wc_cmd, stdin=cat_proc.stdout, stdout=subprocess.PIPE)
+    assert cat_proc.stdout is not None
+    cat_proc.stdout.close()
+    wc_output, _ = wc_proc.communicate()
+    _, cat_stderr = cat_proc.communicate()
+    if cat_proc.returncode != 0:
+        raise RuntimeError(f"{cat_cmd[0]} failed: {cat_stderr.decode()}")
+    return int(wc_output.strip())
+
+
+def read_compressed(path: Path) -> str:
+    result = subprocess.run(
+        ["zstd", "-dc", str(path)],  # noqa: S607
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"zstd -dc failed: {result.stderr}")
+    return result.stdout
 
 
 def resolve_path(path: Path | str) -> Path:
@@ -106,3 +130,26 @@ class EnumChoice(cloup.Choice):
 def enum_choice(enum: type[StrEnum]) -> cloup.Choice:
     """Returns a list of choices for a StrEnum."""
     return EnumChoice(list(enum))
+
+
+def parallel_map(fn: Callable[..., Any], jobs: list[tuple[Any, ...]], max_workers: int) -> None:
+    """Run fn(*args) for each args in jobs, using a thread pool if max_workers > 1.
+
+    Handles Ctrl-C cleanly by cancelling pending futures."""
+    if max_workers <= 1:
+        for args in jobs:
+            fn(*args)
+        return
+
+    pool = ThreadPoolExecutor(max_workers=max_workers)
+    futures: list[Future[Any]] = [pool.submit(fn, *args) for args in jobs]
+    try:
+        remaining = set(futures)
+        while remaining:
+            done, remaining = wait(remaining, timeout=1)
+            for f in done:
+                f.result()
+    except BaseException:
+        pool.shutdown(wait=False, cancel_futures=True)
+        raise
+    pool.shutdown()

@@ -9,7 +9,7 @@ from rnapy.model.model_cfg import EnergyCfg, SuboptCfg
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
-from rnapy.util.util import fast_linecount, named_tmpfile
+from rnapy.util.util import fast_linecount, named_tmpfile, read_compressed
 
 
 @dataclass
@@ -80,14 +80,19 @@ class MemeRna(RnaPackage):
         with named_tmpfile("w") as f:
             stdout_path = Path(f.name)
             res = self._run_cmd(
-                "./subopt", *args, rna.r, stdout_to_str=False, stdout_path=stdout_path
+                "./subopt",
+                *args,
+                rna.r,
+                stdout_to_str=False,
+                stdout_path=stdout_path,
+                compress_stdout=True,
             )
             if subopt_cfg.count_only:
-                count = fast_linecount(stdout_path) - 1
+                count = fast_linecount(stdout_path, compressed=True) - 1
                 return count, res
 
             subopts = []
-            for line in stdout_path.read_text().splitlines()[:-1]:
+            for line in read_compressed(stdout_path).splitlines()[:-1]:
                 energy_str, db = line.strip().split()
                 energy = Decimal(energy_str)
                 subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))

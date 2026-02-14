@@ -31,7 +31,7 @@ class SuboptDebug {
   SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 
-  int Run(const SuboptCallback& fn);
+  int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {
@@ -61,10 +61,10 @@ class SuboptDebug {
 
   void PruneInsert(const Node& node, std::multiset<Node>* prune) {
     if (node.res.energy <= dp_.ext[0][EXT] + subopt_cfg_.delta) {
-      if (static_cast<int>(prune->size()) >= subopt_cfg_.strucs &&
+      if (static_cast<int64_t>(prune->size()) >= subopt_cfg_.strucs &&
           (--prune->end())->res.energy > node.res.energy)
         prune->erase(--prune->end());
-      if (static_cast<int>(prune->size()) < subopt_cfg_.strucs) prune->insert(node.copy());
+      if (static_cast<int64_t>(prune->size()) < subopt_cfg_.strucs) prune->insert(node.copy());
     }
   }
 
