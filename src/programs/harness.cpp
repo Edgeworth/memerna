@@ -25,6 +25,7 @@
 #include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "util/float.h"
 
 int main(int argc, char* argv[]) {
   mrna::InitProgram();
@@ -106,7 +107,7 @@ int main(int argc, char* argv[]) {
         fmt::print("{}\n{}\n", res.mfe.energy, res.tb.s.ToDb());
       } else if (pfn) {
         auto res = package->Pfn(r, pfn_alg, energy_cfg, pf_cfg);
-        fmt::print("q: {}\np:\n", res.pfn.q);
+        fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
         PrintPfn(res.pfn.p);
         fmt::print("\nprobabilities:\n");
         PrintBoltzProbs(res.pfn.prob);

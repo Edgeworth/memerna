@@ -55,6 +55,7 @@ if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Sanitizers)
@@ -125,7 +126,6 @@ if(USE_MPFR)
 endif()
 
 # Enable tests.
-set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 enable_testing()
 
 # Apply compile definitions here so they only apply to memerna code.
@@ -368,20 +368,18 @@ target_link_libraries(run_benchmark PRIVATE memerna Threads::Threads benchmark::
 target_link_libraries(run_tests PRIVATE memerna Threads::Threads GTest::gtest)
 target_link_libraries(subopt PRIVATE memerna)
 
-# Use Boost if available
-if(Boost_FOUND)
-  target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
-  target_compile_definitions(memerna PUBLIC USE_BOOST)
-  target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS}) # For Boost stacktrace
+# Use Boost (REQUIRED above, so Boost_FOUND is always true here).
+target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
+target_compile_definitions(memerna PUBLIC USE_BOOST)
+target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS}) # For Boost stacktrace
 
-  if(LIBBACKTRACE)
-    target_link_libraries(memerna PUBLIC ${LIBBACKTRACE})
-  endif()
+if(LIBBACKTRACE)
+  target_link_libraries(memerna PUBLIC ${LIBBACKTRACE})
 endif()
 
 # Use MPFR if necessary
 if(USE_MPFR)
-  target_include_directories(memerna PUBLIC ${MPFR_INCLUDE_DIRS})
+  target_include_directories(memerna PUBLIC ${MPFR_INCLUDES})
   target_compile_definitions(memerna PUBLIC USE_MPFR)
   target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
 endif()

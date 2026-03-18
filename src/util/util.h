@@ -23,7 +23,7 @@ constexpr auto Decay(T& a) {
 
 // Only works with [0, 2N).
 inline int FastMod(int a, int m) {
-  assert(a < 2 * m);
+  assert(a >= 0 && a < 2 * m);
   if (a >= m) return a - m;
   return a;
 }

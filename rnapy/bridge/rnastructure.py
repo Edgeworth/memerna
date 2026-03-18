@@ -55,9 +55,10 @@ class RNAstructure(RnaPackage):
             # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
             # the fitted -9.
             res = self._run_cmd("./exe/efn2", "-s", fin.name, fout.name, stdout_to_str=True)
-            match = re.search(r"[eE]nergy = (.+)", fout.read())
+            output = fout.read()
+            match = re.search(r"[eE]nergy = (.+)", output)
             if match is None:
-                raise RuntimeError(f"Could not find energy in {fout.read()}")
+                raise RuntimeError(f"Could not find energy in {output}")
             energy = Decimal(match.group(1))
         return energy, res
 

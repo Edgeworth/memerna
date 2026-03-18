@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/baseopt/energy/precomp.h"
 #include "backends/common/base/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -27,6 +28,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
 
   spdlog::debug("baseopt {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
+  const Precomp pc(Primary(r), m, cfg);
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
   std::vector<DpIndex> q;
@@ -167,7 +169,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (dp[ist][ien][DP_P] < CAP_E) {
-              const auto val = m->TwoLoop(r, cfg, st, en, ist, ien) + dp[ist][ien][DP_P];
+              const auto val = pc.TwoLoop(st, en, ist, ien) + dp[ist][ien][DP_P];
               if (val == dp[st][en][DP_P]) {
                 q.emplace_back(ist, ien, DP_P);
                 goto loopend;
@@ -176,7 +178,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        if (m->Hairpin(r, st, en) == dp[st][en][DP_P]) {
+        if (pc.Hairpin(st, en) == dp[st][en][DP_P]) {
           goto loopend;
         }
 
@@ -284,7 +286,6 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        // Done with paired. We might not have jumped to loopend if this was a hairpin.
         continue;
       }
 

@@ -20,13 +20,13 @@ std::string sgetline(std::istream& is) {
 
 std::string TrimLeft(const std::string& s) {
   auto iter = s.begin();
-  while (iter != s.end() && isspace(*iter)) ++iter;
+  while (iter != s.end() && std::isspace(static_cast<unsigned char>(*iter))) ++iter;
   return {iter, s.end()};
 }
 
 std::string TrimRight(const std::string& s) {
   auto iter = s.end();
-  while (iter != s.begin() && isspace(*(iter - 1))) --iter;
+  while (iter != s.begin() && std::isspace(static_cast<unsigned char>(*(iter - 1)))) --iter;
   return {s.begin(), iter};
 }
 

@@ -1,4 +1,6 @@
 # Copyright 2022 Eliot Courtney.
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from rnapy.model.rna import Rna
@@ -16,7 +18,7 @@ class RnaAccuracy:
         return fscore
 
     @staticmethod
-    def from_rna(true: Rna, pred: Rna) -> "RnaAccuracy":
+    def from_rna(true: Rna, pred: Rna) -> RnaAccuracy:
         if pred.s is None:
             raise ValueError("Predicted structure is None.")
         if true.s is None:

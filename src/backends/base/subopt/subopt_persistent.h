@@ -71,7 +71,7 @@ class SuboptPersistent {
   std::pair<Energy, int64_t> RunInternal();
 
   // Computes the suboptimal folding for the given subpath and puts it into `res_`.
-  void GenerateResult(int64_t idx);
+  void GenerateResult(int idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     // We request the expansions of an index multiple times when we find the

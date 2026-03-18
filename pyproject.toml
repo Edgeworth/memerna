@@ -19,9 +19,9 @@ click = ">=8.3.1"
 click-params = ">=0.5.0"
 click_log = ">=0.4.0"
 cloup = ">=3.0.8"
-libtmux = ">=0.53.0"
-polars = ">=1.37.1"
-python-dotenv = ">=1.2.1"
+libtmux = ">=0.55.0"
+polars = ">=1.38.1"
+python-dotenv = ">=1.2.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.19.1"
@@ -58,7 +58,7 @@ warn_unused_ignores = true
 show_error_codes = true
 
 # Set python version.
-python_version = '3.13'
+python_version = '3.14'
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -69,7 +69,7 @@ module = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.format]
 # Make sure lists etc can go back onto one line if they get shorter.

@@ -1,7 +1,10 @@
 # Copyright 2022 Eliot Courtney.
+import functools
 import os
+import shutil
 import signal
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -14,7 +17,7 @@ from rnapy.util.format import human_size
 @dataclass
 class CmdLimits:
     time_sec: int | None = None  # limit to time in seconds
-    mem_bytes: int | None = None  # limit for rss in bytes
+    mem_bytes: int | None = None  # limit for process memory in bytes
     cpu_affinity: set[int] | None = None  # set of CPU IDs to run using
 
 
@@ -32,6 +35,71 @@ class CmdResult:
         return f"{self.real_sec:.2f}s, {human_size(self.maxrss_bytes)} "
 
 
+@functools.cache
+def _can_use_systemd_user_scope() -> bool:
+    if sys.platform != "linux":
+        return False
+    if shutil.which("systemd-run") is None:
+        return False
+    try:
+        res = subprocess.run(
+            ["systemd-run", "--user", "--scope", "--quiet", "true"],  # noqa: S607
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return res.returncode == 0
+
+
+@functools.cache
+def _warn_systemd_user_scope_unavailable() -> None:
+    click.echo(
+        "Warning: systemd-run --user --scope is unavailable; falling back to prlimit --as, "
+        "which limits virtual address space rather than resident memory.",
+        err=True,
+    )
+
+
+def _cmd_list_with_limits(cmd: tuple[str, ...], limits: CmdLimits) -> list[str]:
+    cmd_list: list[str] = list(cmd)
+    if limits.cpu_affinity is not None:
+        cmd_list = [
+            "taskset",
+            "-c",
+            ",".join(str(c) for c in sorted(limits.cpu_affinity)),
+            *cmd_list,
+        ]
+
+    use_systemd_memory_limit = limits.mem_bytes is not None and _can_use_systemd_user_scope()
+
+    prlimit_args: list[str] = []
+    if limits.time_sec is not None:
+        prlimit_args.append(f"--cpu={limits.time_sec}")
+    if limits.mem_bytes is not None and not use_systemd_memory_limit:
+        _warn_systemd_user_scope_unavailable()
+        prlimit_args.append(f"--as={limits.mem_bytes}")
+    if prlimit_args:
+        cmd_list = ["prlimit", *prlimit_args, "--", *cmd_list]
+
+    if use_systemd_memory_limit:
+        cmd_list = [
+            "systemd-run",
+            "--user",
+            "--scope",
+            "--quiet",
+            "-p",
+            f"MemoryMax={limits.mem_bytes}",
+            "-p",
+            "MemorySwapMax=0",
+            *cmd_list,
+        ]
+
+    return cmd_list
+
+
 def try_cmd(
     *cmd: str,
     stdin_inp: str | bytes | None = None,
@@ -46,21 +114,7 @@ def try_cmd(
     if isinstance(stdin_inp, str):
         stdin_inp = stdin_inp.encode("utf-8")
 
-    cmd_list: list[str] = list(cmd)
-    if limits.cpu_affinity is not None:
-        cmd_list = [
-            "taskset",
-            "-c",
-            ",".join(str(c) for c in sorted(limits.cpu_affinity)),
-            *cmd_list,
-        ]
-    prlimit_args: list[str] = []
-    if limits.time_sec is not None:
-        prlimit_args.append(f"--cpu={limits.time_sec}")
-    if limits.mem_bytes is not None:
-        prlimit_args.append(f"--as={limits.mem_bytes}")
-    if prlimit_args:
-        cmd_list = ["prlimit", *prlimit_args, "--", *cmd_list]
+    cmd_list = _cmd_list_with_limits(cmd, limits)
 
     # Uses GNU time.
     cmd = ("/usr/bin/time", "-f", "%e %U %S %M", *cmd_list)
@@ -114,12 +168,14 @@ def try_cmd(
         if stdout_path is not None:
             if zstd_proc is not None:
                 zstd_proc.wait()
+                assert stdout_file is not None
                 stdout_file.close()
                 if zstd_proc.returncode != 0:
                     raise RuntimeError(
                         f"zstd compression failed with return code {zstd_proc.returncode}"
                     )
             else:
+                assert not isinstance(stdout, (int, type(None)))
                 stdout.flush()
                 stdout.close()
 

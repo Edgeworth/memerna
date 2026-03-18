@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import override
 
 from rnapy.bridge.rnapackage import RnaPackage
-from rnapy.model.model_cfg import EnergyCfg, LonelyPairs, SuboptCfg
+from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg
 from rnapy.model.parse.sequence import db_to_secondary
 from rnapy.model.rna import Rna
 from rnapy.util.command import CmdResult
@@ -17,7 +17,7 @@ class MemeRna01(RnaPackage):
             raise NotImplementedError("memerna0.1 does not support modifying lonely pairs behavior")
         if cfg.energy_model is not None:
             raise NotImplementedError("memerna0.1 energy model configuration not supported")
-        if cfg.ctd != "all":
+        if cfg.ctd != CtdCfg.ALL:
             raise NotImplementedError("memerna0.1 only supports all CTDs")
 
         return []

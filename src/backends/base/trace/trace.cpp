@@ -329,10 +329,9 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
               goto loopend;
             }
           }
-
-          // Done with paired. We might not have jumped to loopend if this was a hairpin.
-          continue;
         }
+
+        continue;
       }
 
       // Deal with the rest of the cases:
