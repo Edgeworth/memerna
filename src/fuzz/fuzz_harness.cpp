@@ -2,6 +2,7 @@
 #include "fuzz/fuzz_harness.h"
 
 #include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <memory>
 #include <utility>
@@ -12,6 +13,36 @@
 #include "model/primary.h"
 
 namespace mrna::fuzz {
+
+namespace {
+
+std::vector<std::vector<BackendModelPtr>> EquivalenceClasses(
+    const std::vector<BackendModelPtr>& ms) {
+  std::vector<std::vector<BackendModelPtr>> groups;
+  for (const auto& m : ms) {
+    bool found = false;
+    for (auto& group : groups) {
+      if (IsEquivalent(group[0], m)) {
+        group.push_back(m);
+        found = true;
+        break;
+      }
+    }
+    if (!found) groups.push_back({m});
+  }
+  return groups;
+}
+
+std::string DescribeEquivalenceClass(const std::vector<BackendModelPtr>& group) {
+  std::string desc;
+  for (int i = 0; i < static_cast<int>(group.size()); ++i) {
+    if (i > 0) desc += ", ";
+    desc += fmt::format("{}", GetBackendKind(group[i]));
+  }
+  return desc;
+}
+
+}  // namespace
 
 FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
     : fuzz_cfg_(std::move(fuzz_cfg)), e_(std::random_device{}()) {
@@ -28,15 +59,36 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg)
   };
 }
 
-FuzzInvocation FuzzHarness::CreateInvocation(const Primary& r, erg::PseudofreeCfg pf) {
+Error FuzzHarness::Run(const Primary& r, erg::PseudofreeCfg pf) {
   MaybeLoadBackends();
+  auto groups = EquivalenceClasses(ms_);
+  if (first_invocation_) {
+    spdlog::info("backend equivalence classes: {}", groups.size());
+    for (int i = 0; i < static_cast<int>(groups.size()); ++i)
+      spdlog::info("equivalence class {}: {}", i, DescribeEquivalenceClass(groups[i]));
+  }
 
-  FuzzInvocation invoc(r, ms_, backend_cfg_, std::move(pf), fuzz_cfg_, first_invocation_);
-  first_invocation_ = false;
 #ifdef USE_RNASTRUCTURE
-  invoc.set_rnastructure(rstr_);
+  const bool rnastructure =
+      fuzz_cfg_.mfe_rnastructure || fuzz_cfg_.subopt_rnastructure || fuzz_cfg_.pfn_rnastructure;
+  verify(
+      !rnastructure || groups.size() == 1,
+      "RNAstructure comparison requires exactly 1 backend equivalence class, got {}",
+      groups.size());
 #endif  // USE_RNASTRUCTURE
-  return invoc;
+
+  Error errors;
+  for (const auto& group : groups) {
+    FuzzInvocation invoc(r, group, backend_cfg_, pf, fuzz_cfg_, first_invocation_);
+#ifdef USE_RNASTRUCTURE
+    invoc.set_rnastructure(rstr_);
+#endif  // USE_RNASTRUCTURE
+    auto local = invoc.Run();
+    errors.insert(errors.end(), std::make_move_iterator(local.begin()), std::make_move_iterator(local.end()));
+  }
+
+  first_invocation_ = false;
+  return errors;
 }
 
 void FuzzHarness::MaybeLoadBackends() {

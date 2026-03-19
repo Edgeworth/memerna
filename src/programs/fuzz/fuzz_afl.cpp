@@ -48,8 +48,7 @@ int main(int argc, char* argv[]) {
         // Ignore. Probably a bad input.
         continue;
       }
-      auto invoc = harness.CreateInvocation(seq, mrna::erg::PseudofreeCfg{});
-      const auto res = invoc.Run();
+      const auto res = harness.Run(seq, mrna::erg::PseudofreeCfg{});
       if (!res.empty()) {
         for (const auto& s : res) fmt::print("{}\n", s);
         fmt::print("\n");

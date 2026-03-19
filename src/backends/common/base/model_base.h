@@ -67,6 +67,8 @@ class ModelBase {
   Energy au_penalty = {};
   Energy gu_penalty = {};
 
+  bool operator==(const ModelBase&) const = default;
+
   [[nodiscard]] static constexpr bool CanPair(
       erg::EnergyCfg cfg, const Primary& r, int st, int en) {
     if (cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)

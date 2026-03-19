@@ -36,6 +36,8 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
 
   Energy penultimate_stack[4][4][4][4] = {};
 
+  bool operator==(const Model&) const = default;
+
   Energy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
       std::unique_ptr<Structure>* s = nullptr) const;
   Energy Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost, int oen,

@@ -66,6 +66,55 @@ BackendModelPtr CloneBackend(const BackendModelPtr& m);
       m);
 }
 
+[[nodiscard]] inline bool IsEquivalent(const md::base::ModelBase& a, const md::base::ModelBase& b) {
+  return a == b;
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::stack::Model& a, const md::stack::Model& b) {
+  return a == b;
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::base::ModelBase& a, const md::stack::Model& b) {
+  if (a != static_cast<const md::base::ModelBase&>(b)) return false;
+  const auto* ps = reinterpret_cast<const Energy*>(&b.penultimate_stack);
+  for (unsigned i = 0; i < sizeof(b.penultimate_stack) / sizeof(Energy); ++i)
+    if (ps[i] != ZERO_E) return false;
+  return true;
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::stack::Model& a, const md::base::ModelBase& b) {
+  return IsEquivalent(b, a);
+}
+
+[[nodiscard]] inline bool IsEquivalent(const BackendModelPtr& a, const BackendModelPtr& b) {
+  return std::visit(
+      [](const auto& a, const auto& b) -> bool {
+        using A = std::decay_t<decltype(a)>;
+        using B = std::decay_t<decltype(b)>;
+        if constexpr (std::is_same_v<A, B>) {
+          if (a == b) return true;
+        }
+        if (!a || !b) return false;
+        return IsEquivalent(*a, *b);
+      },
+      a, b);
+}
+
+[[nodiscard]] inline bool IsEquivalent(
+    const BackendBoltzModelPtr& a, const BackendBoltzModelPtr& b) {
+  return std::visit(
+      [](const auto& a, const auto& b) -> bool {
+        using A = std::decay_t<decltype(a)>;
+        using B = std::decay_t<decltype(b)>;
+        if constexpr (std::is_same_v<A, B>) {
+          if (a == b) return true;
+        }
+        if (!a || !b) return false;
+        return IsEquivalent(a->m(), b->m());
+      },
+      a, b);
+}
+
 }  // namespace mrna
 
 #endif  // API_CTX_BACKEND_H_

@@ -78,8 +78,7 @@ class FuzzRunner {
   void RunInvocation(const mrna::Primary& r) {
     mrna::erg::PseudofreeCfg pf(
         MaybeGetPairedPseudofree(r.size()), MaybeGetUnpairedPseudofree(r.size()));
-    auto invoc = harness_.CreateInvocation(r, pf);
-    MaybePrintResult(invoc.Run(), pf);
+    MaybePrintResult(harness_.Run(r, pf), pf);
   }
 
   std::vector<mrna::Energy> MaybeGetPairedPseudofree(std::size_t length) {

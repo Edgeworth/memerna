@@ -75,19 +75,6 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
   }
 }
 
-md::base::DpState* MaybeGetBaseDpState(mfe::DpState& dp) {
-  auto base_dp = overloaded{
-      [&](md::base::DpState& got) -> md::base::DpState* { return &got; },
-      [&](md::stack::DpState& got) -> md::base::DpState* { return &got.base; },
-      [&](const std::monostate&) -> md::base::DpState* { return nullptr; },
-      [&](const auto&) -> md::base::DpState* {
-        fatal("bug");
-        return nullptr;
-      },
-  };
-  return std::visit(base_dp, dp);
-}
-
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms,
@@ -100,8 +87,16 @@ FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms
 Error FuzzInvocation::Run() {
   if (cfg_.pfn_subopt)
     verify(!cfg_.energy_cfg.bulge_states, "bulge states must be disabled for pfn subopt fuzzing");
-  if (cfg_.mfe) Register("mfe:", CheckMfe());
-  if (cfg_.subopt) Register("subopt:", CheckSubopt());
+
+  std::optional<FoldBaseline> fold_baseline;
+  if (cfg_.mfe || cfg_.subopt) {
+    auto [mfe_errors, baseline] = CheckMfe();
+    Register("mfe:", std::move(mfe_errors));
+    fold_baseline = std::move(baseline);
+  }
+
+  if (cfg_.subopt && fold_baseline.has_value()) Register("subopt:", CheckSubopt(*fold_baseline));
+
   if (cfg_.pfn) Register("pfn:", CheckPfn());
 
   auto ret = std::move(errors_);
@@ -118,18 +113,27 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
   for (const auto& error : errors) errors_.push_back("  " + error);
 }
 
-void FuzzInvocation::EnsureFoldResult() {
-  if (!fold_)
-    fold_ = Ctx(ms_[0], backend_cfg_)
-                .Fold(r_, /*alg=*/std::nullopt, cfg_.energy_cfg, pf_, trace::TraceCfg{});
+const BackendModelPtr* FuzzInvocation::FindSuboptModel(subopt::SuboptCfg subopt_cfg) const {
+  for (const auto& m : ms_) {
+    auto kind = GetBackendKind(m);
+    if (!ResolveMfe(kind, /*alg=*/std::nullopt, backend_cfg_, cfg_.energy_cfg, pf_, /*log=*/nullptr)
+            .has_value())
+      continue;
+    if (ResolveSubopt(kind, /*alg=*/std::nullopt, backend_cfg_, cfg_.energy_cfg, pf_, subopt_cfg,
+            /*log=*/nullptr)
+            .has_value())
+      return &m;
+  }
+  return nullptr;
 }
 
-Error FuzzInvocation::CheckMfe() {
+std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::CheckMfe() {
   const int N = static_cast<int>(r_.size());
   Error errors;
 
   // Run memerna folds.
   std::vector<FoldResult> results;
+  std::vector<BackendModelPtr> models;
   std::vector<std::string> tags;
   std::vector<Energy> ctd_efns;  // Efn using returned CTDs.
   std::vector<Energy> opt_efns;  // Efn using optimal CTDs.
@@ -154,6 +158,7 @@ Error FuzzInvocation::CheckMfe() {
       opt_efns.push_back(
           TotalEnergy(m, r_, res.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_).energy);
       results.emplace_back(std::move(res));
+      models.push_back(m);
       tags.push_back(fmt::format("{}-{}", kind, mfe_alg));
     };
 
@@ -161,18 +166,19 @@ Error FuzzInvocation::CheckMfe() {
       maybe_run(entry.alg);
   }
 
-  // Find first dp table that exists.
-  md::base::DpState* base_dp = nullptr;
+  if (results.empty()) return {std::move(errors), std::nullopt};
+
+  // Prefer a baseline with a DP table so table comparisons and RNAstructure checks
+  // can use the chosen baseline directly.
   int cmp_idx = 0;
   for (int i = 0; i < static_cast<int>(results.size()); ++i) {
-    base_dp = MaybeGetBaseDpState(results[i].mfe.dp);
-    if (base_dp) {
+    if (mfe::MaybeGetBaseDpState(results[i].mfe.dp) != nullptr) {
       cmp_idx = i;
       break;
     }
   }
 
-  if (results.empty()) return errors;
+  const auto* cmp_dp = mfe::MaybeGetBaseDpState(results[cmp_idx].mfe.dp);
 
   // Check memerna energies compared to themselves and to efn.
   auto& cmp_res = results[cmp_idx];
@@ -184,23 +190,30 @@ Error FuzzInvocation::CheckMfe() {
           results[i].mfe.energy, ctd_efns[i], opt_efns[i], tags[cmp_idx], cmp_res.mfe.energy));
     }
 
-    if (cfg_.mfe_table && base_dp) {
-      auto* got = MaybeGetBaseDpState(results[i].mfe.dp);
-      if (got) CompareBaseDpState(*got, *base_dp, fmt::format("mrna[{}]", i), errors);
+    if (cfg_.mfe_table && cmp_dp) {
+      if (const auto* got = mfe::MaybeGetBaseDpState(results[i].mfe.dp))
+        CompareBaseDpState(*got, *cmp_dp, fmt::format("mrna[{}]", i), errors);
     }
   }
 
-  fold_ = std::move(cmp_res);
+  std::optional<FoldBaseline> baseline =
+      FoldBaseline{.fold = std::move(cmp_res), .model = std::move(models[cmp_idx])};
 
 #ifdef USE_RNASTRUCTURE
-  if (cfg_.mfe_rnastructure) Register("RNAstructure:", CheckMfeRNAstructure());
+  if (cfg_.mfe_rnastructure) {
+    Register("RNAstructure:", CheckMfeRNAstructure(baseline.value()));
+  }
 #endif  // USE_RNASTRUCTURE
 
-  return errors;
+  return {std::move(errors), std::move(baseline)};
 }
 
-Error FuzzInvocation::CheckSubopt() {
-  EnsureFoldResult();
+Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
+  struct SuboptRun {
+    BackendModelPtr model;
+    std::vector<subopt::SuboptResult> results;
+    std::string tag;
+  };
 
   const int N = static_cast<int>(r_.size());
   Error errors;
@@ -214,12 +227,10 @@ Error FuzzInvocation::CheckSubopt() {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = true},
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
-  std::vector<std::pair<subopt::SuboptCfg, std::vector<std::vector<subopt::SuboptResult>>>> results;
-  std::vector<std::vector<std::string>> tags;
+  std::vector<std::pair<subopt::SuboptCfg, std::vector<SuboptRun>>> results;
   for (int cfg_idx = 0; cfg_idx < static_cast<int>(std::size(cfgs)); ++cfg_idx) {
     const auto& cfg = cfgs[cfg_idx];
     results.push_back({cfg, {}});
-    tags.emplace_back();
     for (const auto& m : ms_) {
       const auto kind = GetBackendKind(m);
       auto maybe_run = [&](SuboptAlg subopt_alg) {
@@ -237,8 +248,9 @@ Error FuzzInvocation::CheckSubopt() {
         // Sort them to make the sorted=false configurations comparable between
         // algorithms.
         std::sort(res.begin(), res.end());
-        results.back().second.push_back(std::move(res));
-        tags.back().push_back(fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx));
+        results.back().second.push_back({.model = m,
+            .results = std::move(res),
+            .tag = fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx)});
       };
 
       for (const auto& entry :
@@ -252,17 +264,21 @@ Error FuzzInvocation::CheckSubopt() {
     auto desc = fmt::format(
         "subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta, cfg.strucs, cfg.sorted, i);
     for (int alg = 0; alg < static_cast<int>(res.size()); ++alg) {
-      Register(fmt::format("{}, cfg: {}", tags[i][alg], desc), CheckSuboptResult(res[alg]));
-      Register(fmt::format("{} vs {}, cfg: {}", tags[i][alg], tags[i][0], desc),
-          CheckSuboptResultPair(cfg, res[0], res[alg]));
+      Register(fmt::format("{}, cfg: {}", res[alg].tag, desc),
+          CheckSuboptResult(baseline.fold.mfe.energy, res[alg].results, res[alg].model));
+      Register(fmt::format("{} vs {}, cfg: {}", res[alg].tag, res[0].tag, desc),
+          CheckSuboptResultPair(cfg, res[0].results, res[alg].results));
     }
   }
 
   // Put regular configuration (delta-sorted) into common result:
-  subopt_ = std::move(results.front().second.front());
+  std::vector<subopt::SuboptResult> subopt_baseline;
+  if (!results.empty() && !results.front().second.empty())
+    subopt_baseline = std::move(results.front().second.front().results);
 
 #ifdef USE_RNASTRUCTURE
-  if (cfg_.subopt_rnastructure) Register("rnastructure:", CheckSuboptRNAstructure(cfgs[0]));
+  if (cfg_.subopt_rnastructure)
+    Register("rnastructure:", CheckSuboptRNAstructure(cfgs[0], baseline, subopt_baseline));
 #endif  // USE_RNASTRUCTURE
 
   return errors;
@@ -278,16 +294,16 @@ bool FuzzInvocation::SuboptDuplicates(const std::vector<subopt::SuboptResult>& s
   return false;
 }
 
-Error FuzzInvocation::CheckSuboptResult(
-    const std::vector<subopt::SuboptResult>& subopt, bool has_ctds, bool check_duplicates) {
-  verify(fold_.has_value(), "bug");
+Error FuzzInvocation::CheckSuboptResult(Energy mfe_energy,
+    const std::vector<subopt::SuboptResult>& subopt, const BackendModelPtr& m, bool has_ctds,
+    bool check_duplicates) {
   Error errors;
   // Check at least one suboptimal structure.
   if (subopt.empty()) errors.emplace_back("no structures returned");
   // Check MFE.
-  if (!subopt.empty() && fold_->mfe.energy != subopt[0].energy)
+  if (!subopt.empty() && mfe_energy != subopt[0].energy)
     errors.push_back(
-        fmt::format("lowest structure energy {} != mfe {}", subopt[0].energy, fold_->mfe.energy));
+        fmt::format("lowest structure energy {} != mfe {}", subopt[0].energy, mfe_energy));
 
   // Check for duplicate structures.
   if (check_duplicates && SuboptDuplicates(subopt)) errors.emplace_back("has duplicates");
@@ -297,7 +313,7 @@ Error FuzzInvocation::CheckSuboptResult(
   if (has_ctds) {
     for (int i = 0; i < static_cast<int>(subopt.size()); ++i) {
       const auto& sub = subopt[i];
-      auto suboptimal_efn = TotalEnergy(ms_[0], r_, sub.tb.s, &sub.tb.ctd, cfg_.energy_cfg, pf_);
+      auto suboptimal_efn = TotalEnergy(m, r_, sub.tb.s, &sub.tb.ctd, cfg_.energy_cfg, pf_);
       if (suboptimal_efn.energy != sub.energy) {
         errors.push_back(
             fmt::format("structure {}: energy {} != efn {}", i, sub.energy, suboptimal_efn.energy));
@@ -416,32 +432,32 @@ Error FuzzInvocation::CheckPfn() {
 
   if (N < cfg_.pfn_subopt) {
     subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
-    const Ctx ctx(ms_.front(), backend_cfg_);
-    auto subopts = ctx.SuboptIntoVector(
-        r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt, cfg_.energy_cfg, pf_, subopt_cfg);
-    flt subopt_q{};
-    for (const auto& res : subopts) subopt_q += res.energy.Boltz();
+    if (const auto* m = FindSuboptModel(subopt_cfg)) {
+      const Ctx ctx(*m, backend_cfg_);
+      auto subopts = ctx.SuboptIntoVector(
+          r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt, cfg_.energy_cfg, pf_, subopt_cfg);
+      flt subopt_q{};
+      for (const auto& res : subopts) subopt_q += res.energy.Boltz();
 
-    for (int i = 0; i < static_cast<int>(results.size()); ++i) {
-      if (!PfnPQEq(subopt_q, results[i].pfn.q))
-        errors.push_back(fmt::format("subopt q: {} != {} pfn q: {}, diff: {}", subopt_q, tags[i],
-            results[i].pfn.q, subopt_q - results[i].pfn.q));
+      for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+        if (!PfnPQEq(subopt_q, results[i].pfn.q))
+          errors.push_back(fmt::format("subopt q: {} != {} pfn q: {}, diff: {}", subopt_q, tags[i],
+              results[i].pfn.q, subopt_q - results[i].pfn.q));
+      }
     }
   }
 
-  pfn_ = std::move(results[0]);
+  auto pfn_baseline = std::move(results[0]);
 
 #ifdef USE_RNASTRUCTURE
-  if (cfg_.pfn_rnastructure) Register("RNAstructure:", CheckPfnRNAstructure());
+  if (cfg_.pfn_rnastructure) Register("RNAstructure:", CheckPfnRNAstructure(pfn_baseline));
 #endif  // USE_RNASTRUCTURE
 
   return errors;
 }
 
 #ifdef USE_RNASTRUCTURE
-Error FuzzInvocation::CheckMfeRNAstructure() {
-  verify(fold_.has_value(), "bug");
-
+Error FuzzInvocation::CheckMfeRNAstructure(const FoldBaseline& baseline) {
   const int N = static_cast<int>(r_.size());
   Error errors;
   dp_state_t rstr_dp;
@@ -449,10 +465,10 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   auto efn = rstr_->Efn(r_, Secondary(fold.tb.s), erg::EnergyCfg{}, erg::PseudofreeCfg{});
 
   // Check RNAstructure energies:
-  if (fold_->mfe.energy != fold.mfe.energy || fold_->mfe.energy != efn.energy) {
+  if (baseline.fold.mfe.energy != fold.mfe.energy || baseline.fold.mfe.energy != efn.energy) {
     errors.emplace_back("mfe/efn energy mismatch:");
     errors.push_back(fmt::format(
-        "  {} (dp), {} (efn) != mfe {}", fold.mfe.energy, efn.energy, fold_->mfe.energy));
+        "  {} (dp), {} (efn) != mfe {}", fold.mfe.energy, efn.energy, baseline.fold.mfe.energy));
   }
 
   // Check RNAstructure produced structure:
@@ -462,13 +478,14 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   // Note that it might not be the same, so we can't do an peqality check
   // of CTD structure.
   auto opt_efn =
-      TotalEnergy(ms_[0], r_, fold.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_).energy;
+      TotalEnergy(baseline.model, r_, fold.tb.s, /*given_ctd=*/nullptr, cfg_.energy_cfg, pf_)
+          .energy;
   if (opt_efn != fold.mfe.energy) {
     errors.emplace_back("mfe/efn energy mismatch:");
     errors.push_back(fmt::format("  {} (opt efn) != mfe {}", opt_efn, fold.mfe.energy));
   }
 
-  auto* want = MaybeGetBaseDpState(fold_->mfe.dp);
+  const auto* want = mfe::MaybeGetBaseDpState(baseline.fold.mfe.dp);
   verify(want != nullptr, "fuzzing with RNAstructure should have base dp state");
 
   // Check RNAstructure dp table:
@@ -492,29 +509,31 @@ Error FuzzInvocation::CheckMfeRNAstructure() {
   return errors;
 }
 
-Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg) {
+Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg,
+    const FoldBaseline& baseline, const std::vector<subopt::SuboptResult>& subopt) {
   Error errors;
   // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
-  if (subopt_.empty()) return errors;
-  if (subopt_[0].energy < -cfg_.subopt_delta) {
+  if (subopt.empty()) return errors;
+  if (subopt[0].energy < -cfg_.subopt_delta) {
     auto rstr_subopt = rstr_->SuboptIntoVector(r_, /*mfe_alg=*/std::nullopt,
         /*alg=*/std::nullopt, erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = cfg_.subopt_delta});
     std::sort(rstr_subopt.begin(), rstr_subopt.end());
-    Register(
-        "subopt:", CheckSuboptResult(rstr_subopt, /*has_ctds=*/false, /*check_duplicates=*/false));
+    Register("subopt:",
+        CheckSuboptResult(baseline.fold.mfe.energy, rstr_subopt, baseline.model,
+            /*has_ctds=*/false, /*check_duplicates=*/false));
     Register("subopt vs memerna:",
-        CheckSuboptResultPair(subopt_cfg, subopt_, rstr_subopt, /*has_ctds=*/false));
+        CheckSuboptResultPair(subopt_cfg, subopt, rstr_subopt, /*has_ctds=*/false));
   }
 
   return errors;
 }
 
-Error FuzzInvocation::CheckPfnRNAstructure() {
+Error FuzzInvocation::CheckPfnRNAstructure(const pfn::PfnResult& pfn) {
   Error errors;
   auto rstr_pfn = rstr_->Pfn(r_, /*alg=*/std::nullopt, erg::EnergyCfg{}, erg::PseudofreeCfg{});
 
-  ComparePfn(rstr_pfn.pfn, pfn_.pfn, "RNAstructure", "memerna", errors);
+  ComparePfn(rstr_pfn.pfn, pfn.pfn, "RNAstructure", "memerna", errors);
 
   return errors;
 }

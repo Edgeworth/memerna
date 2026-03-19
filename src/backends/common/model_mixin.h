@@ -33,6 +33,8 @@ class ModelMixin {
  public:
   using Ptr = std::shared_ptr<T>;
 
+  bool operator==(const ModelMixin&) const = default;
+
   static Ptr Create() { return Ptr(new T); }
 
   static Ptr FromModelPath(const std::string& path) {

@@ -26,7 +26,7 @@ class FuzzHarness {
  public:
   explicit FuzzHarness(FuzzCfg fuzz_cfg);
 
-  FuzzInvocation CreateInvocation(const Primary& r, erg::PseudofreeCfg pf);
+  Error Run(const Primary& r, erg::PseudofreeCfg pf);
   std::mt19937& e() { return e_; }
 
   [[nodiscard]] constexpr std::optional<uint_fast32_t> last_seed() const {

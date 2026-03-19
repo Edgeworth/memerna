@@ -4,6 +4,7 @@
 #include <deque>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "api/ctx/ctx.h"
@@ -40,6 +41,11 @@ class FuzzInvocation {
 #endif  // USE_RNASTRUCTURE
 
  private:
+  struct FoldBaseline {
+    FoldResult fold;
+    BackendModelPtr model;
+  };
+
   Primary r_;
   std::vector<BackendModelPtr> ms_;
   BackendCfg backend_cfg_;
@@ -47,32 +53,29 @@ class FuzzInvocation {
   FuzzCfg cfg_;
   bool should_log_;
 
-  // Store assumed to be correct answers for each problem type:
-  std::optional<FoldResult> fold_;
-  std::vector<subopt::SuboptResult> subopt_{};
-  pfn::PfnResult pfn_{};
-
   Error errors_;
 
 #ifdef USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;
 
-  Error CheckMfeRNAstructure();
-  Error CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg);
-  Error CheckPfnRNAstructure();
+  Error CheckMfeRNAstructure(const FoldBaseline& baseline);
+  Error CheckSuboptRNAstructure(
+      subopt::SuboptCfg subopt_cfg, const FoldBaseline& baseline,
+      const std::vector<subopt::SuboptResult>& subopt);
+  Error CheckPfnRNAstructure(const pfn::PfnResult& pfn);
 #endif  // USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
 
-  void EnsureFoldResult();
+  [[nodiscard]] const BackendModelPtr* FindSuboptModel(subopt::SuboptCfg subopt_cfg) const;
 
-  Error CheckMfe();
+  std::tuple<Error, std::optional<FoldBaseline>> CheckMfe();
 
-  Error CheckSubopt();
+  Error CheckSubopt(const FoldBaseline& baseline);
 
   static bool SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts);
-  Error CheckSuboptResult(const std::vector<subopt::SuboptResult>& subopt, bool has_ctds = true,
-      bool check_duplicates = true);
+  Error CheckSuboptResult(Energy mfe_energy, const std::vector<subopt::SuboptResult>& subopt,
+      const BackendModelPtr& m, bool has_ctds = true, bool check_duplicates = true);
   static Error CheckSuboptResultPair(subopt::SuboptCfg subopt_cfg,
       const std::vector<subopt::SuboptResult>& a, const std::vector<subopt::SuboptResult>& b,
       bool has_ctds = true);
