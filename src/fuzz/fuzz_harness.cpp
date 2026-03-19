@@ -96,8 +96,8 @@ void FuzzHarness::MaybeLoadBackends() {
   if (!ms_.empty() && !fuzz_cfg_.random_models) return;
   ms_.clear();
 
-  if (fuzz_cfg_.seed >= 0) {
-    backend_cfg_.data_src = static_cast<uint_fast32_t>(fuzz_cfg_.seed);
+  if (fuzz_cfg_.seed.has_value()) {
+    backend_cfg_.data_src = *fuzz_cfg_.seed;
   } else if (fuzz_cfg_.random_models) {
     backend_cfg_.data_src = static_cast<uint_fast32_t>(e_());
   } else {

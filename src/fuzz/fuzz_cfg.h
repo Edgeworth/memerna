@@ -2,6 +2,7 @@
 #ifndef FUZZ_FUZZ_CFG_H_
 #define FUZZ_FUZZ_CFG_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -119,9 +120,8 @@ struct FuzzCfg {
   bool random_models = false;
   bool random_pseudofree = false;
 
-  // Whether to use a fixed seed for creating a random model. Negative means use
-  // the model data, not random data.
-  int seed = -1;
+  // Whether to use a fixed seed for creating a random model.
+  std::optional<uint_fast32_t> seed;
 
   erg::EnergyCfg energy_cfg{};
   erg::EnergyModelKind energy_model{};

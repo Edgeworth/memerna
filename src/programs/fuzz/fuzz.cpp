@@ -98,6 +98,11 @@ class FuzzRunner {
 
   void MaybePrintResult(const mrna::fuzz::Error& res, const mrna::erg::PseudofreeCfg& pf) {
     if (res.empty()) return;
+    fmt::print("Energy model: {}\n", cfg_.energy_model);
+    fmt::print("Energy cfg: {}\n", cfg_.energy_cfg);
+    fmt::print("Backends:");
+    for (const auto& backend : cfg_.backends) fmt::print(" {}", backend);
+    fmt::print("\n");
     if (cfg_.random_models) fmt::print("Random model seed: {}\n", harness_.last_seed().value());
     if (!pf.paired.empty()) {
       fmt::print("Pseudofree paired energies: ");

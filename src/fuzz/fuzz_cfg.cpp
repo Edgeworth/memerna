@@ -59,7 +59,7 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("pfn_prob_rel_ep: {}\n", pfn_prob_rel_ep);
   desc += fmt::format("pfn_prob_abs_ep: {}\n", pfn_prob_abs_ep);
   desc += fmt::format("random_models: {}\n", random_models);
-  desc += fmt::format("seed: {}\n", seed);
+  desc += fmt::format("seed: {}\n", seed ? fmt::format("{}", *seed) : "none");
   desc += fmt::format("energy_cfg: {}\n", energy_cfg);
   desc += fmt::format("energy_model: {}\n", energy_model);
   desc += fmt::format("backend: ");
@@ -97,9 +97,9 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
 
   args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
   args.MaybeSet(OPT_FUZZ_RANDOM_PSEUDOFREE, &cfg.random_pseudofree);
-  cfg.seed = args.GetOr(OPT_SEED, cfg.seed);
+  if (args.Has(OPT_SEED)) cfg.seed = args.Get<uint_fast32_t>(OPT_SEED);
 
-  verify(!(cfg.random_models && cfg.seed >= 0), "cannot set fixed seed with random models");
+  verify(!(cfg.random_models && cfg.seed.has_value()), "cannot set fixed seed with random models");
 
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
   cfg.energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL);

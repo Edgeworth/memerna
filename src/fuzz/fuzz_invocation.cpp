@@ -40,7 +40,7 @@ using md::base::EXT_SIZE;
 namespace {
 
 void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& want,
-    const std::string& name_got, Error& errors) {
+    const std::string& name_got, const std::string& name_want, Error& errors) {
   if (got.dp.empty()) return;  // Brute force doesn't generate tables.
 
   const int N = static_cast<int>(want.dp.size());
@@ -54,8 +54,8 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
         // If meant to be infinity and not.
         if (((dp < CAP_E) != (dpi < CAP_E)) || (dp < CAP_E && dp != dpi)) {
           errors.emplace_back("dp mismatch:");
-          errors.push_back(
-              fmt::format("  dp {} at {} {} {}: {} != {}", name_got, st, en, a, dpi, dp));
+          errors.push_back(fmt::format(
+              "  dp {} vs {} at {} {} {}: {} != {}", name_got, name_want, st, en, a, dpi, dp));
         }
       }
     }
@@ -69,7 +69,8 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
       // If meant to be infinity and not.
       if (((ext < CAP_E) != (exti < CAP_E)) || (ext < CAP_E && ext != exti)) {
         errors.emplace_back("ext mismatch:");
-        errors.push_back(fmt::format("ext {} at {} {}: {} != {}", name_got, st, a, exti, ext));
+        errors.push_back(
+            fmt::format("ext {} vs {} at {} {}: {} != {}", name_got, name_want, st, a, exti, ext));
       }
     }
   }
@@ -192,7 +193,7 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
 
     if (cfg_.mfe_table && cmp_dp) {
       if (const auto* got = mfe::MaybeGetBaseDpState(results[i].mfe.dp))
-        CompareBaseDpState(*got, *cmp_dp, fmt::format("mrna[{}]", i), errors);
+        CompareBaseDpState(*got, *cmp_dp, tags[i], tags[cmp_idx], errors);
     }
   }
 
