@@ -1,4 +1,79 @@
-"G"
-"U"
+#
+# AFL dictionary for JSON + memerna fuzz config
+#
+# Base JSON tokens from AFL++ dictionaries/json.dict
+#
+
+"0"
+",0"
+":0"
+"0:"
+"-1.2e+3"
+
+"true"
+"false"
+"null"
+
+"\"\""
+",\"\""
+":\"\""
+"\"\":"
+
+"{}"
+",{}"
+":{}"
+"{\"\":0}"
+"{{}}"
+
+"[]"
+",[]"
+":[]"
+"[0]"
+"[[]]"
+
+"''"
+"\\"
+"\\b"
+"\\f"
+"\\n"
+"\\r"
+"\\t"
+"\\u0000"
+"\\x00"
+"\\0"
+"\\uD800\\uDC00"
+"\\uDBFF\\uDFFF"
+
+"\"\":0"
+"//"
+"/**/"
+
+","
+":"
+
+#
+# Domain-specific tokens
+#
+
+# JSON keys
+"seq"
+"seed"
+"energy_model"
+"ctd"
+
+# Energy model values
+"t04"
+"t12"
+"t22"
+
+# CTD values
+"all"
+"none"
+"d2"
+"no-coax"
+
+# RNA bases
 "A"
 "C"
+"G"
+"U"

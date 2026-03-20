@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 import multiprocessing
 import shlex
+from collections import defaultdict
 from typing import Any
 
 import click
@@ -17,14 +18,17 @@ from rnapy.build.args import (
 from rnapy.util.util import fn_args
 
 
-def run_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
+def build_fuzz(cfg: AflFuzzCfg) -> None:
     cfg.build()
+
+
+def launch_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
     cmd = cfg.afl_fuzz_cmd()
     cwd = cfg.bin_path()
     click.echo(f"Running fuzz {cmd} in {cwd}")
 
     # Run in given tmux window:
-    pane = window.attached_pane
+    pane = window.active_pane
     if not pane:
         raise RuntimeError(f"Window {window} has no attached pane")
     pane.send_keys(f"cd {shlex.quote(str(cwd))}", enter=True, suppress_history=True)
@@ -44,7 +48,22 @@ def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
     afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
     cfgs = afl_fuzz_cfgs(afl_cfg, num_procs)
 
-    # Use libtmux to set up a session with a random name.
+    # Group configs by cmake build directory.
+    by_build_path: dict[str, list[AflFuzzCfg]] = defaultdict(list)
+    for cfg in cfgs:
+        by_build_path[str(cfg.build_cfg.build_path())].append(cfg)
+
+    # Build unique configs in parallel.
+    representatives = [group[0] for group in by_build_path.values()]
+    with multiprocessing.Pool(len(representatives)) as pool:
+        pool.map(build_fuzz, representatives)
+
+    # Copy binaries for remaining same-kind fuzzers that didn't build.
+    for group in by_build_path.values():
+        for cfg in group[1:]:
+            cfg.build()
+
+    # Launch each fuzzer in its own tmux window.
     session = None
     try:
         server = libtmux.Server()
@@ -55,13 +74,13 @@ def afl_fuzz(num_procs: int, **_kwargs: Any) -> None:
             window = session.new_window(attach=False, window_name=f"window_{i}")
             windows.append(window)
 
-        with multiprocessing.Pool(len(cfgs)) as pool:
-            pool.starmap(run_fuzz, zip(cfgs, windows, strict=True))
+        for cfg, window in zip(cfgs, windows, strict=True):
+            launch_fuzz(cfg, window)
 
         click.echo("Attaching session")
-        session.attach_session()
+        session.attach()
     except Exception:
         click.echo("Error occurred, killing session")
         if session is not None:
-            session.kill_session()
+            session.kill()
         raise

@@ -6,6 +6,7 @@ import cloup
 
 from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.build_cfg import BuildCfg, BuildKind, Compiler, Sanitizer
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.util.util import enum_choice
 
 build_cfg_options = cloup.option_group(
@@ -69,81 +70,63 @@ def build_cfg_from_args(
 
 afl_fuzz_cfg_options = cloup.option_group(
     "afl-fuzz config options",
-    cloup.option("--max-len", default=-1, help="Max size of sequences to fuzz"),
+    cloup.option("--max-len", type=int, default=None, help="Max sequence length"),
+    cloup.option("--random-pf/--no-random-pf", default=None, help="Random pseudofree energies"),
+    cloup.option("--energy-model", default=None, help="Energy model"),
+    cloup.option("--ctd", type=enum_choice(CtdCfg), default=None, help="CTD mode"),
     cloup.option(
-        "--seed",
-        required=False,
-        type=int,
-        help="Seed to use for fuzzing for a single fixed random model",
+        "--lonely-pairs", type=enum_choice(LonelyPairs), default=None, help="Lonely pairs mode"
     ),
+    cloup.option("--backends", multiple=True, help="Backends to fuzz"),
+    cloup.option("--brute-max", type=int, default=None, help="Max brute force size"),
+    cloup.option("--mfe/--no-mfe", default=None, help="Fuzz MFE"),
     cloup.option(
-        "--random-models/--no-random-models",
-        default=False,
-        help="Whether to use random models for fuzzing every invocation",
+        "--mfe-rnastructure/--no-mfe-rnastructure", default=None, help="Fuzz MFE RNAstructure"
     ),
-    cloup.option("--energy-model", default="t04", help="Which energy model to use for fuzzing"),
-    cloup.option(
-        "--backends",
-        default=["base", "baseopt"],
-        multiple=True,
-        help="Which backends to use for fuzzing",
-    ),
-    cloup.option("--brute-max", default=30, help="Max size of sequences to brute force"),
-    cloup.option("--mfe/--no-mfe", default=False, help="Whether to fuzz mfe"),
-    cloup.option(
-        "--mfe-rnastructure/--no-mfe-rnastructure",
-        default=False,
-        help="Whether to fuzz mfe with rnastructure",
-    ),
-    cloup.option(
-        "--mfe-table/--no-mfe-table", default=False, help="Whether to fuzz mfe with table"
-    ),
-    cloup.option("--subopt/--no-subopt", default=False, help="Whether to fuzz subopt"),
+    cloup.option("--mfe-table/--no-mfe-table", default=None, help="Check MFE DP tables"),
+    cloup.option("--subopt/--no-subopt", default=None, help="Fuzz suboptimal folding"),
     cloup.option(
         "--subopt-rnastructure/--no-subopt-rnastructure",
-        default=False,
-        help="Whether to fuzz subopt with rnastructure",
+        default=None,
+        help="Fuzz subopt RNAstructure",
     ),
+    cloup.option("--subopt-strucs", type=int, default=None, help="Max subopt structures"),
+    cloup.option("--subopt-delta", type=float, default=None, help="Max subopt energy delta"),
+    cloup.option("--pfn/--no-pfn", default=None, help="Fuzz partition function"),
     cloup.option(
-        "--subopt-strucs", default=10000, help="Maximum number of structures to generate for subopt"
-    ),
-    # no subopt time here because it will generate different results between algos
-    cloup.option("--subopt-delta", default=0.6, help="Maximum energy delta for subopt"),
-    cloup.option("--pfn/--no-pfn", default=False, help="Whether to fuzz partition function"),
-    cloup.option(
-        "--pfn-rnastructure/--no-pfn-rnastructure",
-        default=False,
-        help="Whether to fuzz partition function with rnastructure",
+        "--pfn-rnastructure/--no-pfn-rnastructure", default=None, help="Fuzz PFN RNAstructure"
     ),
 )
 
 
 def build_afl_fuzz_cfg_from_args(
     build_cfg: BuildCfg,
-    energy_model: str,
-    backends: list[str],
-    max_len: int = -1,
-    seed: int | None = None,
-    random_models: bool = False,
-    brute_max: int = 30,
-    mfe: bool = False,
-    mfe_rnastructure: bool = False,
-    mfe_table: bool = False,
-    subopt: bool = False,
-    subopt_rnastructure: bool = False,
-    subopt_strucs: int = 5000,
-    subopt_delta: float = 0.6,
-    pfn: bool = False,
-    pfn_rnastructure: bool = False,
+    max_len: int | None = None,
+    random_pf: bool | None = None,
+    energy_model: str | None = None,
+    ctd: CtdCfg | None = None,
+    lonely_pairs: LonelyPairs | None = None,
+    backends: tuple[str, ...] = (),
+    brute_max: int | None = None,
+    mfe: bool | None = None,
+    mfe_rnastructure: bool | None = None,
+    mfe_table: bool | None = None,
+    subopt: bool | None = None,
+    subopt_rnastructure: bool | None = None,
+    subopt_strucs: int | None = None,
+    subopt_delta: float | None = None,
+    pfn: bool | None = None,
+    pfn_rnastructure: bool | None = None,
     **_kwargs: Any,
 ) -> AflFuzzCfg:
     return AflFuzzCfg(
         build_cfg=build_cfg,
         fuzz_max_len=max_len,
-        fuzz_seed=seed,
-        fuzz_random_models=random_models,
+        fuzz_random_pseudofree=random_pf,
         fuzz_energy_model=energy_model,
-        fuzz_backends=backends,
+        fuzz_ctd=ctd,
+        fuzz_lonely_pairs=lonely_pairs,
+        fuzz_backends=list(backends) if backends else None,
         fuzz_brute_max=brute_max,
         fuzz_mfe=mfe,
         fuzz_mfe_rnastructure=mfe_rnastructure,

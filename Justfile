@@ -58,6 +58,27 @@ fuzz $fuzz_exec:
   $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 200
   $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 200
 
+afl-setup:
+  #!/usr/bin/env bash
+  if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
+    echo core | sudo tee /proc/sys/kernel/core_pattern
+  else
+    echo "core_pattern already set"
+  fi
+
+# Minimize all unique AFL crash files.
+afl-tmin afl_dir:
+  crashes=$(find {{afl_dir}}/ -path '*/crashes/*' -type f -not -name 'README.txt' \
+    -exec md5sum {} + | sort | uniq -w 32 | awk '{print $2}') && \
+  if [ -z "$crashes" ]; then echo "No crashes found."; exit 0; fi && \
+  echo "Found $(echo "$crashes" | wc -l) unique crashes." && \
+  poetry run python -m rnapy.run afl-fuzz-min --compiler=afl-fast --kind=relwithdebinfo \
+    --mfe --mfe-table --subopt $crashes
+
+afl-fuzz: afl-setup
+  poetry run python -m rnapy.run afl-fuzz --compiler=afl-fast --kind=relwithdebinfo \
+    --mfe --mfe-table --subopt --pfn --random-pf
+
 fix:
   pre-commit run --all-files
 

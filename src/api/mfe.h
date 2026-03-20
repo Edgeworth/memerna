@@ -20,11 +20,12 @@ struct MfeResult {
 };
 
 [[nodiscard]] inline const md::base::DpState* MaybeGetBaseDpState(const DpState& dp) {
-  return std::visit(overloaded{
-      [](const md::base::DpState& base) -> const md::base::DpState* { return &base; },
-      [](const md::stack::DpState& stack) -> const md::base::DpState* { return &stack.base; },
-      [](const std::monostate&) -> const md::base::DpState* { return nullptr; },
-  },
+  return std::visit(
+      overloaded{
+          [](const md::base::DpState& base) -> const md::base::DpState* { return &base; },
+          [](const md::stack::DpState& stack) -> const md::base::DpState* { return &stack.base; },
+          [](const std::monostate&) -> const md::base::DpState* { return nullptr; },
+      },
       dp);
 }
 

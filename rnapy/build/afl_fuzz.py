@@ -1,15 +1,19 @@
 # Copyright 2022 Eliot Courtney.
 import copy
 import dataclasses
+import os
 import shutil
+import subprocess
 from dataclasses import dataclass, field
 from enum import StrEnum
+from functools import cached_property
 from itertools import cycle, islice
 from pathlib import Path
 
 import click
 
 from rnapy.build.build_cfg import BuildCfg, Sanitizer
+from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 
 AFL_MEMORY_LIMIT_MB = "2000"
 AFL_TIME_LIMIT_MS = "2000"
@@ -46,26 +50,27 @@ class AflFuzzKind(StrEnum):
 class AflFuzzCfg:
     build_cfg: BuildCfg
 
-    # Info for the actual fuzz_afl invocation:
-    fuzz_max_len: int
-    fuzz_seed: int | None  # For fixed random model
-    fuzz_random_models: bool  # For random models every fuzz invocation
-    fuzz_energy_model: str
-    fuzz_backends: list[str]
-    fuzz_brute_max: int
-    fuzz_mfe: bool
-    fuzz_mfe_rnastructure: bool
-    fuzz_mfe_table: bool
-    fuzz_subopt: bool
-    fuzz_subopt_rnastructure: bool
-    fuzz_subopt_strucs: int
-    fuzz_subopt_delta: float
-    fuzz_pfn: bool
-    fuzz_pfn_rnastructure: bool
+    fuzz_max_len: int | None = None
+    fuzz_random_pseudofree: bool | None = None
+    fuzz_energy_model: str | None = None
+    fuzz_ctd: CtdCfg | None = None
+    fuzz_lonely_pairs: LonelyPairs | None = None
+    fuzz_backends: list[str] | None = None
+    fuzz_brute_max: int | None = None
+    fuzz_mfe: bool | None = None
+    fuzz_mfe_rnastructure: bool | None = None
+    fuzz_mfe_table: bool | None = None
+    fuzz_subopt: bool | None = None
+    fuzz_subopt_rnastructure: bool | None = None
+    fuzz_subopt_strucs: int | None = None
+    fuzz_subopt_delta: float | None = None
+    fuzz_pfn: bool | None = None
+    fuzz_pfn_rnastructure: bool | None = None
 
     kind: AflFuzzKind = AflFuzzKind.REGULAR
     # extra args for afl-fuzz. not included in ident
     afl_args: list[str] = field(default_factory=list)
+    disable_trim: bool = False
     index: int = 0  # which fuzzer this is when running multiple fuzzers
 
     def __post_init__(self) -> None:
@@ -115,8 +120,32 @@ class AflFuzzCfg:
         if self.kind == AflFuzzKind.CMPLOG:
             shutil.copy(self.bin_path() / AFL_TARGET, self.bin_path() / (AFL_TARGET + ".cmplog"))
 
+    @cached_property
+    def afl_map_size(self) -> int:
+        env = os.environ.copy()
+        env["AFL_DUMP_MAP_SIZE"] = "1"
+        res = subprocess.run(
+            [f"./{AFL_TARGET}"],
+            cwd=self.bin_path(),
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if res.returncode != 255:
+            raise RuntimeError(
+                f"Failed to query AFL_MAP_SIZE from {self.bin_path() / AFL_TARGET}: {res.stderr}"
+            )
+        return int(res.stdout.strip())
+
     def _afl_env(self) -> str:
-        env = "AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 AFL_SKIP_CPUFREQ=1 "
+        env = (
+            "AFL_AUTORESUME=1 AFL_IMPORT_FIRST=1 AFL_TESTCACHE_SIZE=500 "
+            "AFL_SKIP_CPUFREQ=1 AFL_CMPLOG_ONLY_NEW=1 "
+        )
+        env += f"AFL_MAP_SIZE={self.afl_map_size} "
+        if self.disable_trim:
+            env += "AFL_DISABLE_TRIM=1 "
         # Use ASAN options to enforce memory limit.
         # These use the AFL default ASAN options plus hard_rss_limit_mb
         if self.kind == AflFuzzKind.ASAN:
@@ -139,28 +168,42 @@ class AflFuzzCfg:
         if self.build_cfg.rnastructure:
             cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
         cmd += f"--memerna-data {self.build_cfg.src / 'data'} "
-        cmd += f"--max-len {self.fuzz_max_len} "
-        if self.fuzz_seed is not None:
-            cmd += f"--seed {self.fuzz_seed} "
-        if self.fuzz_random_models:
-            cmd += "--random-models "
-        cmd += f"--energy-model {self.fuzz_energy_model} "
-        cmd += f"--backends {','.join(self.fuzz_backends)} "
-        cmd += f"--brute-max {self.fuzz_brute_max} "
-        cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
-        cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "
-        cmd += "--mfe-table " if self.fuzz_mfe_table else "--no-mfe-table "
-        cmd += "--subopt " if self.fuzz_subopt else "--no-subopt "
-        cmd += (
-            "--subopt-rnastructure "
-            if self.fuzz_subopt_rnastructure
-            else "--no-subopt-rnastructure "
-        )
-        cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
-        cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
-        cmd += "--pfn " if self.fuzz_pfn else "--no-pfn "
-        cmd += "--pfn-rnastructure " if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure "
-
+        if self.fuzz_max_len is not None:
+            cmd += f"--max-len {self.fuzz_max_len} "
+        if self.fuzz_random_pseudofree:
+            cmd += "--random-pf "
+        if self.fuzz_energy_model is not None:
+            cmd += f"--energy-model {self.fuzz_energy_model} "
+        if self.fuzz_ctd is not None:
+            cmd += f"--ctd {self.fuzz_ctd} "
+        if self.fuzz_lonely_pairs is not None:
+            cmd += f"--lonely-pairs {self.fuzz_lonely_pairs} "
+        if self.fuzz_backends is not None:
+            cmd += f"--backends {','.join(self.fuzz_backends)} "
+        if self.fuzz_brute_max is not None:
+            cmd += f"--brute-max {self.fuzz_brute_max} "
+        if self.fuzz_mfe is not None:
+            cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
+        if self.fuzz_mfe_rnastructure is not None:
+            cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "
+        if self.fuzz_mfe_table is not None:
+            cmd += "--mfe-table " if self.fuzz_mfe_table else "--no-mfe-table "
+        if self.fuzz_subopt is not None:
+            cmd += "--subopt " if self.fuzz_subopt else "--no-subopt "
+        if self.fuzz_subopt_rnastructure is not None:
+            cmd += (
+                "--subopt-rnastructure "
+                if self.fuzz_subopt_rnastructure
+                else "--no-subopt-rnastructure "
+            )
+        if self.fuzz_subopt_strucs is not None:
+            cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
+        if self.fuzz_subopt_delta is not None:
+            cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
+        if self.fuzz_pfn is not None:
+            cmd += "--pfn " if self.fuzz_pfn else "--no-pfn "
+        if self.fuzz_pfn_rnastructure is not None:
+            cmd += "--pfn-rnastructure " if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure "
         return cmd
 
     def afl_fuzz_cmd(self) -> str:
@@ -185,6 +228,7 @@ class AflFuzzCfg:
     def afl_tmin_cmd(self, path: Path) -> str:
         cmd = ""
 
+        cmd += f"AFL_MAP_SIZE={self.afl_map_size} "
         cmd += f"afl-tmin {self._afl_limits()}  "
         cmd += f"-i {path} -o {self.data_path()}/{path.name}.min "
         cmd += "-- " + self._fuzz_cmd()
@@ -195,54 +239,59 @@ class AflFuzzCfg:
 def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:
     """Build an ensemble of fuzz configurations for a build configuration."""
     cfgs = []
-    # Constructs fuzzers in this order:
-    # Regular fuzzer - the main fuzzer.
-    # CMPLOG fuzzer.
-    # CMPLOG fuzzer with -l AT transformations.
-    # ASAN fuzzer.
-    # UBSAN fuzzer.
-    # TSAN fuzzer.
-    # CFISAN fuzzer.
-    # Regular fuzzers with combinations of -L 0, -Z, and different power schedules.
+    # Ensemble following AFL++ best practices (docs/fuzzing_in_depth.md):
+    # 1. Main fuzzer (-M, gets old queue selection and no trimming automatically).
+    # 2. CMPLOG with -l 2 (standard comparison logging).
+    # 3. CMPLOG with -l 2AT (arithmetic + transformational solving).
+    # 4. Sanitizer fuzzers (ASAN, UBSAN, TSAN, CFISAN).
+    # 5. Extra regular fuzzers with varied power schedules, ~10% MOpt,
+    #    ~10% old queue cycling (-Z), ~50% AFL_DISABLE_TRIM.
     # Note: LAF is disabled since it seems to cause heisenbugs.
-    kinds_args: list[tuple[AflFuzzKind, list[str]]] = [
-        (AflFuzzKind.REGULAR, []),
-        (AflFuzzKind.CMPLOG, []),
-        (AflFuzzKind.CMPLOG, ["-l", "AT"]),
+    kinds_args: list[tuple[AflFuzzKind, list[str], bool]] = [
+        (AflFuzzKind.REGULAR, [], False),
+        (AflFuzzKind.CMPLOG, ["-l", "2"], False),
+        (AflFuzzKind.CMPLOG, ["-l", "2AT"], False),
     ]
 
-    # Skip other configurations if RNAstructure is enabled because we don't
+    # Skip sanitizer configurations if RNAstructure is enabled because we don't
     # care about these kinds of issues in RNAstructure.
-    # Also skip LAF, as it takes too long to compile.
     if not afl_cfg.build_cfg.rnastructure:
         kinds_args += [
-            (AflFuzzKind.ASAN, []),
-            (AflFuzzKind.UBSAN, []),
-            (AflFuzzKind.TSAN, []),
-            (AflFuzzKind.CFISAN, []),
+            (AflFuzzKind.ASAN, [], False),
+            (AflFuzzKind.UBSAN, [], False),
+            (AflFuzzKind.TSAN, [], False),
+            (AflFuzzKind.CFISAN, [], False),
         ]
 
-    # 1/4th of the time.
-    mopt_cycle = [["-L", "0"]] + [[]] * 3
-    queue_cycle = [["-Z"]] + [[]] * 10
+    # ~10% MOpt (not well maintained but still recommended for a minority).
+    mopt_cycle = [["-L", "0"]] + [[]] * 9
+    # ~10% old queue cycling.
+    queue_cycle = [["-Z"]] + [[]] * 9
+    # ~50% disable trimming (recommended by AFL++ docs).
+    trim_cycle = [True, False]
+    # Power schedules: majority fast/explore, rest spread across recommended set.
+    # Recommended by AFL++ docs: explore, fast, coe, lin, quad, exploit, rare.
     power_cycle = [
         ["-p", "fast"],
+        ["-p", "fast"],
+        ["-p", "fast"],
+        ["-p", "explore"],
         ["-p", "explore"],
         ["-p", "exploit"],
-        ["-p", "seek"],
-        ["-p", "rare"],
-        ["-p", "mmopt"],
         ["-p", "coe"],
         ["-p", "lin"],
         ["-p", "quad"],
+        ["-p", "rare"],
     ]
 
-    gen = zip(cycle(mopt_cycle), cycle(queue_cycle), cycle(power_cycle))
-    for mopt, queue, power in islice(gen, max_num_procs):
-        kinds_args.append((AflFuzzKind.REGULAR, mopt + queue + power))
+    gen = zip(cycle(mopt_cycle), cycle(queue_cycle), cycle(power_cycle), cycle(trim_cycle))
+    for mopt, queue, power, trim in islice(gen, max_num_procs):
+        kinds_args.append((AflFuzzKind.REGULAR, mopt + queue + power, trim))
 
-    for i, (kind, extra_args) in enumerate(kinds_args):
-        cfg = dataclasses.replace(afl_cfg, kind=kind, afl_args=extra_args, index=i)
+    for i, (kind, extra_args, trim) in enumerate(kinds_args):
+        cfg = dataclasses.replace(
+            afl_cfg, kind=kind, afl_args=extra_args, disable_trim=trim, index=i
+        )
         cfgs.append(cfg)
 
     return cfgs[:max_num_procs]

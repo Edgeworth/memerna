@@ -24,9 +24,9 @@ namespace mrna::fuzz {
 
 class FuzzHarness {
  public:
-  explicit FuzzHarness(FuzzCfg fuzz_cfg);
+  explicit FuzzHarness(FuzzCfg fuzz_cfg, bool should_log = true);
 
-  Error Run(const Primary& r, erg::PseudofreeCfg pf);
+  Error Run(const Primary& r, const erg::PseudofreeCfg& pf);
   std::mt19937& e() { return e_; }
 
   [[nodiscard]] constexpr std::optional<uint_fast32_t> last_seed() const {
@@ -44,7 +44,7 @@ class FuzzHarness {
   BackendCfg backend_cfg_;
   FuzzCfg fuzz_cfg_;
   std::mt19937 e_;
-  bool first_invocation_ = true;
+  bool should_log_;
 
 #ifdef USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;

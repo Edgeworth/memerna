@@ -59,8 +59,7 @@ class FuzzInvocation {
   std::shared_ptr<bridge::RNAstructure> rstr_;
 
   Error CheckMfeRNAstructure(const FoldBaseline& baseline);
-  Error CheckSuboptRNAstructure(
-      subopt::SuboptCfg subopt_cfg, const FoldBaseline& baseline,
+  Error CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg, const FoldBaseline& baseline,
       const std::vector<subopt::SuboptResult>& subopt);
   Error CheckPfnRNAstructure(const pfn::PfnResult& pfn);
 #endif  // USE_RNASTRUCTURE

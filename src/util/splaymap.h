@@ -168,7 +168,7 @@ class SplayMap {
     return Get();
   }
 
-  std::size_t Size() const { return size_; }
+  [[nodiscard]] std::size_t Size() const { return size_; }
 
   void Reserve(std::size_t s) { ns_.reserve(s); }
 
@@ -180,7 +180,7 @@ class SplayMap {
   }
 
   // Testing / visualisation methods.
-  std::string Describe() const {
+  [[nodiscard]] std::string Describe() const {
     std::string ans = fmt::format(
         "Tree with {} nodes. Backing node size: {}, root at index {}\n", Size(), ns_.size(), root);
     for (const auto& s : DescribeInternal(root)) ans += s + "\n";
@@ -202,7 +202,7 @@ class SplayMap {
   int root{NONE};
   std::size_t size_{0};
 
-  std::vector<std::string> DescribeInternal(int node) const {
+  [[nodiscard]] std::vector<std::string> DescribeInternal(int node) const {
     if (node == NONE) return {""};
     const auto& n = ns_[node];
     std::vector<std::string> desc;
