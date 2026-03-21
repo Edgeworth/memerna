@@ -113,6 +113,7 @@ rnapy helper build script) that may be useful for some users. See the cmake
 configuration for a full explanation.
 
 - USE_MPFR: use MPFR for arbitrary precision floating point
+- ENABLE_LOGGING: enable project logging
 - ENERGY_PRECISION: the number of decimal places to use for energy calculations
 - FLOAT_PRECISION: the number of significant digits to use for floats
 

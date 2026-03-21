@@ -11,11 +11,11 @@ namespace mrna {
 
 class EnergyTestT12 : public testing::TestWithParam<int> {};
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EnergyTestT12);
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(EnergyTestT12, T12P2) {
   const auto& m = t12_ms[GetParam()];

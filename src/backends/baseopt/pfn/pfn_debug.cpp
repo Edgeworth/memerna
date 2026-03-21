@@ -2,7 +2,6 @@
 #include "backends/baseopt/pfn/pfn_debug.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -18,6 +17,7 @@
 #include "model/pfn.h"
 #include "model/primary.h"
 #include "util/error.h"
+#include "util/log.h"
 #include "util/util.h"
 
 namespace mrna::md::base::opt {
@@ -50,7 +50,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
+  logdebug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), m, cfg);

@@ -28,7 +28,7 @@ class PfnTestT04 : public testing::TestWithParam<std::tuple<int, PfnAlg>> {
   }
 };
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST_P(PfnTestT04, T04P1) {
   auto [i, alg] = GetParam();
@@ -103,7 +103,7 @@ TEST_P(PfnTestT04, T04P1) {
       Pfn(m, std::get<Primary>(k16sHSapiens3)).pfn.q);
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(PfnTestT04, T04P2) {
   auto [i, alg] = GetParam();

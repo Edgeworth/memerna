@@ -27,7 +27,7 @@ class SuboptTestT04 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> 
   }
 };
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST_P(SuboptTestT04, T04P1) {
   auto [i, alg] = GetParam();
@@ -456,7 +456,7 @@ TEST_P(SuboptTestT04, T04P1) {
       });
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(SuboptTestT04, T04P2) {
   auto [i, alg] = GetParam();

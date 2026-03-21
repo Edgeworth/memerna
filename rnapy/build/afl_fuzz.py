@@ -81,6 +81,9 @@ class AflFuzzCfg:
         self.base_build_cfg = copy.deepcopy(self.build_cfg)
         # Copy config so we can add our environment variables to it.
         self.build_cfg = copy.deepcopy(self.build_cfg)
+        # CFISAN trips in logger startup code, so force logging off only for that build.
+        if self.kind == AflFuzzKind.CFISAN:
+            self.build_cfg.enable_logging = False
         self.build_cfg.env.update(self.kind.env())
 
     def error(self) -> str:

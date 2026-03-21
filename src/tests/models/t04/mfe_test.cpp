@@ -22,7 +22,7 @@ class MfeTestT04 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
   }
 };
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST_P(MfeTestT04, T04P1) {
   auto [i, alg] = GetParam();
@@ -105,7 +105,7 @@ TEST_P(MfeTestT04, T04P1) {
   EXPECT_EQ(E(-89.6), std::get<0>(Mfe(m, std::get<Primary>(k16sHSapiens3))));
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(MfeTestT04, T04P2) {
   auto [i, alg] = GetParam();

@@ -34,6 +34,7 @@ build_cfg_options = cloup.option_group(
     cloup.option("--lto/--no-lto", default=False, help="Whether to build with LTO"),
     cloup.option("--rnastructure/--no-rnastructure", default=False),
     cloup.option("--mpfr/--no-mpfr", default=False),
+    cloup.option("--logging/--no-logging", default=True, help="Whether to enable project logging"),
     cloup.option("--float-precision", type=int, default=15),
     cloup.option("--energy-precision", type=int, default=2),
 )
@@ -49,6 +50,7 @@ def build_cfg_from_args(
     rnastructure: bool,
     iwyu: bool,
     lto: bool,
+    logging: bool,
     float_precision: int,
     energy_precision: int,
     **_kwargs: Any,
@@ -63,6 +65,7 @@ def build_cfg_from_args(
         rnastructure=rnastructure,
         iwyu=iwyu,
         lto=lto,
+        enable_logging=logging,
         float_precision=float_precision,
         energy_precision=energy_precision,
     )

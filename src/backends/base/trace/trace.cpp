@@ -2,7 +2,6 @@
 #include "backends/base/trace/trace.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <vector>
@@ -16,6 +15,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::base {
 
@@ -24,7 +24,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
   const int N = static_cast<int>(r.size());
   verify(!tcfg.random, "random traceback is not supported in this energy model");
 
-  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
+  logdebug("base {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));

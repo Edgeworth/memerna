@@ -159,7 +159,7 @@ TEST_P(EnergyTestBase, BaseCases) {
 
 INSTANTIATE_TEST_SUITE_P(EnergyModelTests, EnergyTestBase, testing::Range(0, NUM_TEST_MODELS));
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST(EnergyTestBase, T04) {
   auto m = base_t04;
@@ -180,7 +180,7 @@ TEST(EnergyTestBase, T04) {
   EXPECT_EQ(0, std::memcmp(augubranch, pc.augubranch, sizeof(augubranch)));
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST(EnergyTestBase, T04) {
   auto m = base_t04;

@@ -10,6 +10,7 @@ option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 option(USE_LTO "Whether to build with LTO" OFF)
+option(ENABLE_LOGGING "Enable project logging" ON)
 set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for floats.
     Valid values are 6 (float32), 15 (float64), 18 (float80), or any value if MPFR is enabled.")
 set(ENERGY_PRECISION 2 CACHE STRING
@@ -83,11 +84,13 @@ CPMAddPackage(
 CPMAddPackage("gh:fmtlib/fmt#12.1.0")
 
 # spdlog should reuse existing fmtlib.
-CPMAddPackage(
-  GITHUB_REPOSITORY gabime/spdlog
-  VERSION 1.17.0
-  OPTIONS "SPDLOG_FMT_EXTERNAL 1"
-)
+if(ENABLE_LOGGING)
+  CPMAddPackage(
+    GITHUB_REPOSITORY gabime/spdlog
+    VERSION 1.17.0
+    OPTIONS "SPDLOG_FMT_EXTERNAL 1"
+  )
+endif()
 
 # gtest
 CPMAddPackage(
@@ -288,6 +291,8 @@ set(MEMERNA_SOURCE
   src/util/error.h
   src/util/float.h
   src/util/enum.h
+  src/util/log.cpp
+  src/util/log.h
   src/util/lru_vector_cache.h
   src/util/splaymap.h
   src/util/string.cpp
@@ -340,10 +345,14 @@ endif()
 add_library(memerna ${MEMERNA_SOURCE})
 
 target_compile_definitions(memerna PUBLIC
-  MEMERNA_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-  MEMERNA_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-  MEMERNA_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+  MRNA_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+  MRNA_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+  MRNA_VERSION_PATCH=${PROJECT_VERSION_PATCH}
 )
+
+if(ENABLE_LOGGING)
+  target_compile_definitions(memerna PUBLIC MRNA_ENABLE_LOGGING)
+endif()
 
 add_executable(efn src/programs/efn.cpp)
 add_executable(fold src/programs/fold.cpp)
@@ -357,7 +366,10 @@ add_executable(subopt src/programs/subopt.cpp)
 
 target_include_directories(memerna PUBLIC src)
 
-target_link_libraries(memerna PUBLIC fmt::fmt spdlog::spdlog)
+target_link_libraries(memerna PUBLIC fmt::fmt)
+if(ENABLE_LOGGING)
+  target_link_libraries(memerna PUBLIC spdlog::spdlog)
+endif()
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)
@@ -370,7 +382,7 @@ target_link_libraries(subopt PRIVATE memerna)
 
 # Use Boost (REQUIRED above, so Boost_FOUND is always true here).
 target_include_directories(memerna PUBLIC ${Boost_INCLUDE_DIRS})
-target_compile_definitions(memerna PUBLIC USE_BOOST)
+target_compile_definitions(memerna PUBLIC MRNA_USE_BOOST)
 target_link_libraries(memerna PUBLIC ${CMAKE_DL_LIBS}) # For Boost stacktrace
 
 if(LIBBACKTRACE)
@@ -380,22 +392,22 @@ endif()
 # Use MPFR if necessary
 if(USE_MPFR)
   target_include_directories(memerna PUBLIC ${MPFR_INCLUDES})
-  target_compile_definitions(memerna PUBLIC USE_MPFR)
+  target_compile_definitions(memerna PUBLIC MRNA_USE_MPFR)
   target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
 endif()
 
 # Use RNAstructure if necessary
 if(USE_RNASTRUCTURE)
   target_include_directories(memerna SYSTEM PUBLIC extern) # Suppress warnings.
-  target_compile_definitions(memerna PUBLIC USE_RNASTRUCTURE)
+  target_compile_definitions(memerna PUBLIC MRNA_USE_RNASTRUCTURE)
   target_link_libraries(memerna PUBLIC rnastructure_bridge)
 endif()
 
 # Set float precision
-target_compile_definitions(memerna PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
+target_compile_definitions(memerna PUBLIC MRNA_FLOAT_PRECISION=${FLOAT_PRECISION})
 
 # Set energy precision
-target_compile_definitions(memerna PUBLIC ENERGY_PRECISION=${ENERGY_PRECISION})
+target_compile_definitions(memerna PUBLIC MRNA_ENERGY_PRECISION=${ENERGY_PRECISION})
 
 # Add sanitizers
 add_sanitizers(memerna)

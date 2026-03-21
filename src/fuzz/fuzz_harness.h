@@ -16,9 +16,9 @@
 #include "model/primary.h"
 #include "util/util.h"
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
 #include "api/bridge/rnastructure.h"
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
 namespace mrna::fuzz {
 
@@ -46,11 +46,11 @@ class FuzzHarness {
   std::mt19937 e_;
   bool should_log_;
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
-  void MaybeLoadBackends();
+  void MaybeLoadBackends(const erg::PseudofreeCfg& pf);
 };
 
 }  // namespace mrna::fuzz

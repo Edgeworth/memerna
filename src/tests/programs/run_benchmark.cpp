@@ -25,7 +25,7 @@ namespace mrna {
 // BackendCfg for benchmarks - uses T04 model with monostate data_src since
 // the model is already loaded.
 inline const BackendCfg kBenchmarkCfg{.energy_model = erg::EnergyModelKind::T04,
-    .precision = ENERGY_PRECISION,
+    .precision = MRNA_ENERGY_PRECISION,
     .data_src = std::monostate{}};
 
 template <class... Args>

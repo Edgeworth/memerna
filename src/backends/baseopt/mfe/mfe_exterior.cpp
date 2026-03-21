@@ -2,7 +2,6 @@
 #include "backends/baseopt/mfe/mfe_exterior.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 

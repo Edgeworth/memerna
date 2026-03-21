@@ -16,12 +16,12 @@
 
 namespace mrna {
 
-#define EXPECT_REL_EQ(a, b)                                                    \
-  do {                                                                         \
-    auto acopy = (a);                                                          \
-    auto bcopy = (b);                                                          \
-    EXPECT_TRUE(rel_eq(acopy, bcopy))                                          \
-        << std::setprecision(FLOAT_PRECISION + 1) << acopy << " != " << bcopy; \
+#define EXPECT_REL_EQ(a, b)                                                         \
+  do {                                                                              \
+    auto acopy = (a);                                                               \
+    auto bcopy = (b);                                                               \
+    EXPECT_TRUE(rel_eq(acopy, bcopy))                                               \
+        << std::setprecision(MRNA_FLOAT_PRECISION + 1) << acopy << " != " << bcopy; \
   } while (0)
 
 inline Energy GetEnergy(const BackendModelPtr& m, const std::tuple<Primary, Secondary>& s) {

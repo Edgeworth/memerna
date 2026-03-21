@@ -2,7 +2,6 @@
 #include "backends/stack/trace/trace.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <optional>
@@ -22,6 +21,7 @@
 #include "model/secondary.h"
 #include "util/array.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::stack {
 
@@ -61,7 +61,7 @@ struct TracebackInternal {
     if (tcfg.random) {
       const auto seed = tcfg.seed.value_or(std::random_device{}());
       eng.seed(seed);
-      spdlog::debug("trace random seed {}", seed);
+      logdebug("trace random seed {}", seed);
     }
   }
 
@@ -563,7 +563,7 @@ struct TracebackInternal {
   }
 
   TraceResult Compute() {
-    spdlog::debug("stack {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
+    logdebug("stack {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
     std::vector<DpIndex> q;
     q.emplace_back(base::DpIndex(0, -1, EXT));

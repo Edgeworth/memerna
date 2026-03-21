@@ -2,7 +2,6 @@
 #include "backends/base/pfn/pfn_debug.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -18,6 +17,7 @@
 #include "model/pfn.h"
 #include "model/primary.h"
 #include "util/error.h"
+#include "util/log.h"
 #include "util/util.h"
 
 namespace mrna::md::base {
@@ -43,7 +43,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
       funcname(), reason);
   pf.Verify(r);
 
-  spdlog::debug("base {} with {}, {}", funcname(), cfg, pf);
+  logdebug("base {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), m, cfg, pf);

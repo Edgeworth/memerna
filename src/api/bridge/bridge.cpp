@@ -7,9 +7,9 @@
 #include "api/ctx/ctx.h"
 #include "util/error.h"
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
 #include "api/bridge/rnastructure.h"
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
 namespace mrna::bridge {
 
@@ -24,11 +24,11 @@ std::unique_ptr<RnaPackage> RnaPackage::FromArgParse(const ArgParse& args) {
   verify(args.Get<bool>(OPT_USE_RNASTRUCTURE) + args.Get<bool>(OPT_USE_MEMERNA) == 1,
       "require exactly one package flag\n{}", args.Usage());
   if (args.Get<bool>(OPT_USE_RNASTRUCTURE)) {
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
     return std::unique_ptr<RnaPackage>(new RNAstructure(RNAstructure::FromArgParse(args)));
 #else
     fatal("not compiled with RNAstructure");
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   } else {
     return std::unique_ptr<RnaPackage>(new Memerna(Memerna::FromArgParse(args)));

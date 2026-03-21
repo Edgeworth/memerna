@@ -20,6 +20,7 @@ test:
     --kind=debug --kind=relwithdebinfo ::: --sanitizer=asan \
     --sanitizer=tsan --sanitizer=ubsan ::: --float-precision=15 --float-precision=18 :::+ \
     --energy-precision=1 --energy-precision=2 :::+ \
+    --no-logging --logging :::+ \
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
     --compiler=clang --compiler=default --compiler=afl-fast
 

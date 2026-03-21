@@ -2,7 +2,6 @@
 #include "backends/baseopt/mfe/mfe_lyngso_sparse_opt.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -18,6 +17,7 @@
 #include "model/primary.h"
 #include "util/array.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::base::opt {
 
@@ -48,7 +48,7 @@ void MfeLyngsoSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& sta
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
+  logdebug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const Precomp pc(Primary(r), m, cfg);

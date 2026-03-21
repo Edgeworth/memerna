@@ -2,7 +2,6 @@
 #include "backends/base/subopt/subopt_persistent.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -17,6 +16,7 @@
 #include "model/energy.h"
 #include "model/secondary.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::base {
 
@@ -52,7 +52,7 @@ int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
       "{} does not support the given configuration: {}", funcname(), reason);
   pf_.Verify(r_);
 
-  spdlog::debug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method

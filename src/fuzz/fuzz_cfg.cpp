@@ -111,9 +111,9 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
 
   cfg.data_dir = args.Get<std::string>(OPT_MEMERNA_DATA);
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   cfg.rnastructure_data_dir = args.Get<std::string>(bridge::OPT_RNASTRUCTURE_DATA);
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   return cfg;
 }

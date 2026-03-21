@@ -2,7 +2,6 @@
 #include "backends/baseopt/subopt/subopt_iterative.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -16,6 +15,7 @@
 #include "model/ctd.h"
 #include "model/secondary.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::base::opt {
 
@@ -53,7 +53,7 @@ int64_t SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
       "{} does not support the given configuration: {}", funcname(), reason);
 
-  spdlog::debug("baseopt {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("baseopt {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
 
   // If require sorted output, or limited number of structures (requires sorting).
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||

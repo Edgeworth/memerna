@@ -41,7 +41,7 @@ class MfeTestT22 : public testing::TestWithParam<std::tuple<int, MfeAlg>> {
   }
 };
 
-#if ENERGY_PRECISION == 2
+#if MRNA_ENERGY_PRECISION == 2
 
 TEST_P(MfeTestT22, T22P2) {
   auto [i, alg] = GetParam();

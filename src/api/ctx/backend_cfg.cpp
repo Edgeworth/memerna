@@ -19,8 +19,8 @@ BackendCfg BackendCfg::FromArgParse(const ArgParse& args) {
           : std::variant<std::monostate, std::string, uint_fast32_t>{args.Get<std::string>(
                 OPT_MEMERNA_DATA)},
   };
-  verify(cfg.precision == ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
-      cfg.precision, ENERGY_PRECISION);
+  verify(cfg.precision == MRNA_ENERGY_PRECISION, "unsupported energy precision: {}, built with {}",
+      cfg.precision, MRNA_ENERGY_PRECISION);
   return cfg;
 }
 

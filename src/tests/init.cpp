@@ -38,18 +38,18 @@ void InitTest(const std::string& data_dir) {
   for (auto backend : EnumValues<BackendKind>()) {
     t04_ms.push_back(BackendFromBackendCfg(backend,
         BackendCfg{.energy_model = erg::EnergyModelKind::T04,
-            .precision = ENERGY_PRECISION,
+            .precision = MRNA_ENERGY_PRECISION,
             .data_src = data_dir}));
     t12_ms.push_back(BackendFromBackendCfg(backend,
         BackendCfg{.energy_model = erg::EnergyModelKind::T12,
-            .precision = ENERGY_PRECISION,
+            .precision = MRNA_ENERGY_PRECISION,
             .data_src = data_dir}));
   }
 
   // Only STACK supports T22.
   t22_ms.push_back(BackendFromBackendCfg(BackendKind::STACK,
       BackendCfg{.energy_model = erg::EnergyModelKind::T22,
-          .precision = ENERGY_PRECISION,
+          .precision = MRNA_ENERGY_PRECISION,
           .data_src = data_dir}));
 
   verify(t04_ms.size() == NUM_T04_MODELS, "t04_ms.size() == NUM_T04_MODELS");
@@ -58,7 +58,7 @@ void InitTest(const std::string& data_dir) {
 
   base_t04 = md::base::Model::FromBackendCfg(BackendKind::BASE,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
-          .precision = ENERGY_PRECISION,
+          .precision = MRNA_ENERGY_PRECISION,
           .data_src = data_dir});
   base_ms.push_back(base_t04);
   while (base_ms.size() < NUM_TEST_MODELS)
@@ -66,7 +66,7 @@ void InitTest(const std::string& data_dir) {
 
   baseopt_t04 = md::base::opt::Model::FromBackendCfg(BackendKind::BASEOPT,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
-          .precision = ENERGY_PRECISION,
+          .precision = MRNA_ENERGY_PRECISION,
           .data_src = data_dir});
   baseopt_ms.push_back(baseopt_t04);
   while (baseopt_ms.size() < NUM_TEST_MODELS)
@@ -74,7 +74,7 @@ void InitTest(const std::string& data_dir) {
 
   stack_t04 = md::stack::Model::FromBackendCfg(BackendKind::STACK,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
-          .precision = ENERGY_PRECISION,
+          .precision = MRNA_ENERGY_PRECISION,
           .data_src = data_dir});
   stack_ms.push_back(stack_t04);
   while (stack_ms.size() < NUM_TEST_MODELS)

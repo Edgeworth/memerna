@@ -22,8 +22,8 @@ using BoltzEnergy = flt;
 struct __attribute__((packed, aligned(4))) Energy {
  public:
   // Precision of energy values.
-  static constexpr int FACTOR = powi(10, ENERGY_PRECISION);
-  static constexpr int EXPONENT = ENERGY_PRECISION;
+  static constexpr int FACTOR = powi(10, MRNA_ENERGY_PRECISION);
+  static constexpr int EXPONENT = MRNA_ENERGY_PRECISION;
 
   [[nodiscard]] static constexpr Energy FromRaw(int32_t v) noexcept { return Energy{.v = v}; }
 

@@ -15,12 +15,12 @@
 #include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
 #include <memory>
 #include <utility>
 
 #include "api/bridge/rnastructure.h"
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
 namespace mrna::fuzz {
 
@@ -33,12 +33,12 @@ class FuzzInvocation {
 
   Error Run();
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   void set_rnastructure(std::shared_ptr<bridge::RNAstructure> rstr) {
-    verify(ENERGY_PRECISION == 1, "ENERGY_PRECISION must be 1 for RNAstructure");
+    verify(MRNA_ENERGY_PRECISION == 1, "MRNA_ENERGY_PRECISION must be 1 for RNAstructure");
     rstr_ = std::move(rstr);
   }
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
  private:
   struct FoldBaseline {
@@ -55,14 +55,14 @@ class FuzzInvocation {
 
   Error errors_;
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   std::shared_ptr<bridge::RNAstructure> rstr_;
 
   Error CheckMfeRNAstructure(const FoldBaseline& baseline);
   Error CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg, const FoldBaseline& baseline,
       const std::vector<subopt::SuboptResult>& subopt);
   Error CheckPfnRNAstructure(const pfn::PfnResult& pfn);
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   void Register(const std::string& header, Error&& local);
 

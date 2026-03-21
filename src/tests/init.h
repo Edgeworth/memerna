@@ -18,15 +18,15 @@ namespace mrna {
 // BackendCfg constants for IsSupported checks in tests.
 // Uses monostate for data_src since we only need energy_model for checks.
 inline const BackendCfg kT04Cfg{.energy_model = erg::EnergyModelKind::T04,
-    .precision = ENERGY_PRECISION,
+    .precision = MRNA_ENERGY_PRECISION,
     .data_src = std::monostate{}};
 
 inline const BackendCfg kT12Cfg{.energy_model = erg::EnergyModelKind::T12,
-    .precision = ENERGY_PRECISION,
+    .precision = MRNA_ENERGY_PRECISION,
     .data_src = std::monostate{}};
 
 inline const BackendCfg kT22Cfg{.energy_model = erg::EnergyModelKind::T22,
-    .precision = ENERGY_PRECISION,
+    .precision = MRNA_ENERGY_PRECISION,
     .data_src = std::monostate{}};
 
 extern std::tuple<Primary, Secondary> kNNDBHairpin1;

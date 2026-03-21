@@ -11,7 +11,7 @@ namespace mrna {
 
 class EnergyTestT04 : public testing::TestWithParam<int> {};
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST_P(EnergyTestT04, T04P1) {
   auto m = t04_ms[GetParam()];
@@ -40,7 +40,7 @@ TEST_P(EnergyTestT04, T04P1) {
   EXPECT_EQ(E(7.2), GetEnergy(m, "UGACAAAGGCGA", "(..(...)...)"));
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(EnergyTestT04, T04P2) {
   const auto& m = t04_ms[GetParam()];

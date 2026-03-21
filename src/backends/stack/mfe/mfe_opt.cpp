@@ -2,7 +2,6 @@
 #include "backends/stack/mfe/mfe_opt.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -16,6 +15,7 @@
 #include "model/primary.h"
 #include "util/array.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::stack {
 
@@ -67,7 +67,7 @@ struct MfeInternal {
         funcname(), reason);
     pf.Verify(r);
 
-    spdlog::debug("stack {} with {}, {}", funcname(), cfg, pf);
+    logdebug("stack {} with {}, {}", funcname(), cfg, pf);
 
     dp = base::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);

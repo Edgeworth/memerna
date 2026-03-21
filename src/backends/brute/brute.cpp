@@ -2,7 +2,6 @@
 #include "backends/brute/brute.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <iterator>
 #include <string>
@@ -17,6 +16,7 @@
 #include "model/constants.h"
 #include "model/energy.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::brute {
 
@@ -38,7 +38,7 @@ BruteResult Brute::Run() {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
-  spdlog::debug("brute {} with {}, {}, {}", funcname(), energy_cfg_, brute_cfg_, pf_);
+  logdebug("brute {} with {}, {}, {}", funcname(), energy_cfg_, brute_cfg_, pf_);
 
   if (brute_cfg_.pfn) {
     // Plus one to N, since -1 takes up a spot.

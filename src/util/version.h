@@ -22,9 +22,9 @@ struct VersionInfo {
   }
 };
 
-inline constexpr VersionInfo VERSION = {.major = MEMERNA_VERSION_MAJOR,
-    .minor = MEMERNA_VERSION_MINOR,
-    .patch = MEMERNA_VERSION_PATCH,
+inline constexpr VersionInfo VERSION = {.major = MRNA_VERSION_MAJOR,
+    .minor = MRNA_VERSION_MINOR,
+    .patch = MRNA_VERSION_PATCH,
     .pre_release = "",
     .build_metadata = ""};
 

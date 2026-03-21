@@ -2,7 +2,6 @@
 #include "backends/baseopt/subopt/subopt_debug.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <cassert>
@@ -16,6 +15,7 @@
 #include "model/constants.h"
 #include "model/secondary.h"
 #include "util/error.h"
+#include "util/log.h"
 
 namespace mrna::md::base::opt {
 
@@ -50,7 +50,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
   verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
       "{} does not support the given configuration: {}", funcname(), reason);
 
-  spdlog::debug("baseopt {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("baseopt {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand

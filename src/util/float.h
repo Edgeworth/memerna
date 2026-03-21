@@ -6,7 +6,7 @@
 #include <cmath>
 #include <string>
 
-#ifdef USE_MPFR
+#ifdef MRNA_USE_MPFR
 #include <fmt/ostream.h>
 
 #include <boost/multiprecision/mpfr.hpp>
@@ -21,7 +21,7 @@ inline void throw_exception(const std::exception& e) {
 }
 
 }  // namespace boost
-#endif  // USE_MPFR
+#endif  // MRNA_USE_MPFR
 
 namespace mrna {
 
@@ -31,13 +31,13 @@ constexpr int powi(int base, int exp) {
   return result;
 }
 
-#ifdef USE_MPFR
+#ifdef MRNA_USE_MPFR
 
 using flt =
-    boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<FLOAT_PRECISION>>;
+    boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<MRNA_FLOAT_PRECISION>>;
 
 #define _STRHELP(x) STRINGIFY(x)
-#define FLTFMT "{:." _STRHELP(FLOAT_PRECISION) "f}"
+#define FLTFMT "{:." _STRHELP(MRNA_FLOAT_PRECISION) "f}"
 
 // Stringify to ensure
 #define FLT(x) static_cast<flt>(#x)
@@ -46,13 +46,13 @@ inline flt ParseFlt(const std::string& str) { return flt(str); }
 
 #else
 
-#if FLOAT_PRECISION == 6
+#if MRNA_FLOAT_PRECISION == 6
 using flt = float;
 #define FLTFMT "{:.6f}"
-#elif FLOAT_PRECISION == 15
+#elif MRNA_FLOAT_PRECISION == 15
 using flt = double;
 #define FLTFMT "{:.15f}"
-#elif FLOAT_PRECISION == 18
+#elif MRNA_FLOAT_PRECISION == 18
 using flt = long double;
 #define FLTFMT "{:.18f}"
 #else
@@ -72,13 +72,13 @@ inline bool isnan(flt v) { return std::isnan(v); }
 
 inline flt ParseFlt(const std::string& str) { return static_cast<flt>(std::stold(str)); }
 
-#endif  // USE_MPFR
+#endif  // MRNA_USE_MPFR
 
-#if FLOAT_PRECISION == 6
+#if MRNA_FLOAT_PRECISION == 6
 inline const flt EP{1e-3};
-#elif FLOAT_PRECISION == 15
+#elif MRNA_FLOAT_PRECISION == 15
 inline const flt EP{1e-7};
-#elif FLOAT_PRECISION == 18
+#elif MRNA_FLOAT_PRECISION == 18
 inline const flt EP{1e-9};
 #else
 inline const flt EP{1e-30};
@@ -94,7 +94,7 @@ inline bool absrel_eq(flt a, flt b, flt ep = EP) { return abs_eq(a, b, ep) || re
 
 }  // namespace mrna
 
-#ifdef USE_MPFR
+#ifdef MRNA_USE_MPFR
 
 #include <fmt/format.h>
 
@@ -161,6 +161,6 @@ struct formatter<T> {
 
 }  // namespace fmt
 
-#endif  // USE_MPFR
+#endif  // MRNA_USE_MPFR
 
 #endif  // UTIL_FLOAT_H_

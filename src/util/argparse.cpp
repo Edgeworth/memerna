@@ -2,7 +2,6 @@
 #include "util/argparse.h"
 
 #include <fmt/core.h>
-#include <spdlog/common.h>
 
 #include <cstdlib>
 #include <string>
@@ -10,7 +9,7 @@
 #include <vector>
 
 #include "api/options.h"
-#include "spdlog/spdlog.h"
+#include "util/log.h"
 #include "util/string.h"
 
 namespace mrna {
@@ -145,12 +144,12 @@ void ArgParse::ParseOrExit(int argc, char** argv) {
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
     auto usage = Usage();
-    spdlog::critical("{}\n{}\n", ret, usage);
+    logcritical("{}\n{}\n", ret, usage);
     std::exit(1);  // NOLINT
   }
 
   if (GetOr(OPT_VERBOSE)) {
-    spdlog::set_level(spdlog::level::debug);
+    SetLogLevel(LogLevel::DEBUG);
   }
 }
 

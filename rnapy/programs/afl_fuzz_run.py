@@ -26,11 +26,7 @@ def afl_fuzz_run(testcase: str, index: int, **_kwargs: Any) -> None:
     afl_cfg = afl_fuzz_cfg_by_index(afl_cfg, index)
     afl_cfg.build()
     res = subprocess.run(
-        afl_cfg.fuzz_argv(),
-        input=testcase + "\n",
-        cwd=afl_cfg.bin_path(),
-        text=True,
-        check=False,
+        afl_cfg.fuzz_argv(), input=testcase + "\n", cwd=afl_cfg.bin_path(), text=True, check=False
     )
     if res.returncode != 0:
         raise RuntimeError(f"Fuzz target exited with code {res.returncode}.")

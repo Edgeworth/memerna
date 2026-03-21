@@ -1,12 +1,11 @@
 // Copyright 2026 Eliot Courtney.
 #include "util/argparse.h"
 
-#include <spdlog/spdlog.h>
-
 #include <string>
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "util/log.h"
 
 namespace mrna {
 
@@ -48,29 +47,29 @@ TEST(ArgParseTest, GetOrDefaultIsFalseWhenUnspecified) {
 }
 
 TEST(ArgParseTest, ParseOrExitNoVerboseDoesNotEnableDebug) {
-  const auto old_level = spdlog::get_level();
-  spdlog::set_level(spdlog::level::info);
+  const auto old_level = GetLogLevel();
+  SetLogLevel(LogLevel::INFO);
 
   mrna::ArgParse args;
   std::vector<std::string> argv_str = {"prog", "--no-verbose"};
   auto argv = MakeArgv(argv_str);
   args.ParseOrExit(static_cast<int>(argv.size()), argv.data());
 
-  EXPECT_NE(spdlog::get_level(), spdlog::level::debug);
-  spdlog::set_level(old_level);
+  EXPECT_NE(GetLogLevel(), LogLevel::DEBUG);
+  SetLogLevel(old_level);
 }
 
 TEST(ArgParseTest, ParseOrExitVerboseEnablesDebug) {
-  const auto old_level = spdlog::get_level();
-  spdlog::set_level(spdlog::level::info);
+  const auto old_level = GetLogLevel();
+  SetLogLevel(LogLevel::INFO);
 
   mrna::ArgParse args;
   std::vector<std::string> argv_str = {"prog", "--verbose"};
   auto argv = MakeArgv(argv_str);
   args.ParseOrExit(static_cast<int>(argv.size()), argv.data());
 
-  EXPECT_EQ(spdlog::get_level(), spdlog::level::debug);
-  spdlog::set_level(old_level);
+  EXPECT_EQ(GetLogLevel(), LogLevel::DEBUG);
+  SetLogLevel(old_level);
 }
 
 TEST(ArgParseTest, ThreeDashesRejected) {

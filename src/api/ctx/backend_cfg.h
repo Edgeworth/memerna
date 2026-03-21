@@ -19,7 +19,7 @@ MAKE_ENUM(BackendKind, BASE, BASEOPT, STACK);
 
 struct BackendCfg {
   erg::EnergyModelKind energy_model = erg::EnergyModelKind::T04;
-  int precision = ENERGY_PRECISION;
+  int precision = MRNA_ENERGY_PRECISION;
   std::variant<std::monostate, std::string, uint_fast32_t> data_src = std::monostate{};
 
   [[nodiscard]]
@@ -39,8 +39,8 @@ inline const Opt OPT_ENERGY_MODEL = Opt(Opt::ARG)
 
 inline const Opt OPT_ENERGY_PRECISION = Opt(Opt::ARG)
                                             .LongName("energy-precision")
-                                            .Choice({Conv(ENERGY_PRECISION)})
-                                            .Default(ENERGY_PRECISION)
+                                            .Choice({Conv(MRNA_ENERGY_PRECISION)})
+                                            .Default(MRNA_ENERGY_PRECISION)
                                             .Help("energy precision to use");
 
 inline const Opt OPT_BACKEND =

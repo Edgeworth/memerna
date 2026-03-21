@@ -2,7 +2,6 @@
 #include "backends/baseopt/pfn/pfn_opt.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -18,6 +17,7 @@
 #include "model/pfn.h"
 #include "model/primary.h"
 #include "util/error.h"
+#include "util/log.h"
 #include "util/util.h"
 
 namespace mrna::md::base::opt {
@@ -50,7 +50,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCf
   verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
 
-  spdlog::debug("baseopt {} with {}, {}", funcname(), cfg, pf);
+  logdebug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
   const int N = static_cast<int>(r.size());
   const BoltzPrecomp bpc(Primary(r), bm, cfg);

@@ -2,7 +2,6 @@
 #include "backends/stack/mfe/mfe_exterior.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 

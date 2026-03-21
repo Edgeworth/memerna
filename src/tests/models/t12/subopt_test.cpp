@@ -27,11 +27,11 @@ class SuboptTestT12 : public testing::TestWithParam<std::tuple<int, SuboptAlg>> 
   }
 };
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SuboptTestT12);
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST_P(SuboptTestT12, T12P2) {
   auto [i, alg] = GetParam();

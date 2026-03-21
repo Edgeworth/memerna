@@ -2,7 +2,6 @@
 #include "fuzz/fuzz_invocation.h"
 
 #include <fmt/core.h>
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <set>
@@ -29,6 +28,7 @@
 #include "model/secondary.h"
 #include "util/error.h"
 #include "util/float.h"
+#include "util/log.h"
 #include "util/util.h"
 
 namespace mrna::fuzz {
@@ -144,10 +144,10 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
     auto maybe_run = [&](MfeAlg mfe_alg) {
       std::string reason;
       if (!MfeAlgIsSupported(kind, mfe_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
-        if (should_log_) spdlog::info("mfe NOT fuzzed: {}-{}: {}", kind, mfe_alg, reason);
+        if (should_log_) loginfo("mfe NOT fuzzed: {}-{}: {}", kind, mfe_alg, reason);
         return;
       }
-      if (should_log_) spdlog::info("mfe fuzzed: {}-{}", kind, mfe_alg);
+      if (should_log_) loginfo("mfe fuzzed: {}-{}", kind, mfe_alg);
 
       const Ctx ctx(m, backend_cfg_);
       auto res = ctx.Fold(r_, mfe_alg, cfg_.energy_cfg, pf_, {});
@@ -201,11 +201,11 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
   std::optional<FoldBaseline> baseline =
       FoldBaseline{.fold = std::move(cmp_res), .model = std::move(models[cmp_idx])};
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   if (cfg_.mfe_rnastructure) {
     Register("RNAstructure:", CheckMfeRNAstructure(baseline.value()));
   }
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   return {std::move(errors), std::move(baseline)};
 }
@@ -239,10 +239,10 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
         std::string reason;
         if (!SuboptAlgIsSupported(
                 kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg, &reason)) {
-          if (should_log_) spdlog::info("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
+          if (should_log_) loginfo("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
           return;
         }
-        if (should_log_) spdlog::info("subopt fuzzed: {}-{}", kind, subopt_alg);
+        if (should_log_) loginfo("subopt fuzzed: {}-{}", kind, subopt_alg);
 
         const Ctx ctx(m, backend_cfg_);
         auto res = ctx.SuboptIntoVector(
@@ -278,10 +278,10 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
   if (!results.empty() && !results.front().second.empty())
     subopt_baseline = std::move(results.front().second.front().results);
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   if (cfg_.subopt_rnastructure)
     Register("rnastructure:", CheckSuboptRNAstructure(cfgs[0], baseline, subopt_baseline));
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   return errors;
 }
@@ -413,10 +413,10 @@ Error FuzzInvocation::CheckPfn() {
     auto maybe_run = [&](PfnAlg pfn_alg) {
       std::string reason;
       if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
-        if (should_log_) spdlog::info("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
+        if (should_log_) loginfo("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
         return;
       }
-      if (should_log_) spdlog::info("pfn fuzzed: {}-{}", kind, pfn_alg);
+      if (should_log_) loginfo("pfn fuzzed: {}-{}", kind, pfn_alg);
 
       const Ctx ctx(m, backend_cfg_);
       results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
@@ -451,14 +451,14 @@ Error FuzzInvocation::CheckPfn() {
 
   auto pfn_baseline = std::move(results[0]);
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
   if (cfg_.pfn_rnastructure) Register("RNAstructure:", CheckPfnRNAstructure(pfn_baseline));
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
   return errors;
 }
 
-#ifdef USE_RNASTRUCTURE
+#ifdef MRNA_USE_RNASTRUCTURE
 Error FuzzInvocation::CheckMfeRNAstructure(const FoldBaseline& baseline) {
   const int N = static_cast<int>(r_.size());
   Error errors;
@@ -539,6 +539,6 @@ Error FuzzInvocation::CheckPfnRNAstructure(const pfn::PfnResult& pfn) {
 
   return errors;
 }
-#endif  // USE_RNASTRUCTURE
+#endif  // MRNA_USE_RNASTRUCTURE
 
 }  // namespace mrna::fuzz

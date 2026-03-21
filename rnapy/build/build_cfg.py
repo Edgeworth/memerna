@@ -67,6 +67,7 @@ class BuildCfg:
     rnastructure: bool
     iwyu: bool
     lto: bool
+    enable_logging: bool
     float_precision: int
     energy_precision: int
     env: dict[str, str] = field(default_factory=dict)
@@ -85,6 +86,8 @@ class BuildCfg:
             ident += "-iwyu"
         if self.lto:
             ident += "-lto"
+        if not self.enable_logging:
+            ident += "-no-logging"
         if self.env:
             ident += "-" + "-".join(f"{k}-{v}" for k, v in self.env.items())
         return ident
@@ -106,6 +109,7 @@ class BuildCfg:
             "USE_MPFR": "ON" if self.mpfr else "OFF",
             "USE_IWYU": "ON" if self.iwyu else "OFF",
             "USE_LTO": "ON" if self.lto else "OFF",
+            "ENABLE_LOGGING": "ON" if self.enable_logging else "OFF",
             "FLOAT_PRECISION": f"{self.float_precision}",
             "ENERGY_PRECISION": f"{self.energy_precision}",
         }

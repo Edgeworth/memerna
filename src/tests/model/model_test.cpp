@@ -4,7 +4,7 @@
 
 namespace mrna {
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST(ModelTest, EnergyToString) {
   EXPECT_EQ("0.0", E(0).ToString());
@@ -42,7 +42,7 @@ TEST(ModelTest, EnergyFromRaw) {
   EXPECT_EQ(Energy::FromRaw(-1000), E(-100.0));
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST(ModelTest, EnergyToString) {
   EXPECT_EQ("0.00", E(0).ToString());

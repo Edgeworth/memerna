@@ -129,7 +129,7 @@ TEST_P(EnergyTestStack, BaseCases) {
 
 INSTANTIATE_TEST_SUITE_P(EnergyModelTests, EnergyTestStack, testing::Range(0, NUM_TEST_MODELS));
 
-#if ENERGY_PRECISION == 1
+#if MRNA_ENERGY_PRECISION == 1
 
 TEST(EnergyTestStack, T04) {
   auto m = stack_t04;
@@ -139,7 +139,7 @@ TEST(EnergyTestStack, T04) {
   EXPECT_EQ(E(4.6), m->InternalLoopInitiation(67));
 }
 
-#elif ENERGY_PRECISION == 2
+#elif MRNA_ENERGY_PRECISION == 2
 
 TEST(EnergyTestStack, T04) {
   auto m = stack_t04;
