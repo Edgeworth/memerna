@@ -2,6 +2,7 @@
 import copy
 import dataclasses
 import os
+import shlex
 import shutil
 import subprocess
 from dataclasses import dataclass, field
@@ -15,8 +16,8 @@ import click
 from rnapy.build.build_cfg import BuildCfg, Sanitizer
 from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 
-AFL_MEMORY_LIMIT_MB = "2000"
-AFL_TIME_LIMIT_MS = "2000"
+AFL_MEMORY_LIMIT_MB = "10000"
+AFL_TIME_LIMIT_MS = "5000"
 AFL_TARGET = "fuzz_afl"
 AFL_DATA = Path("data") / "aflplusplus" / AFL_TARGET
 
@@ -38,7 +39,7 @@ class AflFuzzKind(StrEnum):
         if self == AflFuzzKind.TSAN:
             return {"AFL_USE_TSAN": "1"}
         if self == AflFuzzKind.CFISAN:
-            return {"AFL_USE_CFISAN": "1"}
+            return {"AFL_USE_CFISAN": "1", "AFL_CFISAN_VERBOSE": "1"}
         if self == AflFuzzKind.LAF:
             return {"AFL_LLVM_LAF_ALL": "1"}
         if self == AflFuzzKind.CMPLOG:
@@ -82,10 +83,6 @@ class AflFuzzCfg:
         self.build_cfg = copy.deepcopy(self.build_cfg)
         self.build_cfg.env.update(self.kind.env())
 
-        # Remove mutually exclusive env vars.
-        if self.kind == AflFuzzKind.ASAN:
-            del self.build_cfg.env["AFL_HARDEN"]
-
     def error(self) -> str:
         if not self.build_cfg.is_afl():
             return "Fuzzing only supported for AFL configurations."
@@ -113,12 +110,22 @@ class AflFuzzCfg:
         self.bin_path().mkdir(parents=True, exist_ok=True)
         shutil.copy(self.build_cfg.build_path() / AFL_TARGET, self.bin_path())
 
+    def _copy_built_binary(self, build_cfg: BuildCfg, dst_name: str) -> None:
+        self.bin_path().mkdir(parents=True, exist_ok=True)
+        shutil.copy(build_cfg.build_path() / AFL_TARGET, self.bin_path() / dst_name)
+
     # Note that this can't be called in parallel.
     def build(self) -> None:
-        self._build_single()
-        # If it was CMPLOG, put existing artifact as .cmplog.
-        if self.kind == AflFuzzKind.CMPLOG:
-            shutil.copy(self.bin_path() / AFL_TARGET, self.bin_path() / (AFL_TARGET + ".cmplog"))
+        if self.kind != AflFuzzKind.CMPLOG:
+            self._build_single()
+            return
+
+        click.echo(f"Building fuzz configuration {self.ident()} (regular + cmplog)")
+        self.base_build_cfg.build([AFL_TARGET])
+        self._copy_built_binary(self.base_build_cfg, AFL_TARGET)
+
+        self.build_cfg.build([AFL_TARGET])
+        self._copy_built_binary(self.build_cfg, AFL_TARGET + ".cmplog")
 
     @cached_property
     def afl_map_size(self) -> int:
@@ -163,48 +170,51 @@ class AflFuzzCfg:
             return f"-t {AFL_TIME_LIMIT_MS}"
         return f"-m {AFL_MEMORY_LIMIT_MB} -t {AFL_TIME_LIMIT_MS}"
 
-    def _fuzz_cmd(self) -> str:
-        cmd = f"./{AFL_TARGET} "
+    def fuzz_argv(self) -> list[str]:
+        cmd = [f"./{AFL_TARGET}"]
         if self.build_cfg.rnastructure:
-            cmd += f"-rd {self.build_cfg.src}/extern/rnastructure_bridge/data_tables/ "
-        cmd += f"--memerna-data {self.build_cfg.src / 'data'} "
+            cmd += ["-rd", str(self.build_cfg.src / "extern/rnastructure_bridge/data_tables")]
+        cmd += ["--memerna-data", str(self.build_cfg.src / "data")]
         if self.fuzz_max_len is not None:
-            cmd += f"--max-len {self.fuzz_max_len} "
+            cmd += ["--max-len", str(self.fuzz_max_len)]
         if self.fuzz_random_pseudofree:
-            cmd += "--random-pf "
+            cmd += ["--random-pf"]
         if self.fuzz_energy_model is not None:
-            cmd += f"--energy-model {self.fuzz_energy_model} "
+            cmd += ["--energy-model", self.fuzz_energy_model]
         if self.fuzz_ctd is not None:
-            cmd += f"--ctd {self.fuzz_ctd} "
+            cmd += ["--ctd", str(self.fuzz_ctd)]
         if self.fuzz_lonely_pairs is not None:
-            cmd += f"--lonely-pairs {self.fuzz_lonely_pairs} "
+            cmd += ["--lonely-pairs", str(self.fuzz_lonely_pairs)]
         if self.fuzz_backends is not None:
-            cmd += f"--backends {','.join(self.fuzz_backends)} "
+            cmd += ["--backends", ",".join(self.fuzz_backends)]
         if self.fuzz_brute_max is not None:
-            cmd += f"--brute-max {self.fuzz_brute_max} "
+            cmd += ["--brute-max", str(self.fuzz_brute_max)]
         if self.fuzz_mfe is not None:
-            cmd += "--mfe " if self.fuzz_mfe else "--no-mfe "
+            cmd += ["--mfe" if self.fuzz_mfe else "--no-mfe"]
         if self.fuzz_mfe_rnastructure is not None:
-            cmd += "--mfe-rnastructure " if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure "
+            cmd += ["--mfe-rnastructure" if self.fuzz_mfe_rnastructure else "--no-mfe-rnastructure"]
         if self.fuzz_mfe_table is not None:
-            cmd += "--mfe-table " if self.fuzz_mfe_table else "--no-mfe-table "
+            cmd += ["--mfe-table" if self.fuzz_mfe_table else "--no-mfe-table"]
         if self.fuzz_subopt is not None:
-            cmd += "--subopt " if self.fuzz_subopt else "--no-subopt "
+            cmd += ["--subopt" if self.fuzz_subopt else "--no-subopt"]
         if self.fuzz_subopt_rnastructure is not None:
-            cmd += (
-                "--subopt-rnastructure "
+            cmd += [
+                "--subopt-rnastructure"
                 if self.fuzz_subopt_rnastructure
-                else "--no-subopt-rnastructure "
-            )
+                else "--no-subopt-rnastructure"
+            ]
         if self.fuzz_subopt_strucs is not None:
-            cmd += f"--subopt-strucs {self.fuzz_subopt_strucs} "
+            cmd += ["--subopt-strucs", str(self.fuzz_subopt_strucs)]
         if self.fuzz_subopt_delta is not None:
-            cmd += f"--subopt-delta {self.fuzz_subopt_delta} "
+            cmd += ["--subopt-delta", str(self.fuzz_subopt_delta)]
         if self.fuzz_pfn is not None:
-            cmd += "--pfn " if self.fuzz_pfn else "--no-pfn "
+            cmd += ["--pfn" if self.fuzz_pfn else "--no-pfn"]
         if self.fuzz_pfn_rnastructure is not None:
-            cmd += "--pfn-rnastructure " if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure "
+            cmd += ["--pfn-rnastructure" if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure"]
         return cmd
+
+    def fuzz_cmd(self) -> str:
+        return " ".join(shlex.quote(arg) for arg in self.fuzz_argv())
 
     def afl_fuzz_cmd(self) -> str:
         cmd = ""
@@ -221,7 +231,7 @@ class AflFuzzCfg:
         if self.kind == AflFuzzKind.CMPLOG:
             cmd += f"-c ./{AFL_TARGET}.cmplog "
         cmd += " ".join(self.afl_args) + " "
-        cmd += "-- " + self._fuzz_cmd()
+        cmd += "-- " + self.fuzz_cmd()
 
         return cmd
 
@@ -231,7 +241,7 @@ class AflFuzzCfg:
         cmd += f"AFL_MAP_SIZE={self.afl_map_size} "
         cmd += f"afl-tmin {self._afl_limits()}  "
         cmd += f"-i {path} -o {self.data_path()}/{path.name}.min "
-        cmd += "-- " + self._fuzz_cmd()
+        cmd += "-- " + self.fuzz_cmd()
 
         return cmd
 
@@ -289,9 +299,22 @@ def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:
         kinds_args.append((AflFuzzKind.REGULAR, mopt + queue + power, trim))
 
     for i, (kind, extra_args, trim) in enumerate(kinds_args):
-        cfg = dataclasses.replace(
-            afl_cfg, kind=kind, afl_args=extra_args, disable_trim=trim, index=i
-        )
+        cfg_kwargs = {
+            field.name: copy.deepcopy(getattr(afl_cfg, field.name))
+            for field in dataclasses.fields(AflFuzzCfg)
+        }
+        cfg_kwargs["build_cfg"] = copy.deepcopy(afl_cfg.base_build_cfg)
+        cfg_kwargs["kind"] = kind
+        cfg_kwargs["afl_args"] = extra_args
+        cfg_kwargs["disable_trim"] = trim
+        cfg_kwargs["index"] = i
+        cfg = AflFuzzCfg(**cfg_kwargs)
         cfgs.append(cfg)
 
     return cfgs[:max_num_procs]
+
+
+def afl_fuzz_cfg_by_index(afl_cfg: AflFuzzCfg, index: int) -> AflFuzzCfg:
+    if index < 0:
+        raise ValueError("Fuzzer index must be >= 0.")
+    return afl_fuzz_cfgs(afl_cfg, index + 1)[index]

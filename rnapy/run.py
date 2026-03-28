@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from rnapy.programs.afl_fuzz import afl_fuzz
 from rnapy.programs.afl_fuzz_min import afl_fuzz_min
+from rnapy.programs.afl_fuzz_run import afl_fuzz_run
 from rnapy.programs.analysis.fold_accuracy import run_fold_accuracy
 from rnapy.programs.analysis.fold_perf import run_fold_perf
 from rnapy.programs.analysis.subopt_perf import run_subopt_perf
@@ -34,7 +35,7 @@ def cli() -> None:
 
 
 cli.section("Runner", harness, run_fold_perf, run_fold_accuracy, run_subopt_perf)
-cli.section("Build", build, afl_fuzz, afl_fuzz_min)
+cli.section("Build", build, afl_fuzz, afl_fuzz_min, afl_fuzz_run)
 cli.section("Utility", convert_format, generate_random_dataset)
 
 if __name__ == "__main__":

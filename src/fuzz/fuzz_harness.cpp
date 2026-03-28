@@ -9,7 +9,9 @@
 #include <utility>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_cfg.h"
 #include "model/primary.h"
 
@@ -105,8 +107,18 @@ void FuzzHarness::MaybeLoadBackends() {
     backend_cfg_.data_src = fuzz_cfg_.data_dir;
   }
 
-  for (const auto& backend : fuzz_cfg_.backends) {
-    ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
+  if (fuzz_cfg_.backends.empty()) {
+    for (const auto& backend : EnumValues<BackendKind>()) {
+      if (!BackendIsSupported(backend, backend_cfg_, fuzz_cfg_.energy_cfg, erg::PseudofreeCfg{})) {
+        spdlog::warn("backend NOT loaded: {}: not supported with current config", backend);
+        continue;
+      }
+      ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
+    }
+  } else {
+    for (const auto& backend : fuzz_cfg_.backends) {
+      ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
+    }
   }
 }
 

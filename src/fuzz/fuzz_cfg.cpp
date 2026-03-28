@@ -103,7 +103,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
 
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
   cfg.energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL);
-  cfg.backends = args.GetMultiple<BackendKind>(OPT_FUZZ_BACKENDS);
+  cfg.backends = args.GetMultipleOr<BackendKind>(OPT_FUZZ_BACKENDS);
   cfg.pf_paired = args.GetMultipleOr<Energy>(erg::OPT_PAIRED_PSEUDOFREE);
   cfg.pf_unpaired = args.GetMultipleOr<Energy>(erg::OPT_UNPAIRED_PSEUDOFREE);
   verify(!cfg.random_pseudofree || (cfg.pf_paired.empty() && cfg.pf_unpaired.empty()),

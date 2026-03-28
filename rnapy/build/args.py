@@ -98,6 +98,13 @@ afl_fuzz_cfg_options = cloup.option_group(
     ),
 )
 
+afl_fuzz_index_option = cloup.option(
+    "--index",
+    type=cloup.IntRange(min=0),
+    default=0,
+    help="Index of the generated fuzzer configuration to use",
+)
+
 
 def build_afl_fuzz_cfg_from_args(
     build_cfg: BuildCfg,

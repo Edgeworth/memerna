@@ -1,6 +1,7 @@
 alias t := test
 alias f := fix
 alias u := update
+set positional-arguments
 
 default:
   @just --list
@@ -28,35 +29,41 @@ bench:
     ./benchmark.json --kind=release
 
 fuzz $fuzz_exec:
-  #!/usr/bin/env -S parallel --shebang --ungroup --verbose
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --energy-model t04 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --ctd none 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --ctd d2 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --ctd no-coax 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd none 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd d2 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd no-coax 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd none 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd d2 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd no-coax 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd none 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd d2 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd no-coax 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --ctd all 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 30
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 200
-  $fuzz_exec --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 200
+  #!/usr/bin/env bash
+  set -euo pipefail
+  # `set positional-arguments` passes recipe args to the shebang interpreter.
+  # `parallel --shebang` treats that extra argv as an input file, so run
+  # `parallel` explicitly from bash instead.
+  printf -v fuzz_exec_q '%q' "$fuzz_exec"
+  parallel --ungroup --verbose --halt soon,fail=1 bash -lc ::: \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd none 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd d2 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd no-coax 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd all 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 200"
 
 afl-setup:
   #!/usr/bin/env bash
@@ -67,17 +74,27 @@ afl-setup:
   fi
 
 # Minimize all unique AFL crash files.
-afl-tmin afl_dir:
-  crashes=$(find {{afl_dir}}/ -path '*/crashes/*' -type f -not -name 'README.txt' \
-    -exec md5sum {} + | sort | uniq -w 32 | awk '{print $2}') && \
-  if [ -z "$crashes" ]; then echo "No crashes found."; exit 0; fi && \
-  echo "Found $(echo "$crashes" | wc -l) unique crashes." && \
+afl-tmin afl_dir *args:
+  #!/usr/bin/env bash
+  afl_dir="$1"
+  shift
+  mapfile -t crashes < <(find "$afl_dir"/ -path '*/crashes/*' -type f -not -name 'README.txt' \
+    -exec md5sum {} + | sort | uniq -w 32 | awk '{print $2}')
+  if [ "${#crashes[@]}" -eq 0 ]; then
+    echo "No crashes found."
+    exit 0
+  fi
+  echo "Found ${#crashes[@]} unique crashes."
   poetry run python -m rnapy.run afl-fuzz-min --compiler=afl-fast --kind=relwithdebinfo \
-    --mfe --mfe-table --subopt $crashes
+    --mfe --mfe-table --subopt "$@" "${crashes[@]}"
 
-afl-fuzz: afl-setup
+afl-fuzz *args: afl-setup
   poetry run python -m rnapy.run afl-fuzz --compiler=afl-fast --kind=relwithdebinfo \
-    --mfe --mfe-table --subopt --pfn --random-pf
+    --mfe --mfe-table --subopt --random-pf "$@"
+
+afl-run *args:
+  poetry run python -m rnapy.run afl-fuzz-run --compiler=afl-fast --kind=relwithdebinfo \
+    --mfe --mfe-table --subopt --random-pf "$@"
 
 fix:
   pre-commit run --all-files

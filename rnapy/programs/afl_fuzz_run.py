@@ -1,8 +1,7 @@
 # Copyright 2022 Eliot Courtney.
-from pathlib import Path
+import subprocess
 from typing import Any
 
-import click
 import cloup
 
 from rnapy.build.afl_fuzz import afl_fuzz_cfg_by_index
@@ -13,7 +12,6 @@ from rnapy.build.args import (
     build_cfg_from_args,
     build_cfg_options,
 )
-from rnapy.util.command import run_shell
 from rnapy.util.util import fn_args
 
 
@@ -21,18 +19,18 @@ from rnapy.util.util import fn_args
 @build_cfg_options
 @afl_fuzz_cfg_options
 @afl_fuzz_index_option
-@cloup.argument(
-    "paths",
-    type=cloup.Path(exists=True, dir_okay=False, resolve_path=True, path_type=Path),
-    nargs=-1,
-)
-def afl_fuzz_min(paths: list[Path], index: int, **_kwargs: Any) -> None:
+@cloup.argument("testcase", type=str)
+def afl_fuzz_run(testcase: str, index: int, **_kwargs: Any) -> None:
     build_cfg = build_cfg_from_args(**fn_args())
     afl_cfg = build_afl_fuzz_cfg_from_args(build_cfg, **fn_args())
     afl_cfg = afl_fuzz_cfg_by_index(afl_cfg, index)
     afl_cfg.build()
-
-    for path in paths:
-        cmd = afl_cfg.afl_tmin_cmd(path)
-        click.echo(f"Running minimisation {cmd}")
-        run_shell(cmd, cwd=afl_cfg.bin_path())
+    res = subprocess.run(
+        afl_cfg.fuzz_argv(),
+        input=testcase + "\n",
+        cwd=afl_cfg.bin_path(),
+        text=True,
+        check=False,
+    )
+    if res.returncode != 0:
+        raise RuntimeError(f"Fuzz target exited with code {res.returncode}.")

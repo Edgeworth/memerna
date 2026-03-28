@@ -17,7 +17,6 @@ inline const Opt OPT_FUZZ_BACKENDS = Opt(Opt::ARG)
                                          .LongName("backends")
                                          .ChoiceEnum<BackendKind>()
                                          .Multiple()
-                                         .AllChoicesAsDefault()
                                          .Help("backends to fuzz");
 
 inline const auto OPT_FUZZ_RANDOM_MODELS =
