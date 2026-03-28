@@ -112,8 +112,8 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb);
           for (auto cand : cand_st[CAND_P_LOC])
             mins[DP_P] = std::min(mins[DP_P],
-                base_branch_cost + cand.energy - pc.min_mismatch_coax - pc.min_pf_unpaired +
-                    outer_coax + pf.Unpaired(en - 1) + dp[cand.idx][en - 2][DP_U]);
+                base_branch_cost + cand.energy - pc.min_mismatch_coax + outer_coax +
+                    pf.Unpaired(en - 1) + m->multiloop_c  + dp[cand.idx][en - 2][DP_U]);
           // ((   )   ) Left flush coax
           for (auto cand : cand_st[CAND_P_LFC])
             mins[DP_P] = std::min(mins[DP_P],
@@ -126,8 +126,8 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
           // (.   (   ).) Right outer coax
           for (auto cand : p_cand_en[CAND_EN_P_ROC][en])
             mins[DP_P] = std::min(mins[DP_P],
-                base_branch_cost + cand.energy - pc.min_mismatch_coax - pc.min_pf_unpaired +
-                    outer_coax + pf.Unpaired(st + 1) + dp[st + 2][cand.idx][DP_U]);
+                base_branch_cost + cand.energy - pc.min_mismatch_coax + outer_coax +
+                    pf.Unpaired(st + 1) + m->multiloop_c + dp[st + 2][cand.idx][DP_U]);
           // (   (   )) Right flush coax
           for (auto cand : p_cand_en[CAND_EN_P_RFC][en])
             mins[DP_P] = std::min(mins[DP_P],
@@ -162,8 +162,7 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
         }
         for (auto cand : cand_st[CAND_U_RC_FWD]) {
           // |(   )|<.(   ). > Right coax forward
-          const auto val = cand.energy - pc.min_mismatch_coax - 2 * pc.min_pf_unpaired -
-              2 * m->multiloop_c + dp[cand.idx][en][DP_U_RC];
+          const auto val = cand.energy - pc.min_mismatch_coax + dp[cand.idx][en][DP_U_RC];
           mins[DP_U] = std::min(mins[DP_U], val);
           mins[DP_U2] = std::min(mins[DP_U2], val);
         }
@@ -308,8 +307,7 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
           cand_st[CAND_U_LC].emplace_back(lcoax_base, en + 1);
 
         // (   )<.(   ). > Right coax forward - U, U2
-        const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax +
-            2 * pc.min_pf_unpaired + 2 * m->multiloop_c;
+        const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax;
         if (rcoaxf_base < CAP_E && rcoaxf_base < dp[st][en][DP_U])
           cand_st[CAND_U_RC_FWD].emplace_back(rcoaxf_base, en + 1);
 
@@ -349,12 +347,12 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
         // Since we assumed the minimum energy coax stack and made this structure self contained,
         // we could potentially replace it with U[st + 1][en].
         const auto plocoax_base = dp[st + 2][en][DP_P] + pc.augubranch[st2b][enb] +
-            pf.Unpaired(st + 1) + 2 * m->multiloop_c + pc.min_mismatch_coax + pc.min_pf_unpaired;
+            pf.Unpaired(st + 1) + m->multiloop_c + pc.min_mismatch_coax;
         if (plocoax_base < CAP_E && plocoax_base < dp[st + 1][en][DP_U])
           cand_st[CAND_P_LOC].emplace_back(plocoax_base, en + 1);
         // (.   (   ).) Right outer coax
         const auto procoax_base = dp[st][en - 2][DP_P] + pc.augubranch[stb][en2b] +
-            pf.Unpaired(en - 1) + 2 * m->multiloop_c + pc.min_mismatch_coax + pc.min_pf_unpaired;
+            pf.Unpaired(en - 1) + m->multiloop_c + pc.min_mismatch_coax;
         if (st > 0 && procoax_base < CAP_E && procoax_base < dp[st][en - 1][DP_U])
           p_cand_en[CAND_EN_P_ROC][en].emplace_back(procoax_base, st - 1);
         // (.(   ).   ) Left inner coax
