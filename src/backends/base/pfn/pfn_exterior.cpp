@@ -11,7 +11,7 @@ namespace mrna::md::base {
 
 void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
     const erg::PseudofreeCfg& pf) {
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   pf.Verify(r);
 
   const auto& dp = state.dp;

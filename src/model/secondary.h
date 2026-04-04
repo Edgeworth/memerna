@@ -12,18 +12,21 @@
 
 #include "model/base.h"
 #include "model/primary.h"
+#include "util/util.h"
 
 namespace mrna {
 
 // Stores a secondary structure as a vector of indices. The index at a position
 // is the position of the base it is paired with. If the base is not paired, the
-// index is -1.
+// index is INVALID_INDEX.
 class Secondary {
  public:
   constexpr Secondary() = default;
   constexpr ~Secondary() = default;
-  constexpr explicit Secondary(std::initializer_list<int> init) : data_(init) {}
-  constexpr explicit Secondary(std::size_t size) : data_(size, -1) {}
+  explicit Secondary(std::initializer_list<Index> init) : data_(init) {
+    VerifyRnaSize(data_.size());
+  }
+  explicit Secondary(std::size_t size) : data_(size, INVALID_INDEX) { VerifyRnaSize(data_.size()); }
 
   constexpr Secondary(Secondary&&) = default;
   constexpr Secondary& operator=(Secondary&&) = default;
@@ -34,8 +37,8 @@ class Secondary {
 
   constexpr auto operator<=>(const Secondary&) const = default;
 
-  constexpr int& operator[](std::size_t pos) { return data_[pos]; }
-  constexpr const int& operator[](std::size_t pos) const { return data_[pos]; }
+  constexpr Index& operator[](std::size_t pos) { return data_[pos]; }
+  constexpr const Index& operator[](std::size_t pos) const { return data_[pos]; }
 
   [[nodiscard]] constexpr auto begin() const noexcept { return data_.begin(); }
   [[nodiscard]] constexpr auto end() const noexcept { return data_.end(); }
@@ -43,50 +46,67 @@ class Secondary {
   [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
   [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] constexpr std::size_t size() const { return data_.size(); }
+  [[nodiscard]] constexpr Index size() const { return static_cast<Index>(data_.size()); }
 
-  void reset(std::size_t size) {
-    data_.resize(size);
-    std::fill(data_.begin(), data_.end(), -1);
+  [[nodiscard]] constexpr bool IsPaired(int pos) const {
+    assert(pos >= 0);
+    return data_[pos] != INVALID_INDEX;
+  }
+  [[nodiscard]] constexpr bool IsUnpaired(int pos) const {
+    assert(pos >= 0);
+    return data_[pos] == INVALID_INDEX;
+  }
+  [[nodiscard]] constexpr bool IsOpeningPair(int pos) const {
+    assert(pos >= 0);
+    const auto pair = data_[pos];
+    return pair != INVALID_INDEX && pos < pair;
+  }
+  [[nodiscard]] constexpr bool IsClosingPair(int pos) const {
+    assert(pos >= 0);
+    const auto pair = data_[pos];
+    return pair != INVALID_INDEX && pair < pos;
   }
 
-  void reset() { std::fill(data_.begin(), data_.end(), -1); }
+  void reset(std::size_t size) {
+    VerifyRnaSize(size);
+    data_.resize(size);
+    std::fill(data_.begin(), data_.end(), INVALID_INDEX);
+  }
+
+  void reset() { std::fill(data_.begin(), data_.end(), INVALID_INDEX); }
 
   [[nodiscard]] constexpr bool PreviousPaired(int st, int en) const {
-    return st != 0 && en != static_cast<int>(size()) - 1 && data_[st - 1] == en + 1;
+    return st != 0 && en + 1 < size() && data_[st - 1] == en + 1;
   }
 
   static Secondary FromDb(const std::string& pairs_str);  // Dotbracket
   [[nodiscard]] std::string ToDb() const;
 
  private:
-  std::vector<int> data_;
+  std::vector<Index> data_;
 };
 
 struct Pair {
-  Index st = -1;
-  Index en = -1;
+  Index st = INVALID_INDEX;
+  Index en = INVALID_INDEX;
 
   constexpr Pair() = default;
-  constexpr Pair(int st_, int en_) : st(Index(st_)), en(Index(en_)) {
-    assert(st_ == st);
-    assert(en_ == en);
-  }
+  constexpr Pair(int st_, int en_) : st(As<Index>(st_)), en(As<Index>(en_)) {}
 
-  [[nodiscard]] constexpr bool IsValid() const { return st != -1; }
+  [[nodiscard]] constexpr bool IsValid() const { return st != INVALID_INDEX; }
 
   constexpr void Apply(Secondary& s) const {
-    assert(st >= 0);
-    assert(en >= 0);
+    assert(st >= 0 && st != INVALID_INDEX);
+    assert(en >= 0 && en != INVALID_INDEX);
     s[st] = en;
     s[en] = st;
   }
 
   constexpr void Remove(Secondary& s) const {
-    assert(st >= 0);
-    assert(en >= 0);
-    s[st] = -1;
-    s[en] = -1;
+    assert(st >= 0 && st != INVALID_INDEX);
+    assert(en >= 0 && en != INVALID_INDEX);
+    s[st] = INVALID_INDEX;
+    s[en] = INVALID_INDEX;
   }
 
   constexpr void MaybeApply(Secondary& s) const {

@@ -11,10 +11,17 @@ option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 option(USE_LTO "Whether to build with LTO" OFF)
 option(ENABLE_LOGGING "Enable project logging" ON)
+set(INDEX_BITS 16 CACHE STRING "Number of bits to use for indices and sequence lengths.
+    Valid values are 8, 16, or 32.")
 set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for floats.
     Valid values are 6 (float32), 15 (float64), 18 (float80), or any value if MPFR is enabled.")
 set(ENERGY_PRECISION 2 CACHE STRING
   "Number of decimal places to use for energy calculations")
+set_property(CACHE INDEX_BITS PROPERTY STRINGS 8 16 32)
+
+if(NOT INDEX_BITS MATCHES "^(8|16|32)$")
+  message(FATAL_ERROR "INDEX_BITS must be one of 8, 16, or 32")
+endif()
 
 # Always have RNAstructure compiled as release.
 if(USE_RNASTRUCTURE)
@@ -408,6 +415,9 @@ target_compile_definitions(memerna PUBLIC MRNA_FLOAT_PRECISION=${FLOAT_PRECISION
 
 # Set energy precision
 target_compile_definitions(memerna PUBLIC MRNA_ENERGY_PRECISION=${ENERGY_PRECISION})
+
+# Set index precision
+target_compile_definitions(memerna PUBLIC MRNA_INDEX_BITS=${INDEX_BITS})
 
 # Add sanitizers
 add_sanitizers(memerna)

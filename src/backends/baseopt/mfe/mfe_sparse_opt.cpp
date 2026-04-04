@@ -49,7 +49,7 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
 
   logdebug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   const Precomp pc(Primary(r), m, cfg);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
@@ -208,13 +208,13 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
       if (IsGuPair(stb, enb)) {
         if (normal_base < CAP_E && normal_base < dp[st][en][DP_U_GU] &&
             (cand_st[CAND_U_GU].empty() || normal_base < cand_st[CAND_U_GU].back().energy))
-          cand_st[CAND_U_GU].push_back({normal_base, en + 1});
+          cand_st[CAND_U_GU].emplace_back(normal_base, en + 1);
         // Base case.
         dp[st][en][DP_U_GU] = std::min(dp[st][en][DP_U_GU], normal_base);
       } else {
         if (normal_base < CAP_E && normal_base < dp[st][en][DP_U_WC] &&
             (cand_st[CAND_U_WC].empty() || normal_base < cand_st[CAND_U_WC].back().energy))
-          cand_st[CAND_U_WC].push_back({normal_base, en + 1});
+          cand_st[CAND_U_WC].emplace_back(normal_base, en + 1);
         // Base case.
         dp[st][en][DP_U_WC] = std::min(dp[st][en][DP_U_WC], normal_base);
       }
@@ -238,18 +238,18 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
       // Add potentials to the candidate lists.
       if (cand_st_u < CAP_E &&
           (cand_st[CAND_U].empty() || cand_st_u < cand_st[CAND_U].back().energy))
-        cand_st[CAND_U].push_back({cand_st_u, en + 1});
+        cand_st[CAND_U].emplace_back(cand_st_u, en + 1);
 
       // .(   ).<(   ) > - Left coax - U, U2
       const auto lcoax_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
           m->MismatchCoaxial(en1b, enb, stb, st1b);
       if (lcoax_base < CAP_E && lcoax_base < dp[st][en][DP_U])
-        cand_st[CAND_U_LC].push_back({lcoax_base, en + 1});
+        cand_st[CAND_U_LC].emplace_back(lcoax_base, en + 1);
 
       // (   )<.(   ). > Right coax forward - U, U2
       const auto rcoaxf_base = dp[st][en][DP_P] + pc.augubranch[stb][enb] + pc.min_mismatch_coax;
       if (rcoaxf_base < CAP_E && rcoaxf_base < dp[st][en][DP_U])
-        cand_st[CAND_U_RC_FWD].push_back({rcoaxf_base, en + 1});
+        cand_st[CAND_U_RC_FWD].emplace_back(rcoaxf_base, en + 1);
 
       // (   )<.( * ). > Right coax backward - RC
       // Again, we can't replace RC with U, we'd have to replace it with RC, so compare to
@@ -258,7 +258,7 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
           m->MismatchCoaxial(en1b, enb, stb, st1b);
       if (rcoaxb_base < CAP_E && rcoaxb_base < dp[st][en][DP_U_RC] &&
           (cand_st[CAND_U_RC].empty() || rcoaxb_base < cand_st[CAND_U_RC].back().energy))
-        cand_st[CAND_U_RC].push_back({rcoaxb_base, en + 1});
+        cand_st[CAND_U_RC].emplace_back(rcoaxb_base, en + 1);
       // Base case.
       dp[st][en][DP_U_RC] = std::min(dp[st][en][DP_U_RC], rcoaxb_base);
 
@@ -266,12 +266,12 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
       const auto wc_flush_base =
           dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + m->stack[en1b][enb][WcPair(enb)][stb];
       if (wc_flush_base < CAP_E && wc_flush_base < dp[st][en - 1][DP_U])
-        cand_st[CAND_U_LFC_WC].push_back({wc_flush_base, en});
+        cand_st[CAND_U_LFC_WC].emplace_back(wc_flush_base, en);
       if (IsGu(enb)) {
         const auto gu_flush_base =
             dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + m->stack[en1b][enb][GuPair(enb)][stb];
         if (gu_flush_base < CAP_E && gu_flush_base < dp[st][en - 1][DP_U])
-          cand_st[CAND_U_LFC_GU].push_back({gu_flush_base, en});
+          cand_st[CAND_U_LFC_GU].emplace_back(gu_flush_base, en);
       }
 
       // Paired cases
@@ -281,30 +281,30 @@ void MfeSparseOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, er
       const auto plocoax_base =
           dp[st + 2][en][DP_P] + pc.augubranch[st2b][enb] + pc.min_mismatch_coax;
       if (plocoax_base < CAP_E && plocoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_LOC].push_back({plocoax_base, en + 1});
+        cand_st[CAND_P_LOC].emplace_back(plocoax_base, en + 1);
       // (.   (   ).) Right outer coax
       const auto procoax_base =
           dp[st][en - 2][DP_P] + pc.augubranch[stb][en2b] + pc.min_mismatch_coax;
-      if (procoax_base < CAP_E && procoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_ROC][en].push_back({procoax_base, st - 1});
+      if (st > 0 && procoax_base < CAP_E && procoax_base < dp[st][en - 1][DP_U])
+        p_cand_en[CAND_EN_P_ROC][en].emplace_back(procoax_base, st - 1);
       // (.(   ).   ) Left inner coax
       const auto plrcoax_base = dp[st + 2][en - 1][DP_P] + pc.augubranch[st2b][en1b] +
           m->MismatchCoaxial(en1b, enb, st1b, st2b);
       if (plrcoax_base < CAP_E && plrcoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_LIC].push_back({plrcoax_base, en + 1});
+        cand_st[CAND_P_LIC].emplace_back(plrcoax_base, en + 1);
       // (   .(   ).) Right inner coax
       const auto prlcoax_base = dp[st + 1][en - 2][DP_P] + pc.augubranch[st1b][en2b] +
           m->MismatchCoaxial(en2b, en1b, stb, st1b);
-      if (prlcoax_base < CAP_E && prlcoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_RIC][en].push_back({prlcoax_base, st - 1});
+      if (st > 0 && prlcoax_base < CAP_E && prlcoax_base < dp[st][en - 1][DP_U])
+        p_cand_en[CAND_EN_P_RIC][en].emplace_back(prlcoax_base, st - 1);
       // ((   )   ) Left flush coax
       const auto plfcoax_base = dp[st + 1][en][DP_P] + pc.augubranch[st1b][enb] + pc.min_flush_coax;
       if (plfcoax_base < CAP_E && plfcoax_base < dp[st + 1][en][DP_U])
-        cand_st[CAND_P_LFC].push_back({plfcoax_base, en});
+        cand_st[CAND_P_LFC].emplace_back(plfcoax_base, en);
       // (   (   )) Right flush coax
       const auto prfcoax_base = dp[st][en - 1][DP_P] + pc.augubranch[stb][en1b] + pc.min_flush_coax;
       if (prfcoax_base < CAP_E && prfcoax_base < dp[st][en - 1][DP_U])
-        p_cand_en[CAND_EN_P_RFC][en].push_back({prfcoax_base, st});
+        p_cand_en[CAND_EN_P_RFC][en].emplace_back(prfcoax_base, st);
 
       // Base cases.
       dp[st][en][DP_U] = std::min(dp[st][en][DP_U], cand_st_u);

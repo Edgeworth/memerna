@@ -17,7 +17,7 @@ namespace mrna::md::base {
 
 Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf) {
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   pf.Verify(r);
 
   state.ext = ExtArray(r.size() + 1, MAX_E);

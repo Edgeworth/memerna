@@ -3,8 +3,12 @@
 #define MODEL_BASE_H_
 
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <optional>
+
+#include "util/error.h"
 
 namespace mrna {
 
@@ -12,8 +16,33 @@ using Base = uint8_t;
 using BaseMask = uint32_t;
 
 // Used to index into RNA primary and secondary structures.
-// Use int16_t here to save memory.
-using Index = int16_t;
+// Index stores both sequence positions and sequence lengths, so INVALID_INDEX
+// is reserved as the sentinel value and the largest valid size/index is
+// INVALID_INDEX - 1.
+constexpr int INDEX_BITS = MRNA_INDEX_BITS;
+
+constexpr uint8_t INVALID_UINT8 = std::numeric_limits<uint8_t>::max();
+constexpr uint16_t INVALID_UINT16 = std::numeric_limits<uint16_t>::max();
+constexpr uint32_t INVALID_UINT32 = std::numeric_limits<uint32_t>::max();
+
+#if MRNA_INDEX_BITS == 8
+using Index = uint8_t;
+constexpr Index INVALID_INDEX = static_cast<Index>(INVALID_UINT8);
+#elif MRNA_INDEX_BITS == 16
+using Index = uint16_t;
+constexpr Index INVALID_INDEX = static_cast<Index>(INVALID_UINT16);
+#elif MRNA_INDEX_BITS == 32
+using Index = int32_t;
+constexpr Index INVALID_INDEX = std::numeric_limits<int32_t>::max();
+#else
+#error "Unsupported MRNA_INDEX_BITS"
+#endif
+
+constexpr std::size_t MAX_RNA_SIZE = std::size_t(INVALID_INDEX) - 1;
+
+constexpr void VerifyRnaSize(std::size_t size) {
+  verify(size <= MAX_RNA_SIZE, "RNA too long - recompile with larger INDEX_BITS");
+}
 
 // Don't ever change these values.
 constexpr Base A = 0, C = 1, G = 2, U = 3, MAX_BASE = 4, MIN_BASE = 0;

@@ -1,6 +1,7 @@
 // Copyright 2025 Eliot Courtney.
 #include <benchmark/benchmark.h>
 
+#include <algorithm>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/variadic/to_seq.hpp>
@@ -82,11 +83,11 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
 
 #define FORCE_EVAL(...) __VA_ARGS__
 
-#define DEFINE_MFE_BENCH1(r, m, kind)                \
-  BENCHMARK_CAPTURE(Mfe, m kind, &(m), MfeAlg::kind) \
-      ->RangeMultiplier(2)                           \
-      ->Range(16, 512)                               \
-      ->Complexity()                                 \
+#define DEFINE_MFE_BENCH1(r, m, kind)                       \
+  BENCHMARK_CAPTURE(Mfe, m kind, &(m), MfeAlg::kind)        \
+      ->RangeMultiplier(2)                                  \
+      ->Range(16, std::min<std::size_t>(512, MAX_RNA_SIZE)) \
+      ->Complexity()                                        \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_MFE_BENCH(m, ...) \
@@ -96,24 +97,24 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
   BENCHMARK_CAPTURE(                                                                     \
       Subopt, m kind 100strucs, &(m), SuboptAlg::kind, subopt::SuboptCfg{.strucs = 100}) \
       ->RangeMultiplier(2)                                                               \
-      ->Range(16, 512)                                                                   \
+      ->Range(16, std::min<std::size_t>(512, MAX_RNA_SIZE))                              \
       ->Complexity()                                                                     \
       ->Unit(benchmark::kMillisecond);                                                   \
   BENCHMARK_CAPTURE(                                                                     \
       Subopt, m kind delta, &(m), SuboptAlg::kind, subopt::SuboptCfg{.delta = E(0.2)})   \
       ->RangeMultiplier(2)                                                               \
-      ->Range(16, 512)                                                                   \
+      ->Range(16, std::min<std::size_t>(512, MAX_RNA_SIZE))                              \
       ->Complexity()                                                                     \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_SUBOPT_BENCH(m, ...) \
   BOOST_PP_SEQ_FOR_EACH(DEFINE_SUBOPT_BENCH1, m, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
 
-#define DEFINE_PARTITION_BENCH1(r, m, kind)          \
-  BENCHMARK_CAPTURE(Pfn, m kind, &(m), PfnAlg::kind) \
-      ->RangeMultiplier(2)                           \
-      ->Range(16, 512)                               \
-      ->Complexity()                                 \
+#define DEFINE_PARTITION_BENCH1(r, m, kind)                 \
+  BENCHMARK_CAPTURE(Pfn, m kind, &(m), PfnAlg::kind)        \
+      ->RangeMultiplier(2)                                  \
+      ->Range(16, std::min<std::size_t>(512, MAX_RNA_SIZE)) \
+      ->Complexity()                                        \
       ->Unit(benchmark::kMillisecond);
 
 #define DEFINE_PARTITION_BENCH(m, ...) \

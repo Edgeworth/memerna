@@ -7,9 +7,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "util/util.h"
 
 namespace mrna {
 
@@ -23,8 +26,8 @@ class SplayMap {
     if (Find(key)) return false;
     ++size_;
 
-    int oldroot = root;
-    root = static_cast<int>(ns_.size());
+    NodeIndex oldroot = root;
+    root = As<NodeIndex>(ns_.size());
     // Case where `oldroot` is NONE will be handled magically, since none.{l, r} == none.
     if (key < ns_[oldroot].k) {
       ns_.push_back({key, ns_[oldroot].l, oldroot, std::forward<ValueRef>(value)});
@@ -40,13 +43,13 @@ class SplayMap {
   // Returns true if found.
   bool Find(Key key) {
     if (root == NONE) return false;
-    int lnext = TMP;
-    int rnext = TMP;
+    NodeIndex lnext = TMP;
+    NodeIndex rnext = TMP;
     bool found = false;
     while (!found) {
       if (key < ns_[root].k) {
         // Case: we are going left
-        int l = ns_[root].l;
+        NodeIndex l = ns_[root].l;
         if (l == NONE) break;
         if (key < ns_[l].k) {
           // Zig-Zig - Rotate right
@@ -81,7 +84,7 @@ class SplayMap {
         }
       } else if (ns_[root].k < key) {
         // Case: we are going right
-        int r = ns_[root].r;
+        NodeIndex r = ns_[root].r;
         if (r == NONE) break;
         if (ns_[r].k < key) {
           // Zig-Zig - Rotate left
@@ -140,7 +143,7 @@ class SplayMap {
         // Move the next lowest key up to the top of the right subtree with another find.
         // Since it is the next lowest, the left child of the right subtree will be NONE,
         // so we can attach the left subtree there.
-        int oldroot = root;
+        NodeIndex oldroot = root;
         root = ns_[root].r;
         Find(key);
         assert(ns_[root].l == NONE);
@@ -190,19 +193,20 @@ class SplayMap {
   std::vector<Key> Keys() const { return KeysInternal(root); }
 
  private:
-  static constexpr int NONE = 0, TMP = 1;
+  using NodeIndex = int32_t;
+  static constexpr NodeIndex NONE = 0, TMP = 1;
 
   struct Node {
     Key k;
-    int l, r;
+    NodeIndex l, r;
     Value v;
   };
 
   std::vector<Node> ns_;
-  int root{NONE};
+  NodeIndex root{NONE};
   std::size_t size_{0};
 
-  [[nodiscard]] std::vector<std::string> DescribeInternal(int node) const {
+  [[nodiscard]] std::vector<std::string> DescribeInternal(NodeIndex node) const {
     if (node == NONE) return {""};
     const auto& n = ns_[node];
     std::vector<std::string> desc;
@@ -216,7 +220,7 @@ class SplayMap {
     return desc;
   }
 
-  std::vector<Key> KeysInternal(int node) const {
+  std::vector<Key> KeysInternal(NodeIndex node) const {
     if (node == NONE) return {};
     auto a = KeysInternal(ns_[node].l);
     a.push_back(ns_[node].k);

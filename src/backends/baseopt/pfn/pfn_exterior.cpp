@@ -9,7 +9,7 @@
 namespace mrna::md::base::opt {
 
 void PfnExterior(const Primary& r, const Model& m, PfnState& state) {
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
 
   const auto& dp = state.dp;
   state.ext = BoltzExtArray(r.size() + 1, 0);

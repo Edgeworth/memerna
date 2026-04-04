@@ -102,7 +102,9 @@ TEST_P(MfeTestT04, T04P1) {
   EXPECT_EQ(ans, Mfe(m, "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU"));
 
   // Has multiple possible MFE structures.
-  EXPECT_EQ(E(-89.6), std::get<0>(Mfe(m, std::get<Primary>(k16sHSapiens3))));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(E(-89.6), std::get<0>(Mfe(m, std::get<Primary>(*k16sHSapiens3))));
+  }
 }
 
 #elif MRNA_ENERGY_PRECISION == 2
@@ -189,7 +191,9 @@ TEST_P(MfeTestT04, T04P2) {
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]3...........n[[[[[.."
       ".......]]]]]]mP]]]]]]..]]]]]]]]]]...]]M"};
-  EXPECT_EQ(ans, Mfe(m, std::get<Primary>(k16sHSapiens3)));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(ans, Mfe(m, std::get<Primary>(*k16sHSapiens3)));
+  }
 }
 
 #endif

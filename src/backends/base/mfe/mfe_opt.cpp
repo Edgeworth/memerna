@@ -41,7 +41,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
 
   logdebug("base {} with {}, {}", funcname(), cfg, pf);
 
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   const Precomp pc(Primary(r), m, cfg, pf);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;

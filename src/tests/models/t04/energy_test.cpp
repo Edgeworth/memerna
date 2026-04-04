@@ -32,7 +32,9 @@ TEST_P(EnergyTestT04, T04P1) {
       GetEnergy(m, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(17.9), GetEnergy(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-43.1), GetEnergy(m, k16sHSapiens3));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(E(-43.1), GetEnergy(m, *k16sHSapiens3));
+  }
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(3.7), GetEnergy(m, "GGUCAAAGGUC", "((((...))))"));
@@ -61,7 +63,9 @@ TEST_P(EnergyTestT04, T04P2) {
       GetEnergy(m, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(17.90), GetEnergy(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-42.75), GetEnergy(m, k16sHSapiens3));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(E(-42.75), GetEnergy(m, *k16sHSapiens3));
+  }
 
   // Special stacking - this is not implemented.
   EXPECT_EQ(E(3.63), GetEnergy(m, "GGUCAAAGGUC", "((((...))))"));

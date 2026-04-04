@@ -83,7 +83,12 @@ int main(int argc, char* argv[]) {
   // This must be after __AFL_INIT and before __AFL_LOOP.
   auto buf = reinterpret_cast<const char*>(__AFL_FUZZ_TESTCASE_BUF);
   while (__AFL_LOOP(1000)) {
-    const auto len = static_cast<std::size_t>(__AFL_FUZZ_TESTCASE_LEN);
+#pragma GCC diagnostic push
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wshorten-64-to-32"
+#endif
+    const auto len = std::size_t(__AFL_FUZZ_TESTCASE_LEN);
+#pragma GCC diagnostic pop
 
     // Parse JSON testcase.
     boost::system::error_code ec;

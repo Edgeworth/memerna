@@ -2,6 +2,7 @@
 #ifndef TESTS_INIT_H_
 #define TESTS_INIT_H_
 
+#include <optional>
 #include <string>
 #include <tuple>
 #include <variant>
@@ -41,7 +42,8 @@ extern std::tuple<Primary, Secondary> kNNDBInternal1x5;
 extern std::tuple<Primary, Secondary> kNNDBInternal2x2;
 extern std::tuple<Primary, Secondary> kBulge1;
 extern std::tuple<Primary, Secondary> kInternal1;
-extern std::tuple<Primary, Secondary> k16sHSapiens3;
+// 315 nt - only available when MAX_RNA_SIZE >= 315 (not INDEX_BITS=8).
+extern std::optional<std::tuple<Primary, Secondary>> k16sHSapiens3;
 
 // Make sure to use Range(0, NUM_TEST_MODELS) if making a parameterised test
 // with all models in <backend>_ms, since they are initialized at runtime.

@@ -2,6 +2,7 @@
 #include "util/log.h"
 
 #include <cstdlib>
+#include <utility>
 
 #ifdef MRNA_ENABLE_LOGGING
 #include "spdlog/sinks/stdout_color_sinks.h"

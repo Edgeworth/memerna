@@ -188,7 +188,9 @@ TEST_P(EnergyTestT22, T22P2) {
       GetEnergy(m, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(14.71), GetEnergy(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-45.38), GetEnergy(m, k16sHSapiens3));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(E(-45.38), GetEnergy(m, *k16sHSapiens3));
+  }
 
   EXPECT_EQ(E(1.61), GetEnergy(m, "GGUCAAAGGUC", "((((...))))"));
   EXPECT_EQ(E(-4.44), GetEnergy(m, "GGGGAAACCCC", "((((...))))"));
@@ -573,9 +575,9 @@ TEST_P(EnergyTestT22, T22P2Pseudofree) {
         GetPseudofree(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)");
     EXPECT_EQ(E(14.71) + pseudofree, energy);
   }
-  {
+  if (k16sHSapiens3) {
     const auto& [energy, pseudofree] = GetPseudofree(
-        m, std::get<Primary>(k16sHSapiens3).ToSeq(), std::get<Secondary>(k16sHSapiens3).ToDb());
+        m, std::get<Primary>(*k16sHSapiens3).ToSeq(), std::get<Secondary>(*k16sHSapiens3).ToDb());
     EXPECT_EQ(E(-45.38) + pseudofree, energy);
   }
 

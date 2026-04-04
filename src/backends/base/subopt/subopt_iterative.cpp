@@ -88,17 +88,18 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
   Energy energy = ZERO_E;
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.expand_idx = 0, .to_expand{0, -1, EXT}, .should_unexpand = false});
+  q_.push_back({.expand_idx = 0, .to_expand{0, INVALID_INDEX, EXT}, .should_unexpand = false});
   while (!q_.empty()) {
     // We don't pop here because we update the node in place to advance it to
     // the next child (via incrementing the index into its expansions). This
     // makes it easy to update the incremental state across children and easy to
     // early stop when we reach the energy delta limit.
     auto& s = q_.back();
-    assert(s.to_expand.st != -1);
+    assert(s.to_expand.IsValid());
 
     const auto& exps = GetExpansion(s.to_expand);
-    assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
+    const auto num_exps = As<ExpansionIndex>(exps.size());
+    assert(!exps.empty());  // Must produce at least one expansion.
 
     // Undo previous child's ctds and energy. The pairing is undone by the child.
     // Also remove from unexpanded if the previous child added stuff to it.
@@ -106,20 +107,19 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
       const auto& pexp = exps[s.expand_idx - 1];
       pexp.ctd0.MaybeRemove(res_.tb.ctd);
       pexp.ctd1.MaybeRemove(res_.tb.ctd);
-      if (pexp.idx1.st != -1) unexpanded_.pop_back();
+      if (pexp.idx1.IsValid()) unexpanded_.pop_back();
       energy -= pexp.delta;
     }
 
     // Update the next best seen variable
-    if (s.expand_idx != static_cast<int>(exps.size()) && exps[s.expand_idx].delta + energy > delta)
+    if (s.expand_idx != num_exps && exps[s.expand_idx].delta + energy > delta)
       next_seen = std::min(next_seen, exps[s.expand_idx].delta + energy);
 
     // If we ran out of expansions, or the next expansion would take us over the delta limit
     // we are done with this node.
-    if (s.expand_idx == static_cast<int>(exps.size()) ||
-        exps[s.expand_idx].delta + energy > delta) {
-      if (s.to_expand.en != -1 && s.to_expand.a == DP_P)
-        res_.tb.s[s.to_expand.st] = res_.tb.s[s.to_expand.en] = -1;
+    if (s.expand_idx == num_exps || exps[s.expand_idx].delta + energy > delta) {
+      if (!s.to_expand.IsExternal() && s.to_expand.a == DP_P)
+        res_.tb.s[s.to_expand.st] = res_.tb.s[s.to_expand.en] = INVALID_INDEX;
       if (s.should_unexpand) unexpanded_.push_back(s.to_expand);
       q_.pop_back();
       continue;
@@ -132,12 +132,12 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
     // they are guaranteed to be empty if this is a terminal.
     energy += exp.delta;
 
-    if (exp.idx0.st == -1) {
+    if (!exp.idx0.IsValid()) {
       // Ran out of expansions at this node (leaf). May still need to go through
       // collected unexpanded nodes.
 
       // Can't have a idx1 without idx0. Also can't set ctds or affect energy.
-      assert(exp.idx1.st == -1);
+      assert(!exp.idx1.IsValid());
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
 
       // Use an unexpanded now, if one exists.
@@ -161,10 +161,10 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
       // Apply child's modifications to the global state.
       exp.ctd0.MaybeApply(res_.tb.ctd);
       exp.ctd1.MaybeApply(res_.tb.ctd);
-      if (exp.idx1.st != -1) unexpanded_.push_back(exp.idx1);
+      if (exp.idx1.IsValid()) unexpanded_.push_back(exp.idx1);
     }
 
-    if (ns.to_expand.en != -1 && ns.to_expand.a == DP_P) {
+    if (!ns.to_expand.IsExternal() && ns.to_expand.a == DP_P) {
       res_.tb.s[ns.to_expand.st] = ns.to_expand.en;
       res_.tb.s[ns.to_expand.en] = ns.to_expand.st;
     }
@@ -179,15 +179,15 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
 template <bool UseLru>
 std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   const int st = to_expand.st;
   int en = to_expand.en;
-  const int a = to_expand.a;
+  const DpArrayId a = to_expand.a;
   std::vector<Expansion> exps;
   // Temporary variable to hold energy calculations.
   Energy energy = ZERO_E;
   // Exterior loop
-  if (en == -1) {
+  if (to_expand.IsExternal()) {
     if (a == EXT) {
       // Base case: do nothing.
       if (st == N)
@@ -195,7 +195,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
       else
         // Case: No pair starting here (for EXT only)
         exps.push_back({.delta = dp_.ext[st + 1][EXT] + pf_.Unpaired(st) - dp_.ext[st][a],
-            .idx0{st + 1, -1, EXT}});
+            .idx0{st + 1, INVALID_INDEX, EXT}});
     }
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
@@ -216,7 +216,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
             pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta)
-          exps.push_back({.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st + 1, en - 1, DP_P}});
+          exps.push_back(
+              {.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st + 1, en - 1, DP_P}});
       }
 
       // EXT_RC is only for the above case.
@@ -247,14 +248,16 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 
       if (energy <= delta) {
         if (a == EXT)
-          exps.push_back(
-              {.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st, en, DP_P}, .ctd0{st, val_ctd}});
+          exps.push_back({.delta = energy,
+              .idx0{en + 1, INVALID_INDEX, EXT},
+              .idx1{st, en, DP_P},
+              .ctd0{st, val_ctd}});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
         // coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
-          exps.push_back({.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st, en, DP_P}});
+          exps.push_back({.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st, en, DP_P}});
       }
 
       // Everything after this is only for EXT.
@@ -265,7 +268,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         energy = base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st, en - 1, DP_P},
               .ctd0{st, CTD_3_DANGLE}});
 
@@ -273,7 +276,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         energy = base10 + m_->dangle5[enb][stb][st1b] + pf_.Unpaired(st) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st + 1, en, DP_P},
               .ctd0{st + 1, CTD_5_DANGLE}});
 
@@ -282,7 +285,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
             dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st + 1, en - 1, DP_P},
               .ctd0{st + 1, CTD_MISMATCH}});
       }
@@ -294,13 +297,13 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
               pf_.Unpaired(en);
           if (energy + dp_.ext[en + 1][EXT_GU] <= delta)
             exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_GU],
-                .idx0{en + 1, -1, EXT_GU},
+                .idx0{en + 1, INVALID_INDEX, EXT_GU},
                 .idx1{st + 1, en - 1, DP_P},
                 .ctd0{en + 1, CTD_LCOAX_WITH_PREV},
                 .ctd1{st + 1, CTD_LCOAX_WITH_NEXT}});
           if (energy + dp_.ext[en + 1][EXT_WC] <= delta)
             exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_WC],
-                .idx0{en + 1, -1, EXT_WC},
+                .idx0{en + 1, INVALID_INDEX, EXT_WC},
                 .idx1{st + 1, en - 1, DP_P},
                 .ctd0{en + 1, CTD_LCOAX_WITH_PREV},
                 .ctd1{st + 1, CTD_LCOAX_WITH_NEXT}});
@@ -311,7 +314,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
           energy = base00 + dp_.ext[en + 1][EXT_RC];
           if (energy <= delta)
             exps.push_back({.delta = energy,
-                .idx0{en + 1, -1, EXT_RC},
+                .idx0{en + 1, INVALID_INDEX, EXT_RC},
                 .idx1{st, en, DP_P},
                 .ctd0{en + 2, CTD_RC_WITH_PREV},
                 .ctd1{st, CTD_RC_WITH_NEXT}});
@@ -321,7 +324,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
         energy = base01 + m_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en, -1, EXT_WC},
+              .idx0{en, INVALID_INDEX, EXT_WC},
               .idx1{st, en - 1, DP_P},
               .ctd0{en, CTD_FCOAX_WITH_PREV},
               .ctd1{st, CTD_FCOAX_WITH_NEXT}});
@@ -330,7 +333,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
           energy = base01 + m_->stack[en1b][enb][GuPair(enb)][stb] + dp_.ext[en][EXT_GU];
           if (energy <= delta)
             exps.push_back({.delta = energy,
-                .idx0{en, -1, EXT_GU},
+                .idx0{en, INVALID_INDEX, EXT_GU},
                 .idx1{st, en - 1, DP_P},
                 .ctd0{en, CTD_FCOAX_WITH_PREV},
                 .ctd1{st, CTD_FCOAX_WITH_NEXT}});

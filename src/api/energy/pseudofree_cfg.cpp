@@ -49,9 +49,10 @@ PseudofreeCfg::PseudofreeCfg(std::vector<Energy> paired_, std::vector<Energy> un
 
 void PseudofreeCfg::Verify(const Primary& r) const {
   if (!paired.empty())
-    verify(paired.size() == r.size(), "pseudofree paired must be same length as seq");
+    verify(paired.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
   if (!unpaired.empty())
-    verify(unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+    verify(
+        unpaired.size() == std::size_t(r.size()), "pseudofree unpaired must be same length as seq");
 }
 
 PseudofreeCfg PseudofreeCfg::FromArgParse(const ArgParse& args) {
@@ -66,9 +67,10 @@ BoltzPseudofreeCfg::BoltzPseudofreeCfg(const PseudofreeCfg& pf)
 
 void BoltzPseudofreeCfg::Verify(const Primary& r) const {
   if (!paired.empty())
-    verify(paired.size() == r.size(), "pseudofree paired must be same length as seq");
+    verify(paired.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
   if (!unpaired.empty())
-    verify(unpaired.size() == r.size(), "pseudofree unpaired must be same length as seq");
+    verify(
+        unpaired.size() == std::size_t(r.size()), "pseudofree unpaired must be same length as seq");
 }
 
 std::ostream& operator<<(std::ostream& str, const PseudofreeCfg& o) {

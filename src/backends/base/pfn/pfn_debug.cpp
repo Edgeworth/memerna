@@ -45,7 +45,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
 
   logdebug("base {} with {}, {}", funcname(), cfg, pf);
 
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   const Precomp pc(Primary(r), m, cfg, pf);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;

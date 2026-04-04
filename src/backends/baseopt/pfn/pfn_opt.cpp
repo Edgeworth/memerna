@@ -52,7 +52,7 @@ PfnTables PfnOpt::Run(const Primary& r, const BoltzModel::Ptr& bm, erg::EnergyCf
 
   logdebug("baseopt {} with {}, {}", funcname(), cfg, pf);
 
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   const BoltzPrecomp bpc(Primary(r), bm, cfg);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;

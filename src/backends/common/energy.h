@@ -3,10 +3,15 @@
 #define BACKENDS_COMMON_ENERGY_H_
 
 #include <algorithm>
+#include <cstdint>
+#include <limits>
 
 #include "model/energy.h"
 
 namespace mrna::md {
+
+using ExpansionIndex = uint32_t;
+constexpr ExpansionIndex INVALID_EXPANSION_INDEX = std::numeric_limits<ExpansionIndex>::max();
 
 inline Energy MinEnergy(const Energy* energy, std::size_t size) {
   Energy min = energy[0];

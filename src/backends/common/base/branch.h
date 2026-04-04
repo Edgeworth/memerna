@@ -45,8 +45,8 @@ namespace mrna::md::base {
 template <typename T>
 Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
-  const int N = static_cast<int>(branches.size());
-  const int RSZ = static_cast<int>(r.size());
+  const auto N = As<int>(branches.size());
+  const int RSZ = r.size();
   assert(branch_ctd->empty());
   // Could be on the exterior loop with a branch (0, N - 1).
   if (N < 1) return ZERO_E;
@@ -77,17 +77,17 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
   for (int i = 0; i < N; ++i) {
     li[i] = branches[i];
     ri[i] = s[branches[i]];
-    assert(ri[i] != -1);
+    assert(s.IsPaired(branches[i]));
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
     // If `use_first_lu`, then if the left unpaired base is the same as the last branch's right
     // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
     // dangle, right facing coaxial stack, etc). This is because the loop is cyclic.
-    lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && s[lui[i]] == -1;
+    lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && s.IsUnpaired(lui[i]);
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);
-    ru_exists[i] = rui[i] >= 0 && rui[i] < RSZ && s[rui[i]] == -1;
+    ru_exists[i] = rui[i] < RSZ && s.IsUnpaired(rui[i]);
     ru_usable[i] = ru_exists[i] && (rui[i] != first_lui || !use_first_lu);
-    ru_shared[i] = ru_exists[i] && rui[i] < RSZ - 1 && s[rui[i] + 1] != -1;
+    ru_shared[i] = ru_exists[i] && rui[i] < RSZ - 1 && s.IsPaired(rui[i] + 1);
   }
 
   for (int i = 0; i < N; ++i) {
@@ -221,7 +221,7 @@ Energy AddBaseCtdsToBranchCtds(const T& m, erg::EnergyCfg cfg, const Primary& r,
   // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
   // before it, but that actually needs to be at the end.
   bool rot_left = false;
-  for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
+  for (std::size_t i = 0; i < branches.size(); ++i) {
     const int branch = branches[i];
     const int prev_branch = i > 0 ? branches[i - 1] : branches.back();
     Energy energy = ZERO_E;
@@ -230,7 +230,7 @@ Energy AddBaseCtdsToBranchCtds(const T& m, erg::EnergyCfg cfg, const Primary& r,
     switch (ctd[branch]) {
     case CTD_UNUSED: break;
     case CTD_3_DANGLE:
-      assert(s[branch] + 1 < static_cast<int>(r.size()));
+      assert(s.IsPaired(branch) && s[branch] + 1 < r.size());
       energy = m.dangle3[enb][r[s[branch] + 1]][stb];
       break;
     case CTD_5_DANGLE:
@@ -238,19 +238,19 @@ Energy AddBaseCtdsToBranchCtds(const T& m, erg::EnergyCfg cfg, const Primary& r,
       energy = m.dangle5[enb][r[branch - 1]][stb];
       break;
     case CTD_MISMATCH:
-      assert(s[branch] + 1 < static_cast<int>(r.size()) && branch > 0);
+      assert(s.IsPaired(branch) && s[branch] + 1 < r.size() && branch > 0);
       energy = m.terminal[enb][r[s[branch] + 1]][r[branch - 1]][stb];
       break;
     case CTD_LCOAX_WITH_PREV:
       // .(   ).(   )
-      assert(s[prev_branch] + 1 < static_cast<int>(r.size()) && prev_branch - 1 >= 0);
+      assert(s.IsPaired(prev_branch) && s[prev_branch] + 1 < r.size() && prev_branch > 0);
       energy = m.MismatchCoaxial(
           r[s[prev_branch]], r[s[prev_branch] + 1], r[prev_branch - 1], r[prev_branch]);
       branch_ctd->emplace_back(CTD_LCOAX_WITH_NEXT, energy);
       rot_left = (i == 0) || rot_left;
       break;
     case CTD_RC_WITH_PREV:
-      assert(branch > 0 && s[branch] + 1 < static_cast<int>(r.size()));
+      assert(branch > 0 && s.IsPaired(branch) && s[branch] + 1 < r.size());
       // (   ).(   ). or (.(   ).   )
       energy = m.MismatchCoaxial(enb, r[s[branch] + 1], r[branch - 1], stb);
       // Need to do rotations

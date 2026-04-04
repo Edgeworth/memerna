@@ -33,6 +33,7 @@ using base::DP_U2;
 using base::DP_U_GU;
 using base::DP_U_RC;
 using base::DP_U_WC;
+using base::DpArrayId;
 using base::EXT;
 using base::EXT_GU;
 using base::EXT_RC;
@@ -44,7 +45,7 @@ struct TracebackInternal {
   erg::EnergyCfg cfg;
   const erg::PseudofreeCfg& pf;
   const trace::TraceCfg& tcfg;
-  int N;
+  Index N;
   const base::DpArray& dp;
   const base::ExtArray& ext;
   const Array2D<Energy>& nostack;
@@ -55,9 +56,9 @@ struct TracebackInternal {
 
   TracebackInternal(const Primary& r_, const Model::Ptr& m_, const DpState& state_,
       erg::EnergyCfg cfg_, const erg::PseudofreeCfg& pf_, const trace::TraceCfg& tcfg_)
-      : r(r_), m(*m_), cfg(cfg_), pf(pf_), tcfg(tcfg_), N(static_cast<int>(r_.size())),
-        dp(state_.base.dp), ext(state_.base.ext), nostack(state_.nostack), penult(state_.penult),
-        res((Secondary(N)), Ctds(N)), eng() {
+      : r(r_), m(*m_), cfg(cfg_), pf(pf_), tcfg(tcfg_), N(As<Index>(r_.size())), dp(state_.base.dp),
+        ext(state_.base.ext), nostack(state_.nostack), penult(state_.penult),
+        res(Secondary(N), Ctds(N)), eng() {
     if (tcfg.random) {
       const auto seed = tcfg.seed.value_or(std::random_device{}());
       eng.seed(seed);
@@ -65,10 +66,10 @@ struct TracebackInternal {
     }
   }
 
-  void ComputeExt(int st, int a) {
+  void ComputeExt(int st, DpArrayId a) {
     // Case: No pair starting here
     if (a == EXT && st + 1 < N && ext[st + 1][EXT] + pf.Unpaired(st) == ext[st][EXT]) {
-      next.push_back({.idx0 = base::DpIndex(st + 1, -1, EXT)});
+      next.push_back({.idx0 = base::DpIndex(st + 1, INVALID_INDEX, EXT)});
     }
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
@@ -89,7 +90,7 @@ struct TracebackInternal {
                 ext[en + 1][EXT] ==
             ext[st][EXT_RC]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT)});
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT)});
         }
       }
 
@@ -99,7 +100,8 @@ struct TracebackInternal {
       if (base00 + ext[en + 1][EXT] == ext[st][a] && (a != EXT_WC || IsWcPair(stb, enb)) &&
           (a != EXT_GU || IsGuPair(stb, enb))) {
         // EXT_WC and EXT_GU will have already had their ctds set.
-        Expansion exp{.idx0 = base::DpIndex(st, en, DP_P), .idx1 = base::DpIndex(en + 1, -1, EXT)};
+        Expansion exp{
+            .idx0 = base::DpIndex(st, en, DP_P), .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT)};
         if (a == EXT) exp.ctd0 = {st, CTD_UNUSED};
         next.push_back(exp);
       }
@@ -113,7 +115,7 @@ struct TracebackInternal {
             ext[st][EXT]) {
           next.push_back({
               .idx0 = base::DpIndex(st, en - 1, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
               .ctd0{st, CTD_3_DANGLE},
           });
         }
@@ -121,7 +123,7 @@ struct TracebackInternal {
         if (base10 + m.dangle5[enb][stb][st1b] + pf.Unpaired(st) + ext[en + 1][EXT] ==
             ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
               .ctd0{st + 1, CTD_5_DANGLE}});
         }
         // .(   ).<   > Terminal mismatch
@@ -129,7 +131,7 @@ struct TracebackInternal {
                 ext[en + 1][EXT] ==
             ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
               .ctd0{st + 1, CTD_MISMATCH}});
         }
       }
@@ -140,13 +142,13 @@ struct TracebackInternal {
             base11 + m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en);
         if (val + ext[en + 1][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT_WC),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_WC),
               .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
               .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
         }
         if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT_GU),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_GU),
               .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
               .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
         }
@@ -154,7 +156,7 @@ struct TracebackInternal {
         // (   )<.(   ). > Right coax forward
         if (base00 + ext[en + 1][EXT_RC] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st, en, DP_P),
-              .idx1 = base::DpIndex(en + 1, -1, EXT_RC),
+              .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_RC),
               .ctd0{st, CTD_RC_WITH_NEXT},
               .ctd1{en + 2, CTD_RC_WITH_PREV}});
         }
@@ -162,14 +164,14 @@ struct TracebackInternal {
         // (   )(<   ) > Flush coax
         if (base01 + m.stack[en1b][enb][WcPair(enb)][stb] + ext[en][EXT_WC] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st, en - 1, DP_P),
-              .idx1 = base::DpIndex(en, -1, EXT_WC),
+              .idx1 = base::DpIndex(en, INVALID_INDEX, EXT_WC),
               .ctd0{st, CTD_FCOAX_WITH_NEXT},
               .ctd1{en, CTD_FCOAX_WITH_PREV}});
         }
         if (IsGu(enb) &&
             base01 + m.stack[en1b][enb][GuPair(enb)][stb] + ext[en][EXT_GU] == ext[st][EXT]) {
           next.push_back({.idx0 = base::DpIndex(st, en - 1, DP_P),
-              .idx1 = base::DpIndex(en, -1, EXT_GU),
+              .idx1 = base::DpIndex(en, INVALID_INDEX, EXT_GU),
               .ctd0{st, CTD_FCOAX_WITH_NEXT},
               .ctd1{en, CTD_FCOAX_WITH_PREV}});
         }
@@ -359,7 +361,7 @@ struct TracebackInternal {
     }
   }
 
-  void ComputeUnpaired(int st, int en, int a) {
+  void ComputeUnpaired(int st, int en, DpArrayId a) {
     const auto stb = r[st];
     const auto st1b = r[st + 1];
 
@@ -566,7 +568,7 @@ struct TracebackInternal {
     logdebug("stack {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
 
     std::vector<DpIndex> q;
-    q.emplace_back(base::DpIndex(0, -1, EXT));
+    q.emplace_back(base::DpIndex(0, INVALID_INDEX, EXT));
     while (!q.empty()) {
       auto idx_all = q.back();
       q.pop_back();
@@ -576,8 +578,8 @@ struct TracebackInternal {
         auto idx = std::get<base::DpIndex>(idx_all);
         int st = idx.st;
         int en = idx.en;
-        int a = idx.a;
-        if (en == -1) {
+        DpArrayId a = idx.a;
+        if (idx.IsExternal()) {
           ComputeExt(st, a);
         } else {
           // Done with paired. We might not have returned true if this was a hairpin.

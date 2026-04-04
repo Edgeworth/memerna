@@ -49,7 +49,7 @@ def _can_use_systemd_user_scope() -> bool:
             check=False,
             timeout=5,
         )
-    except OSError, subprocess.SubprocessError:
+    except (OSError, subprocess.SubprocessError):
         return False
     return res.returncode == 0
 

@@ -22,7 +22,8 @@ test:
     --energy-precision=1 --energy-precision=2 :::+ \
     --no-logging --logging :::+ \
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
-    --compiler=clang --compiler=default --compiler=afl-fast
+    --compiler=clang --compiler=default --compiler=afl-fast ::: \
+    --index-bits=8 --index-bits=16 --index-bits=32
 
 bench:
   # Run benchmarks.

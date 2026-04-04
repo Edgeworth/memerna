@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "backends/common/energy.h"
 #include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
@@ -38,7 +40,7 @@ class SuboptIterative {
 
  private:
   struct Node {
-    int expand_idx = {0};
+    ExpansionIndex expand_idx = {0};
     // We could use std::monostate in DpIndex to avoid optional here, but it doesn't change the size
     // of `Node` and it causes a perf regression by adding more variants which worsens the
     // `SplayMap` cache lookup.
@@ -74,13 +76,13 @@ class SuboptIterative {
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 
-  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, int a, Energy delta) const;
+  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, base::DpArrayId a, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> PairedOrNoStackExpansions(
       int st, int en, bool is_nostack, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> UnpairedExpansions(
-      int st, int en, int a, Energy delta) const;
+      int st, int en, base::DpArrayId a, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> PenultimateExpansions(
       int st, int en, int length, Energy delta) const;

@@ -23,17 +23,23 @@ std::tuple<Primary, Secondary> kNNDBInternal1x5 =
 std::tuple<Primary, Secondary> kNNDBInternal2x2 = ParseSeqDb("CAGACGAAACGGAUG", "((..((...))..))");
 std::tuple<Primary, Secondary> kBulge1 = ParseSeqDb("GCUCGAAACAGC", "(((.(...))))");
 std::tuple<Primary, Secondary> kInternal1 = ParseSeqDb("AGAGAAACAAAU", "(..(...)...)");
-std::tuple<Primary, Secondary> k16sHSapiens3 =
-    ParseSeqDb("AAGGACCUGGCGGUGCUUCAUAUCCCUCUAGAGGAGCCUGUUCUGUAAUCGAUAAACCCCGAUCAACCUCACCACCUCUUGCU"
-               "CAGCCUAUAUACCGCCAUCUUCAGCAAACCCUGAUGAAGGCUACAAAGUAAGCGCAAGUACCCACGUAAAGACGUUAGGUCAA"
-               "GGUGUAGCCCAUGAGGUGGCAAGAAAUGGGCUACAUUUUCUACCCCAGAAAACUACGAUAGCCCUUAUGAAACUUAAGGGUCG"
-               "AAGGUGGAUUUAGCAGUAAACUAAGAGUAGAGUGCUUAGUUGAACAGGGCCCUGAAGCGCGUACAC",
-        ".......(((((.(((((((...((..((((((.((((((((((...((((........))))........(((((((.......((.(("
-        "((..((((((.(.(..((..(((((.....))).......))..)).....(((....)))...).).).)))...))))))))....))"
-        ")))))..)).)))))))).)...((((.....)))).....(..(.(((((((.......))))))).)..).....))))).....((("
-        "((((.........)))))))......))...)))))))))).)).");
+std::optional<std::tuple<Primary, Secondary>> k16sHSapiens3;
 
 void InitTest(const std::string& data_dir) {
+  // 315 nt sequence - only available when MAX_RNA_SIZE is large enough.
+  constexpr const char* kK16sHSapiens3Seq =
+      "AAGGACCUGGCGGUGCUUCAUAUCCCUCUAGAGGAGCCUGUUCUGUAAUCGAUAAACCCCGAUCAACCUCACCACCUCUUGCU"
+      "CAGCCUAUAUACCGCCAUCUUCAGCAAACCCUGAUGAAGGCUACAAAGUAAGCGCAAGUACCCACGUAAAGACGUUAGGUCAA"
+      "GGUGUAGCCCAUGAGGUGGCAAGAAAUGGGCUACAUUUUCUACCCCAGAAAACUACGAUAGCCCUUAUGAAACUUAAGGGUCG"
+      "AAGGUGGAUUUAGCAGUAAACUAAGAGUAGAGUGCUUAGUUGAACAGGGCCCUGAAGCGCGUACAC";
+  constexpr const char* kK16sHSapiens3Db =
+      ".......(((((.(((((((...((..((((((.((((((((((...((((........))))........(((((((.......((.(("
+      "((..((((((.(.(..((..(((((.....))).......))..)).....(((....)))...).).).)))...))))))))....))"
+      ")))))..)).)))))))).)...((((.....)))).....(..(.(((((((.......))))))).)..).....))))).....((("
+      "((((.........)))))))......))...)))))))))).)).";
+  if (std::char_traits<char>::length(kK16sHSapiens3Seq) <= MAX_RNA_SIZE)
+    k16sHSapiens3 = ParseSeqDb(kK16sHSapiens3Seq, kK16sHSapiens3Db);
+
   // All backends support T04 and T12.
   for (auto backend : EnumValues<BackendKind>()) {
     t04_ms.push_back(BackendFromBackendCfg(backend,

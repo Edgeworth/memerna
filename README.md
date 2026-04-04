@@ -114,6 +114,7 @@ configuration for a full explanation.
 
 - USE_MPFR: use MPFR for arbitrary precision floating point
 - ENABLE_LOGGING: enable project logging
+- INDEX_BITS: the number of bits to use for indices and sequence lengths
 - ENERGY_PRECISION: the number of decimal places to use for energy calculations
 - FLOAT_PRECISION: the number of significant digits to use for floats
 

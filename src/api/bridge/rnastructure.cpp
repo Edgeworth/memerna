@@ -26,7 +26,10 @@ std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
 
 Secondary StructureToSecondary(const structure& struc, int struc_num = 1) {
   Secondary s(struc.GetSequenceLength());
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) s[i] = struc.GetPair(i + 1, struc_num) - 1;
+  for (int i = 0; i < s.size(); ++i) {
+    int pair = struc.GetPair(i + 1, struc_num);
+    s[i] = pair == 0 ? INVALID_INDEX : As<Index>(pair - 1);
+  }
   return s;
 }
 
@@ -182,7 +185,7 @@ pfn::PfnResult RNAstructure::Pfn(const Primary& r, std::optional<PfnAlg> alg, er
   VerifySupported(alg, cfg, pf);
   const auto structure = LoadStructure(r);
   auto state = RunPfn(structure.get(), data_.get());
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
 
   // RNAstructure partition values are stored in natural log space.
   auto p = BoltzSums(N, 0);
@@ -226,8 +229,9 @@ std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r) const {
 std::unique_ptr<structure> RNAstructure::LoadStructure(const Primary& r, const Secondary& s) const {
   auto struc = LoadStructure(r);
   struc->AddStructure();
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
-    if (i < s[i]) struc->SetPair(i + 1, s[i] + 1);
+  for (int i = 0; i < s.size(); ++i) {
+    if (!s.IsOpeningPair(i)) continue;
+    struc->SetPair(i + 1, s[i] + 1);
   }
   return struc;
 }

@@ -21,6 +21,13 @@ constexpr auto Decay(T& a) {
   return reinterpret_cast<std::remove_all_extents_t<T>*>(&a);
 }
 
+template <typename T, typename U>
+constexpr T As(U v) {
+  auto r = static_cast<T>(v);
+  assert(static_cast<U>(r) == v);
+  return r;
+}
+
 // Only works with [0, 2N).
 inline int FastMod(int a, int m) {
   assert(a >= 0 && a < 2 * m);

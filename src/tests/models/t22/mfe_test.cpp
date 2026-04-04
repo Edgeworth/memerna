@@ -123,7 +123,9 @@ TEST_P(MfeTestT22, T22P2) {
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]p[[.[[[[....[[[...]]"
       "]....]]]].]]]mN]]]]]]..]]]]]]]]]]...]]M"};
-  EXPECT_EQ(ans, Mfe(m, std::get<Primary>(k16sHSapiens3)));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(ans, Mfe(m, std::get<Primary>(*k16sHSapiens3)));
+  }
 }
 
 TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
@@ -189,7 +191,8 @@ TEST_P(MfeTestT22, T22P2PseudofreeEnergy) {
       m, E(-8.44), "UCCACGGCUCGACGGCGCACUUAGUGCGUGGG", "[[[[[3n[[....]]]p[[[...]]]]]]]]]");
   TestMfePseudofree(m, E(-19.97), "UGGGGAAGUGCCGAUGCGGUACUAUUAUCCACUGUCUAUGGAUAAGUCCCCCGACCU",
       "[[[[[Mn[[[[[[...]]]]]]]mp[[[[[[.......]]]]]]]M.m]]]]]3...");
-  TestMfePseudofree(m, E(-92.19), std::get<Primary>(k16sHSapiens3).ToSeq(),
+  if (!k16sHSapiens3) return;
+  TestMfePseudofree(m, E(-92.19), std::get<Primary>(*k16sHSapiens3).ToSeq(),
       "......m[[...[[[[[[[[............[[..[[[[[[[Mp[.[[[[........]]]]..]]....n[[[[[n[[[[...[[.[[[."
       "....[[[.[[.[[[[......]]]].]].]]]......]]].]]]]]]]mp[[.[[[[....]]]]..]]]M...n[[[[[[[[[[......"
       ".......]]]]]]]]]]]mp[[[.....]]]]M...mn[...[[[[[[[.......]]]]]]]]]MP]]]]]p[[.[[[[....[[[...]]"

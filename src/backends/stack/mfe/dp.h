@@ -24,16 +24,15 @@ struct DpState {
 struct PenultimateIndex {
   Index st, en, len;
 
-  PenultimateIndex(int st_, int en_, int len_) : st(Index(st_)), en(Index(en_)), len(Index(len_)) {
-    assert(st_ == st && en_ == en && len == len_);
-  }
+  PenultimateIndex(int st_, int en_, int len_)
+      : st(As<Index>(st_)), en(As<Index>(en_)), len(As<Index>(len_)) {}
 
   constexpr auto operator<=>(const PenultimateIndex&) const = default;
 
   [[nodiscard]] constexpr std::size_t LinearIndex(std::size_t n) const {
-    assert(st >= 0 && st <= int(n));
-    assert(en >= 0 && en <= int(n));
-    assert(len >= 0 && len <= int(n));
+    assert(st >= 0 && std::size_t(st) <= n);
+    assert(en >= 0 && std::size_t(en) <= n);
+    assert(len >= 0 && std::size_t(len) <= n);
 
     return len + (n + 1) * en + (n + 1) * (n + 1) * st;
   }
@@ -46,15 +45,13 @@ struct PenultimateIndex {
 struct NoStackIndex {
   Index st, en;
 
-  NoStackIndex(int st_, int en_) : st(Index(st_)), en(Index(en_)) {
-    assert(st_ == st && en_ == en);
-  }
+  NoStackIndex(int st_, int en_) : st(As<Index>(st_)), en(As<Index>(en_)) {}
 
   constexpr auto operator<=>(const NoStackIndex&) const = default;
 
   [[nodiscard]] constexpr std::size_t LinearIndex(std::size_t n) const {
-    assert(st >= 0 && st <= int(n));
-    assert(en >= 0 && en <= int(n));
+    assert(st >= 0 && std::size_t(st) <= n);
+    assert(en >= 0 && std::size_t(en) <= n);
     return en + (n + 1) * st;
   }
 

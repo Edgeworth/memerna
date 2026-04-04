@@ -22,7 +22,7 @@ namespace mrna::md::base::opt {
 
 TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg) {
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
   verify(!tcfg.random, "random traceback is not supported in this energy model");
   verify(pf.Empty(), "pseudofree energy is not supported in baseopt backend");
 
@@ -32,17 +32,18 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
   std::vector<DpIndex> q;
-  q.emplace_back(0, -1, EXT);
+  q.emplace_back(0, INVALID_INDEX, EXT);
   while (!q.empty()) {
-    const int st = q.back().st;
-    int en = q.back().en;
-    const int a = q.back().a;
+    const auto back = q.back();
+    const int st = back.st;
+    int en = back.en;
+    const DpArrayId a = back.a;
     q.pop_back();
 
-    if (en == -1) {
+    if (back.IsExternal()) {
       // Case: No pair starting here
       if (a == EXT && st + 1 < N && ext[st + 1][EXT] == ext[st][EXT]) {
-        q.emplace_back(st + 1, -1, EXT);
+        q.emplace_back(st + 1, INVALID_INDEX, EXT);
         goto loopend;
       }
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -63,7 +64,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           if (base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + ext[en + 1][EXT] ==
               ext[st][EXT_RC]) {
             q.emplace_back(st + 1, en - 1, DP_P);
-            q.emplace_back(en + 1, -1, EXT);
+            q.emplace_back(en + 1, INVALID_INDEX, EXT);
             goto loopend;
           }
         }
@@ -78,7 +79,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           // EXT_WC and EXT_GU will have already had their ctds set.
           if (a == EXT) res.ctd[st] = CTD_UNUSED;
           q.emplace_back(st, en, DP_P);
-          q.emplace_back(en + 1, -1, EXT);
+          q.emplace_back(en + 1, INVALID_INDEX, EXT);
           goto loopend;
         }
 
@@ -89,21 +90,21 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         if (base01 + m->dangle3[en1b][enb][stb] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st] = CTD_3_DANGLE;
           q.emplace_back(st, en - 1, DP_P);
-          q.emplace_back(en + 1, -1, EXT);
+          q.emplace_back(en + 1, INVALID_INDEX, EXT);
           goto loopend;
         }
         // 5(   )<   > 5'
         if (base10 + m->dangle5[enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st + 1] = CTD_5_DANGLE;
           q.emplace_back(st + 1, en, DP_P);
-          q.emplace_back(en + 1, -1, EXT);
+          q.emplace_back(en + 1, INVALID_INDEX, EXT);
           goto loopend;
         }
         // .(   ).<   > Terminal mismatch
         if (base11 + m->terminal[en1b][enb][stb][st1b] + ext[en + 1][EXT] == ext[st][EXT]) {
           res.ctd[st + 1] = CTD_MISMATCH;
           q.emplace_back(st + 1, en - 1, DP_P);
-          q.emplace_back(en + 1, -1, EXT);
+          q.emplace_back(en + 1, INVALID_INDEX, EXT);
           goto loopend;
         }
 
@@ -114,14 +115,14 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace_back(st + 1, en - 1, DP_P);
-            q.emplace_back(en + 1, -1, EXT_WC);
+            q.emplace_back(en + 1, INVALID_INDEX, EXT_WC);
             goto loopend;
           }
           if (val + ext[en + 1][EXT_GU] == ext[st][EXT]) {
             res.ctd[st + 1] = CTD_LCOAX_WITH_NEXT;
             res.ctd[en + 1] = CTD_LCOAX_WITH_PREV;
             q.emplace_back(st + 1, en - 1, DP_P);
-            q.emplace_back(en + 1, -1, EXT_GU);
+            q.emplace_back(en + 1, INVALID_INDEX, EXT_GU);
             goto loopend;
           }
 
@@ -130,7 +131,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             res.ctd[st] = CTD_RC_WITH_NEXT;
             res.ctd[en + 2] = CTD_RC_WITH_PREV;
             q.emplace_back(st, en, DP_P);
-            q.emplace_back(en + 1, -1, EXT_RC);
+            q.emplace_back(en + 1, INVALID_INDEX, EXT_RC);
             goto loopend;
           }
 
@@ -139,7 +140,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace_back(st, en - 1, DP_P);
-            q.emplace_back(en, -1, EXT_WC);
+            q.emplace_back(en, INVALID_INDEX, EXT_WC);
             goto loopend;
           }
           if (IsGu(enb) &&
@@ -147,7 +148,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             res.ctd[st] = CTD_FCOAX_WITH_NEXT;
             res.ctd[en] = CTD_FCOAX_WITH_PREV;
             q.emplace_back(st, en - 1, DP_P);
-            q.emplace_back(en, -1, EXT_GU);
+            q.emplace_back(en, INVALID_INDEX, EXT_GU);
             goto loopend;
           }
         }
@@ -161,8 +162,8 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
       const auto en2b = r[en - 2];
       if (a == DP_P) {
         // It's paired, so add it to the folding.
-        res.s[st] = en;
-        res.s[en] = st;
+        res.s[st] = As<Index>(en);
+        res.s[en] = As<Index>(st);
 
         // Following largely matches the above DP so look up there for comments.
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);

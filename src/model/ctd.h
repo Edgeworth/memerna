@@ -67,8 +67,8 @@ class Ctds {
  public:
   constexpr Ctds() = default;
   constexpr ~Ctds() = default;
-  constexpr explicit Ctds(std::initializer_list<Ctd> init) : data_(init) {}
-  constexpr explicit Ctds(std::size_t size) : data_(size, CTD_NA) {}
+  explicit Ctds(std::initializer_list<Ctd> init) : data_(init) { VerifyRnaSize(data_.size()); }
+  explicit Ctds(std::size_t size) : data_(size, CTD_NA) { VerifyRnaSize(data_.size()); }
 
   constexpr Ctds(Ctds&&) = default;
   constexpr Ctds& operator=(Ctds&&) = default;
@@ -88,9 +88,10 @@ class Ctds {
   [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
   [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] constexpr std::size_t size() const { return data_.size(); }
+  [[nodiscard]] constexpr Index size() const { return static_cast<Index>(data_.size()); }
 
   void reset(std::size_t size) {
+    VerifyRnaSize(size);
     data_.resize(size);
     std::fill(data_.begin(), data_.end(), CTD_NA);
   }
@@ -107,17 +108,17 @@ class Ctds {
 // Describes a CTD at a particular index.
 struct IndexCtd {
   IndexCtd() = default;
-  IndexCtd(int idx_, Ctd ctd_) : idx(Index(idx_)), ctd(ctd_) { assert(idx_ == idx); }
+  IndexCtd(int idx_, Ctd ctd_) : idx(As<Index>(idx_)), ctd(ctd_) {}
 
-  [[nodiscard]] constexpr bool IsValid() const { return idx >= 0; }
+  [[nodiscard]] constexpr bool IsValid() const { return idx != INVALID_INDEX; }
 
   constexpr void Apply(Ctds& ctds) const {
-    assert(idx >= 0);
+    assert(idx >= 0 && idx != INVALID_INDEX);
     ctds[idx] = ctd;
   }
 
   constexpr void Remove(Ctds& ctds) const {
-    assert(idx >= 0);
+    assert(idx >= 0 && idx != INVALID_INDEX);
     ctds[idx] = CTD_NA;
   }
 
@@ -129,7 +130,7 @@ struct IndexCtd {
     if (IsValid()) Remove(ctds);
   }
 
-  Index idx{-1};
+  Index idx{INVALID_INDEX};
   Ctd ctd{CTD_NA};
 };
 

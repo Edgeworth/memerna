@@ -11,10 +11,10 @@ namespace mrna {
 
 namespace {
 
-std::vector<char*> MakeArgv(const std::vector<std::string>& args) {
+std::vector<char*> MakeArgv(std::vector<std::string>& args) {
   std::vector<char*> argv;
   argv.reserve(args.size());
-  for (const auto& s : args) argv.push_back(const_cast<char*>(s.c_str()));
+  for (auto& s : args) argv.push_back(s.data());
   return argv;
 }
 

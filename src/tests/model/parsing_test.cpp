@@ -17,95 +17,115 @@ class ParsingTest : public testing::Test {
   const std::string kCtdString1;
 
   const Primary kPrimary2 = Primary::FromSeq("A");
-  const Secondary kSecondary2{-1};
+  const Secondary kSecondary2{INVALID_INDEX};
   const Ctds kCtd2{CTD_NA};
   const std::string kCtdString2 = ".";
 
   const Primary kPrimary3 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary3{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
+  const Secondary kSecondary3{13, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, INVALID_INDEX,
+      11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, INVALID_INDEX, 0};
   const Ctds kCtd3{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE,
       CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString3 = "[[...].[...]3]";
 
   const Primary kPrimary4 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary4{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
+  const Secondary kSecondary4{INVALID_INDEX, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1,
+      INVALID_INDEX, 11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, INVALID_INDEX,
+      INVALID_INDEX};
   const Ctds kCtd4{CTD_NA, CTD_RC_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString4 = ".n...]mp...]M.";
 
   const Primary kPrimary5 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary5{-1, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, -1};
+  const Secondary kSecondary5{INVALID_INDEX, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1,
+      INVALID_INDEX, 11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, INVALID_INDEX,
+      INVALID_INDEX};
   const Ctds kCtd5{CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA,
       CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString5 = ".[...]3[...]..";
 
   const Primary kPrimary6 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary6{6, 5, -1, -1, -1, 1, 0, 11, -1, -1, -1, 7, -1, -1};
+  const Secondary kSecondary6{6, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, 0, 11,
+      INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, INVALID_INDEX, INVALID_INDEX};
   const Ctds kCtd6{CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString6 = "n[...]]p...]..";
 
   const Primary kPrimary7 = Primary::FromSeq("UACGUUGGUGCUU");
-  const Secondary kSecondary7{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
+  const Secondary kSecondary7{12, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, INVALID_INDEX,
+      11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, 0};
   const Ctds kCtd7{CTD_UNUSED, CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_NEXT};
   const std::string kCtdString7 = "[p...].[...]N";
 
   const Primary kPrimary8 = Primary::FromSeq("UACGUUGGUGCUUAA");
-  const Secondary kSecondary8{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
+  const Secondary kSecondary8{14, INVALID_INDEX, 6, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 2,
+      INVALID_INDEX, 12, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 8, INVALID_INDEX, 0};
   const Ctds kCtd8{CTD_UNUSED, CTD_NA, CTD_LCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_NEXT};
   const std::string kCtdString8 = "[Mp...].[...]mN";
 
   const Primary kPrimary9 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary9{13, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, 0};
+  const Secondary kSecondary9{13, INVALID_INDEX, 6, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 2,
+      INVALID_INDEX, 12, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 8, 0};
   const Ctds kCtd9{CTD_UNUSED, CTD_NA, CTD_RC_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_NEXT};
   const std::string kCtdString9 = "[mp...]M[...]N";
 
   const Primary kPrimary10 = Primary::FromSeq("UACGUUGGUGCUU");
-  const Secondary kSecondary10{12, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, 0};
+  const Secondary kSecondary10{12, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, INVALID_INDEX,
+      11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, 0};
   const Ctds kCtd10{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_FCOAX_WITH_PREV};
   const std::string kCtdString10 = "[[...].n...]P";
 
   const Primary kPrimary11 = Primary::FromSeq("UACGUUGGUGCUUAA");
-  const Secondary kSecondary11{14, -1, 6, -1, -1, -1, 2, -1, 12, -1, -1, -1, 8, -1, 0};
+  const Secondary kSecondary11{14, INVALID_INDEX, 6, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 2,
+      INVALID_INDEX, 12, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 8, INVALID_INDEX, 0};
   const Ctds kCtd11{CTD_UNUSED, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_RC_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_RC_WITH_PREV};
   const std::string kCtdString11 = "[M[...].n...]mP";
 
   const Primary kPrimary12 = Primary::FromSeq("UACGUUGGUGCUUA");
-  const Secondary kSecondary12{13, 5, -1, -1, -1, 1, -1, 11, -1, -1, -1, 7, -1, 0};
+  const Secondary kSecondary12{13, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, INVALID_INDEX,
+      11, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 7, INVALID_INDEX, 0};
   const Ctds kCtd12{CTD_UNUSED, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_LCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_LCOAX_WITH_PREV};
   const std::string kCtdString12 = "[[...]mn...]MP";
 
   const Primary kPrimary13 = Primary::FromSeq("UACGUUGGUGCU");
-  const Secondary kSecondary13{11, 5, -1, -1, -1, 1, 10, -1, -1, -1, 6, 0};
+  const Secondary kSecondary13{11, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, 10,
+      INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 6, 0};
   const Ctds kCtd13{CTD_UNUSED, CTD_FCOAX_WITH_NEXT, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_FCOAX_WITH_PREV, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString13 = "[n...]p...]]";
 
   const Primary kPrimary14 = Primary::FromSeq("AAAAAAA");
-  const Secondary kSecondary14{-1, 5, -1, -1, -1, 1, -1};
+  const Secondary kSecondary14{
+      INVALID_INDEX, 5, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 1, INVALID_INDEX};
   const Ctds kCtd14{CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA};
   const std::string kCtdString14 = "m[...]M";
 
   const Primary kPrimary15 = Primary::FromSeq("UACGUUGGUGCUAAAA");
-  const Secondary kSecondary15{15, -1, 6, -1, -1, -1, 2, -1, -1, 13, -1, -1, -1, 9, -1, 0};
+  const Secondary kSecondary15{15, INVALID_INDEX, 6, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 2,
+      INVALID_INDEX, INVALID_INDEX, 13, INVALID_INDEX, INVALID_INDEX, INVALID_INDEX, 9,
+      INVALID_INDEX, 0};
   const Ctds kCtd15{CTD_UNUSED, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_UNUSED};
   const std::string kCtdString15 = "[m[...]Mm[...]M]";
 
   const Primary kPrimary16 = Primary::FromSeq("AUACGUUGGUGCUAAAAA");
-  const Secondary kSecondary16{-1, 16, -1, 7, -1, -1, -1, 3, -1, -1, 14, -1, -1, -1, 10, -1, 1, -1};
+  const Secondary kSecondary16{INVALID_INDEX, 16, INVALID_INDEX, 7, INVALID_INDEX, INVALID_INDEX,
+      INVALID_INDEX, 3, INVALID_INDEX, INVALID_INDEX, 14, INVALID_INDEX, INVALID_INDEX,
+      INVALID_INDEX, 10, INVALID_INDEX, 1, INVALID_INDEX};
   const Ctds kCtd16{CTD_NA, CTD_MISMATCH, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_MISMATCH, CTD_NA};
   const std::string kCtdString16 = "m[M[...]..[...]m]M";
 
   const Primary kPrimary17 = Primary::FromSeq("AUACGUUGGUGCUAAAAA");
-  const Secondary kSecondary17{-1, 16, -1, 7, -1, -1, -1, 3, -1, -1, 14, -1, -1, -1, 10, -1, 1, -1};
+  const Secondary kSecondary17{INVALID_INDEX, 16, INVALID_INDEX, 7, INVALID_INDEX, INVALID_INDEX,
+      INVALID_INDEX, 3, INVALID_INDEX, INVALID_INDEX, 14, INVALID_INDEX, INVALID_INDEX,
+      INVALID_INDEX, 10, INVALID_INDEX, 1, INVALID_INDEX};
   const Ctds kCtd17{CTD_NA, CTD_3_DANGLE, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
       CTD_NA, CTD_NA, CTD_UNUSED, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_3_DANGLE, CTD_NA};
   const std::string kCtdString17 = ".[3[...]..[...].]3";

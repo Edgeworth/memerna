@@ -56,49 +56,49 @@ class Structure {
 
 class HairpinLoopStructure : public Structure {
  public:
-  HairpinLoopStructure(int st, int en) : st_(st), en_(en) {}
+  HairpinLoopStructure(int st, int en) : st_(As<Index>(st)), en_(As<Index>(en)) {}
 
   void AddBranch(std::unique_ptr<Structure> /*b*/) override { fatal("invalid operation"); }
   [[nodiscard]] std::string ShortDesc() const override;
 
  private:
-  int st_, en_;
+  Index st_, en_;
 };
 
 class TwoLoopStructure : public Structure {
  public:
   TwoLoopStructure(int ost, int oen, int ist, int ien)
-      : ost_(ost), oen_(oen), ist_(ist), ien_(ien) {}
+      : ost_(As<Index>(ost)), oen_(As<Index>(oen)), ist_(As<Index>(ist)), ien_(As<Index>(ien)) {}
 
   void AddBranch(std::unique_ptr<Structure> b) override;
   [[nodiscard]] std::string ShortDesc() const override;
 
  private:
-  int ost_, oen_, ist_, ien_;
+  Index ost_, oen_, ist_, ien_;
 };
 
 class MultiLoopStructure : public Structure {
  public:
-  MultiLoopStructure(int st, int en) : st_(st), en_(en) {}
+  MultiLoopStructure(int st, int en) : st_(As<Index>(st)), en_(As<Index>(en)) {}
 
   void AddCtd(Ctd ctd, Energy ctd_energy) { branch_ctd_.emplace_back(ctd, ctd_energy); }
   [[nodiscard]] std::string BranchDesc(int idx) const override;
   [[nodiscard]] std::string ShortDesc() const override;
 
  private:
-  int st_, en_;
+  Index st_, en_;
   BranchCtd branch_ctd_;
 };
 
 class StackingStructure : public Structure {
  public:
-  StackingStructure(int st, int en) : st_(st), en_(en) {}
+  StackingStructure(int st, int en) : st_(As<Index>(st)), en_(As<Index>(en)) {}
 
   void AddBranch(std::unique_ptr<Structure> b) override;
   [[nodiscard]] std::string ShortDesc() const override;
 
  private:
-  int st_, en_;
+  Index st_, en_;
 };
 
 }  // namespace mrna

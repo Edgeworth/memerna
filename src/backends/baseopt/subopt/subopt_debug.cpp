@@ -43,8 +43,7 @@ SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg
       subopt_cfg_(subopt_cfg) {}
 
 int64_t SuboptDebug::Run(const SuboptCallback& fn) {
-  const int N = static_cast<int>(r_.size());
-  verify(N < std::numeric_limits<Index>::max(), "RNA too long for suboptimal folding");
+  const int N = r_.size();
 
   std::string reason;
   verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
@@ -58,7 +57,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
   // Cull the ones not inside the window or when we have more than `max_structures`.
   // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
   // be above cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
-  q_.insert({.not_yet_expanded = {{0, -1, EXT}},
+  q_.insert({.not_yet_expanded = {{0, INVALID_INDEX, EXT}},
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
   while (!q_.empty()) {
@@ -85,7 +84,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
     node.not_yet_expanded.pop_back();
     const int st = to_expand.st;
     int en = to_expand.en;
-    const int a = to_expand.a;
+    const DpArrayId a = to_expand.a;
 
     // Initialise - we only make small modifications to it.
     curnode_ = node.copy();
@@ -93,7 +92,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
     Energy energy = ZERO_E;
 
     // Exterior loop
-    if (en == -1) {
+    if (to_expand.IsExternal()) {
       // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
       // energy as a base.
       const Energy base_energy = node.res.energy - dp_.ext[st][a];
@@ -103,7 +102,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
           Expand(base_energy);
         else
           // Case: No pair starting here (for EXT only)
-          Expand(base_energy + dp_.ext[st + 1][EXT], {st + 1, -1, EXT});
+          Expand(base_energy + dp_.ext[st + 1][EXT], {st + 1, INVALID_INDEX, EXT});
       }
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
         // .   .   .   (   .   .   .   )   <   >
@@ -123,7 +122,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
               dp_.ext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
-          Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P});
+          Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st + 1, en - 1, DP_P});
         }
 
         // EXT_RC is only for the above case.
@@ -133,54 +132,56 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         // (   )<   >
         // If we are at EXT then this is unused.
         energy = base_energy + base00 + dp_.ext[en + 1][EXT];
-        if (a == EXT) Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P}, {st, CTD_UNUSED});
+        if (a == EXT)
+          Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st, en, DP_P}, {st, CTD_UNUSED});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
         // coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
-          Expand(energy, {en + 1, -1, EXT}, {st, en, DP_P});
+          Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st, en, DP_P});
 
         // Everything after this is only for EXT.
         if (a != EXT) continue;
 
         // (   )3<   > 3'
         energy = base_energy + base01 + m_->dangle3[en1b][enb][stb] + dp_.ext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE});
+        Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st, en - 1, DP_P}, {st, CTD_3_DANGLE});
 
         // 5(   )<   > 5'
         energy = base_energy + base10 + m_->dangle5[enb][stb][st1b] + dp_.ext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE});
+        Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st + 1, en, DP_P}, {st + 1, CTD_5_DANGLE});
 
         // .(   ).<   > Terminal mismatch
         energy = base_energy + base11 + m_->terminal[en1b][enb][stb][st1b] + dp_.ext[en + 1][EXT];
-        Expand(energy, {en + 1, -1, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
+        Expand(
+            energy, {en + 1, INVALID_INDEX, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
 
         // (   )(<   ) > Flush coax
         energy =
             base_energy + base01 + m_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
-        Expand(energy, {en, -1, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+        Expand(energy, {en, INVALID_INDEX, EXT_WC}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
             {st, CTD_FCOAX_WITH_NEXT});
         if (IsGu(enb)) {
           energy =
               base_energy + base01 + m_->stack[en1b][enb][GuPair(enb)][stb] + dp_.ext[en][EXT_GU];
-          Expand(energy, {en, -1, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
+          Expand(energy, {en, INVALID_INDEX, EXT_GU}, {st, en - 1, DP_P}, {en, CTD_FCOAX_WITH_PREV},
               {st, CTD_FCOAX_WITH_NEXT});
         }
 
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b);
-          Expand(energy + dp_.ext[en + 1][EXT_GU], {en + 1, -1, EXT_GU}, {st + 1, en - 1, DP_P},
-              {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
-          Expand(energy + dp_.ext[en + 1][EXT_WC], {en + 1, -1, EXT_WC}, {st + 1, en - 1, DP_P},
-              {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
+          Expand(energy + dp_.ext[en + 1][EXT_GU], {en + 1, INVALID_INDEX, EXT_GU},
+              {st + 1, en - 1, DP_P}, {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
+          Expand(energy + dp_.ext[en + 1][EXT_WC], {en + 1, INVALID_INDEX, EXT_WC},
+              {st + 1, en - 1, DP_P}, {en + 1, CTD_LCOAX_WITH_PREV}, {st + 1, CTD_LCOAX_WITH_NEXT});
         }
         if (en < N - 2) {
           // (   )<.(   ). > Right coax forward
           energy = base_energy + base00 + dp_.ext[en + 1][EXT_RC];
-          Expand(energy, {en + 1, -1, EXT_RC}, {st, en, DP_P}, {en + 2, CTD_RC_WITH_PREV},
-              {st, CTD_RC_WITH_NEXT});
+          Expand(energy, {en + 1, INVALID_INDEX, EXT_RC}, {st, en, DP_P},
+              {en + 2, CTD_RC_WITH_PREV}, {st, CTD_RC_WITH_NEXT});
         }
       }
       // Finished exterior loop, don't do anymore.
@@ -199,8 +200,8 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
 
     // Normal stuff
     if (a == DP_P) {
-      curnode_.res.tb.s[st] = en;
-      curnode_.res.tb.s[en] = st;
+      curnode_.res.tb.s[st] = As<Index>(en);
+      curnode_.res.tb.s[en] = As<Index>(st);
 
       // Two loops.
       const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);

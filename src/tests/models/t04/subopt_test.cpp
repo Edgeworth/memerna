@@ -441,19 +441,21 @@ TEST_P(SuboptTestT04, T04P1) {
           E(-20.6),
           E(-20.4),
       });
-  Subopt(m, std::get<Primary>(k16sHSapiens3),
-      {
-          E(-89.6),
-          E(-89.6),
-          E(-89.6),
-          E(-89.6),
-          E(-89.5),
-          E(-89.5),
-          E(-89.5),
-          E(-89.5),
-          E(-89.5),
-          E(-89.5),
-      });
+  if (k16sHSapiens3) {
+    Subopt(m, std::get<Primary>(*k16sHSapiens3),
+        {
+            E(-89.6),
+            E(-89.6),
+            E(-89.6),
+            E(-89.6),
+            E(-89.5),
+            E(-89.5),
+            E(-89.5),
+            E(-89.5),
+            E(-89.5),
+            E(-89.5),
+        });
+  }
 }
 
 #elif MRNA_ENERGY_PRECISION == 2
@@ -870,19 +872,21 @@ TEST_P(SuboptTestT04, T04P2) {
           E(-20.41),
           E(-20.22),
       });
-  Subopt(m, std::get<Primary>(k16sHSapiens3),
-      {
-          E(-89.29),
-          E(-89.29),
-          E(-89.26),
-          E(-89.26),
-          E(-89.19),
-          E(-89.19),
-          E(-89.16),
-          E(-89.16),
-          E(-89.13),
-          E(-89.13),
-      });
+  if (k16sHSapiens3) {
+    Subopt(m, std::get<Primary>(*k16sHSapiens3),
+        {
+            E(-89.29),
+            E(-89.29),
+            E(-89.26),
+            E(-89.26),
+            E(-89.19),
+            E(-89.19),
+            E(-89.16),
+            E(-89.16),
+            E(-89.13),
+            E(-89.13),
+        });
+  }
 }
 
 #endif

@@ -68,6 +68,7 @@ class BuildCfg:
     iwyu: bool
     lto: bool
     enable_logging: bool
+    index_bits: int
     float_precision: int
     energy_precision: int
     env: dict[str, str] = field(default_factory=dict)
@@ -78,6 +79,7 @@ class BuildCfg:
             ident += f"-{self.sanitizer}"
         if self.mpfr:
             ident += "-mpfr"
+        ident += f"-i{self.index_bits}"
         ident += f"-{self.float_precision}"
         ident += f"-p{self.energy_precision}"
         if self.rnastructure:
@@ -110,6 +112,7 @@ class BuildCfg:
             "USE_IWYU": "ON" if self.iwyu else "OFF",
             "USE_LTO": "ON" if self.lto else "OFF",
             "ENABLE_LOGGING": "ON" if self.enable_logging else "OFF",
+            "INDEX_BITS": f"{self.index_bits}",
             "FLOAT_PRECISION": f"{self.float_precision}",
             "ENERGY_PRECISION": f"{self.energy_precision}",
         }
@@ -131,7 +134,8 @@ class BuildCfg:
         if regenerate:
             shutil.rmtree(path, ignore_errors=True)
             assert not path.exists()
-        if not path.exists():
+        if not (path / "Makefile").exists():
+            shutil.rmtree(path, ignore_errors=True)
             self._generate_cmake()
         if build:
             cpu_count = os.cpu_count() or 1

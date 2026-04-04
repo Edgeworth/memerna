@@ -6,6 +6,7 @@
 
 #include "model/energy.h"
 #include "util/array.h"
+#include "util/util.h"
 
 namespace mrna {
 
@@ -21,7 +22,7 @@ struct PfnTables {
   PfnTables(BoltzSums p_, BoltzEnergy q_) : p(std::move(p_)), q(q_), prob(Prob(p, q)) {}
 
   [[nodiscard]] static BoltzProbs Prob(const BoltzSums& p, const BoltzEnergy& q) {
-    const int N = static_cast<int>(p.size());
+    const auto N = As<int>(p.size());
     BoltzProbs prob(N, 0);
     if (q == BoltzEnergy(0)) return prob;
     for (int i = 0; i < N; ++i)

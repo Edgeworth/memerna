@@ -41,14 +41,14 @@ BruteResult Brute::Run() {
   logdebug("brute {} with {}, {}, {}", funcname(), energy_cfg_, brute_cfg_, pf_);
 
   if (brute_cfg_.pfn) {
-    // Plus one to N, since -1 takes up a spot.
+    // Plus one to N, since the packed representation reserves an all-ones sentinel.
     verify(r_.size() + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.pfn.q = 0;
     res_.pfn.p = BoltzSums(r_.size(), 0);
   }
   // Add base pairs in order of increasing st, then en.
-  for (int st = 0; st < static_cast<int>(r_.size()); ++st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < static_cast<int>(r_.size()); ++en) {
+  for (int st = 0; st < r_.size(); ++st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < r_.size(); ++en) {
       if (CanPair(energy_cfg_, m_, r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
@@ -60,7 +60,7 @@ BruteResult Brute::Run() {
 }
 
 void Brute::Dfs(int idx) {
-  if (idx == static_cast<int>(pairs_.size())) {
+  if (idx == int(pairs_.size())) {
     // Precompute whether things are multiloops or not.
     branch_count_ = GetBranchCounts(s_);
     AddAllCombinations(0);
@@ -75,30 +75,30 @@ void Brute::Dfs(int idx) {
   // Only need to check in the range of this base pair. Since we ordered by
   // increasing st, anything at or after this will either be the start of something starting at st,
   // or something ending, both of which conflict with this base pair.
-  for (int i = p.first; i <= p.second; ++i) {
-    if (s_[i] != -1) {
+  for (int i = p.st; i <= p.en; ++i) {
+    if (s_.IsPaired(i)) {
       can_take = false;
       break;
     }
   }
   if (can_take) {
-    s_[p.first] = p.second;
-    s_[p.second] = p.first;
+    s_[p.st] = p.en;
+    s_[p.en] = p.st;
     Dfs(idx + 1);
-    s_[p.first] = -1;
-    s_[p.second] = -1;
+    s_[p.st] = INVALID_INDEX;
+    s_[p.en] = INVALID_INDEX;
   }
 }
 
 void Brute::AddAllCombinations(int idx) {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   // Base case
   if (idx == N) {
     if (brute_cfg_.pfn) {
       auto energy = TotalEnergy(underlying_, r_, s_, &ctd_, pfn_energy_cfg_, pf_).energy;
       res_.pfn.q += energy.Boltz();
       for (int i = 0; i < N; ++i) {
-        if (i < s_[i]) {
+        if (s_.IsOpeningPair(i)) {
           const auto inside_structure = BuildInsideStructure(i, s_[i], N);
           const auto outside_structure = BuildOutsideStructure(i, s_[i], N);
           const bool inside_new = !substructure_map_.Find(inside_structure);
@@ -127,30 +127,32 @@ void Brute::AddAllCombinations(int idx) {
 
   // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set
   // ctds so continue.
-  if (ctd_[idx] != CTD_NA || s_[idx] == -1 || branch_count_[idx] < 2) {
+  const int st = idx;
+  if (ctd_[idx] != CTD_NA || s_.IsUnpaired(st) || branch_count_[idx] < 2) {
     AddAllCombinations(idx + 1);
     return;
   }
 
-  const bool lu_exists = idx - 1 >= 0 && s_[idx - 1] == -1;
-  const bool lu_shared = lu_exists && idx - 2 >= 0 && s_[idx - 2] != -1;
+  const int en = s_[st];
+  const bool lu_exists = st != 0 && s_.IsUnpaired(st - 1);
+  const bool lu_shared = lu_exists && st > 1 && s_.IsPaired(st - 2);
   const bool lu_usable = lu_exists &&
       (!lu_shared ||
-          (ctd_[s_[idx - 2]] != CTD_3_DANGLE && ctd_[s_[idx - 2]] != CTD_MISMATCH &&
-              ctd_[s_[idx - 2]] != CTD_RC_WITH_PREV));
-  const bool ru_exists = s_[idx] + 1 < N && s_[s_[idx] + 1] == -1;
-  const bool ru_shared = ru_exists && s_[idx] + 2 < N && s_[s_[idx] + 2] != -1;
+          (ctd_[s_[st - 2]] != CTD_3_DANGLE && ctd_[s_[st - 2]] != CTD_MISMATCH &&
+              ctd_[s_[st - 2]] != CTD_RC_WITH_PREV));
+  const bool ru_exists = en + 1 < N && s_.IsUnpaired(en + 1);
+  const bool ru_shared = ru_exists && en + 2 < N && s_.IsPaired(en + 2);
   const bool ru_usable = ru_exists &&
       (!ru_shared ||
-          (ctd_[s_[idx] + 2] != CTD_5_DANGLE && ctd_[s_[idx] + 2] != CTD_MISMATCH &&
-              ctd_[s_[idx] + 2] != CTD_LCOAX_WITH_NEXT));
+          (ctd_[en + 2] != CTD_5_DANGLE && ctd_[en + 2] != CTD_MISMATCH &&
+              ctd_[en + 2] != CTD_LCOAX_WITH_NEXT));
   // Even if the next branch is an outer branch, everything will be magically handled.
 
   // CTD_NONE or D2 CTD;
   Ctd none_ctd = CTD_UNUSED;
   if (energy_cfg_.UseD2()) {
-    const bool lspace = idx > 0;
-    const bool rspace = s_[idx] + 1 < N;
+    const bool lspace = st != 0;
+    const bool rspace = en + 1 < N;
     if (lspace && rspace) {
       none_ctd = CTD_MISMATCH;
     } else if (rspace) {
@@ -186,12 +188,12 @@ void Brute::AddAllCombinations(int idx) {
     // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
     // CTD_LCOAX_WITH_NEXT
     if (lu_usable && ru_usable && ru_shared) {
-      auto prevval = ctd_[s_[idx] + 2];
+      auto prevval = ctd_[en + 2];
       if (prevval == CTD_UNUSED || prevval == CTD_NA) {
         ctd_[idx] = CTD_LCOAX_WITH_NEXT;
-        ctd_[s_[idx] + 2] = CTD_LCOAX_WITH_PREV;
+        ctd_[en + 2] = CTD_LCOAX_WITH_PREV;
         AddAllCombinations(idx + 1);
-        ctd_[s_[idx] + 2] = prevval;
+        ctd_[en + 2] = prevval;
       }
     }
 
@@ -208,13 +210,13 @@ void Brute::AddAllCombinations(int idx) {
     }
 
     // CTD_FCOAX_WITH_NEXT
-    if (s_[idx] + 1 < N && s_[s_[idx] + 1] != -1) {
-      auto prevval = ctd_[s_[idx] + 1];
+    if (en + 1 < N && s_.IsPaired(en + 1)) {
+      auto prevval = ctd_[en + 1];
       if (prevval == CTD_UNUSED || prevval == CTD_NA) {
         ctd_[idx] = CTD_FCOAX_WITH_NEXT;
-        ctd_[s_[idx] + 1] = CTD_FCOAX_WITH_PREV;
+        ctd_[en + 1] = CTD_FCOAX_WITH_PREV;
         AddAllCombinations(idx + 1);
-        ctd_[s_[idx] + 1] = prevval;
+        ctd_[en + 1] = prevval;
       }
     }
   }
@@ -243,7 +245,7 @@ void Brute::PruneInsertSubopt(Energy e) {
 
 Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
-  // Zero initialise (important because secondary structure is -1 if there is no pair).
+  // Zero initialise. Unpaired is all-ones in the packed representation once PT_MASK is applied.
   SubstructureId struc = {};
   uint32_t b = 0;
   for (int i = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {
@@ -258,7 +260,7 @@ Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
 
     const uint32_t chunk = b / 16;
     const uint32_t bit = b & 15;
-    struc.bits[chunk] |= pack << bit;
+    struc.bits[chunk] |= uint16_t(pack << bit);
     const uint32_t space = 16 - bit;
     if (space < CTD_MAX_BITS + PT_MAX_BITS) struc.bits[chunk + 1] = uint16_t(pack >> space);
   }

@@ -25,6 +25,7 @@ using base::DP_U2;
 using base::DP_U_GU;
 using base::DP_U_RC;
 using base::DP_U_WC;
+using base::DpArrayId;
 using base::EXT;
 using base::EXT_GU;
 using base::EXT_RC;
@@ -92,13 +93,16 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
   Energy mfe = dp_.base.ext[0][EXT];
   q_.clear();
   unexpanded_.clear();
-  q_.push_back({.expand_idx = 0, .to_expand = base::DpIndex(0, -1, EXT), .should_unexpand = false});
+  q_.push_back({.expand_idx = 0,
+      .to_expand = base::DpIndex(0, INVALID_INDEX, EXT),
+      .should_unexpand = false});
   while (!q_.empty()) {
     auto& s = q_.back();
     assert(s.to_expand.has_value());
     auto to_expand = *s.to_expand;
 
     const auto& exps = GetExpansion(to_expand);
+    const auto num_exps = As<ExpansionIndex>(exps.size());
     assert(!exps.empty());
 
     // Go to next child:
@@ -111,11 +115,10 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
       energy -= pexp.delta;
     }
 
-    if (s.expand_idx != static_cast<int>(exps.size()) && exps[s.expand_idx].delta + energy > delta)
+    if (s.expand_idx != num_exps && exps[s.expand_idx].delta + energy > delta)
       next_seen = std::min(next_seen, exps[s.expand_idx].delta + energy);
 
-    if (s.expand_idx == static_cast<int>(exps.size()) ||
-        exps[s.expand_idx].delta + energy > delta) {
+    if (s.expand_idx == num_exps || exps[s.expand_idx].delta + energy > delta) {
       if (s.should_unexpand) unexpanded_.push_back(to_expand);
       q_.pop_back();
       continue;
@@ -169,8 +172,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
     auto idx = std::get<base::DpIndex>(to_expand);
     int st = idx.st;
     int en = idx.en;
-    int a = idx.a;
-    if (en == -1) return ExtExpansions(st, a, delta);
+    DpArrayId a = idx.a;
+    if (idx.IsExternal()) return ExtExpansions(st, a, delta);
     if (a == DP_P) return PairedOrNoStackExpansions(st, en, /*is_nostack=*/false, delta);
     return UnpairedExpansions(st, en, a, delta);
   }
@@ -190,8 +193,9 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
 }
 
 template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Energy delta) const {
-  const int N = static_cast<int>(r_.size());
+std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
+    int st, DpArrayId a, Energy delta) const {
+  const int N = r_.size();
   const auto& dp = dp_.base.dp;
   const auto& ext = dp_.base.ext;
   std::vector<Expansion> exps;
@@ -204,7 +208,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
     } else {
       energy = ext[st + 1][EXT] + pf_.Unpaired(st) - ext[st][EXT];
       if (energy <= delta)
-        exps.push_back({.delta = energy, .idx0 = base::DpIndex(st + 1, -1, EXT)});
+        exps.push_back({.delta = energy, .idx0 = base::DpIndex(st + 1, INVALID_INDEX, EXT)});
     }
   }
   for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -227,7 +231,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT)});
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT)});
     }
 
     if (a == EXT_RC) continue;
@@ -238,7 +242,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       // EXT_WC and EXT_GU will have already had their ctds set.
       Expansion exp{.delta = energy,
           .idx0 = base::DpIndex(st, en, DP_P),
-          .idx1 = base::DpIndex(en + 1, -1, EXT)};
+          .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT)};
       if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
         exps.push_back(exp);
 
@@ -258,7 +262,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
         exps.push_back({
             .delta = energy,
             .idx0 = base::DpIndex(st, en - 1, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
             .ctd0{st, CTD_3_DANGLE},
         });
 
@@ -267,7 +271,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
             .ctd0{st + 1, CTD_5_DANGLE}});
 
       // .(   ).<   > Terminal mismatch
@@ -276,7 +280,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT),
             .ctd0{st + 1, CTD_MISMATCH}});
     }
 
@@ -287,14 +291,14 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (energy + ext[en + 1][EXT_WC] <= delta)
         exps.push_back({.delta = energy + ext[en + 1][EXT_WC],
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT_WC),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_WC),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
 
       if (energy + ext[en + 1][EXT_GU] <= delta)
         exps.push_back({.delta = energy + ext[en + 1][EXT_GU],
             .idx0 = base::DpIndex(st + 1, en - 1, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT_GU),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_GU),
             .ctd0{st + 1, CTD_LCOAX_WITH_NEXT},
             .ctd1{en + 1, CTD_LCOAX_WITH_PREV}});
 
@@ -302,7 +306,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (en < N - 2 && base00 + ext[en + 1][EXT_RC] <= delta)
         exps.push_back({.delta = base00 + ext[en + 1][EXT_RC],
             .idx0 = base::DpIndex(st, en, DP_P),
-            .idx1 = base::DpIndex(en + 1, -1, EXT_RC),
+            .idx1 = base::DpIndex(en + 1, INVALID_INDEX, EXT_RC),
             .ctd0{st, CTD_RC_WITH_NEXT},
             .ctd1{en + 2, CTD_RC_WITH_PREV}});
 
@@ -311,7 +315,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
       if (energy <= delta)
         exps.push_back({.delta = energy,
             .idx0 = base::DpIndex(st, en - 1, DP_P),
-            .idx1 = base::DpIndex(en, -1, EXT_WC),
+            .idx1 = base::DpIndex(en, INVALID_INDEX, EXT_WC),
             .ctd0{st, CTD_FCOAX_WITH_NEXT},
             .ctd1{en, CTD_FCOAX_WITH_PREV}});
 
@@ -320,7 +324,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(int st, int a, Ene
         if (energy <= delta)
           exps.push_back({.delta = energy,
               .idx0 = base::DpIndex(st, en - 1, DP_P),
-              .idx1 = base::DpIndex(en, -1, EXT_GU),
+              .idx1 = base::DpIndex(en, INVALID_INDEX, EXT_GU),
               .ctd0{st, CTD_FCOAX_WITH_NEXT},
               .ctd1{en, CTD_FCOAX_WITH_PREV}});
       }
@@ -539,7 +543,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
 
 template <bool UseLru>
 std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
-    int st, int en, int a, Energy delta) const {
+    int st, int en, DpArrayId a, Energy delta) const {
   const auto& dp = dp_.base.dp;
   std::vector<Expansion> exps;
   Energy energy = ZERO_E;

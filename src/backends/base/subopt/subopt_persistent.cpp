@@ -58,7 +58,7 @@ int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   pq_ = {};  // priority queue has no clear method
   q_.reserve(r_.size() * r_.size());
 
-  const DpIndex start_idx{0, -1, EXT};
+  const DpIndex start_idx{0, INVALID_INDEX, EXT};
   const Energy mfe = dp_.Index(start_idx);
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
   pq_.emplace(0, 0);
@@ -75,7 +75,7 @@ int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
       if (elapsed.count() >= subopt_cfg_.time_secs) break;
     }
     auto [delta, idx] = RunInternal();
-    if (idx == -1 || delta > subopt_cfg_.delta) break;
+    if (idx == INVALID_SUBOPT_INDEX || delta > subopt_cfg_.delta) break;
 
     // TODO(2): We could expose an API that just has the index to avoid the cost of materialising
     // the full structure here.
@@ -89,23 +89,25 @@ int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
 }
 
 template <bool UseLru>
-std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
+std::pair<Energy, typename SuboptPersistent<UseLru>::SuboptIndex>
+SuboptPersistent<UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();
     auto& s = q_[idx];
 
-    if (s.to_expand.st == -1) {
+    if (!s.to_expand.IsValid()) {
       // At a terminal state - this is a bit different to the other subopt implementations because
       // nodes with no expansions are put onto the queue to make sure energy is properly ordered.
       return {-neg_delta, idx};
     }
 
     const auto& exps = GetExpansion(s.to_expand);
-    assert(!exps.empty());  // Must produce at least one expansion: {-1, -1, -1}.
+    const auto num_exps = As<ExpansionIndex>(exps.size());
+    assert(!exps.empty());  // Must produce at least one expansion.
 
     const auto& exp = exps[s.expand_idx];
-    const bool has_unexpanded = exp.idx1.st != -1;
+    const bool has_unexpanded = exp.idx1.IsValid();
     // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
     // to the next one.
     Node ns = {.parent_idx = idx,
@@ -119,10 +121,10 @@ std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
 
     // If we still have expansions to process, update the energy of the current node with what
     // the best we could do is with the next (worse) expansion.
-    if (s.expand_idx != static_cast<int>(exps.size()))
+    if (s.expand_idx != num_exps)
       pq_.emplace(neg_delta + exp.delta - exps[s.expand_idx].delta, idx);
 
-    if (exp.idx0.st == -1 && s.unexpanded_idx != -1) {
+    if (!exp.idx0.IsValid() && s.unexpanded_idx != INVALID_SUBOPT_INDEX) {
       // Ran out of expansions at this node but we still have unexpanded DpIndexes to process.
       assert(!has_unexpanded);
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
@@ -130,7 +132,7 @@ std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
       // Grab the next unexpanded DpIndex.
       const auto& unexpanded_exp =
           GetExpansion(q_[s.unexpanded_idx].to_expand)[s.unexpanded_expand_idx];
-      assert(unexpanded_exp.idx1.st != -1);  // There should be a valid unexpanded DpIndex here.
+      assert(unexpanded_exp.idx1.IsValid());  // There should be a valid unexpanded DpIndex here.
 
       // Set the next unexpanded index to the next one in the path up the tree.
       ns.unexpanded_expand_idx = q_[ns.unexpanded_idx].unexpanded_expand_idx;
@@ -144,26 +146,26 @@ std::pair<Energy, int64_t> SuboptPersistent<UseLru>::RunInternal() {
     // functions as a depth counter. If we stored a depth value, the only advantage we would get is
     // starting from a lower internal node when we 'switch' to a new place in the tree to generate a
     // new structure, but the extra memory usage is not worth it.
-    pq_.emplace(neg_delta, static_cast<int>(q_.size()));
+    pq_.emplace(neg_delta, SuboptIndex(q_.size()));
     // This is the only modification to `q_`, so access to `s` is valid until here.
     q_.push_back(ns);
   }
-  return {ZERO_E, -1};
+  return {ZERO_E, INVALID_SUBOPT_INDEX};
 }
 
 template <bool UseLru>
-void SuboptPersistent<UseLru>::GenerateResult(int idx) {
+void SuboptPersistent<UseLru>::GenerateResult(SuboptIndex idx) {
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 
-  int expand_idx = q_[idx].parent_expand_idx;
+  ExpansionIndex expand_idx = q_[idx].parent_expand_idx;
   idx = q_[idx].parent_idx;
-  while (idx != -1) {
+  while (idx != INVALID_SUBOPT_INDEX) {
     const auto to_expand = q_[idx].to_expand;
     // Get the expansion that generated the previous node.
     const auto& exp = GetExpansion(to_expand)[expand_idx];
 
-    if (to_expand.en != -1 && to_expand.a == DP_P) {
+    if (!to_expand.IsExternal() && to_expand.a == DP_P) {
       res_.tb.s[to_expand.st] = to_expand.en;
       res_.tb.s[to_expand.en] = to_expand.st;
     }
@@ -178,15 +180,15 @@ void SuboptPersistent<UseLru>::GenerateResult(int idx) {
 template <bool UseLru>
 std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   const int st = to_expand.st;
   int en = to_expand.en;
-  const int a = to_expand.a;
+  const DpArrayId a = to_expand.a;
   std::vector<Expansion> exps;
   // Temporary variable to hold energy calculations.
   Energy energy = ZERO_E;
   // Exterior loop
-  if (en == -1) {
+  if (to_expand.IsExternal()) {
     if (a == EXT) {
       // Base case: do nothing.
       if (st == N)
@@ -194,7 +196,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
       else
         // Case: No pair starting here (for EXT only)
         exps.push_back({.delta = dp_.ext[st + 1][EXT] + pf_.Unpaired(st) - dp_.ext[st][a],
-            .idx0{st + 1, -1, EXT}});
+            .idx0{st + 1, INVALID_INDEX, EXT}});
     }
     for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
       // .   .   .   (   .   .   .   )   <   >
@@ -215,7 +217,8 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
             pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
         if (energy <= delta)
-          exps.push_back({.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st + 1, en - 1, DP_P}});
+          exps.push_back(
+              {.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st + 1, en - 1, DP_P}});
       }
 
       // EXT_RC is only for the above case.
@@ -246,14 +249,16 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
 
       if (energy <= delta) {
         if (a == EXT)
-          exps.push_back(
-              {.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st, en, DP_P}, .ctd0{st, val_ctd}});
+          exps.push_back({.delta = energy,
+              .idx0{en + 1, INVALID_INDEX, EXT},
+              .idx1{st, en, DP_P},
+              .ctd0{st, val_ctd}});
 
         // (   )<   >
         // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
         // coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
-          exps.push_back({.delta = energy, .idx0{en + 1, -1, EXT}, .idx1{st, en, DP_P}});
+          exps.push_back({.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st, en, DP_P}});
       }
 
       // Everything after this is only for EXT.
@@ -264,7 +269,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
         energy = base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st, en - 1, DP_P},
               .ctd0{st, CTD_3_DANGLE}});
 
@@ -272,7 +277,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
         energy = base10 + m_->dangle5[enb][stb][st1b] + pf_.Unpaired(st) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st + 1, en, DP_P},
               .ctd0{st + 1, CTD_5_DANGLE}});
 
@@ -281,7 +286,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
             dp_.ext[en + 1][EXT];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en + 1, -1, EXT},
+              .idx0{en + 1, INVALID_INDEX, EXT},
               .idx1{st + 1, en - 1, DP_P},
               .ctd0{st + 1, CTD_MISMATCH}});
       }
@@ -293,13 +298,13 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
               pf_.Unpaired(en);
           if (energy + dp_.ext[en + 1][EXT_GU] <= delta)
             exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_GU],
-                .idx0{en + 1, -1, EXT_GU},
+                .idx0{en + 1, INVALID_INDEX, EXT_GU},
                 .idx1{st + 1, en - 1, DP_P},
                 .ctd0{en + 1, CTD_LCOAX_WITH_PREV},
                 .ctd1{st + 1, CTD_LCOAX_WITH_NEXT}});
           if (energy + dp_.ext[en + 1][EXT_WC] <= delta)
             exps.push_back({.delta = energy + dp_.ext[en + 1][EXT_WC],
-                .idx0{en + 1, -1, EXT_WC},
+                .idx0{en + 1, INVALID_INDEX, EXT_WC},
                 .idx1{st + 1, en - 1, DP_P},
                 .ctd0{en + 1, CTD_LCOAX_WITH_PREV},
                 .ctd1{st + 1, CTD_LCOAX_WITH_NEXT}});
@@ -310,7 +315,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
           energy = base00 + dp_.ext[en + 1][EXT_RC];
           if (energy <= delta)
             exps.push_back({.delta = energy,
-                .idx0{en + 1, -1, EXT_RC},
+                .idx0{en + 1, INVALID_INDEX, EXT_RC},
                 .idx1{st, en, DP_P},
                 .ctd0{en + 2, CTD_RC_WITH_PREV},
                 .ctd1{st, CTD_RC_WITH_NEXT}});
@@ -320,7 +325,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
         energy = base01 + m_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
         if (energy <= delta)
           exps.push_back({.delta = energy,
-              .idx0{en, -1, EXT_WC},
+              .idx0{en, INVALID_INDEX, EXT_WC},
               .idx1{st, en - 1, DP_P},
               .ctd0{en, CTD_FCOAX_WITH_PREV},
               .ctd1{st, CTD_FCOAX_WITH_NEXT}});
@@ -329,7 +334,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
           energy = base01 + m_->stack[en1b][enb][GuPair(enb)][stb] + dp_.ext[en][EXT_GU];
           if (energy <= delta)
             exps.push_back({.delta = energy,
-                .idx0{en, -1, EXT_GU},
+                .idx0{en, INVALID_INDEX, EXT_GU},
                 .idx1{st, en - 1, DP_P},
                 .ctd0{en, CTD_FCOAX_WITH_PREV},
                 .ctd1{st, CTD_FCOAX_WITH_NEXT}});

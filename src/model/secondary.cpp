@@ -12,14 +12,15 @@ namespace mrna {
 
 Secondary Secondary::FromDb(const std::string& pairs_str) {
   Secondary s(pairs_str.size());
+  const int N = s.size();
   std::vector<int> stk;
-  for (int i = 0; i < static_cast<int>(pairs_str.size()); ++i) {
+  for (int i = 0; i < N; ++i) {
     if (pairs_str[i] == '(') {
       stk.push_back(i);
     } else if (pairs_str[i] == ')') {
       verify(!stk.empty(), "unmatched closing bracket at position {}", i);
-      s[i] = stk.back();
-      s[stk.back()] = i;
+      s[i] = As<Index>(stk.back());
+      s[stk.back()] = As<Index>(i);
       stk.pop_back();
     } else {
       verify(pairs_str[i] == '.', "unexpected character '{}' at position {}", pairs_str[i], i);
@@ -31,12 +32,9 @@ Secondary Secondary::FromDb(const std::string& pairs_str) {
 
 std::string Secondary::ToDb() const {
   std::string db(size(), '.');
-  for (int i = 0; i < static_cast<int>(size()); ++i) {
-    if (data_[i] == -1) continue;
-    if (data_[i] < i)
-      db[i] = ')';
-    else
-      db[i] = '(';
+  for (int i = 0; i < size(); ++i) {
+    if (IsUnpaired(i)) continue;
+    db[i] = IsClosingPair(i) ? ')' : '(';
   }
   return db;
 }

@@ -8,7 +8,6 @@
 #include <string>
 #include <tuple>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "api/ctx/algorithm.h"
@@ -19,7 +18,6 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
-#include "backends/common/base/dp.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -29,13 +27,13 @@
 #include "util/error.h"
 #include "util/float.h"
 #include "util/log.h"
-#include "util/util.h"
 
 namespace mrna::fuzz {
 
 using md::base::DP_P;
 using md::base::DP_SIZE;
 using md::base::DP_U;
+using md::base::DpArrayId;
 using md::base::EXT_SIZE;
 
 namespace {
@@ -44,11 +42,11 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
     const std::string& name_got, const std::string& name_want, Error& errors) {
   if (got.dp.empty()) return;  // Brute force doesn't generate tables.
 
-  const int N = static_cast<int>(want.dp.size());
+  const auto N = As<int>(want.dp.size());
   // Check dp tables:
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (int a = 0; a < DP_SIZE; ++a) {
+      for (DpArrayId a = 0; a < DP_SIZE; ++a) {
         auto dp = want.dp[st][en][a];
 
         auto dpi = got.dp[st][en][a];
@@ -64,7 +62,7 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
 
   // Check ext tables:
   for (int st = 0; st < N; ++st) {
-    for (int a = 0; a < EXT_SIZE; ++a) {
+    for (DpArrayId a = 0; a < EXT_SIZE; ++a) {
       auto ext = want.ext[st][a];
       auto exti = got.ext[st][a];
       // If meant to be infinity and not.
@@ -130,7 +128,7 @@ const BackendModelPtr* FuzzInvocation::FindSuboptModel(subopt::SuboptCfg subopt_
 }
 
 std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::CheckMfe() {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   Error errors;
 
   // Run memerna folds.
@@ -217,7 +215,7 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
     std::string tag;
   };
 
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   Error errors;
 
   subopt::SuboptCfg cfgs[] = {
@@ -378,7 +376,7 @@ bool FuzzInvocation::PfnProbEq(flt a, flt b) const {
 
 void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
     const std::string& name_got, const std::string& name_want, Error& errors) {
-  const int N = static_cast<int>(want.p.size());
+  const auto N = As<int>(want.p.size());
   verify(want.p.size() == want.prob.size(), "bug");
   verify(got.p.size() == want.prob.size(), "bug");
   verify(got.p.size() == want.p.size(), "bug");
@@ -404,7 +402,7 @@ void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
 }
 
 Error FuzzInvocation::CheckPfn() {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   Error errors;
   std::vector<pfn::PfnResult> results;
   std::vector<std::string> tags;
@@ -460,7 +458,7 @@ Error FuzzInvocation::CheckPfn() {
 
 #ifdef MRNA_USE_RNASTRUCTURE
 Error FuzzInvocation::CheckMfeRNAstructure(const FoldBaseline& baseline) {
-  const int N = static_cast<int>(r_.size());
+  const int N = r_.size();
   Error errors;
   dp_state_t rstr_dp;
   auto fold = rstr_->FoldAndDpTable(r_, &rstr_dp);
@@ -493,7 +491,7 @@ Error FuzzInvocation::CheckMfeRNAstructure(const FoldBaseline& baseline) {
   // Check RNAstructure dp table:
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (int a = 0; a < DP_SIZE; ++a) {
+      for (DpArrayId a = 0; a < DP_SIZE; ++a) {
         auto dp = want->dp[st][en][a];
         if (a == DP_P || a == DP_U) {
           auto rstr_eval = a == DP_P ? rstr_dp.v.f(st + 1, en + 1) : rstr_dp.w.f(st + 1, en + 1);

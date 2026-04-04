@@ -40,7 +40,9 @@ TEST_P(EnergyTestT12, T12P2) {
       GetEnergy(m, "GCGACCGGGGCUGGCUUGGUAAUGGUACUCCCCUGUCACGGGAGAGAAUGUGGGUUCAAAUCCCAUCGGUCGCGCCA",
           "(((((((((((.((...((((....))))..)).)))..((((..((((....))))...)))).))))))))...."));
   EXPECT_EQ(E(15.90), GetEnergy(m, "UCUGAGUAAAUUGCUACGCG", "(....)((...).......)"));
-  EXPECT_EQ(E(-41.46), GetEnergy(m, k16sHSapiens3));
+  if (k16sHSapiens3) {
+    EXPECT_EQ(E(-41.46), GetEnergy(m, *k16sHSapiens3));
+  }
 
   // Special stacking - this is not implemented. TODO(4): Implement this?
   EXPECT_EQ(E(2.52), GetEnergy(m, "GGUCAAAGGUC", "((((...))))"));

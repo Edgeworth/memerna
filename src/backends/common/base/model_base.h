@@ -75,7 +75,7 @@ class ModelBase {
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ) &&
         ((en - st - 3 >= HAIRPIN_MIN_SZ && IsPair(r[st + 1], r[en - 1])) ||
-            (st > 0 && en < static_cast<int>(r.size() - 1) && IsPair(r[st - 1], r[en + 1])));
+            (st > 0 && en < r.size() - 1 && IsPair(r[st - 1], r[en + 1])));
   }
 
   [[nodiscard]] constexpr Energy HairpinInitiation(int n) const {

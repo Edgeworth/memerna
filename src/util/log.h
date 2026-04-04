@@ -4,7 +4,7 @@
 
 #include <fmt/core.h>
 
-#include <cstdio>
+#include <cstdio>  // IWYU pragma: keep - required for stderr in no-logging builds.
 #include <utility>
 
 #ifdef MRNA_ENABLE_LOGGING
@@ -28,7 +28,9 @@ void SetLogLevel(LogLevel level);
 [[nodiscard]] LogLevel GetLogLevel();
 
 template <typename... Args>
-inline void IgnoreUnused(const Args&...) {}
+inline void IgnoreUnused(const Args&... unused_args) {
+  ((void)unused_args, ...);
+}
 
 template <typename... Args>
 inline void logdebug(fmt::format_string<Args...> fmt_str, Args&&... args) {

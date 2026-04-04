@@ -4,11 +4,12 @@
 #include <fmt/core.h>
 
 #include "backends/common/base/model_base.h"
+#include "util/util.h"
 
 namespace mrna {
 
 void PrintBoltzProbs(const BoltzProbs& p) {
-  const int N = static_cast<int>(p.size());
+  const auto N = As<int>(p.size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       fmt::print(FLTFMT " ", p[i][j]);
@@ -18,7 +19,7 @@ void PrintBoltzProbs(const BoltzProbs& p) {
 }
 
 void PrintPfn(const BoltzSums& p) {
-  const int N = static_cast<int>(p.size());
+  const auto N = As<int>(p.size());
   for (int i = 0; i < N; ++i) {
     for (int j = 0; j < N; ++j) {
       fmt::print(FLTFMT " ", p[i][j]);
@@ -31,7 +32,7 @@ void PrintPfn(const BoltzSums& p) {
 // This looks at all structures of the form *((*))* where * is any structure.
 void PrintInnerStackProbs(
     const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model) {
-  const int N = static_cast<int>(pfn.p.size());
+  const auto N = As<int>(pfn.p.size());
   BoltzProbs prob(N, 0);
   for (int i = 0; i < N; ++i)
     for (int j = i + 3; j < N; ++j) {
@@ -45,7 +46,7 @@ void PrintInnerStackProbs(
 // least 3 adjacent pairs with no single nucleotide bulges between them. This looks at all
 // structures of the form *(((*)))* where * is any structure.
 void PrintHelixProbs(const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model) {
-  const int N = static_cast<int>(pfn.p.size());
+  const auto N = As<int>(pfn.p.size());
   BoltzProbs prob(N, 0);
   for (int i = 0; i < N; ++i)
     for (int j = i + 5; j < N; ++j) {

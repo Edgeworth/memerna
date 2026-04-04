@@ -55,7 +55,7 @@ struct MfeInternal {
 
   MfeInternal(const Primary& r_, const Model::Ptr& m_, erg::EnergyCfg cfg_,
       const erg::PseudofreeCfg& pf_, DpState& state_)
-      : r(r_), m(*m_), cfg(cfg_), pf(pf_), N(static_cast<int>(r_.size())), dp(state_.base.dp),
+      : r(r_), m(*m_), cfg(cfg_), pf(pf_), N(r_.size()), dp(state_.base.dp),
         nostack(state_.nostack), penult(state_.penult) {}
 
   void Compute() {

@@ -13,9 +13,9 @@ namespace mrna {
 std::vector<int> GetBranchCounts(const Secondary& s) {
   std::vector<int> branch_count(s.size(), 0);
   std::vector<int> q;
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
-    if (s[i] == -1) continue;
-    if (s[i] > i) {
+  for (int i = 0; i < s.size(); ++i) {
+    if (s.IsUnpaired(i)) continue;
+    if (s.IsOpeningPair(i)) {
       // Exterior loop counts a multiloop for CTDs.
       if (q.empty()) branch_count[i] = 2;
       q.push_back(i);
@@ -23,13 +23,13 @@ std::vector<int> GetBranchCounts(const Secondary& s) {
       // Look at all the children.
       int count = 0;
       for (int j = i + 1; j < s[i]; ++j) {
-        if (s[j] != -1) {
+        if (s.IsPaired(j)) {
           j = s[j];
           count++;
         }
       }
       for (int j = i + 1; j < s[i]; ++j) {
-        if (s[j] != -1) {
+        if (s.IsPaired(j)) {
           branch_count[j] = count;
           j = s[j];
         }
@@ -46,7 +46,7 @@ std::vector<int> GetBranchCounts(const Secondary& s) {
 void AddBranchCtdsToBaseCtds(
     const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd) {
   assert(branches.size() == branch_ctd.size());
-  for (int i = 0; i < static_cast<int>(branches.size()); ++i) {
+  for (std::size_t i = 0; i < branches.size(); ++i) {
     // Only write it into one side. If it's for an outer loop, it will be the right side, since we
     // swap the indices in that case.
     (*ctd)[branches[i]] = branch_ctd[i].first;
@@ -56,7 +56,7 @@ void AddBranchCtdsToBaseCtds(
 int MaxNumContiguous(const Primary& r) {
   int num_contig = 0;
   int max_num_contig = 0;
-  Base prev = -1;
+  Base prev = MAX_BASE;
   for (auto b : r) {
     if (b == prev)
       num_contig++;

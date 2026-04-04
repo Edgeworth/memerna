@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 
+#include "model/base.h"
 #include "util/error.h"
 
 namespace mrna {
@@ -18,7 +19,7 @@ Primary Primary::Random(int length, std::mt19937& eng) {
 
 Primary Primary::FromSeq(const std::string& s) {
   Primary r(s.size());
-  for (int i = 0; i < static_cast<int>(s.size()); ++i) {
+  for (int i = 0; i < r.size(); ++i) {
     const auto base = CharToBase(s[i]);
     verify(base.has_value(), "unexpected base {}", s[i]);
     r[i] = *base;
@@ -27,9 +28,8 @@ Primary Primary::FromSeq(const std::string& s) {
 }
 
 std::string Primary::ToSeq() const {
-  std::string s;
-  s.resize(size());
-  for (int i = 0; i < static_cast<int>(size()); ++i) s[i] = BaseToChar(data_[i]).value();
+  std::string s(size(), '\0');
+  for (int i = 0; i < size(); ++i) s[i] = BaseToChar(data_[i]).value();
   return s;
 }
 
@@ -43,7 +43,10 @@ void Primary::Increment() {
     }
     base = MIN_BASE;
   }
-  if (carry) data_.push_back(0);
+  if (carry) {
+    VerifyRnaSize(std::size_t(size()) + 1);
+    data_.push_back(0);
+  }
 }
 
 }  // namespace mrna

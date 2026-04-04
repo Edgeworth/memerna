@@ -48,8 +48,8 @@ std::vector<HP> PrecomputeHairpin(const Primary& r, const M& m, auto init) {
       pos = rna_str.find(str, pos + 1);
     }
   }
-  const int N = static_cast<int>(r.size());
-  pc[N - 1].num_c = static_cast<int>(r[N - 1] == C);
+  const int N = r.size();
+  pc[N - 1].num_c = (r[N - 1] == C);
   for (int i = N - 2; i >= 0; --i)
     if (r[i] == C) pc[i].num_c = pc[i + 1].num_c + 1;
   return pc;

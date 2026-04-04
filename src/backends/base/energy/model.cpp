@@ -210,7 +210,7 @@ Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeC
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
   if (cfg.bulge_states) {
     int num_states = 0;
-    for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
+    for (int i = unpaired; i < r.size() && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
     Energy states_bonus = -E(R * T * log(num_states));
     if (s) (*s)->AddNote("{}e - {} states bonus", states_bonus, num_states);
@@ -408,7 +408,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
 
-  num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
+  num_unpaired = en - st - 1 - num_unpaired + int(exterior_loop) * 2;
   if (struc) struc->AddNote("Unpaired: {}, Branches: {}", num_unpaired, branches->size() + 1);
 
   BranchCtd branch_ctd;
@@ -431,7 +431,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
       if (struc) struc->AddNote("{}e - closing GU penalty at {} {}", gu_penalty, st, en);
       energy += gu_penalty;
     }
-    Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1), num_unpaired);
+    Energy initiation = MultiloopInitiation(int(branches->size() + 1), num_unpaired);
     if (struc) struc->AddNote("{}e - initiation", initiation);
     energy += initiation;
 
@@ -500,8 +500,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
   std::deque<int> branches;
   for (int i = st; i <= en; ++i) {
     const int pair = s[i];
-    assert(pair <= en && (pair == -1 || s[pair] == i));
-    if ((i != st || pair != en) && (i != en || pair != st) && pair != -1) {
+    assert(s.IsUnpaired(i) || (pair <= en && s[pair] == i));
+    if ((i != st || pair != en) && (i != en || pair != st) && s.IsPaired(i)) {
       branches.push_back(i);
       // Skip ahead.
       i = pair;
@@ -556,9 +556,9 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
 
 EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure) const {
-  auto res =
-      SubEnergy(r, s, given_ctd, cfg, pf, 0, static_cast<int>(r.size()) - 1, build_structure);
-  if (s[0] == static_cast<int>(r.size() - 1) && IsAuPair(r[0], r[s[0]])) {
+  const int N = r.size();
+  auto res = SubEnergy(r, s, given_ctd, cfg, pf, 0, N - 1, build_structure);
+  if (s[0] == N - 1 && IsAuPair(r[0], r[s[0]])) {
     res.energy += au_penalty;
     if (res.struc) {
       res.struc->AddNote("{}e - top level AU penalty", au_penalty);
@@ -566,7 +566,7 @@ EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds
       res.struc->set_total_energy(res.struc->total_energy() + au_penalty);
     }
   }
-  if (s[0] == static_cast<int>(r.size() - 1) && IsGuPair(r[0], r[s[0]])) {
+  if (s[0] == N - 1 && IsGuPair(r[0], r[s[0]])) {
     res.energy += gu_penalty;
     if (res.struc) {
       res.struc->AddNote("{}e - top level GU penalty", gu_penalty);

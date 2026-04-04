@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <queue>
 #include <string>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "backends/common/energy.h"
 #include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/trace/trace.h"
@@ -36,21 +38,26 @@ class SuboptPersistent {
   SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
       SuboptCfg subopt_cfg);
 
+  using SuboptIndex = uint32_t;
+  static constexpr SuboptIndex INVALID_SUBOPT_INDEX = INVALID_UINT32;
+
   int64_t Run(const SuboptCallback& fn);
 
  private:
   struct Node {
     // Index of the parent Node in the expand tree.
-    int parent_idx{-1};
+    SuboptIndex parent_idx{INVALID_SUBOPT_INDEX};
     // Index of the expansion this Node used w.r.t. the parent state's `to_expand`.
-    int parent_expand_idx{-1};
+    // INVALID_EXPANSION_INDEX means root.
+    ExpansionIndex parent_expand_idx{INVALID_EXPANSION_INDEX};
     // Index of the next Node who's expansion contains an unexpanded DpIndex we need to process.
-    int unexpanded_idx{-1};
-    // Index of the expansion to use for `unexpanded_idx`'s Node.
-    int unexpanded_expand_idx{-1};
+    SuboptIndex unexpanded_idx{INVALID_SUBOPT_INDEX};
+    // Index of the expansion to use for `unexpanded_idx`'s Node. INVALID_EXPANSION_INDEX means
+    // none.
+    ExpansionIndex unexpanded_expand_idx{INVALID_EXPANSION_INDEX};
     // Index of the child expansion of `to_expand` we should process. This gets updated in place
     // (saves time and memory), which is why we need to keep `parent_expand_idx` around as well.
-    int expand_idx{0};
+    ExpansionIndex expand_idx{0};
     // DpIndex whose child expansions we are processing.
     std::optional<DpIndex> to_expand{};
   };
@@ -65,12 +72,12 @@ class SuboptPersistent {
 
   ExpansionCache<DpIndex, Expansion, UseLru> cache_;
   std::vector<Node> q_;
-  std::priority_queue<std::pair<Energy, int>> pq_;
+  std::priority_queue<std::pair<Energy, SuboptIndex>> pq_;
 
-  std::pair<Energy, int64_t> RunInternal();
+  std::pair<Energy, SuboptIndex> RunInternal();
 
   // Computes the suboptimal folding for the given subpath and puts it into `res_`.
-  void GenerateResult(int64_t idx);
+  void GenerateResult(SuboptIndex idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     auto key = LinearIndex(to_expand, r_.size());
@@ -85,13 +92,13 @@ class SuboptPersistent {
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 
-  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, int a, Energy delta) const;
+  [[nodiscard]] std::vector<Expansion> ExtExpansions(int st, base::DpArrayId a, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> PairedOrNoStackExpansions(
       int st, int en, bool is_nostack, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> UnpairedExpansions(
-      int st, int en, int a, Energy delta) const;
+      int st, int en, base::DpArrayId a, Energy delta) const;
 
   [[nodiscard]] std::vector<Expansion> PenultimateExpansions(
       int st, int en, int length, Energy delta) const;

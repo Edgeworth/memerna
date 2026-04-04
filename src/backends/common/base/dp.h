@@ -3,16 +3,23 @@
 #define BACKENDS_COMMON_BASE_DP_H_
 
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <limits>
 
 #include "api/trace/trace.h"
 #include "util/array.h"
+#include "util/util.h"
 
 namespace mrna::md::base {
 
 using trace::TraceResult;
 
+using DpArrayId = uint8_t;
+constexpr DpArrayId INVALID_DP_ARRAY_ID = std::numeric_limits<DpArrayId>::max();
+
 // DP arrays
-enum : int8_t {
+enum : DpArrayId {
   DP_P,  // For the paired array.
   DP_U,  // For the unpaired array. Contains at least one branch. First and last base may be paired.
   DP_U2,  // Contains at least two branches.
@@ -25,7 +32,7 @@ enum : int8_t {
 
 using DpArray = Array2D1S<Energy, DP_SIZE>;
 
-enum : int8_t {
+enum : DpArrayId {
   EXT,
   EXT_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   EXT_GU,  // Must start with a branch not involved in an interaction that is GU
@@ -40,7 +47,7 @@ using ExtArray = Array1D1S<Energy, EXT_SIZE>;
 // closely). We also need another candidate list for forward right coaxial since
 // we can't use its energy value directly, not knowing it. Same with flush
 // coaxial stacks. |...| denotes which area is replaceable.
-enum : int8_t {
+enum : DpArrayId {
   // Monotonic, because we place Unpaired on the right.
   // Replaceability: Unpaired
   // Energy: Fully determined, since we have all the bases available.
@@ -121,7 +128,7 @@ enum : int8_t {
   CAND_SIZE
 };
 
-enum : int8_t {
+enum : DpArrayId {
   // Monotonic, because we place Unpaired on the left.
   // Replaceability: Unpaired
   // Energy: Fully determined, since we have all the bases available.
@@ -146,23 +153,28 @@ enum : int8_t {
   CAND_EN_SIZE
 };
 
-// Index into the DP tables. `en` set to -1 is used to indicate using the external table. `st` can
-// be N on the external loop.
+// Index into the DP tables. `en` set to INVALID_INDEX is used to indicate the
+// external table. `st` can be N on the external loop.
 struct DpIndex {
-  Index st{-1}, en{-1}, a{-1};
+  Index st{INVALID_INDEX}, en{INVALID_INDEX};
+  DpArrayId a{INVALID_DP_ARRAY_ID};
 
-  DpIndex() = default;
-  DpIndex(int st_, int en_, int a_) : st(Index(st_)), en(Index(en_)), a(Index(a_)) {
-    assert(st_ == st && en_ == en && a == a_);
-  }
+  constexpr DpIndex() = default;
+  constexpr DpIndex(int st_, int en_, DpArrayId a_)
+      : st(As<Index>(st_)), en(As<Index>(en_)), a(a_) {}
 
   constexpr auto operator<=>(const DpIndex&) const = default;
 
+  [[nodiscard]] constexpr bool IsValid() const { return st != INVALID_INDEX; }
+
+  [[nodiscard]] constexpr bool IsExternal() const { return en == INVALID_INDEX; }
+
   [[nodiscard]] constexpr std::size_t LinearIndex(std::size_t n) const {
-    assert(a >= 0 && a < int(MaxArrayCount()));
-    assert(st >= 0 && st <= int(n));
-    assert(en >= -1 && en < int(n));
-    return a + MaxArrayCount() * (en + 1) + MaxArrayCount() * (n + 1) * st;
+    assert(a < MaxArrayCount());
+    assert(st >= 0 && std::size_t(st) <= n);
+    assert(IsExternal() || (en >= 0 && std::size_t(en) < n));
+    const std::size_t en_idx = IsExternal() ? 0 : en + 1;
+    return a + MaxArrayCount() * en_idx + MaxArrayCount() * (n + 1) * st;
   }
 
   [[nodiscard]] constexpr static std::size_t MaxLinearIndex(std::size_t n) {
@@ -177,7 +189,9 @@ struct DpIndex {
 
 struct Cand {
   Energy energy;
-  int idx;
+  Index idx;
+
+  Cand(Energy energy_, int idx_) : energy(energy_), idx(As<Index>(idx_)) {}
 };
 
 struct DpState {
@@ -185,7 +199,7 @@ struct DpState {
   ExtArray ext;
 
   [[nodiscard]] constexpr Energy Index(const DpIndex& idx) const {
-    if (idx.en == -1) return ext[idx.st][idx.a];
+    if (idx.IsExternal()) return ext[idx.st][idx.a];
     return dp[idx.st][idx.en][idx.a];
   }
 };
@@ -194,7 +208,7 @@ struct Expansion {
   // Extra energy of this expansion compared to the best choice.
   Energy delta = {ZERO_E};
 
-  // st == -1 used to mean none - using optional here is like a 40% perf hit.
+  // INVALID_INDEX used to mean none - using optional here is like a 40% perf hit.
   DpIndex idx0{};
   DpIndex idx1{};
   IndexCtd ctd0{};
@@ -204,11 +218,11 @@ struct Expansion {
 };
 
 // DP arrays
-enum : int8_t { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RC, PT_SIZE };
+enum : DpArrayId { PT_P, PT_U, PT_U2, PT_U_WC, PT_U_GU, PT_U_RC, PT_SIZE };
 
 using BoltzDpArray = Array2D1S<BoltzEnergy, PT_SIZE>;
 
-enum : int8_t {
+enum : DpArrayId {
   PTEXT_R,
   PTEXT_L,
   PTEXT_R_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick

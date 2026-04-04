@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "backends/baseopt/energy/model.h"
 #include "backends/baseopt/energy/precomp.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/energy.h"
 #include "backends/common/expansion_cache.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -39,8 +41,8 @@ class SuboptIterative {
  private:
   struct Node {
     // Index of the child expansion of `to_expand` we should process.
-    int expand_idx = {0};
-    // DpIndex whose child expansions we are processing. -1 means empty
+    ExpansionIndex expand_idx = {0};
+    // DpIndex whose child expansions we are processing. INVALID_INDEX means empty.
     DpIndex to_expand{};
     // Stores whether this node's `to_expand` was from `unexpanded_` and needs
     // to be replaced when going back up the DFS stack.

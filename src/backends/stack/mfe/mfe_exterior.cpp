@@ -23,7 +23,7 @@ using base::EXT_WC;
 
 Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf) {
-  const int N = static_cast<int>(r.size());
+  const int N = r.size();
 
   state.base.ext = base::ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state.base;

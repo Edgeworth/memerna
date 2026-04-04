@@ -8,7 +8,6 @@
 #include <ios>
 
 #include "util/log.h"
-#include "util/version.h"
 
 #ifdef MRNA_USE_BOOST
 #include <boost/stacktrace.hpp>

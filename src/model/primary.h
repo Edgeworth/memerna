@@ -15,7 +15,7 @@ class Primary {
  public:
   constexpr Primary() = default;
   constexpr ~Primary() = default;
-  constexpr explicit Primary(std::size_t size) : data_(size, A) {}
+  constexpr explicit Primary(std::size_t size) : data_(size, A) { VerifyRnaSize(size); }
 
   constexpr Primary(Primary&&) = default;
   constexpr Primary& operator=(Primary&&) = default;
@@ -35,7 +35,7 @@ class Primary {
   [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
   [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] constexpr std::size_t size() const { return data_.size(); }
+  [[nodiscard]] constexpr Index size() const { return static_cast<Index>(data_.size()); }
 
   [[nodiscard]] std::string ToSeq() const;
 

@@ -76,7 +76,7 @@ class Brute {
   Secondary s_;
   Ctds ctd_;
   BruteResult res_{};
-  std::vector<std::pair<int, int>> pairs_;  // Holds all possible base pairs to try.
+  std::vector<Pair> pairs_;  // Holds all possible base pairs to try.
   std::vector<int> branch_count_;  // Number of sibling branches.
 
   SplaySet<SubstructureId> substructure_map_;

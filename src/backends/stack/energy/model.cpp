@@ -179,7 +179,7 @@ Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeC
 
   if (cfg.bulge_states) {
     int num_states = 0;
-    for (int i = unpaired; i < static_cast<int>(r.size()) && r[i] == r[unpaired]; ++i) num_states++;
+    for (int i = unpaired; i < r.size() && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
     Energy states_bonus = -E(R * T * log(num_states));
     if (s) (*s)->AddNote("{}e - {} states bonus", states_bonus, num_states);
@@ -360,7 +360,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
 
-  num_unpaired = en - st - 1 - num_unpaired + static_cast<int>(exterior_loop) * 2;
+  num_unpaired = en - st - 1 - num_unpaired + int(exterior_loop) * 2;
   if (struc) struc->AddNote("Unpaired: {}, Branches: {}", num_unpaired, branches->size() + 1);
 
   BranchCtd branch_ctd;
@@ -382,7 +382,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
       if (struc) struc->AddNote("{}e - closing GU penalty at {} {}", gu_penalty, st, en);
       energy += gu_penalty;
     }
-    Energy initiation = MultiloopInitiation(static_cast<int>(branches->size() + 1), num_unpaired);
+    Energy initiation = MultiloopInitiation(int(branches->size() + 1), num_unpaired);
     if (struc) struc->AddNote("{}e - initiation", initiation);
     energy += initiation;
 
@@ -449,8 +449,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
   std::deque<int> branches;
   for (int i = st; i <= en; ++i) {
     const int pair = s[i];
-    assert(pair <= en && (pair == -1 || s[pair] == i));
-    if ((i != st || pair != en) && (i != en || pair != st) && pair != -1) {
+    assert(s.IsUnpaired(i) || (pair <= en && s[pair] == i));
+    if ((i != st || pair != en) && (i != en || pair != st) && s.IsPaired(i)) {
       branches.push_back(i);
       // Skip ahead.
       i = pair;
@@ -514,16 +514,16 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
 
 constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int ost, int oen,
     int ist, int ien, std::unique_ptr<Structure>* struc) const {
-  assert(ost >= 0 && oen < static_cast<int>(r.size()));
-  assert(ist > 0 && ien < static_cast<int>(r.size()) - 1);
+  assert(ost >= 0 && oen < r.size());
+  assert(ist > 0 && ien >= 0 && ien + 1 < r.size());
   assert(ist > ost && ien < oen);
   // Check for single unpaired bases to treat as continuous.
-  const int ost_next = s[ost + 1] == -1 ? ost + 2 : ost + 1;
-  const int oen_prev = s[oen - 1] == -1 ? oen - 2 : oen - 1;
+  const int ost_next = s.IsUnpaired(ost + 1) ? ost + 2 : ost + 1;
+  const int oen_prev = s.IsUnpaired(oen - 1) ? oen - 2 : oen - 1;
   assert(ost_next - ost + oen - oen_prev < 4);
 
-  const int ist_prev = s[ist - 1] == -1 ? ist - 2 : ist - 1;
-  const int ien_next = s[ien + 1] == -1 ? ien + 2 : ien + 1;
+  const int ist_prev = s.IsUnpaired(ist - 1) ? ist - 2 : ist - 1;
+  const int ien_next = s.IsUnpaired(ien + 1) ? ien + 2 : ien + 1;
   assert(ist - ist_prev + ien_next - ien < 4);
 
   auto inner = penultimate_stack[r[ist_prev]][r[ist]][r[ien]][r[ien_next]];
@@ -558,9 +558,9 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
 
 EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure) const {
-  auto res =
-      SubEnergy(r, s, given_ctd, cfg, pf, 0, static_cast<int>(r.size()) - 1, build_structure);
-  if (s[0] == static_cast<int>(r.size() - 1)) {
+  const int N = r.size();
+  auto res = SubEnergy(r, s, given_ctd, cfg, pf, 0, N - 1, build_structure);
+  if (s[0] == N - 1) {
     auto extra_energy = ZERO_E;
     if (IsAuPair(r[0], r[s[0]])) {
       extra_energy += au_penalty;
