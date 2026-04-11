@@ -65,7 +65,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
   void LoadFromModelPath(const std::string& path);
-  void LoadRandom(const BackendCfg& cfg, std::mt19937& eng);
+  void LoadRandom(const BackendCfg& cfg, const RandomModelCfg& random_cfg, std::mt19937& eng);
 
  private:
   friend class ModelMixin<Model>;

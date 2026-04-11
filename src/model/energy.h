@@ -32,7 +32,10 @@ struct __attribute__((packed, aligned(4))) Energy {
   [[nodiscard]] static Energy FromString(const std::string& s);
 
   [[nodiscard]] std::string ToString() const noexcept;
-  [[nodiscard]] flt ToFlt() const noexcept { return v / flt(FACTOR); }
+  template <typename T = flt>
+  [[nodiscard]] T ToFlt() const noexcept {
+    return v / T(FACTOR);
+  }
   [[nodiscard]] inline BoltzEnergy Boltz() const noexcept;
   [[nodiscard]] inline BoltzEnergy LogBoltz() const noexcept;
 

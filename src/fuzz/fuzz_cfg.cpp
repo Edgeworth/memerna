@@ -20,6 +20,8 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_ENERGY_PRECISION);
   args->RegisterOpt(OPT_MEMERNA_DATA);
   args->RegisterOpt(OPT_SEED);
+  args->RegisterOpt(OPT_RAND_MIN_ENERGY);
+  args->RegisterOpt(OPT_RAND_MAX_ENERGY);
   args->RegisterOpt(OPT_FUZZ_BRUTE_MAX);
   args->RegisterOpt(OPT_FUZZ_MFE);
   args->RegisterOpt(OPT_FUZZ_MFE_RNASTRUCTURE);
@@ -36,9 +38,31 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_PFN_PROB_REL_EP);
   args->RegisterOpt(OPT_FUZZ_PFN_PROB_ABS_EP);
   args->RegisterOpt(OPT_FUZZ_BACKENDS);
-  args->RegisterOpt(OPT_FUZZ_RANDOM_MODELS);
+  args->RegisterOpt(OPT_FUZZ_RANDOM_SEEDS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE);
+  args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE_MIN_ENERGY);
+  args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE_MAX_ENERGY);
   args->RegisterOpt(mrna::bridge::OPT_RNASTRUCTURE_DATA);
+}
+
+RandomPseudofreeCfg::RandomPseudofreeCfg(Energy min_energy, Energy max_energy)
+    : min_energy(min_energy), max_energy(max_energy) {
+  verify(this->min_energy <= this->max_energy,
+      "random pseudofree min energy {} > max energy {}", this->min_energy, this->max_energy);
+}
+
+RandomPseudofreeCfg RandomPseudofreeCfg::FromArgParse(const ArgParse& args) {
+  const bool explicit_range = args.HasExplicit(OPT_FUZZ_RANDOM_PSEUDOFREE_MIN_ENERGY) ||
+      args.HasExplicit(OPT_FUZZ_RANDOM_PSEUDOFREE_MAX_ENERGY);
+  verify(!explicit_range || args.GetOr(OPT_FUZZ_RANDOM_PSEUDOFREE),
+      "cannot set random pseudofree energy range without --random-pf");
+  return {args.Get<Energy>(OPT_FUZZ_RANDOM_PSEUDOFREE_MIN_ENERGY),
+      args.Get<Energy>(OPT_FUZZ_RANDOM_PSEUDOFREE_MAX_ENERGY)};
+}
+
+std::ostream& operator<<(std::ostream& str, const RandomPseudofreeCfg& o) {
+  return str << "RandomPseudofreeCfg{"
+             << "min_energy=" << o.min_energy << ", max_energy=" << o.max_energy << "}";
 }
 
 std::string FuzzCfg::Desc() const {
@@ -58,8 +82,10 @@ std::string FuzzCfg::Desc() const {
   desc += fmt::format("pfn_pq_abs_ep: {}\n", pfn_pq_abs_ep);
   desc += fmt::format("pfn_prob_rel_ep: {}\n", pfn_prob_rel_ep);
   desc += fmt::format("pfn_prob_abs_ep: {}\n", pfn_prob_abs_ep);
-  desc += fmt::format("random_models: {}\n", random_models);
-  desc += fmt::format("seed: {}\n", seed ? fmt::format("{}", *seed) : "none");
+  desc += fmt::format("random_seeds: {}\n", random_seeds);
+  desc += fmt::format("random_model_cfg: {}\n", random_model_cfg);
+  desc += fmt::format("random_pseudofree: {}\n", random_pseudofree);
+  desc += fmt::format("random_pseudofree_cfg: {}\n", random_pseudofree_cfg);
   desc += fmt::format("energy_cfg: {}\n", energy_cfg);
   desc += fmt::format("energy_model: {}\n", energy_model);
   desc += fmt::format("backend: ");
@@ -95,11 +121,12 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.subopt = cfg.subopt || cfg.subopt_rnastructure;
   cfg.pfn = cfg.pfn || cfg.pfn_rnastructure || cfg.pfn_subopt;
 
-  args.MaybeSet(OPT_FUZZ_RANDOM_MODELS, &cfg.random_models);
+  args.MaybeSet(OPT_FUZZ_RANDOM_SEEDS, &cfg.random_seeds);
   args.MaybeSet(OPT_FUZZ_RANDOM_PSEUDOFREE, &cfg.random_pseudofree);
-  if (args.Has(OPT_SEED)) cfg.seed = args.Get<uint_fast32_t>(OPT_SEED);
-
-  verify(!(cfg.random_models && cfg.seed.has_value()), "cannot set fixed seed with random models");
+  cfg.random_model_cfg = RandomModelCfg::FromArgParse(args);
+  verify(!(cfg.random_seeds && cfg.random_model_cfg.seed.has_value()),
+      "cannot set fixed seed with random seeds");
+  cfg.random_pseudofree_cfg = RandomPseudofreeCfg::FromArgParse(args);
 
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
   cfg.energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL);

@@ -53,6 +53,10 @@ class AflFuzzCfg:
 
     fuzz_max_len: int | None = None
     fuzz_random_pseudofree: bool | None = None
+    fuzz_random_pseudofree_min_energy: float | None = None
+    fuzz_random_pseudofree_max_energy: float | None = None
+    fuzz_random_min_energy: float | None = None
+    fuzz_random_max_energy: float | None = None
     fuzz_energy_model: str | None = None
     fuzz_ctd: CtdCfg | None = None
     fuzz_lonely_pairs: LonelyPairs | None = None
@@ -182,6 +186,14 @@ class AflFuzzCfg:
             cmd += ["--max-len", str(self.fuzz_max_len)]
         if self.fuzz_random_pseudofree:
             cmd += ["--random-pf"]
+        if self.fuzz_random_pseudofree_min_energy is not None:
+            cmd += ["--random-pf-min-energy", str(self.fuzz_random_pseudofree_min_energy)]
+        if self.fuzz_random_pseudofree_max_energy is not None:
+            cmd += ["--random-pf-max-energy", str(self.fuzz_random_pseudofree_max_energy)]
+        if self.fuzz_random_min_energy is not None:
+            cmd += ["--random-min-energy", str(self.fuzz_random_min_energy)]
+        if self.fuzz_random_max_energy is not None:
+            cmd += ["--random-max-energy", str(self.fuzz_random_max_energy)]
         if self.fuzz_energy_model is not None:
             cmd += ["--energy-model", self.fuzz_energy_model]
         if self.fuzz_ctd is not None:

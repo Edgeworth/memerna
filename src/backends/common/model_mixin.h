@@ -45,10 +45,11 @@ class ModelMixin {
     return m;
   }
 
-  static Ptr Random(const BackendCfg& cfg, uint_fast32_t seed) {
+  static Ptr Random(const BackendCfg& cfg, const RandomModelCfg& random_cfg) {
     auto m = Create();
-    std::mt19937 eng(seed);
-    m->LoadRandom(cfg, eng);
+    verify(random_cfg.seed.has_value(), "random model config missing seed");
+    std::mt19937 eng(*random_cfg.seed);
+    m->LoadRandom(cfg, random_cfg, eng);
     std::string reason;
     verify(m->IsValid(&reason), "invalid energy model: {}", reason);
     return m;
@@ -60,7 +61,7 @@ class ModelMixin {
         overloaded{
             [](std::monostate) -> Ptr { fatal("cannot create model without data source"); },
             [&](const std::string&) { return FromModelPath(*cfg.ModelPath(backend)); },
-            [&](uint_fast32_t seed) { return Random(cfg, seed); },
+            [&](const RandomModelCfg& random_cfg) { return Random(cfg, random_cfg); },
         },
         cfg.data_src);
   }

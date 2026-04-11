@@ -53,9 +53,11 @@ std::optional<std::string> ParseSeq(const json::object& obj) {
 mrna::erg::PseudofreeCfg MakePseudofree(const mrna::fuzz::FuzzCfg& fuzz_cfg, std::size_t len) {
   if (!fuzz_cfg.random_pseudofree) return {};
 
-  std::mt19937 pf_rng(fuzz_cfg.seed.value_or(0));
-  return {mrna::RandomEnergies(len, mrna::E(-10.0), mrna::E(10.0), pf_rng),
-      mrna::RandomEnergies(len, mrna::E(-10.0), mrna::E(10.0), pf_rng)};
+  std::mt19937 pf_rng(fuzz_cfg.random_model_cfg.seed.value_or(0));
+  return {mrna::RandomEnergies(len, fuzz_cfg.random_pseudofree_cfg.min_energy,
+              fuzz_cfg.random_pseudofree_cfg.max_energy, pf_rng),
+      mrna::RandomEnergies(len, fuzz_cfg.random_pseudofree_cfg.min_energy,
+          fuzz_cfg.random_pseudofree_cfg.max_energy, pf_rng)};
 }
 
 }  // namespace
@@ -75,8 +77,8 @@ int main(int argc, char* argv[]) {
   args.ParseOrExit(argc, argv);
 
   [[maybe_unused]] const auto max_len = args.Get<int>(OPT_MAX_LEN);
-
   auto base_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
+  verify(!base_cfg.random_seeds, "AFL fuzz does not support --random-seeds");
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
   __AFL_INIT();
@@ -101,7 +103,7 @@ int main(int argc, char* argv[]) {
 
     // Copy base config and apply JSON overrides.
     auto fuzz_cfg = base_cfg;
-    if (auto seed = ParseSeed(obj)) fuzz_cfg.seed = *seed;
+    if (auto seed = ParseSeed(obj)) fuzz_cfg.random_model_cfg.seed = *seed;
     if (auto em = ParseEnumField<mrna::erg::EnergyModelKind>(obj, "energy_model"))
       fuzz_cfg.energy_model = *em;
     if (auto ctd = ParseEnumField<mrna::erg::EnergyCfg::Ctd>(obj, "ctd"))
@@ -124,7 +126,10 @@ int main(int argc, char* argv[]) {
       fmt::print("Sequence: {}\n", seq.ToSeq());
       fmt::print("Energy model: {}\n", fuzz_cfg.energy_model);
       fmt::print("Energy cfg: {}\n", fuzz_cfg.energy_cfg);
-      if (fuzz_cfg.seed.has_value()) fmt::print("Seed: {}\n", *fuzz_cfg.seed);
+      if (auto random_cfg = harness.last_random_model_cfg())
+        fmt::print("Random model cfg: {}\n", *random_cfg);
+      if (fuzz_cfg.random_pseudofree)
+        fmt::print("Random pseudofree cfg: {}\n", fuzz_cfg.random_pseudofree_cfg);
       if (!pf.paired.empty()) {
         fmt::print("Pseudofree paired:");
         for (const auto& e : pf.paired) fmt::print(" {}", e);

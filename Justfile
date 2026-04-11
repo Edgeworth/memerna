@@ -40,32 +40,32 @@ fuzz $fuzz_exec:
   parallel --ungroup --verbose --halt soon,fail=1 bash -lc ::: \
     "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 30" \
     "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-models --random-pf --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd none 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd d2 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd no-coax 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --ctd all 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd none 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd d2 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd no-coax 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-models --random-pf --ctd all 1 200"
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd none 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd d2 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd no-coax 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd all 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd none 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd d2 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd no-coax 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd all 1 30" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd none 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd d2 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd no-coax 1 200" \
+    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd all 1 200"
 
 afl-setup:
   #!/usr/bin/env bash

@@ -78,6 +78,14 @@ afl_fuzz_cfg_options = cloup.option_group(
     "afl-fuzz config options",
     cloup.option("--max-len", type=int, default=None, help="Max sequence length"),
     cloup.option("--random-pf/--no-random-pf", default=None, help="Random pseudofree energies"),
+    cloup.option("--random-pf-min-energy", type=float, default=None, help="Min random PF energy"),
+    cloup.option("--random-pf-max-energy", type=float, default=None, help="Max random PF energy"),
+    cloup.option(
+        "--random-min-energy", type=float, default=None, help="Min random model energy"
+    ),
+    cloup.option(
+        "--random-max-energy", type=float, default=None, help="Max random model energy"
+    ),
     cloup.option("--energy-model", default=None, help="Energy model"),
     cloup.option("--ctd", type=enum_choice(CtdCfg), default=None, help="CTD mode"),
     cloup.option(
@@ -116,6 +124,10 @@ def build_afl_fuzz_cfg_from_args(
     build_cfg: BuildCfg,
     max_len: int | None = None,
     random_pf: bool | None = None,
+    random_pf_min_energy: float | None = None,
+    random_pf_max_energy: float | None = None,
+    random_min_energy: float | None = None,
+    random_max_energy: float | None = None,
     energy_model: str | None = None,
     ctd: CtdCfg | None = None,
     lonely_pairs: LonelyPairs | None = None,
@@ -136,6 +148,10 @@ def build_afl_fuzz_cfg_from_args(
         build_cfg=build_cfg,
         fuzz_max_len=max_len,
         fuzz_random_pseudofree=random_pf,
+        fuzz_random_pseudofree_min_energy=random_pf_min_energy,
+        fuzz_random_pseudofree_max_energy=random_pf_max_energy,
+        fuzz_random_min_energy=random_min_energy,
+        fuzz_random_max_energy=random_max_energy,
         fuzz_energy_model=energy_model,
         fuzz_ctd=ctd,
         fuzz_lonely_pairs=lonely_pairs,

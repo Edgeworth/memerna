@@ -95,8 +95,9 @@ void LoadFromModelPath(M& m, const std::string& path) {
 template <typename M>
 void LoadRandomModel(M& m, std::mt19937& eng, double min_energy, double max_energy,
     int max_hairpin_sz, int max_num_hairpin) {
+  const auto max_nonneg_energy_d = std::max(0.0, max_energy);
   std::uniform_real_distribution<double> energy_dist(min_energy, max_energy);
-  std::uniform_real_distribution<double> nonneg_energy_dist(0, max_energy);
+  std::uniform_real_distribution<double> nonneg_energy_dist(0.0, max_nonneg_energy_d);
 
   RANDOMISE_DATA(m, stack);
   RANDOMISE_DATA(m, terminal);

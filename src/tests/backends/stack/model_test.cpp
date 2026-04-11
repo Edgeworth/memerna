@@ -9,7 +9,7 @@ class ModelTestStack : public testing::Test {};
 TEST_F(ModelTestStack, IsValid) {
   for (const auto& m : stack_ms) EXPECT_TRUE(m->IsValid());
 
-  auto random_model = Model::Random(kT04Cfg, 0);
+  auto random_model = Model::Random(kT04Cfg, RandomModelCfg(0, E(0.1), E(10.0)));
   EXPECT_TRUE(random_model->IsValid());
   random_model->multiloop_c = E(1.0);
   EXPECT_TRUE(random_model->IsValid());

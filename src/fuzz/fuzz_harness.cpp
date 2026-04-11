@@ -96,13 +96,14 @@ Error FuzzHarness::Run(const Primary& r, const erg::PseudofreeCfg& pf) {
 
 void FuzzHarness::MaybeLoadBackends(const erg::PseudofreeCfg& pf) {
   // Don't reload if already loaded and not randomising.
-  if (!ms_.empty() && !fuzz_cfg_.random_models) return;
+  if (!ms_.empty() && !fuzz_cfg_.random_seeds) return;
   ms_.clear();
 
-  if (fuzz_cfg_.seed.has_value()) {
-    backend_cfg_.data_src = *fuzz_cfg_.seed;
-  } else if (fuzz_cfg_.random_models) {
-    backend_cfg_.data_src = static_cast<uint_fast32_t>(e_());
+  if (fuzz_cfg_.random_seeds) {
+    backend_cfg_.data_src = RandomModelCfg(static_cast<uint_fast32_t>(e_()),
+        fuzz_cfg_.random_model_cfg.min_energy, fuzz_cfg_.random_model_cfg.max_energy);
+  } else if (fuzz_cfg_.random_model_cfg.seed.has_value()) {
+    backend_cfg_.data_src = fuzz_cfg_.random_model_cfg;
   } else {
     backend_cfg_.data_src = fuzz_cfg_.data_dir;
   }

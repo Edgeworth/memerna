@@ -29,12 +29,14 @@ class FuzzHarness {
   Error Run(const Primary& r, const erg::PseudofreeCfg& pf);
   std::mt19937& e() { return e_; }
 
-  [[nodiscard]] constexpr std::optional<uint_fast32_t> last_seed() const {
+  [[nodiscard]] std::optional<RandomModelCfg> last_random_model_cfg() const {
     return std::visit(
         overloaded{
-            [](std::monostate) -> std::optional<uint_fast32_t> { return std::nullopt; },
-            [](const std::string&) -> std::optional<uint_fast32_t> { return std::nullopt; },
-            [](uint_fast32_t seed) -> std::optional<uint_fast32_t> { return seed; },
+            [](std::monostate) -> std::optional<RandomModelCfg> { return std::nullopt; },
+            [](const std::string&) -> std::optional<RandomModelCfg> { return std::nullopt; },
+            [](const RandomModelCfg& random_cfg) -> std::optional<RandomModelCfg> {
+              return random_cfg;
+            },
         },
         backend_cfg_.data_src);
   }

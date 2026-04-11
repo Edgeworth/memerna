@@ -138,8 +138,9 @@ class ArgParse {
 
   // Note that flags set to false via --no-flag will have Has return true.
   // It returns whether or not this option was specified. Use GetOr instead
-  // for flags.
+  // for flags. Options with defaults also count as present.
   [[nodiscard]] bool Has(const Opt& opt) const;
+  [[nodiscard]] bool HasExplicit(const Opt& opt) const;
 
   // Prefer this for setting variables over Get<T>(), if those variables
   // have default values.
@@ -206,6 +207,7 @@ class ArgParse {
   std::map<std::string, Opt> shortname_;
   std::vector<Opt> opts_;  // In order of registration.
   std::map<Opt, std::string> values_;
+  std::set<Opt> explicit_values_;
   std::vector<std::string> pos_;
 };
 

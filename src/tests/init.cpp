@@ -68,7 +68,8 @@ void InitTest(const std::string& data_dir) {
           .data_src = data_dir});
   base_ms.push_back(base_t04);
   while (base_ms.size() < NUM_TEST_MODELS)
-    base_ms.push_back(md::base::Model::Random(kT04Cfg, base_ms.size()));
+    base_ms.push_back(md::base::Model::Random(kT04Cfg,
+        RandomModelCfg(static_cast<uint_fast32_t>(base_ms.size()), E(-10.0), E(10.0))));
 
   baseopt_t04 = md::base::opt::Model::FromBackendCfg(BackendKind::BASEOPT,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
@@ -76,7 +77,8 @@ void InitTest(const std::string& data_dir) {
           .data_src = data_dir});
   baseopt_ms.push_back(baseopt_t04);
   while (baseopt_ms.size() < NUM_TEST_MODELS)
-    baseopt_ms.push_back(md::base::opt::Model::Random(kT04Cfg, baseopt_ms.size()));
+    baseopt_ms.push_back(md::base::opt::Model::Random(kT04Cfg,
+        RandomModelCfg(static_cast<uint_fast32_t>(baseopt_ms.size()), E(-10.0), E(10.0))));
 
   stack_t04 = md::stack::Model::FromBackendCfg(BackendKind::STACK,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
@@ -84,7 +86,8 @@ void InitTest(const std::string& data_dir) {
           .data_src = data_dir});
   stack_ms.push_back(stack_t04);
   while (stack_ms.size() < NUM_TEST_MODELS)
-    stack_ms.push_back(md::stack::Model::Random(kT04Cfg, stack_ms.size()));
+    stack_ms.push_back(md::stack::Model::Random(kT04Cfg,
+        RandomModelCfg(static_cast<uint_fast32_t>(stack_ms.size()), E(-10.0), E(10.0))));
 }
 
 }  // namespace mrna

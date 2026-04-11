@@ -585,15 +585,16 @@ void Model::LoadFromModelPath(const std::string& path) {
   Parse4MapFromFile(path + "/penultimate_stacking.data", penultimate_stack);
 }
 
-void Model::LoadRandom(const BackendCfg& cfg, std::mt19937& eng) {
-  base::LoadRandomModel(
-      *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
+void Model::LoadRandom(const BackendCfg& cfg, const RandomModelCfg& random_cfg, std::mt19937& eng) {
+  const auto min_energy = random_cfg.min_energy.ToFlt<double>();
+  const auto max_energy = random_cfg.max_energy.ToFlt<double>();
+  base::LoadRandomModel(*this, eng, min_energy, max_energy, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
 
   // Only randomize penultimate_stack for T22, which uses penultimate stacking.
   if (cfg.energy_model == erg::EnergyModelKind::T22) {
     // penultimate_stack is dependent on the direction, so 180 degree rotations
     // don't have to be the same.
-    std::uniform_real_distribution<double> energy_dist(RAND_MIN_ENERGY, RAND_MAX_ENERGY);
+    std::uniform_real_distribution<double> energy_dist(min_energy, max_energy);
     RANDOMISE_DATA((*this), penultimate_stack);
   }
 }

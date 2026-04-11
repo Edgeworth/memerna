@@ -48,9 +48,9 @@ class Model : public ModelBase, public ModelMixin<Model> {
 
   void LoadFromModelPath(const std::string& path) { base::LoadFromModelPath(*this, path); }
 
-  void LoadRandom(const BackendCfg& /*cfg*/, std::mt19937& eng) {
-    LoadRandomModel(
-        *this, eng, RAND_MIN_ENERGY, RAND_MAX_ENERGY, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
+  void LoadRandom(const BackendCfg& /*cfg*/, const RandomModelCfg& random_cfg, std::mt19937& eng) {
+    LoadRandomModel(*this, eng, random_cfg.min_energy.ToFlt<double>(),
+        random_cfg.max_energy.ToFlt<double>(), RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
     multiloop_c = ZERO_E;  // baseopt doesn't support multiloop_c.
   }
 

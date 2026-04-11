@@ -2,6 +2,9 @@
 #ifndef FUZZ_FUZZ_CFG_H_
 #define FUZZ_FUZZ_CFG_H_
 
+#include <fmt/ostream.h>
+
+#include <iosfwd>
 #include <optional>
 #include <string>
 #include <vector>
@@ -19,13 +22,25 @@ inline const Opt OPT_FUZZ_BACKENDS = Opt(Opt::ARG)
                                          .Multiple()
                                          .Help("backends to fuzz");
 
-inline const auto OPT_FUZZ_RANDOM_MODELS =
+inline const auto OPT_FUZZ_RANDOM_SEEDS =
     mrna::Opt(mrna::Opt::FLAG)
-        .LongName("random-models")
-        .Help("fuzz random energy models - different each time. c.f. seed");
+        .LongName("random-seeds")
+        .Help("fuzz random energy models with a different seed each time. c.f. seed");
 
 inline const auto OPT_FUZZ_RANDOM_PSEUDOFREE =
     mrna::Opt(mrna::Opt::FLAG).LongName("random-pf").Help("fuzz random pseudofree energies");
+
+inline const auto OPT_FUZZ_RANDOM_PSEUDOFREE_MIN_ENERGY =
+    mrna::Opt(mrna::Opt::ARG)
+        .LongName("random-pf-min-energy")
+        .Default(E(-10.0))
+        .Help("minimum energy for generated random pseudofree values");
+
+inline const auto OPT_FUZZ_RANDOM_PSEUDOFREE_MAX_ENERGY =
+    mrna::Opt(mrna::Opt::ARG)
+        .LongName("random-pf-max-energy")
+        .Default(E(10.0))
+        .Help("maximum energy for generated random pseudofree values");
 
 // Brute force specific options:
 // Allows brute force fuzzing to be given a maximum RNA size
@@ -91,6 +106,16 @@ inline const Opt OPT_FUZZ_PFN_PROB_ABS_EP =
 
 void RegisterOpts(ArgParse* args);
 
+struct RandomPseudofreeCfg {
+  RandomPseudofreeCfg(Energy min_energy, Energy max_energy);
+  static RandomPseudofreeCfg FromArgParse(const ArgParse& args);
+
+  Energy min_energy;
+  Energy max_energy;
+};
+
+std::ostream& operator<<(std::ostream& str, const RandomPseudofreeCfg& o);
+
 // Contains all configuration needed to run a fuzzing round.
 struct FuzzCfg {
   int brute_max = 22;
@@ -115,12 +140,13 @@ struct FuzzCfg {
   flt pfn_prob_rel_ep = EP;
   flt pfn_prob_abs_ep = EP;
 
-  // Whether to use a new random model every time.
-  bool random_models = false;
+  // Whether to use a new random-model seed every time.
+  bool random_seeds = false;
   bool random_pseudofree = false;
 
-  // Whether to use a fixed seed for creating a random model.
-  std::optional<uint_fast32_t> seed;
+  // Random model range, with an optional fixed seed when random_seeds is false.
+  RandomModelCfg random_model_cfg{std::nullopt, E(-10.0), E(10.0)};
+  RandomPseudofreeCfg random_pseudofree_cfg{E(-10.0), E(10.0)};
 
   erg::EnergyCfg energy_cfg{};
   erg::EnergyModelKind energy_model{};
@@ -137,5 +163,8 @@ struct FuzzCfg {
 };
 
 }  // namespace mrna::fuzz
+
+template <>
+struct fmt::formatter<mrna::fuzz::RandomPseudofreeCfg> : ostream_formatter {};
 
 #endif  // FUZZ_FUZZ_CFG_H_

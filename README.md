@@ -223,7 +223,7 @@ iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 General fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-models --energy-model t04 \
+./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --energy-model t04 \
   --backends base,baseopt 1 200
 ```
 
@@ -237,7 +237,7 @@ Exhaustive fuzzing:
 Fuzzing for t22:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-models --random-pf \
+./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --random-pf \
   --energy-model t22 --backends stack 1 200
 ```
 
@@ -247,7 +247,7 @@ The below command runs fuzzing in parallel using GNU parallel with 16 jobs.
 
 ```bash
 seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
-  --random-models --energy-model t04 --backends base,baseopt 1 200'
+  --random-seeds --energy-model t04 --backends base,baseopt 1 200'
 ```
 
 ### Fuzzing against RNAstructure

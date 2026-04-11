@@ -112,11 +112,14 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
         } else {
           values_[opt] = argv[++i];
         }
+        explicit_values_.insert(opt);
       } else {
         auto pair = FlagPair(opt);
         const bool on = !opt.IsInverted();
         values_[pair.first] = Conv(on);
         values_[pair.second] = Conv(!on);
+        explicit_values_.insert(pair.first);
+        explicit_values_.insert(pair.second);
       }
     }
   }
@@ -160,6 +163,8 @@ const Opt& ArgParse::Lookup(const std::string& name) const {
 }
 
 bool ArgParse::Has(const Opt& opt) const { return values_.contains(opt); }
+
+bool ArgParse::HasExplicit(const Opt& opt) const { return explicit_values_.contains(opt); }
 
 std::pair<Opt, Opt> ArgParse::FlagPair(const Opt& opt) const {
   verify(opt.kind() == Opt::FLAG, "option {} is not a flag", opt.longname());
