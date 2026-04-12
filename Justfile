@@ -30,42 +30,88 @@ bench:
   poetry run python -m rnapy.run build --bench --bench-output \
     ./benchmark.json --kind=release
 
-fuzz $fuzz_exec:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  # `set positional-arguments` passes recipe args to the shebang interpreter.
-  # `parallel --shebang` treats that extra argv as an input file, so run
-  # `parallel` explicitly from bash instead.
-  printf -v fuzz_exec_q '%q' "$fuzz_exec"
-  parallel --ungroup --verbose --halt soon,fail=1 bash -lc ::: \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --energy-model t04 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --pfn --random-seeds --random-pf --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd none 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd d2 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd no-coax 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --ctd all 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd none 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd d2 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd no-coax 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd all 1 30" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd none 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd d2 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd no-coax 1 200" \
-    "${fuzz_exec_q} --mfe --mfe-table --subopt --random-seeds --random-pf --ctd all 1 200"
+fuzz *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ $# -lt 1 ]]; then
+      echo "usage: just fuzz <fuzz_exec> [--time-secs <secs>] [--no-pfn]"
+      exit 1
+    fi
+    # `set positional-arguments` passes recipe args to the shebang interpreter.
+    # `parallel --shebang` treats that extra argv as an input file, so run
+    # `parallel` explicitly from bash instead.
+    fuzz_exec=""
+    fuzz_time_secs=600
+    include_pfn=true
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --time-secs)
+          if [[ $# -lt 2 ]]; then
+            echo "missing argument for --time-secs"
+            exit 1
+          fi
+          fuzz_time_secs="$2"
+          shift
+          ;;
+        --no-pfn)
+          include_pfn=false
+          ;;
+        --*)
+          echo "unknown fuzz arg: $1"
+          exit 1
+          ;;
+        *)
+          if [[ -n "$fuzz_exec" ]]; then
+            echo "unexpected positional fuzz arg: $1"
+            exit 1
+          fi
+          fuzz_exec="$1"
+          ;;
+      esac
+      shift
+    done
+    if [[ -z "$fuzz_exec" ]]; then
+      echo "missing fuzz_exec"
+      exit 1
+    fi
+    printf -v fuzz_exec_q '%q' "$fuzz_exec"
+    base_cfgs=(
+      "--mfe --mfe-table 1 100"
+      "--mfe --mfe-table --subopt 1 100"
+    )
+    if [[ "$include_pfn" == true ]]; then
+      base_cfgs+=("--mfe --mfe-table --subopt --pfn 1 30")
+    fi
+    energy_models=(t04 t12 t22)
+    ctds=(none d2 no-coax all)
+    random_model_ranges=(
+      "--random-min-energy -1.0 --random-max-energy 1.0"
+      "--random-min-energy -1.0 --random-max-energy 0.0"
+      "--random-min-energy 0.0 --random-max-energy 1.0"
+    )
+    random_pf_ranges=(
+      ""
+      "--random-pf --random-pf-min-energy -10 --random-pf-max-energy 10"
+      "--random-pf --random-pf-min-energy -10 --random-pf-max-energy -0.1"
+      "--random-pf --random-pf-min-energy 0.1 --random-pf-max-energy 10"
+    )
+    cmds=()
+    for base_cfg in "${base_cfgs[@]}"; do
+      for energy_model in "${energy_models[@]}"; do
+        for ctd in "${ctds[@]}"; do
+          for random_model_range in "${random_model_ranges[@]}"; do
+            for random_pf_range in "${random_pf_ranges[@]}"; do
+              cmd="SPDLOG_LEVEL=err ${fuzz_exec_q} ${base_cfg} --energy-model ${energy_model} --ctd ${ctd} --random-seeds"
+              cmd+=" ${random_model_range} --fuzz-time-secs ${fuzz_time_secs}"
+              if [[ -n "${random_pf_range}" ]]; then cmd+=" ${random_pf_range}"; fi
+              cmds+=("${cmd}")
+            done
+          done
+        done
+      done
+    done
+    echo "Running ${#cmds[@]} fuzzers for ${fuzz_time_secs}s each with $(nproc) jobs"
+    parallel --ungroup --halt now,fail=1 --jobs "$(nproc)" bash -lc ::: "${cmds[@]}"
 
 afl-setup:
   #!/usr/bin/env bash

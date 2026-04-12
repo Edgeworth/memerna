@@ -18,8 +18,7 @@ RandomModelCfg::RandomModelCfg(
 }
 
 RandomModelCfg RandomModelCfg::FromArgParse(const ArgParse& args) {
-  return {args.MaybeGet<uint_fast32_t>(OPT_SEED),
-      args.Get<Energy>(OPT_RAND_MIN_ENERGY),
+  return {args.MaybeGet<uint_fast32_t>(OPT_SEED), args.Get<Energy>(OPT_RAND_MIN_ENERGY),
       args.Get<Energy>(OPT_RAND_MAX_ENERGY)};
 }
 

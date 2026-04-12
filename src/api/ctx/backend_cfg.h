@@ -2,9 +2,9 @@
 #ifndef API_CTX_BACKEND_CFG_H_
 #define API_CTX_BACKEND_CFG_H_
 
-#include <cstdint>
 #include <fmt/ostream.h>
 
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>

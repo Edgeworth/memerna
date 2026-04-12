@@ -13,8 +13,10 @@
 #include "fuzz/fuzz_invocation.h"
 #include "model/energy.h"
 #include "model/primary.h"
+#include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"
+#include "util/log.h"
 
 inline const auto OPT_PRINT_INTERVAL = mrna::Opt(mrna::Opt::ARG)
                                            .LongName("print-interval")
@@ -25,60 +27,57 @@ inline const auto OPT_ENUMERATE =
 
 class FuzzRunner {
  public:
-  explicit FuzzRunner(mrna::fuzz::FuzzCfg cfg) : cfg_(std::move(cfg)), harness_(cfg_) {}
+  explicit FuzzRunner(mrna::fuzz::FuzzCfg cfg, int interval)
+      : cfg_(std::move(cfg)), harness_(cfg_), start_time_(Clock::now()),
+        last_status_time_(start_time_), interval_(interval) {}
 
-  void RunSingle(const mrna::Primary& r, int interval) {
-    fmt::print("Running single fuzz on {}\n", r.ToSeq());
-    auto start_time = std::chrono::steady_clock::now();
+  bool RunSingle(const mrna::Primary& r) {
+    mrna::loginfo("Running single fuzz on {}", r.ToSeq());
     for (int64_t i = 0;; ++i) {
-      if (interval > 0 &&
-          std::chrono::duration_cast<std::chrono::seconds>(
-              std::chrono::steady_clock::now() - start_time)
-                  .count() > interval) {
-        fmt::print("Fuzzed {} times\n", i);
-        start_time = std::chrono::steady_clock::now();
-      }
-      RunInvocation(r);
+      if (!KeepRunning(i, "times")) return true;
+      if (RunInvocation(r)) return false;
     }
   }
 
-  void RunEnumerate(int min_len, int max_len) {
-    fmt::print("Exhaustive fuzzing [{}-{}] len RNAs\n", min_len, max_len);
+  bool RunEnumerate(int min_len, int max_len) {
+    mrna::loginfo("Exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
     int64_t i = 0;
     mrna::Primary r(min_len);
     while (static_cast<int>(r.size()) <= max_len) {
-      if (++i % 1000 == 0) fmt::print("Fuzzed {} RNA, current size: {}\n", i, r.size());
-      RunInvocation(r);
+      if (!KeepRunning(i)) return true;
+      if (++i % 1000 == 0) mrna::loginfo("Fuzzed {} RNA, current size: {}", i, r.size());
+      if (RunInvocation(r)) return false;
       r.Increment();
     }
-    fmt::print("Finished exhaustive fuzzing [{}-{}] len RNAs\n", min_len, max_len);
+    mrna::loginfo("Finished exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
+    return true;
   }
 
-  void RunRandom(int min_len, int max_len, int interval) {
-    fmt::print("Random fuzzing [{}-{}] len RNAs\n", min_len, max_len);
+  bool RunRandom(int min_len, int max_len) {
+    mrna::loginfo("Random fuzzing [{}-{}] len RNAs", min_len, max_len);
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
-    auto start_time = std::chrono::steady_clock::now();
     for (int64_t i = 0;; ++i) {
-      if (interval > 0 &&
-          std::chrono::duration_cast<std::chrono::seconds>(
-              std::chrono::steady_clock::now() - start_time)
-                  .count() > interval) {
-        fmt::print("Fuzzed {} RNAs\n", i);
-        start_time = std::chrono::steady_clock::now();
-      }
+      if (!KeepRunning(i, "RNAs")) return true;
       const int len = len_dist(harness_.e());
-      RunInvocation(mrna::Primary::Random(len, harness_.e()));
+      if (RunInvocation(mrna::Primary::Random(len, harness_.e()))) return false;
     }
   }
 
  private:
+  using Clock = std::chrono::steady_clock;
+
   mrna::fuzz::FuzzCfg cfg_;
   mrna::fuzz::FuzzHarness harness_;
+  Clock::time_point start_time_;
+  Clock::time_point last_status_time_;
+  int interval_;
 
-  void RunInvocation(const mrna::Primary& r) {
+  bool RunInvocation(const mrna::Primary& r) {
     mrna::erg::PseudofreeCfg pf(
         MaybeGetPairedPseudofree(r.size()), MaybeGetUnpairedPseudofree(r.size()));
-    MaybePrintResult(harness_.Run(r, pf), pf);
+    const auto res = harness_.Run(r, pf);
+    MaybePrintResult(res, pf);
+    return !res.empty();
   }
 
   std::vector<mrna::Energy> MaybeGetPairedPseudofree(std::size_t length) {
@@ -97,37 +96,42 @@ class FuzzRunner {
         cfg_.random_pseudofree_cfg.max_energy, harness_.e());
   }
 
+  [[nodiscard]] bool KeepRunning(int64_t i, const char* unit = nullptr) {
+    const auto now = Clock::now();
+    if (cfg_.fuzz_time_secs.has_value() &&
+        std::chrono::duration_cast<std::chrono::seconds>(now - start_time_).count() >=
+            *cfg_.fuzz_time_secs)
+      return false;
+    if (unit != nullptr && interval_ > 0 &&
+        std::chrono::duration_cast<std::chrono::seconds>(now - last_status_time_).count() >
+            interval_) {
+      mrna::loginfo("Fuzzed {} {}", i, unit);
+      last_status_time_ = now;
+    }
+    return true;
+  }
+
   void MaybePrintResult(const mrna::fuzz::Error& res, const mrna::erg::PseudofreeCfg& pf) {
     if (res.empty()) return;
     fmt::print("Energy model: {}\n", cfg_.energy_model);
     fmt::print("Energy cfg: {}\n", cfg_.energy_cfg);
-    fmt::print("Backends:");
-    for (const auto& backend : cfg_.backends) fmt::print(" {}", backend);
-    fmt::print("\n");
+    fmt::print("Backends:{}\n", FormatBackends());
     if (auto random_cfg = harness_.last_random_model_cfg())
       fmt::print("Random model cfg: {}\n", *random_cfg);
-    if (cfg_.random_pseudofree) fmt::print("Random pseudofree cfg: {}\n", cfg_.random_pseudofree_cfg);
-    if (!pf.paired.empty()) {
-      fmt::print("Pseudofree paired energies: ");
-      PrintPseudofreeEnergy(pf.paired);
-    }
-    if (!pf.unpaired.empty()) {
-      fmt::print("Pseudofree unpaired energies: ");
-      PrintPseudofreeEnergy(pf.unpaired);
-    }
+    if (cfg_.random_pseudofree)
+      fmt::print("Random pseudofree cfg: {}\n", cfg_.random_pseudofree_cfg);
+    if (!pf.paired.empty())
+      fmt::print("Pseudofree paired energies: {}\n", mrna::FormatPseudofreeEnergies(pf.paired));
+    if (!pf.unpaired.empty())
+      fmt::print("Pseudofree unpaired energies: {}\n", mrna::FormatPseudofreeEnergies(pf.unpaired));
     for (const auto& s : res) fmt::print("{}\n", s);
     fmt::print("\n");
   }
 
-  static void PrintPseudofreeEnergy(const std::vector<mrna::Energy>& energies) {
-    bool first = true;
-    for (const auto& e : energies) {
-      if (!first) fmt::print(",");
-      first = false;
-      fmt::print("{}", e);
-    }
-
-    fmt::print("\n");
+  [[nodiscard]] std::string FormatBackends() const {
+    std::string backends;
+    for (const auto& backend : cfg_.backends) backends += fmt::format(" {}", backend);
+    return backends;
   }
 };
 
@@ -157,12 +161,14 @@ int main(int argc, char* argv[]) {
   }
 
   auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
-  auto runner = FuzzRunner(fuzz_cfg);
+  auto runner = FuzzRunner(fuzz_cfg, interval);
+  bool ok = false;
   if (!seq.empty()) {
-    runner.RunSingle(mrna::Primary::FromSeq(seq), interval);
+    ok = runner.RunSingle(mrna::Primary::FromSeq(seq));
   } else if (enumerate) {
-    runner.RunEnumerate(min_len, max_len);
+    ok = runner.RunEnumerate(min_len, max_len);
   } else {
-    runner.RunRandom(min_len, max_len, interval);
+    ok = runner.RunRandom(min_len, max_len);
   }
+  return ok ? 0 : 1;
 }

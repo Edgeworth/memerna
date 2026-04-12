@@ -5,6 +5,7 @@
 #include <utility>
 
 #ifdef MRNA_ENABLE_LOGGING
+#include "spdlog/cfg/env.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "util/version.h"
 #endif
@@ -51,6 +52,7 @@ void InitLog() {
   auto logger = spdlog::get("stderr");
   if (!logger) logger = spdlog::stderr_color_mt("stderr");
   spdlog::set_default_logger(std::move(logger));
+  spdlog::cfg::load_env_levels();
   loginfo("memerna version {}", VERSION.ToString());
 #endif
 }

@@ -4,7 +4,6 @@
 
 #include <cstdint>
 #include <set>
-#include <utility>
 #include <vector>
 
 #include "api/brute/brute_cfg.h"

@@ -588,7 +588,8 @@ void Model::LoadFromModelPath(const std::string& path) {
 void Model::LoadRandom(const BackendCfg& cfg, const RandomModelCfg& random_cfg, std::mt19937& eng) {
   const auto min_energy = random_cfg.min_energy.ToFlt<double>();
   const auto max_energy = random_cfg.max_energy.ToFlt<double>();
-  base::LoadRandomModel(*this, eng, min_energy, max_energy, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
+  base::LoadRandomModel(
+      *this, eng, min_energy, max_energy, RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
 
   // Only randomize penultimate_stack for T22, which uses penultimate stacking.
   if (cfg.energy_model == erg::EnergyModelKind::T22) {

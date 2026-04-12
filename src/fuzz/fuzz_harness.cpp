@@ -53,7 +53,7 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg, bool should_log)
   rstr_ =
       std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
 #endif  // MRNA_USE_RNASTRUCTURE
-  if (should_log_) fmt::print("Fuzzing with config: {}\n", fuzz_cfg_.Desc());
+  if (should_log_) loginfo("Fuzzing with config: {}", fuzz_cfg_.Desc());
 
   backend_cfg_ = BackendCfg{
       .energy_model = fuzz_cfg_.energy_model,

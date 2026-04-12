@@ -57,4 +57,15 @@ void PrintHelixProbs(const Primary& r, const PfnTables& pfn, const md::base::Mod
   PrintBoltzProbs(prob);
 }
 
+std::string FormatPseudofreeEnergies(const std::vector<Energy>& energies) {
+  std::string s;
+  bool first = true;
+  for (const auto& e : energies) {
+    if (!first) s += ",";
+    first = false;
+    s += fmt::format("{}", e);
+  }
+  return s;
+}
+
 }  // namespace mrna

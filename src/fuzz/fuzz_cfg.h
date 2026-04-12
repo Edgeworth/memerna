@@ -103,6 +103,11 @@ inline const Opt OPT_FUZZ_PFN_PROB_ABS_EP =
         .LongName("pfn-prob-abs-ep")
         .Default(EP)
         .Help("partition function probability table absolute epsilon");
+inline const Opt OPT_FUZZ_TIME_SECS =
+    Opt(Opt::ARG)
+        .LongName("fuzz-time-secs")
+        .Help("run for n seconds, exiting 0 on timeout and non-zero "
+              "on first failure");
 
 void RegisterOpts(ArgParse* args);
 
@@ -119,6 +124,7 @@ std::ostream& operator<<(std::ostream& str, const RandomPseudofreeCfg& o);
 // Contains all configuration needed to run a fuzzing round.
 struct FuzzCfg {
   int brute_max = 22;
+  std::optional<int> fuzz_time_secs;
 
   // MFE configuration.
   bool mfe = false;

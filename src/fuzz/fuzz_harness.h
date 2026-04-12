@@ -2,7 +2,6 @@
 #ifndef FUZZ_FUZZ_HARNESS_H_
 #define FUZZ_FUZZ_HARNESS_H_
 
-#include <cstdint>
 #include <memory>
 #include <optional>
 #include <random>

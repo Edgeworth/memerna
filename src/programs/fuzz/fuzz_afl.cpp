@@ -18,6 +18,7 @@
 #include "fuzz/fuzz_harness.h"
 #include "model/energy.h"
 #include "model/primary.h"
+#include "programs/print.h"
 #include "util/enum.h"
 
 __AFL_FUZZ_INIT();
@@ -130,16 +131,10 @@ int main(int argc, char* argv[]) {
         fmt::print("Random model cfg: {}\n", *random_cfg);
       if (fuzz_cfg.random_pseudofree)
         fmt::print("Random pseudofree cfg: {}\n", fuzz_cfg.random_pseudofree_cfg);
-      if (!pf.paired.empty()) {
-        fmt::print("Pseudofree paired:");
-        for (const auto& e : pf.paired) fmt::print(" {}", e);
-        fmt::print("\n");
-      }
-      if (!pf.unpaired.empty()) {
-        fmt::print("Pseudofree unpaired:");
-        for (const auto& e : pf.unpaired) fmt::print(" {}", e);
-        fmt::print("\n");
-      }
+      if (!pf.paired.empty())
+        fmt::print("Pseudofree paired: {}\n", mrna::FormatPseudofreeEnergies(pf.paired));
+      if (!pf.unpaired.empty())
+        fmt::print("Pseudofree unpaired: {}\n", mrna::FormatPseudofreeEnergies(pf.unpaired));
       for (const auto& s : res) fmt::print("{}\n", s);
       fmt::print("\n");
       abort();

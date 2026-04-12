@@ -37,6 +37,7 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_FUZZ_PFN_PQ_ABS_EP);
   args->RegisterOpt(OPT_FUZZ_PFN_PROB_REL_EP);
   args->RegisterOpt(OPT_FUZZ_PFN_PROB_ABS_EP);
+  args->RegisterOpt(OPT_FUZZ_TIME_SECS);
   args->RegisterOpt(OPT_FUZZ_BACKENDS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_SEEDS);
   args->RegisterOpt(OPT_FUZZ_RANDOM_PSEUDOFREE);
@@ -47,8 +48,8 @@ void RegisterOpts(ArgParse* args) {
 
 RandomPseudofreeCfg::RandomPseudofreeCfg(Energy min_energy, Energy max_energy)
     : min_energy(min_energy), max_energy(max_energy) {
-  verify(this->min_energy <= this->max_energy,
-      "random pseudofree min energy {} > max energy {}", this->min_energy, this->max_energy);
+  verify(this->min_energy <= this->max_energy, "random pseudofree min energy {} > max energy {}",
+      this->min_energy, this->max_energy);
 }
 
 RandomPseudofreeCfg RandomPseudofreeCfg::FromArgParse(const ArgParse& args) {
@@ -68,6 +69,8 @@ std::ostream& operator<<(std::ostream& str, const RandomPseudofreeCfg& o) {
 std::string FuzzCfg::Desc() const {
   std::string desc;
   desc += fmt::format("brute_max: {}\n", brute_max);
+  desc += fmt::format(
+      "fuzz_time_secs: {}\n", fuzz_time_secs ? fmt::format("{}", *fuzz_time_secs) : "none");
   desc += fmt::format("mfe: {}\n", mfe);
   desc += fmt::format("mfe_rnastructure: {}\n", mfe_rnastructure);
   desc += fmt::format("mfe_table: {}\n", mfe_table);
@@ -99,6 +102,8 @@ std::string FuzzCfg::Desc() const {
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
   args.MaybeSet(OPT_FUZZ_BRUTE_MAX, &cfg.brute_max);
+  cfg.fuzz_time_secs = args.MaybeGet<int>(OPT_FUZZ_TIME_SECS);
+  verify(!cfg.fuzz_time_secs.has_value() || *cfg.fuzz_time_secs >= 0, "invalid fuzz time secs");
 
   args.MaybeSet(OPT_FUZZ_MFE, &cfg.mfe);
   args.MaybeSet(OPT_FUZZ_MFE_RNASTRUCTURE, &cfg.mfe_rnastructure);
