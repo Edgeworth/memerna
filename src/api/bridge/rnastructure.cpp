@@ -46,7 +46,6 @@ std::vector<subopt::SuboptResult> StructureToSuboptVector(const structure& struc
   std::vector<subopt::SuboptResult> res;
   res.reserve(static_cast<int>(s_list.size()));
   for (int i = 0; i < static_cast<int>(s_list.size()); ++i) {
-    // TODO(2): Convert CTDs?
     res.emplace_back(RNAstructure::ToEnergy(struc.GetEnergy(i + 1)),
         trace::TraceResult(std::move(s_list[i]), Ctds()));
   }
@@ -129,7 +128,6 @@ erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, erg::E
   const auto struc = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   efn2(data_.get(), struc.get(), 1, linear_multiloop, static_cast<std::ostream*>(nullptr));
-  // TODO(2): convert ctds and structure?
   // Note: build_structure is ignored - RNAstructure bridge doesn't support Structure output.
   return {ToEnergy(struc->GetEnergy(1)), Ctds(), nullptr};
 }

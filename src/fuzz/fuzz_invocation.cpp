@@ -74,12 +74,20 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
   }
 }
 
+[[nodiscard]] Energy SuboptDeltaForLength(int len) {
+  // Number of structures is exponential. Heuristic to estimate delta to target a reasonable number
+  // of structures.
+  Energy delta = Energy::FromFlt(1.0 / (log(len) + 2.0));
+  return delta;
+}
+
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms,
     BackendCfg backend_cfg, erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg, bool should_log)
     : r_(r), ms_(std::move(ms)), backend_cfg_(std::move(backend_cfg)), pf_(std::move(pf)),
       cfg_(fuzz_cfg), should_log_(should_log) {
+  cfg_.subopt_delta = SuboptDeltaForLength(r.size());
   verify(!ms_.empty(), "must provide at least one energy model to fuzz");
 }
 

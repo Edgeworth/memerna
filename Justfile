@@ -88,12 +88,16 @@ fuzz *args:
       "--random-min-energy -1.0 --random-max-energy 1.0"
       "--random-min-energy -1.0 --random-max-energy 0.0"
       "--random-min-energy 0.0 --random-max-energy 1.0"
+      "--random-min-energy 0.0 --random-max-energy 0.0"
     )
     random_pf_ranges=(
       ""
       "--random-pf --random-pf-min-energy -10 --random-pf-max-energy 10"
+      "--random-pf --random-pf-min-energy -1 --random-pf-max-energy 1"
       "--random-pf --random-pf-min-energy -10 --random-pf-max-energy -0.1"
+      "--random-pf --random-pf-min-energy -1 --random-pf-max-energy -0.1"
       "--random-pf --random-pf-min-energy 0.1 --random-pf-max-energy 10"
+      "--random-pf --random-pf-min-energy 0.1 --random-pf-max-energy 1"
     )
     cmds=()
     for base_cfg in "${base_cfgs[@]}"; do

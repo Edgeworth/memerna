@@ -43,7 +43,6 @@ struct EnergyCfg {
   // calculations, the states are already handled.
   bool bulge_states = true;
 
-  // TODO(1): Implement and use this.
   // Whether to use CTDs in folding, subopt, partition, etc.
   Ctd ctd = Ctd::ALL;
 
