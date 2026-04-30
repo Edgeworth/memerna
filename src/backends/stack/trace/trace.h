@@ -3,7 +3,6 @@
 #define BACKENDS_STACK_TRACE_TRACE_H_
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
 #include "backends/stack/energy/model.h"
@@ -29,8 +28,9 @@ struct Expansion {
   bool operator<(const Expansion& o) const { return delta < o.delta; }
 };
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg);
+    const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg);
 
 }  // namespace mrna::md::stack
 

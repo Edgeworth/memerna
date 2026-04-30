@@ -11,6 +11,7 @@
 #include "backends/base/energy/precomp.h"
 #include "backends/base/pfn/pfn_exterior.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -22,31 +23,31 @@
 
 namespace mrna::md::base {
 
-bool PfnDebug::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+bool PfnDebug<CFG, PseudofreeCfgT>::IsSupported(const PseudofreeCfgT& /*pf*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
   return true;
 }
 
-PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cfg, PfnState& state,
-    const erg::PseudofreeCfg& pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+PfnTables PfnDebug<CFG, PseudofreeCfgT>::Run(
+    const Primary& r, const Model::Ptr& m, PfnState& state, const PseudofreeCfgT& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
-  cfg.bulge_states = false;
   std::string reason;
-  verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(pf, &reason), "{} does not support the given configuration: {}", funcname(),
+      reason);
   pf.Verify(r);
 
-  logdebug("base {} with {}, {}", funcname(), cfg, pf);
+  logdebug("base {} with {}, {}", funcname(), CFG, pf);
 
   const int N = r.size();
-  const Precomp pc(Primary(r), m, cfg, pf);
+  const Precomp<CFG, PseudofreeCfgT> pc(Primary(r), m, pf);
   state.dp = BoltzDpArray(r.size() + 1, 0);
   auto& dp = state.dp;
 
@@ -59,14 +60,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (Model::CanPair(cfg, r, st, en)) {
+      if (Model::CanPair<CFG>(r, st, en)) {
         BoltzEnergy p{0};
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist)
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
             p += pc.TwoLoop(st, en, ist, ien).Boltz() * dp[ist][ien][PT_P];
         // Hairpin loops.
-        p += m->Hairpin(r, pf, st, en).Boltz();
+        p += m->Hairpin<CFG>(r, pf, st, en).Boltz();
 
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const BoltzEnergy base_branch_cost =
@@ -74,14 +75,14 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
 
         // (<   ><   >)
         BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // D2 can overlap terminal mismatches with anything.
           // (<   ><   >) Terminal mismatch
           val *= m->terminal[stb][st1b][en1b][enb].Boltz();
         }
         p += val;
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (3<   ><   >) 3'
           p += base_branch_cost * dp[st + 2][en - 1][PT_U2] *
               (m->dangle3[stb][st1b][enb] + pf.Unpaired(st + 1) + m->multiloop_c).Boltz();
@@ -95,7 +96,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
                   .Boltz();
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
               pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -165,7 +166,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
         BoltzEnergy u2_val = base00 * right_paired;
         BoltzEnergy val = base00 * right_unpaired + base00 * right_paired;
 
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U
@@ -189,7 +190,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
         else
           wc += val;
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3' - U
           val = base01 * (m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c).Boltz();
           u += val * right_unpaired + val * right_paired;
@@ -209,7 +210,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
           u2 += val * right_paired;
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 *
               (m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(piv) +
@@ -250,7 +251,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
   }
 
   // Compute the exterior tables.
-  PfnExterior(r, *m, cfg, state, pf);
+  PfnExterior<CFG>(r, *m, state, pf);
   const auto& ext = state.ext;
 
   // Fill the left triangle.
@@ -269,7 +270,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
       const Base en1b = rspace ? r[en - 1] : Base(-1);
       const Base en2b = rspace > 1 ? r[en - 2] : Base(-1);
 
-      if (Model::CanPair(cfg, r, en, st)) {
+      if (Model::CanPair<CFG>(r, en, st)) {
         BoltzEnergy p = ZERO_B;
         const int ost_max = std::min(st + TWOLOOP_MAX_SZ + 2, N);
         for (int ost = st + 1; ost < ost_max; ++ost) {
@@ -291,7 +292,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
           const BoltzEnergy l1ext = rspace > 1 ? ext[en - 2][PTEXT_L] : BoltzEnergy{1};
 
           BoltzEnergy d2_val = ONE_B;
-          if (cfg.UseD2()) {
+          if constexpr (CFG.UseD2()) {
             if (st != N - 1 && en != 0) {
               // |<   >)   (<   >| Terminal mismatch
               d2_val *= m->terminal[stb][st1b][en1b][enb].Boltz();
@@ -309,7 +310,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
           // |   >)   (<   | - Enclosing loop
           if (lspace && rspace) p += base_branch_cost * dp[st + 1][en - 1][PT_U2] * d2_val;
 
-          if (cfg.UseDangleMismatch()) {
+          if constexpr (CFG.UseDangleMismatch()) {
             if (lspace) {
               // |<   >(   )3<   >| 3' - Exterior loop
               // lspace > 0
@@ -342,7 +343,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
                       .Boltz();
           }
 
-          if (cfg.UseCoaxialStacking()) {
+          if constexpr (CFG.UseCoaxialStacking()) {
             const int limit = en + N;
             for (int tpiv = st; tpiv <= limit; ++tpiv) {
               const int pl = FastMod(tpiv - 1, N);
@@ -408,7 +409,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
         // Enclosing loop cases.
         // Can start at st + 2 because we need to form an enclosing loop.
         // At worst the enclosing loop has to start at st + 1.
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           const int limit = en + N;
           for (int tpiv = st + 2; tpiv < limit; ++tpiv) {
             const int pl = FastMod(tpiv - 1, N);
@@ -520,7 +521,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
 
         if (straddling) {
           BoltzEnergy d2_val = ONE_B;
-          if (cfg.UseD2()) {
+          if constexpr (CFG.UseD2()) {
             // |  >>   m<(   )<m  | Terminal mismatch
             // tpiv != N-1 && st != 0, so we can always do a terminal mismatch.
             d2_val *= m->terminal[pb][prb][r[st - 1]][stb].Boltz();
@@ -545,7 +546,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
               wc += val;
           }
 
-          if (cfg.UseCoaxialStacking()) {
+          if constexpr (CFG.UseCoaxialStacking()) {
             // |  )  >>   <(   )<(  | Flush coax
             // straddling
             val = base00 * m->stack[pb][prb][WcPair(prb)][stb].Boltz() * dp[pr][en][PT_U_WC];
@@ -564,7 +565,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
           }
         }
 
-        if (cfg.UseDangleMismatch() && dot_straddling) {
+        if (CFG.UseDangleMismatch() && dot_straddling) {
           // |  >>   <(   )3<  | 3'
           val = base01 * (m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c).Boltz();
           if (tpiv >= N) u += val * right_unpaired;
@@ -579,7 +580,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
           const BoltzEnergy base11 =
               PairedWithPf(pf, dp, st + 1, pl) * pc.augubranch[st1b][pl1b].Boltz();
 
-          if (cfg.UseDangleMismatch() && straddling) {
+          if (CFG.UseDangleMismatch() && straddling) {
             // |  >>   <5(   )<  | 5'
             val = base10 * (m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c).Boltz();
             if (tpiv >= N) u += val * right_unpaired;
@@ -588,7 +589,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
             u2 += val;
           }
 
-          if (cfg.UseDangleMismatch() && dot_straddling) {
+          if (CFG.UseDangleMismatch() && dot_straddling) {
             // |  >>   <m(   )m<  | Terminal mismatch
             // lspace > 0 && dot_straddling
             val = base11 *
@@ -601,7 +602,7 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
             u2 += val;
           }
 
-          if (cfg.UseCoaxialStacking() && dot_straddling) {
+          if (CFG.UseCoaxialStacking() && dot_straddling) {
             // |  )>>   <.(   ).<(  | Left coax
             // lspace > 0 && dot_straddling
             val = base11 *
@@ -636,5 +637,9 @@ PfnTables PfnDebug::Run(const Primary& r, const Model::Ptr& m, erg::EnergyCfg cf
 
   return {std::move(p), ext[0][PTEXT_R]};
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class PfnDebug<CFG, PF>;
+MRNA_STATIC_FOR_EACH_PFN_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

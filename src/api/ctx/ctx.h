@@ -85,8 +85,8 @@ class Ctx {
       std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const;
 
-  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg,
+      erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const;
 
   [[nodiscard]] MfeBackend BackendForFold(
       std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
@@ -94,7 +94,7 @@ class Ctx {
       std::optional<MfeAlg> mfe_alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCfg& subopt_cfg) const;
   [[nodiscard]] PfnBackend BackendForPfn(
-      std::optional<PfnAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
+      std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const;
 
   static Ctx FromArgParse(const ArgParse& args);
 

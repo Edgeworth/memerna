@@ -20,14 +20,14 @@ erg::PseudofreeCfg NonEmptyPf() {
 
 }  // namespace
 
-TEST(AlgorithmResolveTest, ResolveEfnAutoPrefersBaseoptWhenSupported) {
+TEST(AlgorithmResolveTest, ResolveEfnAutoSelectsBaseWhenSupported) {
   const auto res =
       ResolveEfn(/*kind=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
   ASSERT_TRUE(res.has_value());
-  EXPECT_EQ(res->backend, BackendKind::BASEOPT);
+  EXPECT_EQ(res->backend, BackendKind::BASE);
 }
 
-TEST(AlgorithmResolveTest, ResolveEfnAutoFallsBackWhenBaseoptUnsupported) {
+TEST(AlgorithmResolveTest, ResolveEfnAutoKeepsBaseWithPseudofree) {
   const auto res = ResolveEfn(/*kind=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, NonEmptyPf());
   ASSERT_TRUE(res.has_value());
   EXPECT_EQ(res->backend, BackendKind::BASE);
@@ -50,15 +50,15 @@ TEST(AlgorithmResolveTest, ResolveEfnAutoFailsWhenNoBackendSupportsCfg) {
   EXPECT_FALSE(log.empty());
 }
 
-TEST(AlgorithmResolveTest, ResolveMfeAutoPrefersBaseoptSparseOptWhenSupported) {
+TEST(AlgorithmResolveTest, ResolveMfeAutoSelectsBaseSparseOptWhenSupported) {
   const auto res = ResolveMfe(
       /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
   ASSERT_TRUE(res.has_value());
-  EXPECT_EQ(res->backend, BackendKind::BASEOPT);
+  EXPECT_EQ(res->backend, BackendKind::BASE);
   EXPECT_EQ(res->alg, MfeAlg::SPARSE_OPT);
 }
 
-TEST(AlgorithmResolveTest, ResolveMfeAutoFallsBackWhenBaseoptUnsupported) {
+TEST(AlgorithmResolveTest, ResolveMfeAutoKeepsBaseWithPseudofree) {
   const auto res = ResolveMfe(
       /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, NonEmptyPf());
   ASSERT_TRUE(res.has_value());
@@ -74,16 +74,16 @@ TEST(AlgorithmResolveTest, ResolveMfeAutoSelectsStackOptForT22) {
   EXPECT_EQ(res->alg, MfeAlg::OPT);
 }
 
-TEST(AlgorithmResolveTest, ResolveSuboptAutoPrefersBaseoptIterativeWhenSupported) {
+TEST(AlgorithmResolveTest, ResolveSuboptAutoSelectsBaseIterativeWhenSupported) {
   const subopt::SuboptCfg subopt_cfg;
   const auto res = ResolveSubopt(/*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg,
       erg::EnergyCfg{}, erg::PseudofreeCfg{}, subopt_cfg);
   ASSERT_TRUE(res.has_value());
-  EXPECT_EQ(res->backend, BackendKind::BASEOPT);
+  EXPECT_EQ(res->backend, BackendKind::BASE);
   EXPECT_EQ(res->alg, SuboptAlg::ITERATIVE);
 }
 
-TEST(AlgorithmResolveTest, ResolveSuboptAutoFallsBackWhenBaseoptUnsupported) {
+TEST(AlgorithmResolveTest, ResolveSuboptAutoKeepsBaseWithPseudofree) {
   const subopt::SuboptCfg subopt_cfg;
   const auto res = ResolveSubopt(/*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg,
       erg::EnergyCfg{}, NonEmptyPf(), subopt_cfg);
@@ -92,17 +92,18 @@ TEST(AlgorithmResolveTest, ResolveSuboptAutoFallsBackWhenBaseoptUnsupported) {
   EXPECT_EQ(res->alg, SuboptAlg::ITERATIVE);
 }
 
-TEST(AlgorithmResolveTest, ResolvePfnAutoPrefersBaseoptOptWhenSupported) {
+TEST(AlgorithmResolveTest, ResolvePfnAutoSelectsBasePfnOptWhenSupported) {
   const auto res = ResolvePfn(
-      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfgPfn{},
+      erg::PseudofreeCfg{});
   ASSERT_TRUE(res.has_value());
-  EXPECT_EQ(res->backend, BackendKind::BASEOPT);
+  EXPECT_EQ(res->backend, BackendKind::BASE);
   EXPECT_EQ(res->alg, PfnAlg::OPT);
 }
 
-TEST(AlgorithmResolveTest, ResolvePfnAutoFallsBackWhenBaseoptUnsupported) {
+TEST(AlgorithmResolveTest, ResolvePfnAutoKeepsBaseWithPseudofree) {
   const auto res = ResolvePfn(
-      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfg{}, NonEmptyPf());
+      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfgPfn{}, NonEmptyPf());
   ASSERT_TRUE(res.has_value());
   EXPECT_EQ(res->backend, BackendKind::BASE);
   EXPECT_EQ(res->alg, PfnAlg::OPT);
@@ -111,8 +112,8 @@ TEST(AlgorithmResolveTest, ResolvePfnAutoFallsBackWhenBaseoptUnsupported) {
 TEST(AlgorithmResolveTest, ResolvePfnAutoFailsWhenNoBackendProvidesPfnAlg) {
   std::string log;
   const auto res = ResolvePfn(
-      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{},
-      /*log=*/&log);
+      /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT22Cfg, erg::EnergyCfgPfn{},
+      erg::PseudofreeCfg{}, /*log=*/&log);
   EXPECT_FALSE(res.has_value());
   EXPECT_FALSE(log.empty());
 }

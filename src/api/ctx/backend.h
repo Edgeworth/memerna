@@ -7,8 +7,7 @@
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/boltz_model.h"
 #include "backends/base/energy/model.h"
-#include "backends/baseopt/energy/boltz_model.h"
-#include "backends/baseopt/energy/model.h"
+#include "backends/common/static.h"
 #include "backends/stack/energy/boltz_model.h"
 #include "backends/stack/energy/model.h"
 #include "model/ctd.h"
@@ -17,17 +16,14 @@
 
 namespace mrna {
 
-using BackendModelPtr =
-    std::variant<md::base::Model::Ptr, md::base::opt::Model::Ptr, md::stack::Model::Ptr>;
-using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::base::opt::BoltzModel::Ptr,
-    md::stack::BoltzModel::Ptr>;
+using BackendModelPtr = std::variant<md::base::Model::Ptr, md::stack::Model::Ptr>;
+using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::stack::BoltzModel::Ptr>;
 
 BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg);
 
 constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
   auto vis = overloaded{
       [](const md::base::Model::Ptr&) { return BackendKind::BASE; },
-      [](const md::base::opt::Model::Ptr&) { return BackendKind::BASEOPT; },
       [](const md::stack::Model::Ptr&) { return BackendKind::STACK; },
   };
   return std::visit(vis, m);
@@ -35,6 +31,16 @@ constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
 
 // Creates the Boltzmann energy model from the given energy model.
 BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
+
+[[nodiscard]] inline md::base::BoltzModel::Ptr Boltz(const md::base::Model::Ptr& m) {
+  return md::base::BoltzModel::Create(m);
+}
+
+[[nodiscard]] inline md::stack::BoltzModel::Ptr Boltz(const md::stack::Model::Ptr& m) {
+  return md::stack::BoltzModel::Create(m);
+}
+
+[[nodiscard]] inline BackendBoltzModelPtr Boltz(const BackendBoltzModelPtr& m) { return m; }
 
 BackendModelPtr CloneBackend(const BackendModelPtr& m);
 
@@ -44,26 +50,36 @@ BackendModelPtr CloneBackend(const BackendModelPtr& m);
   return std::visit([](const auto& bm) -> BackendModelPtr { return bm->m().Clone(); }, bm);
 }
 
-[[nodiscard]] inline bool CanPair(
-    erg::EnergyCfg cfg, const BackendModelPtr& m, const Primary& r, int st, int en) {
-  return std::visit([&](const auto& m) { return m->CanPair(cfg, r, st, en); }, m);
+template <erg::EnergyCfg CFG>
+[[nodiscard]] inline bool CanPair(const BackendModelPtr& m, const Primary& r, int st, int en) {
+  return std::visit([&](const auto& m) { return m->template CanPair<CFG>(r, st, en); }, m);
 }
 
 [[nodiscard]] inline erg::EnergyResult TotalEnergy(const BackendModelPtr& m, const Primary& r,
     const Secondary& s, const Ctds* given_ctd, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
     bool build_structure = false) {
-  return std::visit(
-      [&](const auto& m) { return m->TotalEnergy(r, s, given_ctd, cfg, pf, build_structure); }, m);
+  return md::Dispatch(
+      cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+        return std::visit(
+            [&](const auto& m) {
+              return m->template TotalEnergy<CFG>(r, s, given_ctd, static_pf, build_structure);
+            },
+            m);
+      });
 }
 
 [[nodiscard]] inline erg::EnergyResult SubEnergy(const BackendModelPtr& m, const Primary& r,
     const Secondary& s, const Ctds* given_ctd, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
     int st, int en, bool build_structure = false) {
-  return std::visit(
-      [&](const auto& m) {
-        return m->SubEnergy(r, s, given_ctd, cfg, pf, st, en, build_structure);
-      },
-      m);
+  return md::Dispatch(
+      cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+        return std::visit(
+            [&](const auto& m) {
+              return m->template SubEnergy<CFG>(
+                  r, s, given_ctd, static_pf, st, en, build_structure);
+            },
+            m);
+      });
 }
 
 [[nodiscard]] inline bool IsEquivalent(const md::base::ModelBase& a, const md::base::ModelBase& b) {

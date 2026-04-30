@@ -131,10 +131,11 @@ int main(int argc, char* argv[]) {
         fmt::print("Random model cfg: {}\n", *random_cfg);
       if (fuzz_cfg.random_pseudofree)
         fmt::print("Random pseudofree cfg: {}\n", fuzz_cfg.random_pseudofree_cfg);
-      if (!pf.paired.empty())
-        fmt::print("Pseudofree paired: {}\n", mrna::FormatPseudofreeEnergies(pf.paired));
-      if (!pf.unpaired.empty())
-        fmt::print("Pseudofree unpaired: {}\n", mrna::FormatPseudofreeEnergies(pf.unpaired));
+      if (pf.HasPaired())
+        fmt::print("Pseudofree paired: {}\n", mrna::FormatPseudofreeEnergies(pf.PairedEnergies()));
+      if (pf.HasUnpaired())
+        fmt::print(
+            "Pseudofree unpaired: {}\n", mrna::FormatPseudofreeEnergies(pf.UnpairedEnergies()));
       for (const auto& s : res) fmt::print("{}\n", s);
       fmt::print("\n");
       abort();

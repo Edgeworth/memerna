@@ -46,7 +46,6 @@ int main(int argc, char* argv[]) {
   verify(efn + fold + subopt + pfn == 1, "require exactly one program flag\n{}", args.Usage());
 
   auto package = mrna::bridge::RnaPackage::FromArgParse(args);
-  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
   auto pf_cfg = mrna::erg::PseudofreeCfg::FromArgParse(args);
   auto trace_cfg = mrna::trace::TraceCfg::FromArgParse(args);
   auto mfe_alg = args.MaybeGet<mrna::MfeAlg>(mrna::OPT_MFE_ALG);
@@ -57,6 +56,7 @@ int main(int argc, char* argv[]) {
   std::deque<std::string> q(args.Pos().begin(), args.Pos().end());
   const bool read_stdin = q.empty();
   if (efn) {
+    const auto cfg = mrna::erg::EnergyCfg::FromArgParse(args);
     while (true) {
       std::string seq;
       std::string db;
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
       }
       auto [r, s] = mrna::ParseSeqDb(seq, db);
       pf_cfg.Verify(r);
-      const auto res = package->Efn(r, s, energy_cfg, pf_cfg, /*given_ctd=*/nullptr,
+      const auto res = package->Efn(r, s, cfg, pf_cfg, /*given_ctd=*/nullptr,
           /*build_structure=*/args.GetOr(mrna::OPT_VERBOSE));
       fmt::print("{}\n", res.energy);
       if (res.struc)
@@ -95,18 +95,21 @@ int main(int argc, char* argv[]) {
       pf_cfg.Verify(r);
 
       if (subopt) {
+        const auto cfg = mrna::erg::EnergyCfg::FromArgParse(args);
         int64_t strucs = package->Subopt(
-            r, mfe_alg, subopt_alg, energy_cfg, pf_cfg,
+            r, mfe_alg, subopt_alg, cfg, pf_cfg,
             [](const mrna::subopt::SuboptResult& c) {
               fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
             },
             subopt_cfg);
         fmt::print("{} suboptimal structures\n", strucs);
       } else if (fold) {
-        const auto res = package->Fold(r, mfe_alg, energy_cfg, pf_cfg, trace_cfg);
+        const auto cfg = mrna::erg::EnergyCfg::FromArgParse(args);
+        const auto res = package->Fold(r, mfe_alg, cfg, pf_cfg, trace_cfg);
         fmt::print("{}\n{}\n", res.mfe.energy, res.tb.s.ToDb());
       } else if (pfn) {
-        auto res = package->Pfn(r, pfn_alg, energy_cfg, pf_cfg);
+        const auto cfg = mrna::erg::EnergyCfgPfn::FromArgParse(args);
+        auto res = package->Pfn(r, pfn_alg, cfg, pf_cfg);
         fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
         PrintPfn(res.pfn.p);
         fmt::print("\nprobabilities:\n");

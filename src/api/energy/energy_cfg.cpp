@@ -3,6 +3,8 @@
 
 #include <ostream>
 
+#include "util/error.h"
+
 namespace mrna::erg {
 
 void RegisterOptsEnergyCfg(ArgParse* args) {
@@ -17,6 +19,13 @@ EnergyCfg EnergyCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_BULGE_STATES, &cfg.bulge_states);
   args.MaybeSet(OPT_CTD, &cfg.ctd);
   return cfg;
+}
+
+EnergyCfgPfn EnergyCfgPfn::FromArgParse(const ArgParse& args) {
+  const auto cfg = EnergyCfg::FromArgParse(args);
+  verify(
+      !args.HasExplicit(OPT_BULGE_STATES) || !cfg.bulge_states, "PFN requires bulge_states=false");
+  return EnergyCfgPfn{cfg};
 }
 
 std::ostream& operator<<(std::ostream& str, const EnergyCfg& o) {

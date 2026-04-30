@@ -3,7 +3,6 @@
 #define BACKENDS_BASE_ENERGY_PRECOMP_H_
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/precomp_base.h"
 #include "model/energy.h"
@@ -11,14 +10,14 @@
 
 namespace mrna::md::base {
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 class Precomp : public PrecompBase<Model> {
  public:
-  erg::EnergyCfg cfg;
-  erg::PseudofreeCfg pf;
+  PseudofreeCfgT pf;
   Energy min_pf_unpaired{};
   Energy sum_neg_pf{};
 
-  Precomp(Primary r, Model::Ptr m, erg::EnergyCfg cfg, erg::PseudofreeCfg pf);
+  Precomp(Primary r, Model::Ptr m, PseudofreeCfgT pf);
 
   [[nodiscard]] Energy TwoLoop(int ost, int oen, int ist, int ien) const;
 

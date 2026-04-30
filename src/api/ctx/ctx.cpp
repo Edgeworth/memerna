@@ -14,6 +14,7 @@
 #include "api/trace/trace_cfg.h"
 #include "backends/brute/alg.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/primary.h"
@@ -27,7 +28,6 @@ namespace {
 mfe::DpState CreateDpState(const BackendModelPtr& m) {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr&) -> mfe::DpState { return md::base::DpState{}; },
-      [&](const md::base::opt::Model::Ptr&) -> mfe::DpState { return md::base::DpState{}; },
       [&](const md::stack::Model::Ptr&) -> mfe::DpState { return md::stack::DpState{}; },
   };
   return std::visit(vis, m);
@@ -36,7 +36,6 @@ mfe::DpState CreateDpState(const BackendModelPtr& m) {
 pfn::PfnState CreatePfnState(const BackendModelPtr& m) {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr&) -> pfn::PfnState { return md::base::PfnState{}; },
-      [&](const md::base::opt::Model::Ptr&) -> pfn::PfnState { return md::base::PfnState{}; },
       [&](const md::stack::Model::Ptr&) -> pfn::PfnState { fatal("unimplemented"); },
   };
   return std::visit(vis, m);
@@ -134,7 +133,7 @@ SuboptBackend Ctx::BackendForSubopt(std::optional<SuboptAlg> alg, std::optional<
 }
 
 PfnBackend Ctx::BackendForPfn(
-    std::optional<PfnAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
+    std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const {
   if (alg.has_value() && *alg == PfnAlg::BRUTE) {
     std::string log;
     auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
@@ -166,7 +165,10 @@ FoldResult Ctx::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg
   auto backend = BackendForFold(alg, cfg, pf);
 
   if (backend.alg == MfeAlg::BRUTE) {
-    auto subopt = md::brute::MfeBrute(r, backend.m, cfg_, cfg, pf);
+    auto subopt = md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::brute::MfeBrute<CFG>(r, backend.m, cfg_, static_pf);
+        });
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
 
@@ -197,7 +199,10 @@ int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::option
   auto backend = BackendForSubopt(alg, mfe_alg, cfg, pf, subopt_cfg);
 
   if (backend.alg == SuboptAlg::BRUTE) {
-    auto subopts = md::brute::SuboptBrute(r, backend.m, cfg_, cfg, pf, subopt_cfg);
+    auto subopts = md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::brute::SuboptBrute<CFG>(r, backend.m, cfg_, static_pf, subopt_cfg);
+        });
     for (const auto& subopt : subopts) fn(subopt);
     return static_cast<int64_t>(subopts.size());
   }
@@ -209,11 +214,15 @@ int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::option
   return backend.subopt_fn(backend.m, Primary(r), std::move(dp), cfg, pf, fn, subopt_cfg);
 }
 
-pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf) const {
   auto backend = BackendForPfn(alg, cfg, pf);
 
-  if (backend.alg == PfnAlg::BRUTE) return md::brute::PfnBrute(r, backend.m, cfg_, cfg, pf);
+  if (backend.alg == PfnAlg::BRUTE)
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::brute::PfnBrute<CFG>(r, backend.m, cfg_, static_pf);
+        });
 
   pfn::PfnState dp = CreatePfnState(backend.m);
   auto pfn = backend.pfn_fn(backend.m, r, dp, cfg, pf);

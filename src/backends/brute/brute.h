@@ -10,7 +10,6 @@
 #include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -40,10 +39,11 @@ struct BruteResult {
   PfnTables pfn;
 };
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 class Brute {
  public:
-  Brute(const Primary& r, BackendModelPtr m, BackendCfg backend_cfg, erg::EnergyCfg cfg,
-      erg::PseudofreeCfg pf, BruteCfg brute_cfg);
+  Brute(const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg, PseudofreeCfgT pf,
+      BruteCfg brute_cfg);
 
   BruteResult Run();
 
@@ -53,6 +53,7 @@ class Brute {
   constexpr static uint32_t CTD_MAX_BITS = 4;
   constexpr static uint32_t PT_MASK = (1 << PT_MAX_BITS) - 1;
   constexpr static uint32_t CTD_MASK = (1 << CTD_MAX_BITS) - 1;
+  static constexpr erg::EnergyCfg PFN_CFG = erg::EnergyCfgPfn{CFG};
 
   struct SubstructureId {
     constexpr static uint32_t BITS = (PT_MAX_BITS + CTD_MAX_BITS) * (1 << PT_MAX_BITS);
@@ -66,10 +67,7 @@ class Brute {
   BackendModelPtr m_;
   BackendBoltzModelPtr bm_;
   BackendModelPtr underlying_;
-  BackendCfg backend_cfg_;
-  erg::PseudofreeCfg pf_;
-  erg::EnergyCfg energy_cfg_;
-  erg::EnergyCfg pfn_energy_cfg_;
+  PseudofreeCfgT pf_;
   BruteCfg brute_cfg_;
 
   Secondary s_;

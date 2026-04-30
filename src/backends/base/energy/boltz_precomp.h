@@ -1,9 +1,10 @@
 // Copyright 2022 Eliot Courtney.
 #ifndef BACKENDS_BASE_ENERGY_BOLTZ_PRECOMP_H_
 #define BACKENDS_BASE_ENERGY_BOLTZ_PRECOMP_H_
+#include <type_traits>
+#include <utility>
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/boltz_model.h"
 #include "backends/common/base/boltz_precomp_base.h"
 #include "model/energy.h"
@@ -11,12 +12,14 @@
 
 namespace mrna::md::base {
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 struct BoltzPrecomp : public BoltzPrecompBase<BoltzModel> {
-  erg::EnergyCfg cfg;
-  erg::PseudofreeCfg pf;
-  erg::BoltzPseudofreeCfg bpf;
+  using BoltzPseudofreeCfgT = std::decay_t<decltype(Boltz(std::declval<const PseudofreeCfgT&>()))>;
 
-  BoltzPrecomp(Primary r, BoltzModel::Ptr bm, erg::EnergyCfg cfg, erg::PseudofreeCfg pf);
+  PseudofreeCfgT pf;
+  BoltzPseudofreeCfgT bpf;
+
+  BoltzPrecomp(Primary r, BoltzModel::Ptr bm, PseudofreeCfgT pf);
 
   [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
 

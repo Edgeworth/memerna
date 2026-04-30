@@ -10,6 +10,7 @@
 #include "backends/base/energy/model.h"
 #include "backends/base/energy/precomp.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -19,30 +20,31 @@
 
 namespace mrna::md::base {
 
-bool MfeOpt::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+bool MfeOpt<CFG, PseudofreeCfgT>::IsSupported(const PseudofreeCfgT& /*pf*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
   return true;
 }
 
-void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void MfeOpt<CFG, PseudofreeCfgT>::Run(
+    const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   std::string reason;
-  verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(pf, &reason), "{} does not support the given configuration: {}", funcname(),
+      reason);
   pf.Verify(r);
 
-  logdebug("base {} with {}, {}", funcname(), cfg, pf);
+  logdebug("base {} with {}, {}", funcname(), CFG, pf);
 
   const int N = r.size();
-  const Precomp pc(Primary(r), m, cfg, pf);
+  const Precomp<CFG, PseudofreeCfgT> pc(Primary(r), m, pf);
   state.dp = DpArray(r.size() + 1, MAX_E);
   auto& dp = state.dp;
 
@@ -55,7 +57,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (Model::CanPair(cfg, r, st, en)) {
+      if (Model::CanPair<CFG>(r, st, en)) {
         Energy p_min = MAX_E;
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
@@ -73,14 +75,14 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
 
         // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // D2 can overlap terminal mismatches with anything.
           // (<   ><   >) Terminal mismatch
           val += m->terminal[stb][st1b][en1b][enb];
         }
         p_min = std::min(p_min, val);
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (3<   ><   >) 3'
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
@@ -95,7 +97,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
                   pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
               pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -169,7 +171,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
         auto u2_val = base00 + dp[piv + 1][en][DP_U];
         auto val = base00 + right_unpaired;
 
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U
@@ -193,7 +195,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
         else
           wc_min = std::min(wc_min, val);
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3' - U
           u_min = std::min(u_min,
               base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
@@ -217,7 +219,7 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
                   2 * m->multiloop_c + dp[piv + 1][en][DP_U]);
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) +
               pf.Unpaired(piv) + 2 * m->multiloop_c +
@@ -253,5 +255,9 @@ void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::Ene
     }
   }
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class MfeOpt<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

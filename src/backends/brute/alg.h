@@ -7,7 +7,6 @@
 #include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
@@ -15,15 +14,17 @@
 
 namespace mrna::md::brute {
 
-subopt::SuboptResult MfeBrute(const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+subopt::SuboptResult MfeBrute(
+    const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg, const PseudofreeCfgT& pf);
 
-pfn::PfnResult PfnBrute(const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+pfn::PfnResult PfnBrute(
+    const Primary& r, BackendModelPtr m, const BackendCfg& backend_cfg, const PseudofreeCfgT& pf);
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 std::vector<subopt::SuboptResult> SuboptBrute(const Primary& r, BackendModelPtr m,
-    const BackendCfg& backend_cfg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-    subopt::SuboptCfg subopt_cfg);
+    const BackendCfg& backend_cfg, const PseudofreeCfgT& pf, subopt::SuboptCfg subopt_cfg);
 
 }  // namespace mrna::md::brute
 

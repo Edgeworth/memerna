@@ -8,7 +8,7 @@
 namespace mrna::md {
 
 inline void FillBoltzArray(BoltzEnergy* output, const Energy* input, int elements) {
-  for (int i = 0; i < elements; ++i) output[i] = input[i].Boltz();
+  for (int i = 0; i < elements; ++i) output[i] = Boltz(input[i]);
 }
 
 #define FILL_BOLTZ(bm, name)                                                                  \

@@ -124,6 +124,11 @@ will be better.
 
 ## Running
 
+By default, memerna auto-selects the backend and algorithm for the requested
+energy model and configuration. Use `--backend base` or `--backend stack` only
+when you want to force a backend, and use `--dp-alg`, `--subopt-alg`, or
+`--pfn-alg` only when you want to force a specific algorithm.
+
 ### MFE folding
 
 memerna supports minimum free energy (MFE) folding.
@@ -146,7 +151,8 @@ Some of the algorithms are listed here:
 | opt        | O(N^3)        | O(N^2)          | 1.58 seconds              |
 | debug      | O(N^3)        | O(N^2)          | 3.87 seconds              |
 
-The sparse-opt algorithm is the default, and is the fastest algorithm.
+For T04/T12, auto-selection chooses the sparse base algorithm. For T22,
+auto-selection chooses the stack algorithm.
 
 ### Subopt folding
 
@@ -224,22 +230,26 @@ General fuzzing:
 
 ```bash
 ./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --energy-model t04 \
-  --backends base,baseopt 1 200
+  1 200
 ```
 
 Exhaustive fuzzing:
 
 ```bash
 ./fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
-  --backends base,baseopt --enumerate 1 10
+  --enumerate 1 10
 ```
 
 Fuzzing for t22:
 
 ```bash
 ./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --random-pf \
-  --energy-model t22 --backends stack 1 200
+  --energy-model t22 1 200
 ```
+
+`./fuzz` loads all supported backends by default. Use `--backends` only to
+restrict the comparison set, for example when comparing against an external
+package that needs a single memerna backend.
 
 ### Fuzzing in parallel
 
@@ -247,7 +257,7 @@ The below command runs fuzzing in parallel using GNU parallel with 16 jobs.
 
 ```bash
 seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
-  --random-seeds --energy-model t04 --backends base,baseopt 1 200'
+  --random-seeds --energy-model t04 1 200'
 ```
 
 ### Fuzzing against RNAstructure
@@ -256,7 +266,7 @@ seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
 poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
 ./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
-  --mfe-rnastructure --mfe-table --energy-model t04 --backends base,baseopt 1 200
+  --mfe-rnastructure --mfe-table --energy-model t04 --backends base 1 200
 ```
 
 ### Fuzzing with afl-fuzz
@@ -274,7 +284,7 @@ For example, try this command line:
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --num-procs 16 --mfe --mfe-table --seed 123 --max-len 200 \
- --energy-model t22 --backends stack
+ --energy-model t22
 ```
 
 To fuzz everything:
@@ -282,7 +292,7 @@ To fuzz everything:
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
   --num-procs 16 --energy-precision 1 --mfe --mfe-rnastructure --mfe-table \
-  --subopt --max-len 200 --backends base,baseopt
+  --subopt --max-len 200 --backends base
 ```
 
 Fuzz memerna only, with faster settings:
@@ -290,7 +300,7 @@ Fuzz memerna only, with faster settings:
 ```bash
 poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --num-procs 16 --mfe --mfe-table --subopt --subopt-strucs 100 \
- --subopt-delta 0.2 --seed 123 --max-len 200 --backends base,baseopt
+ --subopt-delta 0.2 --seed 123 --max-len 200
 ```
 
 Checking progress:

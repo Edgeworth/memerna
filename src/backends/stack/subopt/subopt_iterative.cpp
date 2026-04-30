@@ -10,6 +10,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -31,38 +32,38 @@ using base::EXT_GU;
 using base::EXT_RC;
 using base::EXT_WC;
 
-template <bool UseLru>
-bool SuboptIterative<UseLru>::IsSupported(const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+bool SuboptIterative<CFG, PseudofreeCfgT, UseLru>::IsSupported(
+    const PseudofreeCfgT& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
-  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL && cfg.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
-      cfg.ctd != erg::EnergyCfg::Ctd::NONE) {
-    if (reason) *reason = fmt::format("ctd={} not supported", cfg.ctd);
+  if constexpr (CFG.ctd != erg::EnergyCfg::Ctd::ALL && CFG.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
+      CFG.ctd != erg::EnergyCfg::Ctd::NONE) {
+    if (reason) *reason = fmt::format("ctd={} not supported", CFG.ctd);
     return false;
   }
   return true;
 }
 
-template <bool UseLru>
-SuboptIterative<UseLru>::SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
-    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
-    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), dp_(std::move(dp)),
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+SuboptIterative<CFG, PseudofreeCfgT, UseLru>::SuboptIterative(
+    Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)),
       subopt_cfg_(subopt_cfg), cache_(r_, MaxLinearIndex(r_.size())) {}
 
-template <bool UseLru>
-int64_t SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+int64_t SuboptIterative<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
   q_.reserve(r_.size());
 
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
-      "{} does not support the given configuration: {}", funcname(), reason);
+  verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
 
-  logdebug("stack {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("stack {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
 
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
       subopt_cfg_.time_secs >= 0.0) {
@@ -84,8 +85,8 @@ int64_t SuboptIterative<UseLru>::Run(const SuboptCallback& fn) {
   return RunInternal(fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs).first;
 }
 
-template <bool UseLru>
-std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::pair<int64_t, Energy> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max) {
   int64_t count = 0;
   Energy next_seen = MAX_E;
@@ -165,8 +166,8 @@ std::pair<int64_t, Energy> SuboptIterative<UseLru>::RunInternal(
   return {count, next_seen};
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   if (std::holds_alternative<base::DpIndex>(to_expand)) {
     auto idx = std::get<base::DpIndex>(to_expand);
@@ -192,8 +193,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::GenerateExpansions(
   return PairedOrNoStackExpansions(st, en, /*is_nostack=*/true, delta);
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::ExtExpansions(
     int st, DpArrayId a, Energy delta) const {
   const int N = r_.size();
   const auto& dp = dp_.base.dp;
@@ -224,7 +225,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
     const auto base11 = dp[st + 1][en - 1][DP_P] + m_->AuGuPenalty(st1b, en1b) - ext[st][a];
 
     // (   )<.( * ). > Right coax backward
-    if (a == EXT_RC && cfg_.UseCoaxialStacking()) {
+    if (a == EXT_RC && CFG.UseCoaxialStacking()) {
       // Don't set CTDs here since they will have already been set.
       energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(en) + ext[en + 1][EXT];
@@ -255,7 +256,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
     // Only look at EXT from here on.
     if (a != EXT) continue;
 
-    if (cfg_.UseDangleMismatch()) {
+    if constexpr (CFG.UseDangleMismatch()) {
       // (   )3<   > 3'
       energy = base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) + ext[en + 1][EXT];
       if (energy <= delta)
@@ -284,7 +285,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
             .ctd0{st + 1, CTD_MISMATCH}});
     }
 
-    if (en < N - 1 && cfg_.UseCoaxialStacking()) {
+    if (en < N - 1 && CFG.UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax
       energy =
           base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) + pf_.Unpaired(en);
@@ -334,8 +335,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::ExtExpansions(
   return exps;
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::PairedOrNoStackExpansions(
     int st, int en, bool is_nostack, Energy delta) const {
   const auto& dp = dp_.base.dp;
   const auto& nostack = dp_.nostack;
@@ -352,8 +353,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
 
   if (!is_nostack) {
     const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
-    const Energy bulge_left = m_->Bulge(r_, cfg_, pf_, st, en, st + 2, en - 1);
-    const Energy bulge_right = m_->Bulge(r_, cfg_, pf_, st, en, st + 1, en - 2);
+    const Energy bulge_left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1);
+    const Energy bulge_right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2);
 
     const auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] +
         m_->penultimate_stack[en1b][enb][stb][st1b] + pf_.Paired(st, en) - dp[st][en][DP_P];
@@ -406,14 +407,14 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
     for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
       // Try all internal loops. We don't check stacks or 1 nuc bulge loops.
       if (dp[ist][ien][DP_P] < CAP_E && ist - st + en - ien > 3) {
-        energy = m_->TwoLoop(r_, cfg_, pf_, st, en, ist, ien) + dp[ist][ien][DP_P] - target;
+        energy = m_->TwoLoop<CFG>(r_, pf_, st, en, ist, ien) + dp[ist][ien][DP_P] - target;
         if (energy <= delta)
           exps.push_back({.delta = energy, .idx0 = base::DpIndex(ist, ien, DP_P), .pair{st, en}});
       }
     }
   }
 
-  energy = m_->Hairpin(r_, pf_, st, en) - target;
+  energy = m_->Hairpin<CFG>(r_, pf_, st, en) - target;
   if (energy <= delta) exps.push_back({.delta = energy, .pair{st, en}});
 
   const auto base_branch_cost =
@@ -428,7 +429,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
         .pair{st, en},
     });
 
-  if (cfg_.UseDangleMismatch()) {
+  if constexpr (CFG.UseDangleMismatch()) {
     // (3<   ><   >) 3'
     energy = base_branch_cost + dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
         pf_.Unpaired(st + 1) + m_->multiloop_c;
@@ -457,7 +458,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
           .pair{st, en}});
   }
 
-  if (cfg_.UseCoaxialStacking()) {
+  if constexpr (CFG.UseCoaxialStacking()) {
     const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + pf_.Unpaired(st + 1) +
         pf_.Unpaired(en - 1) + 2 * m_->multiloop_c;
     for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -541,8 +542,8 @@ std::vector<Expansion> SuboptIterative<UseLru>::PairedOrNoStackExpansions(
   return exps;
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::UnpairedExpansions(
     int st, int en, DpArrayId a, Energy delta) const {
   const auto& dp = dp_.base.dp;
   std::vector<Expansion> exps;
@@ -578,7 +579,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
     // This is only usable if a != DP_U2 since this leaves everything unpaired.
     const auto right_unpaired = pf_.UnpairedSum(piv + 1, en) + (en - piv) * m_->multiloop_c;
 
-    if (cfg_.UseCoaxialStacking()) {
+    if constexpr (CFG.UseCoaxialStacking()) {
       // Check a == U_RC:
       // (   )<.( ** ). > Right coax backward
       if (a == DP_U_RC) {
@@ -634,7 +635,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
 
-    if (cfg_.UseDangleMismatch()) {
+    if constexpr (CFG.UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
       energy = base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) + m_->multiloop_c;
       if (a == DP_U && energy + right_unpaired <= delta)
@@ -676,7 +677,7 @@ std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
             .ctd0{st + 1, CTD_MISMATCH}});
     }
 
-    if (cfg_.UseCoaxialStacking()) {
+    if constexpr (CFG.UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(piv) + 2 * m_->multiloop_c;
@@ -736,16 +737,16 @@ std::vector<Expansion> SuboptIterative<UseLru>::UnpairedExpansions(
   return exps;
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptIterative<UseLru>::PenultimateExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::PenultimateExpansions(
     int st, int en, int length, Energy delta) const {
   const auto& nostack = dp_.nostack;
   const auto& penult = dp_.penult;
   std::vector<Expansion> exps;
   Energy energy = ZERO_E;
 
-  const auto bulge_left = m_->Bulge(r_, cfg_, pf_, st, en, st + 2, en - 1);
-  const auto bulge_right = m_->Bulge(r_, cfg_, pf_, st, en, st + 1, en - 2);
+  const auto bulge_left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1);
+  const auto bulge_right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2);
 
   auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + pf_.Paired(st, en) -
       penult[st][en][length];
@@ -789,7 +790,10 @@ std::vector<Expansion> SuboptIterative<UseLru>::PenultimateExpansions(
   return exps;
 }
 
-template class SuboptIterative<false>;
-template class SuboptIterative<true>;
+#define MRNA_INSTANTIATE(CFG, PF)                 \
+  template class SuboptIterative<CFG, PF, false>; \
+  template class SuboptIterative<CFG, PF, true>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::stack

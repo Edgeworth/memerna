@@ -8,6 +8,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -26,16 +27,16 @@ using base::DP_U_GU;
 using base::DP_U_RC;
 using base::DP_U_WC;
 
-bool MfeOpt::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+bool MfeOpt<CFG, PseudofreeCfgT>::IsSupported(const PseudofreeCfgT& /*pf*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
-  if (cfg.ctd != erg::EnergyCfg::Ctd::ALL && cfg.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
-      cfg.ctd != erg::EnergyCfg::Ctd::NONE) {
-    if (reason) *reason = fmt::format("ctd={} not supported", cfg.ctd);
+  if constexpr (CFG.ctd != erg::EnergyCfg::Ctd::ALL && CFG.ctd != erg::EnergyCfg::Ctd::NO_COAX &&
+      CFG.ctd != erg::EnergyCfg::Ctd::NONE) {
+    if (reason) *reason = fmt::format("ctd={} not supported", CFG.ctd);
     return false;
   }
   return true;
@@ -43,31 +44,30 @@ bool MfeOpt::IsSupported(
 
 namespace {
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 struct MfeInternal {
   const Primary& r;
   const Model& m;
-  erg::EnergyCfg cfg;
-  const erg::PseudofreeCfg& pf;
+  const PseudofreeCfgT& pf;
   int N;
   base::DpArray& dp;
   Array2D<Energy>& nostack;
   Array3D<Energy>& penult;
 
-  MfeInternal(const Primary& r_, const Model::Ptr& m_, erg::EnergyCfg cfg_,
-      const erg::PseudofreeCfg& pf_, DpState& state_)
-      : r(r_), m(*m_), cfg(cfg_), pf(pf_), N(r_.size()), dp(state_.base.dp),
-        nostack(state_.nostack), penult(state_.penult) {}
+  MfeInternal(const Primary& r_, const Model::Ptr& m_, const PseudofreeCfgT& pf_, DpState& state_)
+      : r(r_), m(*m_), pf(pf_), N(r_.size()), dp(state_.base.dp), nostack(state_.nostack),
+        penult(state_.penult) {}
 
   void Compute() {
     static_assert(
         HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
     std::string reason;
-    verify(MfeOpt::IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
-        funcname(), reason);
+    verify((MfeOpt<CFG, PseudofreeCfgT>::IsSupported(pf, &reason)),
+        "{} does not support the given configuration: {}", funcname(), reason);
     pf.Verify(r);
 
-    logdebug("stack {} with {}, {}", funcname(), cfg, pf);
+    logdebug("stack {} with {}, {}", funcname(), CFG, pf);
 
     dp = base::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);
@@ -82,19 +82,19 @@ struct MfeInternal {
         const Base en1b = r[en - 1];
         const Base en2b = r[en - 2];
 
-        if (Model::CanPair(cfg, r, st, en)) {
+        if (Model::CanPair<CFG>(r, st, en)) {
           Energy stack_min = MAX_E;
 
           {
             const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
             // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
-            const Energy bulge_left = m.Bulge(r, cfg, pf, st, en, st + 2, en - 1);
-            const Energy bulge_right = m.Bulge(r, cfg, pf, st, en, st + 1, en - 2);
+            const Energy bulge_left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
+            const Energy bulge_right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
 
             // Try stems with a specific length.
             for (int length = 2; 2 * length <= max_stack; ++length) {
               // Update our DP at (st, en) - no bulge:
-              if (Model::CanPair(cfg, r, st + 1, en - 1)) {
+              if (Model::CanPair<CFG>(r, st + 1, en - 1)) {
                 // Include the paired pseudofree energy value for all except the last pair in this
                 // stack. The last pair will be handled by whatever starts after this stack.
                 auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + pf.Paired(st, en);
@@ -110,7 +110,7 @@ struct MfeInternal {
               }
 
               // Left bulge:
-              if (Model::CanPair(cfg, r, st + 2, en - 1)) {
+              if (Model::CanPair<CFG>(r, st + 2, en - 1)) {
                 auto left = bulge_left;
                 // Try ending the stack without a bulge loop.
                 if (length == 2) {
@@ -124,7 +124,7 @@ struct MfeInternal {
               }
 
               // Right bulge:
-              if (Model::CanPair(cfg, r, st + 1, en - 2)) {
+              if (Model::CanPair<CFG>(r, st + 1, en - 2)) {
                 auto right = bulge_right;
                 if (length == 2) {
                   right += nostack[st + 1][en - 2] +
@@ -147,11 +147,11 @@ struct MfeInternal {
               // Try all internal loops. We don't check stacks or 1 nuc bulge loops.
               if (dp[ist][ien][DP_P] < CAP_E && ist - st + en - ien > 3)
                 nostack_min = std::min(
-                    nostack_min, m.TwoLoop(r, cfg, pf, st, en, ist, ien) + dp[ist][ien][DP_P]);
+                    nostack_min, m.TwoLoop<CFG>(r, pf, st, en, ist, ien) + dp[ist][ien][DP_P]);
             }
           }
           // Hairpin loops.
-          nostack_min = std::min(nostack_min, m.Hairpin(r, pf, st, en));
+          nostack_min = std::min(nostack_min, m.Hairpin<CFG>(r, pf, st, en));
 
           // Multiloops. Look at range [st + 1, en - 1].
           // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
@@ -161,7 +161,7 @@ struct MfeInternal {
           // (<   ><   >)
           nostack_min = std::min(nostack_min, base_branch_cost + dp[st + 1][en - 1][DP_U2]);
 
-          if (cfg.UseDangleMismatch()) {
+          if constexpr (CFG.UseDangleMismatch()) {
             // (3<   ><   >) 3'
             nostack_min = std::min(nostack_min,
                 base_branch_cost + dp[st + 2][en - 1][DP_U2] + m.dangle3[stb][st1b][enb] +
@@ -176,7 +176,7 @@ struct MfeInternal {
                     pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m.multiloop_c);
           }
 
-          if (cfg.UseCoaxialStacking()) {
+          if constexpr (CFG.UseCoaxialStacking()) {
             const auto outer_coax = m.MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
                 pf.Unpaired(en - 1) + 2 * m.multiloop_c;
             for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -261,7 +261,7 @@ struct MfeInternal {
           else
             wc_min = std::min(wc_min, val);
 
-          if (cfg.UseDangleMismatch()) {
+          if constexpr (CFG.UseDangleMismatch()) {
             // (   )3<   > 3' - U
             u_min = std::min(u_min,
                 base01 + m.dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m.multiloop_c +
@@ -285,7 +285,7 @@ struct MfeInternal {
                     2 * m.multiloop_c + dp[piv + 1][en][DP_U]);
           }
 
-          if (cfg.UseCoaxialStacking()) {
+          if constexpr (CFG.UseCoaxialStacking()) {
             // .(   ).<(   ) > Left coax - U
             val = base11 + m.MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) +
                 pf.Unpaired(piv) + 2 * m.multiloop_c +
@@ -325,9 +325,14 @@ struct MfeInternal {
 
 }  // namespace
 
-void MfeOpt::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf) {
-  MfeInternal(r, m, cfg, pf, state).Compute();
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void MfeOpt<CFG, PseudofreeCfgT>::Run(
+    const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf) {
+  MfeInternal<CFG, PseudofreeCfgT>(r, m, pf, state).Compute();
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class MfeOpt<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::stack

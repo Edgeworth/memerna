@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "backends/common/energy.h"
@@ -27,14 +26,13 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
-template <bool UseLru>
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 class SuboptIterative {
  public:
-  static bool IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
-      const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
+  static bool IsSupported(
+      const PseudofreeCfgT& pf, const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
 
-  SuboptIterative(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
-      SuboptCfg subopt_cfg);
+  SuboptIterative(Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg);
 
   int64_t Run(const SuboptCallback& fn);
 
@@ -50,8 +48,7 @@ class SuboptIterative {
 
   Primary r_;
   Model::Ptr m_;
-  erg::EnergyCfg cfg_;
-  erg::PseudofreeCfg pf_;
+  PseudofreeCfgT pf_;
   SuboptResult res_;
   DpState dp_;
   SuboptCfg subopt_cfg_;

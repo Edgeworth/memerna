@@ -228,7 +228,7 @@ void LoadBoltzModel(BM& bm) {
   FILL_BOLTZ(bm, au_penalty);
   FILL_BOLTZ(bm, gu_penalty);
 
-  for (const auto& kv : bm.m().hairpin) bm.hairpin[kv.first] = kv.second.Boltz();
+  for (const auto& kv : bm.m().hairpin) bm.hairpin[kv.first] = Boltz(kv.second);
 }
 
 }  // namespace mrna::md::base

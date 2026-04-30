@@ -2,6 +2,7 @@
 #include "backends/base/pfn/pfn_exterior.h"
 
 #include "api/energy/energy_cfg.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -9,8 +10,8 @@
 
 namespace mrna::md::base {
 
-void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
-    const erg::PseudofreeCfg& pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void PfnExterior(const Primary& r, const Model& m, PfnState& state, const PseudofreeCfgT& pf) {
   const int N = r.size();
   pf.Verify(r);
 
@@ -37,7 +38,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
       // (   )<   >
       BoltzEnergy val = base00 * ext[en + 1][PTEXT_R];
 
-      if (cfg.UseD2()) {
+      if constexpr (CFG.UseD2()) {
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch - U
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
@@ -56,7 +57,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
       else
         ext[st][PTEXT_R_WC] += val;
 
-      if (cfg.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // (   )3<   > 3'
         ext[st][PTEXT_R] +=
             base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ext[en + 1][PTEXT_R];
@@ -69,7 +70,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
             ext[en + 1][PTEXT_R];
       }
 
-      if (cfg.UseCoaxialStacking()) {
+      if constexpr (CFG.UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
         val = base11 *
             (m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en)).Boltz();
@@ -121,7 +122,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
       // <   >(   )
       BoltzEnergy val = base00 * ptextl;
 
-      if (cfg.UseD2()) {
+      if constexpr (CFG.UseD2()) {
         if (st != 0 && en != N - 1) {
           // <   m>(   )m Terminal mismatch
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
@@ -140,7 +141,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
       else
         ext[en][PTEXT_L_WC] += val;
 
-      if (cfg.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // <   >(   )3 3'
         ext[en][PTEXT_L] += base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ptextl;
         // <   >5(   ) 5'
@@ -150,7 +151,7 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
             (m.terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en)).Boltz() * ptextl;
       }
 
-      if (cfg.UseCoaxialStacking()) {
+      if constexpr (CFG.UseCoaxialStacking()) {
         // <  (   )>.(   ). Right coax
         val = base11 *
             (m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en)).Boltz();
@@ -174,5 +175,10 @@ void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState&
     }
   }
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) \
+  template void PfnExterior<CFG, PF>(const Primary&, const Model&, PfnState&, const PF&);
+MRNA_STATIC_FOR_EACH_PFN_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

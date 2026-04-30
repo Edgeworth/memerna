@@ -21,24 +21,30 @@ class Model : public ModelBase, public ModelMixin<Model> {
   static bool IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
       const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
-  Energy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
       std::unique_ptr<Structure>* s = nullptr) const;
-  Energy Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost, int oen,
-      int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  Energy InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen, int ist,
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
       int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  Energy TwoLoop(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
-      int oen, int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  Energy MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf, int st, int en, std::deque<int>* branches, bool use_given_ctds,
-      Ctds* ctd, std::unique_ptr<Structure>* sstruc = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
+      int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   // ModelMixin:
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
   EnergyResult SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int st, int en,
-      bool build_structure = false) const;
+      const PseudofreeCfgT& pf, int st, int en, bool build_structure = false) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
   EnergyResult TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure = false) const;
+      const PseudofreeCfgT& pf, bool build_structure = false) const;
 
   bool IsValid(std::string* reason = nullptr) const { return base::ModelIsValid(*this, reason); }
 
@@ -55,9 +61,9 @@ class Model : public ModelBase, public ModelMixin<Model> {
   // This is private to prevent construction on the stack, since this structure is large.
   Model() = default;
 
-  Energy SubEnergyInternal(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf, int st, int en, bool use_given_ctds, Ctds* ctd,
-      std::unique_ptr<Structure>* struc) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy SubEnergyInternal(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
+      int en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;
 };
 
 }  // namespace mrna::md::base

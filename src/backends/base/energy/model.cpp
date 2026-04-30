@@ -15,6 +15,7 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/branch.h"
 #include "backends/common/base/model_base.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/branch.h"
 #include "model/constants.h"
@@ -50,25 +51,28 @@ bool Model::IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& /*c
 //   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
 //   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
 //   model).
-Energy Model::Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
     std::unique_ptr<Structure>* s) const {
   assert(st < en);
   if (s) *s = std::make_unique<HairpinLoopStructure>(st, en);
 
   Energy energy = ZERO_E;
 
-  // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.unpaired.empty()) {
-    auto unpaired = pf.UnpairedSum(st + 1, en - 1);
-    if (s) (*s)->AddNote("{}e - unpaired pseudofree energy", unpaired);
-    energy += unpaired;
+  {
+    const auto unpaired = pf.UnpairedSum(st + 1, en - 1);
+    if (unpaired != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - unpaired pseudofree energy", unpaired);
+      energy += unpaired;
+    }
   }
 
-  // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.paired.empty()) {
-    auto paired = pf.Paired(st, en);
-    if (s) (*s)->AddNote("{}e - paired pseudofree energy", paired);
-    energy += paired;
+  {
+    const auto paired = pf.Paired(st, en);
+    if (paired != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - paired pseudofree energy", paired);
+      energy += paired;
+    }
   }
 
   // Apply AU penalty if necessary.
@@ -145,8 +149,9 @@ Energy Model::Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, in
 //    bulge bonus.
 //    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
 //    bonus from that.
-Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
-    int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+    std::unique_ptr<Structure>* s) const {
   assert(ist > ost && ien < oen && (oen - ien == 1 || ist - ost == 1) &&
       (oen - ien >= 2 || ist - ost >= 2));
   const int length = std::max(ist - ost, oen - ien) - 1;
@@ -158,22 +163,25 @@ Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeC
     (*s)->AddNote("{}e - initiation", energy);
   }
 
-  // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.unpaired.empty()) {
-    auto unpaired5 = pf.UnpairedSum(ost + 1, ist - 1);
-    if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
-    energy += unpaired5;
-
-    auto unpaired3 = pf.UnpairedSum(ien + 1, oen - 1);
-    if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
-    energy += unpaired3;
+  {
+    const auto unpaired5 = pf.UnpairedSum(ost + 1, ist - 1);
+    const auto unpaired3 = pf.UnpairedSum(ien + 1, oen - 1);
+    if (unpaired5 != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
+      energy += unpaired5;
+    }
+    if (unpaired3 != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
+      energy += unpaired3;
+    }
   }
 
-  // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.paired.empty()) {
-    auto paired = pf.Paired(ost, oen);
-    if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
-    energy += paired;
+  {
+    const auto paired = pf.Paired(ost, oen);
+    if (paired != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+      energy += paired;
+    }
   }
 
   if (length > 1) {
@@ -208,7 +216,7 @@ Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeC
   }
 
   // Count up the number of contiguous same bases next to the size 1 bulge loop base.
-  if (cfg.bulge_states) {
+  if constexpr (CFG.bulge_states) {
     int num_states = 0;
     for (int i = unpaired; i < r.size() && r[i] == r[unpaired]; ++i) num_states++;
     for (int i = unpaired - 1; i >= 0 && r[i] == r[unpaired]; --i) num_states++;
@@ -230,8 +238,9 @@ Energy Model::Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeC
 // 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for
 // 2x3, and then
 //   rotate the rna by 180 degrees to look it up for 3x2.
-Energy Model::InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen,
-    int ist, int ien, std::unique_ptr<Structure>* s) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
+    int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (s) {
@@ -241,22 +250,25 @@ Energy Model::InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int o
 
   Energy energy = ZERO_E;
 
-  // Add unpaired nucleotide pseudofree energy, if it exists.
-  if (!pf.unpaired.empty()) {
-    auto unpaired5 = pf.UnpairedSum(ost + 1, ist - 1);
-    if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
-    energy += unpaired5;
-
-    auto unpaired3 = pf.UnpairedSum(ien + 1, oen - 1);
-    if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
-    energy += unpaired3;
+  {
+    const auto unpaired5 = pf.UnpairedSum(ost + 1, ist - 1);
+    const auto unpaired3 = pf.UnpairedSum(ien + 1, oen - 1);
+    if (unpaired5 != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - 5' side unpaired pseudofree energy", unpaired5);
+      energy += unpaired5;
+    }
+    if (unpaired3 != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - 3' side unpaired pseudofree energy", unpaired3);
+      energy += unpaired3;
+    }
   }
 
-  // Add paired nucleotide pseudofree energy, if it exists.
-  if (!pf.paired.empty()) {
-    auto paired = pf.Paired(ost, oen);
-    if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
-    energy += paired;
+  {
+    const auto paired = pf.Paired(ost, oen);
+    if (paired != ZERO_E) {
+      if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+      energy += paired;
+    }
   }
 
   // AU/GU penalties.
@@ -336,30 +348,33 @@ Energy Model::InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int o
   return energy;
 }
 
-Energy Model::TwoLoop(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
-    int oen, int ist, int ien, std::unique_ptr<Structure>* s) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
+    int ien, std::unique_ptr<Structure>* s) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0) {
     if (s) *s = std::make_unique<StackingStructure>(ost, oen);
     auto energy = stack[r[ost]][r[ist]][r[ien]][r[oen]];
 
-    // Add paired nucleotide pseudofree energy, if it exists.
-    if (!pf.paired.empty()) {
-      auto paired = pf.Paired(ost, oen);
-      if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
-      energy += paired;
+    {
+      const auto paired = pf.Paired(ost, oen);
+      if (paired != ZERO_E) {
+        if (s) (*s)->AddNote("{}e - opening pair pseudofree energy", paired);
+        energy += paired;
+      }
     }
 
     return energy;
   }
-  if (toplen >= 1 && botlen >= 1) return InternalLoop(r, pf, ost, oen, ist, ien, s);
-  return Bulge(r, cfg, pf, ost, oen, ist, ien, s);
+  if (toplen >= 1 && botlen >= 1) return InternalLoop<CFG>(r, pf, ost, oen, ist, ien, s);
+  return Bulge<CFG>(r, pf, ost, oen, ist, ien, s);
 }
 
-Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf, int st, int en, std::deque<int>* branches, bool use_given_ctds,
-    Ctds* ctd, std::unique_ptr<Structure>* sstruc) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf,
+    int st, int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
+    std::unique_ptr<Structure>* sstruc) const {
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
 
@@ -369,11 +384,12 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
     if (exterior_loop) struc->AddNote("exterior loop");
   }
 
-  // Add paired nucleotide pseudofree energy, if it exists.
-  if (!exterior_loop && !pf.paired.empty()) {
-    auto paired = pf.Paired(st, en);
-    if (struc) struc->AddNote("{}e - opening pair pseudofree energy", paired);
-    energy += paired;
+  if (!exterior_loop) {
+    const auto paired = pf.Paired(st, en);
+    if (paired != ZERO_E) {
+      if (struc) struc->AddNote("{}e - opening pair pseudofree energy", paired);
+      energy += paired;
+    }
   }
 
   auto pf_unpaired_energy = ZERO_E;
@@ -382,11 +398,8 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
   for (auto branch_st : *branches) {
     num_unpaired += s[branch_st] - branch_st + 1;
 
-    // Add unpaired nucleotide pseudofree energy, if it exists.
-    if (!pf.unpaired.empty()) {
-      pf_unpaired_energy += pf.UnpairedSum(pf_last_unpaired, branch_st - 1);
-      pf_last_unpaired = s[branch_st] + 1;
-    }
+    pf_unpaired_energy += pf.UnpairedSum(pf_last_unpaired, branch_st - 1);
+    pf_last_unpaired = s[branch_st] + 1;
 
     // Add AUGU penalties.
     if (IsAuPair(r[branch_st], r[s[branch_st]])) {
@@ -401,9 +414,11 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
     }
   }
 
-  if (!pf.unpaired.empty()) {
-    int pf_en = exterior_loop ? en + 1 : en;
+  {
+    const int pf_en = exterior_loop ? en + 1 : en;
     pf_unpaired_energy += pf.UnpairedSum(pf_last_unpaired, pf_en - 1);
+  }
+  if (pf_unpaired_energy != ZERO_E) {
     energy += pf_unpaired_energy;
     if (struc) struc->AddNote("{}e - unpaired pseudofree energy", pf_unpaired_energy);
   }
@@ -416,10 +431,10 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
   if (exterior_loop) {
     // No initiation for the exterior loop.
     if (use_given_ctds) {
-      ctd_energy = AddBaseCtdsToBranchCtds(*this, cfg, r, s, *ctd, *branches, &branch_ctd);
+      ctd_energy = AddBaseCtdsToBranchCtds<CFG>(*this, r, s, *ctd, *branches, &branch_ctd);
     } else {
       ctd_energy =
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &branch_ctd);
+          ComputeOptimalCtds<CFG>(*this, r, s, *branches, /*use_first_lu=*/true, &branch_ctd);
       AddBranchCtdsToBaseCtds(*branches, branch_ctd, ctd);
     }
   } else {
@@ -437,28 +452,28 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
 
     if (use_given_ctds) {
       branches->push_front(en);
-      ctd_energy = AddBaseCtdsToBranchCtds(*this, cfg, r, s, *ctd, *branches, &branch_ctd);
+      ctd_energy = AddBaseCtdsToBranchCtds<CFG>(*this, r, s, *ctd, *branches, &branch_ctd);
       branches->pop_front();
     } else {
       BranchCtd config_ctds[4] = {};
       std::pair<Energy, int> config_energies[4] = {};
       branches->push_front(en);
       config_energies[0] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &config_ctds[0]),
+          ComputeOptimalCtds<CFG>(*this, r, s, *branches, /*use_first_lu=*/true, &config_ctds[0]),
           0};
       config_energies[1] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/false, &config_ctds[1]),
+          ComputeOptimalCtds<CFG>(*this, r, s, *branches, /*use_first_lu=*/false, &config_ctds[1]),
           1};
       branches->pop_front();
       branches->push_back(en);
       config_energies[2] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/true, &config_ctds[2]),
+          ComputeOptimalCtds<CFG>(*this, r, s, *branches, /*use_first_lu=*/true, &config_ctds[2]),
           2};
       // Swap the final branch back to the front because following code expects it.
       config_ctds[2].push_front(config_ctds[2].back());
       config_ctds[2].pop_back();
       config_energies[3] = {
-          ComputeOptimalCtds(*this, cfg, r, s, *branches, /*use_first_lu=*/false, &config_ctds[3]),
+          ComputeOptimalCtds<CFG>(*this, r, s, *branches, /*use_first_lu=*/false, &config_ctds[3]),
           3};
       config_ctds[3].push_front(config_ctds[3].back());
       config_ctds[3].pop_back();
@@ -489,9 +504,9 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, erg::EnergyC
   return energy;
 }
 
-Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf, int st, int en, bool use_given_ctds, Ctds* ctd,
-    std::unique_ptr<Structure>* struc) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf,
+    int st, int en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const {
   assert(en >= st);
   const bool exterior_loop = s[st] != en;
   Energy energy = ZERO_E;
@@ -510,16 +525,16 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
 
   if (exterior_loop || branches.size() >= 2) {
     // Multiloop.
-    energy += MultiloopEnergy(r, s, cfg, pf, st, en, &branches, use_given_ctds, ctd, struc);
+    energy += MultiloopEnergy<CFG>(r, s, pf, st, en, &branches, use_given_ctds, ctd, struc);
   } else if (branches.empty()) {
     // Hairpin loop.
     assert(en - st - 1 >= 3);
-    energy += Hairpin(r, pf, st, en, struc);
+    energy += Hairpin<CFG>(r, pf, st, en, struc);
   } else {
     assert(branches.size() == 1);
     const int loop_st = branches.front();
     const int loop_en = s[branches.front()];
-    energy += TwoLoop(r, cfg, pf, st, en, loop_st, loop_en, struc);
+    energy += TwoLoop<CFG>(r, pf, st, en, loop_st, loop_en, struc);
   }
 
   if (struc) (*struc)->set_self_energy(energy);
@@ -527,10 +542,10 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
   for (auto i : branches) {
     if (struc) {
       std::unique_ptr<Structure> sstruc;
-      energy += SubEnergyInternal(r, s, cfg, pf, i, s[i], use_given_ctds, ctd, &sstruc);
+      energy += SubEnergyInternal<CFG>(r, s, pf, i, s[i], use_given_ctds, ctd, &sstruc);
       (*struc)->AddBranch(std::move(sstruc));
     } else {
-      energy += SubEnergyInternal(r, s, cfg, pf, i, s[i], use_given_ctds, ctd, nullptr);
+      energy += SubEnergyInternal<CFG>(r, s, pf, i, s[i], use_given_ctds, ctd, nullptr);
     }
   }
   if (struc) (*struc)->set_total_energy(energy);
@@ -540,8 +555,9 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, erg::Energ
 
 // If (st, en) is not paired, treated as an exterior loop.
 // If `ctd` is non-null, use the given ctds.
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int st, int en, bool build_structure) const {
+    const PseudofreeCfgT& pf, int st, int en, bool build_structure) const {
   ModelBase::Verify(r, s, given_ctd);
   pf.Verify(r);
 
@@ -549,15 +565,16 @@ EnergyResult Model::SubEnergy(const Primary& r, const Secondary& s, const Ctds* 
   auto ctd = use_given_ctds ? Ctds(*given_ctd) : Ctds(r.size());
 
   std::unique_ptr<Structure> struc;
-  auto energy = SubEnergyInternal(
-      r, s, cfg, pf, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
+  auto energy = SubEnergyInternal<CFG>(
+      r, s, pf, st, en, use_given_ctds, &ctd, build_structure ? &struc : nullptr);
   return {energy, std::move(ctd), std::move(struc)};
 }
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds* given_ctd,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, bool build_structure) const {
+    const PseudofreeCfgT& pf, bool build_structure) const {
   const int N = r.size();
-  auto res = SubEnergy(r, s, given_ctd, cfg, pf, 0, N - 1, build_structure);
+  auto res = SubEnergy<CFG>(r, s, given_ctd, pf, 0, N - 1, build_structure);
   if (s[0] == N - 1 && IsAuPair(r[0], r[s[0]])) {
     res.energy += au_penalty;
     if (res.struc) {
@@ -576,5 +593,23 @@ EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds
   }
   return res;
 }
+
+#define MRNA_INSTANTIATE(CFG, PF)                                                              \
+  template Energy Model::Hairpin<CFG, PF>(                                                     \
+      const Primary&, const PF&, int, int, std::unique_ptr<Structure>*) const;                 \
+  template Energy Model::Bulge<CFG, PF>(                                                       \
+      const Primary&, const PF&, int, int, int, int, std::unique_ptr<Structure>*) const;       \
+  template Energy Model::InternalLoop<CFG, PF>(                                                \
+      const Primary&, const PF&, int, int, int, int, std::unique_ptr<Structure>*) const;       \
+  template Energy Model::TwoLoop<CFG, PF>(                                                     \
+      const Primary&, const PF&, int, int, int, int, std::unique_ptr<Structure>*) const;       \
+  template Energy Model::MultiloopEnergy<CFG, PF>(const Primary&, const Secondary&, const PF&, \
+      int, int, std::deque<int>*, bool, Ctds*, std::unique_ptr<Structure>*) const;             \
+  template EnergyResult Model::SubEnergy<CFG, PF>(                                             \
+      const Primary&, const Secondary&, const Ctds*, const PF&, int, int, bool) const;         \
+  template EnergyResult Model::TotalEnergy<CFG, PF>(                                           \
+      const Primary&, const Secondary&, const Ctds*, const PF&, bool) const;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

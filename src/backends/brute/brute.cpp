@@ -5,13 +5,14 @@
 
 #include <iterator>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "api/ctx/algorithm.h"
-#include "api/energy/energy.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/common/static.h"
 #include "model/branch.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -20,25 +21,30 @@
 
 namespace mrna::md::brute {
 
-Brute::Brute(const Primary& r, BackendModelPtr m, BackendCfg backend_cfg, erg::EnergyCfg cfg,
-    erg::PseudofreeCfg pf, BruteCfg brute_cfg)
-    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)),
-      backend_cfg_(std::move(backend_cfg)), pf_(std::move(pf)), energy_cfg_(cfg),
-      pfn_energy_cfg_(cfg), brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Brute<CFG, PseudofreeCfgT>::Brute(const Primary& r, BackendModelPtr m,
+    const BackendCfg& backend_cfg, PseudofreeCfgT pf, BruteCfg brute_cfg)
+    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
+      brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
   std::string reason;
-  verify(BackendIsSupported(GetBackendKind(m_), backend_cfg_, energy_cfg_, pf_, &reason),
-      "backend {} does not support configuration {}: {}", GetBackendKind(m_), energy_cfg_, reason);
-  pfn_energy_cfg_.bulge_states = false;
+  if constexpr (std::is_same_v<PseudofreeCfgT, erg::PseudofreeCfg>) {
+    verify(BackendIsSupported(GetBackendKind(m_), backend_cfg, CFG, pf_, &reason),
+        "backend {} does not support configuration {}: {}", GetBackendKind(m_), CFG, reason);
+  } else {
+    verify(BackendIsSupported(GetBackendKind(m_), backend_cfg, CFG, erg::PseudofreeCfg{}, &reason),
+        "backend {} does not support configuration {}: {}", GetBackendKind(m_), CFG, reason);
+  }
 
   verify(brute_cfg_.subopt_cfg.time_secs < 0,
       "brute force does not support time limit for suboptimal folding");
 }
 
-BruteResult Brute::Run() {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+BruteResult Brute<CFG, PseudofreeCfgT>::Run() {
   // Preconditions:
   static_assert(CTD_SIZE < (1 << CTD_MAX_BITS), "need increase ctd bits for brute force");
 
-  logdebug("brute {} with {}, {}, {}", funcname(), energy_cfg_, brute_cfg_, pf_);
+  logdebug("brute {} with {}, {}, {}", funcname(), CFG, brute_cfg_, pf_);
 
   if (brute_cfg_.pfn) {
     // Plus one to N, since the packed representation reserves an all-ones sentinel.
@@ -49,7 +55,7 @@ BruteResult Brute::Run() {
   // Add base pairs in order of increasing st, then en.
   for (int st = 0; st < r_.size(); ++st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < r_.size(); ++en) {
-      if (CanPair(energy_cfg_, m_, r_, st, en)) pairs_.emplace_back(st, en);
+      if (CanPair<CFG>(m_, r_, st, en)) pairs_.emplace_back(st, en);
     }
   }
   Dfs(0);
@@ -59,7 +65,8 @@ BruteResult Brute::Run() {
   return std::move(res_);
 }
 
-void Brute::Dfs(int idx) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void Brute<CFG, PseudofreeCfgT>::Dfs(int idx) {
   if (idx == int(pairs_.size())) {
     // Precompute whether things are multiloops or not.
     branch_count_ = GetBranchCounts(s_);
@@ -90,13 +97,18 @@ void Brute::Dfs(int idx) {
   }
 }
 
-void Brute::AddAllCombinations(int idx) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
   const int N = r_.size();
   // Base case
   if (idx == N) {
     if (brute_cfg_.pfn) {
-      auto energy = TotalEnergy(underlying_, r_, s_, &ctd_, pfn_energy_cfg_, pf_).energy;
-      res_.pfn.q += energy.Boltz();
+      auto energy = std::visit(
+          [&](const auto& m) {
+            return m->template TotalEnergy<PFN_CFG>(r_, s_, &ctd_, pf_).energy;
+          },
+          underlying_);
+      res_.pfn.q += Boltz(energy);
       for (int i = 0; i < N; ++i) {
         if (s_.IsOpeningPair(i)) {
           const auto inside_structure = BuildInsideStructure(i, s_[i], N);
@@ -104,14 +116,17 @@ void Brute::AddAllCombinations(int idx) {
           const bool inside_new = !substructure_map_.Find(inside_structure);
           const bool outside_new = !substructure_map_.Find(outside_structure);
           if (inside_new || outside_new) {
-            const Energy inside_energy =
-                SubEnergy(underlying_, r_, s_, &ctd_, pfn_energy_cfg_, pf_, i, s_[i]).energy;
+            const Energy inside_energy = std::visit(
+                [&](const auto& m) {
+                  return m->template SubEnergy<PFN_CFG>(r_, s_, &ctd_, pf_, i, s_[i]).energy;
+                },
+                underlying_);
             if (inside_new) {
-              res_.pfn.p[i][s_[i]] += inside_energy.Boltz();
+              res_.pfn.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());
             }
             if (outside_new) {
-              res_.pfn.p[s_[i]][i] += (energy - inside_energy).Boltz();
+              res_.pfn.p[s_[i]][i] += Boltz(energy - inside_energy);
               substructure_map_.Insert(outside_structure, Nothing());
             }
           }
@@ -119,7 +134,9 @@ void Brute::AddAllCombinations(int idx) {
       }
     }
     if (brute_cfg_.subopt) {
-      auto energy = TotalEnergy(m_, r_, s_, &ctd_, energy_cfg_, pf_).energy;
+      auto energy = std::visit(
+          [&](const auto& m) { return m->template TotalEnergy<CFG>(r_, s_, &ctd_, pf_).energy; },
+          m_);
       PruneInsertSubopt(energy);
     }
     return;
@@ -150,7 +167,7 @@ void Brute::AddAllCombinations(int idx) {
 
   // CTD_NONE or D2 CTD;
   Ctd none_ctd = CTD_UNUSED;
-  if (energy_cfg_.UseD2()) {
+  if constexpr (CFG.UseD2()) {
     const bool lspace = st != 0;
     const bool rspace = en + 1 < N;
     if (lspace && rspace) {
@@ -164,7 +181,7 @@ void Brute::AddAllCombinations(int idx) {
   ctd_[idx] = none_ctd;
   AddAllCombinations(idx + 1);
 
-  if (energy_cfg_.UseDangleMismatch()) {
+  if constexpr (CFG.UseDangleMismatch()) {
     // CTD_3_DANGLE
     if (ru_usable) {
       ctd_[idx] = CTD_3_DANGLE;
@@ -184,7 +201,7 @@ void Brute::AddAllCombinations(int idx) {
     }
   }
 
-  if (energy_cfg_.UseCoaxialStacking()) {
+  if constexpr (CFG.UseCoaxialStacking()) {
     // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
     // CTD_LCOAX_WITH_NEXT
     if (lu_usable && ru_usable && ru_shared) {
@@ -225,7 +242,8 @@ void Brute::AddAllCombinations(int idx) {
   ctd_[idx] = CTD_NA;
 }
 
-void Brute::PruneInsertSubopt(Energy e) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void Brute<CFG, PseudofreeCfgT>::PruneInsertSubopt(Energy e) {
   const bool has_room = static_cast<int64_t>(res_.subopts.size()) < brute_cfg_.subopt_cfg.strucs;
   const bool is_better = res_.subopts.empty() || res_.subopts.rbegin()->energy > e;
   if (has_room || is_better)
@@ -243,7 +261,9 @@ void Brute::PruneInsertSubopt(Energy e) {
   }
 }
 
-Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+typename Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::WriteBits(
+    int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
   // Zero initialise. Unpaired is all-ones in the packed representation once PT_MASK is applied.
   SubstructureId struc = {};
@@ -267,12 +287,20 @@ Brute::SubstructureId Brute::WriteBits(int st, int en, int N, bool inside) {
   return struc;
 }
 
-Brute::SubstructureId Brute::BuildInsideStructure(int st, int en, int N) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+typename Brute<CFG, PseudofreeCfgT>::SubstructureId
+Brute<CFG, PseudofreeCfgT>::BuildInsideStructure(int st, int en, int N) {
   return WriteBits(st, en, N, /*inside=*/true);
 }
 
-Brute::SubstructureId Brute::BuildOutsideStructure(int st, int en, int N) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+typename Brute<CFG, PseudofreeCfgT>::SubstructureId
+Brute<CFG, PseudofreeCfgT>::BuildOutsideStructure(int st, int en, int N) {
   return WriteBits(st, en, N, /*inside=*/false);
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class Brute<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::brute

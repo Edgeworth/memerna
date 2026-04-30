@@ -94,7 +94,7 @@ void VerifySupported(
 }
 
 void VerifySupported(
-    std::optional<PfnAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
+    std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) {
   verify(!alg.has_value(), "Bridge for RNAstructure does not support algorithm selection");
   verify(pf.Empty(), "Bridge for RNAstructure does not support pseudofree energies");
   verify(cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC,
@@ -178,7 +178,7 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(const Primary& 
   return StructureToSuboptVector(*structure);
 }
 
-pfn::PfnResult RNAstructure::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+pfn::PfnResult RNAstructure::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf) const {
   VerifySupported(alg, cfg, pf);
   const auto structure = LoadStructure(r);

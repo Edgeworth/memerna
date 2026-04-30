@@ -10,6 +10,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -27,32 +28,31 @@ constexpr int CHECK_TIME_FREQ = 10000;
 
 }  // namespace
 
-template <bool UseLru>
-bool SuboptPersistent<UseLru>::IsSupported(const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+bool SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::IsSupported(
+    const PseudofreeCfgT& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
   return true;
 }
 
-template <bool UseLru>
-SuboptPersistent<UseLru>::SuboptPersistent(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
-    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
-    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)),
-      pc_(Primary(r_), m_, cfg_, pf_), dp_(std::move(dp)), subopt_cfg_(subopt_cfg),
-      cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::SuboptPersistent(
+    Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_, pf_),
+      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
 
-template <bool UseLru>
-int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
-      "{} does not support the given configuration: {}", funcname(), reason);
+  verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
   pf_.Verify(r_);
 
-  logdebug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("base {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method
@@ -88,9 +88,9 @@ int64_t SuboptPersistent<UseLru>::Run(const SuboptCallback& fn) {
   return num_strucs;
 }
 
-template <bool UseLru>
-std::pair<Energy, typename SuboptPersistent<UseLru>::SuboptIndex>
-SuboptPersistent<UseLru>::RunInternal() {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::pair<Energy, typename SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::SuboptIndex>
+SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::RunInternal() {
   while (!pq_.empty()) {
     auto [neg_delta, idx] = pq_.top();
     pq_.pop();
@@ -153,8 +153,8 @@ SuboptPersistent<UseLru>::RunInternal() {
   return {ZERO_E, INVALID_SUBOPT_INDEX};
 }
 
-template <bool UseLru>
-void SuboptPersistent<UseLru>::GenerateResult(SuboptIndex idx) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+void SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateResult(SuboptIndex idx) {
   res_.tb.s.reset(r_.size());
   res_.tb.ctd.reset(r_.size());
 
@@ -177,8 +177,8 @@ void SuboptPersistent<UseLru>::GenerateResult(SuboptIndex idx) {
   }
 }
 
-template <bool UseLru>
-std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateExpansions(
     const DpIndex& to_expand, Energy delta) const {
   const int N = r_.size();
   const int st = to_expand.st;
@@ -212,7 +212,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
           dp_.dp[st + 1][en - 1][DP_P] + m_->AuGuPenalty(st1b, en1b) - dp_.ext[st][a];
 
       // (   )<.( * ). > Right coax backward
-      if (cfg_.UseCoaxialStacking() && a == EXT_RC) {
+      if (CFG.UseCoaxialStacking() && a == EXT_RC) {
         energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) +
             pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         // We don't set ctds here, since we already set them in the forward case.
@@ -230,7 +230,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
       energy = base00 + dp_.ext[en + 1][EXT];
       Ctd val_ctd = CTD_UNUSED;
 
-      if (cfg_.UseD2()) {
+      if constexpr (CFG.UseD2()) {
         // Note that D2 can overlap with anything.
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch
@@ -264,7 +264,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
       // Everything after this is only for EXT.
       if (a != EXT) continue;
 
-      if (cfg_.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // (   )3<   > 3'
         energy = base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
         if (energy <= delta)
@@ -291,7 +291,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
               .ctd0{st + 1, CTD_MISMATCH}});
       }
 
-      if (cfg_.UseCoaxialStacking()) {
+      if constexpr (CFG.UseCoaxialStacking()) {
         if (en < N - 1) {
           // .(   ).<(   ) > Left coax
           energy = base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) + pf_.Unpaired(st) +
@@ -374,7 +374,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     // (<   ><    >)
     energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
     Ctd val_ctd = CTD_UNUSED;
-    if (cfg_.UseD2()) {
+    if constexpr (CFG.UseD2()) {
       // D2 can overlap terminal mismatches with anything.
       // (<   ><   >) Terminal mismatch
       energy += m_->terminal[stb][st1b][en1b][enb];
@@ -383,7 +383,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     if (energy <= delta)
       exps.push_back({.delta = energy, .idx0{st + 1, en - 1, DP_U2}, .ctd0{en, val_ctd}});
 
-    if (cfg_.UseDangleMismatch()) {
+    if constexpr (CFG.UseDangleMismatch()) {
       // (3<   ><   >) 3'
       energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
           pf_.Unpaired(st + 1) + m_->multiloop_c;
@@ -402,7 +402,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
         exps.push_back({.delta = energy, .idx0{st + 2, en - 2, DP_U2}, .ctd0{en, CTD_MISMATCH}});
     }
 
-    if (cfg_.UseCoaxialStacking()) {
+    if constexpr (CFG.UseCoaxialStacking()) {
       const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + pf_.Unpaired(st + 1) +
           pf_.Unpaired(en - 1) + 2 * m_->multiloop_c;
       for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -501,7 +501,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
 
     // Check a == U_RC:
     // (   )<.( ** ). > Right coax backward
-    if (cfg_.UseCoaxialStacking() && a == DP_U_RC) {
+    if (CFG.UseCoaxialStacking() && a == DP_U_RC) {
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(piv) + 2 * m_->multiloop_c;
       // Our ctds will have already been set by now.
@@ -521,7 +521,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     // (   )<   > - U, U2, U_WC?, U_GU?
     energy = base00;
     Ctd val_ctd = CTD_UNUSED;
-    if (cfg_.UseD2()) {
+    if constexpr (CFG.UseD2()) {
       // Note that D2 can overlap with anything.
       if (st != 0 && piv != N - 1) {
         // (   )<   > Terminal mismatch - U, U2
@@ -565,7 +565,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
     // The rest of the cases are for U and U2.
     if (a != DP_U && a != DP_U2) continue;
 
-    if (cfg_.UseDangleMismatch()) {
+    if constexpr (CFG.UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
       energy = base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) + m_->multiloop_c;
       // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
@@ -604,7 +604,7 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
             .ctd0{st + 1, CTD_MISMATCH}});
     }
 
-    if (cfg_.UseCoaxialStacking()) {
+    if constexpr (CFG.UseCoaxialStacking()) {
       // .(   ).<(   ) > Left coax - U, U2
       energy = base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) + pf_.Unpaired(st) +
           pf_.Unpaired(piv) + 2 * m_->multiloop_c;
@@ -654,7 +654,10 @@ std::vector<Expansion> SuboptPersistent<UseLru>::GenerateExpansions(
   return exps;
 }
 
-template class SuboptPersistent<false>;
-template class SuboptPersistent<true>;
+#define MRNA_INSTANTIATE(CFG, PF)                  \
+  template class SuboptPersistent<CFG, PF, false>; \
+  template class SuboptPersistent<CFG, PF, true>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

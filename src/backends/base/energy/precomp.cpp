@@ -1,34 +1,27 @@
 // Copyright 2022 Eliot Courtney.
 #include "backends/base/energy/precomp.h"
 
-#include <algorithm>
 #include <utility>
+
+#include "backends/common/static.h"
 
 namespace mrna::md::base {
 
-Precomp::Precomp(Primary r, Model::Ptr m, erg::EnergyCfg cfg_, erg::PseudofreeCfg pf_)
-    : PrecompBase(std::move(r), std::move(m)), cfg(cfg_), pf(std::move(pf_)) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Precomp<CFG, PseudofreeCfgT>::Precomp(Primary r, Model::Ptr m, PseudofreeCfgT pf_)
+    : PrecompBase(std::move(r), std::move(m)), pf(std::move(pf_)),
+      min_pf_unpaired(pf.MinUnpaired()), sum_neg_pf(pf.SmallestSubsetSum()) {
   pf.Verify(r_);
-
-  if (!pf.unpaired.empty()) {
-    min_pf_unpaired = pf.unpaired[0];
-    for (const auto& e : pf.unpaired) {
-      min_pf_unpaired = std::min(min_pf_unpaired, e);
-      if (e < ZERO_E) sum_neg_pf += e;
-    }
-  }
-  if (!pf.paired.empty())
-    for (const auto& e : pf.paired)
-      if (e < ZERO_E) sum_neg_pf += e;
 }
 
-Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Precomp<CFG, PseudofreeCfgT>::TwoLoop(int ost, int oen, int ist, int ien) const {
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
 
   if (toplen == 0 && botlen == 0)
     return pf.Paired(ost, oen) + m_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]];
-  if (toplen == 0 || botlen == 0) return m_->Bulge(r_, cfg, pf, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return m_->Bulge<CFG>(r_, pf, ost, oen, ist, ien);
 
   Energy energy = m_->AuGuPenalty(r_[ost], r_[oen]) + m_->AuGuPenalty(r_[ist], r_[ien]) +
       pf.Paired(ost, oen) + pf.UnpairedSum(ost + 1, ist - 1) + pf.UnpairedSum(ien + 1, oen - 1);
@@ -65,7 +58,8 @@ Energy Precomp::TwoLoop(int ost, int oen, int ist, int ien) const {
   return energy;
 }
 
-Energy Precomp::Hairpin(int st, int en) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy Precomp<CFG, PseudofreeCfgT>::Hairpin(int st, int en) const {
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
 
@@ -97,5 +91,9 @@ Energy Precomp::Hairpin(int st, int en) const {
 
   return energy;
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class Precomp<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

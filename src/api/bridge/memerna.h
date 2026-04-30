@@ -44,8 +44,8 @@ class Memerna : public RnaPackage {
       std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
       const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const override;
 
-  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf) const override;
+  [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg,
+      erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const override;
 
   static Memerna FromArgParse(const ArgParse& args);
 

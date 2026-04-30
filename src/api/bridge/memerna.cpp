@@ -30,7 +30,7 @@ std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r,
   return ctx_.SuboptIntoVector(r, mfe_alg, alg, cfg, pf, subopt_cfg);
 }
 
-pfn::PfnResult Memerna::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfg cfg,
+pfn::PfnResult Memerna::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf) const {
   return ctx_.Pfn(r, alg, cfg, pf);
 }

@@ -18,24 +18,28 @@ class BoltzModel : public BoltzModelBase<Model>, public ModelMixin<BoltzModel> {
   // ModelMixin:
   static BoltzModel::Ptr Create(const Model::Ptr& m) { return BoltzModel::Ptr(new BoltzModel(m)); }
 
-  BoltzEnergy Hairpin(const Primary& r, const erg::PseudofreeCfg& pf, int st, int en,
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  BoltzEnergy Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
       std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.Hairpin(r, pf, st, en, s).Boltz();
+    return Boltz(m_.Hairpin<CFG>(r, pf, st, en, s));
   }
 
-  BoltzEnergy Bulge(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
-      int oen, int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.Bulge(r, cfg, pf, ost, oen, ist, ien, s).Boltz();
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  BoltzEnergy Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const {
+    return Boltz(m_.Bulge<CFG>(r, pf, ost, oen, ist, ien, s));
   }
 
-  BoltzEnergy InternalLoop(const Primary& r, const erg::PseudofreeCfg& pf, int ost, int oen,
-      int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.InternalLoop(r, pf, ost, oen, ist, ien, s).Boltz();
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  BoltzEnergy InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
+      int ien, std::unique_ptr<Structure>* s = nullptr) const {
+    return Boltz(m_.InternalLoop<CFG>(r, pf, ost, oen, ist, ien, s));
   }
 
-  BoltzEnergy TwoLoop(const Primary& r, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, int ost,
-      int oen, int ist, int ien, std::unique_ptr<Structure>* s = nullptr) const {
-    return m_.TwoLoop(r, cfg, pf, ost, oen, ist, ien, s).Boltz();
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  BoltzEnergy TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
+      int ien, std::unique_ptr<Structure>* s = nullptr) const {
+    return Boltz(m_.TwoLoop<CFG>(r, pf, ost, oen, ist, ien, s));
   }
 
  private:

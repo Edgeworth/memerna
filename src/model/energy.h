@@ -91,6 +91,16 @@ inline const Energy NINIO_MAX_ASYM = E(3.0);
   return BoltzEnergy(-ToFlt()) / (BoltzEnergy(R) * BoltzEnergy(T));
 }
 
+[[nodiscard]] inline BoltzEnergy Boltz(BoltzEnergy energy) { return energy; }
+
+template <typename T>
+concept HasMemberBoltz = requires(const T& value) { value.Boltz(); };
+
+template <HasMemberBoltz T>
+[[nodiscard]] inline decltype(auto) Boltz(const T& value) {
+  return value.Boltz();
+}
+
 std::vector<Energy> RandomEnergies(
     std::size_t length, Energy min_energy, Energy max_energy, std::mt19937& eng);
 

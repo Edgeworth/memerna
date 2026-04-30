@@ -72,7 +72,7 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
 
   for (auto _ : state) {
     auto r = Primary::Random(static_cast<int>(state.range(0)), eng);
-    auto result = ctx.Pfn(r, pfn_alg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+    auto result = ctx.Pfn(r, pfn_alg, erg::EnergyCfgPfn{}, erg::PseudofreeCfg{});
     benchmark::DoNotOptimize(result);
     benchmark::ClobberMemory();
   }
@@ -123,10 +123,6 @@ void Pfn(benchmark::State& state, Args&&... arglist) {
 DEFINE_MFE_BENCH(base_t04, DEBUG, SPARSE_OPT);
 DEFINE_SUBOPT_BENCH(base_t04, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
 DEFINE_PARTITION_BENCH(base_t04, DEBUG, OPT);
-
-DEFINE_MFE_BENCH(baseopt_t04, DEBUG, SPARSE_OPT);
-DEFINE_SUBOPT_BENCH(baseopt_t04, DEBUG, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);
-DEFINE_PARTITION_BENCH(baseopt_t04, DEBUG, OPT);
 
 DEFINE_MFE_BENCH(stack_t04, OPT);
 DEFINE_SUBOPT_BENCH(stack_t04, ITERATIVE, ITERATIVE_LOWMEM, PERSISTENT, PERSISTENT_LOWMEM);

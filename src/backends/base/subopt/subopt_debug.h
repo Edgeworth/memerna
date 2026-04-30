@@ -7,10 +7,8 @@
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
-#include "api/trace/trace.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/ctd.h"
@@ -23,13 +21,13 @@ using mrna::subopt::SuboptCallback;
 using mrna::subopt::SuboptCfg;
 using mrna::subopt::SuboptResult;
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 class SuboptDebug {
  public:
-  static bool IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
-      const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
+  static bool IsSupported(
+      const PseudofreeCfgT& pf, const SuboptCfg& subopt_cfg, std::string* reason = nullptr);
 
-  SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg, erg::PseudofreeCfg pf,
-      SuboptCfg subopt_cfg);
+  SuboptDebug(Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg);
 
   int64_t Run(const SuboptCallback& fn);
 
@@ -49,8 +47,7 @@ class SuboptDebug {
 
   Primary r_;
   Model::Ptr m_;
-  erg::EnergyCfg cfg_;
-  erg::PseudofreeCfg pf_;
+  PseudofreeCfgT pf_;
   DpState dp_;
   SuboptCfg subopt_cfg_;
 

@@ -62,7 +62,7 @@ using SuboptFn = std::function<int64_t(const BackendModelPtr&, Primary, mfe::DpS
     erg::EnergyCfg, const erg::PseudofreeCfg&, const subopt::SuboptCallback&, subopt::SuboptCfg)>;
 
 using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pfn::PfnState&,
-    erg::EnergyCfg, const erg::PseudofreeCfg&)>;
+    erg::EnergyCfgPfn, const erg::PseudofreeCfg&)>;
 
 [[nodiscard]] MfeFn GetMfeFn(BackendKind kind, MfeAlg alg);
 [[nodiscard]] MfeExteriorFn GetMfeExteriorFn(BackendKind kind);
@@ -76,7 +76,7 @@ using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pf
     const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
     const subopt::SuboptCfg& subopt_cfg, std::string* reason = nullptr);
 [[nodiscard]] bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const BackendCfg& backend_cfg,
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+    erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
 
 [[nodiscard]] bool BackendIsSupported(BackendKind kind, const BackendCfg& backend_cfg,
     const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
@@ -106,7 +106,7 @@ PfnPriorityForBackend(
     std::optional<SuboptAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log = nullptr);
 [[nodiscard]] std::optional<BackendPfnPriority> ResolvePfn(std::optional<BackendKind> kind,
-    std::optional<PfnAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
+    std::optional<PfnAlg> alg, const BackendCfg& backend_cfg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf, std::string* log = nullptr);
 
 inline const Opt OPT_MFE_ALG = Opt(Opt::ARG).LongName("dp-alg").ChoiceEnum<MfeAlg>().Help(

@@ -1,7 +1,9 @@
 // Copyright 2025 Eliot Courtney.
 #include "api/energy/pseudofree_cfg.h"
 
+#include <algorithm>
 #include <ostream>
+#include <span>
 #include <utility>
 #include <vector>
 
@@ -20,14 +22,14 @@ std::vector<Energy> BuildUnpairedSum(const std::vector<Energy>& unpaired) {
   return unpaired_sum;
 }
 
-std::vector<BoltzEnergy> BuildBoltz(const std::vector<Energy>& energies) {
+std::vector<BoltzEnergy> BuildBoltz(std::span<const Energy> energies) {
   std::vector<BoltzEnergy> boltz;
   boltz.resize(energies.size());
-  for (size_t i = 0; i < energies.size(); ++i) boltz[i] = energies[i].Boltz();
+  for (size_t i = 0; i < energies.size(); ++i) boltz[i] = Boltz(energies[i]);
   return boltz;
 }
 
-std::vector<BoltzEnergy> BuildUnpairedSumLog(const std::vector<Energy>& unpaired) {
+std::vector<BoltzEnergy> BuildUnpairedSumLog(std::span<const Energy> unpaired) {
   if (unpaired.empty()) return {};
   std::vector<BoltzEnergy> unpaired_sum_log;
   unpaired_sum_log.reserve(unpaired.size() + 1);
@@ -43,16 +45,32 @@ void RegisterOptsPseudofree(ArgParse* args) {
   args->RegisterOpt(OPT_UNPAIRED_PSEUDOFREE);
 }
 
-PseudofreeCfg::PseudofreeCfg(std::vector<Energy> paired_, std::vector<Energy> unpaired_)
-    : paired(std::move(paired_)), unpaired(std::move(unpaired_)),
-      unpaired_sum(BuildUnpairedSum(unpaired)) {}
+PseudofreeCfg::PseudofreeCfg(std::vector<Energy> paired, std::vector<Energy> unpaired)
+    : paired_(std::move(paired)), unpaired_(std::move(unpaired)),
+      unpaired_sum_(BuildUnpairedSum(unpaired_)) {}
+
+Energy PseudofreeCfg::MinUnpaired() const {
+  if (unpaired_.empty()) return ZERO_E;
+  Energy min_unpaired = unpaired_[0];
+  for (const auto& e : unpaired_) min_unpaired = std::min(min_unpaired, e);
+  return min_unpaired;
+}
+
+Energy PseudofreeCfg::SmallestSubsetSum() const {
+  Energy sum = ZERO_E;
+  for (const auto& e : unpaired_)
+    if (e < ZERO_E) sum += e;
+  for (const auto& e : paired_)
+    if (e < ZERO_E) sum += e;
+  return sum;
+}
 
 void PseudofreeCfg::Verify(const Primary& r) const {
-  if (!paired.empty())
-    verify(paired.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
-  if (!unpaired.empty())
-    verify(
-        unpaired.size() == std::size_t(r.size()), "pseudofree unpaired must be same length as seq");
+  if (!paired_.empty())
+    verify(paired_.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
+  if (!unpaired_.empty())
+    verify(unpaired_.size() == std::size_t(r.size()),
+        "pseudofree unpaired must be same length as seq");
 }
 
 PseudofreeCfg PseudofreeCfg::FromArgParse(const ArgParse& args) {
@@ -61,21 +79,23 @@ PseudofreeCfg PseudofreeCfg::FromArgParse(const ArgParse& args) {
   return {std::move(pf_paired), std::move(pf_unpaired)};
 }
 
+BoltzPseudofreeCfg PseudofreeCfg::Boltz() const { return BoltzPseudofreeCfg(*this); }
+
 BoltzPseudofreeCfg::BoltzPseudofreeCfg(const PseudofreeCfg& pf)
-    : paired(BuildBoltz(pf.paired)), unpaired(BuildBoltz(pf.unpaired)),
-      unpaired_sum_log(BuildUnpairedSumLog(pf.unpaired)) {}
+    : paired_(BuildBoltz(pf.PairedEnergies())), unpaired_(BuildBoltz(pf.UnpairedEnergies())),
+      unpaired_sum_log_(BuildUnpairedSumLog(pf.UnpairedEnergies())) {}
 
 void BoltzPseudofreeCfg::Verify(const Primary& r) const {
-  if (!paired.empty())
-    verify(paired.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
-  if (!unpaired.empty())
-    verify(
-        unpaired.size() == std::size_t(r.size()), "pseudofree unpaired must be same length as seq");
+  if (!paired_.empty())
+    verify(paired_.size() == std::size_t(r.size()), "pseudofree paired must be same length as seq");
+  if (!unpaired_.empty())
+    verify(unpaired_.size() == std::size_t(r.size()),
+        "pseudofree unpaired must be same length as seq");
 }
 
 std::ostream& operator<<(std::ostream& str, const PseudofreeCfg& o) {
-  return str << "PseudofreeCfg{paired=" << o.paired.size() << ", unpaired=" << o.unpaired.size()
-             << "}";
+  return str << "PseudofreeCfg{paired=" << o.PairedEnergies().size()
+             << ", unpaired=" << o.UnpairedEnergies().size() << "}";
 }
 
 }  // namespace mrna::erg

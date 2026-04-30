@@ -3,27 +3,19 @@
 #define BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
 
 #include "api/energy/energy_cfg.h"
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/primary.h"
 
 namespace mrna::md::base {
 
-void PfnExterior(const Primary& r, const Model& m, erg::EnergyCfg cfg, PfnState& state,
-    const erg::PseudofreeCfg& pf);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void PfnExterior(const Primary& r, const Model& m, PfnState& state, const PseudofreeCfgT& pf);
 
-inline BoltzEnergy PairedWithPf(
-    const erg::PseudofreeCfg& pf, const BoltzDpArray& dp, int st, int en) {
+template <class PseudofreeCfgT>
+inline BoltzEnergy PairedWithPf(const PseudofreeCfgT& pf, const BoltzDpArray& dp, int st, int en) {
   BoltzEnergy res = dp[st][en][PT_P];
-  if (st > en) res *= pf.Paired(en, st).Boltz();
-  return res;
-}
-
-inline BoltzEnergy PairedWithPf(
-    const erg::BoltzPseudofreeCfg& bpf, const BoltzDpArray& dp, int st, int en) {
-  BoltzEnergy res = dp[st][en][PT_P];
-  if (st > en) res *= bpf.Paired(en, st);
+  if (st > en) res *= Boltz(pf.Paired(en, st));
   return res;
 }
 

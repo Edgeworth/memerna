@@ -46,7 +46,7 @@ class FoldPerfRunner:
                     ctd=CtdCfg.ALL,
                     lonely_pairs=LonelyPairs.HEURISTIC,
                     energy_model="t04",
-                    backend="baseopt",
+                    backend="base",
                 ),
             ),
             (linearfold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),

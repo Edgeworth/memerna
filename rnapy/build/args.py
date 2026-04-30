@@ -80,12 +80,8 @@ afl_fuzz_cfg_options = cloup.option_group(
     cloup.option("--random-pf/--no-random-pf", default=None, help="Random pseudofree energies"),
     cloup.option("--random-pf-min-energy", type=float, default=None, help="Min random PF energy"),
     cloup.option("--random-pf-max-energy", type=float, default=None, help="Max random PF energy"),
-    cloup.option(
-        "--random-min-energy", type=float, default=None, help="Min random model energy"
-    ),
-    cloup.option(
-        "--random-max-energy", type=float, default=None, help="Max random model energy"
-    ),
+    cloup.option("--random-min-energy", type=float, default=None, help="Min random model energy"),
+    cloup.option("--random-max-energy", type=float, default=None, help="Max random model energy"),
     cloup.option("--energy-model", default=None, help="Energy model"),
     cloup.option("--ctd", type=enum_choice(CtdCfg), default=None, help="CTD mode"),
     cloup.option(

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -19,30 +20,33 @@
 
 namespace mrna::md::base {
 
-bool SuboptDebug::IsSupported(const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/,
-    const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+bool SuboptDebug<CFG, PseudofreeCfgT>::IsSupported(
+    const PseudofreeCfgT& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
   return true;
 }
 
-SuboptDebug::SuboptDebug(Primary r, Model::Ptr m, DpState dp, erg::EnergyCfg cfg,
-    erg::PseudofreeCfg pf, SuboptCfg subopt_cfg)
-    : r_(std::move(r)), m_(std::move(m)), cfg_(cfg), pf_(std::move(pf)), dp_(std::move(dp)),
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+SuboptDebug<CFG, PseudofreeCfgT>::SuboptDebug(
+    Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
+    : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)),
       subopt_cfg_(subopt_cfg) {}
 
-int64_t SuboptDebug::Run(const SuboptCallback& fn) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
   const int N = r_.size();
 
   std::string reason;
-  verify(IsSupported(cfg_, pf_, subopt_cfg_, &reason),
-      "{} does not support the given configuration: {}", funcname(), reason);
+  verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
   pf_.Verify(r_);
 
-  logdebug("base {} with {}, {}, {}", funcname(), cfg_, subopt_cfg_, pf_);
+  logdebug("base {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
   auto start_time = std::chrono::steady_clock::now();
 
   // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
@@ -112,7 +116,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         curnode_ = node.copy();
 
         // (   )<.( * ). > Right coax backward
-        if (cfg_.UseCoaxialStacking() && a == EXT_RC) {
+        if (CFG.UseCoaxialStacking() && a == EXT_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(en1b, enb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(en) + dp_.ext[en + 1][EXT];
           // We don't set ctds here, since we already set them in the forward case.
@@ -127,7 +131,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         energy = base_energy + base00 + dp_.ext[en + 1][EXT];
         Ctd val_ctd = CTD_UNUSED;
 
-        if (cfg_.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && en != N - 1) {
             // (   )<   > Terminal mismatch
@@ -155,7 +159,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         // Everything after this is only for EXT.
         if (a != EXT) continue;
 
-        if (cfg_.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3'
           energy = base_energy + base01 + m_->dangle3[en1b][enb][stb] + pf_.Unpaired(en) +
               dp_.ext[en + 1][EXT];
@@ -173,7 +177,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
               energy, {en + 1, INVALID_INDEX, EXT}, {st + 1, en - 1, DP_P}, {st + 1, CTD_MISMATCH});
         }
 
-        if (cfg_.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // (   )(<   ) > Flush coax
           energy =
               base_energy + base01 + m_->stack[en1b][enb][WcPair(enb)][stb] + dp_.ext[en][EXT_WC];
@@ -229,13 +233,13 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
       for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
         for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
           energy =
-              base_energy + m_->TwoLoop(r_, cfg_, pf_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
+              base_energy + m_->TwoLoop<CFG>(r_, pf_, st, en, ist, ien) + dp_.dp[ist][ien][DP_P];
           Expand(energy, {ist, ien, DP_P});
         }
       }
 
       // Hairpin loop
-      energy = base_energy + m_->Hairpin(r_, pf_, st, en);
+      energy = base_energy + m_->Hairpin<CFG>(r_, pf_, st, en);
       Expand(energy);
 
       auto base_and_branch = base_energy + m_->AuGuPenalty(stb, enb) + pf_.Paired(st, en) +
@@ -244,7 +248,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
       // (<   ><    >)
       energy = base_and_branch + dp_.dp[st + 1][en - 1][DP_U2];
       Ctd val_ctd = CTD_UNUSED;
-      if (cfg_.UseD2()) {
+      if constexpr (CFG.UseD2()) {
         // D2 can overlap terminal mismatches with anything.
         // (<   ><   >) Terminal mismatch
         energy += m_->terminal[stb][st1b][en1b][enb];
@@ -252,7 +256,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
       }
       Expand(energy, {st + 1, en - 1, DP_U2}, {en, val_ctd});
 
-      if (cfg_.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // (3<   ><   >) 3'
         energy = base_and_branch + dp_.dp[st + 2][en - 1][DP_U2] + m_->dangle3[stb][st1b][enb] +
             pf_.Unpaired(st + 1) + m_->multiloop_c;
@@ -268,7 +272,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         Expand(energy, {st + 2, en - 2, DP_U2}, {en, CTD_MISMATCH});
       }
 
-      if (cfg_.UseCoaxialStacking()) {
+      if constexpr (CFG.UseCoaxialStacking()) {
         const auto outer_coax = m_->MismatchCoaxial(stb, st1b, en1b, enb) + pf_.Unpaired(st + 1) +
             pf_.Unpaired(en - 1) + 2 * m_->multiloop_c;
         for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -346,7 +350,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
-        if (cfg_.UseCoaxialStacking() && a == DP_U_RC) {
+        if (CFG.UseCoaxialStacking() && a == DP_U_RC) {
           energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(piv) + 2 * m_->multiloop_c;
           // Our ctds will have already been set by now.
@@ -362,7 +366,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         // (   )<   > - U, U2, U_WC?, U_GU?
         energy = base_energy + base00;
         Ctd val_ctd = CTD_UNUSED;
-        if (cfg_.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U, U2
@@ -396,7 +400,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
         // The rest of the cases are for U and U2.
         if (a != DP_U && a != DP_U2) continue;
 
-        if (cfg_.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
           energy = base_energy + base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) +
               m_->multiloop_c;
@@ -422,7 +426,7 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
               {st + 1, CTD_MISMATCH});
         }
 
-        if (cfg_.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
           energy = base_energy + base11 + m_->MismatchCoaxial(pl1b, pb, stb, st1b) +
               pf_.Unpaired(st) + pf_.Unpaired(piv) + 2 * m_->multiloop_c;
@@ -462,5 +466,9 @@ int64_t SuboptDebug::Run(const SuboptCallback& fn) {
   }
   return static_cast<int64_t>(finished_.size());
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template class SuboptDebug<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

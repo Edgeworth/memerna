@@ -8,6 +8,7 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -15,8 +16,9 @@
 
 namespace mrna::md::base {
 
-Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+Energy MfeExterior(
+    const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf) {
   const int N = r.size();
   pf.Verify(r);
 
@@ -44,7 +46,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
       // (   )<   >
       auto val = base00 + ext[en + 1][EXT];
 
-      if (cfg.UseD2()) {
+      if constexpr (CFG.UseD2()) {
         if (st != 0 && en != N - 1) {
           // (   )<   > Terminal mismatch - U
           val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
@@ -63,7 +65,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
       else
         ext[st][EXT_WC] = std::min(ext[st][EXT_WC], val);
 
-      if (cfg.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // (   )3<   > 3'
         e = std::min(e, base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT]);
         // 5(   )<   > 5'
@@ -74,7 +76,7 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
                 ext[en + 1][EXT]);
       }
 
-      if (cfg.UseCoaxialStacking()) {
+      if constexpr (CFG.UseCoaxialStacking()) {
         // .(   ).<(   ) > Left coax
         val = base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en);
         e = std::min(e, val + ext[en + 1][EXT_GU]);
@@ -99,4 +101,10 @@ Energy MfeExterior(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
 
   return ext[0][EXT];
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) \
+  template Energy MfeExterior<CFG, PF>(const Primary&, const Model::Ptr&, DpState&, const PF&);
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
+
 }  // namespace mrna::md::base

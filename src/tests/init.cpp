@@ -71,15 +71,6 @@ void InitTest(const std::string& data_dir) {
     base_ms.push_back(md::base::Model::Random(
         kT04Cfg, RandomModelCfg(static_cast<uint_fast32_t>(base_ms.size()), E(-10.0), E(10.0))));
 
-  baseopt_t04 = md::base::opt::Model::FromBackendCfg(BackendKind::BASEOPT,
-      BackendCfg{.energy_model = erg::EnergyModelKind::T04,
-          .precision = MRNA_ENERGY_PRECISION,
-          .data_src = data_dir});
-  baseopt_ms.push_back(baseopt_t04);
-  while (baseopt_ms.size() < NUM_TEST_MODELS)
-    baseopt_ms.push_back(md::base::opt::Model::Random(
-        kT04Cfg, RandomModelCfg(static_cast<uint_fast32_t>(baseopt_ms.size()), E(-10.0), E(10.0))));
-
   stack_t04 = md::stack::Model::FromBackendCfg(BackendKind::STACK,
       BackendCfg{.energy_model = erg::EnergyModelKind::T04,
           .precision = MRNA_ENERGY_PRECISION,

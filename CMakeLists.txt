@@ -203,37 +203,6 @@ set(MEMERNA_SOURCE
   src/backends/base/subopt/subopt_persistent.h
   src/backends/base/trace/trace.cpp
   src/backends/base/trace/trace.h
-  src/backends/baseopt/energy/boltz_model.h
-  src/backends/baseopt/energy/boltz_precomp.cpp
-  src/backends/baseopt/energy/boltz_precomp.h
-  src/backends/baseopt/energy/model.cpp
-  src/backends/baseopt/energy/model.h
-  src/backends/baseopt/energy/precomp.cpp
-  src/backends/baseopt/energy/precomp.h
-  src/backends/baseopt/mfe/mfe_debug.cpp
-  src/backends/baseopt/mfe/mfe_debug.h
-  src/backends/baseopt/mfe/mfe_exterior.cpp
-  src/backends/baseopt/mfe/mfe_lyngso_sparse_opt.cpp
-  src/backends/baseopt/mfe/mfe_lyngso_sparse_opt.h
-  src/backends/baseopt/mfe/mfe_opt.cpp
-  src/backends/baseopt/mfe/mfe_opt.h
-  src/backends/baseopt/mfe/mfe_sparse_opt.cpp
-  src/backends/baseopt/mfe/mfe_sparse_opt.h
-  src/backends/baseopt/mfe/mfe_exterior.h
-  src/backends/baseopt/pfn/pfn_debug.cpp
-  src/backends/baseopt/pfn/pfn_debug.h
-  src/backends/baseopt/pfn/pfn_exterior.cpp
-  src/backends/baseopt/pfn/pfn_exterior.h
-  src/backends/baseopt/pfn/pfn_opt.cpp
-  src/backends/baseopt/pfn/pfn_opt.h
-  src/backends/baseopt/subopt/subopt_debug.cpp
-  src/backends/baseopt/subopt/subopt_debug.h
-  src/backends/baseopt/subopt/subopt_iterative.cpp
-  src/backends/baseopt/subopt/subopt_iterative.h
-  src/backends/baseopt/subopt/subopt_persistent.cpp
-  src/backends/baseopt/subopt/subopt_persistent.h
-  src/backends/baseopt/trace/trace.cpp
-  src/backends/baseopt/trace/trace.h
   src/backends/brute/alg.cpp
   src/backends/brute/alg.h
   src/backends/brute/brute.cpp
@@ -251,6 +220,7 @@ set(MEMERNA_SOURCE
   src/backends/common/model_mixin.h
   src/backends/common/parse.cpp
   src/backends/common/parse.h
+  src/backends/common/static.h
   src/backends/stack/energy/boltz_model.cpp
   src/backends/stack/energy/boltz_model.h
   src/backends/stack/energy/model.cpp
@@ -309,9 +279,8 @@ set(MEMERNA_SOURCE
 )
 set(TEST_SOURCE
   src/tests/api/ctx/algorithm_test.cpp
+  src/tests/api/energy/energy_cfg_test.cpp
   src/tests/backends/energy_test.cpp
-  src/tests/backends/baseopt/energy_test.cpp
-  src/tests/backends/baseopt/model_test.cpp
   src/tests/backends/stack/energy_test.cpp
   src/tests/backends/stack/model_test.cpp
   src/tests/backends/base/energy_test.cpp

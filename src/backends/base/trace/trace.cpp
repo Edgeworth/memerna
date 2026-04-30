@@ -8,6 +8,7 @@
 
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
@@ -19,12 +20,13 @@
 
 namespace mrna::md::base {
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& tcfg) {
+    const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg) {
   const int N = r.size();
   verify(!tcfg.random, "random traceback is not supported in this energy model");
 
-  logdebug("base {} with {}, {}, {}", funcname(), cfg, tcfg, pf);
+  logdebug("base {} with {}, {}, {}", funcname(), CFG, tcfg, pf);
 
   const auto& [dp, ext] = state;
   TraceResult res((Secondary(N)), Ctds(N));
@@ -56,7 +58,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         const auto base11 = dp[st + 1][en - 1][DP_P] + m->AuGuPenalty(st1b, en1b);
 
         // (   )<.( * ). > Right coax backward
-        if (cfg.UseCoaxialStacking() && a == EXT_RC) {
+        if (CFG.UseCoaxialStacking() && a == EXT_RC) {
           // Don't set CTDs here since they will have already been set.
           if (base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) +
                   pf.Unpaired(en) + ext[en + 1][EXT] ==
@@ -74,7 +76,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         auto val = base00 + ext[en + 1][EXT];
         Ctd val_ctd = CTD_UNUSED;
 
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && en != N - 1) {
             // (   )<   > Terminal mismatch
@@ -103,7 +105,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         // Only look at EXT from here on.
         if (a != EXT) continue;
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3'
           if (base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT] ==
               ext[st][EXT]) {
@@ -131,7 +133,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        if (cfg.UseCoaxialStacking() && en < N - 1) {
+        if (CFG.UseCoaxialStacking() && en < N - 1) {
           // .(   ).<(   ) > Left coax  x
           val =
               base11 + m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en);
@@ -194,7 +196,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (dp[ist][ien][DP_P] < CAP_E) {
-              const auto val = m->TwoLoop(r, cfg, pf, st, en, ist, ien) + dp[ist][ien][DP_P];
+              const auto val = m->TwoLoop<CFG>(r, pf, st, en, ist, ien) + dp[ist][ien][DP_P];
               if (val == dp[st][en][DP_P]) {
                 q.emplace_back(ist, ien, DP_P);
                 goto loopend;
@@ -203,7 +205,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        if (m->Hairpin(r, pf, st, en) == dp[st][en][DP_P]) {
+        if (m->Hairpin<CFG>(r, pf, st, en) == dp[st][en][DP_P]) {
           goto loopend;
         }
 
@@ -213,7 +215,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         // (<   ><    >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
         Ctd val_ctd = CTD_UNUSED;
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // D2 can overlap terminal mismatches with anything.
           // (<   ><   >) Terminal mismatch
           val += m->terminal[stb][st1b][en1b][enb];
@@ -225,7 +227,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           goto loopend;
         }
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (3<   ><   >) 3'
           if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
                   pf.Unpaired(st + 1) + m->multiloop_c ==
@@ -252,7 +254,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
               pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -367,7 +369,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
 
         // Check a == U_RC:
         // (   )<.( ** ). > Right coax backward
-        if (cfg.UseCoaxialStacking() && a == DP_U_RC) {
+        if (CFG.UseCoaxialStacking() && a == DP_U_RC) {
           if (base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) +
                   pf.Unpaired(piv) + 2 * m->multiloop_c + right_unpaired ==
               dp[st][en][DP_U_RC]) {
@@ -385,7 +387,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         auto val = base00 + right_unpaired;
         Ctd val_ctd = CTD_UNUSED;
 
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U, U2
@@ -415,7 +417,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         // The rest of the cases are for U and U2.
         if (a != DP_U && a != DP_U2) continue;
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3' - U, U2
           if (base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
                   right_unpaired ==
@@ -445,7 +447,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           }
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U, U2
           auto val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) +
               pf.Unpaired(piv) + 2 * m->multiloop_c;
@@ -500,5 +502,11 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
 
   return res;
 }
+
+#define MRNA_INSTANTIATE(CFG, PF)          \
+  template TraceResult Traceback<CFG, PF>( \
+      const Primary&, const Model::Ptr&, const DpState&, const PF&, const trace::TraceCfg&);
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

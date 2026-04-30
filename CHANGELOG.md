@@ -1,5 +1,9 @@
 # Unreleased (on main, since 0.2.0)
 
+## 2026/04
+- Removed the baseopt backend and its model data.
+- base backend now uses constexpr (replaces baseopt)
+
 ## 2026/02
 - Large refactors
 

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/primary.h"
@@ -12,13 +11,12 @@
 namespace mrna::md::base {
 
 // Sparse folding.
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 class MfeSparseOpt {
  public:
-  static bool IsSupported(
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+  static bool IsSupported(const PseudofreeCfgT& pf, std::string* reason = nullptr);
 
-  static void Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf);
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf);
 };
 
 }  // namespace mrna::md::base

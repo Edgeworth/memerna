@@ -2,8 +2,8 @@
 #ifndef PROGRAMS_PRINT_H_
 #define PROGRAMS_PRINT_H_
 
+#include <span>
 #include <string>
-#include <vector>
 
 #include "backends/common/base/model_base.h"
 #include "model/energy.h"
@@ -20,7 +20,7 @@ void PrintInnerStackProbs(const Primary& r, const PfnTables& pfn, const md::base
 
 void PrintHelixProbs(const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model);
 
-std::string FormatPseudofreeEnergies(const std::vector<Energy>& energies);
+std::string FormatPseudofreeEnergies(std::span<const Energy> energies);
 
 }  // namespace mrna
 

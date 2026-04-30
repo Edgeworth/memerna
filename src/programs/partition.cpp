@@ -27,13 +27,13 @@ int main(int argc, char* argv[]) {
 
   verify(args.PosSize() == 1, "need primary sequence to fold");
   auto r = mrna::Primary::FromSeq(args.Pos(0));
-  auto energy_cfg = mrna::erg::EnergyCfg::FromArgParse(args);
+  const auto cfg = mrna::erg::EnergyCfgPfn::FromArgParse(args);
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
 
   auto ctx = mrna::Ctx::FromArgParse(args);
   auto pfn_alg = args.MaybeGet<mrna::PfnAlg>(mrna::OPT_PFN_ALG);
-  auto res = ctx.Pfn(r, pfn_alg, energy_cfg, pf);
+  auto res = ctx.Pfn(r, pfn_alg, cfg, pf);
   fmt::print("q: " FLTFMT "\np:\n", res.pfn.q);
   mrna::PrintPfn(res.pfn.p);
   fmt::print("\nprobabilities:\n");
@@ -46,6 +46,6 @@ int main(int argc, char* argv[]) {
       fmt::print("\nInner stacking probabilities\n");
       mrna::PrintInnerStackProbs(r, res.pfn, *model);
     }};
-    std::visit(vis, ctx.BackendForPfn(pfn_alg, energy_cfg, pf).m);
+    std::visit(vis, ctx.BackendForPfn(pfn_alg, cfg, pf).m);
   }
 }

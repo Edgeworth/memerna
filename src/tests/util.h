@@ -66,7 +66,7 @@ inline std::vector<subopt::SuboptResult> CheckSubopt(const BackendModelPtr& m,
 
 inline pfn::PfnResult GetPfn(
     const BackendModelPtr& m, const BackendCfg& backend_cfg, PfnAlg alg, const Primary& r) {
-  return Ctx(m, backend_cfg).Pfn(r, alg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+  return Ctx(m, backend_cfg).Pfn(r, alg, erg::EnergyCfgPfn{}, erg::PseudofreeCfg{});
 }
 
 inline pfn::PfnResult GetPfn(

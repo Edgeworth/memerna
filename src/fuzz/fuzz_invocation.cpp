@@ -417,14 +417,15 @@ Error FuzzInvocation::CheckPfn() {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](PfnAlg pfn_alg) {
       std::string reason;
-      if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, cfg_.energy_cfg, pf_, &reason)) {
+      if (!PfnAlgIsSupported(
+              kind, pfn_alg, backend_cfg_, erg::EnergyCfgPfn{cfg_.energy_cfg}, pf_, &reason)) {
         if (should_log_) loginfo("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
         return;
       }
       if (should_log_) loginfo("pfn fuzzed: {}-{}", kind, pfn_alg);
 
       const Ctx ctx(m, backend_cfg_);
-      results.emplace_back(ctx.Pfn(r_, pfn_alg, cfg_.energy_cfg, pf_));
+      results.emplace_back(ctx.Pfn(r_, pfn_alg, erg::EnergyCfgPfn{cfg_.energy_cfg}, pf_));
       tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
     };
 
@@ -538,7 +539,7 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg,
 
 Error FuzzInvocation::CheckPfnRNAstructure(const pfn::PfnResult& pfn) {
   Error errors;
-  auto rstr_pfn = rstr_->Pfn(r_, /*alg=*/std::nullopt, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+  auto rstr_pfn = rstr_->Pfn(r_, /*alg=*/std::nullopt, erg::EnergyCfgPfn{}, erg::PseudofreeCfg{});
 
   ComparePfn(rstr_pfn.pfn, pfn.pfn, "RNAstructure", "memerna", errors);
 

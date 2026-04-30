@@ -50,18 +50,16 @@ extern std::optional<std::tuple<Primary, Secondary>> k16sHSapiens3;
 inline constexpr int NUM_TEST_MODELS = 5;
 
 inline md::base::Model::Ptr base_t04;
-inline md::base::opt::Model::Ptr baseopt_t04;
 inline md::stack::Model::Ptr stack_t04;
 
 inline std::vector<md::base::Model::Ptr> base_ms;
-inline std::vector<md::base::opt::Model::Ptr> baseopt_ms;
 inline std::vector<md::stack::Model::Ptr> stack_ms;
 // NEWBACKEND: Add here.
 
-inline constexpr int NUM_T04_MODELS = 3;
+inline constexpr int NUM_T04_MODELS = 2;
 inline std::vector<BackendModelPtr> t04_ms;
 
-inline constexpr int NUM_T12_MODELS = 3;
+inline constexpr int NUM_T12_MODELS = 2;
 inline std::vector<BackendModelPtr> t12_ms;
 
 inline constexpr int NUM_T22_MODELS = 1;

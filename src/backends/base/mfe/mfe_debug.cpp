@@ -9,6 +9,7 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
+#include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -26,27 +27,28 @@ namespace mrna::md::base {
     }                                                                   \
   } while (0)
 
-bool MfeDebug::IsSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& /*pf*/, std::string* reason) {
-  if (cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
-    if (reason) *reason = fmt::format("lonely_pairs={} not supported", cfg.lonely_pairs);
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+bool MfeDebug<CFG, PseudofreeCfgT>::IsSupported(const PseudofreeCfgT& /*pf*/, std::string* reason) {
+  if constexpr (CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      CFG.lonely_pairs != erg::EnergyCfg::LonelyPairs::ON) {
+    if (reason) *reason = fmt::format("lonely_pairs={} not supported", CFG.lonely_pairs);
     return false;
   }
   return true;
 }
 
-void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-    const erg::PseudofreeCfg& pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+void MfeDebug<CFG, PseudofreeCfgT>::Run(
+    const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf) {
   static_assert(
       HAIRPIN_MIN_SZ >= 2, "Minimum hairpin size >= 2 is relied upon in some expressions.");
 
   std::string reason;
-  verify(IsSupported(cfg, pf, &reason), "{} does not support the given configuration: {}",
-      funcname(), reason);
+  verify(IsSupported(pf, &reason), "{} does not support the given configuration: {}", funcname(),
+      reason);
   pf.Verify(r);
 
-  logdebug("base {} with {}, {}", funcname(), cfg, pf);
+  logdebug("base {} with {}, {}", funcname(), CFG, pf);
 
   const int N = r.size();
   state.dp = DpArray(r.size() + 1, MAX_E);
@@ -61,16 +63,16 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
       const Base en1b = r[en - 1];
       const Base en2b = r[en - 2];
 
-      if (Model::CanPair(cfg, r, st, en)) {
+      if (Model::CanPair<CFG>(r, st, en)) {
         const int max_inter = std::min(TWOLOOP_MAX_SZ, en - st - HAIRPIN_MIN_SZ - 3);
         for (int ist = st + 1; ist < st + max_inter + 2; ++ist) {
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien) {
             if (dp[ist][ien][DP_P] < CAP_E)
-              UPDATE_CACHE(DP_P, m->TwoLoop(r, cfg, pf, st, en, ist, ien) + dp[ist][ien][DP_P]);
+              UPDATE_CACHE(DP_P, m->TwoLoop<CFG>(r, pf, st, en, ist, ien) + dp[ist][ien][DP_P]);
           }
         }
         // Hairpin loops.
-        UPDATE_CACHE(DP_P, m->Hairpin(r, pf, st, en));
+        UPDATE_CACHE(DP_P, m->Hairpin<CFG>(r, pf, st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
         // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
@@ -79,14 +81,14 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
 
         // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // D2 can overlap terminal mismatches with anything.
           // (<   ><   >) Terminal mismatch
           val += m->terminal[stb][st1b][en1b][enb];
         }
         UPDATE_CACHE(DP_P, val);
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (3<   ><   >) 3'
           UPDATE_CACHE(DP_P,
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
@@ -101,7 +103,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
                   pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c);
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
               pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
@@ -174,7 +176,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
         auto u2_val = base00 + dp[piv + 1][en][DP_U];
         auto val = base00 + right_unpaired;
 
-        if (cfg.UseD2()) {
+        if constexpr (CFG.UseD2()) {
           // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
             // (   )<   > Terminal mismatch - U
@@ -198,7 +200,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
         else
           UPDATE_CACHE(DP_U_WC, val);
 
-        if (cfg.UseDangleMismatch()) {
+        if constexpr (CFG.UseDangleMismatch()) {
           // (   )3<   > 3' - U
           UPDATE_CACHE(DP_U,
               base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
@@ -222,7 +224,7 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
                   2 * m->multiloop_c + dp[piv + 1][en][DP_U]);
         }
 
-        if (cfg.UseCoaxialStacking()) {
+        if constexpr (CFG.UseCoaxialStacking()) {
           // .(   ).<(   ) > Left coax - U
           val = base11 + m->MismatchCoaxial(pl1b, pb, stb, st1b) + pf.Unpaired(st) +
               pf.Unpaired(piv) + 2 * m->multiloop_c +
@@ -254,5 +256,9 @@ void MfeDebug::Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::E
 }
 
 #undef UPDATE_CACHE
+
+#define MRNA_INSTANTIATE(CFG, PF) template class MfeDebug<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

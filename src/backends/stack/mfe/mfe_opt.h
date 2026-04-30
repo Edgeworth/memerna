@@ -4,20 +4,18 @@
 
 #include <string>
 
-#include "api/energy/pseudofree_cfg.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/primary.h"
 
 namespace mrna::md::stack {
 
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 class MfeOpt {
  public:
-  static bool IsSupported(
-      const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+  static bool IsSupported(const PseudofreeCfgT& pf, std::string* reason = nullptr);
 
-  static void Run(const Primary& r, const Model::Ptr& m, DpState& state, erg::EnergyCfg cfg,
-      const erg::PseudofreeCfg& pf);
+  static void Run(const Primary& r, const Model::Ptr& m, DpState& state, const PseudofreeCfgT& pf);
 };
 
 }  // namespace mrna::md::stack

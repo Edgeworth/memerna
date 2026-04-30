@@ -4,15 +4,18 @@
 #include <algorithm>
 #include <utility>
 
+#include "backends/common/static.h"
+
 namespace mrna::md::base {
 
-BoltzPrecomp::BoltzPrecomp(
-    Primary r, BoltzModel::Ptr bm, erg::EnergyCfg cfg_, erg::PseudofreeCfg pf_)
-    : BoltzPrecompBase(std::move(r), std::move(bm)), cfg(cfg_), pf(std::move(pf_)), bpf(pf) {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+BoltzPrecomp<CFG, PseudofreeCfgT>::BoltzPrecomp(Primary r, BoltzModel::Ptr bm, PseudofreeCfgT pf_)
+    : BoltzPrecompBase(std::move(r), std::move(bm)), pf(std::move(pf_)), bpf(Boltz(pf)) {
   bpf.Verify(r_);
 }
 
-BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+BoltzEnergy BoltzPrecomp<CFG, PseudofreeCfgT>::Hairpin(int st, int en) const {
   const auto& m = bm_->m();
   const int length = en - st - 1;
   assert(length >= HAIRPIN_MIN_SZ);
@@ -26,7 +29,7 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   const Base st1b = r_[st + 1];
   const Base en1b = r_[en - 1];
   const Base enb = r_[en];
-  energy *= (m.HairpinInitiation(length) + m.AuGuPenalty(stb, enb)).Boltz();
+  energy *= Boltz(m.HairpinInitiation(length) + m.AuGuPenalty(stb, enb));
   const bool all_c = hairpin[st + 1].num_c >= length;
 
   if (length == 3) {
@@ -38,20 +41,21 @@ BoltzEnergy BoltzPrecomp::Hairpin(int st, int en) const {
   if ((st1b == U && en1b == U) || (st1b == G && en1b == A))
     energy *= bm_->hairpin_uu_ga_first_mismatch;
   if (st1b == G && en1b == G) energy *= bm_->hairpin_gg_first_mismatch;
-  if (all_c) energy *= (m.hairpin_all_c_a * length).Boltz() * bm_->hairpin_all_c_b;
+  if (all_c) energy *= Boltz(m.hairpin_all_c_a * length) * bm_->hairpin_all_c_b;
   if (stb == G && enb == U && st >= 2 && r_[st - 1] == G && r_[st - 2] == G)
     energy *= bm_->hairpin_special_gu_closure;
 
   return energy;
 }
 
-BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+BoltzEnergy BoltzPrecomp<CFG, PseudofreeCfgT>::TwoLoop(int ost, int oen, int ist, int ien) const {
   const auto& m = bm_->m();
   const int toplen = ist - ost - 1;
   const int botlen = oen - ien - 1;
   if (toplen == 0 && botlen == 0)
     return bm_->stack[r_[ost]][r_[ist]][r_[ien]][r_[oen]] * bpf.Paired(ost, oen);
-  if (toplen == 0 || botlen == 0) return bm_->Bulge(r_, cfg, pf, ost, oen, ist, ien);
+  if (toplen == 0 || botlen == 0) return bm_->Bulge<CFG>(r_, pf, ost, oen, ist, ien);
 
   BoltzEnergy energy = bm_->AuGuPenalty(r_[ost], r_[oen]) * bm_->AuGuPenalty(r_[ist], r_[ien]) *
       bpf.Paired(ost, oen) * bpf.UnpairedProd(ost + 1, ist - 1) *
@@ -76,7 +80,7 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
       "initiation cache not large enough");
   assert(toplen + botlen < std::remove_reference_t<decltype(m)>::INITIATION_CACHE_SZ);
   energy *= bm_->internal_init[toplen + botlen] *
-      std::min(std::abs(toplen - botlen) * m.internal_asym, NINIO_MAX_ASYM).Boltz();
+      Boltz(std::min(std::abs(toplen - botlen) * m.internal_asym, NINIO_MAX_ASYM));
 
   energy *= bm_->InternalLoopAuGuPenalty(r_[ost], r_[oen]);
   energy *= bm_->InternalLoopAuGuPenalty(r_[ist], r_[ien]);
@@ -90,5 +94,9 @@ BoltzEnergy BoltzPrecomp::TwoLoop(int ost, int oen, int ist, int ien) const {
 
   return energy;
 }
+
+#define MRNA_INSTANTIATE(CFG, PF) template struct BoltzPrecomp<CFG, PF>;
+MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
+#undef MRNA_INSTANTIATE
 
 }  // namespace mrna::md::base

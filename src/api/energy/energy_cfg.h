@@ -66,6 +66,13 @@ struct EnergyCfg {
   }
 };
 
+struct EnergyCfgPfn : EnergyCfg {
+  constexpr EnergyCfgPfn() : EnergyCfgPfn(EnergyCfg{}) {}
+  constexpr explicit EnergyCfgPfn(EnergyCfg c) : EnergyCfg(c) { bulge_states = false; }
+
+  static EnergyCfgPfn FromArgParse(const ArgParse& args);
+};
+
 std::ostream& operator<<(std::ostream& str, const EnergyCfg& o);
 
 inline const auto OPT_LONELY_PAIRS = mrna::Opt(Opt::ARG)

@@ -58,7 +58,7 @@ class RnaPackage {
       const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const = 0;
 
   [[nodiscard]] virtual pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg,
-      erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf) const = 0;
+      erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const = 0;
 
   static std::unique_ptr<RnaPackage> FromArgParse(const ArgParse& args);
 };

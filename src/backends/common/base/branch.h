@@ -42,8 +42,8 @@ namespace mrna::md::base {
     }                                                                                 \
   } while (0)
 
-template <typename T>
-Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, const Secondary& s,
+template <erg::EnergyCfg CFG, typename T>
+Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, bool use_first_lu, BranchCtd* branch_ctd) {
   const auto N = As<int>(branches.size());
   const int RSZ = r.size();
@@ -100,7 +100,7 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
 
     // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be
     // the last branch.
-    if (cfg.UseCoaxialStacking() && !ru_exists[i] && i != N - 1) {
+    if (CFG.UseCoaxialStacking() && !ru_exists[i] && i != N - 1) {
       Energy coax = m.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
       // When the next branch is consumed by this coaxial stack, it can no longer interact with
       // anything, so just skip to i + 2.
@@ -114,7 +114,7 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
     }
 
     if (lu_usable[i] && ru_usable[i]) {
-      if (cfg.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
         // Consumes ru, so if it was shared, use it.
         UPDATE_CACHE(ru_shared[i], i + 1, 0, i, m.terminal[rb][rub][lub][lb], CTD_MISMATCH);
@@ -124,7 +124,7 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
       // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
       // Skip to the branch after next since the next branch can't be involved in any more
       // interactions anyway: its left pair is consumed, and its right pair can't dangle towards it.
-      if (cfg.UseCoaxialStacking() && ru_shared[i] && i != N - 1) {
+      if (CFG.UseCoaxialStacking() && ru_shared[i] && i != N - 1) {
         Energy left_coax = m.MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LCOAX_WITH_NEXT);
       }
@@ -132,7 +132,7 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
 
     // Right consuming cases.
     if (ru_usable[i]) {
-      if (cfg.UseDangleMismatch()) {
+      if constexpr (CFG.UseDangleMismatch()) {
         // Right dangle (3').
         // Only requires ru_exists so handle where left is both used and not used.
         UPDATE_CACHE(ru_shared[i], i + 1, 0, i, m.dangle3[rb][rub][lb], CTD_3_DANGLE);
@@ -141,7 +141,7 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
 
       // Mismatch mediated coaxial stacking, right facing (uses the next branch).
       // Requires ru_exists, ru_shared. Consumes ru and rru.
-      if (cfg.UseCoaxialStacking() && ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
+      if (CFG.UseCoaxialStacking() && ru_shared[i] && i != N - 1 && ru_usable[i + 1]) {
         Energy right_coax = m.MismatchCoaxial(r[ri[i + 1]], r[rui[i + 1]], rub, r[li[i + 1]]);
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RC_WITH_NEXT);
@@ -153,14 +153,14 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
       }
     }
 
-    if (cfg.UseDangleMismatch() && lu_usable[i]) {
+    if (CFG.UseDangleMismatch() && lu_usable[i]) {
       // 5' dangle.
       UPDATE_CACHE(0, i + 1, 0, i, m.dangle5[rb][lub][lb], CTD_5_DANGLE);
     }
 
     auto val = ZERO_E;
     auto val_ctd = CTD_UNUSED;
-    if (cfg.UseD2()) {
+    if constexpr (CFG.UseD2()) {
       // Note that D2 can overlap with anything.
       if (li[i] != 0 && ri[i] != RSZ - 1) {
         val += m.terminal[rb][r[rui[i]]][r[lui[i]]][lb];
@@ -211,9 +211,9 @@ Energy ComputeOptimalCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, cons
 
 // Reads the per-base ctd representation from `ctd` for `branches` branches and
 // writes it in branch representation to `branch_ctd`.
-template <typename T>
-Energy AddBaseCtdsToBranchCtds(const T& m, erg::EnergyCfg cfg, const Primary& r, const Secondary& s,
-    const Ctds& ctd, const std::deque<int>& branches, BranchCtd* branch_ctd) {
+template <erg::EnergyCfg CFG, typename T>
+Energy AddBaseCtdsToBranchCtds(const T& m, const Primary& r, const Secondary& s, const Ctds& ctd,
+    const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = ZERO_E;
   // If we have an outer loop in `branches`, it is possible the first could refer to PREV, or the
@@ -271,7 +271,7 @@ Energy AddBaseCtdsToBranchCtds(const T& m, erg::EnergyCfg cfg, const Primary& r,
     default:
       // Should never happen
       fatal("unexpected CTD value {} at index {}, primary: {}, secondary: {}, ctds: {}",
-          ctd[branch], branch, r.ToSeq(), s.ToDb(), cfg.ToCtdString(s, ctd));
+          ctd[branch], branch, r.ToSeq(), s.ToDb(), CFG.ToCtdString(s, ctd));
     }
     branch_ctd->emplace_back(ctd[branch], energy);
     total_energy += energy;
