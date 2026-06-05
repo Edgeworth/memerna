@@ -34,29 +34,37 @@ def validate_db(
     return db_to_secondary(value)
 
 
-memevault_options = cloup.option(
-    "--memevault-path",
-    envvar="MEMEVAULT",
-    show_envvar=True,
-    required=False,
-    type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
+memevault_options = cloup.option_group(
+    "memevault options",
+    cloup.option(
+        "--memevault-path",
+        envvar="MEMEVAULT",
+        show_envvar=True,
+        required=False,
+        type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
+    ),
+    cloup.option("--memevault-dataset", default="archiveii", show_default=True),
 )
 
-data_options = cloup.option_group(
-    "Data options",
-    memevault_options,
-    RequireAtLeast(1)(
-        cloup.option("-mr", "--memevault-rna"),
-        cloup.option("-fr", "--file-rna", type=cloup.File("r"), callback=validate_rna_file),
-        cloup.option("-pr", "--primary", callback=validate_seq),
-        cloup.option("-sr", "--secondary", callback=validate_db),
-    ),
-)
+
+def data_options(fn: Any) -> Any:
+    return memevault_options(
+        cloup.option_group(
+            "Data options",
+            RequireAtLeast(1)(
+                cloup.option("-mr", "--memevault-rna"),
+                cloup.option("-fr", "--file-rna", type=cloup.File("r"), callback=validate_rna_file),
+                cloup.option("-pr", "--primary", callback=validate_seq),
+                cloup.option("-sr", "--secondary", callback=validate_db),
+            ),
+        )(fn)
+    )
 
 
 def rna_from_args(
     memevault_rna: str | None,
     memevault_path: Path | None,
+    memevault_dataset: str,
     file_rna: Rna | None,
     primary: str | None,
     secondary: list[int] | None,
@@ -73,7 +81,7 @@ def rna_from_args(
     if memevault_rna:
         if memevault_path is None:
             raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
-        return MemeVault(memevault_path, "archiveii")[memevault_rna]
+        return MemeVault(memevault_path, memevault_dataset)[memevault_rna]
     if primary or secondary:
         return Rna("cmd", primary, secondary)
     raise click.UsageError("Specify one of --memevault-rna, --file-rna, --primary/--secondary")

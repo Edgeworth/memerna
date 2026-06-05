@@ -2,6 +2,7 @@
 #ifndef TESTS_UTIL_H_
 #define TESTS_UTIL_H_
 
+#include <iomanip>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "gtest/gtest.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "util/argparse.h"
 
 namespace mrna {
 
@@ -72,6 +74,22 @@ inline pfn::PfnResult GetPfn(
 inline pfn::PfnResult GetPfn(
     const BackendModelPtr& m, const BackendCfg& backend_cfg, PfnAlg alg, const std::string& s) {
   return GetPfn(m, backend_cfg, alg, Primary::FromSeq(s));
+}
+
+inline std::vector<char*> MakeArgv(std::vector<std::string>& args) {
+  std::vector<char*> argv;
+  argv.reserve(args.size());
+  for (auto& arg : args) argv.push_back(arg.data());
+  return argv;
+}
+
+template <class RegisterOptsFn>
+inline ArgParse ParseTestArgs(std::vector<std::string> argv_str, RegisterOptsFn register_opts) {
+  ArgParse args;
+  register_opts(&args);
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+  return args;
 }
 
 void CheckPfn(const PfnTables& got, const PfnTables& want);

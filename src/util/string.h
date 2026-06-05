@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "util/enum.h"  // IWYU pragma: keep - required for ADL to work for enum conversion.
@@ -17,6 +18,7 @@ std::string sgetline(std::istream& is);
 
 template <typename T>
 T Conv(const std::string& s) {
+  if constexpr (std::is_same_v<T, std::string>) return s;
   T t{};
   std::stringstream ss(s);
   ss >> t;

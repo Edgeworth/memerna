@@ -81,6 +81,15 @@ void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& w
   return delta;
 }
 
+[[nodiscard]] bool HasDuplicateTracebacks(const std::vector<subopt::SuboptResult>& subopts) {
+  std::set<trace::TraceResult> traceback_set;
+  for (const auto& subopt : subopts) {
+    if (traceback_set.contains(subopt.tb)) return true;
+    traceback_set.insert(trace::TraceResult(subopt.tb));
+  }
+  return false;
+}
+
 }  // namespace
 
 FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms,
@@ -92,9 +101,6 @@ FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms
 }
 
 Error FuzzInvocation::Run() {
-  if (cfg_.pfn_subopt)
-    verify(!cfg_.energy_cfg.bulge_states, "bulge states must be disabled for pfn subopt fuzzing");
-
   std::optional<FoldBaseline> fold_baseline;
   if (cfg_.mfe || cfg_.subopt) {
     auto [mfe_errors, baseline] = CheckMfe();
@@ -120,13 +126,14 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
   for (const auto& error : errors) errors_.push_back("  " + error);
 }
 
-const BackendModelPtr* FuzzInvocation::FindSuboptModel(subopt::SuboptCfg subopt_cfg) const {
+const BackendModelPtr* FuzzInvocation::FindSuboptModel(
+    const erg::EnergyCfg& energy_cfg, subopt::SuboptCfg subopt_cfg) const {
   for (const auto& m : ms_) {
     auto kind = GetBackendKind(m);
-    if (!ResolveMfe(kind, /*alg=*/std::nullopt, backend_cfg_, cfg_.energy_cfg, pf_, /*log=*/nullptr)
+    if (!ResolveMfe(kind, /*alg=*/std::nullopt, backend_cfg_, energy_cfg, pf_, /*log=*/nullptr)
             .has_value())
       continue;
-    if (ResolveSubopt(kind, /*alg=*/std::nullopt, backend_cfg_, cfg_.energy_cfg, pf_, subopt_cfg,
+    if (ResolveSubopt(kind, /*alg=*/std::nullopt, backend_cfg_, energy_cfg, pf_, subopt_cfg,
             /*log=*/nullptr)
             .has_value())
       return &m;
@@ -291,16 +298,6 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
   return errors;
 }
 
-bool FuzzInvocation::SuboptDuplicates(const std::vector<subopt::SuboptResult>& subopts) {
-  // If energies are different but everything else is the same, it is still a bug.
-  std::set<subopt::SuboptResult> subopt_set;
-  for (const auto& subopt : subopts) {
-    if (subopt_set.contains(subopt)) return true;
-    subopt_set.insert(subopt);
-  }
-  return false;
-}
-
 Error FuzzInvocation::CheckSuboptResult(Energy mfe_energy,
     const std::vector<subopt::SuboptResult>& subopt, const BackendModelPtr& m, bool has_ctds,
     bool check_duplicates) {
@@ -313,7 +310,7 @@ Error FuzzInvocation::CheckSuboptResult(Energy mfe_energy,
         fmt::format("lowest structure energy {} != mfe {}", subopt[0].energy, mfe_energy));
 
   // Check for duplicate structures.
-  if (check_duplicates && SuboptDuplicates(subopt)) errors.emplace_back("has duplicates");
+  if (check_duplicates && HasDuplicateTracebacks(subopt)) errors.emplace_back("has duplicates");
 
   // Only ones with CTDs set can do these tests.
   // TODO(2): Improve this once we have better CTD option support.
@@ -411,21 +408,21 @@ void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
 Error FuzzInvocation::CheckPfn() {
   const int N = r_.size();
   Error errors;
+  const erg::EnergyCfgPfn pfn_energy_cfg{cfg_.energy_cfg};
   std::vector<pfn::PfnResult> results;
   std::vector<std::string> tags;
   for (const auto& m : ms_) {
     const auto kind = GetBackendKind(m);
     auto maybe_run = [&](PfnAlg pfn_alg) {
       std::string reason;
-      if (!PfnAlgIsSupported(
-              kind, pfn_alg, backend_cfg_, erg::EnergyCfgPfn{cfg_.energy_cfg}, pf_, &reason)) {
+      if (!PfnAlgIsSupported(kind, pfn_alg, backend_cfg_, pfn_energy_cfg, pf_, &reason)) {
         if (should_log_) loginfo("pfn NOT fuzzed: {}-{}: {}", kind, pfn_alg, reason);
         return;
       }
       if (should_log_) loginfo("pfn fuzzed: {}-{}", kind, pfn_alg);
 
       const Ctx ctx(m, backend_cfg_);
-      results.emplace_back(ctx.Pfn(r_, pfn_alg, erg::EnergyCfgPfn{cfg_.energy_cfg}, pf_));
+      results.emplace_back(ctx.Pfn(r_, pfn_alg, pfn_energy_cfg, pf_));
       tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
     };
 
@@ -440,10 +437,10 @@ Error FuzzInvocation::CheckPfn() {
 
   if (N < cfg_.pfn_subopt) {
     subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
-    if (const auto* m = FindSuboptModel(subopt_cfg)) {
+    if (const auto* m = FindSuboptModel(pfn_energy_cfg, subopt_cfg)) {
       const Ctx ctx(*m, backend_cfg_);
       auto subopts = ctx.SuboptIntoVector(
-          r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt, cfg_.energy_cfg, pf_, subopt_cfg);
+          r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt, pfn_energy_cfg, pf_, subopt_cfg);
       flt subopt_q{};
       for (const auto& res : subopts) subopt_q += res.energy.Boltz();
 

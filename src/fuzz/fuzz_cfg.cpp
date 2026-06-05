@@ -134,6 +134,9 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.random_pseudofree_cfg = RandomPseudofreeCfg::FromArgParse(args);
 
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
+  verify(
+      !cfg.pfn_subopt || !args.HasExplicit(erg::OPT_BULGE_STATES) || !cfg.energy_cfg.bulge_states,
+      "--pfn-subopt is incompatible with --bulge-states");
   cfg.energy_model = args.Get<erg::EnergyModelKind>(OPT_ENERGY_MODEL);
   cfg.backends = args.GetMultipleOr<BackendKind>(OPT_FUZZ_BACKENDS);
   cfg.pf_paired = args.GetMultipleOr<Energy>(erg::OPT_PAIRED_PSEUDOFREE);

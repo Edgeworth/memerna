@@ -5,20 +5,10 @@
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "tests/util.h"
 #include "util/log.h"
 
 namespace mrna {
-
-namespace {
-
-std::vector<char*> MakeArgv(std::vector<std::string>& args) {
-  std::vector<char*> argv;
-  argv.reserve(args.size());
-  for (auto& s : args) argv.push_back(s.data());
-  return argv;
-}
-
-}  // namespace
 
 TEST(ArgParseTest, HasIsTrueForNoFlagButGetOrIsFalse) {
   const auto opt = mrna::Opt(mrna::Opt::FLAG).LongName("flag");
@@ -90,6 +80,28 @@ TEST(ArgParseTest, BareDashIsPositional) {
   EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
   EXPECT_EQ(1, args.Pos().size());
   EXPECT_EQ("-", args.Pos()[0]);
+}
+
+TEST(ArgParseTest, StringArgumentPreservesSpaces) {
+  const auto opt = mrna::Opt(mrna::Opt::ARG).LongName("path");
+  mrna::ArgParse args;
+  args.RegisterOpt(opt);
+
+  std::vector<std::string> argv_str = {"prog", "--path", "/tmp/model path"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+
+  EXPECT_EQ("/tmp/model path", args.Get<std::string>(opt));
+}
+
+TEST(ArgParseTest, StringPositionalPreservesSpaces) {
+  mrna::ArgParse args;
+
+  std::vector<std::string> argv_str = {"prog", "RNA with spaces"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+
+  EXPECT_EQ("RNA with spaces", args.Pos<std::string>(0));
 }
 
 }  // namespace mrna

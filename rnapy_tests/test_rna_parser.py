@@ -56,3 +56,8 @@ def test_to_ct_file_last_row_next_is_zero() -> None:
 def test_from_any_file_rejects_empty_input() -> None:
     with pytest.raises(ValueError):
         RnaParser.from_any_file("")
+
+
+def test_rna_rejects_mismatched_empty_secondary() -> None:
+    with pytest.raises(ValueError, match="same length"):
+        Rna(r="G", s=[])

@@ -13,7 +13,7 @@ class Rna:
     energy: Decimal | None = None
 
     def __post_init__(self) -> None:
-        if self.r and self.s and len(self.r) != len(self.s):
+        if self.r is not None and self.s is not None and len(self.r) != len(self.s):
             raise ValueError("primary and secondary must be the same length")
 
     def __str__(self) -> str:
