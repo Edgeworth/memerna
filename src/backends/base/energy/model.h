@@ -55,12 +55,13 @@ class Model : public ModelBase, public ModelMixin<Model> {
         random_cfg.max_energy.ToFlt<double>(), RAND_MAX_HAIRPIN_SZ, RAND_MAX_NUM_HAIRPIN);
   }
 
- private:
+ protected:
   friend class ModelMixin<Model>;
 
-  // This is private to prevent construction on the stack, since this structure is large.
+  // This is protected to prevent construction on the stack, since this structure is large.
   Model() = default;
 
+ private:
   template <erg::EnergyCfg CFG, class PseudofreeCfgT>
   Energy SubEnergyInternal(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
       int en, bool use_given_ctds, Ctds* ctd, std::unique_ptr<Structure>* struc) const;

@@ -12,6 +12,8 @@
 #include "api/mfe.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/brute/alg.h"
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
@@ -29,6 +31,7 @@ mfe::DpState CreateDpState(const BackendModelPtr& m) {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr&) -> mfe::DpState { return md::base::DpState{}; },
       [&](const md::stack::Model::Ptr&) -> mfe::DpState { return md::stack::DpState{}; },
+      [&](const md::canon::Model::Ptr&) -> mfe::DpState { return md::canon::DpState{}; },
   };
   return std::visit(vis, m);
 }
@@ -37,6 +40,7 @@ pfn::PfnState CreatePfnState(const BackendModelPtr& m) {
   auto vis = overloaded{
       [&](const md::base::Model::Ptr&) -> pfn::PfnState { return md::base::PfnState{}; },
       [&](const md::stack::Model::Ptr&) -> pfn::PfnState { fatal("unimplemented"); },
+      [&](const md::canon::Model::Ptr&) -> pfn::PfnState { return md::canon::PfnState{}; },
   };
   return std::visit(vis, m);
 }

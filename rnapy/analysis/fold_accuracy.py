@@ -34,7 +34,25 @@ class FoldAccuracyRunner:
             (
                 memerna,
                 EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="canon",
+                ),
+            ),
+            (
+                memerna,
+                EnergyCfg(
                     ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON, energy_model="t04", backend="base"
+                ),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.ALL,
+                    lonely_pairs=LonelyPairs.ON,
+                    energy_model="t04",
+                    backend="canon",
                 ),
             ),
             (
@@ -44,6 +62,15 @@ class FoldAccuracyRunner:
                     lonely_pairs=LonelyPairs.HEURISTIC,
                     energy_model="t04",
                     backend="base",
+                ),
+            ),
+            (
+                memerna,
+                EnergyCfg(
+                    ctd=CtdCfg.NO_COAX,
+                    lonely_pairs=LonelyPairs.HEURISTIC,
+                    energy_model="t04",
+                    backend="canon",
                 ),
             ),
             (

@@ -79,6 +79,15 @@ void InitTest(const std::string& data_dir) {
   while (stack_ms.size() < NUM_TEST_MODELS)
     stack_ms.push_back(md::stack::Model::Random(
         kT04Cfg, RandomModelCfg(static_cast<uint_fast32_t>(stack_ms.size()), E(-10.0), E(10.0))));
+
+  canon_t04 = md::canon::Model::FromBackendCfg(BackendKind::CANON,
+      BackendCfg{.energy_model = erg::EnergyModelKind::T04,
+          .precision = MRNA_ENERGY_PRECISION,
+          .data_src = data_dir});
+  canon_ms.push_back(canon_t04);
+  while (canon_ms.size() < NUM_TEST_MODELS)
+    canon_ms.push_back(md::canon::Model::Random(
+        kT04Cfg, RandomModelCfg(static_cast<uint_fast32_t>(canon_ms.size()), E(-10.0), E(10.0))));
 }
 
 }  // namespace mrna

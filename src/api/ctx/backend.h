@@ -7,6 +7,8 @@
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/boltz_model.h"
 #include "backends/base/energy/model.h"
+#include "backends/canon/energy/boltz_model.h"
+#include "backends/canon/energy/model.h"
 #include "backends/common/static.h"
 #include "backends/stack/energy/boltz_model.h"
 #include "backends/stack/energy/model.h"
@@ -16,8 +18,10 @@
 
 namespace mrna {
 
-using BackendModelPtr = std::variant<md::base::Model::Ptr, md::stack::Model::Ptr>;
-using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::stack::BoltzModel::Ptr>;
+using BackendModelPtr =
+    std::variant<md::base::Model::Ptr, md::stack::Model::Ptr, md::canon::Model::Ptr>;
+using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::stack::BoltzModel::Ptr,
+    md::canon::BoltzModel::Ptr>;
 
 BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg);
 
@@ -25,6 +29,7 @@ constexpr BackendKind GetBackendKind(const BackendModelPtr& m) {
   auto vis = overloaded{
       [](const md::base::Model::Ptr&) { return BackendKind::BASE; },
       [](const md::stack::Model::Ptr&) { return BackendKind::STACK; },
+      [](const md::canon::Model::Ptr&) { return BackendKind::CANON; },
   };
   return std::visit(vis, m);
 }
@@ -38,6 +43,10 @@ BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
 
 [[nodiscard]] inline md::stack::BoltzModel::Ptr Boltz(const md::stack::Model::Ptr& m) {
   return md::stack::BoltzModel::Create(m);
+}
+
+[[nodiscard]] inline md::canon::BoltzModel::Ptr Boltz(const md::canon::Model::Ptr& m) {
+  return md::canon::BoltzModel::Create(m);
 }
 
 [[nodiscard]] inline BackendBoltzModelPtr Boltz(const BackendBoltzModelPtr& m) { return m; }
@@ -100,6 +109,26 @@ template <erg::EnergyCfg CFG>
 
 [[nodiscard]] inline bool IsEquivalent(const md::stack::Model& a, const md::base::ModelBase& b) {
   return IsEquivalent(b, a);
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::canon::Model& a, const md::canon::Model& b) {
+  return static_cast<const md::base::ModelBase&>(a) == static_cast<const md::base::ModelBase&>(b);
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::base::ModelBase& a, const md::canon::Model& b) {
+  return a == static_cast<const md::base::ModelBase&>(b);
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::canon::Model& a, const md::base::ModelBase& b) {
+  return IsEquivalent(b, a);
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::stack::Model& a, const md::canon::Model& b) {
+  return IsEquivalent(a, static_cast<const md::base::ModelBase&>(b));
+}
+
+[[nodiscard]] inline bool IsEquivalent(const md::canon::Model& a, const md::stack::Model& b) {
+  return IsEquivalent(static_cast<const md::base::ModelBase&>(a), b);
 }
 
 [[nodiscard]] inline bool IsEquivalent(const BackendModelPtr& a, const BackendModelPtr& b) {

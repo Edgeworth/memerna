@@ -125,9 +125,9 @@ will be better.
 ## Running
 
 By default, memerna auto-selects the backend and algorithm for the requested
-energy model and configuration. Use `--backend base` or `--backend stack` only
-when you want to force a backend, and use `--dp-alg`, `--subopt-alg`, or
-`--pfn-alg` only when you want to force a specific algorithm.
+energy model and configuration. Use `--backend base`, `--backend canon`, or
+`--backend stack` only when you want to force a backend, and use `--dp-alg`,
+`--subopt-alg`, or `--pfn-alg` only when you want to force a specific algorithm.
 
 ### MFE folding
 

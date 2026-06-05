@@ -4,6 +4,7 @@
 
 #include <variant>
 
+#include "backends/canon/dp.h"
 #include "backends/common/base/dp.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/energy.h"
@@ -12,7 +13,8 @@
 namespace mrna::mfe {
 
 // Monostate if there is no DP state supported/used, like with RNAstructure.
-using DpState = std::variant<std::monostate, md::base::DpState, md::stack::DpState>;
+using DpState =
+    std::variant<std::monostate, md::base::DpState, md::stack::DpState, md::canon::DpState>;
 
 struct MfeResult {
   DpState dp;
@@ -24,6 +26,7 @@ struct MfeResult {
       overloaded{
           [](const md::base::DpState& base) -> const md::base::DpState* { return &base; },
           [](const md::stack::DpState& stack) -> const md::base::DpState* { return &stack.base; },
+          [](const md::canon::DpState&) -> const md::base::DpState* { return nullptr; },
           [](const std::monostate&) -> const md::base::DpState* { return nullptr; },
       },
       dp);

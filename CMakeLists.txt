@@ -203,6 +203,28 @@ set(MEMERNA_SOURCE
   src/backends/base/subopt/subopt_persistent.h
   src/backends/base/trace/trace.cpp
   src/backends/base/trace/trace.h
+  src/backends/canon/dp.h
+  src/backends/canon/energy/boltz_model.h
+  src/backends/canon/energy/boltz_precomp.cpp
+  src/backends/canon/energy/boltz_precomp.h
+  src/backends/canon/energy/model.cpp
+  src/backends/canon/energy/model.h
+  src/backends/canon/energy/precomp.cpp
+  src/backends/canon/energy/precomp.h
+  src/backends/canon/mfe/mfe_exterior.cpp
+  src/backends/canon/mfe/mfe_exterior.h
+  src/backends/canon/mfe/mfe_opt.cpp
+  src/backends/canon/mfe/mfe_opt.h
+  src/backends/canon/pfn/pfn_exterior.cpp
+  src/backends/canon/pfn/pfn_exterior.h
+  src/backends/canon/pfn/pfn_opt.cpp
+  src/backends/canon/pfn/pfn_opt.h
+  src/backends/canon/subopt/subopt_iterative.cpp
+  src/backends/canon/subopt/subopt_iterative.h
+  src/backends/canon/subopt/subopt_persistent.cpp
+  src/backends/canon/subopt/subopt_persistent.h
+  src/backends/canon/trace/trace.cpp
+  src/backends/canon/trace/trace.h
   src/backends/brute/alg.cpp
   src/backends/brute/alg.h
   src/backends/brute/brute.cpp
@@ -285,6 +307,8 @@ set(TEST_SOURCE
   src/tests/backends/stack/model_test.cpp
   src/tests/backends/base/energy_test.cpp
   src/tests/backends/base/model_test.cpp
+  src/tests/backends/canon/energy_test.cpp
+  src/tests/backends/canon/model_test.cpp
   src/tests/fuzz/fuzz_test.cpp
   src/tests/model/base_test.cpp
   src/tests/model/parsing_test.cpp
@@ -344,9 +368,11 @@ add_executable(subopt src/programs/subopt.cpp)
 target_include_directories(memerna PUBLIC src)
 
 target_link_libraries(memerna PUBLIC fmt::fmt)
+
 if(ENABLE_LOGGING)
   target_link_libraries(memerna PUBLIC spdlog::spdlog)
 endif()
+
 target_link_libraries(efn PRIVATE memerna)
 target_link_libraries(fold PRIVATE memerna)
 target_link_libraries(fuzz PRIVATE memerna)

@@ -74,6 +74,22 @@ TEST(AlgorithmResolveTest, ResolveMfeAutoSelectsStackOptForT22) {
   EXPECT_EQ(res->alg, MfeAlg::OPT);
 }
 
+TEST(AlgorithmResolveTest, ResolveMfeCanonOptSupportsD2) {
+  erg::EnergyCfg cfg;
+  cfg.ctd = erg::EnergyCfg::Ctd::D2;
+  const auto res =
+      ResolveMfe(BackendKind::CANON, MfeAlg::OPT, kT04Cfg, cfg, erg::PseudofreeCfg{});
+  ASSERT_TRUE(res.has_value());
+  EXPECT_EQ(res->backend, BackendKind::CANON);
+  EXPECT_EQ(res->alg, MfeAlg::OPT);
+}
+
+TEST(AlgorithmResolveTest, ResolveMfeCanonOptRejectsT22) {
+  const auto res = ResolveMfe(
+      BackendKind::CANON, MfeAlg::OPT, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+  EXPECT_FALSE(res.has_value());
+}
+
 TEST(AlgorithmResolveTest, ResolveSuboptAutoSelectsBaseIterativeWhenSupported) {
   const subopt::SuboptCfg subopt_cfg;
   const auto res = ResolveSubopt(/*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg,
@@ -92,6 +108,17 @@ TEST(AlgorithmResolveTest, ResolveSuboptAutoKeepsBaseWithPseudofree) {
   EXPECT_EQ(res->alg, SuboptAlg::ITERATIVE);
 }
 
+TEST(AlgorithmResolveTest, ResolveSuboptCanonPersistentSupportsD2) {
+  erg::EnergyCfg cfg;
+  cfg.ctd = erg::EnergyCfg::Ctd::D2;
+  const subopt::SuboptCfg subopt_cfg;
+  const auto res = ResolveSubopt(
+      BackendKind::CANON, SuboptAlg::PERSISTENT, kT04Cfg, cfg, erg::PseudofreeCfg{}, subopt_cfg);
+  ASSERT_TRUE(res.has_value());
+  EXPECT_EQ(res->backend, BackendKind::CANON);
+  EXPECT_EQ(res->alg, SuboptAlg::PERSISTENT);
+}
+
 TEST(AlgorithmResolveTest, ResolvePfnAutoSelectsBasePfnOptWhenSupported) {
   const auto res = ResolvePfn(
       /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfgPfn{},
@@ -106,6 +133,16 @@ TEST(AlgorithmResolveTest, ResolvePfnAutoKeepsBaseWithPseudofree) {
       /*kind=*/std::nullopt, /*alg=*/std::nullopt, kT04Cfg, erg::EnergyCfgPfn{}, NonEmptyPf());
   ASSERT_TRUE(res.has_value());
   EXPECT_EQ(res->backend, BackendKind::BASE);
+  EXPECT_EQ(res->alg, PfnAlg::OPT);
+}
+
+TEST(AlgorithmResolveTest, ResolvePfnCanonOptSupportsD2) {
+  erg::EnergyCfg cfg;
+  cfg.ctd = erg::EnergyCfg::Ctd::D2;
+  const auto res = ResolvePfn(
+      BackendKind::CANON, PfnAlg::OPT, kT04Cfg, erg::EnergyCfgPfn{cfg}, erg::PseudofreeCfg{});
+  ASSERT_TRUE(res.has_value());
+  EXPECT_EQ(res->backend, BackendKind::CANON);
   EXPECT_EQ(res->alg, PfnAlg::OPT);
 }
 

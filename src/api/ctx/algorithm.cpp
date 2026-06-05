@@ -23,6 +23,13 @@
 #include "backends/base/subopt/subopt_iterative.h"
 #include "backends/base/subopt/subopt_persistent.h"
 #include "backends/base/trace/trace.h"
+#include "backends/canon/energy/model.h"
+#include "backends/canon/mfe/mfe_exterior.h"
+#include "backends/canon/mfe/mfe_opt.h"
+#include "backends/canon/pfn/pfn_opt.h"
+#include "backends/canon/subopt/subopt_iterative.h"
+#include "backends/canon/subopt/subopt_persistent.h"
+#include "backends/canon/trace/trace.h"
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
@@ -41,7 +48,8 @@ namespace {
 constexpr int EfnPriority(BackendKind backend) {
   switch (backend) {
   case BackendKind::BASE: return 1;
-  case BackendKind::STACK: return 2;
+  case BackendKind::STACK: return 3;
+  case BackendKind::CANON: return 2;
   }
   unreachable();
 }
@@ -62,6 +70,15 @@ constexpr int MfePriority(BackendKind backend, MfeAlg alg) {
     case MfeAlg::BRUTE: return 913;
     case MfeAlg::DEBUG: return 0;
     case MfeAlg::OPT: return 231;
+    case MfeAlg::SPARSE_OPT: return 0;
+    case MfeAlg::LYNGSO_SPARSE_OPT: return 0;
+    }
+    break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case MfeAlg::BRUTE: return 912;
+    case MfeAlg::DEBUG: return 0;
+    case MfeAlg::OPT: return 221;
     case MfeAlg::SPARSE_OPT: return 0;
     case MfeAlg::LYNGSO_SPARSE_OPT: return 0;
     }
@@ -92,6 +109,16 @@ constexpr int SuboptPriority(BackendKind backend, SuboptAlg alg) {
     case SuboptAlg::PERSISTENT_LOWMEM: return 322;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case SuboptAlg::BRUTE: return 912;
+    case SuboptAlg::DEBUG: return 0;
+    case SuboptAlg::ITERATIVE: return 211;
+    case SuboptAlg::ITERATIVE_LOWMEM: return 221;
+    case SuboptAlg::PERSISTENT: return 212;
+    case SuboptAlg::PERSISTENT_LOWMEM: return 222;
+    }
+    break;
   }
   unreachable();
 }
@@ -112,6 +139,13 @@ constexpr int PfnPriority(BackendKind backend, PfnAlg alg) {
     case PfnAlg::OPT: return 0;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case PfnAlg::BRUTE: return 912;
+    case PfnAlg::DEBUG: return 0;
+    case PfnAlg::OPT: return 211;
+    }
+    break;
   }
   unreachable();
 }
@@ -123,6 +157,7 @@ bool BackendIsSupported(BackendKind kind, const BackendCfg& backend_cfg, const e
   switch (kind) {
   case BackendKind::BASE: return md::base::Model::IsSupported(backend_cfg, cfg, pf, reason);
   case BackendKind::STACK: return md::stack::Model::IsSupported(backend_cfg, cfg, pf, reason);
+  case BackendKind::CANON: return md::canon::Model::IsSupported(backend_cfg, cfg, pf, reason);
   }
   unreachable();
 }
@@ -287,6 +322,23 @@ MfeFn GetMfeFn(BackendKind kind, MfeAlg alg) {
     case MfeAlg::LYNGSO_SPARSE_OPT: break;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case MfeAlg::OPT:
+      return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg,
+                 const erg::PseudofreeCfg& pf) {
+        md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              md::canon::MfeOpt<CFG, PseudofreeCfgT>::Run(r, std::get<md::canon::Model::Ptr>(m),
+                  std::get<md::canon::DpState>(dp), static_pf);
+            });
+      };
+    case MfeAlg::BRUTE:
+    case MfeAlg::DEBUG:
+    case MfeAlg::SPARSE_OPT:
+    case MfeAlg::LYNGSO_SPARSE_OPT: break;
+    }
+    break;
   }
   fatal("GetMfeFn: unsupported combination {}/{}", kind, alg);
   unreachable();
@@ -337,6 +389,19 @@ bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const BackendCfg& backend_c
     case MfeAlg::LYNGSO_SPARSE_OPT: break;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case MfeAlg::OPT:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::MfeOpt<CFG, PseudofreeCfgT>::IsSupported(static_pf, reason);
+          });
+    case MfeAlg::BRUTE:
+    case MfeAlg::DEBUG:
+    case MfeAlg::SPARSE_OPT:
+    case MfeAlg::LYNGSO_SPARSE_OPT: break;
+    }
+    break;
   }
   if (reason) *reason = fmt::format("not available for {} backend", kind);
   return false;
@@ -364,7 +429,18 @@ MfeExteriorFn GetMfeExteriorFn(BackendKind kind) {
                 r, std::get<md::stack::Model::Ptr>(m), state, static_pf);
           });
     };
+  case BackendKind::CANON:
+    return [](const BackendModelPtr& m, const Primary& r, mfe::DpState& dp, erg::EnergyCfg cfg,
+               const erg::PseudofreeCfg& pf) {
+      auto& state = std::get<md::canon::DpState>(dp);
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::MfeExterior<CFG>(
+                r, std::get<md::canon::Model::Ptr>(m), state, static_pf);
+          });
+    };
   }
+  fatal("GetMfeExteriorFn: unsupported backend {}", kind);
   unreachable();
 }
 
@@ -390,7 +466,18 @@ TraceFn GetTraceFn(BackendKind kind) {
                 r, std::get<md::stack::Model::Ptr>(m), state, static_pf, trace_cfg);
           });
     };
+  case BackendKind::CANON:
+    return [](const BackendModelPtr& m, const Primary& r, const mfe::DpState& dp,
+               erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) {
+      const auto& state = std::get<md::canon::DpState>(dp);
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::Traceback<CFG>(
+                r, std::get<md::canon::Model::Ptr>(m), state, static_pf, trace_cfg);
+          });
+    };
   }
+  fatal("GetTraceFn: unsupported backend {}", kind);
   unreachable();
 }
 
@@ -515,6 +602,61 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
     case SuboptAlg::DEBUG: break;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case SuboptAlg::ITERATIVE:
+      return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
+                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
+                 subopt::SuboptCfg subopt_cfg) {
+        return md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              return md::canon::SuboptIterative<CFG, PseudofreeCfgT, false>(std::move(r),
+                  std::get<md::canon::Model::Ptr>(m), std::get<md::canon::DpState>(std::move(dp)),
+                  static_pf, subopt_cfg)
+                  .Run(fn);
+            });
+      };
+    case SuboptAlg::ITERATIVE_LOWMEM:
+      return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
+                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
+                 subopt::SuboptCfg subopt_cfg) {
+        return md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              return md::canon::SuboptIterative<CFG, PseudofreeCfgT, true>(std::move(r),
+                  std::get<md::canon::Model::Ptr>(m), std::get<md::canon::DpState>(std::move(dp)),
+                  static_pf, subopt_cfg)
+                  .Run(fn);
+            });
+      };
+    case SuboptAlg::PERSISTENT:
+      return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
+                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
+                 subopt::SuboptCfg subopt_cfg) {
+        return md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, false>(std::move(r),
+                  std::get<md::canon::Model::Ptr>(m), std::get<md::canon::DpState>(std::move(dp)),
+                  static_pf, subopt_cfg)
+                  .Run(fn);
+            });
+      };
+    case SuboptAlg::PERSISTENT_LOWMEM:
+      return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
+                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
+                 subopt::SuboptCfg subopt_cfg) {
+        return md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, true>(std::move(r),
+                  std::get<md::canon::Model::Ptr>(m), std::get<md::canon::DpState>(std::move(dp)),
+                  static_pf, subopt_cfg)
+                  .Run(fn);
+            });
+      };
+    case SuboptAlg::BRUTE:
+    case SuboptAlg::DEBUG:
+      break;
+    }
+    break;
   }
   fatal("GetSuboptFn: unsupported combination {}/{}", kind, alg);
   unreachable();
@@ -592,6 +734,37 @@ bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const BackendCfg& bac
     case SuboptAlg::DEBUG: break;
     }
     break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case SuboptAlg::ITERATIVE:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::SuboptIterative<CFG, PseudofreeCfgT, false>::IsSupported(
+                static_pf, subopt_cfg, reason);
+          });
+    case SuboptAlg::ITERATIVE_LOWMEM:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::SuboptIterative<CFG, PseudofreeCfgT, true>::IsSupported(
+                static_pf, subopt_cfg, reason);
+          });
+    case SuboptAlg::PERSISTENT:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, false>::IsSupported(
+                static_pf, subopt_cfg, reason);
+          });
+    case SuboptAlg::PERSISTENT_LOWMEM:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, true>::IsSupported(
+                static_pf, subopt_cfg, reason);
+          });
+    case SuboptAlg::BRUTE:
+    case SuboptAlg::DEBUG:
+      break;
+    }
+    break;
   }
   if (reason) *reason = fmt::format("not available for {} backend", kind);
   return false;
@@ -626,6 +799,23 @@ PfnFn GetPfnFn(BackendKind kind, PfnAlg alg) {
     }
     break;
   case BackendKind::STACK: break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case PfnAlg::OPT:
+      return [](const BackendModelPtr& m, const Primary& r, pfn::PfnState& dp,
+                 erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) {
+        auto& state = std::get<md::canon::PfnState>(dp);
+        return md::Dispatch(cfg, pf,
+            [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+              return md::canon::PfnOpt<CFG, PseudofreeCfgT>::Run(r,
+                  md::canon::BoltzModel::Create(std::get<md::canon::Model::Ptr>(m)), state,
+                  static_pf);
+            });
+      };
+    case PfnAlg::BRUTE:
+    case PfnAlg::DEBUG: break;
+    }
+    break;
   }
   fatal("GetPfnFn: unsupported combination {}/{}", kind, alg);
   unreachable();
@@ -653,6 +843,17 @@ bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const BackendCfg& backend_c
     }
     break;
   case BackendKind::STACK: break;
+  case BackendKind::CANON:
+    switch (alg) {
+    case PfnAlg::OPT:
+      return md::Dispatch(
+          cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+            return md::canon::PfnOpt<CFG, PseudofreeCfgT>::IsSupported(static_pf, reason);
+          });
+    case PfnAlg::BRUTE:
+    case PfnAlg::DEBUG: break;
+    }
+    break;
   }
   if (reason) *reason = fmt::format("not available for {} backend", kind);
   return false;

@@ -4,12 +4,13 @@
 
 #include <variant>
 
+#include "backends/canon/dp.h"
 #include "backends/common/base/dp.h"
 #include "model/pfn.h"
 
 namespace mrna::pfn {
 
-using PfnState = std::variant<std::monostate, md::base::PfnState>;
+using PfnState = std::variant<std::monostate, md::base::PfnState, md::canon::PfnState>;
 
 struct PfnResult {
   PfnState state;

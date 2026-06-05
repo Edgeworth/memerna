@@ -9,6 +9,7 @@ BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg
   switch (backend) {
   case BackendKind::BASE: return md::base::Model::FromBackendCfg(backend, cfg);
   case BackendKind::STACK: return md::stack::Model::FromBackendCfg(backend, cfg);
+  case BackendKind::CANON: return md::canon::Model::FromBackendCfg(backend, cfg);
   }
   unreachable();
 }

@@ -19,7 +19,7 @@ namespace mrna {
 
 void RegisterOptsBackendCfg(ArgParse* args);
 
-MAKE_ENUM(BackendKind, BASE, STACK);
+MAKE_ENUM(BackendKind, BASE, STACK, CANON);
 
 struct RandomModelCfg {
   RandomModelCfg(std::optional<uint_fast32_t> seed, Energy min_energy, Energy max_energy);

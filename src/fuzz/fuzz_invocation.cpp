@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 
 #include <algorithm>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -30,46 +31,105 @@
 namespace mrna::fuzz {
 
 using md::base::DP_P;
-using md::base::DP_SIZE;
 using md::base::DP_U;
 using md::base::DpArrayId;
-using md::base::EXT_SIZE;
 
 namespace {
 
-void CompareBaseDpState(const md::base::DpState& got, const md::base::DpState& want,
-    const std::string& name_got, const std::string& name_want, Error& errors) {
-  if (got.dp.empty()) return;  // Brute force doesn't generate tables.
+[[nodiscard]] std::optional<int> CommonDpSize(const mfe::DpState& state) {
+  return std::visit(
+      overloaded{
+          [](const md::base::DpState& base) -> std::optional<int> {
+            return As<int>(base.dp.size());
+          },
+          [](const md::stack::DpState& stack) -> std::optional<int> {
+            return As<int>(stack.base.dp.size());
+          },
+          [](const md::canon::DpState& canon) -> std::optional<int> {
+            return As<int>(canon.dp.size());
+          },
+          [](const std::monostate&) -> std::optional<int> { return std::nullopt; },
+      },
+      state);
+}
 
-  const auto N = As<int>(want.dp.size());
-  // Check dp tables:
+[[nodiscard]] std::optional<Energy> CommonDpIndex(
+    const mfe::DpState& state, int st, int en, DpArrayId a) {
+  return std::visit(
+      overloaded{
+          [=](const md::base::DpState& base) -> std::optional<Energy> {
+            return base.dp[st][en][a];
+          },
+          [=](const md::stack::DpState& stack) -> std::optional<Energy> {
+            return stack.base.dp[st][en][a];
+          },
+          [=](const md::canon::DpState& canon) -> std::optional<Energy> {
+            switch (a) {
+            case DP_P: return canon.dp[st][en][md::canon::DP_P];
+            case DP_U: return canon.dp[st][en][md::canon::DP_U];
+            case md::base::DP_U2: return canon.dp[st][en][md::canon::DP_U2];
+            default: return std::nullopt;
+            }
+          },
+          [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
+      },
+      state);
+}
+
+[[nodiscard]] std::optional<Energy> CommonExtIndex(const mfe::DpState& state, int st) {
+  return std::visit(
+      overloaded{
+          [=](const md::base::DpState& base) -> std::optional<Energy> {
+            return base.ext[st][md::base::EXT];
+          },
+          [=](const md::stack::DpState& stack) -> std::optional<Energy> {
+            return stack.base.ext[st][md::base::EXT];
+          },
+          [=](const md::canon::DpState& canon) -> std::optional<Energy> {
+            return canon.ext[st][md::canon::EXT];
+          },
+          [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
+      },
+      state);
+}
+
+void CompareCommonDpState(const mfe::DpState& got, const mfe::DpState& want,
+    const std::string& name_got, const std::string& name_want, Error& errors) {
+  const auto got_size = CommonDpSize(got);
+  const auto want_size = CommonDpSize(want);
+  if (!got_size || !want_size) return;
+  if (*got_size == 0 || *want_size == 0) return;  // Brute force doesn't generate tables.
+  if (*got_size != *want_size) {
+    errors.emplace_back("dp size mismatch:");
+    errors.push_back(
+        fmt::format("  dp {} vs {}: {} != {}", name_got, name_want, *got_size, *want_size));
+    return;
+  }
+
+  const int N = *want_size;
   for (int st = N - 1; st >= 0; --st) {
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (DpArrayId a = 0; a < DP_SIZE; ++a) {
-        auto dp = want.dp[st][en][a];
-
-        auto dpi = got.dp[st][en][a];
-        // If meant to be infinity and not.
-        if (((dp < CAP_E) != (dpi < CAP_E)) || (dp < CAP_E && dp != dpi)) {
+      for (DpArrayId a : {DP_P, DP_U, md::base::DP_U2}) {
+        const auto dp = CommonDpIndex(want, st, en, a);
+        const auto dpi = CommonDpIndex(got, st, en, a);
+        if (!dp || !dpi) continue;
+        if (((*dp < CAP_E) != (*dpi < CAP_E)) || (*dp < CAP_E && *dp != *dpi)) {
           errors.emplace_back("dp mismatch:");
           errors.push_back(fmt::format(
-              "  dp {} vs {} at {} {} {}: {} != {}", name_got, name_want, st, en, a, dpi, dp));
+              "  dp {} vs {} at {} {} {}: {} != {}", name_got, name_want, st, en, a, *dpi, *dp));
         }
       }
     }
   }
 
-  // Check ext tables:
   for (int st = 0; st < N; ++st) {
-    for (DpArrayId a = 0; a < EXT_SIZE; ++a) {
-      auto ext = want.ext[st][a];
-      auto exti = got.ext[st][a];
-      // If meant to be infinity and not.
-      if (((ext < CAP_E) != (exti < CAP_E)) || (ext < CAP_E && ext != exti)) {
-        errors.emplace_back("ext mismatch:");
-        errors.push_back(
-            fmt::format("ext {} vs {} at {} {}: {} != {}", name_got, name_want, st, a, exti, ext));
-      }
+    const auto ext = CommonExtIndex(want, st);
+    const auto exti = CommonExtIndex(got, st);
+    if (!ext || !exti) continue;
+    if (((*ext < CAP_E) != (*exti < CAP_E)) || (*ext < CAP_E && *ext != *exti)) {
+      errors.emplace_back("ext mismatch:");
+      errors.push_back(fmt::format(
+          "ext {} vs {} at {}: {} != {}", name_got, name_want, st, *exti, *ext));
     }
   }
 }
@@ -192,8 +252,6 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
     }
   }
 
-  const auto* cmp_dp = mfe::MaybeGetBaseDpState(results[cmp_idx].mfe.dp);
-
   // Check memerna energies compared to themselves and to efn.
   auto& cmp_res = results[cmp_idx];
   for (int i = 0; i < static_cast<int>(results.size()); ++i) {
@@ -204,10 +262,8 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
           results[i].mfe.energy, ctd_efns[i], opt_efns[i], tags[cmp_idx], cmp_res.mfe.energy));
     }
 
-    if (cfg_.mfe_table && cmp_dp) {
-      if (const auto* got = mfe::MaybeGetBaseDpState(results[i].mfe.dp))
-        CompareBaseDpState(*got, *cmp_dp, tags[i], tags[cmp_idx], errors);
-    }
+    if (cfg_.mfe_table)
+      CompareCommonDpState(results[i].mfe.dp, cmp_res.mfe.dp, tags[i], tags[cmp_idx], errors);
   }
 
   std::optional<FoldBaseline> baseline =
