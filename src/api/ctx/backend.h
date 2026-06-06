@@ -20,8 +20,8 @@ namespace mrna {
 
 using BackendModelPtr =
     std::variant<md::base::Model::Ptr, md::stack::Model::Ptr, md::canon::Model::Ptr>;
-using BackendBoltzModelPtr = std::variant<md::base::BoltzModel::Ptr, md::stack::BoltzModel::Ptr,
-    md::canon::BoltzModel::Ptr>;
+using BackendBoltzModelPtr =
+    std::variant<md::base::BoltzModel::Ptr, md::stack::BoltzModel::Ptr, md::canon::BoltzModel::Ptr>;
 
 BackendModelPtr BackendFromBackendCfg(BackendKind backend, const BackendCfg& cfg);
 

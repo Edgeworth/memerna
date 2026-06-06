@@ -28,7 +28,7 @@ struct SuboptResult {
   trace::TraceResult tb;
 };
 
-using SuboptCallback = std::function<void(const SuboptResult&)>;
+using SuboptCallback = std::function<bool(const SuboptResult&)>;
 
 }  // namespace mrna::subopt
 

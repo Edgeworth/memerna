@@ -12,9 +12,9 @@
 #include "api/mfe.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
+#include "backends/brute/alg.h"
 #include "backends/canon/dp.h"
 #include "backends/canon/energy/model.h"
-#include "backends/brute/alg.h"
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
@@ -190,16 +190,18 @@ std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r,
     std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg) const {
   std::vector<subopt::SuboptResult> subopts;
-  [[maybe_unused]] const int64_t strucs = Subopt(
-      r, mfe_alg, alg, cfg, pf,
-      [&subopts](const subopt::SuboptResult& subopt) { subopts.push_back(subopt); }, subopt_cfg);
+  [[maybe_unused]] const int64_t strucs =
+      Subopt(r, mfe_alg, alg, cfg, pf, subopt_cfg, [&subopts](const subopt::SuboptResult& subopt) {
+        subopts.push_back(subopt);
+        return true;
+      });
   assert(strucs == static_cast<int64_t>(subopts.size()));
   return subopts;
 }
 
 int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg,
-    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-    subopt::SuboptCfg subopt_cfg) const {
+    erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+    const subopt::SuboptCallback& fn) const {
   auto backend = BackendForSubopt(alg, mfe_alg, cfg, pf, subopt_cfg);
 
   if (backend.alg == SuboptAlg::BRUTE) {
@@ -207,15 +209,19 @@ int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::option
         cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
           return md::brute::SuboptBrute<CFG>(r, backend.m, cfg_, static_pf, subopt_cfg);
         });
-    for (const auto& subopt : subopts) fn(subopt);
-    return static_cast<int64_t>(subopts.size());
+    int64_t count = 0;
+    for (const auto& subopt : subopts) {
+      ++count;
+      if (!fn(subopt)) break;
+    }
+    return count;
   }
 
   mfe::DpState dp = CreateDpState(backend.m);
   backend.mfe_fn(backend.m, r, dp, cfg, pf);
   backend.mfe_exterior_fn(backend.m, r, dp, cfg, pf);
 
-  return backend.subopt_fn(backend.m, Primary(r), std::move(dp), cfg, pf, fn, subopt_cfg);
+  return backend.subopt_fn(backend.m, Primary(r), std::move(dp), cfg, pf, subopt_cfg, fn);
 }
 
 pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg,

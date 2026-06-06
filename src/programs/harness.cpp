@@ -96,12 +96,11 @@ int main(int argc, char* argv[]) {
 
       if (subopt) {
         const auto cfg = mrna::erg::EnergyCfg::FromArgParse(args);
-        int64_t strucs = package->Subopt(
-            r, mfe_alg, subopt_alg, cfg, pf_cfg,
+        int64_t strucs = package->Subopt(r, mfe_alg, subopt_alg, cfg, pf_cfg, subopt_cfg,
             [](const mrna::subopt::SuboptResult& c) {
               fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
-            },
-            subopt_cfg);
+              return true;
+            });
         fmt::print("{} suboptimal structures\n", strucs);
       } else if (fold) {
         const auto cfg = mrna::erg::EnergyCfg::FromArgParse(args);

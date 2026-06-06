@@ -5,9 +5,11 @@
 #include <string>
 #include <vector>
 
+#include "api/ctx/ctx.h"
 #include "api/subopt/subopt_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
+#include "model/primary.h"
 #include "tests/init.h"
 
 namespace mrna {
@@ -77,16 +79,15 @@ TEST(AlgorithmResolveTest, ResolveMfeAutoSelectsStackOptForT22) {
 TEST(AlgorithmResolveTest, ResolveMfeCanonOptSupportsD2) {
   erg::EnergyCfg cfg;
   cfg.ctd = erg::EnergyCfg::Ctd::D2;
-  const auto res =
-      ResolveMfe(BackendKind::CANON, MfeAlg::OPT, kT04Cfg, cfg, erg::PseudofreeCfg{});
+  const auto res = ResolveMfe(BackendKind::CANON, MfeAlg::OPT, kT04Cfg, cfg, erg::PseudofreeCfg{});
   ASSERT_TRUE(res.has_value());
   EXPECT_EQ(res->backend, BackendKind::CANON);
   EXPECT_EQ(res->alg, MfeAlg::OPT);
 }
 
 TEST(AlgorithmResolveTest, ResolveMfeCanonOptRejectsT22) {
-  const auto res = ResolveMfe(
-      BackendKind::CANON, MfeAlg::OPT, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
+  const auto res =
+      ResolveMfe(BackendKind::CANON, MfeAlg::OPT, kT22Cfg, erg::EnergyCfg{}, erg::PseudofreeCfg{});
   EXPECT_FALSE(res.has_value());
 }
 
@@ -117,6 +118,19 @@ TEST(AlgorithmResolveTest, ResolveSuboptCanonPersistentSupportsD2) {
   ASSERT_TRUE(res.has_value());
   EXPECT_EQ(res->backend, BackendKind::CANON);
   EXPECT_EQ(res->alg, SuboptAlg::PERSISTENT);
+}
+
+TEST(CtxSuboptTest, CallbackCanStopEnumeration) {
+  const Ctx ctx(base_t04, kT04Cfg);
+  const auto r = Primary::FromSeq("CCUCCGGG");
+  int64_t calls = 0;
+  const auto count = ctx.Subopt(r, /*mfe_alg=*/std::nullopt, SuboptAlg::ITERATIVE, erg::EnergyCfg{},
+      erg::PseudofreeCfg{}, subopt::SuboptCfg{}, [&](const subopt::SuboptResult&) {
+        ++calls;
+        return false;
+      });
+  EXPECT_EQ(count, 1);
+  EXPECT_EQ(calls, 1);
 }
 
 TEST(AlgorithmResolveTest, ResolvePfnAutoSelectsBasePfnOptWhenSupported) {

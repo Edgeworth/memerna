@@ -38,18 +38,20 @@ int main(int argc, char* argv[]) {
   auto pf = mrna::erg::PseudofreeCfg::FromArgParse(args);
   pf.Verify(r);
 
-  mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) {};
+  mrna::subopt::SuboptCallback fn = [](const mrna::subopt::SuboptResult&) { return true; };
   if (should_print) {
     if (ctd_data) {
       fn = [energy_cfg](const mrna::subopt::SuboptResult& c) {
         fmt::print("{} {}\n", c.energy, energy_cfg.ToCtdString(c.tb.s, c.tb.ctd));
+        return true;
       };
     } else {
       fn = [](const mrna::subopt::SuboptResult& c) {
         fmt::print("{} {}\n", c.energy, c.tb.s.ToDb());
+        return true;
       };
     }
   }
-  int64_t strucs = ctx.Subopt(r, mfe_alg, subopt_alg, energy_cfg, pf, fn, subopt_cfg);
+  int64_t strucs = ctx.Subopt(r, mfe_alg, subopt_alg, energy_cfg, pf, subopt_cfg, fn);
   fmt::print("{} suboptimal structures\n", strucs);
 }

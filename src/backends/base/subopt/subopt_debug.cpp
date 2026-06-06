@@ -460,11 +460,13 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
       }
     }
   }
+  int64_t count = 0;
   for (const auto& struc : finished_) {
     assert(struc.not_yet_expanded.empty());
-    fn(struc.res);
+    ++count;
+    if (!fn(struc.res)) break;
   }
-  return static_cast<int64_t>(finished_.size());
+  return count;
 }
 
 #define MRNA_INSTANTIATE(CFG, PF) template class SuboptDebug<CFG, PF>;

@@ -51,7 +51,7 @@ class RnaPackage {
 
   [[nodiscard]] virtual int64_t Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
       std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-      const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const = 0;
+      subopt::SuboptCfg subopt_cfg, const subopt::SuboptCallback& fn) const = 0;
 
   [[nodiscard]] virtual std::vector<subopt::SuboptResult> SuboptIntoVector(const Primary& r,
       std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,

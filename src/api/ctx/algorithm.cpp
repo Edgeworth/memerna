@@ -487,8 +487,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
     switch (alg) {
     case SuboptAlg::DEBUG:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::base::SuboptDebug<CFG, PseudofreeCfgT>(std::move(r),
@@ -499,8 +499,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::ITERATIVE:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::base::SuboptIterative<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -511,8 +511,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::ITERATIVE_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::base::SuboptIterative<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -523,8 +523,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::base::SuboptPersistent<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -535,8 +535,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::base::SuboptPersistent<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -552,8 +552,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
     switch (alg) {
     case SuboptAlg::ITERATIVE:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::stack::SuboptIterative<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -564,8 +564,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::ITERATIVE_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::stack::SuboptIterative<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -576,8 +576,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::stack::SuboptPersistent<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -588,8 +588,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::stack::SuboptPersistent<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -606,8 +606,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
     switch (alg) {
     case SuboptAlg::ITERATIVE:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::canon::SuboptIterative<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -618,8 +618,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::ITERATIVE_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::canon::SuboptIterative<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -630,8 +630,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, false>(std::move(r),
@@ -642,8 +642,8 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
       };
     case SuboptAlg::PERSISTENT_LOWMEM:
       return [](const BackendModelPtr& m, Primary r, mfe::DpState dp, erg::EnergyCfg cfg,
-                 const erg::PseudofreeCfg& pf, const subopt::SuboptCallback& fn,
-                 subopt::SuboptCfg subopt_cfg) {
+                 const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
+                 const subopt::SuboptCallback& fn) {
         return md::Dispatch(cfg, pf,
             [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
               return md::canon::SuboptPersistent<CFG, PseudofreeCfgT, true>(std::move(r),
@@ -653,8 +653,7 @@ SuboptFn GetSuboptFn(BackendKind kind, SuboptAlg alg) {
             });
       };
     case SuboptAlg::BRUTE:
-    case SuboptAlg::DEBUG:
-      break;
+    case SuboptAlg::DEBUG: break;
     }
     break;
   }
@@ -761,8 +760,7 @@ bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const BackendCfg& bac
                 static_pf, subopt_cfg, reason);
           });
     case SuboptAlg::BRUTE:
-    case SuboptAlg::DEBUG:
-      break;
+    case SuboptAlg::DEBUG: break;
     }
     break;
   }

@@ -19,14 +19,15 @@ TEST_F(EnergyTestCanon, EquivalentToBase) {
   for (const auto& c : cases) {
     const auto& r = std::get<Primary>(c);
     const auto& s = std::get<Secondary>(c);
-    EXPECT_EQ(
-        base_t04->TotalEnergy<erg::EnergyCfg{}>(r, s, nullptr, erg::PseudofreeCfg{}).energy,
+    EXPECT_EQ(base_t04->TotalEnergy<erg::EnergyCfg{}>(r, s, nullptr, erg::PseudofreeCfg{}).energy,
         canon_t04->TotalEnergy<erg::EnergyCfg{}>(r, s, nullptr, erg::PseudofreeCfg{}).energy);
-    EXPECT_EQ(base_t04->SubEnergy<erg::EnergyCfg{}>(r, s, nullptr, erg::PseudofreeCfg{}, 0,
-                  static_cast<int>(r.size()) - 1)
+    EXPECT_EQ(base_t04
+                  ->SubEnergy<erg::EnergyCfg{}>(
+                      r, s, nullptr, erg::PseudofreeCfg{}, 0, static_cast<int>(r.size()) - 1)
                   .energy,
-        canon_t04->SubEnergy<erg::EnergyCfg{}>(
-                     r, s, nullptr, erg::PseudofreeCfg{}, 0, static_cast<int>(r.size()) - 1)
+        canon_t04
+            ->SubEnergy<erg::EnergyCfg{}>(
+                r, s, nullptr, erg::PseudofreeCfg{}, 0, static_cast<int>(r.size()) - 1)
             .energy);
   }
 }

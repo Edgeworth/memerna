@@ -57,7 +57,13 @@ class SuboptIterative {
   std::vector<Node> q_;
   std::vector<DpIndex> unexpanded_;
 
-  std::pair<int64_t, Energy> RunInternal(
+  struct RunInternalResult {
+    int64_t count = 0;
+    Energy next_seen = MAX_E;
+    bool keep_going = true;
+  };
+
+  RunInternalResult RunInternal(
       const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {

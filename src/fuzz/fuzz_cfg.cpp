@@ -112,6 +112,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_FUZZ_SUBOPT, &cfg.subopt);
   args.MaybeSet(OPT_FUZZ_SUBOPT_RNASTRUCTURE, &cfg.subopt_rnastructure);
   args.MaybeSet(OPT_FUZZ_SUBOPT_STRUCS, &cfg.subopt_strucs);
+  verify(cfg.subopt_strucs >= 0, "invalid subopt strucs");
   args.MaybeSet(OPT_FUZZ_SUBOPT_DELTA, &cfg.subopt_delta);
 
   args.MaybeSet(OPT_FUZZ_PFN, &cfg.pfn);

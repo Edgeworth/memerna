@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 
 #include <algorithm>
+#include <iterator>
 #include <optional>
 #include <set>
 #include <string>
@@ -27,69 +28,70 @@
 #include "util/error.h"
 #include "util/float.h"
 #include "util/log.h"
+#include "util/string.h"
 
 namespace mrna::fuzz {
 
 using md::base::DP_P;
+using md::base::DP_SIZE;
 using md::base::DP_U;
 using md::base::DpArrayId;
 
 namespace {
 
+constexpr std::size_t SUBOPT_HARD_CAP = 100000;
+
 [[nodiscard]] std::optional<int> CommonDpSize(const mfe::DpState& state) {
-  return std::visit(
-      overloaded{
-          [](const md::base::DpState& base) -> std::optional<int> {
-            return As<int>(base.dp.size());
-          },
-          [](const md::stack::DpState& stack) -> std::optional<int> {
-            return As<int>(stack.base.dp.size());
-          },
-          [](const md::canon::DpState& canon) -> std::optional<int> {
-            return As<int>(canon.dp.size());
-          },
-          [](const std::monostate&) -> std::optional<int> { return std::nullopt; },
-      },
+  return std::visit(overloaded{
+                        [](const md::base::DpState& base) -> std::optional<int> {
+                          return As<int>(base.dp.size());
+                        },
+                        [](const md::stack::DpState& stack) -> std::optional<int> {
+                          return As<int>(stack.base.dp.size());
+                        },
+                        [](const md::canon::DpState& canon) -> std::optional<int> {
+                          return As<int>(canon.dp.size());
+                        },
+                        [](const std::monostate&) -> std::optional<int> { return std::nullopt; },
+                    },
       state);
 }
 
 [[nodiscard]] std::optional<Energy> CommonDpIndex(
     const mfe::DpState& state, int st, int en, DpArrayId a) {
-  return std::visit(
-      overloaded{
-          [=](const md::base::DpState& base) -> std::optional<Energy> {
-            return base.dp[st][en][a];
-          },
-          [=](const md::stack::DpState& stack) -> std::optional<Energy> {
-            return stack.base.dp[st][en][a];
-          },
-          [=](const md::canon::DpState& canon) -> std::optional<Energy> {
-            switch (a) {
-            case DP_P: return canon.dp[st][en][md::canon::DP_P];
-            case DP_U: return canon.dp[st][en][md::canon::DP_U];
-            case md::base::DP_U2: return canon.dp[st][en][md::canon::DP_U2];
-            default: return std::nullopt;
-            }
-          },
-          [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
-      },
+  return std::visit(overloaded{
+                        [=](const md::base::DpState& base) -> std::optional<Energy> {
+                          return base.dp[st][en][a];
+                        },
+                        [=](const md::stack::DpState& stack) -> std::optional<Energy> {
+                          return stack.base.dp[st][en][a];
+                        },
+                        [=](const md::canon::DpState& canon) -> std::optional<Energy> {
+                          switch (a) {
+                          case DP_P: return canon.dp[st][en][md::canon::DP_P];
+                          case DP_U: return canon.dp[st][en][md::canon::DP_U];
+                          case md::base::DP_U2: return canon.dp[st][en][md::canon::DP_U2];
+                          default: return std::nullopt;
+                          }
+                        },
+                        [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
+                    },
       state);
 }
 
 [[nodiscard]] std::optional<Energy> CommonExtIndex(const mfe::DpState& state, int st) {
-  return std::visit(
-      overloaded{
-          [=](const md::base::DpState& base) -> std::optional<Energy> {
-            return base.ext[st][md::base::EXT];
-          },
-          [=](const md::stack::DpState& stack) -> std::optional<Energy> {
-            return stack.base.ext[st][md::base::EXT];
-          },
-          [=](const md::canon::DpState& canon) -> std::optional<Energy> {
-            return canon.ext[st][md::canon::EXT];
-          },
-          [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
-      },
+  return std::visit(overloaded{
+                        [=](const md::base::DpState& base) -> std::optional<Energy> {
+                          return base.ext[st][md::base::EXT];
+                        },
+                        [=](const md::stack::DpState& stack) -> std::optional<Energy> {
+                          return stack.base.ext[st][md::base::EXT];
+                        },
+                        [=](const md::canon::DpState& canon) -> std::optional<Energy> {
+                          return canon.ext[st][md::canon::EXT];
+                        },
+                        [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
+                    },
       state);
 }
 
@@ -128,8 +130,8 @@ void CompareCommonDpState(const mfe::DpState& got, const mfe::DpState& want,
     if (!ext || !exti) continue;
     if (((*ext < CAP_E) != (*exti < CAP_E)) || (*ext < CAP_E && *ext != *exti)) {
       errors.emplace_back("ext mismatch:");
-      errors.push_back(fmt::format(
-          "ext {} vs {} at {}: {} != {}", name_got, name_want, st, *exti, *ext));
+      errors.push_back(
+          fmt::format("ext {} vs {} at {}: {} != {}", name_got, name_want, st, *exti, *ext));
     }
   }
 }
@@ -149,6 +151,14 @@ void CompareCommonDpState(const mfe::DpState& got, const mfe::DpState& want,
   }
   return false;
 }
+
+#ifdef MRNA_USE_RNASTRUCTURE
+[[nodiscard]] bool RNAstructureEnergyCfgSupported(
+    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
+  return pf.Empty() && cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC &&
+      cfg.ctd == erg::EnergyCfg::Ctd::ALL;
+}
+#endif  // MRNA_USE_RNASTRUCTURE
 
 }  // namespace
 
@@ -283,6 +293,7 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
     BackendModelPtr model;
     std::vector<subopt::SuboptResult> results;
     std::string tag;
+    bool hit_hard_cap = false;
   };
 
   const int N = r_.size();
@@ -297,59 +308,109 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = true},
       {.delta = cfg_.subopt_delta, .strucs = cfg_.subopt_strucs, .sorted = false},
   };
-  std::vector<std::pair<subopt::SuboptCfg, std::vector<SuboptRun>>> results;
+
   for (int cfg_idx = 0; cfg_idx < static_cast<int>(std::size(cfgs)); ++cfg_idx) {
     const auto& cfg = cfgs[cfg_idx];
-    results.push_back({cfg, {}});
+    auto desc = fmt::format("subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta,
+        cfg.strucs, cfg.sorted, cfg_idx);
+
+    auto collect = [&](const BackendModelPtr& m, SuboptAlg subopt_alg) -> std::optional<SuboptRun> {
+      const auto kind = GetBackendKind(m);
+      std::string reason;
+      if (!SuboptAlgIsSupported(
+              kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg, &reason)) {
+        if (should_log_) loginfo("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
+        return std::nullopt;
+      }
+      if (should_log_) loginfo("subopt fuzzed: {}-{}", kind, subopt_alg);
+
+      SuboptRun run{
+          .model = m, .results = {}, .tag = fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx)};
+      run.results.reserve(SUBOPT_HARD_CAP);
+      const Ctx ctx(m, backend_cfg_);
+      std::ignore = ctx.Subopt(r_, /*mfe_alg=*/std::nullopt, subopt_alg, cfg_.energy_cfg, pf_, cfg,
+          [&](const subopt::SuboptResult& res) {
+            run.results.push_back(res);
+            run.hit_hard_cap = run.results.size() >= SUBOPT_HARD_CAP;
+            return !run.hit_hard_cap;
+          });
+
+      // Check sorted if it was meant to be.
+      if (cfg.sorted &&
+          !std::is_sorted(run.results.begin(), run.results.end(),
+              [](const auto& a, const auto& b) { return a.energy < b.energy; }))
+        errors.emplace_back("subopt result not sorted by energy");
+
+      std::sort(run.results.begin(), run.results.end());
+      return run;
+    };
+
+    std::vector<SuboptRun> runs;
     for (const auto& m : ms_) {
       const auto kind = GetBackendKind(m);
-      auto maybe_run = [&](SuboptAlg subopt_alg) {
-        std::string reason;
-        if (!SuboptAlgIsSupported(
-                kind, subopt_alg, backend_cfg_, cfg_.energy_cfg, pf_, cfg, &reason)) {
-          if (should_log_) loginfo("subopt NOT fuzzed: {}-{}: {}", kind, subopt_alg, reason);
-          return;
-        }
-        if (should_log_) loginfo("subopt fuzzed: {}-{}", kind, subopt_alg);
-
-        const Ctx ctx(m, backend_cfg_);
-        auto res = ctx.SuboptIntoVector(
-            r_, /*mfe_alg=*/std::nullopt, subopt_alg, cfg_.energy_cfg, pf_, cfg);
-        // Sort them to make the sorted=false configurations comparable between
-        // algorithms.
-        std::sort(res.begin(), res.end());
-        results.back().second.push_back({.model = m,
-            .results = std::move(res),
-            .tag = fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx)});
-      };
-
       for (const auto& entry :
-          SuboptPriorityForBackend(kind, /*alg=*/std::nullopt, N <= cfg_.brute_max))
-        maybe_run(entry.alg);
+          SuboptPriorityForBackend(kind, /*alg=*/std::nullopt, /*include_brute=*/false)) {
+        // DEBUG algo may OOM even with hard-cap, so only run it (later) if we didn't hit cap.
+        if (entry.alg == SuboptAlg::DEBUG) continue;
+        if (auto run = collect(m, entry.alg)) runs.push_back(std::move(*run));
+      }
     }
-  }
 
-  for (int i = 0; i < static_cast<int>(results.size()); ++i) {
-    const auto& [cfg, res] = results[i];
-    auto desc = fmt::format(
-        "subopt delta: {} strucs: {} sorted: {}, idx: {}", cfg.delta, cfg.strucs, cfg.sorted, i);
-    for (int alg = 0; alg < static_cast<int>(res.size()); ++alg) {
-      Register(fmt::format("{}, cfg: {}", res[alg].tag, desc),
-          CheckSuboptResult(baseline.fold.mfe.energy, res[alg].results, res[alg].model));
-      Register(fmt::format("{} vs {}, cfg: {}", res[alg].tag, res[0].tag, desc),
-          CheckSuboptResultPair(cfg, res[0].results, res[alg].results));
+    if (runs.empty()) {
+      if (should_log_) loginfo("subopt skipped: no phase-1 run supported for {}", desc);
+      continue;
     }
-  }
 
-  // Put regular configuration (delta-sorted) into common result:
-  std::vector<subopt::SuboptResult> subopt_baseline;
-  if (!results.empty() && !results.front().second.empty())
-    subopt_baseline = std::move(results.front().second.front().results);
+    std::vector<std::string> capped_tags;
+    std::vector<std::string> completed_tags;
+    for (const auto& run : runs)
+      (run.hit_hard_cap ? capped_tags : completed_tags).push_back(run.tag);
+
+    if (!capped_tags.empty() && !completed_tags.empty()) {
+      errors.emplace_back("subopt hard cap mismatch:");
+      errors.push_back(fmt::format("  cfg: {}, capped: {}, completed: {}", desc,
+          Join(capped_tags, ","), Join(completed_tags, ",")));
+      continue;
+    }
+
+    // All hit hard cap, don't run the deferred ones that might OOM.
+    if (completed_tags.empty()) continue;
+
+    std::vector<SuboptRun> deferred_runs;
+    for (const auto& m : ms_) {
+      if (auto run = collect(m, SuboptAlg::DEBUG)) deferred_runs.push_back(std::move(*run));
+      if (N <= cfg_.brute_max)
+        if (auto run = collect(m, SuboptAlg::BRUTE)) deferred_runs.push_back(std::move(*run));
+    }
+
+    bool deferred_hit_cap = false;
+    for (auto& run : deferred_runs) {
+      if (run.hit_hard_cap) {
+        deferred_hit_cap = true;
+        errors.emplace_back("subopt deferred hard cap:");
+        errors.push_back(fmt::format("  cfg: {}, capped: {}", desc, run.tag));
+      }
+      runs.push_back(std::move(run));
+    }
+    if (deferred_hit_cap) continue;
+
+    for (int alg = 0; alg < static_cast<int>(runs.size()); ++alg) {
+      Register(fmt::format("{}, cfg: {}", runs[alg].tag, desc),
+          CheckSuboptResult(baseline.fold.mfe.energy, runs[alg].results, runs[alg].model));
+      Register(fmt::format("{} vs {}, cfg: {}", runs[alg].tag, runs[0].tag, desc),
+          CheckSuboptResultPair(cfg, runs[0].results, runs[alg].results));
+    }
 
 #ifdef MRNA_USE_RNASTRUCTURE
-  if (cfg_.subopt_rnastructure)
-    Register("rnastructure:", CheckSuboptRNAstructure(cfgs[0], baseline, subopt_baseline));
+    if (cfg_idx == 0 && cfg_.subopt_rnastructure) {
+      if (RNAstructureEnergyCfgSupported(cfg_.energy_cfg, pf_)) {
+        Register("rnastructure:", CheckSuboptRNAstructure(cfg, baseline, runs[0].results));
+      } else if (should_log_) {
+        loginfo("RNAstructure subopt skipped: unsupported energy or pseudofree configuration");
+      }
+    }
 #endif  // MRNA_USE_RNASTRUCTURE
+  }
 
   return errors;
 }
@@ -576,9 +637,22 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg,
   // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
   // strange things when the energy for suboptimal structures is 0 or above.
   if (subopt.empty()) return errors;
-  if (subopt[0].energy < -cfg_.subopt_delta) {
-    auto rstr_subopt = rstr_->SuboptIntoVector(r_, /*mfe_alg=*/std::nullopt,
-        /*alg=*/std::nullopt, erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = cfg_.subopt_delta});
+  if (subopt[0].energy < -subopt_cfg.delta) {
+    std::vector<subopt::SuboptResult> rstr_subopt;
+    rstr_subopt.reserve(SUBOPT_HARD_CAP);
+
+    bool hit_hard_cap = false;
+    std::ignore = rstr_->Subopt(r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt,
+        erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = subopt_cfg.delta},
+        [&](const subopt::SuboptResult& res) {
+          rstr_subopt.push_back(res);
+          hit_hard_cap = rstr_subopt.size() >= SUBOPT_HARD_CAP;
+          return !hit_hard_cap;
+        });
+
+    // If we hit a hard cap, don't compare results, just ignore this run.
+    if (hit_hard_cap) return errors;
+
     std::sort(rstr_subopt.begin(), rstr_subopt.end());
     Register("subopt:",
         CheckSuboptResult(baseline.fold.mfe.energy, rstr_subopt, baseline.model,

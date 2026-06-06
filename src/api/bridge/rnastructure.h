@@ -37,7 +37,7 @@ class RNAstructure : public RnaPackage {
 
   [[nodiscard]] int64_t Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
       std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-      const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const override;
+      subopt::SuboptCfg subopt_cfg, const subopt::SuboptCallback& fn) const override;
 
   [[nodiscard]] std::vector<subopt::SuboptResult> SuboptIntoVector(const Primary& r,
       std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg, erg::EnergyCfg cfg,

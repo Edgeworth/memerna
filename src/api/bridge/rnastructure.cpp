@@ -159,10 +159,14 @@ FoldResult RNAstructure::FoldAndDpTable(const Primary& r, dp_state_t* dp_state) 
 
 int64_t RNAstructure::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
     std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-    const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const {
+    subopt::SuboptCfg subopt_cfg, const subopt::SuboptCallback& fn) const {
   auto res = SuboptIntoVector(r, mfe_alg, alg, cfg, pf, subopt_cfg);
-  for (const auto& subopt : res) fn(subopt);
-  return static_cast<int64_t>(res.size());
+  int64_t count = 0;
+  for (const auto& subopt : res) {
+    ++count;
+    if (!fn(subopt)) break;
+  }
+  return count;
 }
 
 std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(const Primary& r,

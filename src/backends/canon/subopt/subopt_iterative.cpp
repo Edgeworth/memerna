@@ -61,16 +61,18 @@ int64_t SuboptIterative<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& 
         if (elapsed.count() >= subopt_cfg_.time_secs) break;
       }
       auto res = RunInternal(fn, delta, /*exact_energy=*/true, subopt_cfg_.strucs - count);
-      count += res.first;
-      delta = res.second;
+      count += res.count;
+      if (!res.keep_going) break;
+      delta = res.next_seen;
     }
     return count;
   }
-  return RunInternal(fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs).first;
+  return RunInternal(fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs).count;
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
-std::pair<int64_t, Energy> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(
+typename SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternalResult
+SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(
     const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max) {
   int64_t count = 0;
   Energy next_seen = MAX_E;
@@ -119,9 +121,9 @@ std::pair<int64_t, Energy> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInte
       if (unexpanded_.empty()) {
         if (!exact_energy || energy == delta) {
           res_.energy = energy + dp_.ext[0][EXT];
-          fn(res_);
           ++count;
-          if (count == max) return {count, CAP_E};
+          if (!fn(res_)) return {.count = count, .next_seen = next_seen, .keep_going = false};
+          if (count == max) return {.count = count, .next_seen = CAP_E};
         }
         continue;
       }
@@ -146,7 +148,7 @@ std::pair<int64_t, Energy> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInte
   }
   assert(unexpanded_.empty() && energy == ZERO_E && res_.tb.s == Secondary(res_.tb.s.size()) &&
       res_.tb.ctd == Ctds(res_.tb.ctd.size()));
-  return {count, next_seen};
+  return {.count = count, .next_seen = next_seen};
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>

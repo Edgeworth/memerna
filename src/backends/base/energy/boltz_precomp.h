@@ -100,8 +100,8 @@ BoltzEnergy BoltzPrecomp<CFG, PseudofreeCfgT, BoltzModelT>::TwoLoop(
         bm->internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
     return energy *
-        bm->internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]]
-                        [r[ien + 2]][r[oen]];
+        bm->internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
+                        [r[oen]];
 
   static_assert(TWOLOOP_MAX_SZ <= std::remove_reference_t<decltype(m)>::INITIATION_CACHE_SZ,
       "initiation cache not large enough");

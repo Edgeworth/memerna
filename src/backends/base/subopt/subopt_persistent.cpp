@@ -82,7 +82,7 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
     num_strucs++;
     GenerateResult(idx);
     res_.energy = delta + mfe;
-    fn(res_);
+    if (!fn(res_)) break;
   }
 
   return num_strucs;

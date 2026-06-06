@@ -20,8 +20,8 @@ FoldResult Memerna::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::Energ
 
 int64_t Memerna::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg,
     std::optional<SuboptAlg> alg, erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf,
-    const subopt::SuboptCallback& fn, subopt::SuboptCfg subopt_cfg) const {
-  return ctx_.Subopt(r, mfe_alg, alg, cfg, pf, fn, subopt_cfg);
+    subopt::SuboptCfg subopt_cfg, const subopt::SuboptCallback& fn) const {
+  return ctx_.Subopt(r, mfe_alg, alg, cfg, pf, subopt_cfg, fn);
 }
 
 std::vector<subopt::SuboptResult> Memerna::SuboptIntoVector(const Primary& r,

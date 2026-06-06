@@ -223,7 +223,6 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
       dp[st][en][PT_U] = u;
       dp[st][en][PT_U2] = u2;
-
     }
   }
 
@@ -371,15 +370,15 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
               if (right_formable)
                 p += base_branch_cost * dp[st + 2][piv][PT_U] *
-                    PairedWithPf(bpc.bpf, dp, pr, en - 2) * bpc.augubranch[prb][en2b] *
-                    outer_coax * bm->multiloop_c * bm->multiloop_c;
+                    PairedWithPf(bpc.bpf, dp, pr, en - 2) * bpc.augubranch[prb][en2b] * outer_coax *
+                    bm->multiloop_c * bm->multiloop_c;
             }
 
             if (lspace > 1 && rspace && left_dot_formable)
-              p += base_branch_cost * PairedWithPf(bpc.bpf, dp, st + 2, pl) *
-                  dp[pr][en - 1][PT_U] * bpc.augubranch[st2b][pl1b] *
-                  bm->MismatchCoaxial(pl1b, plb, st1b, st2b) * bpc.bpf.Unpaired(st + 1) *
-                  bpc.bpf.Unpaired(piv) * bm->multiloop_c * bm->multiloop_c;
+              p += base_branch_cost * PairedWithPf(bpc.bpf, dp, st + 2, pl) * dp[pr][en - 1][PT_U] *
+                  bpc.augubranch[st2b][pl1b] * bm->MismatchCoaxial(pl1b, plb, st1b, st2b) *
+                  bpc.bpf.Unpaired(st + 1) * bpc.bpf.Unpaired(piv) * bm->multiloop_c *
+                  bm->multiloop_c;
 
             if (lspace && rspace > 1 && right_dot_formable)
               p += base_branch_cost * dp[st + 1][piv][PT_U] *

@@ -30,16 +30,14 @@ class Precomp : public PrecompBase<ModelT> {
 };
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, class ModelT>
-Precomp<CFG, PseudofreeCfgT, ModelT>::Precomp(
-    Primary r, typename ModelT::Ptr m, PseudofreeCfgT pf_)
+Precomp<CFG, PseudofreeCfgT, ModelT>::Precomp(Primary r, typename ModelT::Ptr m, PseudofreeCfgT pf_)
     : PrecompBase<ModelT>(std::move(r), std::move(m)), pf(std::move(pf_)),
       min_pf_unpaired(pf.MinUnpaired()), sum_neg_pf(pf.SmallestSubsetSum()) {
   pf.Verify(this->r_);
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, class ModelT>
-Energy Precomp<CFG, PseudofreeCfgT, ModelT>::TwoLoop(
-    int ost, int oen, int ist, int ien) const {
+Energy Precomp<CFG, PseudofreeCfgT, ModelT>::TwoLoop(int ost, int oen, int ist, int ien) const {
   const auto& r = this->r_;
   const auto& m = this->m_;
   const int toplen = ist - ost - 1;
@@ -62,11 +60,10 @@ Energy Precomp<CFG, PseudofreeCfgT, ModelT>::TwoLoop(
         m->internal_1x2[r[ien]][r[ien + 1]][r[oen]][r[ost]][r[ost + 1]][r[ost + 2]][r[ist]];
   if (toplen == 2 && botlen == 2)
     return energy +
-        m->internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]]
-                       [r[ien + 2]][r[oen]];
+        m->internal_2x2[r[ost]][r[ost + 1]][r[ost + 2]][r[ist]][r[ien]][r[ien + 1]][r[ien + 2]]
+                       [r[oen]];
 
-  static_assert(
-      TWOLOOP_MAX_SZ <= ModelT::INITIATION_CACHE_SZ, "initiation cache not large enough");
+  static_assert(TWOLOOP_MAX_SZ <= ModelT::INITIATION_CACHE_SZ, "initiation cache not large enough");
   assert(toplen + botlen < ModelT::INITIATION_CACHE_SZ);
   energy += m->internal_init[toplen + botlen] +
       std::min(std::abs(toplen - botlen) * m->internal_asym, NINIO_MAX_ASYM);
