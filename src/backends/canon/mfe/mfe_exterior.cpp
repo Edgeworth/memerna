@@ -21,10 +21,14 @@ Energy MfeExterior(
   state.ext = ExtArray(r.size() + 1, MAX_E);
   auto& [dp, ext] = state;
 
+  // Exterior loop calculation.
   ext[N][EXT] = ZERO_E;
   for (int st = N - 1; st >= 0; --st) {
+    // Case: No pair starting here
     ext[st][EXT] = ext[st + 1][EXT] + pf.Unpaired(st);
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      // .   .   .   (   .   .   .   )   <   >
+      //           stb  st1b   en1b  enb   rem
       const auto stb = r[st];
       const auto st1b = r[st + 1];
       const auto enb = r[en];
@@ -34,22 +38,30 @@ Energy MfeExterior(
       const auto base10 = dp[st + 1][en][DP_P] + m->AuGuPenalty(st1b, enb);
       const auto base11 = dp[st + 1][en - 1][DP_P] + m->AuGuPenalty(st1b, en1b);
 
+      // (   )<   >
       auto val = base00 + ext[en + 1][EXT];
 
       if constexpr (CFG.UseD2()) {
-        if (st != 0 && en != N - 1)
+        if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch
           val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
-        else if (en != N - 1)
+        } else if (en != N - 1) {
+          // (   )<3   > 3'
           val += m->dangle3[enb][r[en + 1]][stb];
-        else if (st != 0)
+        } else if (st != 0) {
+          // 5(   )<   > 5'
           val += m->dangle5[enb][r[st - 1]][stb];
+        }
       }
 
       Energy e = val;
 
       if constexpr (CFG.UseDangleMismatch()) {
+        // (   )3<   > 3'
         e = std::min(e, base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT]);
+        // 5(   )<   > 5'
         e = std::min(e, base10 + m->dangle5[enb][stb][st1b] + pf.Unpaired(st) + ext[en + 1][EXT]);
+        // .(   ).<   > Terminal mismatch
         e = std::min(e,
             base11 + m->terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en) +
                 ext[en + 1][EXT]);

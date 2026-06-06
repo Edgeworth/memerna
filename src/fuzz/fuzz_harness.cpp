@@ -50,8 +50,9 @@ std::string DescribeEquivalenceClass(const std::vector<BackendModelPtr>& group) 
 FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg, bool should_log)
     : fuzz_cfg_(std::move(fuzz_cfg)), e_(std::random_device{}()), should_log_(should_log) {
 #ifdef MRNA_USE_RNASTRUCTURE
-  rstr_ =
-      std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
+  if (fuzz_cfg_.UsesRNAstructure())
+    rstr_ =
+        std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
 #endif  // MRNA_USE_RNASTRUCTURE
   if (should_log_) loginfo("Fuzzing with config: {}", fuzz_cfg_.Desc());
 
@@ -83,7 +84,7 @@ Error FuzzHarness::Run(const Primary& r, const erg::PseudofreeCfg& pf) {
   for (const auto& group : groups) {
     FuzzInvocation invoc(r, group, backend_cfg_, pf, fuzz_cfg_, should_log_);
 #ifdef MRNA_USE_RNASTRUCTURE
-    invoc.set_rnastructure(rstr_);
+    if (fuzz_cfg_.UsesRNAstructure()) invoc.set_rnastructure(rstr_);
 #endif  // MRNA_USE_RNASTRUCTURE
     auto local = invoc.Run();
     errors.insert(

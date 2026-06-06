@@ -43,6 +43,8 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
       }
       if (a != EXT) continue;
       for (en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+        // .   .   .   (   .   .   .   )   <   >
+        //           stb  st1b   en1b  enb   rem
         const auto stb = r[st];
         const auto st1b = r[st + 1];
         const auto enb = r[en];
@@ -52,16 +54,20 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         const auto base10 = dp[st + 1][en][DP_P] + m->AuGuPenalty(st1b, enb);
         const auto base11 = dp[st + 1][en - 1][DP_P] + m->AuGuPenalty(st1b, en1b);
 
+        // (   )<   >
         auto val = base00 + ext[en + 1][EXT];
         Ctd val_ctd = CTD_UNUSED;
         if constexpr (CFG.UseD2()) {
           if (st != 0 && en != N - 1) {
+            // (   )<   > Terminal mismatch
             val += m->terminal[enb][r[en + 1]][r[st - 1]][stb];
             val_ctd = CTD_MISMATCH;
           } else if (en != N - 1) {
+            // (   )<3   > 3'
             val += m->dangle3[enb][r[en + 1]][stb];
             val_ctd = CTD_3_DANGLE;
           } else if (st != 0) {
+            // 5(   )<   > 5'
             val += m->dangle5[enb][r[st - 1]][stb];
             val_ctd = CTD_5_DANGLE;
           }
@@ -75,6 +81,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         }
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (   )3<   > 3'
           if (base01 + m->dangle3[en1b][enb][stb] + pf.Unpaired(en) + ext[en + 1][EXT] ==
               ext[st][EXT]) {
             res.ctd[st] = CTD_3_DANGLE;
@@ -82,6 +89,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             q.emplace_back(en + 1, INVALID_INDEX, EXT);
             goto loopend;
           }
+          // 5(   )<   > 5'
           if (base10 + m->dangle5[enb][stb][st1b] + pf.Unpaired(st) + ext[en + 1][EXT] ==
               ext[st][EXT]) {
             res.ctd[st + 1] = CTD_5_DANGLE;
@@ -89,6 +97,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             q.emplace_back(en + 1, INVALID_INDEX, EXT);
             goto loopend;
           }
+          // .(   ).<   > Terminal mismatch
           if (base11 + m->terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en) +
                   ext[en + 1][EXT] ==
               ext[st][EXT]) {
@@ -181,9 +190,12 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         const auto base_branch_cost =
             m->AuGuPenalty(stb, enb) + pf.Paired(st, en) + m->multiloop_a + m->multiloop_b;
 
+        // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
         Ctd val_ctd = CTD_UNUSED;
         if constexpr (CFG.UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
           val += m->terminal[stb][st1b][en1b][enb];
           val_ctd = CTD_MISMATCH;
         }
@@ -194,6 +206,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         }
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (3<   ><   >) 3'
           if (base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
                   pf.Unpaired(st + 1) + m->multiloop_c ==
               dp[st][en][DP_P]) {
@@ -201,6 +214,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             q.emplace_back(st + 2, en - 1, DP_U2);
             goto loopend;
           }
+          // (<   ><   >5) 5'
           if (base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
                   pf.Unpaired(en - 1) + m->multiloop_c ==
               dp[st][en][DP_P]) {
@@ -208,6 +222,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             q.emplace_back(st + 1, en - 2, DP_U2);
             goto loopend;
           }
+          // (.<   ><   >.) Terminal mismatch
           if (base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
                   pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c ==
               dp[st][en][DP_P]) {
@@ -360,8 +375,11 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
       }
 
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
+        //   (   .   )<   (
+        // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_b;
         const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_b;
         const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;
@@ -375,17 +393,22 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
           is_right_filled = false;
         }
 
+        // (   )<   > - U, U2
         auto val = base00 + right_unpaired;
         Ctd val_ctd = CTD_UNUSED;
 
         if constexpr (CFG.UseD2()) {
+          // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U, U2
             val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
             val_ctd = CTD_MISMATCH;
           } else if (piv != N - 1) {
+            // (   )<3   > 3' - U, U2
             val += m->dangle3[pb][r[piv + 1]][stb];
             val_ctd = CTD_3_DANGLE;
           } else if (st != 0) {
+            // 5(   )<   > 5' - U, U2
             val += m->dangle5[pb][r[st - 1]][stb];
             val_ctd = CTD_5_DANGLE;
           }
@@ -399,6 +422,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
         }
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (   )3<   > 3' - U, U2
           if (base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
                   right_unpaired ==
               dp[st][en][a]) {
@@ -407,6 +431,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
+          // 5(   )<   > 5' - U, U2
           if (base10 + m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c +
                   right_unpaired ==
               dp[st][en][a]) {
@@ -415,6 +440,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
             if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);
             goto loopend;
           }
+          // .(   ).<   > Terminal mismatch - U, U2
           if (base11 + m->terminal[pl1b][pb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(piv) +
                   2 * m->multiloop_c + right_unpaired ==
               dp[st][en][a]) {
@@ -429,6 +455,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
       if constexpr (CFG.UseCoaxialStacking()) {
         if (a == DP_U || a == DP_U2) {
           for (int piv = st + 2 * HAIRPIN_MIN_SZ + 3; piv <= en; ++piv) {
+            // (   )(<   )<   > - CX
             auto right_unpaired = dp[piv + 1][en][DP_U];
             bool is_right_filled = true;
             if (pf.UnpairedSum(piv + 1, en) + (en - piv) * m->multiloop_c < right_unpaired) {

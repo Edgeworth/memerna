@@ -64,21 +64,32 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
               p_min = std::min(p_min, pc.TwoLoop(st, en, ist, ien) + dp[ist][ien][DP_P]);
           }
         }
+        // Hairpin loops.
         p_min = std::min(p_min, pc.Hairpin(st, en));
 
+        // Multiloops. Look at range [st + 1, en - 1].
+        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const auto base_branch_cost = pc.augubranch[stb][enb] + pf.Paired(st, en) + m->multiloop_a;
 
+        // (<   ><   >)
         auto val = base_branch_cost + dp[st + 1][en - 1][DP_U2];
-        if constexpr (CFG.UseD2()) val += m->terminal[stb][st1b][en1b][enb];
+        if constexpr (CFG.UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val += m->terminal[stb][st1b][en1b][enb];
+        }
         p_min = std::min(p_min, val);
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (3<   ><   >) 3'
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][en - 1][DP_U2] + m->dangle3[stb][st1b][enb] +
                   pf.Unpaired(st + 1) + m->multiloop_c);
+          // (<   ><   >5) 5'
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 1][en - 2][DP_U2] + m->dangle5[stb][en1b][enb] +
                   pf.Unpaired(en - 1) + m->multiloop_c);
+          // (.<   ><   >.) Terminal mismatch
           p_min = std::min(p_min,
               base_branch_cost + dp[st + 2][en - 2][DP_U2] + m->terminal[stb][st1b][en1b][enb] +
                   pf.Unpaired(st + 1) + pf.Unpaired(en - 1) + 2 * m->multiloop_c);
@@ -88,6 +99,7 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
           const auto outer_coax = m->MismatchCoaxial(stb, st1b, en1b, enb) + pf.Unpaired(st + 1) +
               pf.Unpaired(en - 1) + 2 * m->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
+            // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
             const Base plb = r[piv];
             const Base prb = r[piv + 1];
@@ -168,8 +180,11 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
       }
 
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
+        //   (   .   )<   (
+        // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const auto base00 = dp[st][piv][DP_P] + pc.augubranch[stb][pb];
         const auto base01 = dp[st][piv - 1][DP_P] + pc.augubranch[stb][pl1b];
         const auto base10 = dp[st + 1][piv][DP_P] + pc.augubranch[st1b][pb];
@@ -177,17 +192,22 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
         const auto right_unpaired = std::min(
             dp[piv + 1][en][DP_U], pf.UnpairedSum(piv + 1, en) + (en - piv) * m->multiloop_c);
 
+        // (   )<   > - U, U2
         auto u2_val = base00 + dp[piv + 1][en][DP_U];
         auto val = base00 + right_unpaired;
 
         if constexpr (CFG.UseD2()) {
+          // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U, U2
             val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
             u2_val += m->terminal[pb][r[piv + 1]][r[st - 1]][stb];
           } else if (piv != N - 1) {
+            // (   )<3   > 3' - U, U2
             val += m->dangle3[pb][r[piv + 1]][stb];
             u2_val += m->dangle3[pb][r[piv + 1]][stb];
           } else if (st != 0) {
+            // 5(   )<   > 5' - U, U2
             val += m->dangle5[pb][r[st - 1]][stb];
             u2_val += m->dangle5[pb][r[st - 1]][stb];
           }
@@ -197,18 +217,21 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
         u_min = std::min(u_min, val);
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (   )3<   > 3' - U, U2
           u_min = std::min(u_min,
               base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
                   right_unpaired);
           u2_min = std::min(u2_min,
               base01 + m->dangle3[pl1b][pb][stb] + pf.Unpaired(piv) + m->multiloop_c +
                   dp[piv + 1][en][DP_U]);
+          // 5(   )<   > 5' - U, U2
           u_min = std::min(u_min,
               base10 + m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c +
                   right_unpaired);
           u2_min = std::min(u2_min,
               base10 + m->dangle5[pb][stb][st1b] + pf.Unpaired(st) + m->multiloop_c +
                   dp[piv + 1][en][DP_U]);
+          // .(   ).<   > Terminal mismatch - U, U2
           u_min = std::min(u_min,
               base11 + m->terminal[pl1b][pb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(piv) +
                   2 * m->multiloop_c + right_unpaired);
@@ -220,6 +243,7 @@ void MfeOpt<CFG, PseudofreeCfgT>::Run(
 
       if constexpr (CFG.UseCoaxialStacking()) {
         for (int piv = st + 2 * HAIRPIN_MIN_SZ + 3; piv <= en; ++piv) {
+          // (   )(<   )<   > - CX
           const auto right_unpaired = std::min(
               dp[piv + 1][en][DP_U], pf.UnpairedSum(piv + 1, en) + (en - piv) * m->multiloop_c);
           const auto val = dp[st][piv][DP_CX] + right_unpaired;

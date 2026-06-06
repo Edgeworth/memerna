@@ -569,10 +569,8 @@ Error FuzzInvocation::CheckPfn() {
     }
   }
 
-  auto pfn_baseline = std::move(results[0]);
-
 #ifdef MRNA_USE_RNASTRUCTURE
-  if (cfg_.pfn_rnastructure) Register("RNAstructure:", CheckPfnRNAstructure(pfn_baseline));
+  if (cfg_.pfn_rnastructure) Register("RNAstructure:", CheckPfnRNAstructure(results[0]));
 #endif  // MRNA_USE_RNASTRUCTURE
 
   return errors;

@@ -164,6 +164,7 @@ struct FuzzCfg {
   std::string rnastructure_data_dir{};
 
   [[nodiscard]] std::string Desc() const;
+  [[nodiscard]] bool UsesRNAstructure() const;
 
   static FuzzCfg FromArgParse(const ArgParse& args);
 };

@@ -99,6 +99,10 @@ std::string FuzzCfg::Desc() const {
   return desc;
 }
 
+bool FuzzCfg::UsesRNAstructure() const {
+  return mfe_rnastructure || subopt_rnastructure || pfn_rnastructure;
+}
+
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
   args.MaybeSet(OPT_FUZZ_BRUTE_MAX, &cfg.brute_max);
@@ -148,7 +152,8 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.data_dir = args.Get<std::string>(OPT_MEMERNA_DATA);
 
 #ifdef MRNA_USE_RNASTRUCTURE
-  cfg.rnastructure_data_dir = args.Get<std::string>(bridge::OPT_RNASTRUCTURE_DATA);
+  if (cfg.UsesRNAstructure())
+    cfg.rnastructure_data_dir = args.Get<std::string>(bridge::OPT_RNASTRUCTURE_DATA);
 #endif  // MRNA_USE_RNASTRUCTURE
 
   return cfg;

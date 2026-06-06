@@ -21,8 +21,11 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
 
   ext[N][PTEXT_R] = ONE_B;
   for (int st = N - 1; st >= 0; --st) {
+    // Case: No pair starting here
     ext[st][PTEXT_R] += ext[st + 1][PTEXT_R] * pf.Unpaired(st).Boltz();
     for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      // .   .   .   (   .   .   .   )   <   >
+      //           stb  st1b   en1b  enb   rem
       const auto stb = r[st];
       const auto st1b = r[st + 1];
       const auto enb = r[en];
@@ -32,14 +35,18 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
       const BoltzEnergy base10 = dp[st + 1][en][PT_P] * m.AuGuPenalty(st1b, enb).Boltz();
       const BoltzEnergy base11 = dp[st + 1][en - 1][PT_P] * m.AuGuPenalty(st1b, en1b).Boltz();
 
+      // (   )<   >
       BoltzEnergy val = base00 * ext[en + 1][PTEXT_R];
 
       if constexpr (CFG.UseD2()) {
         if (st != 0 && en != N - 1) {
+          // (   )<   > Terminal mismatch
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
         } else if (en != N - 1) {
+          // (   )<3   > 3'
           val *= m.dangle3[enb][r[en + 1]][stb].Boltz();
         } else if (st != 0) {
+          // 5(   )<   > 5'
           val *= m.dangle5[enb][r[st - 1]][stb].Boltz();
         }
       }
@@ -47,16 +54,20 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
       ext[st][PTEXT_R] += val;
 
       if constexpr (CFG.UseDangleMismatch()) {
+        // (   )3<   > 3'
         ext[st][PTEXT_R] +=
             base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ext[en + 1][PTEXT_R];
+        // 5(   )<   > 5'
         ext[st][PTEXT_R] +=
             base10 * (m.dangle5[enb][stb][st1b] + pf.Unpaired(st)).Boltz() * ext[en + 1][PTEXT_R];
+        // .(   ).<   > Terminal mismatch
         ext[st][PTEXT_R] += base11 *
             (m.terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en)).Boltz() *
             ext[en + 1][PTEXT_R];
       }
 
       if constexpr (CFG.UseCoaxialStacking()) {
+        // .(   ).<(   ) > Left coax
         for (int piv = en + HAIRPIN_MIN_SZ + 2; piv < N; ++piv) {
           const Base prb = r[en + 1];
           const Base pb = r[piv];
@@ -66,6 +77,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
               ext[piv + 1][PTEXT_R];
         }
 
+        // (   )<.(   ). > Right coax forward
         for (int piv = en + HAIRPIN_MIN_SZ + 4; piv < N; ++piv) {
           const Base prb = r[en + 1];
           const Base pr1b = r[en + 2];
@@ -78,6 +90,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
               ext[piv + 1][PTEXT_R];
         }
 
+        // (   )(<   ) > Flush coax
         for (int piv = en + HAIRPIN_MIN_SZ + 1; piv < N; ++piv) {
           const Base pb = r[piv];
           ext[st][PTEXT_R] += base01 * dp[en][piv][PT_P] * m.AuGuPenalty(enb, pb).Boltz() *
@@ -89,6 +102,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
 
   ext[0][PTEXT_L] = pf.Unpaired(0).Boltz();
   for (int en = 1; en < N; ++en) {
+    // Case: No pair ending here
     ext[en][PTEXT_L] += ext[en - 1][PTEXT_L] * pf.Unpaired(en).Boltz();
     for (int st = 0; st < en - HAIRPIN_MIN_SZ; ++st) {
       const auto stb = r[st];
@@ -102,27 +116,35 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
 
       const BoltzEnergy ptextl = st ? ext[st - 1][PTEXT_L] : BoltzEnergy{1};
 
+      // <   >(   )
       BoltzEnergy val = base00 * ptextl;
 
       if constexpr (CFG.UseD2()) {
         if (st != 0 && en != N - 1) {
+          // <   m>(   )m Terminal mismatch
           val *= m.terminal[enb][r[en + 1]][r[st - 1]][stb].Boltz();
         } else if (en != N - 1) {
+          // <   >(   )3 3'
           val *= m.dangle3[enb][r[en + 1]][stb].Boltz();
         } else if (st != 0) {
+          // <   5>(   ) 5'
           val *= m.dangle5[enb][r[st - 1]][stb].Boltz();
         }
       }
       ext[en][PTEXT_L] += val;
 
       if constexpr (CFG.UseDangleMismatch()) {
+        // <   >(   )3 3'
         ext[en][PTEXT_L] += base01 * (m.dangle3[en1b][enb][stb] + pf.Unpaired(en)).Boltz() * ptextl;
+        // <   >5(   ) 5'
         ext[en][PTEXT_L] += base10 * (m.dangle5[enb][stb][st1b] + pf.Unpaired(st)).Boltz() * ptextl;
+        // <   >.(   ). Terminal mismatch
         ext[en][PTEXT_L] += base11 *
             (m.terminal[en1b][enb][stb][st1b] + pf.Unpaired(st) + pf.Unpaired(en)).Boltz() * ptextl;
       }
 
       if constexpr (CFG.UseCoaxialStacking()) {
+        // <  (   )>.(   ). Right coax
         for (int piv = 0; piv <= st - HAIRPIN_MIN_SZ - 2; ++piv) {
           const BoltzEnergy prefix = piv ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
           const Base pb = r[piv];
@@ -132,6 +154,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
               (m.MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en)).Boltz();
         }
 
+        // <  .(   ).>(   ) Left coax forward
         for (int piv = 0; piv <= st - HAIRPIN_MIN_SZ - 4; ++piv) {
           const BoltzEnergy prefix = piv ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
           const Base pb = r[piv];
@@ -144,6 +167,7 @@ void PfnExterior(const Primary& r, const Model& m, PfnState& state, const Pseudo
                   .Boltz();
         }
 
+        // < (   >)(   ) Flush coax
         for (int piv = 0; piv <= st - HAIRPIN_MIN_SZ - 1; ++piv) {
           const BoltzEnergy prefix = piv ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
           const Base pb = r[piv];

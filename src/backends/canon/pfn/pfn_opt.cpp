@@ -66,20 +66,30 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
           for (int ien = en - max_inter + ist - st - 2; ien < en; ++ien)
             p += bpc.TwoLoop(st, en, ist, ien) * dp[ist][ien][PT_P];
 
+        // Hairpin loops.
         p += bpc.Hairpin(st, en);
 
+        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
         const BoltzEnergy base_branch_cost =
             bpc.augubranch[stb][enb] * bpc.bpf.Paired(st, en) * bm->multiloop_a;
 
+        // (<   ><   >)
         BoltzEnergy val = base_branch_cost * dp[st + 1][en - 1][PT_U2];
-        if constexpr (CFG.UseD2()) val *= bm->terminal[stb][st1b][en1b][enb];
+        if constexpr (CFG.UseD2()) {
+          // D2 can overlap terminal mismatches with anything.
+          // (<   ><   >) Terminal mismatch
+          val *= bm->terminal[stb][st1b][en1b][enb];
+        }
         p += val;
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (3<   ><   >) 3'
           p += base_branch_cost * dp[st + 2][en - 1][PT_U2] * bm->dangle3[stb][st1b][enb] *
               bpc.bpf.Unpaired(st + 1) * bm->multiloop_c;
+          // (<   ><   >5) 5'
           p += base_branch_cost * dp[st + 1][en - 2][PT_U2] * bm->dangle5[stb][en1b][enb] *
               bpc.bpf.Unpaired(en - 1) * bm->multiloop_c;
+          // (.<   ><   >.) Terminal mismatch
           p += base_branch_cost * dp[st + 2][en - 2][PT_U2] * bm->terminal[stb][st1b][en1b][enb] *
               bpc.bpf.Unpaired(st + 1) * bpc.bpf.Unpaired(en - 1) * bm->multiloop_c *
               bm->multiloop_c;
@@ -90,6 +100,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
               bpc.bpf.Unpaired(st + 1) * bpc.bpf.Unpaired(en - 1) * bm->multiloop_c *
               bm->multiloop_c;
           for (int piv = st + HAIRPIN_MIN_SZ + 2; piv < en - HAIRPIN_MIN_SZ - 2; ++piv) {
+            // Paired coaxial stacking cases:
             const Base pl1b = r[piv - 1];
             const Base plb = r[piv];
             const Base prb = r[piv + 1];
@@ -135,8 +146,11 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
       }
 
       for (int piv = st + HAIRPIN_MIN_SZ + 1; piv <= en; ++piv) {
+        //   (   .   )<   (
+        // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
         const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
         const BoltzEnergy base01 = dp[st][piv - 1][PT_P] * bpc.augubranch[stb][pl1b];
         const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * bpc.augubranch[st1b][pb];
@@ -146,17 +160,22 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         const BoltzEnergy right_unpaired =
             bpc.bpf.UnpairedProd(piv + 1, en) * pow(bm->multiloop_c, en - piv);
 
+        // (   )<   > - U, U2
         BoltzEnergy u2_val = base00 * right_paired;
         BoltzEnergy val = base00 * right_unpaired + base00 * right_paired;
 
         if constexpr (CFG.UseD2()) {
+          // Note that D2 can overlap with anything.
           if (st != 0 && piv != N - 1) {
+            // (   )<   > Terminal mismatch - U, U2
             val *= bm->terminal[pb][r[piv + 1]][r[st - 1]][stb];
             u2_val *= bm->terminal[pb][r[piv + 1]][r[st - 1]][stb];
           } else if (piv != N - 1) {
+            // (   )<3   > 3' - U, U2
             val *= bm->dangle3[pb][r[piv + 1]][stb];
             u2_val *= bm->dangle3[pb][r[piv + 1]][stb];
           } else if (st != 0) {
+            // 5(   )<   > 5' - U, U2
             val *= bm->dangle5[pb][r[st - 1]][stb];
             u2_val *= bm->dangle5[pb][r[st - 1]][stb];
           }
@@ -166,14 +185,17 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         u += val;
 
         if constexpr (CFG.UseDangleMismatch()) {
+          // (   )3<   > 3' - U, U2
           val = base01 * bm->dangle3[pl1b][pb][stb] * bpc.bpf.Unpaired(piv) * bm->multiloop_c;
           u += val * right_unpaired + val * right_paired;
           u2 += val * right_paired;
 
+          // 5(   )<   > 5' - U, U2
           val = base10 * bm->dangle5[pb][stb][st1b] * bpc.bpf.Unpaired(st) * bm->multiloop_c;
           u += val * right_unpaired + val * right_paired;
           u2 += val * right_paired;
 
+          // .(   ).<   > Terminal mismatch - U, U2
           val = base11 * bm->terminal[pl1b][pb][stb][st1b] * bpc.bpf.Unpaired(st) *
               bpc.bpf.Unpaired(piv) * bm->multiloop_c * bm->multiloop_c;
           u += val * right_unpaired + val * right_paired;
@@ -212,6 +234,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         dp[st][en][PT_CX] = cx;
 
         for (int piv = st + 2 * HAIRPIN_MIN_SZ + 3; piv <= en; ++piv) {
+          // (   )(<   )<   > - CX
           const BoltzEnergy right_paired = dp[piv + 1][en][PT_U];
           const BoltzEnergy right_unpaired =
               bpc.bpf.UnpairedProd(piv + 1, en) * pow(bm->multiloop_c, en - piv);
@@ -229,8 +252,13 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
   PfnExterior<CFG>(r, bm->m(), state, pf);
   const auto& ext = state.ext;
 
+  // Fill the left triangle.
+  // The meaning of the tables changes here:
+  // U, U2, CX: any table index with en < st must have a loop enclosing (en, st)
   for (int st = N - 1; st >= 0; --st) {
     for (int en = 0; en < st; ++en) {
+      //        ..)...(..
+      // rspace  en   st  lspace
       const int lspace = N - st - 1;
       const int rspace = en;
       const Base stb = r[st];
@@ -255,6 +283,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
                 bpc.bpf.Unpaired(en - 1)
             : ZERO_B;
 
+        // Exterior-loop and non-coax enclosing-loop cases.
         {
           const BoltzEnergy augu = bm->AuGuPenalty(enb, stb);
           const BoltzEnergy rext = ext[st + 1][PTEXT_R];
@@ -265,35 +294,48 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
           BoltzEnergy d2_val = ONE_B;
           if constexpr (CFG.UseD2()) {
             if (st != N - 1 && en != 0) {
+              // |<   >)   (<   >| Terminal mismatch
               d2_val *= bm->terminal[stb][st1b][en1b][enb];
             } else if (st != N - 1) {
+              // |<   >)   (<3   >| 3'
               d2_val *= bm->dangle3[stb][st1b][enb];
             } else if (en != 0) {
+              // |<   5>)   (<   >| 5'
               d2_val *= bm->dangle5[stb][en1b][enb];
             }
           }
 
+          // |<   >)   (<   >| - Exterior loop
           p += augu * lext * rext * d2_val;
 
+          // |   >)   (<   | - Enclosing loop
           if (lspace && rspace) p += base_branch_cost * dp[st + 1][en - 1][PT_U2] * d2_val;
 
           if constexpr (CFG.UseDangleMismatch()) {
             if (lspace) {
+              // |<   >(   )3<   >| 3' - Exterior loop
+              // lspace > 0
               p += augu * lext * r1ext * bm->dangle3[stb][st1b][enb] * bpc.bpf.Unpaired(st + 1);
+              // |  >5)   (<   | 5' - Enclosing loop
               if (rspace > 1)
                 p += base_branch_cost * dp[st + 1][en - 2][PT_U2] * bm->dangle5[stb][en1b][enb] *
                     bpc.bpf.Unpaired(en - 1) * bm->multiloop_c;
             }
             if (rspace) {
+              // |<   >5(   )<   >| 5' - Exterior loop
+              // rspace > 0
               p += augu * l1ext * rext * bm->dangle5[stb][en1b][enb] * bpc.bpf.Unpaired(en - 1);
+              // |   >)   (3<  | 3' - Enclosing loop
               if (lspace > 1)
                 p += base_branch_cost * dp[st + 2][en - 1][PT_U2] * bm->dangle3[stb][st1b][enb] *
                     bpc.bpf.Unpaired(st + 1) * bm->multiloop_c;
             }
+            // |<   >m(   )m<   >| Terminal mismatch - Exterior loop
             if (lspace && rspace)
               p += augu * l1ext * r1ext * bm->terminal[stb][st1b][en1b][enb] *
                   bpc.bpf.Unpaired(st + 1) * bpc.bpf.Unpaired(en - 1);
 
+            // |  >m)   (m<  | Terminal mismatch - Enclosing loop
             if (lspace > 1 && rspace > 1)
               p += base_branch_cost * dp[st + 2][en - 2][PT_U2] *
                   bm->terminal[stb][st1b][en1b][enb] * bpc.bpf.Unpaired(st + 1) *
@@ -314,36 +356,51 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
               if (left_formable) {
                 const BoltzEnergy rp1ext = ext[piv + 1][PTEXT_R];
+                // |<   >)   (.(   ).<   >| Exterior loop - Left inner coax
+                // lspace > 1 && not enclosed
                 p += PairedWithPf(bpc.bpf, dp, st + 2, pl) * lext * rp1ext *
                     bm->AuGuPenalty(stb, enb) * bm->AuGuPenalty(st2b, pl1b) *
                     bm->MismatchCoaxial(pl1b, plb, st1b, st2b) * bpc.bpf.Unpaired(st + 1) *
                     bpc.bpf.Unpaired(piv);
+                // |<   >)   ((   )<   >| Exterior loop - Left flush coax
+                // lspace > 0 && not enclosed
                 p += PairedWithPf(bpc.bpf, dp, st + 1, piv) * lext * rp1ext *
                     bm->AuGuPenalty(stb, enb) * bm->AuGuPenalty(st1b, plb) *
                     bm->stack[stb][st1b][plb][enb];
 
-                if (rspace)
+                if (rspace) {
+                  // |<   >.)   (.(   )<   >| Exterior loop - Left outer coax
+                  // lspace > 0 && rspace > 0 && not enclosed
                   p += PairedWithPf(bpc.bpf, dp, st + 2, piv) * l1ext * rp1ext *
                       bm->AuGuPenalty(stb, enb) * bm->AuGuPenalty(st2b, plb) * outer_coax;
+                }
               }
 
               if (right_formable) {
                 const BoltzEnergy lpext = piv > 0 ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
+                // |<   >.(   ).)   (<   >| Exterior loop - Right inner coax
+                // rspace > 1 && not enclosed
                 p += PairedWithPf(bpc.bpf, dp, pr, en - 2) * lpext * rext *
                     bm->AuGuPenalty(stb, enb) * bm->AuGuPenalty(prb, en2b) *
                     bm->MismatchCoaxial(en2b, en1b, plb, prb) * bpc.bpf.Unpaired(piv) *
                     bpc.bpf.Unpaired(en - 1);
+                // |<   >(   ))   (<   >| Exterior loop - Right flush coax
+                // rspace > 0 && not enclosed
                 p += dp[piv][en - 1][PT_P] * lpext * rext * bm->AuGuPenalty(stb, enb) *
                     bm->AuGuPenalty(plb, en1b) * bm->stack[en1b][enb][stb][plb];
 
-                if (lspace)
+                if (lspace) {
+                  // |<   >(   ).)   (.<   >| Exterior loop - Right outer coax
+                  // lspace > 0 && rspace > 1 && not enclosed
                   p += dp[piv][en - 2][PT_P] * lpext * r1ext * bm->AuGuPenalty(stb, enb) *
                       bm->AuGuPenalty(plb, en2b) * outer_coax;
+                }
               }
             }
           }
         }
 
+        // Enclosing loop coax cases.
         if constexpr (CFG.UseCoaxialStacking()) {
           const int limit = en + N;
           for (int tpiv = st + 2; tpiv < limit; ++tpiv) {
@@ -359,43 +416,61 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
             const bool left_formable = straddling && (piv - st - 2 >= HAIRPIN_MIN_SZ || tpiv >= N);
             const bool right_formable =
                 straddling && (en - piv - 3 >= HAIRPIN_MIN_SZ || tpiv < N - 1);
-            const bool left_dot_formable = left_formable && tpiv != N;
-            const bool right_dot_formable = right_formable && tpiv != N - 2;
+            const bool left_dot_formable = left_formable && tpiv != N;  // Can't split a dot.
+            const bool right_dot_formable = right_formable && tpiv != N - 2;  // Can't split a dot.
 
             if (lspace > 1 && rspace > 1) {
-              if (left_formable)
+              if (left_formable) {
+                // |  >.)   (.(   )<  | Enclosing loop - Left outer coax
+                // lspace > 1 && rspace > 1 && enclosed
                 p += base_branch_cost * PairedWithPf(bpc.bpf, dp, st + 2, piv) *
                     dp[pr][en - 2][PT_U] * bpc.augubranch[st2b][plb] * outer_coax *
                     bm->multiloop_c * bm->multiloop_c;
+              }
 
-              if (right_formable)
+              if (right_formable) {
+                // |  >(   ).)   (.<  | Enclosing loop - Right outer coax
+                // lspace > 1 && rspace > 1 && enclosed
                 p += base_branch_cost * dp[st + 2][piv][PT_U] *
                     PairedWithPf(bpc.bpf, dp, pr, en - 2) * bpc.augubranch[prb][en2b] * outer_coax *
                     bm->multiloop_c * bm->multiloop_c;
+              }
             }
 
-            if (lspace > 1 && rspace && left_dot_formable)
+            if (lspace > 1 && rspace && left_dot_formable) {
+              // |  >)   (.(   ).<  | Enclosing loop - Left inner coax
+              // lspace > 1 && rspace > 0 && enclosed && no dot split
               p += base_branch_cost * PairedWithPf(bpc.bpf, dp, st + 2, pl) * dp[pr][en - 1][PT_U] *
                   bpc.augubranch[st2b][pl1b] * bm->MismatchCoaxial(pl1b, plb, st1b, st2b) *
                   bpc.bpf.Unpaired(st + 1) * bpc.bpf.Unpaired(piv) * bm->multiloop_c *
                   bm->multiloop_c;
+            }
 
-            if (lspace && rspace > 1 && right_dot_formable)
+            if (lspace && rspace > 1 && right_dot_formable) {
+              // |  >.(   ).)   (<  | Enclosing loop - Right inner coax
+              // lspace > 0 && rspace > 1 && enclosed && no dot split
               p += base_branch_cost * dp[st + 1][piv][PT_U] *
                   PairedWithPf(bpc.bpf, dp, pr1, en - 2) * bpc.augubranch[pr1b][en2b] *
                   bm->MismatchCoaxial(en2b, en1b, prb, pr1b) * bpc.bpf.Unpaired(pr) *
                   bpc.bpf.Unpaired(en - 1) * bm->multiloop_c * bm->multiloop_c;
+            }
 
             if (lspace && rspace) {
-              if (left_formable)
+              if (left_formable) {
+                // |  >)   ((   )<  | Enclosing loop - Left flush coax
+                // lspace > 0 && rspace > 0 && enclosed
                 p += base_branch_cost * PairedWithPf(bpc.bpf, dp, st + 1, piv) *
                     dp[pr][en - 1][PT_U] * bpc.augubranch[st1b][plb] *
                     bm->stack[stb][st1b][plb][enb];
+              }
 
-              if (right_formable)
+              if (right_formable) {
+                // |  >(   ))   (<  | Enclosing loop - Right flush coax
+                // lspace > 0 && rspace > 0 && enclosed
                 p += base_branch_cost * dp[st + 1][piv][PT_U] *
                     PairedWithPf(bpc.bpf, dp, pr, en - 1) * bpc.augubranch[prb][en1b] *
                     bm->stack[en1b][enb][stb][prb];
+              }
             }
           }
         }
@@ -406,6 +481,9 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
       BoltzEnergy u{0};
       BoltzEnergy u2{0};
       BoltzEnergy cx{0};
+      // Update unpaired.
+      // Choose `st` to be unpaired, but only if we can maintain the constraint that we have
+      // an enclosing loop formed.
       if (st + 1 < N) {
         u += dp[st + 1][en][PT_U] * bpc.bpf.Unpaired(st) * bm->multiloop_c;
         u2 += dp[st + 1][en][PT_U2] * bpc.bpf.Unpaired(st) * bm->multiloop_c;
@@ -431,8 +509,13 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
         if (straddling) {
           BoltzEnergy d2_val = ONE_B;
-          if constexpr (CFG.UseD2()) d2_val *= bm->terminal[pb][prb][r[st - 1]][stb];
+          if constexpr (CFG.UseD2()) {
+            // |  >>   m<(   )<m  | Terminal mismatch
+            // tpiv != N-1 && st != 0, so we can always do a terminal mismatch.
+            d2_val *= bm->terminal[pb][prb][r[st - 1]][stb];
+          }
 
+          // |  >>   <(   )<  |
           val = base00 * right_paired * d2_val;
           u2 += val;
           u += val;
@@ -441,6 +524,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         }
 
         if (CFG.UseDangleMismatch() && dot_straddling) {
+          // |  >>   <(   )3<  | 3'
           val = base01 * bm->dangle3[pl1b][pb][stb] * bpc.bpf.Unpaired(piv) * bm->multiloop_c;
           if (tpiv >= N) u += val * right_unpaired;
           val *= right_paired;
@@ -455,6 +539,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
               PairedWithPf(bpc.bpf, dp, st + 1, pl) * bpc.augubranch[st1b][pl1b];
 
           if (CFG.UseDangleMismatch() && straddling) {
+            // |  >>   <5(   )<  | 5'
             val = base10 * bm->dangle5[pb][stb][st1b] * bpc.bpf.Unpaired(st) * bm->multiloop_c;
             if (tpiv >= N) u += val * right_unpaired;
             val *= right_paired;
@@ -463,6 +548,8 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
           }
 
           if (CFG.UseDangleMismatch() && dot_straddling) {
+            // |  >>   <.(   ).<  | Terminal mismatch
+            // lspace > 0 && dot_straddling
             val = base11 * bm->terminal[pl1b][pb][stb][st1b] * bpc.bpf.Unpaired(st) *
                 bpc.bpf.Unpaired(piv) * bm->multiloop_c * bm->multiloop_c;
             if (tpiv >= N) u += val * right_unpaired;
@@ -476,6 +563,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
       if constexpr (CFG.UseCoaxialStacking()) {
         const int tend = en + N;
 
+        // |  )  >>   <(   )<(  | Flush coax - CX
         for (int tpiv = st + 1; tpiv <= tend; ++tpiv) {
           if (tpiv == N) continue;
           const int pl = FastMod(tpiv - 1, N);
@@ -488,6 +576,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         }
 
         if (lspace) {
+          // |  )>>   <.(   ).<(  | Left coax - CX
           for (int tpiv = st + 1; tpiv <= tend - 1; ++tpiv) {
             if (tpiv == N - 1 || tpiv == N) continue;
             const int pl = FastMod(tpiv - 1, N);
@@ -503,12 +592,13 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
           }
         }
 
+        // |  ).  >>   <(   )<.(   | Right coax - CX
         for (int tpiv = st + 1; tpiv <= tend - 3; ++tpiv) {
-          if (tpiv == N - 1) continue;
+          if (en == 0 || tpiv == N - 2 || tpiv == N - 1) continue;
           const int piv = FastMod(tpiv, N);
           const int pr = FastMod(tpiv + 1, N);
           const int pr1 = FastMod(tpiv + 2, N);
-          const int cx_en1 = en ? en - 1 : N - 1;
+          const int cx_en1 = en - 1;
           const Base pb = r[piv];
           const Base prb = r[pr];
           const Base pr1b = r[pr1];
@@ -521,6 +611,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         dp[st][en][PT_CX] = cx;
 
         for (int tpiv = st + 1; tpiv <= en + N; ++tpiv) {
+          // |  )>>   <(   )<(   <   | - CX followed by U
           if (tpiv == N - 1) continue;
           const int piv = FastMod(tpiv, N);
           const int pr = FastMod(tpiv + 1, N);
