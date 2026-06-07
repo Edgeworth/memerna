@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/base/energy/boltz_model.h"
 #include "backends/base/energy/precomp.h"
 #include "backends/base/pfn/pfn_exterior.h"
 #include "backends/common/base/dp.h"
@@ -251,7 +252,8 @@ PfnTables PfnDebug<CFG, PseudofreeCfgT>::Run(
   }
 
   // Compute the exterior tables.
-  PfnExterior<CFG>(r, *m, state, pf);
+  const auto bm = BoltzModel::Create(m);
+  PfnExterior<CFG>(r, *bm, state, pf);
   const auto& ext = state.ext;
 
   // Fill the left triangle.

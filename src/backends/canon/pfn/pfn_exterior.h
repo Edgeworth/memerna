@@ -4,13 +4,13 @@
 
 #include "api/energy/energy_cfg.h"
 #include "backends/canon/dp.h"
-#include "backends/canon/energy/model.h"
+#include "backends/canon/energy/boltz_model.h"
 #include "model/primary.h"
 
 namespace mrna::md::canon {
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-void PfnExterior(const Primary& r, const Model& m, PfnState& state, const PseudofreeCfgT& pf);
+void PfnExterior(const Primary& r, const BoltzModel& bm, PfnState& state, const PseudofreeCfgT& pf);
 
 template <class PseudofreeCfgT>
 inline BoltzEnergy PairedWithPf(const PseudofreeCfgT& pf, const BoltzDpArray& dp, int st, int en) {

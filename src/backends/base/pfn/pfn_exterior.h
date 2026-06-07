@@ -3,14 +3,14 @@
 #define BACKENDS_BASE_PFN_PFN_EXTERIOR_H_
 
 #include "api/energy/energy_cfg.h"
-#include "backends/base/energy/model.h"
+#include "backends/base/energy/boltz_model.h"
 #include "backends/common/base/dp.h"
 #include "model/primary.h"
 
 namespace mrna::md::base {
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-void PfnExterior(const Primary& r, const Model& m, PfnState& state, const PseudofreeCfgT& pf);
+void PfnExterior(const Primary& r, const BoltzModel& bm, PfnState& state, const PseudofreeCfgT& pf);
 
 template <class PseudofreeCfgT>
 inline BoltzEnergy PairedWithPf(const PseudofreeCfgT& pf, const BoltzDpArray& dp, int st, int en) {

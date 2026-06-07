@@ -244,7 +244,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
   }
 
   // Compute the exterior tables.
-  PfnExterior<CFG>(r, bm->m(), state, pf);
+  PfnExterior<CFG>(r, *bm, state, pf);
   const auto& ext = state.ext;
 
   // Fill the left triangle.
