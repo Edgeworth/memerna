@@ -113,7 +113,7 @@ class PrecompBase {
     const auto min_bulge_init =
         MinEnergy(&m_->bulge_init[1], sizeof(m_->bulge_init) - sizeof(m_->bulge_init[0]));
 
-    const Energy states_bonus = -E(R * T * log(MaxNumContiguous(r_)));
+  const Energy states_bonus = -E(R * T * log(std::max(MaxNumContiguous(r_), 1)));
     const Energy min_bulge = min_bulge_init + min_penalty + min_stack +
         std::min(m_->bulge_special_c, ZERO_E) + states_bonus;
     min_twoloop_not_stack = std::min(min_bulge, min_internal);

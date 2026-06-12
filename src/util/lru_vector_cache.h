@@ -2,6 +2,7 @@
 #ifndef UTIL_LRU_VECTOR_CACHE_H_
 #define UTIL_LRU_VECTOR_CACHE_H_
 
+#include <cassert>
 #include <list>
 #include <utility>
 #include <vector>
@@ -20,8 +21,8 @@ class LruVectorCache {
   const std::vector<Value>& Insert(Key key, std::vector<Value>&& value) {
     // Key should not already be in the cache. This means we don't need to remove it from the LRU
     // list.
-    assert(cache_[key].first.empty());
     assert(key < cache_.size());
+    assert(cache_[key].first.empty());
     total_ += value.size();
     lru_.push_front(key);
     cache_[key] = {std::move(value), lru_.begin()};
@@ -44,7 +45,7 @@ class LruVectorCache {
   std::size_t total_ = 0;
 
   void MaybeEvict() {
-    while (total_ > max_total_) {
+    while (total_ > max_total_ && lru_.size() > 1) {
       auto key = lru_.back();
       total_ -= cache_[key].first.size();
       cache_[key].first.clear();

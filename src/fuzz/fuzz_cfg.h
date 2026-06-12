@@ -123,7 +123,7 @@ std::ostream& operator<<(std::ostream& str, const RandomPseudofreeCfg& o);
 
 // Contains all configuration needed to run a fuzzing round.
 struct FuzzCfg {
-  int brute_max = 22;
+  int brute_max = 30;
   std::optional<int> fuzz_time_secs;
 
   // MFE configuration.

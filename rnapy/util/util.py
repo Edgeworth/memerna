@@ -88,6 +88,8 @@ def fast_linecount(path: Path, compressed: bool = False) -> int:
     _, cat_stderr = cat_proc.communicate()
     if cat_proc.returncode != 0:
         raise RuntimeError(f"{cat_cmd[0]} failed: {cat_stderr.decode()}")
+    if wc_proc.returncode != 0:
+        raise RuntimeError(f"wc failed with return code {wc_proc.returncode}")
     return int(wc_output.strip())
 
 

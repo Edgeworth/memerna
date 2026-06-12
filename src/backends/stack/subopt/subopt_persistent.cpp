@@ -74,7 +74,7 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
 
   q_.clear();
   pq_ = {};  // priority queue has no clear method
-  q_.reserve(r_.size() * r_.size());
+  q_.reserve(static_cast<std::size_t>(r_.size()) * r_.size());
 
   const auto start_idx = base::DpIndex(0, INVALID_INDEX, EXT);
   const Energy mfe = dp_.base.Index(start_idx);

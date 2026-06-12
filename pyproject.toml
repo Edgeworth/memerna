@@ -1,32 +1,37 @@
 [project]
 authors = [{name = "Eliot Courtney", email = "edgeworth.dev@gmail.com"}]
 description = "memerna"
-dynamic = ["dependencies"]
 license = {text = "GPL-3.0-only"}
 name = "rnapy"
 requires-python = ">=3.13,<4.0"
 version = "0.2.1"
 
+dependencies = [
+  "click>=8.4.2",
+  "click-params>=0.5.0",
+  "click_log>=0.4.0",
+  "cloup>=3.1.0",
+  "libtmux>=0.62.0",
+  "polars>=1.42.1",
+  "python-dotenv>=1.2.2",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=2.2.0",
+  "pytest>=9.1.1",
+]
+
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+build-backend = "uv_build"
+requires = ["uv_build>=0.11.29,<0.12"]
 
-[tool.poetry]
-packages = [{include = "rnapy"}]
+[tool.uv]
+preview-features = ["centralized-project-envs"]
 
-[tool.poetry.dependencies]
-click = ">=8.3.3"
-click-params = ">=0.5.0"
-click_log = ">=0.4.0"
-cloup = ">=3.0.9"
-libtmux = ">=0.55.1"
-polars = ">=1.40.1"
-python-dotenv = ">=1.2.2"
-
-[tool.poetry.group.dev.dependencies]
-mypy = ">=1.20.2"
-poetry-plugin-up = ">=0.9.0"
-pytest = ">=9.0.3"
+[tool.uv.build-backend]
+module-name = "rnapy"
+module-root = ""
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
@@ -58,7 +63,7 @@ warn_unused_ignores = true
 show_error_codes = true
 
 # Set python version.
-python_version = '3.14'
+python_version = '3.13'
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -69,7 +74,7 @@ module = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py314"
+target-version = "py313"
 
 [tool.ruff.format]
 # Make sure lists etc can go back onto one line if they get shorter.

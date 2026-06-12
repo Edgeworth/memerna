@@ -82,11 +82,11 @@ cmake --build build
 ```
 
 Alternatively, memerna can be compiled using the rnapy python helper script,
-if you have Python 3.11+ and poetry installed. This will output builds
+if you have Python 3.13+ and uv installed. This will output builds
 into the given prefix directory, which defaults to $HOME/bin/memerna.
 
 ```sh
-poetry run python -m rnapy.run build --kind release
+uv run python -m rnapy.run build --kind release
 ```
 
 Optionally, you may set `CPM_SOURCE_CACHE` to a directory to cache external
@@ -214,7 +214,7 @@ Some of the algorithms are listed here:
 
 ### Running include-what-you-use
 
-poetry run python -m rnapy.run build --iwyu --no-build
+uv run python -m rnapy.run build --iwyu --no-build
 
 Then from the cmake build directory:
 make -j$(nproc) 2> /tmp/iwyu.out
@@ -263,7 +263,7 @@ seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
 ### Fuzzing against RNAstructure
 
 ```bash
-poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
+uv run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
 ./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
   --mfe-rnastructure --mfe-table --energy-model t04 --backends base 1 200
@@ -276,21 +276,21 @@ afl-lto. It's better to use a seeded energy model than random energy models for
 afl-fuzz since it will be more stable and easier to debug if it finds something.
 
 ```bash
-poetry run python -m rnapy.run afl-fuzz --help
+uv run python -m rnapy.run afl-fuzz --help
 ```
 
 For example, try this command line:
 
 ```bash
-poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --num-procs 16 --mfe --mfe-table --seed 123 --max-len 200 \
+uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+ --num-procs 16 --mfe --mfe-table --max-len 200 \
  --energy-model t22
 ```
 
 To fuzz everything:
 
 ```bash
-poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
   --num-procs 16 --energy-precision 1 --mfe --mfe-rnastructure --mfe-table \
   --subopt --max-len 200 --backends base
 ```
@@ -298,9 +298,9 @@ poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
 Fuzz memerna only, with faster settings:
 
 ```bash
-poetry run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
+uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
  --num-procs 16 --mfe --mfe-table --subopt --subopt-strucs 100 \
- --subopt-delta 0.2 --seed 123 --max-len 200
+ --subopt-delta 0.2 --max-len 200
 ```
 
 Checking progress:
@@ -318,7 +318,7 @@ cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
 Minimising test cases:
 
 ```bash
-poetry run python -m rnapy.run afl-fuzz-min <crash-file>
+uv run python -m rnapy.run afl-fuzz-min <crash-file>
 ```
 
 ### Environment variables for rnapy
@@ -329,7 +329,7 @@ a .env file (used by rnapy):
 ```bash
 MRNA=<set to memerna source directory>
 MEMEVAULT=${MRNA}/rnapy/data/memevault.db
-MRNA_DIST=${HOME}/bin/memerna/relwithdebinfo-default-64-rnastructure
+MRNA_DIST=${HOME}/bin/memerna/<build-id>
 MRNA01_DIST=${HOME}/...
 RNASTRUCTURE=${HOME}/...
 SPARSEMFEFOLD=${HOME}/...

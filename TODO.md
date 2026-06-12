@@ -29,6 +29,7 @@ LogKind:
 - PadeApprox<N>
 - BithackPadeApprox<N>
 - MinimaxApprox<N>
+- Lookup table idea?
 
 ExpKind:
 - standard library

@@ -1,7 +1,9 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/energy.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <istream>
@@ -40,12 +42,19 @@ Energy Energy::FromString(const std::string& s) {
     std::string decimal;
     verify(ss >> decimal, "invalid energy: {}", s);
     verify(decimal.size() <= Energy::EXPONENT, "invalid energy: {}", s);
+    verify(std::all_of(decimal.begin(), decimal.end(), [](char c) { return c >= '0' && c <= '9'; }),
+        "invalid energy: {}", s);
     decimal.resize(Energy::EXPONENT, '0');
     lo = std::stoi(decimal);
   }
   verify(ss.eof(), "invalid energy: {}", s);
   verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: {}", s);
-  Energy energy = Energy::FromRaw(sgn * (hi * Energy::FACTOR + lo));
+  // Compute in 64-bit so an out-of-range integer part is caught by the range check below rather
+  // than overflowing int. The largest valid magnitude is bounded by CAP_E.
+  const int64_t raw = int64_t{sgn} * (int64_t{hi} * Energy::FACTOR + lo);
+  verify(raw >= std::numeric_limits<int32_t>::min() && raw <= std::numeric_limits<int32_t>::max(),
+      "energy out of range: {}", s);
+  Energy energy = Energy::FromRaw(static_cast<int32_t>(raw));
   verify(energy < CAP_E, "energy out of range: {}", s);
   return energy;
 }
