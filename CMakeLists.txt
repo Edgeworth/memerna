@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 project(memerna VERSION 0.2.1 LANGUAGES CXX)
 
@@ -65,7 +65,7 @@ endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost 1.77 REQUIRED)
 find_package(Sanitizers)
 find_package(MPFR)
 
@@ -325,6 +325,7 @@ set(TEST_SOURCE
   src/tests/models/t04/mfe_test.cpp
   src/tests/util/argparse_test.cpp
   src/tests/util/float_test.cpp
+  src/tests/util/lru_vector_cache_test.cpp
   src/tests/util/splaymap_test.cpp
   src/tests/util.cpp
   src/tests/util.h

@@ -25,7 +25,7 @@ namespace mrna {
 constexpr std::string NormalizeEnumName(std::string name) {
   for (char& c : name) {
     if (c == '_') c = '-';
-    c = static_cast<char>(std::tolower(c));
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   }
   return name;
 }

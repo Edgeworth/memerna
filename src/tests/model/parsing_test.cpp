@@ -1,4 +1,5 @@
 // Copyright 2016 Eliot Courtney.
+#include <stdexcept>
 #include <string>
 #include <tuple>
 
@@ -149,6 +150,10 @@ TEST_F(ParsingTest, SecondaryCtdToCtdString) {
   EXPECT_EQ(kCtdString15, kCtd15.ToString(kSecondary15, /*use_d2=*/false));
   EXPECT_EQ(kCtdString16, kCtd16.ToString(kSecondary16, /*use_d2=*/false));
   EXPECT_EQ(kCtdString17, kCtd17.ToString(kSecondary17, /*use_d2=*/false));
+}
+
+TEST_F(ParsingTest, SecondaryCtdToCtdStringRejectsMismatchedSizes) {
+  EXPECT_THROW((void)Ctds{CTD_NA}.ToString(Secondary{}, /*use_d2=*/false), std::runtime_error);
 }
 
 TEST_F(ParsingTest, ParseCtd) {

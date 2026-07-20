@@ -44,6 +44,8 @@ using flt =
 
 inline flt ParseFlt(const std::string& str) { return flt(str); }
 
+inline bool IsFinite(const flt& v) { return boost::multiprecision::isfinite(v); }
+
 #else
 
 #if MRNA_FLOAT_PRECISION == 6
@@ -66,6 +68,7 @@ inline flt exp(flt v) { return std::exp(v); }
 inline flt pow(flt base, int exp) { return std::pow(base, exp); }
 inline flt round(flt v) { return std::round(v); }
 inline bool isnan(flt v) { return std::isnan(v); }
+inline bool IsFinite(flt v) { return std::isfinite(v); }
 
 // Just pass through for built in types. Make literals long doubles.
 #define FLT(x) static_cast<flt>(x##l)
@@ -84,7 +87,7 @@ inline const flt EP{1e-9};
 inline const flt EP{1e-30};
 #endif
 
-inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) < ep; }
+inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) <= ep; }
 
 inline bool rel_eq(flt a, flt b, flt rel = EP) {
   return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));

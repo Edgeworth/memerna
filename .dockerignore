@@ -1,0 +1,10 @@
+.git
+.venv
+build
+.cache
+.mypy_cache
+.pytest_cache
+**/__pycache__
+*.pyc
+benchmark.json*
+memevault.db

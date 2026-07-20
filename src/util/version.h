@@ -16,9 +16,8 @@ struct VersionInfo {
   const std::string build_metadata;
 
   [[nodiscard]] std::string ToString() const {
-    return fmt::format("{}.{}.{}{}{}", major, minor, patch,
-        pre_release.empty() ? "" : "-" + std::string(pre_release),
-        build_metadata.empty() ? "" : "+" + std::string(build_metadata));
+    return fmt::format("{}.{}.{}{}{}{}{}", major, minor, patch, pre_release.empty() ? "" : "-",
+        pre_release, build_metadata.empty() ? "" : "+", build_metadata);
   }
 };
 
