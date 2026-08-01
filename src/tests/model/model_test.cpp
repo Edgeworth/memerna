@@ -1,4 +1,6 @@
 // Copyright 2022 Eliot Courtney.
+#include "api/energy/pseudofree_cfg.h"
+#include "backends/common/energy.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 
@@ -85,5 +87,20 @@ TEST(ModelTest, EnergyFromRaw) {
 }
 
 #endif
+
+TEST(ModelTest, MinEnergyTraversesNestedArrays) {
+  const Energy energies[2][2] = {{E(4.0), E(3.0)}, {E(2.0), E(-1.0)}};
+
+  EXPECT_EQ(E(-1.0), md::MinEnergy(energies));
+}
+
+TEST(PseudofreeCfgTest, BoltzRangesHandleCappedEntries) {
+  const auto pf = erg::PseudofreeCfg({}, {CAP_E, ZERO_E}).Boltz();
+
+  EXPECT_EQ(pf.UnpairedProd(0, 0), ZERO_B);
+  EXPECT_EQ(pf.UnpairedProd(0, 1), ZERO_B);
+  EXPECT_EQ(pf.UnpairedProd(1, 1), ONE_B);
+  EXPECT_EQ(pf.UnpairedProd(1, 0), ONE_B);
+}
 
 }  // namespace mrna

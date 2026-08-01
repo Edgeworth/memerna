@@ -164,7 +164,12 @@ struct FuzzCfg {
   std::string rnastructure_data_dir{};
 
   [[nodiscard]] std::string Desc() const;
+  [[nodiscard]] bool MfeEnabled() const { return mfe || mfe_rnastructure || mfe_table; }
+  [[nodiscard]] bool SuboptEnabled() const { return subopt || subopt_rnastructure; }
+  [[nodiscard]] bool PfnEnabled() const { return pfn || pfn_rnastructure || pfn_subopt > 0; }
   [[nodiscard]] bool UsesRNAstructure() const;
+
+  void Verify() const;
 
   static FuzzCfg FromArgParse(const ArgParse& args);
 };

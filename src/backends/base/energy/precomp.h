@@ -22,7 +22,7 @@ class Precomp : public PrecompBase<ModelT> {
   Energy min_pf_unpaired{};
   Energy sum_neg_pf{};
 
-  Precomp(Primary r, typename ModelT::Ptr m, PseudofreeCfgT pf);
+  Precomp(Primary r, ModelT::Ptr m, PseudofreeCfgT pf);
 
   [[nodiscard]] Energy TwoLoop(int ost, int oen, int ist, int ien) const;
 
@@ -30,7 +30,7 @@ class Precomp : public PrecompBase<ModelT> {
 };
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, class ModelT>
-Precomp<CFG, PseudofreeCfgT, ModelT>::Precomp(Primary r, typename ModelT::Ptr m, PseudofreeCfgT pf_)
+Precomp<CFG, PseudofreeCfgT, ModelT>::Precomp(Primary r, ModelT::Ptr m, PseudofreeCfgT pf_)
     : PrecompBase<ModelT>(std::move(r), std::move(m)), pf(std::move(pf_)),
       min_pf_unpaired(pf.MinUnpaired()), sum_neg_pf(pf.SmallestSubsetSum()) {
   pf.Verify(this->r_);

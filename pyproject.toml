@@ -3,7 +3,7 @@ authors = [{name = "Eliot Courtney", email = "edgeworth.dev@gmail.com"}]
 description = "memerna"
 license = {text = "GPL-3.0-only"}
 name = "rnapy"
-requires-python = ">=3.13,<4.0"
+requires-python = ">=3.14,<4.0"
 version = "0.2.1"
 
 dependencies = [
@@ -12,14 +12,15 @@ dependencies = [
   "click_log>=0.4.0",
   "cloup>=3.1.0",
   "libtmux>=0.62.0",
-  "polars>=1.42.1",
-  "python-dotenv>=1.2.2",
+  "polars>=1.43.2",
+  "python-dotenv>=1.2.3",
 ]
 
 [dependency-groups]
 dev = [
-  "mypy>=2.2.0",
   "pytest>=9.1.1",
+  "ruff==0.15.0",
+  "ty>=0.0.73",
 ]
 
 [build-system]
@@ -38,43 +39,14 @@ addopts = ["--import-mode=importlib"]
 pythonpath = ["."]
 testpaths = ["rnapy_tests"]
 
-[tool.mypy]
-show_column_numbers = true
-# Require type hints
-disallow_untyped_defs = true
-
-# Allow types that is not imported to be used in annotations.
-# This is necessary because some libraries don't have annotations.
-disallow_any_unimported = false
-
-# Disallow implicit optional e.g. arg: str = None
-no_implicit_optional = true
-
-# Check bodies of functions without type annotations too
-check_untyped_defs = true
-
-# Warn about returning Any from a function annotated to not return it
-warn_return_any = true
-
-# Warn about unused ignore annotations
-warn_unused_ignores = true
-
-# Show error codes
-show_error_codes = true
-
-# Set python version.
-python_version = '3.13'
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
-  "click_log.*",
-  "click_params.*",
-]
+[tool.ty.rules]
+blanket-ignore-comment = "error"
+missing-override-decorator = "error"
+missing-type-argument = "error"
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.format]
 # Make sure lists etc can go back onto one line if they get shorter.

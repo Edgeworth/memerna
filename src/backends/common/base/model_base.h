@@ -70,7 +70,7 @@ class ModelBase {
   bool operator==(const ModelBase&) const = default;
 
   template <erg::EnergyCfg CFG>
-  [[nodiscard]] static constexpr bool CanPair(const Primary& r, int st, int en) {
+  [[nodiscard]] static bool CanPair(const Primary& r, int st, int en) {
     if constexpr (CFG.lonely_pairs == erg::EnergyCfg::LonelyPairs::ON)
       return IsPair(r[st], r[en]) && (en - st - 1 >= HAIRPIN_MIN_SZ);
     else

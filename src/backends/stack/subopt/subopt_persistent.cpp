@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,13 +33,6 @@ using base::EXT_GU;
 using base::EXT_RC;
 using base::EXT_WC;
 
-namespace {
-
-// Check the time every `CHECK_TIME_FREQ` iterations.
-constexpr int CHECK_TIME_FREQ = 10000;
-
-}  // namespace
-
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 bool SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::IsSupported(
     const PseudofreeCfgT& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
@@ -59,7 +53,9 @@ template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::SuboptPersistent(
     Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)),
-      subopt_cfg_(subopt_cfg), cache_(r_, MaxLinearIndex(r_.size())) {}
+      subopt_cfg_(subopt_cfg), cache_(r_, MaxLinearIndex(r_.size())) {
+  subopt_cfg_.Verify();
+}
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
@@ -69,7 +65,6 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
   std::string reason;
   verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
-
   logdebug("stack {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
 
   q_.clear();
@@ -79,7 +74,7 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
   const auto start_idx = base::DpIndex(0, INVALID_INDEX, EXT);
   const Energy mfe = dp_.base.Index(start_idx);
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
-  pq_.emplace(0, 0);
+  pq_.emplace(ZERO_E, SuboptIndex(0));
 
   int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
@@ -87,7 +82,7 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
   while (!pq_.empty()) {
     if (num_strucs >= subopt_cfg_.strucs) break;
 
-    if (subopt_cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
+    if (subopt_cfg_.time_secs >= 0.0 && num_strucs % subopt::CHECK_TIME_FREQ == 0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
       if (elapsed.count() >= subopt_cfg_.time_secs) break;

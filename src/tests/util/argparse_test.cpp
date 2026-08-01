@@ -9,6 +9,18 @@
 #include "util/log.h"
 
 namespace mrna {
+namespace {
+
+void ParseHelp(const char* help) {
+  const auto required = mrna::Opt(mrna::Opt::ARG).LongName("required").Required();
+  mrna::ArgParse args;
+  args.RegisterOpt(required);
+  std::vector<std::string> argv_str = {"prog", help};
+  auto argv = MakeArgv(argv_str);
+  args.ParseOrExit(static_cast<int>(argv.size()), argv.data());
+}
+
+}  // namespace
 
 TEST(ArgParseTest, HasIsTrueForNoFlagButGetOrIsFalse) {
   const auto opt = mrna::Opt(mrna::Opt::FLAG).LongName("flag");
@@ -102,6 +114,45 @@ TEST(ArgParseTest, StringPositionalPreservesSpaces) {
   EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
 
   EXPECT_EQ("RNA with spaces", args.Pos<std::string>(0));
+}
+
+TEST(ArgParseTest, ShortOnlyFlagParses) {
+  const auto flag = mrna::Opt(mrna::Opt::FLAG).ShortName("x");
+  mrna::ArgParse args;
+  args.RegisterOpt(flag);
+
+  std::vector<std::string> argv_str = {"prog", "-x"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+
+  EXPECT_TRUE(args.HasExplicit(flag));
+  EXPECT_TRUE(args.Get<bool>(flag));
+}
+
+TEST(ArgParseTest, RegisteringTheSameOptionTwiceDoesNotDuplicateUsage) {
+  const auto opt = mrna::Opt(mrna::Opt::FLAG).LongName("flag");
+  mrna::ArgParse args;
+  args.RegisterOpt(opt);
+  args.RegisterOpt(opt);
+
+  const auto usage = args.Usage();
+  const auto first = usage.find("--flag");
+  ASSERT_NE(std::string::npos, first);
+  EXPECT_EQ(std::string::npos, usage.find("--flag", first + 1));
+}
+
+TEST(ArgParseTest, UsageIncludesProgramAndHelp) {
+  mrna::ArgParse args;
+
+  const auto usage = args.Usage("prog");
+
+  EXPECT_NE(std::string::npos, usage.find("Usage: prog"));
+  EXPECT_NE(std::string::npos, usage.find("-h, --help"));
+}
+
+TEST(ArgParseTest, ParseOrExitHelpSucceedsBeforeRequiredValidation) {
+  EXPECT_EXIT(ParseHelp("--help"), testing::ExitedWithCode(0), "");
+  EXPECT_EXIT(ParseHelp("-h"), testing::ExitedWithCode(0), "");
 }
 
 }  // namespace mrna

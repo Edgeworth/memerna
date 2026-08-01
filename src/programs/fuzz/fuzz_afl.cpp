@@ -40,8 +40,9 @@ std::optional<T> ParseEnumField(const json::object& obj, const char* key) {
 std::optional<uint_fast32_t> ParseSeed(const json::object& obj) {
   const auto* v = obj.if_contains("seed");
   if (!v) return std::nullopt;
-  auto r = v->try_to_number<uint_fast32_t>();
-  if (r) return *r;
+  boost::system::error_code ec;
+  const auto seed = v->to_number<uint_fast32_t>(ec);
+  if (!ec) return seed;
   return std::nullopt;
 }
 
@@ -80,6 +81,8 @@ int main(int argc, char* argv[]) {
   [[maybe_unused]] const auto max_len = args.Get<int>(OPT_MAX_LEN);
   auto base_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
   verify(!base_cfg.random_seeds, "AFL fuzz does not support --random-seeds");
+  verify(base_cfg.pf_paired.empty() && base_cfg.pf_unpaired.empty(),
+      "AFL fuzz does not support fixed pseudofree energies; use --random-pf");
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
   __AFL_INIT();
@@ -104,11 +107,13 @@ int main(int argc, char* argv[]) {
 
     // Copy base config and apply JSON overrides.
     auto fuzz_cfg = base_cfg;
-    if (auto seed = ParseSeed(obj)) fuzz_cfg.random_model_cfg.seed = *seed;
-    if (auto em = ParseEnumField<mrna::erg::EnergyModelKind>(obj, "energy_model"))
-      fuzz_cfg.energy_model = *em;
-    if (auto ctd = ParseEnumField<mrna::erg::EnergyCfg::Ctd>(obj, "ctd"))
-      fuzz_cfg.energy_cfg.ctd = *ctd;
+    if (!fuzz_cfg.UsesRNAstructure()) {
+      if (auto seed = ParseSeed(obj)) fuzz_cfg.random_model_cfg.seed = *seed;
+      if (auto em = ParseEnumField<mrna::erg::EnergyModelKind>(obj, "energy_model"))
+        fuzz_cfg.energy_model = *em;
+      if (auto ctd = ParseEnumField<mrna::erg::EnergyCfg::Ctd>(obj, "ctd"))
+        fuzz_cfg.energy_cfg.ctd = *ctd;
+    }
 
     // Parse sequence.
     mrna::Primary seq;
@@ -122,7 +127,8 @@ int main(int argc, char* argv[]) {
     auto harness = mrna::fuzz::FuzzHarness(fuzz_cfg, /*should_log=*/false);
     auto pf = MakePseudofree(fuzz_cfg, seq.size());
     const auto res = harness.Run(seq, pf);
-    if (!res.empty()) {
+    if (!res.has_value()) continue;
+    if (!res->empty()) {
       // Print info needed to reproduce with the standalone fuzz program.
       fmt::print("Sequence: {}\n", seq.ToSeq());
       fmt::print("Energy model: {}\n", fuzz_cfg.energy_model);
@@ -136,7 +142,7 @@ int main(int argc, char* argv[]) {
       if (pf.HasUnpaired())
         fmt::print(
             "Pseudofree unpaired: {}\n", mrna::FormatPseudofreeEnergies(pf.UnpairedEnergies()));
-      for (const auto& s : res) fmt::print("{}\n", s);
+      for (const auto& s : *res) fmt::print("{}\n", s);
       fmt::print("\n");
       abort();
     }

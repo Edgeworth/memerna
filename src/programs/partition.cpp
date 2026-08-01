@@ -40,12 +40,6 @@ int main(int argc, char* argv[]) {
   mrna::PrintBoltzProbs(res.pfn.prob);
 
   if (args.GetOr(mrna::OPT_PFN_PRINT_EXTRA_TABLES)) {
-    auto vis = mrna::overloaded{[&](const auto& model) {
-      fmt::print("\nHelix probabilities\n");
-      mrna::PrintHelixProbs(r, res.pfn, *model);
-      fmt::print("\nInner stacking probabilities\n");
-      mrna::PrintInnerStackProbs(r, res.pfn, *model);
-    }};
-    std::visit(vis, ctx.BackendForPfn(pfn_alg, cfg, pf).m);
+    mrna::PrintExtraPfnTables(r, res.pfn, ctx.BackendForPfn(pfn_alg, cfg, pf).m, pf);
   }
 }

@@ -35,16 +35,24 @@ template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 SuboptDebug<CFG, PseudofreeCfgT>::SuboptDebug(
     Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), dp_(std::move(dp)),
-      subopt_cfg_(subopt_cfg) {}
+      subopt_cfg_(subopt_cfg) {
+  subopt_cfg_.Verify();
+}
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
   const int N = r_.size();
 
+  q_.clear();
+  finished_.clear();
+  curnode_ = Node{};
+
   std::string reason;
   verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
   pf_.Verify(r_);
+
+  if (subopt_cfg_.strucs == 0) return 0;
 
   logdebug("base {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
   auto start_time = std::chrono::steady_clock::now();

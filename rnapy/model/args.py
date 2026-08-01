@@ -1,7 +1,9 @@
 # Copyright 2022 Eliot Courtney.
+import math
 from decimal import Decimal
 from typing import Any
 
+import click
 import cloup
 from click_params import DECIMAL
 
@@ -42,13 +44,37 @@ def energy_cfg_from_args(
     return EnergyCfg(lonely_pairs=lonely_pairs, ctd=ctd, energy_model=energy_model, backend=backend)
 
 
+def validate_nonnegative_decimal(
+    _ctx: click.Context, _param: click.Parameter, value: Decimal | None
+) -> Decimal | None:
+    if value is not None and (not value.is_finite() or value < 0):
+        raise click.BadParameter("must be finite and nonnegative")
+    return value
+
+
+def validate_finite_float(
+    _ctx: click.Context, _param: click.Parameter, value: float | None
+) -> float | None:
+    if value is not None and not math.isfinite(value):
+        raise click.BadParameter("must be finite")
+    return value
+
+
 subopt_options = cloup.option_group(
     "Subopt options",
-    cloup.option("--subopt-delta", type=DECIMAL, help="maximum energy delta from minimum"),
-    cloup.option("--subopt-strucs", type=int, help="maximum number of reported structures"),
+    cloup.option(
+        "--subopt-delta",
+        type=DECIMAL,
+        callback=validate_nonnegative_decimal,
+        help="maximum energy delta from minimum",
+    ),
+    cloup.option(
+        "--subopt-strucs", type=cloup.IntRange(min=0), help="maximum number of reported structures"
+    ),
     cloup.option(
         "--subopt-time-secs",
-        type=float,
+        type=cloup.FloatRange(min=0),
+        callback=validate_finite_float,
         help="maximum time in seconds to run suboptimal folding for",
     ),
     cloup.option(

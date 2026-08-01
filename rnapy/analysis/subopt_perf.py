@@ -241,7 +241,7 @@ class SuboptPerfRunner:
     def _num_strucs() -> list[int]:
         return list(range(100_000, 10_000_001, 100_000))
 
-    def _lookup_cached(self, data_keys: dict) -> dict[str, Any] | None:
+    def _lookup_cached(self, data_keys: dict[str, Any]) -> dict[str, Any] | None:
         df = self._cached
         if df.is_empty():
             return None
@@ -260,6 +260,7 @@ class SuboptPerfRunner:
         self, program: RnaPackage, energy_cfg: EnergyCfg, subopt_cfg: SuboptCfg, rna: Rna
     ) -> bool:
         desc = program.desc(energy_cfg=energy_cfg, subopt_cfg=subopt_cfg)
+        name = rna.require_name()
         click.echo(f"Benchmarking folding with {desc} on {self.memevault.dataset}")
 
         for run_idx in range(self.num_tries):
@@ -267,7 +268,7 @@ class SuboptPerfRunner:
                 desc,
                 {
                     "dataset": self.memevault.dataset,
-                    "rna_name": rna.name,
+                    "rna_name": name,
                     "rna_length": len(rna),
                     "run_idx": run_idx,
                 },
@@ -281,7 +282,7 @@ class SuboptPerfRunner:
                 continue
 
             failed = False
-            data_values: dict = {}
+            data_values: dict[str, Any] = {}
             rna_count = None
             try:
                 rna_count, cmd_res = program.subopt(rna, energy_cfg, subopt_cfg)
@@ -297,7 +298,7 @@ class SuboptPerfRunner:
                     },
                 )
             except Exception as e:
-                click.echo(f"Error running {program} on {rna.name}: {e}")
+                click.echo(f"Error running {program} on {name}: {e}")
                 failed = True
 
             assert failed or isinstance(rna_count, int), f"Expected int, got {type(rna_count)}"

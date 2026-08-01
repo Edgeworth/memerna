@@ -4,7 +4,7 @@ from typing import Any
 import click
 import cloup
 
-from rnapy.bridge.args import bridge_options
+from rnapy.bridge.args import BridgeName, bridge_options
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.data.args import data_options, rna_from_args
 from rnapy.model.args import (
@@ -14,7 +14,7 @@ from rnapy.model.args import (
     subopt_options,
 )
 from rnapy.util.args import init_package_limits, limit_options
-from rnapy.util.util import fn_args
+from rnapy.util.util import enum_choice, fn_args
 
 
 @cloup.command()
@@ -32,16 +32,15 @@ from rnapy.util.util import fn_args
     "-s", "--subopt/--no-subopt", default=False, help="Run suboptimal folding on the given RNA"
 )
 @cloup.option(
-    "-x",
-    "--programs",
-    multiple=True,
-    type=cloup.Choice(
-        ["memerna", "memerna01", "rnastructure", "sparsemfefold", "sparsernafold", "viennarna"]
-    ),
-    help="Programs to run",
+    "-x", "--programs", multiple=True, type=enum_choice(BridgeName), help="Programs to run"
 )
 def harness(
-    programs: list[str], efn: bool, fold: bool, partition: bool, subopt: bool, **kwargs: Any
+    programs: tuple[BridgeName, ...],
+    efn: bool,
+    fold: bool,
+    partition: bool,
+    subopt: bool,
+    **kwargs: Any,
 ) -> None:
     init_package_limits(**fn_args())
     energy_cfg = energy_cfg_from_args(**fn_args())
@@ -50,7 +49,7 @@ def harness(
     packages: list[RnaPackage] = []
 
     for program in programs:
-        package: RnaPackage | None = kwargs.get(program)
+        package: RnaPackage | None = kwargs.get(program.value)
         if package is None:
             raise click.UsageError(f"Path for program {program} not found")
         packages.append(package)

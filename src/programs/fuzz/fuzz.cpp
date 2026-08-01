@@ -2,6 +2,7 @@
 #include <fmt/core.h>
 
 #include <chrono>
+#include <optional>
 #include <random>
 #include <string>
 #include <utility>
@@ -35,7 +36,7 @@ class FuzzRunner {
     mrna::loginfo("Running single fuzz on {}", r.ToSeq());
     for (int64_t i = 0;; ++i) {
       if (!KeepRunning(i, "times")) return true;
-      if (RunInvocation(r)) return false;
+      if (auto result = RunInvocation(r)) return *result;
     }
   }
 
@@ -46,7 +47,7 @@ class FuzzRunner {
     while (static_cast<int>(r.size()) <= max_len) {
       if (!KeepRunning(i)) return true;
       if (++i % 1000 == 0) mrna::loginfo("Fuzzed {} RNA, current size: {}", i, r.size());
-      if (RunInvocation(r)) return false;
+      if (auto result = RunInvocation(r)) return *result;
       r.Increment();
     }
     mrna::loginfo("Finished exhaustive fuzzing [{}-{}] len RNAs", min_len, max_len);
@@ -59,7 +60,7 @@ class FuzzRunner {
     for (int64_t i = 0;; ++i) {
       if (!KeepRunning(i, "RNAs")) return true;
       const int len = len_dist(harness_.e());
-      if (RunInvocation(mrna::Primary::Random(len, harness_.e()))) return false;
+      if (auto result = RunInvocation(mrna::Primary::Random(len, harness_.e()))) return *result;
     }
   }
 
@@ -72,12 +73,17 @@ class FuzzRunner {
   Clock::time_point last_status_time_;
   int interval_;
 
-  bool RunInvocation(const mrna::Primary& r) {
+  std::optional<bool> RunInvocation(const mrna::Primary& r) {
     mrna::erg::PseudofreeCfg pf(
         MaybeGetPairedPseudofree(r.size()), MaybeGetUnpairedPseudofree(r.size()));
-    const auto res = harness_.Run(r, pf);
-    MaybePrintResult(res, pf);
-    return !res.empty();
+    const auto result = harness_.Run(r, pf);
+    if (!result.has_value()) {
+      mrna::logwarn("Skipping configuration with no compatible backends");
+      return cfg_.backends.empty();
+    }
+    MaybePrintResult(*result, pf);
+    if (!result->empty()) return false;
+    return std::nullopt;
   }
 
   std::vector<mrna::Energy> MaybeGetPairedPseudofree(std::size_t length) {
@@ -150,9 +156,11 @@ int main(int argc, char* argv[]) {
   int min_len = 0;
   int max_len = 0;
   std::string seq;
+  const bool single_sequence = args.PosSize() == 1;
 
-  if (args.PosSize() == 1) {
+  if (single_sequence) {
     seq = args.Pos(0);
+    verify(!seq.empty(), "sequence must not be empty");
   } else if (args.PosSize() == 2) {
     min_len = args.Pos<int>(0);
     max_len = args.Pos<int>(1);
@@ -165,7 +173,7 @@ int main(int argc, char* argv[]) {
   auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
   auto runner = FuzzRunner(fuzz_cfg, interval);
   bool ok = false;
-  if (!seq.empty()) {
+  if (single_sequence) {
     ok = runner.RunSingle(mrna::Primary::FromSeq(seq));
   } else if (enumerate) {
     ok = runner.RunEnumerate(min_len, max_len);

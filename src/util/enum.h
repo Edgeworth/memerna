@@ -22,7 +22,7 @@
 
 namespace mrna {
 
-constexpr std::string NormalizeEnumName(std::string name) {
+inline std::string NormalizeEnumName(std::string name) {
   for (char& c : name) {
     if (c == '_') c = '-';
     c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
@@ -31,7 +31,7 @@ constexpr std::string NormalizeEnumName(std::string name) {
 }
 
 template <typename T>
-constexpr std::vector<T> EnumValues() {
+inline std::vector<T> EnumValues() {
   std::vector<T> values;
   boost::mp11::mp_for_each<boost::describe::describe_enumerators<T>>(
       [&](auto v) { values.push_back(v.value); });
@@ -39,7 +39,7 @@ constexpr std::vector<T> EnumValues() {
 }
 
 template <typename T>
-constexpr std::vector<std::string> EnumNames() {
+inline std::vector<std::string> EnumNames() {
   std::vector<std::string> values;
   boost::mp11::mp_for_each<boost::describe::describe_enumerators<T>>(
       [&](auto v) { values.push_back(NormalizeEnumName(v.name)); });
@@ -47,7 +47,7 @@ constexpr std::vector<std::string> EnumNames() {
 }
 
 template <typename T>
-constexpr std::vector<std::pair<T, std::string>> EnumItems() {
+inline std::vector<std::pair<T, std::string>> EnumItems() {
   std::vector<std::pair<T, std::string>> values;
   boost::mp11::mp_for_each<boost::describe::describe_enumerators<T>>(
       [&](auto v) { values.push_back({v.value, NormalizeEnumName(v.name)}); });

@@ -29,6 +29,8 @@ struct TraceCfg {
   bool random = false;
   std::optional<uint_fast32_t> seed;
 
+  void Verify() const;
+
   static TraceCfg FromArgParse(const ArgParse& args);
 };
 

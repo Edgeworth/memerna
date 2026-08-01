@@ -501,8 +501,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
         const BoltzEnergy right_paired = dp[pr][en][PT_U];
         const BoltzEnergy right_unpaired =
-            tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1]
-                       : ONE_B;
+            tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1] : ONE_B;
 
         const bool straddling = tpiv != N - 1;
         const bool dot_straddling = straddling && tpiv != N;
@@ -618,8 +617,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
           const int pr = FastMod(tpiv + 1, N);
           const BoltzEnergy right_paired = dp[pr][en][PT_U];
           const BoltzEnergy right_unpaired =
-              tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1]
-                         : ZERO_B;
+              tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1] : ZERO_B;
           const BoltzEnergy val = dp[st][piv][PT_CX] * (right_unpaired + right_paired);
           u += val;
           u2 += val;

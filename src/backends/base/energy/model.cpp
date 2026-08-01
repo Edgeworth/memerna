@@ -575,6 +575,7 @@ EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds
     const PseudofreeCfgT& pf, bool build_structure) const {
   const int N = r.size();
   auto res = SubEnergy<CFG>(r, s, given_ctd, pf, 0, N - 1, build_structure);
+  if (!given_ctd && s[0] == N - 1) res.ctd[0] = CTD_UNUSED;
   if (s[0] == N - 1 && IsAuPair(r[0], r[s[0]])) {
     res.energy += au_penalty;
     if (res.struc) {

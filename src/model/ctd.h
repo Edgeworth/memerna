@@ -65,30 +65,30 @@ using BranchCtd = std::deque<std::pair<Ctd, Energy>>;
 // an outer loop, and the other with the loop on the far right.
 class Ctds {
  public:
-  constexpr Ctds() = default;
-  constexpr ~Ctds() = default;
+  Ctds() = default;
+  ~Ctds() = default;
   explicit Ctds(std::initializer_list<Ctd> init) : data_(init) { VerifyRnaSize(data_.size()); }
   explicit Ctds(std::size_t size) : data_(size, CTD_NA) { VerifyRnaSize(data_.size()); }
 
-  constexpr Ctds(Ctds&&) = default;
-  constexpr Ctds& operator=(Ctds&&) = default;
+  Ctds(Ctds&&) = default;
+  Ctds& operator=(Ctds&&) = default;
 
   // Allow copies explicitly using the constructor.
-  constexpr explicit Ctds(const Ctds&) = default;
-  constexpr Ctds& operator=(const Ctds&) = delete;
+  explicit Ctds(const Ctds&) = default;
+  Ctds& operator=(const Ctds&) = delete;
 
-  constexpr auto operator<=>(const Ctds&) const = default;
+  auto operator<=>(const Ctds&) const = default;
 
-  constexpr Ctd& operator[](std::size_t pos) { return data_[pos]; }
-  constexpr const Ctd& operator[](std::size_t pos) const { return data_[pos]; }
+  Ctd& operator[](std::size_t pos) { return data_[pos]; }
+  const Ctd& operator[](std::size_t pos) const { return data_[pos]; }
 
-  [[nodiscard]] constexpr auto begin() const noexcept { return data_.begin(); }
-  [[nodiscard]] constexpr auto end() const noexcept { return data_.end(); }
+  [[nodiscard]] auto begin() const noexcept { return data_.begin(); }
+  [[nodiscard]] auto end() const noexcept { return data_.end(); }
 
-  [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
-  [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
+  [[nodiscard]] auto cbegin() const noexcept { return data_.cbegin(); }
+  [[nodiscard]] auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] constexpr Index size() const { return static_cast<Index>(data_.size()); }
+  [[nodiscard]] Index size() const { return static_cast<Index>(data_.size()); }
 
   void reset(std::size_t size) {
     VerifyRnaSize(size);
@@ -112,21 +112,21 @@ struct IndexCtd {
 
   [[nodiscard]] constexpr bool IsValid() const { return idx != INVALID_INDEX; }
 
-  constexpr void Apply(Ctds& ctds) const {
+  void Apply(Ctds& ctds) const {
     assert(idx >= 0 && idx != INVALID_INDEX);
     ctds[idx] = ctd;
   }
 
-  constexpr void Remove(Ctds& ctds) const {
+  void Remove(Ctds& ctds) const {
     assert(idx >= 0 && idx != INVALID_INDEX);
     ctds[idx] = CTD_NA;
   }
 
-  constexpr void MaybeApply(Ctds& ctds) const {
+  void MaybeApply(Ctds& ctds) const {
     if (IsValid()) Apply(ctds);
   }
 
-  constexpr void MaybeRemove(Ctds& ctds) const {
+  void MaybeRemove(Ctds& ctds) const {
     if (IsValid()) Remove(ctds);
   }
 

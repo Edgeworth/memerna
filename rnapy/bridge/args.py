@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+from enum import StrEnum
 from pathlib import Path
 
 import click
@@ -11,6 +12,16 @@ from rnapy.bridge.rnastructure import RNAstructure
 from rnapy.bridge.sparsemfefold import SparseMFEFold
 from rnapy.bridge.sparsernafold import SparseRNAFolD
 from rnapy.bridge.viennarna import ViennaRna
+
+
+class BridgeName(StrEnum):
+    LINEARFOLD = "linearfold"
+    MEMERNA = "memerna"
+    MEMERNA01 = "memerna01"
+    RNASTRUCTURE = "rnastructure"
+    SPARSEMFEFOLD = "sparsemfefold"
+    SPARSERNAFOLD = "sparsernafold"
+    VIENNARNA = "viennarna"
 
 
 def validate_memerna(
@@ -69,66 +80,79 @@ def validate_sparsernafold(
     return SparseRNAFolD(value)
 
 
+memerna_path_option = cloup.option(
+    "--memerna-path",
+    BridgeName.MEMERNA.value,
+    envvar="MRNA_DIST",
+    show_envvar=True,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+    callback=validate_memerna,
+    help="path to memerna build directory",
+)
+
+memerna01_path_option = cloup.option(
+    "--memerna01-path",
+    BridgeName.MEMERNA01.value,
+    envvar="MRNA01_DIST",
+    show_envvar=True,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+    callback=validate_memerna01,
+    help="path to memerna0.1 build directory",
+)
+
+linearfold_path_option = cloup.option(
+    "--linearfold-path",
+    BridgeName.LINEARFOLD.value,
+    envvar="LINEARFOLD",
+    show_envvar=True,
+    callback=validate_linearfold,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+)
+
+rnastructure_path_option = cloup.option(
+    "--rnastructure-path",
+    BridgeName.RNASTRUCTURE.value,
+    envvar="RNASTRUCTURE",
+    show_envvar=True,
+    callback=validate_rnastructure,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+    help="path to RNAstructure source directory (in-tree build assumed to be done)",
+)
+
+sparsemfefold_path_option = cloup.option(
+    "--sparsemfefold-path",
+    BridgeName.SPARSEMFEFOLD.value,
+    envvar="SPARSEMFEFOLD",
+    show_envvar=True,
+    callback=validate_sparsemfefold,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+)
+
+viennarna_path_option = cloup.option(
+    "--viennarna-path",
+    BridgeName.VIENNARNA.value,
+    envvar="VIENNARNA",
+    show_envvar=True,
+    callback=validate_viennarna,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+)
+
+sparsernafold_path_option = cloup.option(
+    "--sparsernafold-path",
+    BridgeName.SPARSERNAFOLD.value,
+    envvar="SPARSERNAFOLD",
+    show_envvar=True,
+    callback=validate_sparsernafold,
+    type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
+)
+
 bridge_options = cloup.option_group(
     "Bridge options",
-    cloup.option(
-        "--memerna-path",
-        "memerna",
-        envvar="MRNA_DIST",
-        show_envvar=True,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-        callback=validate_memerna,
-        help="path to memerna build directory",
-    ),
-    cloup.option(
-        "--memerna01-path",
-        "memerna01",
-        envvar="MRNA01_DIST",
-        show_envvar=True,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-        callback=validate_memerna01,
-        help="path to memerna0.1 build directory",
-    ),
-    cloup.option(
-        "--linearfold-path",
-        "linearfold",
-        envvar="LINEARFOLD",
-        show_envvar=True,
-        callback=validate_linearfold,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-    ),
-    cloup.option(
-        "--rnastructure-path",
-        "rnastructure",
-        envvar="RNASTRUCTURE",
-        show_envvar=True,
-        callback=validate_rnastructure,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-        help="path to RNAstructure source directory (in-tree build assumed to be done)",
-    ),
-    cloup.option(
-        "--sparsemfefold-path",
-        "sparsemfefold",
-        envvar="SPARSEMFEFOLD",
-        show_envvar=True,
-        callback=validate_sparsemfefold,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-        help="",
-    ),
-    cloup.option(
-        "--viennarna-path",
-        "viennarna",
-        envvar="VIENNARNA",
-        show_envvar=True,
-        callback=validate_viennarna,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-    ),
-    cloup.option(
-        "--sparsernafold-path",
-        "sparsernafold",
-        envvar="SPARSERNAFOLD",
-        show_envvar=True,
-        callback=validate_sparsernafold,
-        type=cloup.Path(file_okay=False, exists=True, resolve_path=True, path_type=Path),
-    ),
+    memerna_path_option,
+    memerna01_path_option,
+    linearfold_path_option,
+    rnastructure_path_option,
+    sparsemfefold_path_option,
+    viennarna_path_option,
+    sparsernafold_path_option,
 )

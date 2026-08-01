@@ -134,12 +134,24 @@ class BuildCfg:
         if regenerate:
             shutil.rmtree(path, ignore_errors=True)
             assert not path.exists()
-        if not (path / "Makefile").exists():
+        cache_path = path / "CMakeCache.txt"
+        if cache_path.exists():
+            source_entry = f"CMAKE_HOME_DIRECTORY:INTERNAL={self.src.resolve()}"
+            if source_entry not in cache_path.read_text().splitlines():
+                raise RuntimeError(
+                    f"{path} is configured for a different source directory; "
+                    "use --regenerate or a different --prefix"
+                )
+        else:
             shutil.rmtree(path, ignore_errors=True)
             self._generate_cmake()
         if build:
             cpu_count = os.cpu_count() or 1
-            jobs = max(1, cpu_count - 1)
-            cmd_parts = ["make", "-j", str(jobs), "-l", str(jobs), *targets]
+            jobs = int(os.environ.get("MRNA_BUILD_JOBS", max(1, cpu_count - 1)))
+            if jobs < 1:
+                raise ValueError("MRNA_BUILD_JOBS must be positive")
+            cmd_parts = ["cmake", "--build", ".", "--parallel", str(jobs)]
+            if targets:
+                cmd_parts += ["--target", *targets]
             cmd = " ".join(shlex.quote(part) for part in cmd_parts)
             run_shell(cmd, cwd=path, extra_env=self.env)

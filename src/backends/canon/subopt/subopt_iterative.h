@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -55,6 +56,7 @@ class SuboptIterative {
 
   SuboptResult res_;
   std::vector<DpIndex> unexpanded_;
+  int iters_until_check_ = 1;
 
   struct RunInternalResult {
     int64_t count = 0;
@@ -62,8 +64,9 @@ class SuboptIterative {
     bool keep_going = true;
   };
 
-  RunInternalResult RunInternal(
-      const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max);
+  template <bool CheckTime>
+  RunInternalResult RunInternal(const SuboptCallback& fn, Energy delta, bool exact_energy,
+      int64_t max, const std::chrono::steady_clock::time_point& start_time);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
     auto key = to_expand.LinearIndex(r_.size());

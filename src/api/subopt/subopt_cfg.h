@@ -14,6 +14,8 @@
 
 namespace mrna::subopt {
 
+inline constexpr int CHECK_TIME_FREQ = 16'384;
+
 inline const auto OPT_SUBOPT_DELTA =
     Opt(Opt::ARG).LongName("subopt-delta").Help("maximum energy delta from minimum");
 inline const auto OPT_SUBOPT_MAX =
@@ -36,6 +38,8 @@ struct SuboptCfg {
   int64_t strucs = MAX_STRUCTURES;  // maximum number of structures to report
   float time_secs = -1.0;  // maximum time in seconds to run suboptimal folding for
   bool sorted = true;  // if the structures should be sorted
+
+  void Verify() const;
 
   static SuboptCfg FromArgParse(const ArgParse& args);
 };

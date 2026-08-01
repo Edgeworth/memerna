@@ -44,13 +44,13 @@ struct __attribute__((packed, aligned(4))) Energy {
   constexpr Energy operator-() const noexcept { return FromRaw(-v); }
 
   constexpr Energy operator+(const Energy& o) const noexcept { return FromRaw(v + o.v); }
-  constexpr Energy operator+=(const Energy& o) noexcept {
+  constexpr Energy& operator+=(const Energy& o) noexcept {
     v += o.v;
     return *this;
   }
 
   constexpr Energy operator-(const Energy& o) const noexcept { return FromRaw(v - o.v); }
-  constexpr Energy operator-=(const Energy& o) {
+  constexpr Energy& operator-=(const Energy& o) noexcept {
     v -= o.v;
     return *this;
   }

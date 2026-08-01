@@ -66,7 +66,12 @@ class FuzzInvocation {
 
   void Register(const std::string& header, Error&& local);
 
-  [[nodiscard]] const BackendModelPtr* FindSuboptModel(
+  static bool CollectSuboptPrefix(const subopt::SuboptResult& result,
+      std::vector<subopt::SuboptResult>* results, bool* hit_hard_cap);
+  static void CompareDpState(const mfe::DpState& got, const mfe::DpState& want,
+      const std::string& name_got, const std::string& name_want, Error& errors);
+
+  [[nodiscard]] std::optional<BackendModelPtr> FindSuboptModel(
       const erg::EnergyCfg& energy_cfg, subopt::SuboptCfg subopt_cfg) const;
 
   std::tuple<Error, std::optional<FoldBaseline>> CheckMfe();

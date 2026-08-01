@@ -5,7 +5,8 @@
 #include <span>
 #include <string>
 
-#include "backends/common/base/model_base.h"
+#include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "model/energy.h"
 #include "model/pfn.h"
 #include "model/primary.h"
@@ -16,9 +17,8 @@ void PrintBoltzProbs(const BoltzProbs& p);
 
 void PrintPfn(const BoltzSums& p);
 
-void PrintInnerStackProbs(const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model);
-
-void PrintHelixProbs(const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model);
+void PrintExtraPfnTables(const Primary& r, const PfnTables& pfn, const BackendModelPtr& model,
+    const erg::PseudofreeCfg& pf);
 
 std::string FormatPseudofreeEnergies(std::span<const Energy> energies);
 

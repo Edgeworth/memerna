@@ -47,9 +47,19 @@ struct Array2D {
 };
 
 template <typename T, unsigned int K>
-struct Array2D1S {
-  using ArrayType = T[K];
+struct Array1D1SView {
+ public:
+  constexpr explicit Array1D1SView(T* data) : data_(data) {}
 
+  constexpr T* operator[](std::size_t idx) { return &data_[idx * K]; }
+  constexpr const T* operator[](std::size_t idx) const { return &data_[idx * K]; }
+
+ private:
+  T* data_;
+};
+
+template <typename T, unsigned int K>
+struct Array2D1S {
  public:
   constexpr Array2D1S() = default;
   constexpr Array2D1S(std::size_t size, T init_val) : data_(new T[size * size * K]), size_(size) {
@@ -70,12 +80,12 @@ struct Array2D1S {
     return *this;
   }
 
-  constexpr ArrayType* operator[](std::size_t idx) {
-    return reinterpret_cast<ArrayType*>(&data_[idx * size_ * K]);
+  constexpr Array1D1SView<T, K> operator[](std::size_t idx) {
+    return Array1D1SView<T, K>(&data_[idx * size_ * K]);
   }
 
-  constexpr const ArrayType* operator[](std::size_t idx) const {
-    return reinterpret_cast<const ArrayType*>(&data_[idx * size_ * K]);
+  constexpr Array1D1SView<const T, K> operator[](std::size_t idx) const {
+    return Array1D1SView<const T, K>(&data_[idx * size_ * K]);
   }
 
   [[nodiscard]] constexpr std::size_t size() const { return size_; }

@@ -34,8 +34,21 @@ std::vector<BoltzEnergy> BuildUnpairedSumLog(std::span<const Energy> unpaired) {
   std::vector<BoltzEnergy> unpaired_sum_log;
   unpaired_sum_log.reserve(unpaired.size() + 1);
   unpaired_sum_log.push_back(ZERO_B);
-  for (const auto& e : unpaired) unpaired_sum_log.push_back(unpaired_sum_log.back() + e.LogBoltz());
+  for (const auto& e : unpaired) {
+    const auto log_boltz = e >= CAP_E ? ZERO_B : e.LogBoltz();
+    unpaired_sum_log.push_back(unpaired_sum_log.back() + log_boltz);
+  }
   return unpaired_sum_log;
+}
+
+std::vector<std::size_t> BuildUnpairedZeroCount(std::span<const Energy> unpaired) {
+  if (unpaired.empty()) return {};
+  std::vector<std::size_t> zero_count;
+  zero_count.reserve(unpaired.size() + 1);
+  zero_count.push_back(0);
+  for (const auto& e : unpaired)
+    zero_count.push_back(zero_count.back() + static_cast<std::size_t>(e >= CAP_E));
+  return zero_count;
 }
 
 }  // namespace
@@ -83,7 +96,8 @@ BoltzPseudofreeCfg PseudofreeCfg::Boltz() const { return BoltzPseudofreeCfg(*thi
 
 BoltzPseudofreeCfg::BoltzPseudofreeCfg(const PseudofreeCfg& pf)
     : paired_(BuildBoltz(pf.PairedEnergies())), unpaired_(BuildBoltz(pf.UnpairedEnergies())),
-      unpaired_sum_log_(BuildUnpairedSumLog(pf.UnpairedEnergies())) {}
+      unpaired_sum_log_(BuildUnpairedSumLog(pf.UnpairedEnergies())),
+      unpaired_zero_count_(BuildUnpairedZeroCount(pf.UnpairedEnergies())) {}
 
 void BoltzPseudofreeCfg::Verify(const Primary& r) const {
   if (!paired_.empty())

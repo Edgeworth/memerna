@@ -22,6 +22,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/structure.h"
+#include "util/file.h"
 
 namespace mrna::md::stack {
 
@@ -527,8 +528,8 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, const Pseu
   return energy;
 }
 
-constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int ost, int oen,
-    int ist, int ien, std::unique_ptr<Structure>* struc) const {
+inline Energy Model::StackPenalty(const Primary& r, const Secondary& s, int ost, int oen, int ist,
+    int ien, std::unique_ptr<Structure>* struc) const {
   assert(ost >= 0 && oen < r.size());
   assert(ist > 0 && ien >= 0 && ien + 1 < r.size());
   assert(ist > ost && ien < oen);
@@ -577,6 +578,7 @@ EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds
     const PseudofreeCfgT& pf, bool build_structure) const {
   const int N = r.size();
   auto res = SubEnergy<CFG>(r, s, given_ctd, pf, 0, N - 1, build_structure);
+  if (!given_ctd && s[0] == N - 1) res.ctd[0] = CTD_UNUSED;
   if (s[0] == N - 1) {
     auto extra_energy = ZERO_E;
     if (IsAuPair(r[0], r[s[0]])) {
@@ -599,7 +601,7 @@ EnergyResult Model::TotalEnergy(const Primary& r, const Secondary& s, const Ctds
 
 void Model::LoadFromModelPath(const std::string& path) {
   base::LoadFromModelPath(*this, path);
-  Parse4MapFromFile(path + "/penultimate_stacking.data", penultimate_stack);
+  Parse4Map(OpenFile(path + "/penultimate_stacking.data"), penultimate_stack);
 }
 
 void Model::LoadRandom(const BackendCfg& cfg, const RandomModelCfg& random_cfg, std::mt19937& eng) {

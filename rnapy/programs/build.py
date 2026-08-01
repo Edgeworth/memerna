@@ -1,4 +1,5 @@
 # Copyright 2022 Eliot Courtney.
+import shlex
 from pathlib import Path
 from typing import Any
 
@@ -43,5 +44,5 @@ def build(
             # Move old benchmark output to .old file, if it exists
             if bench_output.exists():
                 bench_output.rename(bench_output.with_suffix(bench_output.suffix + ".old"))
-            cmd += f" --benchmark_out={bench_output} --benchmark_out_format=json"
+            cmd += f" --benchmark_out={shlex.quote(str(bench_output))} --benchmark_out_format=json"
         run_shell(cmd, cwd=build_path)

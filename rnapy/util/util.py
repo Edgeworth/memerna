@@ -10,15 +10,15 @@ from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor, wait
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, Any, override
 
 import click
 import cloup
 import polars as pl
 
 
-def strict_merge(*dicts: dict) -> dict:
-    merged = {}
+def strict_merge(*dicts: dict[str, Any]) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
     for curdict in dicts:
         for key, value in curdict.items():
             if key in merged:
@@ -27,7 +27,7 @@ def strict_merge(*dicts: dict) -> dict:
     return merged
 
 
-def row_by_key(json_path: Path, data_keys: dict) -> dict[str, Any] | None:
+def row_by_key(json_path: Path, data_keys: dict[str, Any]) -> dict[str, Any] | None:
     """Checks if a row with the given keys exists in the JSON file."""
     if not json_path.exists():
         return None
@@ -78,24 +78,22 @@ def stable_hash(val: Any) -> int:
 
 
 def fast_linecount(path: Path, compressed: bool = False) -> int:
-    cat_cmd = ["zstd", "-dc", str(path)] if compressed else ["cat", str(path)]
-    cat_proc = subprocess.Popen(cat_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    wc_cmd = ["wc", "-l"]
-    wc_proc = subprocess.Popen(wc_cmd, stdin=cat_proc.stdout, stdout=subprocess.PIPE)
-    assert cat_proc.stdout is not None
-    cat_proc.stdout.close()
-    wc_output, _ = wc_proc.communicate()
-    _, cat_stderr = cat_proc.communicate()
-    if cat_proc.returncode != 0:
-        raise RuntimeError(f"{cat_cmd[0]} failed: {cat_stderr.decode()}")
-    if wc_proc.returncode != 0:
-        raise RuntimeError(f"wc failed with return code {wc_proc.returncode}")
-    return int(wc_output.strip())
+    if compressed:
+        cmd = ["bash", "-o", "pipefail", "-c", 'zstd -dc -- "$1" | wc -l', "bash", str(path)]
+    else:
+        cmd = ["wc", "-l", "--", str(path)]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if result.returncode != 0:
+        raise RuntimeError(f"line count failed: {result.stderr}")
+    try:
+        return int(result.stdout.split(maxsplit=1)[0])
+    except (IndexError, ValueError) as exc:
+        raise RuntimeError(f"could not parse line count: {result.stdout!r}") from exc
 
 
 def read_compressed(path: Path) -> str:
     result = subprocess.run(
-        ["zstd", "-dc", str(path)],  # noqa: S607
+        ["zstd", "-dc", "--", str(path)],  # noqa: S607
         capture_output=True,
         text=True,
         check=False,
@@ -114,10 +112,11 @@ def named_tmpfile(mode: str) -> IO[Any]:
     return tempfile.NamedTemporaryFile(mode)
 
 
-class EnumChoice(cloup.Choice):
+class EnumChoice(cloup.Choice[StrEnum]):
     """A custom Choice class for StrEnum types."""
 
-    def normalize_choice(self, choice: StrEnum, ctx: click.Context | None) -> str:
+    @override
+    def normalize_choice(self, choice: object, ctx: click.Context | None) -> str:
         normed_value = choice.value if isinstance(choice, enum.Enum) else str(choice)
 
         if ctx is not None and ctx.token_normalize_func is not None:
@@ -129,7 +128,7 @@ class EnumChoice(cloup.Choice):
         return normed_value
 
 
-def enum_choice(enum: type[StrEnum]) -> cloup.Choice:
+def enum_choice(enum: type[StrEnum]) -> cloup.Choice[StrEnum]:
     """Returns a list of choices for a StrEnum."""
     return EnumChoice(list(enum))
 

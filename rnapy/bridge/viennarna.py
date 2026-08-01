@@ -66,10 +66,9 @@ class ViennaRna(RnaPackage):
     @override
     def efn(self, rna: Rna, cfg: EnergyCfg) -> tuple[Decimal, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        if rna.r is None:
-            raise ValueError(f"RNA {rna.name} has no sequence")
+        sequence = rna.require_sequence()
         res = self._run_cmd(
-            "./src/bin/RNAeval", *args, stdin_inp=f"{rna.r}\n{rna.db()}", stdout_to_str=True
+            "./src/bin/RNAeval", *args, stdin_inp=f"{sequence}\n{rna.db()}", stdout_to_str=True
         )
         match = re.search(r"\s+\(\s*([0-9\.\-]+)\s*\)", res.stdout.strip())
         if match is None:
@@ -80,10 +79,9 @@ class ViennaRna(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
+        sequence = rna.require_sequence()
         with named_tmpfile("w") as f:
-            if rna.r is None:
-                raise ValueError(f"RNA {rna.name} has no sequence")
-            f.write(rna.r)
+            f.write(sequence)
             f.flush()
             res = self._run_cmd(
                 "./src/bin/RNAfold", *args, "--noPS", "-i", f.name, stdout_to_str=True
@@ -111,27 +109,28 @@ class ViennaRna(RnaPackage):
     ) -> tuple[list[Rna] | int, CmdResult]:
         args = self._energy_cfg_args(energy_cfg)
         args += self._subopt_cfg_args(subopt_cfg)
-        if rna.r is None:
-            raise ValueError(f"RNA {rna.name} has no sequence")
+        sequence = rna.require_sequence()
 
         with named_tmpfile("w") as f:
             stdout_path = Path(f.name)
             res = self._run_cmd(
                 "./src/bin/RNAsubopt",
                 *args,
-                stdin_inp=rna.r,
+                stdin_inp=sequence,
                 stdout_to_str=False,
                 stdout_path=stdout_path,
                 compress_stdout=True,
             )
 
             if subopt_cfg.count_only:
-                count = fast_linecount(stdout_path, compressed=True) - 1
-                return count, res
+                line_count = fast_linecount(stdout_path, compressed=True)
+                if line_count < 1:
+                    raise ValueError("suboptimal folding produced no header line")
+                return line_count - 1, res
 
             subopts = []
             for i in read_compressed(stdout_path).splitlines()[1:]:
                 db, energy_str = re.split(r"\s+", i.strip())
                 energy = Decimal(energy_str)
-                subopts.append(Rna(name=rna.name, r=rna.r, s=db_to_secondary(db), energy=energy))
+                subopts.append(Rna(name=rna.name, r=sequence, s=db_to_secondary(db), energy=energy))
             return subopts, res

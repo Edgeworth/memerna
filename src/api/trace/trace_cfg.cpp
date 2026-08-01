@@ -10,11 +10,15 @@ void RegisterOpts(ArgParse* args) {
   args->RegisterOpt(OPT_TRACE_SEED);
 }
 
+void TraceCfg::Verify() const {
+  verify(!seed.has_value() || random, "trace seed requires random traceback");
+}
+
 TraceCfg TraceCfg::FromArgParse(const ArgParse& args) {
   TraceCfg cfg;
   args.MaybeSet(OPT_TRACE_RANDOM, &cfg.random);
   cfg.seed = args.MaybeGet<uint_fast32_t>(OPT_TRACE_SEED);
-  verify(!cfg.seed.has_value() || cfg.random, "trace-seed requires --trace-random");
+  cfg.Verify();
   return cfg;
 }
 

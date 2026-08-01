@@ -1,5 +1,6 @@
 # Copyright 2022 Eliot Courtney.
 from pathlib import Path
+from typing import Any
 
 import click
 import polars as pl
@@ -42,12 +43,7 @@ class FoldPerfRunner:
         self.programs = [
             (
                 memerna01,
-                EnergyCfg(
-                    ctd=CtdCfg.ALL,
-                    lonely_pairs=LonelyPairs.HEURISTIC,
-                    energy_model="t04",
-                    backend="base",
-                ),
+                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, backend="base"),
             ),
             (linearfold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
             (rnastructure, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
@@ -62,16 +58,12 @@ class FoldPerfRunner:
     def _run_once(self, program: RnaPackage, cfg: EnergyCfg, rna: Rna) -> None:
         dataset = self.memevault.dataset
         desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
+        name = rna.require_name()
 
         for run_idx in range(self.num_tries):
             data_keys = strict_merge(
                 desc,
-                {
-                    "dataset": dataset,
-                    "rna_name": rna.name,
-                    "rna_length": len(rna),
-                    "run_idx": run_idx,
-                },
+                {"dataset": dataset, "rna_name": name, "rna_length": len(rna), "run_idx": run_idx},
             )
 
             row = row_by_key(self.output_path, data_keys)
@@ -83,7 +75,7 @@ class FoldPerfRunner:
                 continue
 
             failed = False
-            data_values: dict = {}
+            data_values: dict[str, Any] = {}
             try:
                 folded, res = program.fold(rna, cfg)
                 data_values = {
@@ -94,7 +86,7 @@ class FoldPerfRunner:
                     "real_sec": res.real_sec,
                 }
             except Exception as e:
-                click.echo(f"Error running {program} on {rna.name}: {e}")
+                click.echo(f"Error running {program} on {name}: {e}")
                 failed = True
 
             data = strict_merge(data_keys, data_values, {"failed": failed})

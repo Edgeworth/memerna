@@ -51,4 +51,29 @@ TEST(FloatTest, RoundTripSpecialValues) {
   }
 }
 
+TEST(FloatTest, ZeroEpsilonAcceptsEqualValues) {
+  EXPECT_TRUE(abs_eq(FLT(1.0), FLT(1.0), FLT(0.0)));
+  EXPECT_FALSE(abs_eq(FLT(1.0), FLT(2.0), FLT(0.0)));
+}
+
+TEST(FloatTest, EqualityHandlesNonfiniteValues) {
+  if (std::numeric_limits<flt>::has_infinity) {
+    const flt pos_inf = std::numeric_limits<flt>::infinity();
+    const flt neg_inf = -pos_inf;
+
+    EXPECT_TRUE(abs_eq(pos_inf, pos_inf));
+    EXPECT_TRUE(rel_eq(pos_inf, pos_inf));
+    EXPECT_TRUE(absrel_eq(neg_inf, neg_inf));
+    EXPECT_FALSE(abs_eq(pos_inf, neg_inf));
+    EXPECT_FALSE(rel_eq(pos_inf, FLT(1.0)));
+  }
+
+  if (std::numeric_limits<flt>::has_quiet_NaN) {
+    const flt nan = std::numeric_limits<flt>::quiet_NaN();
+    EXPECT_FALSE(abs_eq(nan, nan));
+    EXPECT_FALSE(rel_eq(nan, nan));
+    EXPECT_FALSE(absrel_eq(nan, nan));
+  }
+}
+
 }  // namespace mrna

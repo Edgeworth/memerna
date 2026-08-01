@@ -63,8 +63,8 @@ void PfnExterior(
         ext[st][PTEXT_R] +=
             base10 * bm.dangle5[enb][stb][st1b] * bpf.Unpaired(st) * ext[en + 1][PTEXT_R];
         // .(   ).<   > Terminal mismatch
-        ext[st][PTEXT_R] += base11 * bm.terminal[en1b][enb][stb][st1b] *
-            bpf.Unpaired(st) * bpf.Unpaired(en) * ext[en + 1][PTEXT_R];
+        ext[st][PTEXT_R] += base11 * bm.terminal[en1b][enb][stb][st1b] * bpf.Unpaired(st) *
+            bpf.Unpaired(en) * ext[en + 1][PTEXT_R];
       }
 
       if constexpr (CFG.UseCoaxialStacking()) {
@@ -73,8 +73,7 @@ void PfnExterior(
           const Base prb = r[en + 1];
           const Base pb = r[piv];
           ext[st][PTEXT_R] += base11 * dp[en + 1][piv][PT_P] * bm.AuGuPenalty(prb, pb) *
-              bm.MismatchCoaxial(en1b, enb, stb, st1b) * bpf.Unpaired(st) *
-              bpf.Unpaired(en) *
+              bm.MismatchCoaxial(en1b, enb, stb, st1b) * bpf.Unpaired(st) * bpf.Unpaired(en) *
               ext[piv + 1][PTEXT_R];
         }
 
@@ -84,9 +83,8 @@ void PfnExterior(
           const Base pr1b = r[en + 2];
           const Base pl1b = r[piv - 1];
           const Base pb = r[piv];
-          ext[st][PTEXT_R] += base00 * dp[en + 2][piv - 1][PT_P] *
-              bm.AuGuPenalty(pr1b, pl1b) * bm.MismatchCoaxial(pl1b, pb, prb, pr1b) *
-              bpf.Unpaired(en + 1) * bpf.Unpaired(piv) *
+          ext[st][PTEXT_R] += base00 * dp[en + 2][piv - 1][PT_P] * bm.AuGuPenalty(pr1b, pl1b) *
+              bm.MismatchCoaxial(pl1b, pb, prb, pr1b) * bpf.Unpaired(en + 1) * bpf.Unpaired(piv) *
               ext[piv + 1][PTEXT_R];
         }
 
@@ -139,8 +137,8 @@ void PfnExterior(
         // <   >5(   ) 5'
         ext[en][PTEXT_L] += base10 * bm.dangle5[enb][stb][st1b] * bpf.Unpaired(st) * ptextl;
         // <   >.(   ). Terminal mismatch
-        ext[en][PTEXT_L] += base11 * bm.terminal[en1b][enb][stb][st1b] *
-            bpf.Unpaired(st) * bpf.Unpaired(en) * ptextl;
+        ext[en][PTEXT_L] += base11 * bm.terminal[en1b][enb][stb][st1b] * bpf.Unpaired(st) *
+            bpf.Unpaired(en) * ptextl;
       }
 
       if constexpr (CFG.UseCoaxialStacking()) {
@@ -149,9 +147,8 @@ void PfnExterior(
           const BoltzEnergy prefix = piv ? ext[piv - 1][PTEXT_L] : BoltzEnergy{1};
           const Base pb = r[piv];
           const Base pl1b = r[st - 1];
-          ext[en][PTEXT_L] += prefix * dp[piv][st - 1][PT_P] * bm.AuGuPenalty(pb, pl1b) *
-              base11 * bm.MismatchCoaxial(en1b, enb, stb, st1b) * bpf.Unpaired(st) *
-              bpf.Unpaired(en);
+          ext[en][PTEXT_L] += prefix * dp[piv][st - 1][PT_P] * bm.AuGuPenalty(pb, pl1b) * base11 *
+              bm.MismatchCoaxial(en1b, enb, stb, st1b) * bpf.Unpaired(st) * bpf.Unpaired(en);
         }
 
         // <  .(   ).>(   ) Left coax forward
@@ -161,9 +158,9 @@ void PfnExterior(
           const Base prb = r[piv + 1];
           const Base pl1b = r[st - 2];
           const Base plb = r[st - 1];
-          ext[en][PTEXT_L] += prefix * dp[piv + 1][st - 2][PT_P] *
-              bm.AuGuPenalty(prb, pl1b) * base00 * bm.MismatchCoaxial(pl1b, plb, pb, prb) *
-              bpf.Unpaired(piv) * bpf.Unpaired(st - 1);
+          ext[en][PTEXT_L] += prefix * dp[piv + 1][st - 2][PT_P] * bm.AuGuPenalty(prb, pl1b) *
+              base00 * bm.MismatchCoaxial(pl1b, plb, pb, prb) * bpf.Unpaired(piv) *
+              bpf.Unpaired(st - 1);
         }
 
         // < (   >)(   ) Flush coax

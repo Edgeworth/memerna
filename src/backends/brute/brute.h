@@ -22,6 +22,9 @@ namespace mrna::md::brute {
 
 using mrna::brute::BruteCfg;
 
+inline constexpr uint32_t PFN_PT_MAX_BITS = 5;
+inline constexpr int PFN_MAX_RNA_SIZE = (1 << PFN_PT_MAX_BITS) - 1;
+
 struct SuboptCmp {
   bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
     // Kept in a multiset, so this is just used for ordering, not deduplication.
@@ -49,7 +52,7 @@ class Brute {
 
  private:
   // Pfn function:
-  constexpr static uint32_t PT_MAX_BITS = 5;
+  constexpr static uint32_t PT_MAX_BITS = PFN_PT_MAX_BITS;
   constexpr static uint32_t CTD_MAX_BITS = 4;
   constexpr static uint32_t PT_MASK = (1 << PT_MAX_BITS) - 1;
   constexpr static uint32_t CTD_MASK = (1 << CTD_MAX_BITS) - 1;

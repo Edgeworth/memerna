@@ -40,7 +40,7 @@ constexpr Index INVALID_INDEX = std::numeric_limits<int32_t>::max();
 
 constexpr std::size_t MAX_RNA_SIZE = std::size_t(INVALID_INDEX) - 1;
 
-constexpr void VerifyRnaSize(std::size_t size) {
+inline void VerifyRnaSize(std::size_t size) {
   verify(size <= MAX_RNA_SIZE, "RNA too long - recompile with larger INDEX_BITS");
 }
 

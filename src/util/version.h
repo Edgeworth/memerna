@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 
 #include <string>
+#include <string_view>
 
 namespace mrna {
 
@@ -12,8 +13,8 @@ struct VersionInfo {
   const unsigned int major;
   const unsigned int minor;
   const unsigned int patch;
-  const std::string pre_release;
-  const std::string build_metadata;
+  const std::string_view pre_release;
+  const std::string_view build_metadata;
 
   [[nodiscard]] std::string ToString() const {
     return fmt::format("{}.{}.{}{}{}{}{}", major, minor, patch, pre_release.empty() ? "" : "-",

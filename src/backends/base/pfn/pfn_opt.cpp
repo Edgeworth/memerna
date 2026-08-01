@@ -501,8 +501,7 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
         const BoltzEnergy right_paired = dp[pr][en][PT_U];
         const BoltzEnergy right_unpaired =
-            tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1]
-                       : ONE_B;
+            tpiv >= N ? bpc.bpf.UnpairedProd(pr, en) * bpc.multiloop_c_pow[en - pr + 1] : ONE_B;
 
         // Must have an enclosing loop.
         const bool straddling = tpiv != N - 1;

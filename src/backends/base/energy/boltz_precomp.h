@@ -22,7 +22,7 @@ struct BoltzPrecomp : public BoltzPrecompBase<BoltzModelT> {
   PseudofreeCfgT pf;
   BoltzPseudofreeCfgT bpf;
 
-  BoltzPrecomp(Primary r, typename BoltzModelT::Ptr bm, PseudofreeCfgT pf);
+  BoltzPrecomp(Primary r, BoltzModelT::Ptr bm, PseudofreeCfgT pf);
 
   [[nodiscard]] BoltzEnergy Hairpin(int st, int en) const;
 
@@ -31,7 +31,7 @@ struct BoltzPrecomp : public BoltzPrecompBase<BoltzModelT> {
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, class BoltzModelT>
 BoltzPrecomp<CFG, PseudofreeCfgT, BoltzModelT>::BoltzPrecomp(
-    Primary r, typename BoltzModelT::Ptr bm, PseudofreeCfgT pf_)
+    Primary r, BoltzModelT::Ptr bm, PseudofreeCfgT pf_)
     : BoltzPrecompBase<BoltzModelT>(std::move(r), std::move(bm)), pf(std::move(pf_)),
       bpf(Boltz(pf)) {
   bpf.Verify(this->r_);

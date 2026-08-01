@@ -40,6 +40,7 @@ def launch_fuzz(cfg: AflFuzzCfg, window: libtmux.Window) -> None:
 @afl_fuzz_cfg_options
 @cloup.option(
     "--num-procs",
+    type=cloup.IntRange(min=1),
     default=max(1, multiprocessing.cpu_count() - 2),
     help="Number of fuzzing configurations to run.",
 )

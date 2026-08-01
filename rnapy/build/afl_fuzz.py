@@ -1,6 +1,7 @@
 # Copyright 2022 Eliot Courtney.
 import copy
 import dataclasses
+import hashlib
 import os
 import shlex
 import shutil
@@ -169,13 +170,13 @@ class AflFuzzCfg:
             )
         if self.kind == AflFuzzKind.TSAN:
             env += f"TSAN_OPTIONS=hard_rss_limit_mb={AFL_MEMORY_LIMIT_MB} "
-        return env
+        return env.rstrip()
 
-    def _afl_limits(self) -> str:
+    def _afl_limits(self) -> list[str]:
         # ASAN allocates virtual memory which doesn't work well with AFL memory limit.
         if self.kind in [AflFuzzKind.ASAN, AflFuzzKind.TSAN]:
-            return f"-t {AFL_TIME_LIMIT_MS}"
-        return f"-m {AFL_MEMORY_LIMIT_MB} -t {AFL_TIME_LIMIT_MS}"
+            return ["-t", AFL_TIME_LIMIT_MS]
+        return ["-m", AFL_MEMORY_LIMIT_MB, "-t", AFL_TIME_LIMIT_MS]
 
     def fuzz_argv(self) -> list[str]:
         cmd = [f"./{AFL_TARGET}"]
@@ -228,37 +229,39 @@ class AflFuzzCfg:
             cmd += ["--pfn-rnastructure" if self.fuzz_pfn_rnastructure else "--no-pfn-rnastructure"]
         return cmd
 
-    def fuzz_cmd(self) -> str:
-        return " ".join(shlex.quote(arg) for arg in self.fuzz_argv())
-
     def afl_fuzz_cmd(self) -> str:
-        cmd = ""
-
-        instance = f"-M {self.ident()}" if self.index == 0 else f"-S {self.ident()}"
-
-        # Add environment vars.
-        cmd += f"{self._afl_env()} "
-        # Add dictionary for fuzzing.
         afl_data_dir = self.build_cfg.src / AFL_DATA
-        cmd += f"afl-fuzz -x {afl_data_dir}/dict.dct -i {afl_data_dir}/testcases "
-        cmd += f"{self._afl_limits()} "
-        cmd += f"-o {self.data_path()}/afl {instance} "
+        instance_flag = "-M" if self.index == 0 else "-S"
+        argv = [
+            "afl-fuzz",
+            "-x",
+            str(afl_data_dir / "dict.dct"),
+            "-i",
+            str(afl_data_dir / "testcases"),
+            *self._afl_limits(),
+            "-o",
+            str(self.data_path() / "afl"),
+            instance_flag,
+            self.ident(),
+        ]
         if self.kind == AflFuzzKind.CMPLOG:
-            cmd += f"-c ./{AFL_TARGET}.cmplog "
-        cmd += " ".join(self.afl_args) + " "
-        cmd += "-- " + self.fuzz_cmd()
-
-        return cmd
+            argv += ["-c", f"./{AFL_TARGET}.cmplog"]
+        argv += [*self.afl_args, "--", *self.fuzz_argv()]
+        return f"{self._afl_env()} {' '.join(shlex.quote(arg) for arg in argv)}"
 
     def afl_tmin_cmd(self, path: Path) -> str:
-        cmd = ""
-
-        cmd += f"AFL_MAP_SIZE={self.afl_map_size} "
-        cmd += f"afl-tmin {self._afl_limits()}  "
-        cmd += f"-i {path} -o {self.data_path()}/{path.name}.min "
-        cmd += "-- " + self.fuzz_cmd()
-
-        return cmd
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+        argv = [
+            "afl-tmin",
+            *self._afl_limits(),
+            "-i",
+            str(path),
+            "-o",
+            str(self.data_path() / f"{path.name}.{digest}.min"),
+            "--",
+            *self.fuzz_argv(),
+        ]
+        return f"AFL_MAP_SIZE={self.afl_map_size} {' '.join(shlex.quote(arg) for arg in argv)}"
 
 
 def afl_fuzz_cfgs(afl_cfg: AflFuzzCfg, max_num_procs: int) -> list[AflFuzzCfg]:

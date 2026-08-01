@@ -6,6 +6,7 @@ import cloup
 
 from rnapy.build.afl_fuzz import AflFuzzCfg
 from rnapy.build.build_cfg import BuildCfg, BuildKind, Compiler, Sanitizer
+from rnapy.model.args import validate_finite_float
 from rnapy.model.model_cfg import CtdCfg, LonelyPairs
 from rnapy.util.util import enum_choice
 
@@ -21,7 +22,7 @@ build_cfg_options = cloup.option_group(
     ),
     cloup.option(
         "--prefix",
-        type=cloup.Path(exists=True, file_okay=False, resolve_path=True, path_type=Path),
+        type=cloup.Path(file_okay=False, resolve_path=True, path_type=Path),
         default=Path.home() / "bin",
         help="Where to place build directory",
     ),
@@ -76,12 +77,36 @@ def build_cfg_from_args(
 
 afl_fuzz_cfg_options = cloup.option_group(
     "afl-fuzz config options",
-    cloup.option("--max-len", type=int, default=None, help="Max sequence length"),
+    cloup.option("--max-len", type=cloup.IntRange(min=1), default=None, help="Max sequence length"),
     cloup.option("--random-pf/--no-random-pf", default=None, help="Random pseudofree energies"),
-    cloup.option("--random-pf-min-energy", type=float, default=None, help="Min random PF energy"),
-    cloup.option("--random-pf-max-energy", type=float, default=None, help="Max random PF energy"),
-    cloup.option("--random-min-energy", type=float, default=None, help="Min random model energy"),
-    cloup.option("--random-max-energy", type=float, default=None, help="Max random model energy"),
+    cloup.option(
+        "--random-pf-min-energy",
+        type=float,
+        callback=validate_finite_float,
+        default=None,
+        help="Min random PF energy",
+    ),
+    cloup.option(
+        "--random-pf-max-energy",
+        type=float,
+        callback=validate_finite_float,
+        default=None,
+        help="Max random PF energy",
+    ),
+    cloup.option(
+        "--random-min-energy",
+        type=float,
+        callback=validate_finite_float,
+        default=None,
+        help="Min random model energy",
+    ),
+    cloup.option(
+        "--random-max-energy",
+        type=float,
+        callback=validate_finite_float,
+        default=None,
+        help="Max random model energy",
+    ),
     cloup.option("--energy-model", default=None, help="Energy model"),
     cloup.option("--ctd", type=enum_choice(CtdCfg), default=None, help="CTD mode"),
     cloup.option(
@@ -100,8 +125,16 @@ afl_fuzz_cfg_options = cloup.option_group(
         default=None,
         help="Fuzz subopt RNAstructure",
     ),
-    cloup.option("--subopt-strucs", type=int, default=None, help="Max subopt structures"),
-    cloup.option("--subopt-delta", type=float, default=None, help="Max subopt energy delta"),
+    cloup.option(
+        "--subopt-strucs", type=cloup.IntRange(min=0), default=None, help="Max subopt structures"
+    ),
+    cloup.option(
+        "--subopt-delta",
+        type=cloup.FloatRange(min=0),
+        callback=validate_finite_float,
+        default=None,
+        help="Max subopt energy delta",
+    ),
     cloup.option("--pfn/--no-pfn", default=None, help="Fuzz partition function"),
     cloup.option(
         "--pfn-rnastructure/--no-pfn-rnastructure", default=None, help="Fuzz PFN RNAstructure"

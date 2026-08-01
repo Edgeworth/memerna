@@ -33,18 +33,17 @@ class MemeRna01(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        if rna.r is None:
-            raise ValueError(f"RNA {rna.name} has no sequence")
+        sequence = rna.require_sequence()
         res = self._run_cmd(
             "./build/fold",
             *args,
             "-memerna-data",
             str(self.path.joinpath("data")),
-            rna.r,
+            sequence,
             stdout_to_str=True,
         )
         _, db, _ = res.stdout.strip().split("\n")
-        return Rna(rna.name, rna.r, db_to_secondary(db)), res
+        return Rna(rna.name, sequence, db_to_secondary(db)), res
 
     @override
     def partition(self, rna: Rna, cfg: EnergyCfg) -> None:

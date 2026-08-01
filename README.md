@@ -31,32 +31,42 @@ Please cite the following for sparse folding including coaxial stacking:
   number={3},
   pages={168819},
   year={2025},
-  publisher={Elsevier}
+  publisher={Elsevier},
+  doi={10.1016/j.jmb.2024.168819}
 }
 ```
 
-## Building
+## Building (Ubuntu 22.04 LTS)
 
-memerna was tested to build and run in Ubuntu 22.04 LTS with up to date
-packages. The following instructions assume you are using Ubuntu 22.04 LTS.
-However, memerna is mainly developed on Arch Linux, and is likely to work on any
-modern Linux distribution provided the toolchain is new enough.
+Ubuntu 22.04 LTS is the oldest supported Ubuntu release. Its stock Boost 1.74
+does not contain Boost.Describe, so the setup below installs Boost 1.83 from
+`ppa:mhier/libboost-latest`. On newer distributions, just having a C++ compiler
+and cmake is likely sufficient.
+
+The [Dockerfile](Dockerfile) uses vanilla Ubuntu 22.04 and commands that also
+work on bare metal. Build and test the image, or run an installed program, with:
+
+```sh
+just docker-test
+docker run --rm memerna:ubuntu-min fold GCGACCGGGGCUGGCUUGGUAA
+```
+
+The image also contains `efn`, `fuzz`, `harness`, `partition`, and `subopt`.
 
 ### Environment setup
 
 Install the following packages:
 
 ```sh
-sudo apt install build-essential cmake git libboost-dev libmpfr-dev
+sudo apt install build-essential cmake git libmpfr-dev software-properties-common
+sudo add-apt-repository ppa:mhier/libboost-latest
+sudo apt install libboost1.83-dev
 ```
 
-On Ubuntu 22.04 LTS, the following packages are also required since the
-toolchain version is too old (note that this is a PPA, so use at your own risk):
-
-```sh
-sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
-sudo apt install gcc-12 g++-12
-```
+A direct CMake build does not require Python. The Python tools require uv and
+use Python 3.14; uv downloads the interpreter when needed. The repository
+command recipes require just. The Dockerfile contains the pinned installation
+commands and the additional test dependencies.
 
 Clone the repo:
 
@@ -77,13 +87,13 @@ memerna can be compiled directly with cmake. The following commands will build
 it for Ubuntu 22.04 LTS:
 
 ```sh
-CC=gcc-12 CXX=g++-12 cmake -B build -D CMAKE_BUILD_TYPE=Release .
+cmake -B build -D CMAKE_BUILD_TYPE=Release .
 cmake --build build
 ```
 
-Alternatively, memerna can be compiled using the rnapy python helper script,
-if you have Python 3.13+ and uv installed. This will output builds
-into the given prefix directory, which defaults to $HOME/bin/memerna.
+Alternatively, memerna can be compiled using the rnapy python helper script, if
+you have uv installed. This will output builds into the given prefix directory,
+which defaults to $HOME/bin/memerna.
 
 ```sh
 uv run python -m rnapy.run build --kind release
@@ -95,16 +105,9 @@ configurations.
 
 #### Compiler and toolchain support
 
-| Compiler | Version | Supported |
-| -------- | ------- | --------- |
-| GCC      | <= 11   | ❌        |
-| GCC      | 12      | ✅        |
-| GCC      | 13      | ✅        |
-| Clang    | <= 15   | ❌        |
-| Clang    | 16      | ✅        |
-
-Note that clang 14 and 15 will work with a sufficiently modern standard C++
-library (but not gcc 11's, or libc++ 14 or 15's).
+GCC 11 or newer is supported. Recent Clang releases should work. Clang 16 might
+also work, but Clang builds are not guaranteed. The Ubuntu 22.04 image tests
+GCC 11.
 
 ### Build configuration
 
@@ -134,13 +137,13 @@ energy model and configuration. Use `--backend base`, `--backend canon`, or
 memerna supports minimum free energy (MFE) folding.
 
 ```sh
-./fold GCGACCGGGGCUGGCUUGGUAA
+./build/fold GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for MFE folding, which can be specified like so:
 
 ```sh
-./fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
+./build/fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -151,24 +154,24 @@ Some of the algorithms are listed here:
 | opt        | O(N^3)        | O(N^2)          | 1.58 seconds              |
 | debug      | O(N^3)        | O(N^2)          | 3.87 seconds              |
 
-For T04/T12, auto-selection chooses the sparse base algorithm. For T22,
-auto-selection chooses the stack algorithm.
+With the default energy and trace settings, T04/T12 auto-selection chooses the
+sparse base algorithm and T22 auto-selection chooses the stack algorithm.
 
 ### Subopt folding
 
 memerna supports suboptimal folding. For example:
 
 ```sh
-./subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for suboptimal folding, which can be specified like so:
 
 ```sh
-./subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here (where K is the number of structures produced). The example
@@ -181,22 +184,21 @@ runtime is based on a 100 nt sequence and 1000000 structures.
 | iterative-lowmem  | O(N^3 + KN^2)           | O(N^2)          |                 |
 | persistent-lowmem | O(N^3 + KN^2 + K log K) | O(N^2 + K)      |                 |
 
-The iterative algorithm will be faster and use less memory for longer sequences. The lowmem variants
-use an LRU cache to reduce memory from O(N^3) to O(N^2), at the cost of increased time per structure
-from O(N) to O(N^2) due to cache misses.
+The low-memory variants evict cached expansion vectors and compute them again
+after cache misses.
 
 ### Partition function
 
 memerna supports computing the partition function. For example:
 
 ```sh
-./partition GCGACCGGGGCUGGCUUGGUAA
+./build/partition GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for the partition function, which can be specified like so:
 
 ```sh
-./partition --pfn-alg opt GCGACCGGGGCUGGCUUGGUAA
+./build/partition --pfn-alg opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -206,21 +208,13 @@ Some of the algorithms are listed here:
 | opt       | O(N^3)        | O(N^2)          | 9.23 seconds              |
 | debug     | O(N^3)        | O(N^2)          | 34.43 seconds             |
 
+The partition function is not supported for T22.
+
 ### Running the tests
 
 ```sh
-./run_tests
+./build/run_tests
 ```
-
-### Running include-what-you-use
-
-uv run python -m rnapy.run build --iwyu --no-build
-
-Then from the cmake build directory:
-make -j$(nproc) 2> /tmp/iwyu.out
-
-Then:
-iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 
 ## Fuzzing
 
@@ -229,180 +223,35 @@ iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 General fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --energy-model t04 \
-  1 200
+./build/fuzz --mfe --mfe-table --subopt --pfn --random-seeds --energy-model t04 \
+  1 30
 ```
 
 Exhaustive fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
+./build/fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
   --enumerate 1 10
 ```
 
-Fuzzing for t22:
+T22 MFE and suboptimal fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-seeds --random-pf \
+./build/fuzz --mfe --mfe-table --subopt --random-seeds --random-pf \
   --energy-model t22 1 200
 ```
 
-`./fuzz` loads all supported backends by default. Use `--backends` only to
+Random fuzzing continues until it finds a difference or is interrupted. Use
+`--fuzz-time-secs N` to stop after N seconds.
+
+`./build/fuzz` loads all supported backends by default. Use `--backends` only to
 restrict the comparison set, for example when comparing against an external
 package that needs a single memerna backend.
 
-### Fuzzing in parallel
+See [CODING.md](CODING.md) for developer fuzzing workflows and implementation
+notes.
 
-The below command runs fuzzing in parallel using GNU parallel with 16 jobs.
-
-```bash
-seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
-  --random-seeds --energy-model t04 1 200'
-```
-
-### Fuzzing against RNAstructure
-
-```bash
-uv run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
-# Just MFE:
-./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
-  --mfe-rnastructure --mfe-table --energy-model t04 --backends base 1 200
-```
-
-### Fuzzing with afl-fuzz
-
-Note that afl-fast seems to cause broken behaviour recently, compared to
-afl-lto. It's better to use a seeded energy model than random energy models for
-afl-fuzz since it will be more stable and easier to debug if it finds something.
-
-```bash
-uv run python -m rnapy.run afl-fuzz --help
-```
-
-For example, try this command line:
-
-```bash
-uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --num-procs 16 --mfe --mfe-table --max-len 200 \
- --energy-model t22
-```
-
-To fuzz everything:
-
-```bash
-uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
-  --num-procs 16 --energy-precision 1 --mfe --mfe-rnastructure --mfe-table \
-  --subopt --max-len 200 --backends base
-```
-
-Fuzz memerna only, with faster settings:
-
-```bash
-uv run python -m rnapy.run afl-fuzz --kind release --compiler afl-lto \
- --num-procs 16 --mfe --mfe-table --subopt --subopt-strucs 100 \
- --subopt-delta 0.2 --max-len 200
-```
-
-Checking progress:
-
-```bash
-afl-whatsup -s $PREFIX/memerna-afl/*/afl
-```
-
-Reproducing a crash:
-
-```bash
-cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
-```
-
-Minimising test cases:
-
-```bash
-uv run python -m rnapy.run afl-fuzz-min <crash-file>
-```
-
-### Environment variables for rnapy
-
-Optionally, it can be useful to set the following variables, for example in
-a .env file (used by rnapy):
-
-```bash
-MRNA=<set to memerna source directory>
-MEMEVAULT=${MRNA}/rnapy/data/memevault.db
-MRNA_DIST=${HOME}/bin/memerna/<build-id>
-MRNA01_DIST=${HOME}/...
-RNASTRUCTURE=${HOME}/...
-SPARSEMFEFOLD=${HOME}/...
-SPARSERNAFOLD=${HOME}/...
-VIENNARNA=${HOME}/...
-LINEARFOLD=${HOME}/...
-```
-
-## Model notes
-
-Turner 1999 model (not implemented)
-
-Turner 2004 model (t04):
-
-- Adds coaxial stacking
-- Lonely pairs are "soft disallowed" - only consider pairs where at least one of
-  the adjacent two pairs could be made.
-- Updates parameters for terminal mismatches, hairpin, bulge, internal, and multiloops.
-- Special stacks of length > 2 base pairs are not handled.
-- Internal loops are limited to size 30 in most implementations in memerna.
-
-Update in 2012 model (t12):
-
-- GU penalty removed from AU/GU penalty
-- GU penalty removed from special hairpins, if closed by GU (none like this)
-- Removed 0.45 portion of GU penalty from internal loop GU penalty.
-- Stacking parameters changed (for GU stacks, not WC)
-- See "Testing the nearest neighbor model for Canonical RNA base pairs" paper
-
-Update in 2022 model (t22):
-
-- AU penalty removed as well
-- AU penalty removed from special hairpins, if closed by AU
-- Lonely pairs implemented fully correctly.
-- Removed 0.5 (not 0.45) portion of AU penalty from internal loop AU penalty.
-- Stacking parameters changed
-- Sequence dependent parameters for terminal base pairs based on the penultimate
-  pair (penultimate_stacking.data)
-  - Bulge loops of size 1 are continuous and don't have penultimate stacking
-    applied inside (same as AU/GU penalty rules).
-  - Coaxial stacks are not treated as continuous for penultimate stacking (same
-    as AU/GU penalty rules).
-- See "Nearest neighbor rules for RNA helix folding thermodynamics: improved end effects"
-
-## Data table notes
-
-- bulge_initiation.data
-- dangle3.data
-- dangle5.data
-- hairpin.data
-  Special hairpins. AU/GU penalties NOT baked in.
-- hairpin_initiation.data
-- internal_1x1.data
-  1x1 special internal loops. AU/GU penalties NOT baked in.
-  N.B. internal loops are never treated as continuous.
-- internal_1x2.data
-  2x1 special internal loops. AU/GU penalties NOT baked in.
-- internal_2x2.data
-  2x2 special internal loops. AU/GU penalties NOT baked in.
-- internal_2x3_mismatch.data
-  2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
-- internal_initiation.data
-- internal_other_mismatch.data
-  Non 2x3 internal loop terminal mismatch parameters. AU/GU penalties NOT baked in.
-- misc.data
-- stacking.data
-- terminal.data
-
-## Misc notes
-
-In all cases where an ordering of base_t p is used (e.g. data tables), it will be ACGU.
-
-## License notes
+## License
 
 For any commercial applications of this software, please contact the author for
 a license.

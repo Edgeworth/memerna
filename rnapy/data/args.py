@@ -13,36 +13,47 @@ from rnapy.model.rna import Rna
 
 
 def validate_rna_file(
-    _ctx: click.Context, _param: click.Parameter, value: TextIO | None
+    ctx: click.Context, param: click.Parameter, value: TextIO | None
 ) -> Rna | None:
     if value is None:
         return None
-    return RnaParser.from_any_file(value.read())
+    try:
+        return RnaParser.from_any_file(value.read())
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), ctx=ctx, param=param) from exc
 
 
-def validate_seq(_ctx: click.Context, _param: click.Parameter, value: str | None) -> str | None:
+def validate_seq(ctx: click.Context, param: click.Parameter, value: str | None) -> str | None:
     if not value:
         return value
-    return seq_to_primary(value)
+    try:
+        return seq_to_primary(value)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), ctx=ctx, param=param) from exc
 
 
-def validate_db(
-    _ctx: click.Context, _param: click.Parameter, value: str | None
-) -> list[int] | None:
+def validate_db(ctx: click.Context, param: click.Parameter, value: str | None) -> list[int] | None:
     if value is None:
         return None
-    return db_to_secondary(value)
+    try:
+        return db_to_secondary(value)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc), ctx=ctx, param=param) from exc
+
+
+def memevault_path_option(*, required: bool, exists: bool = True) -> Any:
+    return cloup.option(
+        "--memevault-path",
+        envvar="MEMEVAULT",
+        show_envvar=True,
+        required=required,
+        type=cloup.Path(dir_okay=False, exists=exists, path_type=Path),
+    )
 
 
 memevault_options = cloup.option_group(
     "memevault options",
-    cloup.option(
-        "--memevault-path",
-        envvar="MEMEVAULT",
-        show_envvar=True,
-        required=False,
-        type=cloup.Path(dir_okay=False, exists=True, path_type=Path),
-    ),
+    memevault_path_option(required=False),
     cloup.option("--memevault-dataset", default="archiveii", show_default=True),
 )
 
@@ -70,8 +81,6 @@ def rna_from_args(
     secondary: list[int] | None,
     **_kwargs: Any,
 ) -> Rna:
-    if memevault_rna and not memevault_path:
-        raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
     if sum(1 for i in [memevault_rna, file_rna, primary or secondary] if i) != 1:
         raise click.UsageError(
             "Specify only one of --memevault-rna, --file-rna, --primary/--secondary"
@@ -81,7 +90,18 @@ def rna_from_args(
     if memevault_rna:
         if memevault_path is None:
             raise click.UsageError("--memevault-path is required when --memevault-rna is specified")
-        return MemeVault(memevault_path, memevault_dataset)[memevault_rna]
+        vault = MemeVault(memevault_path, memevault_dataset)
+        if not vault.dataset_exists():
+            raise click.BadParameter(
+                f"dataset {memevault_dataset!r} does not exist", param_hint="--memevault-dataset"
+            )
+        try:
+            return vault[memevault_rna]
+        except KeyError as exc:
+            raise click.BadParameter(
+                f"RNA {memevault_rna!r} does not exist in dataset {memevault_dataset!r}",
+                param_hint="--memevault-rna",
+            ) from exc
     if primary or secondary:
         return Rna("cmd", primary, secondary)
     raise click.UsageError("Specify one of --memevault-rna, --file-rna, --primary/--secondary")

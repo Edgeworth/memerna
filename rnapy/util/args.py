@@ -36,9 +36,15 @@ def validate_cpu_affinity(
 
 limit_options = cloup.option_group(
     "Resource limit options",
-    cloup.option("--time-limit-seconds", type=int, help="maximum time to run any bridge packages"),
     cloup.option(
-        "--memory-limit-bytes", type=int, help="maximum memory to use for any bridge packages"
+        "--time-limit-seconds",
+        type=cloup.IntRange(min=1),
+        help="maximum time to run any bridge packages",
+    ),
+    cloup.option(
+        "--memory-limit-bytes",
+        type=cloup.IntRange(min=1),
+        help="maximum memory to use for any bridge packages",
     ),
     cloup.option(
         "--cpu-affinity",

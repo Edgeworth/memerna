@@ -2,6 +2,8 @@
 #ifndef BACKENDS_STACK_TRACE_TRACE_H_
 #define BACKENDS_STACK_TRACE_TRACE_H_
 
+#include <string>
+
 #include "api/energy/energy_cfg.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
@@ -29,8 +31,14 @@ struct Expansion {
 };
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
-    const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg);
+class Trace {
+ public:
+  static bool IsSupported(
+      const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg, std::string* reason = nullptr);
+
+  static TraceResult Run(const Primary& r, const Model::Ptr& m, const DpState& state,
+      const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg);
+};
 
 }  // namespace mrna::md::stack
 

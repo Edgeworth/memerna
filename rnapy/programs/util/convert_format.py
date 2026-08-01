@@ -14,7 +14,10 @@ from rnapy.util.util import fn_args
 @cloup.option("-k", "--kind", type=cloup.Choice(["db", "ct"]), default="db")
 def convert_format(kind: str, **_kwargs: Any) -> None:
     rna = rna_from_args(**fn_args())
-    if kind == "ct":
-        click.echo(RnaParser.to_ct_file(rna))
-    if kind == "db":
-        click.echo(RnaParser.to_db_file(rna))
+    try:
+        if kind == "ct":
+            click.echo(RnaParser.to_ct_file(rna))
+        if kind == "db":
+            click.echo(RnaParser.to_db_file(rna))
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc

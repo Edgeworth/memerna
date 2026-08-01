@@ -5,6 +5,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#include <cstddef>
 #include <iosfwd>
 #include <ostream>
 #include <span>
@@ -39,32 +40,32 @@ class PseudofreeCfg {
   PseudofreeCfg() = default;
   PseudofreeCfg(std::vector<Energy> paired, std::vector<Energy> unpaired);
 
-  constexpr auto operator<=>(const PseudofreeCfg&) const = default;
+  auto operator<=>(const PseudofreeCfg&) const = default;
 
-  [[nodiscard]] constexpr bool Empty() const { return paired_.empty() && unpaired_.empty(); }
-  [[nodiscard]] constexpr bool HasPaired() const { return !paired_.empty(); }
-  [[nodiscard]] constexpr bool HasUnpaired() const { return !unpaired_.empty(); }
-  [[nodiscard]] constexpr std::span<const Energy> PairedEnergies() const { return paired_; }
-  [[nodiscard]] constexpr std::span<const Energy> UnpairedEnergies() const { return unpaired_; }
+  [[nodiscard]] bool Empty() const { return paired_.empty() && unpaired_.empty(); }
+  [[nodiscard]] bool HasPaired() const { return !paired_.empty(); }
+  [[nodiscard]] bool HasUnpaired() const { return !unpaired_.empty(); }
+  [[nodiscard]] std::span<const Energy> PairedEnergies() const { return paired_; }
+  [[nodiscard]] std::span<const Energy> UnpairedEnergies() const { return unpaired_; }
   [[nodiscard]] Energy MinUnpaired() const;
   [[nodiscard]] Energy SmallestSubsetSum() const;
 
-  [[nodiscard]] constexpr Energy Unpaired(int n) const {
+  [[nodiscard]] Energy Unpaired(int n) const {
     if (unpaired_.empty()) return ZERO_E;
     assert(n >= 0 && n < static_cast<int>(unpaired_.size()));
     return unpaired_[n];
   }
 
   // Inclusive range over unpaired positions.
-  [[nodiscard]] constexpr Energy UnpairedSum(int st, int en) const {
+  [[nodiscard]] Energy UnpairedSum(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired_.empty()) return ZERO_E;
     assert(st >= 0 && en + 1 < static_cast<int>(unpaired_sum_.size()));
     return unpaired_sum_[en + 1] - unpaired_sum_[st];
   }
 
-  [[nodiscard]] constexpr Energy Paired(int st, int en) const {
-    assert(st <= en);
+  [[nodiscard]] Energy Paired(int st, int en) const {
+    assert(st < en);
     if (paired_.empty()) return ZERO_E;
     assert(st >= 0 && en < static_cast<int>(paired_.size()));
     return paired_[st] + paired_[en];
@@ -135,11 +136,12 @@ class BoltzPseudofreeCfg {
     assert(st <= en + 1);
     if (unpaired_.empty()) return ONE_B;
     assert(st >= 0 && en + 1 < static_cast<int>(unpaired_sum_log_.size()));
+    if (unpaired_zero_count_[en + 1] != unpaired_zero_count_[st]) return ZERO_B;
     return exp(unpaired_sum_log_[en + 1] - unpaired_sum_log_[st]);
   }
 
   [[nodiscard]] BoltzEnergy Paired(int st, int en) const {
-    assert(st <= en);
+    assert(st < en);
     if (paired_.empty()) return ONE_B;
     assert(st >= 0 && en < static_cast<int>(paired_.size()));
     return paired_[st] * paired_[en];
@@ -151,6 +153,7 @@ class BoltzPseudofreeCfg {
   const std::vector<BoltzEnergy> paired_{};
   const std::vector<BoltzEnergy> unpaired_{};
   const std::vector<BoltzEnergy> unpaired_sum_log_{};
+  const std::vector<std::size_t> unpaired_zero_count_{};
 };
 
 class NoBoltzPseudofreeCfg {

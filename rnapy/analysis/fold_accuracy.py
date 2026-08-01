@@ -1,5 +1,6 @@
 # Copyright 2023 Eliot Courtney.
 from pathlib import Path
+from typing import Any
 
 import click
 import polars as pl
@@ -49,10 +50,7 @@ class FoldAccuracyRunner:
             (
                 memerna,
                 EnergyCfg(
-                    ctd=CtdCfg.ALL,
-                    lonely_pairs=LonelyPairs.ON,
-                    energy_model="t04",
-                    backend="canon",
+                    ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.ON, energy_model="t04", backend="canon"
                 ),
             ),
             (
@@ -91,12 +89,10 @@ class FoldAccuracyRunner:
     def _run_once(self, program: RnaPackage, cfg: EnergyCfg, rna: Rna) -> None:
         desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
         dataset = self.memevault.dataset
-
-        if not rna.name:
-            raise ValueError(f"RNA name is empty: {rna}")
+        name = rna.require_name()
 
         data_keys = strict_merge(
-            desc, {"dataset": dataset, "rna_name": rna.name, "rna_length": len(rna)}
+            desc, {"dataset": dataset, "rna_name": name, "rna_length": len(rna)}
         )
 
         row = row_by_key(self.output_path, data_keys)
@@ -105,24 +101,29 @@ class FoldAccuracyRunner:
             return
 
         failed = False
-        data_values: dict = {}
+        data_values: dict[str, Any] = {}
         try:
             pred, _ = program.fold(rna, cfg)
             accuracy = RnaAccuracy.from_rna(rna, pred)
             data_values = {
-                "family": self._extract_family(rna.name),
+                "family": self._extract_family(name),
                 "ppv": accuracy.ppv,
                 "sensitivity": accuracy.sensitivity,
                 "f1": accuracy.f1_score(),
             }
         except Exception as e:
-            click.echo(f"Error running {program} on {rna.name}: {e}")
+            click.echo(f"Error running {program} on {name}: {e}")
             failed = True
 
         data = strict_merge(data_keys, data_values, {"failed": failed})
         append_ndjson(self.output_path, pl.DataFrame([data]))
 
     def run(self) -> None:
+        if not self.memevault.has_reference_structures():
+            raise click.ClickException(
+                f"Dataset {self.memevault.dataset!r} contains RNAs without "
+                "reference secondary structures"
+            )
         for program, cfg in self.programs:
             dataset = self.memevault.dataset
             desc = program.desc(energy_cfg=cfg, subopt_cfg=None)

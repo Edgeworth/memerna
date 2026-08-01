@@ -7,6 +7,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,12 +27,12 @@ struct Opt {
   Opt() = delete;
   explicit Opt(Kind kind) : kind_(kind) {}
 
-  constexpr Opt& LongName(std::string n) {
+  Opt& LongName(std::string n) {
     longname_ = std::move(n);
     return *this;
   }
 
-  constexpr Opt& ShortName(std::string n) {
+  Opt& ShortName(std::string n) {
     shortname_ = std::move(n);
     return *this;
   }
@@ -128,7 +129,7 @@ class ArgParse {
   ArgParse& operator=(ArgParse&&) = default;
 
   void RegisterOpt(const Opt& opt);
-  [[nodiscard]] std::string Usage() const;
+  [[nodiscard]] std::string Usage(std::string_view program = "") const;
 
   std::string Parse(int argc, char* argv[]);
   void ParseOrExit(int argc, char* argv[]);

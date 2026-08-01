@@ -103,11 +103,47 @@ bool FuzzCfg::UsesRNAstructure() const {
   return mfe_rnastructure || subopt_rnastructure || pfn_rnastructure;
 }
 
+void FuzzCfg::Verify() const {
+  verify(!fuzz_time_secs.has_value() || *fuzz_time_secs >= 0, "invalid fuzz time secs");
+  verify(subopt_strucs >= 0, "invalid subopt strucs");
+  verify(subopt_delta >= ZERO_E, "invalid subopt delta");
+  verify(pfn_subopt >= 0, "invalid pfn subopt length");
+
+  const auto valid_ep = [](const flt& ep) { return ep >= 0 && IsFinite(ep); };
+  verify(valid_ep(pfn_pq_rel_ep) && valid_ep(pfn_pq_abs_ep) && valid_ep(pfn_prob_rel_ep) &&
+          valid_ep(pfn_prob_abs_ep),
+      "partition function epsilon must be finite and nonnegative");
+
+  verify(
+      !SuboptEnabled() || subopt_strucs > 0, "subopt strucs must be positive when fuzzing subopt");
+  verify(MfeEnabled() || SuboptEnabled() || PfnEnabled(), "enable at least one fuzz operation");
+  verify(!(random_seeds && random_model_cfg.seed.has_value()),
+      "cannot set fixed seed with random seeds");
+  verify(!random_pseudofree || (pf_paired.empty() && pf_unpaired.empty()),
+      "cannot set pseudofree energies with random pseudofree");
+
+#ifndef MRNA_USE_RNASTRUCTURE
+  verify(!UsesRNAstructure(), "RNAstructure comparisons require RNAstructure support");
+#else
+  if (UsesRNAstructure()) {
+    verify(energy_model == erg::EnergyModelKind::T04,
+        "RNAstructure comparisons require energy model t04");
+    verify(!random_seeds && !random_model_cfg.seed.has_value(),
+        "RNAstructure comparisons are incompatible with randomized energy models");
+    verify(!random_pseudofree && pf_paired.empty() && pf_unpaired.empty(),
+        "RNAstructure comparisons are incompatible with pseudofree energies");
+    verify(energy_cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC,
+        "RNAstructure comparisons require --lonely-pairs heuristic");
+    verify(
+        energy_cfg.ctd == erg::EnergyCfg::Ctd::ALL, "RNAstructure comparisons require --ctd all");
+  }
+#endif  // MRNA_USE_RNASTRUCTURE
+}
+
 FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   FuzzCfg cfg;
   args.MaybeSet(OPT_FUZZ_BRUTE_MAX, &cfg.brute_max);
   cfg.fuzz_time_secs = args.MaybeGet<int>(OPT_FUZZ_TIME_SECS);
-  verify(!cfg.fuzz_time_secs.has_value() || *cfg.fuzz_time_secs >= 0, "invalid fuzz time secs");
 
   args.MaybeSet(OPT_FUZZ_MFE, &cfg.mfe);
   args.MaybeSet(OPT_FUZZ_MFE_RNASTRUCTURE, &cfg.mfe_rnastructure);
@@ -116,7 +152,6 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_FUZZ_SUBOPT, &cfg.subopt);
   args.MaybeSet(OPT_FUZZ_SUBOPT_RNASTRUCTURE, &cfg.subopt_rnastructure);
   args.MaybeSet(OPT_FUZZ_SUBOPT_STRUCS, &cfg.subopt_strucs);
-  verify(cfg.subopt_strucs >= 0, "invalid subopt strucs");
   args.MaybeSet(OPT_FUZZ_SUBOPT_DELTA, &cfg.subopt_delta);
 
   args.MaybeSet(OPT_FUZZ_PFN, &cfg.pfn);
@@ -127,15 +162,9 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   args.MaybeSet(OPT_FUZZ_PFN_PROB_REL_EP, &cfg.pfn_prob_rel_ep);
   args.MaybeSet(OPT_FUZZ_PFN_PROB_ABS_EP, &cfg.pfn_prob_abs_ep);
 
-  cfg.mfe = cfg.mfe || cfg.mfe_rnastructure;
-  cfg.subopt = cfg.subopt || cfg.subopt_rnastructure;
-  cfg.pfn = cfg.pfn || cfg.pfn_rnastructure || cfg.pfn_subopt;
-
   args.MaybeSet(OPT_FUZZ_RANDOM_SEEDS, &cfg.random_seeds);
   args.MaybeSet(OPT_FUZZ_RANDOM_PSEUDOFREE, &cfg.random_pseudofree);
   cfg.random_model_cfg = RandomModelCfg::FromArgParse(args);
-  verify(!(cfg.random_seeds && cfg.random_model_cfg.seed.has_value()),
-      "cannot set fixed seed with random seeds");
   cfg.random_pseudofree_cfg = RandomPseudofreeCfg::FromArgParse(args);
 
   cfg.energy_cfg = erg::EnergyCfg::FromArgParse(args);
@@ -146,8 +175,6 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
   cfg.backends = args.GetMultipleOr<BackendKind>(OPT_FUZZ_BACKENDS);
   cfg.pf_paired = args.GetMultipleOr<Energy>(erg::OPT_PAIRED_PSEUDOFREE);
   cfg.pf_unpaired = args.GetMultipleOr<Energy>(erg::OPT_UNPAIRED_PSEUDOFREE);
-  verify(!cfg.random_pseudofree || (cfg.pf_paired.empty() && cfg.pf_unpaired.empty()),
-      "cannot set pseudofree energies with random pseudofree");
 
   cfg.data_dir = args.Get<std::string>(OPT_MEMERNA_DATA);
 
@@ -156,6 +183,7 @@ FuzzCfg FuzzCfg::FromArgParse(const ArgParse& args) {
     cfg.rnastructure_data_dir = args.Get<std::string>(bridge::OPT_RNASTRUCTURE_DATA);
 #endif  // MRNA_USE_RNASTRUCTURE
 
+  cfg.Verify();
   return cfg;
 }
 

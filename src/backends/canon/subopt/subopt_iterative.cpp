@@ -35,7 +35,9 @@ template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 SuboptIterative<CFG, PseudofreeCfgT, UseLru>::SuboptIterative(
     Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_, pf_),
-      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {
+  subopt_cfg_.Verify();
+}
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 int64_t SuboptIterative<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
@@ -49,31 +51,34 @@ int64_t SuboptIterative<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& 
 
   logdebug("canon {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
 
+  std::chrono::steady_clock::time_point start_time{};
   if (subopt_cfg_.sorted || subopt_cfg_.strucs != SuboptCfg::MAX_STRUCTURES ||
       subopt_cfg_.time_secs >= 0.0) {
     int64_t count = 0;
     Energy delta = ZERO_E;
-    auto start_time = std::chrono::steady_clock::now();
+    start_time = std::chrono::steady_clock::now();
+    iters_until_check_ = 1;
     while (count < subopt_cfg_.strucs && delta != MAX_E && delta <= subopt_cfg_.delta) {
-      if (subopt_cfg_.time_secs >= 0.0) {
-        auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
-            std::chrono::steady_clock::now() - start_time);
-        if (elapsed.count() >= subopt_cfg_.time_secs) break;
-      }
-      auto res = RunInternal(fn, delta, /*exact_energy=*/true, subopt_cfg_.strucs - count);
+      auto res = subopt_cfg_.time_secs >= 0.0 ? RunInternal<true>(fn, delta, /*exact_energy=*/true,
+                                                    subopt_cfg_.strucs - count, start_time)
+                                              : RunInternal<false>(fn, delta, /*exact_energy=*/true,
+                                                    subopt_cfg_.strucs - count, start_time);
       count += res.count;
       if (!res.keep_going) break;
       delta = res.next_seen;
     }
     return count;
   }
-  return RunInternal(fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs).count;
+  return RunInternal<false>(
+      fn, subopt_cfg_.delta, /*exact_energy=*/false, subopt_cfg_.strucs, start_time)
+      .count;
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
-typename SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternalResult
-SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(
-    const SuboptCallback& fn, Energy delta, bool exact_energy, int64_t max) {
+template <bool CheckTime>
+SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternalResult
+SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(const SuboptCallback& fn, Energy delta,
+    bool exact_energy, int64_t max, const std::chrono::steady_clock::time_point& start_time) {
   int64_t count = 0;
   Energy next_seen = MAX_E;
   Energy energy = ZERO_E;
@@ -81,6 +86,15 @@ SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(
   unexpanded_.clear();
   q_.push_back({.expand_idx = 0, .to_expand{0, INVALID_INDEX, EXT}, .should_unexpand = false});
   while (!q_.empty()) {
+    if constexpr (CheckTime) {
+      if (--iters_until_check_ == 0) {
+        iters_until_check_ = subopt::CHECK_TIME_FREQ;
+        auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+            std::chrono::steady_clock::now() - start_time);
+        if (elapsed.count() >= subopt_cfg_.time_secs)
+          return {.count = count, .next_seen = next_seen, .keep_going = false};
+      }
+    }
     auto& s = q_.back();
     assert(s.to_expand.IsValid());
 

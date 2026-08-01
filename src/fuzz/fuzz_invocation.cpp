@@ -20,6 +20,7 @@
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/brute/brute.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
@@ -36,6 +37,7 @@ using md::base::DP_P;
 using md::base::DP_SIZE;
 using md::base::DP_U;
 using md::base::DpArrayId;
+using md::base::EXT_SIZE;
 
 namespace {
 
@@ -79,61 +81,20 @@ constexpr std::size_t SUBOPT_HARD_CAP = 100000;
       state);
 }
 
-[[nodiscard]] std::optional<Energy> CommonExtIndex(const mfe::DpState& state, int st) {
-  return std::visit(overloaded{
-                        [=](const md::base::DpState& base) -> std::optional<Energy> {
-                          return base.ext[st][md::base::EXT];
-                        },
-                        [=](const md::stack::DpState& stack) -> std::optional<Energy> {
-                          return stack.base.ext[st][md::base::EXT];
-                        },
-                        [=](const md::canon::DpState& canon) -> std::optional<Energy> {
-                          return canon.ext[st][md::canon::EXT];
-                        },
-                        [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
-                    },
+[[nodiscard]] std::optional<Energy> CommonExtIndex(const mfe::DpState& state, int st, DpArrayId a) {
+  return std::visit(
+      overloaded{
+          [=](const md::base::DpState& base) -> std::optional<Energy> { return base.ext[st][a]; },
+          [=](const md::stack::DpState& stack) -> std::optional<Energy> {
+            return stack.base.ext[st][a];
+          },
+          [=](const md::canon::DpState& canon) -> std::optional<Energy> {
+            if (a == md::base::EXT) return canon.ext[st][md::canon::EXT];
+            return std::nullopt;
+          },
+          [](const std::monostate&) -> std::optional<Energy> { return std::nullopt; },
+      },
       state);
-}
-
-void CompareCommonDpState(const mfe::DpState& got, const mfe::DpState& want,
-    const std::string& name_got, const std::string& name_want, Error& errors) {
-  const auto got_size = CommonDpSize(got);
-  const auto want_size = CommonDpSize(want);
-  if (!got_size || !want_size) return;
-  if (*got_size == 0 || *want_size == 0) return;  // Brute force doesn't generate tables.
-  if (*got_size != *want_size) {
-    errors.emplace_back("dp size mismatch:");
-    errors.push_back(
-        fmt::format("  dp {} vs {}: {} != {}", name_got, name_want, *got_size, *want_size));
-    return;
-  }
-
-  const int N = *want_size;
-  for (int st = N - 1; st >= 0; --st) {
-    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
-      for (DpArrayId a : {DP_P, DP_U, md::base::DP_U2}) {
-        const auto dp = CommonDpIndex(want, st, en, a);
-        const auto dpi = CommonDpIndex(got, st, en, a);
-        if (!dp || !dpi) continue;
-        if (((*dp < CAP_E) != (*dpi < CAP_E)) || (*dp < CAP_E && *dp != *dpi)) {
-          errors.emplace_back("dp mismatch:");
-          errors.push_back(fmt::format(
-              "  dp {} vs {} at {} {} {}: {} != {}", name_got, name_want, st, en, a, *dpi, *dp));
-        }
-      }
-    }
-  }
-
-  for (int st = 0; st < N; ++st) {
-    const auto ext = CommonExtIndex(want, st);
-    const auto exti = CommonExtIndex(got, st);
-    if (!ext || !exti) continue;
-    if (((*ext < CAP_E) != (*exti < CAP_E)) || (*ext < CAP_E && *ext != *exti)) {
-      errors.emplace_back("ext mismatch:");
-      errors.push_back(
-          fmt::format("ext {} vs {} at {}: {} != {}", name_got, name_want, st, *exti, *ext));
-    }
-  }
 }
 
 [[nodiscard]] Energy SuboptDeltaForLength(int len) {
@@ -152,35 +113,81 @@ void CompareCommonDpState(const mfe::DpState& got, const mfe::DpState& want,
   return false;
 }
 
-#ifdef MRNA_USE_RNASTRUCTURE
-[[nodiscard]] bool RNAstructureEnergyCfgSupported(
-    const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
-  return pf.Empty() && cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC &&
-      cfg.ctd == erg::EnergyCfg::Ctd::ALL;
-}
-#endif  // MRNA_USE_RNASTRUCTURE
-
 }  // namespace
+
+void FuzzInvocation::CompareDpState(const mfe::DpState& got, const mfe::DpState& want,
+    const std::string& name_got, const std::string& name_want, Error& errors) {
+  const auto got_size = CommonDpSize(got);
+  const auto want_size = CommonDpSize(want);
+  if (!got_size || !want_size) return;
+  if (*got_size == 0 || *want_size == 0) return;  // Brute force doesn't generate tables.
+  if (*got_size != *want_size) {
+    errors.emplace_back("dp size mismatch:");
+    errors.push_back(
+        fmt::format("  dp {} vs {}: {} != {}", name_got, name_want, *got_size, *want_size));
+    return;
+  }
+
+  const int N = *want_size;
+  for (int st = N - 1; st >= 0; --st) {
+    for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
+      for (DpArrayId a = 0; a < DP_SIZE; ++a) {
+        const auto dp = CommonDpIndex(want, st, en, a);
+        const auto dpi = CommonDpIndex(got, st, en, a);
+        if (!dp || !dpi) continue;
+        if (((*dp < CAP_E) != (*dpi < CAP_E)) || (*dp < CAP_E && *dp != *dpi)) {
+          errors.emplace_back("dp mismatch:");
+          errors.push_back(fmt::format(
+              "  dp {} vs {} at {} {} {}: {} != {}", name_got, name_want, st, en, a, *dpi, *dp));
+        }
+      }
+    }
+  }
+
+  for (int st = 0; st < N; ++st) {
+    for (DpArrayId a = 0; a < EXT_SIZE; ++a) {
+      const auto ext = CommonExtIndex(want, st, a);
+      const auto exti = CommonExtIndex(got, st, a);
+      if (!ext || !exti) continue;
+      if (((*ext < CAP_E) != (*exti < CAP_E)) || (*ext < CAP_E && *ext != *exti)) {
+        errors.emplace_back("ext mismatch:");
+        errors.push_back(fmt::format(
+            "ext {} vs {} at {} {}: {} != {}", name_got, name_want, st, a, *exti, *ext));
+      }
+    }
+  }
+}
+
+bool FuzzInvocation::CollectSuboptPrefix(const subopt::SuboptResult& result,
+    std::vector<subopt::SuboptResult>* results, bool* hit_hard_cap) {
+  if (results->size() == SUBOPT_HARD_CAP) {
+    *hit_hard_cap = true;
+    return false;
+  }
+  results->push_back(result);
+  return true;
+}
 
 FuzzInvocation::FuzzInvocation(const Primary& r, std::vector<BackendModelPtr> ms,
     BackendCfg backend_cfg, erg::PseudofreeCfg pf, const FuzzCfg& fuzz_cfg, bool should_log)
     : r_(r), ms_(std::move(ms)), backend_cfg_(std::move(backend_cfg)), pf_(std::move(pf)),
       cfg_(fuzz_cfg), should_log_(should_log) {
-  cfg_.subopt_delta = SuboptDeltaForLength(r.size());
+  cfg_.subopt_delta = std::min(cfg_.subopt_delta, SuboptDeltaForLength(r.size()));
   verify(!ms_.empty(), "must provide at least one energy model to fuzz");
 }
 
 Error FuzzInvocation::Run() {
   std::optional<FoldBaseline> fold_baseline;
-  if (cfg_.mfe || cfg_.subopt) {
+  if (cfg_.MfeEnabled() || cfg_.SuboptEnabled()) {
     auto [mfe_errors, baseline] = CheckMfe();
     Register("mfe:", std::move(mfe_errors));
     fold_baseline = std::move(baseline);
   }
 
-  if (cfg_.subopt && fold_baseline.has_value()) Register("subopt:", CheckSubopt(*fold_baseline));
+  if (cfg_.SuboptEnabled() && fold_baseline.has_value())
+    Register("subopt:", CheckSubopt(*fold_baseline));
 
-  if (cfg_.pfn) Register("pfn:", CheckPfn());
+  if (cfg_.PfnEnabled()) Register("pfn:", CheckPfn());
 
   auto ret = std::move(errors_);
   errors_.clear();
@@ -196,19 +203,20 @@ void FuzzInvocation::Register(const std::string& header, Error&& local) {
   for (const auto& error : errors) errors_.push_back("  " + error);
 }
 
-const BackendModelPtr* FuzzInvocation::FindSuboptModel(
+std::optional<BackendModelPtr> FuzzInvocation::FindSuboptModel(
     const erg::EnergyCfg& energy_cfg, subopt::SuboptCfg subopt_cfg) const {
   for (const auto& m : ms_) {
-    auto kind = GetBackendKind(m);
-    if (!ResolveMfe(kind, /*alg=*/std::nullopt, backend_cfg_, energy_cfg, pf_, /*log=*/nullptr)
+    const auto kind = GetBackendKind(m);
+    if (!ResolveMfe(kind, /*alg=*/std::nullopt, backend_cfg_, energy_cfg, pf_, trace::TraceCfg{},
+            /*log=*/nullptr)
             .has_value())
       continue;
     if (ResolveSubopt(kind, /*alg=*/std::nullopt, backend_cfg_, energy_cfg, pf_, subopt_cfg,
             /*log=*/nullptr)
             .has_value())
-      return &m;
+      return m;
   }
-  return nullptr;
+  return std::nullopt;
 }
 
 std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::CheckMfe() {
@@ -273,16 +281,14 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
     }
 
     if (cfg_.mfe_table)
-      CompareCommonDpState(results[i].mfe.dp, cmp_res.mfe.dp, tags[i], tags[cmp_idx], errors);
+      CompareDpState(results[i].mfe.dp, cmp_res.mfe.dp, tags[i], tags[cmp_idx], errors);
   }
 
   std::optional<FoldBaseline> baseline =
       FoldBaseline{.fold = std::move(cmp_res), .model = std::move(models[cmp_idx])};
 
 #ifdef MRNA_USE_RNASTRUCTURE
-  if (cfg_.mfe_rnastructure) {
-    Register("RNAstructure:", CheckMfeRNAstructure(baseline.value()));
-  }
+  if (cfg_.mfe_rnastructure) Register("RNAstructure:", CheckMfeRNAstructure(baseline.value()));
 #endif  // MRNA_USE_RNASTRUCTURE
 
   return {std::move(errors), std::move(baseline)};
@@ -326,13 +332,10 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
 
       SuboptRun run{
           .model = m, .results = {}, .tag = fmt::format("{}-{}-{}", kind, subopt_alg, cfg_idx)};
-      run.results.reserve(SUBOPT_HARD_CAP);
       const Ctx ctx(m, backend_cfg_);
       std::ignore = ctx.Subopt(r_, /*mfe_alg=*/std::nullopt, subopt_alg, cfg_.energy_cfg, pf_, cfg,
           [&](const subopt::SuboptResult& res) {
-            run.results.push_back(res);
-            run.hit_hard_cap = run.results.size() >= SUBOPT_HARD_CAP;
-            return !run.hit_hard_cap;
+            return CollectSuboptPrefix(res, &run.results, &run.hit_hard_cap);
           });
 
       // Check sorted if it was meant to be.
@@ -360,6 +363,9 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
       if (should_log_) loginfo("subopt skipped: no phase-1 run supported for {}", desc);
       continue;
     }
+    for (const auto& run : runs)
+      Register(fmt::format("{}, cfg: {}", run.tag, desc),
+          CheckSuboptResult(baseline.fold.mfe.energy, run.results, run.model));
 
     std::vector<std::string> capped_tags;
     std::vector<std::string> completed_tags;
@@ -385,6 +391,8 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
 
     bool deferred_hit_cap = false;
     for (auto& run : deferred_runs) {
+      Register(fmt::format("{}, cfg: {}", run.tag, desc),
+          CheckSuboptResult(baseline.fold.mfe.energy, run.results, run.model));
       if (run.hit_hard_cap) {
         deferred_hit_cap = true;
         errors.emplace_back("subopt deferred hard cap:");
@@ -395,19 +403,13 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
     if (deferred_hit_cap) continue;
 
     for (int alg = 0; alg < static_cast<int>(runs.size()); ++alg) {
-      Register(fmt::format("{}, cfg: {}", runs[alg].tag, desc),
-          CheckSuboptResult(baseline.fold.mfe.energy, runs[alg].results, runs[alg].model));
       Register(fmt::format("{} vs {}, cfg: {}", runs[alg].tag, runs[0].tag, desc),
           CheckSuboptResultPair(cfg, runs[0].results, runs[alg].results));
     }
 
 #ifdef MRNA_USE_RNASTRUCTURE
     if (cfg_idx == 0 && cfg_.subopt_rnastructure) {
-      if (RNAstructureEnergyCfgSupported(cfg_.energy_cfg, pf_)) {
-        Register("rnastructure:", CheckSuboptRNAstructure(cfg, baseline, runs[0].results));
-      } else if (should_log_) {
-        loginfo("RNAstructure subopt skipped: unsupported energy or pseudofree configuration");
-      }
+      Register("rnastructure:", CheckSuboptRNAstructure(cfg, baseline, runs[0].results));
     }
 #endif  // MRNA_USE_RNASTRUCTURE
   }
@@ -470,14 +472,15 @@ Error FuzzInvocation::CheckSuboptResultPair(subopt::SuboptCfg subopt_cfg,
         fmt::format("first has {} structures != second has {} structures", a.size(), b.size()));
   } else {
     for (int64_t i = 0; i < static_cast<int64_t>(a.size()); ++i) {
-      // If we were limited by number of structures and we are on the last energy value,
-      // different algorithms may not have put the same subset of structures with
-      // that energy value into their result, so break.
-      if (subopt_cfg.strucs == static_cast<int64_t>(a.size()) && a[i].energy == a.back().energy)
-        break;
-      if (a[i].energy != b[i].energy)
+      if (a[i].energy != b[i].energy) {
         errors.push_back(
             fmt::format("structure {}: first {} != second {}", i, a[i].energy, b[i].energy));
+        continue;
+      }
+
+      // A structure limit may select different structures tied at the cutoff energy.
+      if (subopt_cfg.strucs == static_cast<int64_t>(a.size()) && a[i].energy == a.back().energy)
+        continue;
       if (a[i].tb.s != b[i].tb.s)
         errors.push_back(fmt::format("structure {}: secondaries differ", i));
       if (has_ctds && a[i].tb.ctd != b[i].tb.ctd)
@@ -499,7 +502,7 @@ void FuzzInvocation::ComparePfn(const PfnTables& got, const PfnTables& want,
     const std::string& name_got, const std::string& name_want, Error& errors) {
   const auto N = As<int>(want.p.size());
   verify(want.p.size() == want.prob.size(), "bug");
-  verify(got.p.size() == want.prob.size(), "bug");
+  verify(got.prob.size() == want.prob.size(), "bug");
   verify(got.p.size() == want.p.size(), "bug");
 
   if (!PfnPQEq(got.q, want.q)) {
@@ -543,7 +546,9 @@ Error FuzzInvocation::CheckPfn() {
       tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
     };
 
-    for (const auto& entry : PfnPriorityForBackend(kind, /*alg=*/std::nullopt, N <= cfg_.brute_max))
+    // Brute force partition has a hard size cap (PFN_MAX_RNA_SIZE) independent of brute_max.
+    const bool use_brute = N <= cfg_.brute_max && N <= md::brute::PFN_MAX_RNA_SIZE;
+    for (const auto& entry : PfnPriorityForBackend(kind, /*alg=*/std::nullopt, use_brute))
       maybe_run(entry.alg);
   }
 
@@ -552,19 +557,23 @@ Error FuzzInvocation::CheckPfn() {
   for (int i = 0; i < static_cast<int>(results.size()); ++i)
     ComparePfn(results[i].pfn, results[0].pfn, tags[i], tags[0], errors);
 
-  if (N < cfg_.pfn_subopt) {
-    subopt::SuboptCfg subopt_cfg = {.strucs = 100000, .sorted = false};
-    if (const auto* m = FindSuboptModel(pfn_energy_cfg, subopt_cfg)) {
-      const Ctx ctx(*m, backend_cfg_);
+  if (N <= cfg_.pfn_subopt) {
+    subopt::SuboptCfg subopt_cfg = {.strucs = SUBOPT_HARD_CAP + 1, .sorted = false};
+    if (auto m = FindSuboptModel(pfn_energy_cfg, subopt_cfg)) {
+      const Ctx ctx(std::move(*m), backend_cfg_);
       auto subopts = ctx.SuboptIntoVector(
           r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt, pfn_energy_cfg, pf_, subopt_cfg);
-      flt subopt_q{};
-      for (const auto& res : subopts) subopt_q += res.energy.Boltz();
+      if (subopts.size() > SUBOPT_HARD_CAP) {
+        if (should_log_) loginfo("pfn-subopt comparison inconclusive: structure cap reached");
+      } else {
+        flt subopt_q{};
+        for (const auto& res : subopts) subopt_q += res.energy.Boltz();
 
-      for (int i = 0; i < static_cast<int>(results.size()); ++i) {
-        if (!PfnPQEq(subopt_q, results[i].pfn.q))
-          errors.push_back(fmt::format("subopt q: {} != {} pfn q: {}, diff: {}", subopt_q, tags[i],
-              results[i].pfn.q, subopt_q - results[i].pfn.q));
+        for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+          if (!PfnPQEq(subopt_q, results[i].pfn.q))
+            errors.push_back(fmt::format("subopt q: {} != {} pfn q: {}, diff: {}", subopt_q,
+                tags[i], results[i].pfn.q, subopt_q - results[i].pfn.q));
+        }
       }
     }
   }
@@ -637,24 +646,19 @@ Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg,
   if (subopt.empty()) return errors;
   if (subopt[0].energy < -subopt_cfg.delta) {
     std::vector<subopt::SuboptResult> rstr_subopt;
-    rstr_subopt.reserve(SUBOPT_HARD_CAP);
-
     bool hit_hard_cap = false;
     std::ignore = rstr_->Subopt(r_, /*mfe_alg=*/std::nullopt, /*alg=*/std::nullopt,
         erg::EnergyCfg{}, erg::PseudofreeCfg{}, {.delta = subopt_cfg.delta},
         [&](const subopt::SuboptResult& res) {
-          rstr_subopt.push_back(res);
-          hit_hard_cap = rstr_subopt.size() >= SUBOPT_HARD_CAP;
-          return !hit_hard_cap;
+          return CollectSuboptPrefix(res, &rstr_subopt, &hit_hard_cap);
         });
-
-    // If we hit a hard cap, don't compare results, just ignore this run.
-    if (hit_hard_cap) return errors;
 
     std::sort(rstr_subopt.begin(), rstr_subopt.end());
     Register("subopt:",
         CheckSuboptResult(baseline.fold.mfe.energy, rstr_subopt, baseline.model,
             /*has_ctds=*/false, /*check_duplicates=*/false));
+    if (hit_hard_cap) return errors;
+
     Register("subopt vs memerna:",
         CheckSuboptResultPair(subopt_cfg, subopt, rstr_subopt, /*has_ctds=*/false));
   }

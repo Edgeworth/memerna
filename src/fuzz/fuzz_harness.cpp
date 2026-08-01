@@ -49,10 +49,11 @@ std::string DescribeEquivalenceClass(const std::vector<BackendModelPtr>& group) 
 
 FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg, bool should_log)
     : fuzz_cfg_(std::move(fuzz_cfg)), e_(std::random_device{}()), should_log_(should_log) {
+  fuzz_cfg_.Verify();
 #ifdef MRNA_USE_RNASTRUCTURE
   if (fuzz_cfg_.UsesRNAstructure())
-    rstr_ =
-        std::make_shared<bridge::RNAstructure>(fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
+    rstr_ = std::make_shared<bridge::RNAstructure>(
+        fuzz_cfg_.rnastructure_data_dir, /*use_lyngso=*/false);
 #endif  // MRNA_USE_RNASTRUCTURE
   if (should_log_) loginfo("Fuzzing with config: {}", fuzz_cfg_.Desc());
 
@@ -63,8 +64,9 @@ FuzzHarness::FuzzHarness(FuzzCfg fuzz_cfg, bool should_log)
   };
 }
 
-Error FuzzHarness::Run(const Primary& r, const erg::PseudofreeCfg& pf) {
+std::optional<Error> FuzzHarness::Run(const Primary& r, const erg::PseudofreeCfg& pf) {
   MaybeLoadBackends(pf);
+  if (ms_.empty()) return std::nullopt;
   auto groups = EquivalenceClasses(ms_);
   if (should_log_) {
     loginfo("backend equivalence classes: {}", groups.size());
@@ -73,9 +75,7 @@ Error FuzzHarness::Run(const Primary& r, const erg::PseudofreeCfg& pf) {
   }
 
 #ifdef MRNA_USE_RNASTRUCTURE
-  const bool rnastructure =
-      fuzz_cfg_.mfe_rnastructure || fuzz_cfg_.subopt_rnastructure || fuzz_cfg_.pfn_rnastructure;
-  verify(!rnastructure || groups.size() == 1,
+  verify(!fuzz_cfg_.UsesRNAstructure() || groups.size() == 1,
       "RNAstructure comparison requires exactly 1 backend equivalence class, got {}",
       groups.size());
 #endif  // MRNA_USE_RNASTRUCTURE
@@ -109,19 +109,14 @@ void FuzzHarness::MaybeLoadBackends(const erg::PseudofreeCfg& pf) {
     backend_cfg_.data_src = fuzz_cfg_.data_dir;
   }
 
-  if (fuzz_cfg_.backends.empty()) {
-    for (const auto& backend : EnumValues<BackendKind>()) {
-      std::string reason;
-      if (!BackendIsSupported(backend, backend_cfg_, fuzz_cfg_.energy_cfg, pf, &reason)) {
-        if (should_log_) logwarn("backend NOT loaded: {}: {}", backend, reason);
-        continue;
-      }
-      ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
+  const auto backends = fuzz_cfg_.backends.empty() ? EnumValues<BackendKind>() : fuzz_cfg_.backends;
+  for (const auto& backend : backends) {
+    std::string reason;
+    if (!BackendIsSupported(backend, backend_cfg_, fuzz_cfg_.energy_cfg, pf, &reason)) {
+      if (should_log_) logwarn("backend NOT loaded: {}: {}", backend, reason);
+      continue;
     }
-  } else {
-    for (const auto& backend : fuzz_cfg_.backends) {
-      ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
-    }
+    ms_.push_back(BackendFromBackendCfg(backend, backend_cfg_));
   }
 }
 

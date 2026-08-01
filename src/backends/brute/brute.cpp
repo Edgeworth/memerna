@@ -48,7 +48,7 @@ BruteResult Brute<CFG, PseudofreeCfgT>::Run() {
 
   if (brute_cfg_.pfn) {
     // Plus one to N, since the packed representation reserves an all-ones sentinel.
-    verify(r_.size() + 1 < (1 << PT_MAX_BITS), "sequence too long for brute force partition");
+    verify(r_.size() + 1 <= (1 << PT_MAX_BITS), "sequence too long for brute force partition");
     res_.pfn.q = 0;
     res_.pfn.p = BoltzSums(r_.size(), 0);
   }
@@ -68,6 +68,16 @@ BruteResult Brute<CFG, PseudofreeCfgT>::Run() {
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 void Brute<CFG, PseudofreeCfgT>::Dfs(int idx) {
   if (idx == int(pairs_.size())) {
+    if constexpr (CFG.lonely_pairs == erg::EnergyCfg::LonelyPairs::OFF) {
+      for (int st = 0; st < r_.size(); ++st) {
+        if (!s_.IsOpeningPair(st)) continue;
+        const int en = s_[st];
+        const bool stacked_inside = st + 1 < en && s_[st + 1] == en - 1;
+        const bool stacked_outside = st > 0 && en + 1 < r_.size() && s_[st - 1] == en + 1;
+        if (!stacked_inside && !stacked_outside) return;
+      }
+    }
+
     // Precompute whether things are multiloops or not.
     branch_count_ = GetBranchCounts(s_);
     AddAllCombinations(0);
@@ -262,7 +272,7 @@ void Brute<CFG, PseudofreeCfgT>::PruneInsertSubopt(Energy e) {
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-typename Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::WriteBits(
+Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::WriteBits(
     int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
   // Zero initialise. Unpaired is all-ones in the packed representation once PT_MASK is applied.
@@ -288,14 +298,14 @@ typename Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-typename Brute<CFG, PseudofreeCfgT>::SubstructureId
-Brute<CFG, PseudofreeCfgT>::BuildInsideStructure(int st, int en, int N) {
+Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::BuildInsideStructure(
+    int st, int en, int N) {
   return WriteBits(st, en, N, /*inside=*/true);
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-typename Brute<CFG, PseudofreeCfgT>::SubstructureId
-Brute<CFG, PseudofreeCfgT>::BuildOutsideStructure(int st, int en, int N) {
+Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::BuildOutsideStructure(
+    int st, int en, int N) {
   return WriteBits(st, en, N, /*inside=*/false);
 }
 

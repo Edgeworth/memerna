@@ -3,21 +3,22 @@ from pathlib import Path
 from typing import Any
 
 import cloup
+from cloup.constraints import require_all
 
 from rnapy.analysis.fold_accuracy import FoldAccuracyRunner
-from rnapy.bridge.args import bridge_options
+from rnapy.bridge.args import memerna_path_option
 from rnapy.bridge.memerna import MemeRna
-from rnapy.data.args import memevault_options
+from rnapy.data.args import memevault_path_option
 from rnapy.data.memevault import MemeVault
 from rnapy.util.args import init_package_limits, limit_options
 from rnapy.util.util import fn_args
 
 
 @cloup.command()
-@bridge_options
-@memevault_options
+@cloup.option_group("Bridge options", memerna_path_option, constraint=require_all)
+@memevault_path_option(required=True)
 @limit_options
-@cloup.option("--dataset", default="random", type=str)
+@cloup.option("--dataset", default="archiveii", show_default=True, type=str)
 @cloup.option(
     "--output-path", type=cloup.Path(file_okay=True, dir_okay=False, path_type=Path), required=True
 )

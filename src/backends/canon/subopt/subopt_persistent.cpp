@@ -4,6 +4,7 @@
 #include <fmt/core.h>
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,12 +22,6 @@
 
 namespace mrna::md::canon {
 
-namespace {
-
-constexpr int CHECK_TIME_FREQ = 10000;
-
-}  // namespace
-
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 bool SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::IsSupported(
     const PseudofreeCfgT& /*pf*/, const SuboptCfg& /*subopt_cfg*/, std::string* reason) {
@@ -42,7 +37,9 @@ template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::SuboptPersistent(
     Primary r, Model::Ptr m, DpState dp, PseudofreeCfgT pf, SuboptCfg subopt_cfg)
     : r_(std::move(r)), m_(std::move(m)), pf_(std::move(pf)), pc_(Primary(r_), m_, pf_),
-      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {}
+      dp_(std::move(dp)), subopt_cfg_(subopt_cfg), cache_(r_, DpIndex::MaxLinearIndex(r_.size())) {
+  subopt_cfg_.Verify();
+}
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
@@ -55,12 +52,12 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
 
   q_.clear();
   pq_ = {};
-  q_.reserve(r_.size() * r_.size());
+  q_.reserve(static_cast<std::size_t>(r_.size()) * r_.size());
 
   const DpIndex start_idx{0, INVALID_INDEX, EXT};
   const Energy mfe = dp_.Index(start_idx);
   q_.push_back({.expand_idx = 0, .to_expand = start_idx});
-  pq_.emplace(0, 0);
+  pq_.emplace(ZERO_E, SuboptIndex(0));
 
   int64_t num_strucs = 0;
   auto start_time = std::chrono::steady_clock::now();
@@ -68,7 +65,7 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
   while (!pq_.empty()) {
     if (num_strucs >= subopt_cfg_.strucs) break;
 
-    if (subopt_cfg_.time_secs >= 0.0 && num_strucs % CHECK_TIME_FREQ == 0) {
+    if (subopt_cfg_.time_secs >= 0.0 && num_strucs % subopt::CHECK_TIME_FREQ == 0) {
       auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
           std::chrono::steady_clock::now() - start_time);
       if (elapsed.count() >= subopt_cfg_.time_secs) break;

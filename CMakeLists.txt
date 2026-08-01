@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
+  message(FATAL_ERROR "In-source builds are not supported; configure with -B <build-directory>")
+endif()
+
 project(memerna VERSION 0.2.1 LANGUAGES CXX)
 
 # Supress warning messages about unused variables:
@@ -18,9 +22,21 @@ set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for flo
 set(ENERGY_PRECISION 2 CACHE STRING
   "Number of decimal places to use for energy calculations")
 set_property(CACHE INDEX_BITS PROPERTY STRINGS 8 16 32)
+set_property(CACHE FLOAT_PRECISION PROPERTY STRINGS 6 15 18)
+set_property(CACHE ENERGY_PRECISION PROPERTY STRINGS 1 2)
 
 if(NOT INDEX_BITS MATCHES "^(8|16|32)$")
   message(FATAL_ERROR "INDEX_BITS must be one of 8, 16, or 32")
+endif()
+if(USE_MPFR)
+  if(NOT FLOAT_PRECISION MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR "FLOAT_PRECISION must be a positive integer when USE_MPFR is enabled")
+  endif()
+elseif(NOT FLOAT_PRECISION MATCHES "^(6|15|18)$")
+  message(FATAL_ERROR "FLOAT_PRECISION must be one of 6, 15, or 18 when USE_MPFR is disabled")
+endif()
+if(NOT ENERGY_PRECISION MATCHES "^(1|2)$")
+  message(FATAL_ERROR "ENERGY_PRECISION must be one of 1 or 2")
 endif()
 
 # Always have RNAstructure compiled as release.
@@ -288,6 +304,7 @@ set(MEMERNA_SOURCE
   src/util/container.h
   src/util/error.cpp
   src/util/error.h
+  src/util/file.h
   src/util/float.h
   src/util/enum.h
   src/util/log.cpp
@@ -309,6 +326,7 @@ set(TEST_SOURCE
   src/tests/backends/base/model_test.cpp
   src/tests/backends/canon/energy_test.cpp
   src/tests/backends/canon/model_test.cpp
+  src/tests/backends/common/parse_test.cpp
   src/tests/fuzz/fuzz_test.cpp
   src/tests/model/base_test.cpp
   src/tests/model/parsing_test.cpp
@@ -442,7 +460,9 @@ if(USE_IWYU)
   set_target_properties(subopt PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${IWYU}")
 endif()
 
-# Copy data assets to build directory, if the build succeeds:
-add_custom_command(TARGET memerna POST_BUILD COMMAND ${CMAKE_COMMAND}
-  -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data/
-  $<TARGET_FILE_DIR:memerna>/data)
+# Keep the build-tree data assets in sync for incremental builds.
+add_custom_target(copy_data ALL
+  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/data
+COMMAND ${CMAKE_COMMAND}   -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data
+    ${CMAKE_CURRENT_BINARY_DIR}/data)
+add_dependencies(memerna copy_data)

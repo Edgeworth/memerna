@@ -25,7 +25,7 @@ class FuzzHarness {
  public:
   explicit FuzzHarness(FuzzCfg fuzz_cfg, bool should_log = true);
 
-  Error Run(const Primary& r, const erg::PseudofreeCfg& pf);
+  std::optional<Error> Run(const Primary& r, const erg::PseudofreeCfg& pf);
   std::mt19937& e() { return e_; }
 
   [[nodiscard]] std::optional<RandomModelCfg> last_random_model_cfg() const {

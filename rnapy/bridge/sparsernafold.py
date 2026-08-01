@@ -47,9 +47,8 @@ class SparseRNAFolD(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        if rna.r is None:
-            raise ValueError(f"RNA {rna.name} has no sequence")
-        res = self._run_cmd("./build/SparseRNAFolD", *args, rna.r, stdout_to_str=True)
+        sequence = rna.require_sequence()
+        res = self._run_cmd("./build/SparseRNAFolD", *args, sequence, stdout_to_str=True)
         seq, db = res.stdout.strip().split("\n")
         db = db.split(" ")[0]
         predicted = RnaParser.parse(name=rna.name, seq=seq.strip(), db=db.strip())

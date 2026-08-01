@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -45,10 +46,14 @@ std::string Opt::Desc() const {
 
 void ArgParse::RegisterOpt(const Opt& opt) {
   // Check if this conflicts with existing arguments.
-  if (auto iter = longname_.find(opt.longname()); iter != longname_.end())
+  if (auto iter = longname_.find(opt.longname()); iter != longname_.end()) {
     verify(opt == iter->second, "conflicting option registered with longname {}", opt.longname());
-  if (auto iter = shortname_.find(opt.shortname()); iter != shortname_.end())
+    return;
+  }
+  if (auto iter = shortname_.find(opt.shortname()); iter != shortname_.end()) {
     verify(opt == iter->second, "conflicting option registered with shortname {}", opt.shortname());
+    return;
+  }
 
   // Can't have multiple of a flag:
   verify(opt.kind() != Opt::FLAG || !opt.multiple(), "flag {} cannot be multiple", opt.Desc());
@@ -68,13 +73,11 @@ void ArgParse::RegisterOpt(const Opt& opt) {
   if (has_inversion) longname_.emplace(inverted_longname, inverted_opt);
   if (!opt.shortname().empty()) shortname_.emplace(opt.shortname(), opt);
   opts_.push_back(opt);
-  // Add default argument if necessary.
-  if (auto iter = values_.find(opt); opt.has_default() && iter == values_.end())
-    values_.emplace(opt, opt.default_arg());
 }
 
-std::string ArgParse::Usage() const {
-  std::string usage = "Usage: \n";
+std::string ArgParse::Usage(std::string_view program) const {
+  std::string usage = program.empty() ? "Usage:\n" : fmt::format("Usage: {}\n", program);
+  usage += "  -h, --help: show this help message and exit\n";
   for (const auto& opt : opts_) {
     if (opt.hidden()) continue;
     usage += fmt::format("  {}\n", opt.Desc());
@@ -83,6 +86,12 @@ std::string ArgParse::Usage() const {
 }
 
 std::string ArgParse::Parse(int argc, char* argv[]) {
+  values_.clear();
+  explicit_values_.clear();
+  pos_.clear();
+  for (const auto& opt : opts_)
+    if (opt.has_default()) values_.emplace(opt, opt.default_arg());
+
   for (int i = 1; i < argc; ++i) {
     const char* s = argv[i];
     const bool is_opt = s[0] == '-';
@@ -114,6 +123,11 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
         }
         explicit_values_.insert(opt);
       } else {
+        if (opt.longname().empty()) {
+          values_[opt] = Conv(true);
+          explicit_values_.insert(opt);
+          continue;
+        }
         auto pair = FlagPair(opt);
         const bool on = !opt.IsInverted();
         values_[pair.first] = Conv(on);
@@ -144,9 +158,16 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
 
 void ArgParse::ParseOrExit(int argc, char** argv) {
   RegisterOpt(OPT_VERBOSE);
+  for (int i = 1; i < argc; ++i) {
+    const std::string_view arg = argv[i];
+    if (arg == "-h" || arg == "--help") {
+      fmt::print("{}", Usage(argc > 0 ? argv[0] : ""));
+      std::exit(0);  // NOLINT
+    }
+  }
   const auto ret = Parse(argc, argv);
   if (!ret.empty()) {
-    auto usage = Usage();
+    auto usage = Usage(argc > 0 ? argv[0] : "");
     logcritical("{}\n{}\n", ret, usage);
     std::exit(1);  // NOLINT
   }

@@ -22,7 +22,7 @@ struct SuboptResult {
   explicit SuboptResult(const SuboptResult&) = default;
   SuboptResult& operator=(const SuboptResult&) = delete;
 
-  constexpr auto operator<=>(const SuboptResult&) const = default;
+  auto operator<=>(const SuboptResult&) const = default;
 
   Energy energy{};  // Put this first so naive sort is by energy.
   trace::TraceResult tb;

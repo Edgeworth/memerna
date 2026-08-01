@@ -2,8 +2,10 @@
 #ifndef BACKENDS_COMMON_PARSE_H_
 #define BACKENDS_COMMON_PARSE_H_
 
+#include <array>
 #include <cstddef>
-#include <fstream>
+#include <cstring>
+#include <istream>
 #include <string>
 #include <unordered_map>
 
@@ -12,31 +14,36 @@
 
 namespace mrna::md {
 
-void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]);
+void Parse3Map(std::istream&& input, Energy (&output)[4][4][4]);
 
-void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]);
+void Parse4Map(std::istream&& input, Energy (&output)[4][4][4][4]);
 
-void Parse6MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4]);
+void Parse6Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4]);
 
-void Parse7MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4]);
+void Parse7Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4][4]);
 
-void Parse8MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4][4]);
+void Parse8Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4][4][4]);
 
-void ParseNMapFromFile(
-    const std::string& filename, std::unordered_map<std::string, Energy>* output);
+void ParseNMap(std::istream&& input, std::unordered_map<std::string, Energy>* output);
 
 template <std::size_t N>
-void ParseVecFromFile(const std::string& filename, Energy (&output)[N]) {
-  std::ifstream f(filename);
-  verify(f, "could not open file");
+void ParseVec(std::istream&& input, Energy (&output)[N]) {
+  std::memset(static_cast<void*>(&output), 0, sizeof(output));
 
   std::string energy;
+  std::array<bool, N> seen{};
   int idx = 0;
-  while (f >> idx >> energy) {
-    verify(idx >= 0 && idx < int(N), "out of bounds index in {}", filename);
+  while (true) {
+    input >> std::ws;
+    if (input.peek() == std::char_traits<char>::eof()) break;
+    verify(input >> idx, "expected index");
+    verify(input >> energy, "expected energy for index {}", idx);
+    verify(idx > 0 && idx < int(N), "out of bounds index {}", idx);
+    verify(!seen[static_cast<std::size_t>(idx)], "duplicate index {}", idx);
+    seen[static_cast<std::size_t>(idx)] = true;
     output[idx] = Energy::FromString(energy);
   }
-  verify(f.eof(), "expected EOF");
+  verify(input.eof(), "expected EOF");
 }
 
 }  // namespace mrna::md

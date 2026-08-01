@@ -2,24 +2,24 @@
 #ifndef BACKENDS_COMMON_BASE_PARSE_H_
 #define BACKENDS_COMMON_BASE_PARSE_H_
 
+#include <algorithm>
+#include <istream>
 #include <string>
 
 #include "backends/common/boltz.h"
 #include "backends/common/model_mixin.h"
 #include "backends/common/parse.h"
+#include "util/file.h"
 
 namespace mrna::md::base {
 
 template <typename M>
-void ParseMiscDataFromFile(M& m, const std::string& filename) {
-  std::ifstream f(filename);
-  verify(f, "could not open file");
-
+void ParseMiscData(std::istream&& input, M& m) {
 #define READ_DATA(var)                              \
   do {                                              \
     while (1) {                                     \
-      auto line = sgetline(f);                      \
-      verify(f, "unexpected EOF or error");         \
+      auto line = sgetline(input);                  \
+      verify(input, "unexpected EOF or error");     \
       if (line.empty() || line[0] == '/') continue; \
       m.var = Energy::FromString(Trim(line));       \
       break;                                        \
@@ -57,39 +57,39 @@ void ParseMiscDataFromFile(M& m, const std::string& filename) {
   READ_DATA(gu_penalty);
 #undef READ_DATA
 
-  f >> std::ws;
-  verify(f.eof(), "expected EOF");
+  input >> std::ws;
+  verify(input.eof(), "expected EOF");
 }
 
 template <typename M>
 void LoadFromModelPath(M& m, const std::string& path) {
   // Stacking interaction data.
-  Parse4MapFromFile(path + "/stacking.data", m.stack);
+  Parse4Map(OpenFile(path + "/stacking.data"), m.stack);
 
   // Terminal mismatch data.
-  Parse4MapFromFile(path + "/terminal.data", m.terminal);
+  Parse4Map(OpenFile(path + "/terminal.data"), m.terminal);
 
   // Hairpin data.
-  ParseNMapFromFile(path + "/hairpin.data", &m.hairpin);
-  ParseVecFromFile(path + "/hairpin_initiation.data", m.hairpin_init);
+  ParseNMap(OpenFile(path + "/hairpin.data"), &m.hairpin);
+  ParseVec(OpenFile(path + "/hairpin_initiation.data"), m.hairpin_init);
 
   // Bulge loop data.
-  ParseVecFromFile(path + "/bulge_initiation.data", m.bulge_init);
+  ParseVec(OpenFile(path + "/bulge_initiation.data"), m.bulge_init);
 
   // Internal loop data.
-  ParseVecFromFile(path + "/internal_initiation.data", m.internal_init);
-  Parse6MapFromFile(path + "/internal_1x1.data", m.internal_1x1);
-  Parse7MapFromFile(path + "/internal_1x2.data", m.internal_1x2);
-  Parse8MapFromFile(path + "/internal_2x2.data", m.internal_2x2);
-  Parse4MapFromFile(path + "/internal_2x3_mismatch.data", m.internal_2x3_mismatch);
-  Parse4MapFromFile(path + "/internal_other_mismatch.data", m.internal_other_mismatch);
+  ParseVec(OpenFile(path + "/internal_initiation.data"), m.internal_init);
+  Parse6Map(OpenFile(path + "/internal_1x1.data"), m.internal_1x1);
+  Parse7Map(OpenFile(path + "/internal_1x2.data"), m.internal_1x2);
+  Parse8Map(OpenFile(path + "/internal_2x2.data"), m.internal_2x2);
+  Parse4Map(OpenFile(path + "/internal_2x3_mismatch.data"), m.internal_2x3_mismatch);
+  Parse4Map(OpenFile(path + "/internal_other_mismatch.data"), m.internal_other_mismatch);
 
   // Dangle data.
-  Parse3MapFromFile(path + "/dangle3.data", m.dangle3);
-  Parse3MapFromFile(path + "/dangle5.data", m.dangle5);
+  Parse3Map(OpenFile(path + "/dangle3.data"), m.dangle3);
+  Parse3Map(OpenFile(path + "/dangle5.data"), m.dangle5);
 
   // Other misc data.
-  ParseMiscDataFromFile(m, path + "/misc.data");
+  ParseMiscData(OpenFile(path + "/misc.data"), m);
 }
 
 template <typename M>
@@ -122,13 +122,14 @@ void LoadRandomModel(M& m, std::mt19937& eng, double min_energy, double max_ener
   RANDOMISE_DATA(m, hairpin_all_c_b);
 
   m.hairpin.clear();
-  std::uniform_int_distribution<int> hairpin_size_dist(HAIRPIN_MIN_SZ, max_hairpin_sz);
-  verify(HAIRPIN_MIN_SZ <= max_hairpin_sz, "HAIRPIN_MIN_SZ > RAND_MAX_HAIRPIN does not make sense");
+  constexpr int MIN_SPECIAL_HAIRPIN_SIZE = HAIRPIN_MIN_SZ + 2;
+  std::uniform_int_distribution<int> hairpin_size_dist(MIN_SPECIAL_HAIRPIN_SIZE, max_hairpin_sz);
   std::uniform_int_distribution<int> num_hairpin_dist(0, max_num_hairpin);
   const int num_hairpin = num_hairpin_dist(eng);
   for (int i = 0; i < num_hairpin; ++i) {
-    auto hp = Primary::Random(hairpin_size_dist(eng), eng).ToSeq();
-    m.hairpin[hp] = Energy::FromFlt(energy_dist(eng));
+    auto hp = Primary::Random(hairpin_size_dist(eng), eng);
+    hp[hp.size() - 1] = WcPair(hp[0]);
+    m.hairpin[hp.ToSeq()] = Energy::FromFlt(energy_dist(eng));
   }
 
   RANDOMISE_DATA(m, multiloop_a);

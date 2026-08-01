@@ -45,9 +45,8 @@ class LinearFold(RnaPackage):
     @override
     def fold(self, rna: Rna, cfg: EnergyCfg) -> tuple[Rna, CmdResult]:
         args = self._energy_cfg_args(cfg)
-        if rna.r is None:
-            raise ValueError(f"RNA {rna.name} has no sequence")
-        res = self._run_cmd("./linearfold", *args, "-V", stdin_inp=rna.r, stdout_to_str=True)
+        sequence = rna.require_sequence()
+        res = self._run_cmd("./linearfold", *args, "-V", stdin_inp=sequence, stdout_to_str=True)
         lines = res.stdout.strip().splitlines()
         if len(lines) < 2:
             raise ValueError(f"Unexpected LinearFold output: {res.stdout!r}")

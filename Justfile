@@ -7,27 +7,73 @@ default:
   @just --list
 
 test:
-  poetry run pytest
-  # Check various build configurations and run tests. Good to run before push.
+  #!/usr/bin/env bash
+  set -euo pipefail
+  uv run pytest
+  test_job_memory="${MRNA_TEST_JOB_MEMORY:-10G}"
+  test_jobs="${MRNA_TEST_JOBS:-}"
+  read -r -a test_compilers <<< \
+    "${MRNA_TEST_COMPILERS:---compiler=clang --compiler=default}"
+  if [[ -z "$test_jobs" ]]; then
+    # MemAvailable includes reclaimable cache. Leave 25% for other work.
+    mem_available_kib="$(awk '$1 == "MemAvailable:" { print $2; exit }' /proc/meminfo)"
+    test_job_bytes="$(numfmt --from=iec "$test_job_memory")"
+    memory_jobs=$((mem_available_kib * 3 * 1024 / 4 / test_job_bytes))
+    if ((memory_jobs < 1)); then memory_jobs=1; fi
+    test_jobs="$(nproc)"
+    if ((memory_jobs < test_jobs)); then test_jobs="$memory_jobs"; fi
+  fi
+  echo "Testing build configurations with $test_jobs jobs and $test_job_memory per job"
+  # Check representative build configurations. Good to run before push.
   # Uses :::+ to match mpfr-rnastructure and no-mpfr-no-rnastructure etc to
   # save some compilations.
   # Necessary to compile with multiple compilers, as some issues have only shown
-  # themselves on a specfic compiler.
-  # Use setarch -R to disable ASLR, which can cause issues with thread sanitizer.
-  # See https://github.com/google/sanitizers/issues/1716.
-  parallel --progress --halt soon,fail=1 --jobs $(nproc) setarch -R poetry run python -m rnapy.run \
-    build --test {} ">" /dev/null ::: \
+  # themselves on a specific compiler.
+  # memerna is single threaded, so a thread sanitizer build finds nothing.
+  cfgs="$(parallel --keep-order echo ::: \
     --kind=debug --kind=relwithdebinfo ::: --sanitizer=asan \
-    --sanitizer=tsan --sanitizer=ubsan ::: --float-precision=15 --float-precision=18 :::+ \
+    --sanitizer=ubsan ::: --float-precision=15 --float-precision=18 :::+ \
     --energy-precision=1 --energy-precision=2 :::+ \
     --no-logging --logging :::+ \
     --rnastructure --no-rnastructure :::+ --mpfr --no-mpfr ::: \
-    --compiler=clang --compiler=default --compiler=afl-fast ::: \
-    --index-bits=8 --index-bits=16 --index-bits=32
+    "${test_compilers[@]}" ::: --index-bits=16 --index-bits=32)"
+  base="--kind=debug --float-precision=15 --energy-precision=1 --no-logging"
+  base+=" --rnastructure --mpfr"
+  for test_compiler in "${test_compilers[@]}"; do
+    # Also check one build without a sanitizer, since sanitizers change codegen.
+    cfgs+=$'\n'"$base --sanitizer=none --index-bits=16 $test_compiler"
+    # 8 bit indices cap the sequence length, so the tests skip their longest
+    # sequence. One build covers the size limit without shrinking the matrix.
+    cfgs+=$'\n'"$base --sanitizer=ubsan --index-bits=8 $test_compiler"
+  done
+  # Suspend work when there is not enough memory for another job.
+  printf '%s\n' "$cfgs" | parallel --halt soon,fail=1 --jobs "$test_jobs" \
+    --memsuspend "$test_job_memory" just _test-build {}
+
+_test-build *args:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  read -r -a cfg_args <<< "$*"
+  # Build configurations run in parallel. Keep each build serial by
+  # default so the two levels do not multiply the host CPU and memory use.
+  export MRNA_BUILD_JOBS="${MRNA_BUILD_JOBS:-1}"
+  prefix_args=()
+  if [[ "${MRNA_CLEAN_BUILDS:-0}" == 1 ]]; then
+    prefix="$(mktemp -d)"
+    trap 'rm -rf "$prefix"' EXIT
+    prefix_args=(--prefix "$prefix")
+  fi
+  /usr/bin/time --format="$* | %e s | %M KiB max RSS" \
+    uv run python -m rnapy.run build --test \
+      "${prefix_args[@]}" "${cfg_args[@]}" > /dev/null
+
+docker-test:
+  docker build --tag memerna:ubuntu-min .
+  docker run --rm memerna:ubuntu-min
 
 bench:
   # Run benchmarks.
-  poetry run python -m rnapy.run build --bench --bench-output \
+  uv run python -m rnapy.run build --bench --bench-output \
     ./benchmark.json --kind=release
 
 fuzz *args:
@@ -137,25 +183,30 @@ afl-tmin afl_dir *args:
     exit 0
   fi
   echo "Found ${#crashes[@]} unique crashes."
-  poetry run python -m rnapy.run afl-fuzz-min --compiler=afl-fast --kind=relwithdebinfo \
+  uv run python -m rnapy.run afl-fuzz-min --compiler=afl-fast --kind=relwithdebinfo \
     --mfe --mfe-table --subopt "$@" "${crashes[@]}"
 
 afl-fuzz *args: afl-setup
-  poetry run python -m rnapy.run afl-fuzz --compiler=afl-fast --kind=relwithdebinfo \
+  uv run python -m rnapy.run afl-fuzz --compiler=afl-fast --kind=relwithdebinfo \
     --mfe --mfe-table --subopt --random-pf "$@"
 
 afl-run *args:
-  poetry run python -m rnapy.run afl-fuzz-run --compiler=afl-fast --kind=relwithdebinfo \
+  uv run python -m rnapy.run afl-fuzz-run --compiler=afl-fast --kind=relwithdebinfo \
     --mfe --mfe-table --subopt --random-pf "$@"
 
 fix:
   pre-commit run --all-files
 
 update:
-  poetry run poetry up --latest
-  poetry update
+  uvx uv-upx upgrade run
+  uv lock --upgrade
 
 check:
-  poetry check
-  poetry run mypy --install-types --non-interactive rnapy rnapy_tests
+  uv lock --check
+  uv sync --locked
+  uv run --locked uv pip check
+  uv run --locked pytest
+  uv run --locked ty check rnapy rnapy_tests
+  uv run --locked ruff check rnapy rnapy_tests
+  uv run --locked ruff format --check rnapy rnapy_tests
   pre-commit run --all-files

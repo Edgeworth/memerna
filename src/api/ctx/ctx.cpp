@@ -74,14 +74,15 @@ const BackendModelPtr& Ctx::EnsureBackend(BackendKind kind) const {
   return *backends_[idx];
 }
 
-MfeBackend Ctx::BackendForFold(
-    std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const {
-  if (alg.has_value() && *alg == MfeAlg::BRUTE) {
-    std::string log;
-    auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
-    if (!resolved.has_value())
-      fatal("No backend supports this configuration for mfe brute:\n{}", log);
-    const auto& m = EnsureBackend(resolved->backend);
+MfeBackend Ctx::BackendForFold(std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+  trace_cfg.Verify();
+  std::string log;
+  auto resolved = ResolveMfe(backend_, alg, cfg_, cfg, pf, trace_cfg, &log);
+  if (!resolved.has_value()) fatal("No MFE algorithm supports configuration:\n{}", log);
+
+  const auto& m = EnsureBackend(resolved->backend);
+  if (resolved->alg == MfeAlg::BRUTE) {
     return {.m = m,
         .alg = MfeAlg::BRUTE,
         .mfe_fn = nullptr,
@@ -89,11 +90,6 @@ MfeBackend Ctx::BackendForFold(
         .trace_fn = nullptr};
   }
 
-  std::string log;
-  auto resolved = ResolveMfe(backend_, alg, cfg_, cfg, pf, &log);
-  if (!resolved.has_value()) fatal("No MFE algorithm supports configuration:\n{}", log);
-
-  const auto& m = EnsureBackend(resolved->backend);
   return {.m = m,
       .alg = resolved->alg,
       .mfe_fn = GetMfeFn(resolved->backend, resolved->alg),
@@ -104,11 +100,11 @@ MfeBackend Ctx::BackendForFold(
 SuboptBackend Ctx::BackendForSubopt(std::optional<SuboptAlg> alg, std::optional<MfeAlg> mfe_alg,
     const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
     const subopt::SuboptCfg& subopt_cfg) const {
+  subopt_cfg.Verify();
   if (alg.has_value() && *alg == SuboptAlg::BRUTE) {
     std::string log;
-    auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
-    if (!resolved.has_value())
-      fatal("No backend supports this configuration for subopt brute:\n{}", log);
+    auto resolved = ResolveSubopt(backend_, alg, cfg_, cfg, pf, subopt_cfg, &log);
+    if (!resolved.has_value()) fatal("No subopt algorithm supports configuration:\n{}", log);
     const auto& m = EnsureBackend(resolved->backend);
     return {.m = m,
         .alg = SuboptAlg::BRUTE,
@@ -118,7 +114,7 @@ SuboptBackend Ctx::BackendForSubopt(std::optional<SuboptAlg> alg, std::optional<
         .mfe_exterior_fn = nullptr};
   }
 
-  auto mfe_backend = BackendForFold(mfe_alg, cfg, pf);
+  auto mfe_backend = BackendForFold(mfe_alg, cfg, pf, trace::TraceCfg{});
   auto kind = GetBackendKind(mfe_backend.m);
 
   std::string log;
@@ -138,20 +134,12 @@ SuboptBackend Ctx::BackendForSubopt(std::optional<SuboptAlg> alg, std::optional<
 
 PfnBackend Ctx::BackendForPfn(
     std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const {
-  if (alg.has_value() && *alg == PfnAlg::BRUTE) {
-    std::string log;
-    auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
-    if (!resolved.has_value())
-      fatal("No backend supports this configuration for pfn brute:\n{}", log);
-    const auto& m = EnsureBackend(resolved->backend);
-    return {.m = m, .alg = PfnAlg::BRUTE, .pfn_fn = nullptr};
-  }
-
   std::string log;
   auto resolved = ResolvePfn(backend_, alg, cfg_, cfg, pf, &log);
   if (!resolved.has_value()) fatal("No PFN algorithm supports configuration:\n{}", log);
 
   const auto& m = EnsureBackend(resolved->backend);
+  if (resolved->alg == PfnAlg::BRUTE) return {.m = m, .alg = PfnAlg::BRUTE, .pfn_fn = nullptr};
   return {.m = m, .alg = resolved->alg, .pfn_fn = GetPfnFn(resolved->backend, resolved->alg)};
 }
 
@@ -166,12 +154,12 @@ erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg 
 
 FoldResult Ctx::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
-  auto backend = BackendForFold(alg, cfg, pf);
+  auto backend = BackendForFold(alg, cfg, pf, trace_cfg);
 
   if (backend.alg == MfeAlg::BRUTE) {
     auto subopt = md::Dispatch(
         cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-          return md::brute::MfeBrute<CFG>(r, backend.m, cfg_, static_pf);
+          return md::brute::Mfe<CFG, PseudofreeCfgT>::Run(r, backend.m, cfg_, static_pf, trace_cfg);
         });
     return {.mfe = {.dp{}, .energy = subopt.energy}, .tb = std::move(subopt.tb)};
   }
@@ -207,7 +195,8 @@ int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::option
   if (backend.alg == SuboptAlg::BRUTE) {
     auto subopts = md::Dispatch(
         cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-          return md::brute::SuboptBrute<CFG>(r, backend.m, cfg_, static_pf, subopt_cfg);
+          return md::brute::Subopt<CFG, PseudofreeCfgT>::Run(
+              r, backend.m, cfg_, static_pf, subopt_cfg);
         });
     int64_t count = 0;
     for (const auto& subopt : subopts) {
@@ -231,7 +220,7 @@ pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::Energy
   if (backend.alg == PfnAlg::BRUTE)
     return md::Dispatch(
         cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-          return md::brute::PfnBrute<CFG>(r, backend.m, cfg_, static_pf);
+          return md::brute::Pfn<CFG, PseudofreeCfgT>::Run(r, backend.m, cfg_, static_pf);
         });
 
   pfn::PfnState dp = CreatePfnState(backend.m);

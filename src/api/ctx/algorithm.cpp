@@ -23,6 +23,7 @@
 #include "backends/base/subopt/subopt_iterative.h"
 #include "backends/base/subopt/subopt_persistent.h"
 #include "backends/base/trace/trace.h"
+#include "backends/brute/alg.h"
 #include "backends/canon/energy/model.h"
 #include "backends/canon/mfe/mfe_exterior.h"
 #include "backends/canon/mfe/mfe_opt.h"
@@ -45,7 +46,7 @@ namespace mrna {
 
 namespace {
 
-constexpr int EfnPriority(BackendKind backend) {
+int EfnPriority(BackendKind backend) {
   switch (backend) {
   case BackendKind::BASE: return 1;
   case BackendKind::STACK: return 3;
@@ -54,7 +55,7 @@ constexpr int EfnPriority(BackendKind backend) {
   unreachable();
 }
 
-constexpr int MfePriority(BackendKind backend, MfeAlg alg) {
+int MfePriority(BackendKind backend, MfeAlg alg) {
   switch (backend) {
   case BackendKind::BASE:
     switch (alg) {
@@ -87,7 +88,7 @@ constexpr int MfePriority(BackendKind backend, MfeAlg alg) {
   unreachable();
 }
 
-constexpr int SuboptPriority(BackendKind backend, SuboptAlg alg) {
+int SuboptPriority(BackendKind backend, SuboptAlg alg) {
   switch (backend) {
   case BackendKind::BASE:
     switch (alg) {
@@ -123,7 +124,7 @@ constexpr int SuboptPriority(BackendKind backend, SuboptAlg alg) {
   unreachable();
 }
 
-constexpr int PfnPriority(BackendKind backend, PfnAlg alg) {
+int PfnPriority(BackendKind backend, PfnAlg alg) {
   switch (backend) {
   case BackendKind::BASE:
     switch (alg) {
@@ -407,6 +408,33 @@ bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const BackendCfg& backend_c
   return false;
 }
 
+bool TraceAlgIsSupported(BackendKind kind, MfeAlg mfe_alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg, std::string* reason) {
+  if (mfe_alg == MfeAlg::BRUTE)
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT&) {
+          return md::brute::Mfe<CFG, PseudofreeCfgT>::IsSupported(trace_cfg, reason);
+        });
+  switch (kind) {
+  case BackendKind::BASE:
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::base::Trace<CFG, PseudofreeCfgT>::IsSupported(static_pf, trace_cfg, reason);
+        });
+  case BackendKind::STACK:
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::stack::Trace<CFG, PseudofreeCfgT>::IsSupported(static_pf, trace_cfg, reason);
+        });
+  case BackendKind::CANON:
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
+          return md::canon::Trace<CFG, PseudofreeCfgT>::IsSupported(static_pf, trace_cfg, reason);
+        });
+  }
+  unreachable();
+}
+
 MfeExteriorFn GetMfeExteriorFn(BackendKind kind) {
   switch (kind) {
   case BackendKind::BASE:
@@ -452,7 +480,7 @@ TraceFn GetTraceFn(BackendKind kind) {
       const auto& state = std::get<md::base::DpState>(dp);
       return md::Dispatch(
           cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-            return md::base::Traceback<CFG>(
+            return md::base::Trace<CFG, PseudofreeCfgT>::Run(
                 r, std::get<md::base::Model::Ptr>(m), state, static_pf, trace_cfg);
           });
     };
@@ -462,7 +490,7 @@ TraceFn GetTraceFn(BackendKind kind) {
       const auto& state = std::get<md::stack::DpState>(dp);
       return md::Dispatch(
           cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-            return md::stack::Traceback<CFG>(
+            return md::stack::Trace<CFG, PseudofreeCfgT>::Run(
                 r, std::get<md::stack::Model::Ptr>(m), state, static_pf, trace_cfg);
           });
     };
@@ -472,7 +500,7 @@ TraceFn GetTraceFn(BackendKind kind) {
       const auto& state = std::get<md::canon::DpState>(dp);
       return md::Dispatch(
           cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT& static_pf) {
-            return md::canon::Traceback<CFG>(
+            return md::canon::Trace<CFG, PseudofreeCfgT>::Run(
                 r, std::get<md::canon::Model::Ptr>(m), state, static_pf, trace_cfg);
           });
     };
@@ -665,7 +693,11 @@ bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg, const BackendCfg& bac
     const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg,
     std::string* reason) {
   if (!BackendIsSupported(kind, backend_cfg, cfg, pf, reason)) return false;
-  if (alg == SuboptAlg::BRUTE) return true;
+  if (alg == SuboptAlg::BRUTE)
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT&) {
+          return md::brute::Subopt<CFG, PseudofreeCfgT>::IsSupported(subopt_cfg, reason);
+        });
 
   switch (kind) {
   case BackendKind::BASE:
@@ -822,7 +854,11 @@ PfnFn GetPfnFn(BackendKind kind, PfnAlg alg) {
 bool PfnAlgIsSupported(BackendKind kind, PfnAlg alg, const BackendCfg& backend_cfg,
     erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf, std::string* reason) {
   if (!BackendIsSupported(kind, backend_cfg, cfg, pf, reason)) return false;
-  if (alg == PfnAlg::BRUTE) return true;
+  if (alg == PfnAlg::BRUTE)
+    return md::Dispatch(
+        cfg, pf, [&]<erg::EnergyCfg CFG, class PseudofreeCfgT>(const PseudofreeCfgT&) {
+          return md::brute::Pfn<CFG, PseudofreeCfgT>::IsSupported(backend_cfg, reason);
+        });
 
   switch (kind) {
   case BackendKind::BASE:
@@ -875,11 +911,17 @@ std::optional<BackendEfnPriority> ResolveEfnInternal(std::optional<BackendKind> 
 
 std::optional<BackendMfePriority> ResolveMfeInternal(std::optional<BackendKind> kind,
     std::optional<MfeAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* log) {
-  for (const auto& entry : MfePriorityForBackend(kind, alg, /*include_brute=*/false)) {
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg, std::string* log) {
+  for (const auto& entry :
+      MfePriorityForBackend(kind, alg, /*include_brute=*/alg == MfeAlg::BRUTE)) {
     std::string reason;
     if (!MfeAlgIsSupported(
             entry.backend, entry.alg, backend_cfg, cfg, pf, log ? &reason : nullptr)) {
+      if (log) *log += fmt::format("  {}/{}: {}\n", entry.backend, entry.alg, reason);
+      continue;
+    }
+    if (!TraceAlgIsSupported(
+            entry.backend, entry.alg, cfg, pf, trace_cfg, log ? &reason : nullptr)) {
       if (log) *log += fmt::format("  {}/{}: {}\n", entry.backend, entry.alg, reason);
       continue;
     }
@@ -891,7 +933,8 @@ std::optional<BackendMfePriority> ResolveMfeInternal(std::optional<BackendKind> 
 std::optional<BackendSuboptPriority> ResolveSuboptInternal(std::optional<BackendKind> kind,
     std::optional<SuboptAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log) {
-  for (const auto& entry : SuboptPriorityForBackend(kind, alg, /*include_brute=*/false)) {
+  for (const auto& entry :
+      SuboptPriorityForBackend(kind, alg, /*include_brute=*/alg == SuboptAlg::BRUTE)) {
     std::string reason;
     if (!SuboptAlgIsSupported(
             entry.backend, entry.alg, backend_cfg, cfg, pf, subopt_cfg, log ? &reason : nullptr)) {
@@ -906,7 +949,8 @@ std::optional<BackendSuboptPriority> ResolveSuboptInternal(std::optional<Backend
 std::optional<BackendPfnPriority> ResolvePfnInternal(std::optional<BackendKind> kind,
     std::optional<PfnAlg> alg, const BackendCfg& backend_cfg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf, std::string* log) {
-  for (const auto& entry : PfnPriorityForBackend(kind, alg, /*include_brute=*/false)) {
+  for (const auto& entry :
+      PfnPriorityForBackend(kind, alg, /*include_brute=*/alg == PfnAlg::BRUTE)) {
     std::string reason;
     if (!PfnAlgIsSupported(
             entry.backend, entry.alg, backend_cfg, cfg, pf, log ? &reason : nullptr)) {
@@ -930,9 +974,10 @@ std::optional<BackendEfnPriority> ResolveEfn(std::optional<BackendKind> kind,
 
 std::optional<BackendMfePriority> ResolveMfe(std::optional<BackendKind> kind,
     std::optional<MfeAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* log) {
-  auto result = ResolveMfeInternal(kind, alg, backend_cfg, cfg, pf, /*log=*/nullptr);
-  if (!result.has_value() && log) (void)ResolveMfeInternal(kind, alg, backend_cfg, cfg, pf, log);
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg, std::string* log) {
+  auto result = ResolveMfeInternal(kind, alg, backend_cfg, cfg, pf, trace_cfg, /*log=*/nullptr);
+  if (!result.has_value() && log)
+    (void)ResolveMfeInternal(kind, alg, backend_cfg, cfg, pf, trace_cfg, log);
   return result;
 }
 

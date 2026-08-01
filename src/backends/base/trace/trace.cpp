@@ -21,10 +21,23 @@
 namespace mrna::md::base {
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& state,
-    const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg) {
+bool Trace<CFG, PseudofreeCfgT>::IsSupported(
+    const PseudofreeCfgT& /*pf*/, const trace::TraceCfg& tcfg, std::string* reason) {
+  if (tcfg.random) {
+    if (reason) *reason = "random traceback is not supported";
+    return false;
+  }
+  return true;
+}
+
+template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+TraceResult Trace<CFG, PseudofreeCfgT>::Run(const Primary& r, const Model::Ptr& m,
+    const DpState& state, const PseudofreeCfgT& pf, const trace::TraceCfg& tcfg) {
   const int N = r.size();
-  verify(!tcfg.random, "random traceback is not supported in this energy model");
+  tcfg.Verify();
+  std::string reason;
+  verify(IsSupported(pf, tcfg, &reason), "{} does not support the given configuration: {}",
+      funcname(), reason);
 
   logdebug("base {} with {}, {}, {}", funcname(), CFG, tcfg, pf);
 
@@ -503,9 +516,7 @@ TraceResult Traceback(const Primary& r, const Model::Ptr& m, const DpState& stat
   return res;
 }
 
-#define MRNA_INSTANTIATE(CFG, PF)          \
-  template TraceResult Traceback<CFG, PF>( \
-      const Primary&, const Model::Ptr&, const DpState&, const PF&, const trace::TraceCfg&);
+#define MRNA_INSTANTIATE(CFG, PF) template class Trace<CFG, PF>;
 MRNA_STATIC_FOR_EACH_ENERGY_CFG_PF(MRNA_INSTANTIATE)
 #undef MRNA_INSTANTIATE
 

@@ -18,12 +18,9 @@ namespace mrna {
 
 Energy Energy::FromFlt(flt energy) {
   auto rounded = round(energy * Energy::FACTOR);
-  verify(rounded >= flt(std::numeric_limits<int32_t>::min()) &&
-          rounded <= flt(std::numeric_limits<int32_t>::max()),
+  verify(rounded >= flt(std::numeric_limits<int32_t>::min()) && rounded < flt(CAP_E.v),
       "energy value out of range: {}", energy);
-  auto res = Energy::FromRaw(static_cast<int32_t>(rounded));
-  verify(res < CAP_E, "energy value out of range: {}", energy);
-  return res;
+  return Energy::FromRaw(static_cast<int32_t>(rounded));
 }
 
 Energy Energy::FromString(const std::string& s) {
@@ -32,10 +29,12 @@ Energy Energy::FromString(const std::string& s) {
   if (s == "CAP") return CAP_E;
   // Check for a number.
   std::stringstream ss(s);
+  ss >> std::noskipws;
   const int sgn = ss.peek() == '-' ? -1 : 1;
   int hi = 0;
   int lo = 0;
   verify(ss >> hi, "invalid energy: {}", s);
+  verify(hi != std::numeric_limits<int>::min(), "energy out of range: {}", s);
   hi = std::abs(hi);
   if (!ss.eof()) {
     verify(ss.get() == '.', "invalid energy: {}", s);
@@ -85,7 +84,7 @@ std::vector<Energy> RandomEnergies(
     std::size_t length, Energy min_energy, Energy max_energy, std::mt19937& eng) {
   std::uniform_int_distribution<decltype(min_energy.v)> energy_dist(min_energy.v, max_energy.v);
   std::vector<Energy> energies(length);
-  for (int i = 0; i < int(length); ++i) energies[i] = Energy::FromRaw(energy_dist(eng));
+  for (std::size_t i = 0; i < length; ++i) energies[i] = Energy::FromRaw(energy_dist(eng));
   return energies;
 }
 

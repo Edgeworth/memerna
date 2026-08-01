@@ -72,6 +72,8 @@ using PfnFn = std::function<PfnTables(const BackendModelPtr&, const Primary&, pf
 
 [[nodiscard]] bool MfeAlgIsSupported(BackendKind kind, MfeAlg alg, const BackendCfg& backend_cfg,
     const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
+[[nodiscard]] bool TraceAlgIsSupported(BackendKind kind, MfeAlg mfe_alg, const erg::EnergyCfg& cfg,
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg, std::string* reason = nullptr);
 [[nodiscard]] bool SuboptAlgIsSupported(BackendKind kind, SuboptAlg alg,
     const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
     const subopt::SuboptCfg& subopt_cfg, std::string* reason = nullptr);
@@ -101,7 +103,7 @@ PfnPriorityForBackend(
     std::string* log = nullptr);
 [[nodiscard]] std::optional<BackendMfePriority> ResolveMfe(std::optional<BackendKind> kind,
     std::optional<MfeAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
-    const erg::PseudofreeCfg& pf, std::string* log = nullptr);
+    const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg, std::string* log = nullptr);
 [[nodiscard]] std::optional<BackendSuboptPriority> ResolveSubopt(std::optional<BackendKind> kind,
     std::optional<SuboptAlg> alg, const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
     const erg::PseudofreeCfg& pf, const subopt::SuboptCfg& subopt_cfg, std::string* log = nullptr);

@@ -1,7 +1,10 @@
 // Copyright 2022 Eliot Courtney.
 #include "backends/common/parse.h"
 
-#include <optional>
+#include <array>
+#include <cstddef>
+#include <cstring>
+#include <istream>
 #include <string>
 #include <unordered_map>
 
@@ -9,124 +12,81 @@
 
 namespace mrna::md {
 
-void Parse3MapFromFile(const std::string& filename, Energy (&output)[4][4][4]) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
+namespace {
 
+template <std::size_t N, typename Output, typename SetEnergy>
+void ParseMap(std::istream& input, Output& output, SetEnergy&& set_energy) {
+  std::memset(static_cast<void*>(&output), 0, sizeof(output));
+
+  constexpr std::size_t key_count = std::size_t{1} << (2 * N);
+  std::array<bool, key_count> seen{};
+  std::string key;
   std::string energy;
   while (true) {
-    fp >> std::ws;
-    const auto a = CharToBase(static_cast<char>(fp.get()));
-    const auto b = CharToBase(static_cast<char>(fp.get()));
-    const auto c = CharToBase(static_cast<char>(fp.get()));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value(), "expected base");
-    verify(fp >> energy, "expected energy");
-    output[*a][*b][*c] = Energy::FromString(energy);
+    input >> std::ws;
+    if (input.peek() == std::char_traits<char>::eof()) break;
+    verify(input >> key, "expected bases");
+    verify(key.size() == N, "expected {} bases", N);
+    verify(input >> energy, "expected energy for {}", key);
+
+    std::array<Base, N> bases{};
+    std::size_t linear_index = 0;
+    for (std::size_t i = 0; i < N; ++i) {
+      const auto base = CharToBase(key[i]);
+      verify(base.has_value(), "expected base");
+      bases[i] = *base;
+      linear_index = linear_index * 4 + *base;
+    }
+    verify(!seen[linear_index], "duplicate entry {}", key);
+    seen[linear_index] = true;
+    set_energy(bases, Energy::FromString(energy));
   }
-  verify(fp.eof(), "expected EOF");
+  verify(input.eof(), "expected EOF");
 }
 
-void Parse4MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4]) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
+}  // namespace
 
-  std::string energy;
-  while (true) {
-    fp >> std::ws;
-    const auto a = CharToBase(static_cast<char>(fp.get()));
-    const auto b = CharToBase(static_cast<char>(fp.get()));
-    const auto c = CharToBase(static_cast<char>(fp.get()));
-    const auto d = CharToBase(static_cast<char>(fp.get()));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value(), "expected base");
-    verify(fp >> energy, "expected energy");
-    output[*a][*b][*c][*d] = Energy::FromString(energy);
-  }
-  verify(fp.eof(), "expected EOF");
+void Parse3Map(std::istream&& input, Energy (&output)[4][4][4]) {
+  ParseMap<3>(
+      input, output, [&](const auto& b, Energy energy) { output[b[0]][b[1]][b[2]] = energy; });
 }
 
-void Parse6MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4]) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
-
-  std::string energy;
-  while (true) {
-    fp >> std::ws;
-    const auto a = CharToBase(static_cast<char>(fp.get()));
-    const auto b = CharToBase(static_cast<char>(fp.get()));
-    const auto c = CharToBase(static_cast<char>(fp.get()));
-    const auto d = CharToBase(static_cast<char>(fp.get()));
-    const auto e = CharToBase(static_cast<char>(fp.get()));
-    const auto f = CharToBase(static_cast<char>(fp.get()));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value(),
-        "expected base");
-    verify(fp >> energy, "expected energy");
-    output[*a][*b][*c][*d][*e][*f] = Energy::FromString(energy);
-  }
-  verify(fp.eof(), "expected EOF");
+void Parse4Map(std::istream&& input, Energy (&output)[4][4][4][4]) {
+  ParseMap<4>(input, output,
+      [&](const auto& b, Energy energy) { output[b[0]][b[1]][b[2]][b[3]] = energy; });
 }
 
-void Parse7MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4]) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
-
-  std::string energy;
-  while (true) {
-    fp >> std::ws;
-    const auto a = CharToBase(static_cast<char>(fp.get()));
-    const auto b = CharToBase(static_cast<char>(fp.get()));
-    const auto c = CharToBase(static_cast<char>(fp.get()));
-    const auto d = CharToBase(static_cast<char>(fp.get()));
-    const auto e = CharToBase(static_cast<char>(fp.get()));
-    const auto f = CharToBase(static_cast<char>(fp.get()));
-    const auto g = CharToBase(static_cast<char>(fp.get()));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value() && g.has_value(),
-        "expected base");
-    verify(fp >> energy, "expected energy");
-    output[*a][*b][*c][*d][*e][*f][*g] = Energy::FromString(energy);
-  }
-  verify(fp.eof(), "expected EOF");
+void Parse6Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4]) {
+  ParseMap<6>(input, output,
+      [&](const auto& b, Energy energy) { output[b[0]][b[1]][b[2]][b[3]][b[4]][b[5]] = energy; });
 }
 
-void Parse8MapFromFile(const std::string& filename, Energy (&output)[4][4][4][4][4][4][4][4]) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
-
-  std::string energy;
-  while (true) {
-    fp >> std::ws;
-    const auto a = CharToBase(static_cast<char>(fp.get()));
-    const auto b = CharToBase(static_cast<char>(fp.get()));
-    const auto c = CharToBase(static_cast<char>(fp.get()));
-    const auto d = CharToBase(static_cast<char>(fp.get()));
-    const auto e = CharToBase(static_cast<char>(fp.get()));
-    const auto f = CharToBase(static_cast<char>(fp.get()));
-    const auto g = CharToBase(static_cast<char>(fp.get()));
-    const auto h = CharToBase(static_cast<char>(fp.get()));
-    if (!a.has_value()) break;
-    verify(a.has_value() && b.has_value() && c.has_value() && d.has_value() && e.has_value() &&
-            f.has_value() && g.has_value() && h.has_value(),
-        "expected base");
-    verify(fp >> energy, "expected energy");
-    output[*a][*b][*c][*d][*e][*f][*g][*h] = Energy::FromString(energy);
-  }
-  verify(fp.eof(), "expected EOF");
+void Parse7Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4][4]) {
+  ParseMap<7>(input, output, [&](const auto& b, Energy energy) {
+    output[b[0]][b[1]][b[2]][b[3]][b[4]][b[5]][b[6]] = energy;
+  });
 }
 
-void ParseNMapFromFile(
-    const std::string& filename, std::unordered_map<std::string, Energy>* output) {
-  std::ifstream fp(filename);
-  verify(fp, "could not open file: {}", filename);
+void Parse8Map(std::istream&& input, Energy (&output)[4][4][4][4][4][4][4][4]) {
+  ParseMap<8>(input, output, [&](const auto& b, Energy energy) {
+    output[b[0]][b[1]][b[2]][b[3]][b[4]][b[5]][b[6]][b[7]] = energy;
+  });
+}
+
+void ParseNMap(std::istream&& input, std::unordered_map<std::string, Energy>* output) {
+  output->clear();
 
   std::string name;
   std::string energy;
-  while (fp >> name >> energy) (*output)[name] = Energy::FromString(energy);
-  verify(fp.eof(), "expected EOF");
+  while (true) {
+    input >> std::ws;
+    if (input.peek() == std::char_traits<char>::eof()) break;
+    verify(input >> name, "expected name");
+    verify(input >> energy, "expected energy for {}", name);
+    const bool inserted = output->emplace(name, Energy::FromString(energy)).second;
+    verify(inserted, "duplicate entry {}", name);
+  }
+  verify(input.eof(), "expected EOF");
 }
 
 }  // namespace mrna::md

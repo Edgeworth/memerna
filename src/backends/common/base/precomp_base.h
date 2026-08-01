@@ -77,30 +77,24 @@ class PrecompBase {
     for (Base i = 0; i < 4; ++i)
       for (Base j = 0; j < 4; ++j) augubranch[i][j] = m_->multiloop_b + m_->AuGuPenalty(i, j);
 
-    const auto min_stack = MinEnergy(&m_->stack[0][0][0][0], sizeof(m_->stack));
+    const auto min_stack = MinEnergy(m_->stack);
 
     // Non continuous (-2.1), -4 for WC, -16 for terminal mismatch.
     min_mismatch_coax = m_->coax_mismatch_non_contiguous +
         std::min(std::min(m_->coax_mismatch_gu_bonus, m_->coax_mismatch_wc_bonus), ZERO_E) +
-        MinEnergy(&m_->terminal[0][0][0][0], sizeof(m_->terminal));
+        MinEnergy(m_->terminal);
     // Minimum of all stacking params.
     min_flush_coax = min_stack;
 
-    Energy min_internal = MinEnergy(&m_->internal_1x1[0][0][0][0][0][0], sizeof(m_->internal_1x1));
-    min_internal = std::min(
-        min_internal, MinEnergy(&m_->internal_1x2[0][0][0][0][0][0][0], sizeof(m_->internal_1x2)));
-    min_internal = std::min(min_internal,
-        MinEnergy(&m_->internal_2x2[0][0][0][0][0][0][0][0], sizeof(m_->internal_2x2)));
+    Energy min_internal = MinEnergy(m_->internal_1x1);
+    min_internal = std::min(min_internal, MinEnergy(m_->internal_1x2));
+    min_internal = std::min(min_internal, MinEnergy(m_->internal_2x2));
 
     verify(m_->internal_asym >= ZERO_E,
         "min_internal optimisation does not work for negative asymmetry penalties");
-    const auto min_mismatch = 2 *
-        std::min(
-            MinEnergy(&m_->internal_2x3_mismatch[0][0][0][0], sizeof(m_->internal_2x3_mismatch)),
-            MinEnergy(
-                &m_->internal_other_mismatch[0][0][0][0], sizeof(m_->internal_other_mismatch)));
-    const auto min_internal_init = MinEnergy(
-        &m_->internal_init[4], sizeof(m_->internal_init) - 4 * sizeof(m_->internal_init[0]));
+    const auto min_mismatch =
+        2 * std::min(MinEnergy(m_->internal_2x3_mismatch), MinEnergy(m_->internal_other_mismatch));
+    const auto min_internal_init = MinEnergy(std::span<const Energy>(m_->internal_init).subspan(4));
 
     // Current implementation needs regular AU/GU for special internal loops.
     const auto min_internal_penalty =
@@ -110,10 +104,9 @@ class PrecompBase {
     min_internal = std::min(min_internal + min_penalty,
         min_internal_init + min_penalty + min_internal_penalty + min_mismatch);
 
-    const auto min_bulge_init =
-        MinEnergy(&m_->bulge_init[1], sizeof(m_->bulge_init) - sizeof(m_->bulge_init[0]));
+    const auto min_bulge_init = MinEnergy(std::span<const Energy>(m_->bulge_init).subspan(1));
 
-  const Energy states_bonus = -E(R * T * log(std::max(MaxNumContiguous(r_), 1)));
+    const Energy states_bonus = -E(R * T * log(std::max(MaxNumContiguous(r_), 1)));
     const Energy min_bulge = min_bulge_init + min_penalty + min_stack +
         std::min(m_->bulge_special_c, ZERO_E) + states_bonus;
     min_twoloop_not_stack = std::min(min_bulge, min_internal);

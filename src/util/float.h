@@ -87,9 +87,15 @@ inline const flt EP{1e-9};
 inline const flt EP{1e-30};
 #endif
 
-inline bool abs_eq(flt a, flt b, flt ep = EP) { return fabs(a - b) <= ep; }
+inline bool abs_eq(flt a, flt b, flt ep = EP) {
+  if (a == b) return true;
+  if (!IsFinite(a) || !IsFinite(b)) return false;
+  return fabs(a - b) <= ep;
+}
 
 inline bool rel_eq(flt a, flt b, flt rel = EP) {
+  if (a == b) return true;
+  if (!IsFinite(a) || !IsFinite(b)) return false;
   return fabs(a - b) <= rel * std::max(fabs(a), fabs(b));
 }
 

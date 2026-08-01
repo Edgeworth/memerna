@@ -1,7 +1,10 @@
 // Copyright 2026 Eliot Courtney.
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "fuzz/fuzz_cfg.h"
+#include "fuzz/fuzz_harness.h"
 #include "gtest/gtest.h"
 #include "tests/util.h"
 
@@ -11,7 +14,8 @@ TEST(FuzzCfgTest, PfnSuboptAllowsDefaultBulgeStates) {
   const auto cfg =
       FuzzCfg::FromArgParse(ParseTestArgs({"prog", "--pfn-subopt", "8"}, RegisterOpts));
   EXPECT_EQ(8, cfg.pfn_subopt);
-  EXPECT_TRUE(cfg.pfn);
+  EXPECT_FALSE(cfg.pfn);
+  EXPECT_TRUE(cfg.PfnEnabled());
   EXPECT_TRUE(cfg.energy_cfg.bulge_states);
 }
 
@@ -19,7 +23,8 @@ TEST(FuzzCfgTest, PfnSuboptAllowsExplicitNoBulgeStates) {
   const auto cfg = FuzzCfg::FromArgParse(
       ParseTestArgs({"prog", "--pfn-subopt", "8", "--no-bulge-states"}, RegisterOpts));
   EXPECT_EQ(8, cfg.pfn_subopt);
-  EXPECT_TRUE(cfg.pfn);
+  EXPECT_FALSE(cfg.pfn);
+  EXPECT_TRUE(cfg.PfnEnabled());
   EXPECT_FALSE(cfg.energy_cfg.bulge_states);
 }
 
@@ -27,5 +32,32 @@ TEST(FuzzCfgTest, PfnSuboptRejectsExplicitBulgeStates) {
   const auto args = ParseTestArgs({"prog", "--pfn-subopt", "8", "--bulge-states"}, RegisterOpts);
   EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
 }
+
+#ifdef MRNA_USE_RNASTRUCTURE
+TEST(FuzzCfgTest, RejectsUnsupportedRNAstructureModel) {
+  const auto args =
+      ParseTestArgs({"prog", "--mfe-rnastructure", "--energy-model", "t12"}, RegisterOpts);
+  EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
+}
+
+TEST(FuzzCfgTest, RejectsUnsupportedRNAstructureConfigurations) {
+  const std::vector<std::vector<std::string>> cases{
+      {"prog", "--mfe-rnastructure", "--random-seeds"},
+      {"prog", "--subopt-rnastructure", "--random-pf"},
+      {"prog", "--pfn-rnastructure", "--lonely-pairs", "off"},
+      {"prog", "--pfn-rnastructure", "--ctd", "none"},
+  };
+  for (const auto& argv : cases) {
+    SCOPED_TRACE(argv[1]);
+    const auto args = ParseTestArgs(argv, RegisterOpts);
+    EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
+  }
+}
+#else
+TEST(FuzzCfgTest, RejectsRNAstructureChecksWhenUnavailable) {
+  const auto args = ParseTestArgs({"prog", "--mfe-rnastructure"}, RegisterOpts);
+  EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
+}
+#endif  // MRNA_USE_RNASTRUCTURE
 
 }  // namespace mrna::fuzz

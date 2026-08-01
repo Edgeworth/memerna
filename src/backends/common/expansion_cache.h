@@ -40,7 +40,7 @@ class ExpansionCache {
     }
   }
 
-  [[nodiscard]] constexpr std::size_t Size() const {
+  [[nodiscard]] std::size_t Size() const {
     if constexpr (UseLru) {
       return cache_.Size();
     } else {

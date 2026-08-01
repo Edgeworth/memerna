@@ -32,7 +32,7 @@ struct FoldResult {
 };
 
 struct MfeBackend {
-  const BackendModelPtr& m;
+  BackendModelPtr m;
   MfeAlg alg;
   MfeFn mfe_fn;
   MfeExteriorFn mfe_exterior_fn;
@@ -40,7 +40,7 @@ struct MfeBackend {
 };
 
 struct SuboptBackend {
-  const BackendModelPtr& m;
+  BackendModelPtr m;
   SuboptAlg alg;
   MfeAlg mfe_alg;
   SuboptFn subopt_fn;
@@ -49,7 +49,7 @@ struct SuboptBackend {
 };
 
 struct PfnBackend {
-  const BackendModelPtr& m;
+  BackendModelPtr m;
   PfnAlg alg;
   PfnFn pfn_fn;
 };
@@ -60,7 +60,7 @@ class Ctx {
       : cfg_(std::move(cfg)), backend_(backend), backends_() {}
   explicit Ctx(BackendModelPtr m, BackendCfg cfg)
       : cfg_(std::move(cfg)), backend_(GetBackendKind(m)), backends_() {
-    backends_[static_cast<int>(*backend_)] = std::move(m);
+    backends_[static_cast<int>(*backend_)].emplace(std::move(m));
   }
   ~Ctx() = default;
 
@@ -88,8 +88,8 @@ class Ctx {
   [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg,
       erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const;
 
-  [[nodiscard]] MfeBackend BackendForFold(
-      std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) const;
+  [[nodiscard]] MfeBackend BackendForFold(std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg,
+      const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const;
   [[nodiscard]] SuboptBackend BackendForSubopt(std::optional<SuboptAlg> alg,
       std::optional<MfeAlg> mfe_alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf,
       const subopt::SuboptCfg& subopt_cfg) const;

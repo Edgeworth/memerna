@@ -165,6 +165,7 @@ const char* CtdToName(Ctd ctd) {
 }
 
 std::string Ctds::ToString(const Secondary& s, bool use_d2) const {
+  verify(size() == s.size(), "CTDs must be the same length as the secondary structure");
   int N = size();
   std::string str(s.size(), '.');
 

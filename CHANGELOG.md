@@ -1,11 +1,31 @@
 # Unreleased (on main, since 0.2.0)
 
+## 2026/08
+- Added a docker Ubuntu 22.04 build, test, and runtime image.
+- Updated the Python tools to Python 3.14 and replaced mypy with ty.
+- Misc fixes.
+
+## 2026/07
+- Required CMake 3.16 and Boost 1.77 or newer.
+- Misc fixes.
+
+## 2026/06
+- Added the canon backend for T04 and T12.
+- Misc fixes + optimizations.
+- Replaced Poetry with uv for Python dependency management.
+
 ## 2026/04
 - Removed the baseopt backend and its model data.
-- base backend now uses constexpr (replaces baseopt)
+- Added compile-time instantiated algorithms (speedup).
+- Expanded fuzz coverage and random energy configuration.
+
+## 2026/03
+- Fixed sparse candidate pruning when the multiloop closure cost is nonzero.
 
 ## 2026/02
-- Large refactors
+- Added automatic backend and algorithm selection.
+- Added multiloop closure costs to stack MFE and suboptimal folding.
+- Removed the obsolete brute and splay-explorer programs.
 
 ## 2025/07
 - Added explicit pseudofree energy specification to fuzzing
@@ -34,6 +54,12 @@
 - Implemented pseudofree energy for base sparse MFE algorithm
 - Added pseudofree energy support to Lyngso sparse algorithm
 - Implemented pseudofree energy for hairpin precomputation
+
+# Released 0.2.2 (2026-02-13)
+
+- Supported more than 2^31 - 1 suboptimal structures.
+- Improved suboptimal performance-runner handling of timeouts and failed
+  commands.
 
 # Released 0.2.1 (2025-12-27)
 
@@ -90,7 +116,7 @@
   - Closing pairs are the opening pair of the next substructure, and are handled
     by it.
   - Unlike RNAstructure:
-    - unpaired pseudofree energy is applied for special hairpins hairpins.
+    - unpaired pseudofree energy is applied for special hairpins.
     - paired pseudofree energy is not double counted inside helices or missed
       for lonely pairs
     - paired pseudofree energy is counted across a size 1 bulge loop

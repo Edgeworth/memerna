@@ -5,12 +5,12 @@ from typing import Any
 import click
 import cloup
 
-from rnapy.data.args import memevault_options
+from rnapy.data.args import memevault_path_option
 from rnapy.data.memevault import MemeVault
 
 
 @cloup.command()
-@memevault_options
+@memevault_path_option(required=True, exists=False)
 @cloup.option(
     "--dataset-name",
     type=str,
@@ -18,12 +18,12 @@ from rnapy.data.memevault import MemeVault
     help="Name for the new dataset (table name in the database).",
 )
 @cloup.option("--use-range/--no-use-range", default=False, help="Use a range of lengths.")
-@cloup.option("--start-length", type=int, help="Starting length for RNA sequences.")
-@cloup.option("--end-length", type=int, help="Ending length for RNA sequences (inclusive).")
-@cloup.option("--step-size", type=int, help="Step size to increment RNA length.")
+@cloup.option("--start-length", type=cloup.IntRange(min=1), help="Starting RNA length.")
+@cloup.option("--end-length", type=cloup.IntRange(min=1), help="Ending RNA length (inclusive).")
+@cloup.option("--step-size", type=cloup.IntRange(min=1), help="RNA length increment.")
 @cloup.option(
     "--count-per-size",
-    type=int,
+    type=cloup.IntRange(min=1),
     default=1,
     show_default=True,
     help="Number of random RNAs to generate for each size.",
@@ -35,7 +35,7 @@ from rnapy.data.memevault import MemeVault
 )
 @cloup.argument(
     "extra-lengths",
-    type=int,
+    type=cloup.IntRange(min=1),
     nargs=-1,
     help="Additional lengths to generate, specified as integers.",
 )
@@ -48,17 +48,9 @@ def generate_random_dataset(
     step_size: int | None,
     count_per_size: int,
     append: bool,
-    extra_lengths: list[int],
+    extra_lengths: tuple[int, ...],
     **_kwargs: Any,
 ) -> None:
-    memevault = MemeVault(memevault_path, dataset_name)
-    memevault.maybe_create()
-    if append:
-        existing_names = {rna.name for rna in memevault}
-    else:
-        memevault.clear()
-        existing_names = set()
-
     lengths = set(extra_lengths)
     if use_range:
         if start_length is None or end_length is None or step_size is None:
@@ -70,6 +62,18 @@ def generate_random_dataset(
             f"step {step_size}, {count_per_size} per size."
         )
         lengths.update(range(start_length, end_length + 1, step_size))
+    elif any(value is not None for value in (start_length, end_length, step_size)):
+        raise click.UsageError("Range options require --use-range.")
+    if not lengths:
+        raise click.UsageError("Specify --use-range or at least one RNA length.")
+
+    memevault = MemeVault(memevault_path, dataset_name)
+    memevault.maybe_create()
+    if append:
+        existing_names = {rna.name for rna in memevault}
+    else:
+        memevault.clear()
+        existing_names = set()
 
     for length in sorted(lengths):
         for i in range(count_per_size):

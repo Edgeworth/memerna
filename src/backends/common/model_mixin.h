@@ -2,6 +2,7 @@
 #ifndef BACKENDS_COMMON_MODEL_MIXIN_H_
 #define BACKENDS_COMMON_MODEL_MIXIN_H_
 
+#include <cstddef>
 #include <memory>
 #include <random>
 #include <string>
@@ -20,12 +21,11 @@ namespace mrna::md {
     }                                                          \
   } while (0)
 
-#define RANDOMISE_DATA(m, d)                                       \
-  do {                                                             \
-    auto dp = reinterpret_cast<Energy*>(&((m).d));                 \
-    /* NOLINTNEXTLINE */                                           \
-    for (unsigned int i = 0; i < sizeof((m).d) / sizeof(*dp); ++i) \
-      dp[i] = Energy::FromFlt(energy_dist(eng));                   \
+#define RANDOMISE_DATA(m, d)                                        \
+  do {                                                              \
+    auto* data = Decay((m).d);                                      \
+    for (std::size_t i = 0; i < sizeof((m).d) / sizeof(*data); ++i) \
+      data[i] = Energy::FromFlt(energy_dist(eng));                  \
   } while (0)
 
 template <typename T>

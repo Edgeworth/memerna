@@ -5,18 +5,25 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <span>
+#include <type_traits>
 
 #include "model/energy.h"
+#include "util/util.h"
 
 namespace mrna::md {
 
 using ExpansionIndex = uint32_t;
 constexpr ExpansionIndex INVALID_EXPANSION_INDEX = std::numeric_limits<ExpansionIndex>::max();
 
-inline Energy MinEnergy(const Energy* energy, std::size_t size) {
-  Energy min = energy[0];
-  for (int i = 0; i < static_cast<int>(size / sizeof(Energy)); ++i) min = std::min(min, energy[i]);
-  return min;
+inline Energy MinEnergy(std::span<const Energy> energy) {
+  return *std::min_element(energy.begin(), energy.end());
+}
+
+template <typename T>
+  requires std::is_array_v<T>
+inline Energy MinEnergy(const T& energy) {
+  return MinEnergy(std::span<const Energy>(Decay(energy), sizeof(energy) / sizeof(Energy)));
 }
 
 }  // namespace mrna::md
