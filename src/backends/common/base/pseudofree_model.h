@@ -17,19 +17,19 @@ class PseudofreeModel {
   // Cumulative sum of size N+1 (first element is nothing).
   std::vector<Energy> unpaired_cum;
 
-  [[nodiscard]] constexpr Energy Unpaired(int n) const {
+  [[nodiscard]] Energy Unpaired(int n) const {
     if (unpaired.empty()) return ZERO_E;
     return unpaired[n];
   }
 
   // Inclusive range, unlike pf_unpaired_cum directly.
-  [[nodiscard]] constexpr Energy UnpairedCum(int st, int en) const {
+  [[nodiscard]] Energy UnpairedCum(int st, int en) const {
     assert(st <= en + 1);
     if (unpaired.empty()) return ZERO_E;
     return unpaired_cum[en + 1] - unpaired_cum[st];
   }
 
-  [[nodiscard]] constexpr Energy Paired(int st, int en) const {
+  [[nodiscard]] Energy Paired(int st, int en) const {
     assert(st <= en + 1);
     if (paired.empty()) return ZERO_E;
     return paired[st] + paired[en];

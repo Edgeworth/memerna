@@ -24,20 +24,20 @@ struct CtxCfg {
 
   PfnAlg pfn_alg = PfnAlg::AUTO;
 
-  [[nodiscard]] static constexpr std::vector<MfeAlg> MfeAlgsForBackend(const BackendModelPtr& m) {
+  [[nodiscard]] static std::vector<MfeAlg> MfeAlgsForBackend(const BackendModelPtr& m) {
     return MfeAlgsForBackendKind(GetBackendKind(m));
   }
 
-  [[nodiscard]] static constexpr std::vector<SuboptAlg> SuboptAlgsForBackend(
+  [[nodiscard]] static std::vector<SuboptAlg> SuboptAlgsForBackend(
       const BackendModelPtr& m) {
     return SuboptAlgsForBackendKind(GetBackendKind(m));
   }
 
-  [[nodiscard]] static constexpr std::vector<PfnAlg> PfnAlgsForBackend(const BackendModelPtr& m) {
+  [[nodiscard]] static std::vector<PfnAlg> PfnAlgsForBackend(const BackendModelPtr& m) {
     return PfnAlgsForBackendKind(GetBackendKind(m));
   }
 
-  [[nodiscard]] static constexpr std::vector<MfeAlg> MfeAlgsForBackendKind(BackendKind kind) {
+  [[nodiscard]] static std::vector<MfeAlg> MfeAlgsForBackendKind(BackendKind kind) {
     switch (kind) {
     case BackendKind::BASE:
       return {
@@ -67,7 +67,7 @@ struct CtxCfg {
     unreachable();
   }
 
-  [[nodiscard]] static constexpr std::vector<SuboptAlg> SuboptAlgsForBackendKind(BackendKind kind) {
+  [[nodiscard]] static std::vector<SuboptAlg> SuboptAlgsForBackendKind(BackendKind kind) {
     switch (kind) {
     case BackendKind::BASE:
       return {
@@ -102,7 +102,7 @@ struct CtxCfg {
     unreachable();
   }
 
-  [[nodiscard]] static constexpr std::vector<PfnAlg> PfnAlgsForBackendKind(BackendKind kind) {
+  [[nodiscard]] static std::vector<PfnAlg> PfnAlgsForBackendKind(BackendKind kind) {
     switch (kind) {
     case BackendKind::BASE:
       return {

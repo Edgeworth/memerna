@@ -3,13 +3,13 @@ import copy
 import dataclasses
 import shutil
 from dataclasses import dataclass, field
-from enum import StrEnum
 from itertools import cycle, islice
 from pathlib import Path
 
 import click
 
 from rnapy.build.build_cfg import BuildCfg, Sanitizer
+from rnapy.util.str_enum import StrEnum
 
 AFL_MEMORY_LIMIT_MB = "2000"
 AFL_TIME_LIMIT_MS = "2000"

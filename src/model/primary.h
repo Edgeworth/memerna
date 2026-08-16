@@ -13,29 +13,29 @@ namespace mrna {
 
 class Primary {
  public:
-  constexpr Primary() = default;
-  constexpr ~Primary() = default;
-  constexpr explicit Primary(std::size_t size) : data_(size, A) {}
+  Primary() = default;
+  ~Primary() = default;
+  explicit Primary(std::size_t size) : data_(size, A) {}
 
-  constexpr Primary(Primary&&) = default;
-  constexpr Primary& operator=(Primary&&) = default;
+  Primary(Primary&&) = default;
+  Primary& operator=(Primary&&) = default;
 
   // Allow copies explicitly using the constructor.
-  constexpr explicit Primary(const Primary&) = default;
+  explicit Primary(const Primary&) = default;
   Primary& operator=(const Primary&) = delete;
 
-  constexpr auto operator<=>(const Primary&) const = default;
+  auto operator<=>(const Primary&) const = default;
 
-  constexpr Base& operator[](std::size_t pos) { return data_[pos]; }
-  constexpr const Base& operator[](std::size_t pos) const { return data_[pos]; }
+  Base& operator[](std::size_t pos) { return data_[pos]; }
+  const Base& operator[](std::size_t pos) const { return data_[pos]; }
 
-  [[nodiscard]] constexpr auto begin() const noexcept { return data_.begin(); }
-  [[nodiscard]] constexpr auto end() const noexcept { return data_.end(); }
+  [[nodiscard]] auto begin() const noexcept { return data_.begin(); }
+  [[nodiscard]] auto end() const noexcept { return data_.end(); }
 
-  [[nodiscard]] constexpr auto cbegin() const noexcept { return data_.cbegin(); }
-  [[nodiscard]] constexpr auto cend() const noexcept { return data_.cend(); }
+  [[nodiscard]] auto cbegin() const noexcept { return data_.cbegin(); }
+  [[nodiscard]] auto cend() const noexcept { return data_.cend(); }
 
-  [[nodiscard]] constexpr std::size_t size() const { return data_.size(); }
+  [[nodiscard]] std::size_t size() const { return data_.size(); }
 
   [[nodiscard]] std::string ToSeq() const;
 

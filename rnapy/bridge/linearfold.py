@@ -1,7 +1,8 @@
 # Copyright 2023 Eliot Courtney.
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import override
+
+from typing_extensions import override
 
 from rnapy.bridge.rnapackage import RnaPackage
 from rnapy.model.model_cfg import CtdCfg, EnergyCfg, LonelyPairs, SuboptCfg

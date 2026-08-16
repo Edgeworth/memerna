@@ -20,7 +20,7 @@ build_cfg_options = cloup.option_group(
     ),
     cloup.option(
         "--prefix",
-        type=cloup.Path(exists=True, file_okay=False, resolve_path=True, path_type=Path),
+        type=cloup.Path(file_okay=False, resolve_path=True, path_type=Path),
         default=Path.home() / "bin",
         help="Where to place build directory",
     ),

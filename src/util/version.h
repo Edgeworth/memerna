@@ -25,7 +25,7 @@ struct VersionInfo {
 // Declaration of the global version object.
 // Its definition will come from a build-system-generated source file.
 // export // If in a module
-inline constexpr VersionInfo VERSION = {
+inline const VersionInfo VERSION = {
     .major = 0, .minor = 2, .patch = 0, .pre_release = "", .build_metadata = ""};
 
 }  // namespace mrna

@@ -25,12 +25,12 @@ struct Opt {
   Opt() = delete;
   explicit Opt(Kind kind) : kind_(kind) {}
 
-  constexpr Opt& LongName(std::string n) {
+  Opt& LongName(std::string n) {
     longname_ = std::move(n);
     return *this;
   }
 
-  constexpr Opt& ShortName(std::string n) {
+  Opt& ShortName(std::string n) {
     shortname_ = std::move(n);
     return *this;
   }

@@ -47,7 +47,7 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
 
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
   // Handles bulge loops.
-  [[nodiscard]] constexpr Energy StackPenalty(const Primary& r, const Secondary& s, int ost,
+  [[nodiscard]] inline Energy StackPenalty(const Primary& r, const Secondary& s, int ost,
       int oen, int ist, int ien, std::unique_ptr<Structure>* struc = nullptr) const;
 
   // ModelMixin:

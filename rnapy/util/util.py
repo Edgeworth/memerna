@@ -8,13 +8,14 @@ import subprocess
 import tempfile
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor, wait
-from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any
 
 import click
 import cloup
 import pandas as pd
+
+from rnapy.util.str_enum import StrEnum
 
 
 def strict_merge(*dicts: dict) -> dict:

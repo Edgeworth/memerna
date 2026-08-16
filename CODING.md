@@ -13,7 +13,7 @@ Set up pre-commit.
 
 ## Python
 
-- Python 3.10
+- Python 3.10 or newer
 - Format according to black -l 100
 
 ## Directories
@@ -64,9 +64,39 @@ Contains Python code. Organised as follows:
 - programs: Programs invoking various scripts functionality.
 - util: Misc common utilities.
 
-## tests directory
+## Tests
 
-Structure should mirror the source directory.
+C++ tests are in `src/tests`. Their structure should mirror the source
+directory.
+
+## Development checks
+
+`just test` builds and runs the C++ tests across representative configurations.
+These environment variables control its resource use:
+
+- `MRNA_TEST_JOBS`: number of concurrent configurations. By default, this uses
+  the smaller limit from the CPU count and 75% of available memory.
+- `MRNA_TEST_JOB_MEMORY`: estimated memory for one configuration, default `20G`.
+- `MRNA_BUILD_JOBS`: compiler jobs within one configuration. `just test` uses
+  one by default.
+- `MRNA_CLEAN_BUILDS=1`: use a temporary build prefix for each configuration.
+- `MRNA_TEST_COMPILERS`: space-separated compiler options. By default, this
+  tests Clang and the default compiler.
+
+Each configuration reports its elapsed time and maximum resident memory.
+
+To run include-what-you-use, configure a build with:
+
+```sh
+poetry run python -m rnapy.run build --iwyu --no-build
+```
+
+Then run these commands from the generated CMake build directory:
+
+```sh
+cmake --build . --parallel "$(nproc)" 2> /tmp/iwyu.out
+iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
+```
 
 ## Releasing
 

@@ -55,8 +55,9 @@ if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost 1.77 REQUIRED)
 find_package(Sanitizers)
 find_package(MPFR)
 
@@ -125,7 +126,6 @@ if(USE_MPFR)
 endif()
 
 # Enable tests.
-set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 enable_testing()
 
 # Apply compile definitions here so they only apply to memerna code.
@@ -361,7 +361,7 @@ endif()
 
 # Use MPFR if necessary
 if(USE_MPFR)
-  target_include_directories(memerna PUBLIC ${MPFR_INCLUDE_DIRS})
+  target_include_directories(memerna PUBLIC ${MPFR_INCLUDES})
   target_compile_definitions(memerna PUBLIC USE_MPFR)
   target_link_libraries(memerna PUBLIC ${MPFR_LIBRARIES})
 endif()

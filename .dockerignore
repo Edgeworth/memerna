@@ -1,0 +1,13 @@
+.git
+.claude
+.env
+.venv
+build
+.cache
+.mypy_cache
+.pytest_cache
+**/__pycache__
+**/*.pyc
+benchmark.json*
+compile_commands.json
+**/memevault.db

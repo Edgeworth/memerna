@@ -13,6 +13,14 @@
 #include "model/primary.h"
 #include "model/structure.h"
 
+// GCC 11 doesn't handle constructors for MPFR here well - takes a lot of time and memory. We set
+// these values after initialization anyway, so skip the initializer for MPFR.
+#ifdef USE_MPFR
+#define BOLTZ_MEMBER_INIT
+#else
+#define BOLTZ_MEMBER_INIT = {}
+#endif
+
 namespace mrna::md::base {
 
 template <typename M>
@@ -20,29 +28,36 @@ class BoltzModelBase {
  public:
   BoltzModelBase() = delete;
 
-  BoltzEnergy stack[4][4][4][4]{};
-  BoltzEnergy terminal[4][4][4][4]{};
-  BoltzEnergy internal_init[ModelBase::INITIATION_CACHE_SZ]{};
-  BoltzEnergy internal_1x1[4][4][4][4][4][4]{};
-  BoltzEnergy internal_1x2[4][4][4][4][4][4][4]{};
-  BoltzEnergy internal_2x2[4][4][4][4][4][4][4][4]{};
-  BoltzEnergy internal_2x3_mismatch[4][4][4][4]{};
-  BoltzEnergy internal_other_mismatch[4][4][4][4]{};
-  BoltzEnergy internal_asym{};
-  BoltzEnergy internal_au_penalty{};
-  BoltzEnergy internal_gu_penalty{};
-  BoltzEnergy bulge_init[ModelBase::INITIATION_CACHE_SZ]{};
-  BoltzEnergy bulge_special_c{};
-  BoltzEnergy hairpin_init[ModelBase::INITIATION_CACHE_SZ]{};
-  BoltzEnergy hairpin_uu_ga_first_mismatch{}, hairpin_gg_first_mismatch{},
-      hairpin_special_gu_closure{}, hairpin_c3_loop{}, hairpin_all_c_a{}, hairpin_all_c_b{};
+  BoltzEnergy stack[4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy terminal[4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_init[ModelBase::INITIATION_CACHE_SZ] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_1x1[4][4][4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_1x2[4][4][4][4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_2x2[4][4][4][4][4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_2x3_mismatch[4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_other_mismatch[4][4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_asym BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_au_penalty BOLTZ_MEMBER_INIT;
+  BoltzEnergy internal_gu_penalty BOLTZ_MEMBER_INIT;
+  BoltzEnergy bulge_init[ModelBase::INITIATION_CACHE_SZ] BOLTZ_MEMBER_INIT;
+  BoltzEnergy bulge_special_c BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_init[ModelBase::INITIATION_CACHE_SZ] BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_uu_ga_first_mismatch BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_gg_first_mismatch BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_special_gu_closure BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_c3_loop BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_all_c_a BOLTZ_MEMBER_INIT;
+  BoltzEnergy hairpin_all_c_b BOLTZ_MEMBER_INIT;
   std::unordered_map<std::string, BoltzEnergy> hairpin;
-  BoltzEnergy multiloop_hack_a{}, multiloop_hack_b{};
-  BoltzEnergy dangle5[4][4][4]{};
-  BoltzEnergy dangle3[4][4][4]{};
-  BoltzEnergy coax_mismatch_non_contiguous{}, coax_mismatch_wc_bonus{}, coax_mismatch_gu_bonus{};
-  BoltzEnergy au_penalty{};
-  BoltzEnergy gu_penalty{};
+  BoltzEnergy multiloop_hack_a BOLTZ_MEMBER_INIT;
+  BoltzEnergy multiloop_hack_b BOLTZ_MEMBER_INIT;
+  BoltzEnergy dangle5[4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy dangle3[4][4][4] BOLTZ_MEMBER_INIT;
+  BoltzEnergy coax_mismatch_non_contiguous BOLTZ_MEMBER_INIT;
+  BoltzEnergy coax_mismatch_wc_bonus BOLTZ_MEMBER_INIT;
+  BoltzEnergy coax_mismatch_gu_bonus BOLTZ_MEMBER_INIT;
+  BoltzEnergy au_penalty BOLTZ_MEMBER_INIT;
+  BoltzEnergy gu_penalty BOLTZ_MEMBER_INIT;
 
   BoltzEnergy InternalLoopAuGuPenalty(Base stb, Base enb) const {
     assert(IsBase(stb) && IsBase(enb));
@@ -108,5 +123,7 @@ class BoltzModelBase {
 };
 
 }  // namespace mrna::md::base
+
+#undef BOLTZ_MEMBER_INIT
 
 #endif  // BACKENDS_COMMON_BASE_BOLTZ_MODEL_BASE_H_

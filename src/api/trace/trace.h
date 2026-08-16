@@ -21,7 +21,7 @@ struct TraceResult {
   explicit TraceResult(const TraceResult&) = default;
   TraceResult& operator=(const TraceResult&) = delete;
 
-  constexpr auto operator<=>(const TraceResult&) const = default;
+  auto operator<=>(const TraceResult&) const = default;
 
   Secondary s;
   Ctds ctd;  // May be empty if CTDs were not computed.

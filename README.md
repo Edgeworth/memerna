@@ -35,28 +35,39 @@ Please cite the following for sparse folding including coaxial stacking:
 }
 ```
 
-## Building
+## Building (Ubuntu 22.04 LTS)
 
-memerna was tested to build and run in Ubuntu 22.04 LTS with up to date
-packages. The following instructions assume you are using Ubuntu 22.04 LTS.
-However, memerna is mainly developed on Arch Linux, and is likely to work on any
-modern Linux distribution provided the toolchain is new enough.
+Ubuntu 22.04 LTS is the oldest supported Ubuntu release. Its stock Boost 1.74
+does not contain Boost.Describe, so the setup below installs Boost 1.83 from
+`ppa:mhier/libboost-latest`. On newer distributions, a C++ compiler and cmake
+are likely to be sufficient.
+
+The [Dockerfile](Dockerfile) uses vanilla Ubuntu 22.04 and the same tools that
+can be installed on bare metal. Build and test the image, or run an installed
+program, with:
+
+```sh
+just docker-test
+docker run --rm memerna:ubuntu-min fold GCGACCGGGGCUGGCUUGGUAA
+```
+
+The image also contains `brute`, `efn`, `fuzz`, `harness`, `partition`, and
+`subopt`.
 
 ### Environment setup
 
 Install the following packages:
 
 ```sh
-sudo apt install build-essential cmake git libboost-dev libmpfr-dev
+sudo apt install build-essential cmake git libmpfr-dev software-properties-common
+sudo add-apt-repository ppa:mhier/libboost-latest
+sudo apt install libboost1.83-dev
 ```
 
-On Ubuntu 22.04 LTS, the following packages are also required since the
-toolchain version is too old (note that this is a PPA, so use at your own risk):
-
-```sh
-sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
-sudo apt install gcc-12 g++-12
-```
+A direct CMake build does not require Python. The Python helper requires Python
+3.10 or newer and Poetry. The repository command recipes also require just. The
+Dockerfile uses Ubuntu's Python 3.10 and installs Poetry with pip in a virtual
+environment.
 
 Clone the repo:
 
@@ -77,15 +88,16 @@ memerna can be compiled directly with cmake. The following commands will build
 it for Ubuntu 22.04 LTS:
 
 ```sh
-CC=gcc-12 CXX=g++-12 cmake -B build -D CMAKE_BUILD_TYPE=Release .
+cmake -B build -D CMAKE_BUILD_TYPE=Release .
 cmake --build build
 ```
 
 Alternatively, memerna can be compiled using the rnapy python helper script,
-if you have Python 3.11+ and poetry installed. This will output builds
+if you have Python 3.10+ and poetry installed. This will output builds
 into the given prefix directory, which defaults to $HOME/bin/memerna.
 
 ```sh
+poetry install
 poetry run python -m rnapy.run build --kind release
 ```
 
@@ -95,16 +107,9 @@ configurations.
 
 #### Compiler and toolchain support
 
-| Compiler | Version | Supported |
-| -------- | ------- | --------- |
-| GCC      | <= 11   | ❌         |
-| GCC      | 12      | ✅         |
-| GCC      | 13      | ✅         |
-| Clang    | <= 15   | ❌         |
-| Clang    | 16      | ✅         |
-
-Note that clang 14 and 15 will work with a sufficiently modern standard C++
-library (but not gcc 11's, or libc++ 14 or 15's).
+GCC 11 or newer is supported. The Ubuntu 22.04 image tests its default GCC 11
+toolchain. Recent Clang releases should work, but Clang builds are not
+guaranteed.
 
 ### Build configuration
 
@@ -127,13 +132,13 @@ will be better.
 memerna supports minimum free energy (MFE) folding.
 
 ```sh
-./fold GCGACCGGGGCUGGCUUGGUAA
+./build/fold GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for MFE folding, which can be specified like so:
 
 ```sh
-./fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
+./build/fold --dp-alg sparse-opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -151,16 +156,16 @@ The sparse-opt algorithm is the default, and is the fastest algorithm.
 memerna supports suboptimal folding. For example:
 
 ```sh
-./subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
-./subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-strucs 7 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-time-secs 2.5 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for suboptimal folding, which can be specified like so:
 
 ```sh
-./subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
+./build/subopt --subopt-alg iterative --ctd-output --subopt-delta 6 GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here (where K is the number of structures produced). The example
@@ -182,13 +187,13 @@ from O(N) to O(N^2) due to cache misses.
 memerna supports computing the partition function. For example:
 
 ```sh
-./partition GCGACCGGGGCUGGCUUGGUAA
+./build/partition GCGACCGGGGCUGGCUUGGUAA
 ```
 
 There are several algorithms for the partition function, which can be specified like so:
 
 ```sh
-./partition --pfn-alg opt GCGACCGGGGCUGGCUUGGUAA
+./build/partition --pfn-alg opt GCGACCGGGGCUGGCUUGGUAA
 ```
 
 Some of the algorithms are listed here:
@@ -198,21 +203,13 @@ Some of the algorithms are listed here:
 | opt       | O(N^3)        | O(N^2)          | 9.23 seconds              |
 | debug     | O(N^3)        | O(N^2)          | 34.43 seconds             |
 
+The partition function is not supported for T22.
+
 ### Running the tests
 
 ```sh
-./run_tests
+./build/run_tests
 ```
-
-### Running include-what-you-use
-
-poetry run python -m rnapy.run build --iwyu --no-build
-
-Then from the cmake build directory:
-make -j$(nproc) 2> /tmp/iwyu.out
-
-Then:
-iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 
 ## Fuzzing
 
@@ -221,21 +218,21 @@ iwyu-fix-includes --nocomments --blank_lines --nosafe_headers < /tmp/iwyu.out
 General fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-models --energy-model t04 \
-  --backends base,baseopt 1 200
+./build/fuzz --mfe --mfe-table --subopt --pfn --random-models --energy-model t04 \
+  --backends base,baseopt 1 30
 ```
 
 Exhaustive fuzzing:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
+./build/fuzz --mfe --mfe-table --subopt --pfn --energy-model t04 \
   --backends base,baseopt --enumerate 1 10
 ```
 
 Fuzzing for t22:
 
 ```bash
-./fuzz --mfe --mfe-table --subopt --pfn --random-models --random-pf \
+./build/fuzz --mfe --mfe-table --subopt --random-models --random-pf \
   --energy-model t22 --backends stack 1 200
 ```
 
@@ -244,8 +241,8 @@ Fuzzing for t22:
 The below command runs fuzzing in parallel using GNU parallel with 16 jobs.
 
 ```bash
-seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
-  --random-models --energy-model t04 --backends base,baseopt 1 200'
+seq 16 | parallel -j 16 -n0 -u './build/fuzz --mfe --mfe-table --subopt --pfn \
+  --random-models --energy-model t04 --backends base,baseopt 1 30'
 ```
 
 ### Fuzzing against RNAstructure
@@ -253,7 +250,7 @@ seq 16 | parallel -j 16 -n0 -u './fuzz --mfe --mfe-table --subopt --pfn \
 ```bash
 poetry run python -m rnapy.run build --kind relwithdebinfo --rnastructure --energy-precision 1
 # Just MFE:
-./fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
+./build/fuzz -rd $MRNA/extern/rnastructure_bridge/data_tables/ --mfe \
   --mfe-rnastructure --mfe-table --energy-model t04 --backends base,baseopt 1 200
 ```
 
@@ -300,7 +297,7 @@ afl-whatsup -s $PREFIX/memerna-afl/*/afl
 Reproducing a crash:
 
 ```bash
-cat ./afl/default/crashes/<crash> | ./fuzz --afl ...
+cat ./afl/default/crashes/<crash> | ./build/fuzz --afl ...
 ```
 
 Minimising test cases:

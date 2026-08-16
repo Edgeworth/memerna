@@ -1,8 +1,13 @@
 .cache/
 .mypy_cache/
+.pytest_cache/
 .vscode/
 __pycache__
 *.pyc
 memevault.db
 compile_commands.json
 .env
+/benchmark.json*
+/build
+.claude
+.venv

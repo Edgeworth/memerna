@@ -2,7 +2,8 @@
 # These classes mirror the Cfg structs used in memerna.
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import StrEnum
+
+from rnapy.util.str_enum import StrEnum
 
 
 class LonelyPairs(StrEnum):

@@ -2,6 +2,7 @@
 #ifndef TESTS_UTIL_H_
 #define TESTS_UTIL_H_
 
+#include <iomanip>
 #include <string>
 #include <tuple>
 #include <vector>

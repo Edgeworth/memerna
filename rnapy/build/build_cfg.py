@@ -1,12 +1,14 @@
 # Copyright 2022 Eliot Courtney.
+import os
+import shlex
 import shutil
 from dataclasses import dataclass, field
-from enum import StrEnum
 from pathlib import Path
 
 import click
 
 from rnapy.util.command import run_shell
+from rnapy.util.str_enum import StrEnum
 
 
 class Compiler(StrEnum):
@@ -108,13 +110,18 @@ class BuildCfg:
             "ENERGY_PRECISION": f"{self.energy_precision}",
         }
         defs.update(self.sanitizer.cmake_defs())
-        def_str = " ".join(f"-D {i}={k}" for i, k in defs.items())
+        def_args: list[str] = []
+        for key, value in defs.items():
+            def_args += ["-D", f"{key}={value}"]
 
         build_path = self.build_path()
         build_path.mkdir(parents=True, exist_ok=True)
 
         click.echo("Generating cmake files.")
-        run_shell(f"cmake {def_str} {self.src}", cwd=build_path, extra_env=self.env)
+        cmd_parts = ["cmake", *def_args, str(self.src)]
+        run_shell(
+            " ".join(shlex.quote(part) for part in cmd_parts), cwd=build_path, extra_env=self.env
+        )
 
     def build(self, targets: list[str], build: bool = True, regenerate: bool = False) -> None:
         path = self.build_path()
@@ -124,8 +131,13 @@ class BuildCfg:
         if not path.exists():
             self._generate_cmake()
         if build:
+            cpu_count = os.cpu_count() or 1
+            jobs = int(os.environ.get("MRNA_BUILD_JOBS", max(1, cpu_count - 1)))
+            if jobs < 1:
+                raise ValueError("MRNA_BUILD_JOBS must be positive")
+            cmd_parts = ["cmake", "--build", ".", "--parallel", str(jobs)]
+            if targets:
+                cmd_parts += ["--target", *targets]
             run_shell(
-                f"make -j $(($(nproc)-1)) -l $(($(nproc)-1)) {' '.join(targets)}",
-                cwd=path,
-                extra_env=self.env,
+                " ".join(shlex.quote(part) for part in cmd_parts), cwd=path, extra_env=self.env
             )

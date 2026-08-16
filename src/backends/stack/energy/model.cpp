@@ -494,7 +494,7 @@ Energy Model::SubEnergyInternal(const Primary& r, const Secondary& s, int st, in
   return energy;
 }
 
-constexpr Energy Model::StackPenalty(const Primary& r, const Secondary& s, int ost, int oen,
+inline Energy Model::StackPenalty(const Primary& r, const Secondary& s, int ost, int oen,
     int ist, int ien, std::unique_ptr<Structure>* struc) const {
   assert(ost >= 0 && oen < static_cast<int>(r.size()));
   assert(ist > 0 && ien < static_cast<int>(r.size()) - 1);
