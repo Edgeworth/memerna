@@ -24,8 +24,8 @@ namespace mrna::md::brute {
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 Brute<CFG, PseudofreeCfgT>::Brute(const Primary& r, BackendModelPtr m,
     const BackendCfg& backend_cfg, PseudofreeCfgT pf, BruteCfg brute_cfg)
-    : r_(r), m_(std::move(m)), bm_(Boltz(m_)), underlying_(Underlying(bm_)), pf_(std::move(pf)),
-      brute_cfg_(brute_cfg), s_(r_.size()), ctd_(r_.size()) {
+    : r_(r), m_(std::move(m)), pf_(std::move(pf)), brute_cfg_(brute_cfg), s_(r_.size()),
+      ctd_(r_.size()) {
   std::string reason;
   if constexpr (std::is_same_v<PseudofreeCfgT, erg::PseudofreeCfg>) {
     verify(BackendIsSupported(GetBackendKind(m_), backend_cfg, CFG, pf_, &reason),
@@ -117,7 +117,7 @@ void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
           [&](const auto& m) {
             return m->template TotalEnergy<PFN_CFG>(r_, s_, &ctd_, pf_).energy;
           },
-          underlying_);
+          m_);
       res_.pfn.q += Boltz(energy);
       for (int i = 0; i < N; ++i) {
         if (s_.IsOpeningPair(i)) {
@@ -130,7 +130,7 @@ void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
                 [&](const auto& m) {
                   return m->template SubEnergy<PFN_CFG>(r_, s_, &ctd_, pf_, i, s_[i]).energy;
                 },
-                underlying_);
+                m_);
             if (inside_new) {
               res_.pfn.p[i][s_[i]] += Boltz(inside_energy);
               substructure_map_.Insert(inside_structure, Nothing());

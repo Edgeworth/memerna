@@ -207,6 +207,19 @@ TEST(CtxTest, EfnProducesSerializableCtdsForEnclosingPair) {
   }
 }
 
+TEST(CtxTest, RejectsEmptySequences) {
+  const Primary r;
+  const Secondary s;
+  for (const auto& model : t04_ms) {
+    const Ctx ctx(model, kT04Cfg);
+    EXPECT_THROW((void)ctx.Efn(r, s, {}), std::runtime_error);
+    EXPECT_THROW((void)ctx.Fold(r, std::nullopt, {}, {}, {}), std::runtime_error);
+    EXPECT_THROW(
+        (void)ctx.SuboptIntoVector(r, std::nullopt, std::nullopt, {}, {}, {}), std::runtime_error);
+    EXPECT_THROW((void)ctx.Pfn(r, std::nullopt, {}, {}), std::runtime_error);
+  }
+}
+
 TEST(CtxBackendTest, BackendDescriptorsOwnTheirModelVariant) {
   const auto fold = Ctx(base_t04, kT04Cfg)
                         .BackendForFold(/*alg=*/std::nullopt, erg::EnergyCfg{},

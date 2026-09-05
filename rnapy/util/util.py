@@ -29,10 +29,10 @@ def strict_merge(*dicts: dict[str, Any]) -> dict[str, Any]:
 
 def row_by_key(json_path: Path, data_keys: dict[str, Any]) -> dict[str, Any] | None:
     """Checks if a row with the given keys exists in the JSON file."""
-    if not json_path.exists():
+    if not json_path.exists() or json_path.stat().st_size == 0:
         return None
 
-    ndjson = pl.read_ndjson(json_path)
+    ndjson = pl.read_ndjson(json_path, infer_schema_length=None)
     for key, value in data_keys.items():
         if key not in ndjson.columns:
             return None

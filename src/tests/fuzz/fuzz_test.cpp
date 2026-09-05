@@ -35,8 +35,9 @@ TEST(FuzzCfgTest, PfnSuboptRejectsExplicitBulgeStates) {
 
 #ifdef MRNA_USE_RNASTRUCTURE
 TEST(FuzzCfgTest, RejectsUnsupportedRNAstructureModel) {
-  const auto args =
-      ParseTestArgs({"prog", "--mfe-rnastructure", "--energy-model", "t12"}, RegisterOpts);
+  const auto args = ParseTestArgs(
+      {"prog", "--mfe-rnastructure", "--energy-model", "t12", "--rnastructure-data", "data"},
+      RegisterOpts);
   EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
 }
 
@@ -46,12 +47,23 @@ TEST(FuzzCfgTest, RejectsUnsupportedRNAstructureConfigurations) {
       {"prog", "--subopt-rnastructure", "--random-pf"},
       {"prog", "--pfn-rnastructure", "--lonely-pairs", "off"},
       {"prog", "--pfn-rnastructure", "--ctd", "none"},
+      {"prog", "--mfe-rnastructure", "--no-bulge-states"},
+      {"prog", "--subopt-rnastructure", "--no-bulge-states"},
   };
-  for (const auto& argv : cases) {
+  for (auto argv : cases) {
     SCOPED_TRACE(argv[1]);
+    argv.insert(argv.end(), {"--rnastructure-data", "data"});
     const auto args = ParseTestArgs(argv, RegisterOpts);
     EXPECT_THROW((void)FuzzCfg::FromArgParse(args), std::runtime_error);
   }
+}
+
+TEST(FuzzCfgTest, RNAstructurePfnAllowsNoBulgeStates) {
+  const auto cfg = FuzzCfg::FromArgParse(ParseTestArgs(
+      {"prog", "--pfn-rnastructure", "--no-bulge-states", "--rnastructure-data", "data"},
+      RegisterOpts));
+  EXPECT_TRUE(cfg.pfn_rnastructure);
+  EXPECT_FALSE(cfg.energy_cfg.bulge_states);
 }
 #else
 TEST(FuzzCfgTest, RejectsRNAstructureChecksWhenUnavailable) {

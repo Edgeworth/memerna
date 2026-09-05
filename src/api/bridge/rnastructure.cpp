@@ -17,7 +17,7 @@ namespace mrna::bridge {
 namespace {
 
 std::unique_ptr<datatable> LoadDatatable(const std::string& path) {
-  verify(!path.empty() && path.back() == '/', "invalid data path");
+  verify(!path.empty(), "invalid data path");
   setDataPath(path.c_str());  // Set RNAstructure data path.
   auto dt = std::make_unique<datatable>();
   verify(dt->opendat(path.c_str(), "rna") == 1, "could not load RNAstructure data tables");
@@ -87,6 +87,7 @@ void VerifySupported(
     std::optional<MfeAlg> alg, const erg::EnergyCfg& cfg, const erg::PseudofreeCfg& pf) {
   verify(!alg.has_value(), "Bridge for RNAstructure does not support algorithm selection");
   verify(pf.Empty(), "Bridge for RNAstructure does not support pseudofree energies");
+  verify(cfg.bulge_states, "Bridge for RNAstructure requires bulge_states=true");
   verify(cfg.lonely_pairs == erg::EnergyCfg::LonelyPairs::HEURISTIC,
       "Bridge for RNAstructure does not support lonely_pairs != HEURISTIC");
   verify(

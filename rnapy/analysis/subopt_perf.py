@@ -51,7 +51,7 @@ class SuboptPerfRunner:
         self.rnas = [rna for rna in memevault if not rna_lengths or len(rna) in rna_lengths]
         # Load existing results once to avoid re-reading the file per run.
         if output_path.exists() and output_path.stat().st_size > 0:
-            self._cached = pl.read_ndjson(output_path)
+            self._cached = pl.read_ndjson(output_path, infer_schema_length=None)
         else:
             self._cached = pl.DataFrame()
         self.programs = [

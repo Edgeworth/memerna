@@ -68,8 +68,6 @@ class Brute {
 
   Primary r_;
   BackendModelPtr m_;
-  BackendBoltzModelPtr bm_;
-  BackendModelPtr underlying_;
   PseudofreeCfgT pf_;
   BruteCfg brute_cfg_;
 

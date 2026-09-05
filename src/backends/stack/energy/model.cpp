@@ -346,7 +346,7 @@ Energy Model::MultiloopEnergy(const Primary& r, const Secondary& s, const Pseudo
   }
 
   auto pf_unpaired_energy = ZERO_E;
-  int pf_last_unpaired = exterior_loop ? 0 : st + 1;
+  int pf_last_unpaired = exterior_loop ? st : st + 1;
   int num_unpaired = 0;
   for (auto branch_st : *branches) {
     num_unpaired += s[branch_st] - branch_st + 1;

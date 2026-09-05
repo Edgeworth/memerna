@@ -126,6 +126,8 @@ void FuzzCfg::Verify() const {
   verify(!UsesRNAstructure(), "RNAstructure comparisons require RNAstructure support");
 #else
   if (UsesRNAstructure()) {
+    verify(!(mfe_rnastructure || subopt_rnastructure) || energy_cfg.bulge_states,
+        "RNAstructure MFE/subopt comparisons require --bulge-states");
     verify(energy_model == erg::EnergyModelKind::T04,
         "RNAstructure comparisons require energy model t04");
     verify(!random_seeds && !random_model_cfg.seed.has_value(),

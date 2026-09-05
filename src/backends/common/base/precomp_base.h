@@ -30,6 +30,7 @@ struct HairpinPrecomp {
 
 template <typename HP, bool is_boltz, typename M>
 std::vector<HP> PrecomputeHairpin(const Primary& r, const M& m, auto init) {
+  verify(r.size() > 0, "sequence must not be empty");
   std::vector<HP> pc(r.size(), HP(init));
   std::string rna_str = r.ToSeq();
   for (const auto& hairpinpair : m.hairpin) {

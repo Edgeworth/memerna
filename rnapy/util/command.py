@@ -166,7 +166,7 @@ def try_cmd(
             command_stderr_file = stack.enter_context(tempfile.NamedTemporaryFile(mode="w+b"))
             cmd_list = [
                 "timeout",
-                "--foreground",
+                "--foreground",  # Let the command receive Ctrl-C from the terminal.
                 "--verbose",
                 "--kill-after=1",
                 str(limits.time_sec),

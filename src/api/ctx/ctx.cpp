@@ -145,6 +145,7 @@ PfnBackend Ctx::BackendForPfn(
 
 erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool build_structure) const {
+  verify(r.size() > 0, "sequence must not be empty");
   std::string log;
   auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
   if (!resolved.has_value()) fatal("No backend supports this configuration for Efn:\n{}", log);
@@ -154,6 +155,7 @@ erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg 
 
 FoldResult Ctx::Fold(const Primary& r, std::optional<MfeAlg> alg, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const trace::TraceCfg& trace_cfg) const {
+  verify(r.size() > 0, "sequence must not be empty");
   auto backend = BackendForFold(alg, cfg, pf, trace_cfg);
 
   if (backend.alg == MfeAlg::BRUTE) {
@@ -190,6 +192,7 @@ std::vector<subopt::SuboptResult> Ctx::SuboptIntoVector(const Primary& r,
 int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::optional<SuboptAlg> alg,
     erg::EnergyCfg cfg, const erg::PseudofreeCfg& pf, subopt::SuboptCfg subopt_cfg,
     const subopt::SuboptCallback& fn) const {
+  verify(r.size() > 0, "sequence must not be empty");
   auto backend = BackendForSubopt(alg, mfe_alg, cfg, pf, subopt_cfg);
 
   if (backend.alg == SuboptAlg::BRUTE) {
@@ -215,6 +218,7 @@ int64_t Ctx::Subopt(const Primary& r, std::optional<MfeAlg> mfe_alg, std::option
 
 pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::EnergyCfgPfn cfg,
     const erg::PseudofreeCfg& pf) const {
+  verify(r.size() > 0, "sequence must not be empty");
   auto backend = BackendForPfn(alg, cfg, pf);
 
   if (backend.alg == PfnAlg::BRUTE)

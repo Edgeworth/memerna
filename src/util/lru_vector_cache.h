@@ -18,6 +18,11 @@ class LruVectorCache {
   LruVectorCache(std::size_t max_size, std::size_t max_total)
       : lru_(), cache_(max_size, {{}, lru_.end()}), max_total_(max_total) {}
 
+  LruVectorCache(const LruVectorCache&) = delete;
+  LruVectorCache& operator=(const LruVectorCache&) = delete;
+  LruVectorCache(LruVectorCache&&) = delete;
+  LruVectorCache& operator=(LruVectorCache&&) = delete;
+
   const std::vector<Value>& Insert(Key key, std::vector<Value>&& value) {
     // Key should not already be in the cache. This means we don't need to remove it from the LRU
     // list.

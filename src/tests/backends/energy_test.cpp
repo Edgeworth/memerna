@@ -1,11 +1,16 @@
 // Copyright 2022 Eliot Courtney.
 
+#include <stdexcept>
+#include <variant>
 #include <vector>
 
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "gtest/gtest.h"
 #include "model/branch.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "tests/init.h"
 
 namespace mrna::md {
 
@@ -31,6 +36,20 @@ TEST(EnergyTest, GetBranchCounts) {
       (std::vector<int>{2, 3, 0, 3, 0, 3, 0, 3}), GetBranchCounts(Secondary::FromDb("(()()())")));
   EXPECT_EQ(
       (std::vector<int>{2, 1, 2, 0, 2, 0, 2, 1}), GetBranchCounts(Secondary::FromDb("((()()))")));
+}
+
+TEST(EnergyTest, RejectsEmptySequences) {
+  const Primary r;
+  const Secondary s;
+  for (const auto& model : t04_ms) {
+    std::visit(
+        [&](const auto& m) {
+          EXPECT_THROW(
+              (void)m->template TotalEnergy<erg::EnergyCfg{}>(r, s, nullptr, erg::PseudofreeCfg{}),
+              std::runtime_error);
+        },
+        model);
+  }
 }
 
 }  // namespace mrna::md

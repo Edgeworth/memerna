@@ -53,12 +53,6 @@ BackendBoltzModelPtr Boltz(const BackendModelPtr& m);
 
 BackendModelPtr CloneBackend(const BackendModelPtr& m);
 
-// Returns the underlying non-Boltzmann energy model for the given Boltzmann
-// energy model. This returns a clone and can be expensive.
-[[nodiscard]] inline BackendModelPtr Underlying(const BackendBoltzModelPtr& bm) {
-  return std::visit([](const auto& bm) -> BackendModelPtr { return bm->m().Clone(); }, bm);
-}
-
 template <erg::EnergyCfg CFG>
 [[nodiscard]] inline bool CanPair(const BackendModelPtr& m, const Primary& r, int st, int en) {
   return std::visit([&](const auto& m) { return m->template CanPair<CFG>(r, st, en); }, m);
