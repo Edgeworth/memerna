@@ -7,12 +7,12 @@ requires-python = ">=3.14,<4.0"
 version = "0.2.1"
 
 dependencies = [
-  "click>=8.4.2",
+  "click>=8.5.0",
   "click-params>=0.5.0",
   "click_log>=0.4.0",
   "cloup>=3.1.0",
   "libtmux>=0.62.0",
-  "polars>=1.43.2",
+  "polars>=1.44.1",
   "python-dotenv>=1.2.3",
 ]
 
@@ -20,7 +20,7 @@ dependencies = [
 dev = [
   "pytest>=9.1.1",
   "ruff==0.15.0",
-  "ty>=0.0.73",
+  "ty>=0.0.78",
 ]
 
 [build-system]
