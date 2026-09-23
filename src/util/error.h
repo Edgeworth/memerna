@@ -2,7 +2,9 @@
 #ifndef UTIL_ERROR_H_
 #define UTIL_ERROR_H_
 
-#include <fmt/format.h>
+#include <fmt/format.h>  // IWYU pragma: keep - used by verify.
+
+#include <stdexcept>  // IWYU pragma: keep - used by verify.
 
 #define funcname() __PRETTY_FUNCTION__
 

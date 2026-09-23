@@ -1,15 +1,19 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/fuzz_cfg.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
+#include <ostream>
 #include <string>
 
 #include "api/bridge/bridge.h"
 #include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
+#include "model/energy.h"
+#include "util/argparse.h"
 #include "util/error.h"
+#include "util/float.h"
 
 namespace mrna::fuzz {
 

@@ -2,6 +2,8 @@
 #include "backends/base/pfn/pfn_exterior.h"
 
 #include "api/energy/energy_cfg.h"
+#include "backends/base/energy/boltz_model.h"
+#include "backends/common/base/dp.h"
 #include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"

@@ -1,15 +1,23 @@
 // Copyright 2024 Eliot Courtney.
 #include "api/ctx/algorithm.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
+#include <cstddef>
+#include <optional>
 #include <string>
 #include <utility>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
+#include "api/mfe.h"
+#include "api/pfn.h"
+#include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "backends/base/energy/boltz_model.h"
 #include "backends/base/energy/model.h"
 #include "backends/base/mfe/mfe_debug.h"
@@ -24,6 +32,8 @@
 #include "backends/base/subopt/subopt_persistent.h"
 #include "backends/base/trace/trace.h"
 #include "backends/brute/alg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/boltz_model.h"
 #include "backends/canon/energy/model.h"
 #include "backends/canon/mfe/mfe_exterior.h"
 #include "backends/canon/mfe/mfe_opt.h"
@@ -40,6 +50,10 @@
 #include "backends/stack/subopt/subopt_iterative.h"
 #include "backends/stack/subopt/subopt_persistent.h"
 #include "backends/stack/trace/trace.h"
+#include "model/primary.h"
+#include "util/argparse.h"
+#include "util/container.h"
+#include "util/enum.h"
 #include "util/error.h"
 
 namespace mrna {

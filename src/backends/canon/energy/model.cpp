@@ -3,6 +3,10 @@
 
 #include <string>
 
+#include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+
 namespace mrna::md::canon {
 
 bool Model::IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& /*cfg*/,

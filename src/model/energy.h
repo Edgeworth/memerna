@@ -2,9 +2,11 @@
 #ifndef MODEL_ENERGY_H_
 #define MODEL_ENERGY_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
+#include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <random>

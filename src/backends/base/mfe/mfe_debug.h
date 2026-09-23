@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "api/energy/energy_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/dp.h"
 #include "model/primary.h"

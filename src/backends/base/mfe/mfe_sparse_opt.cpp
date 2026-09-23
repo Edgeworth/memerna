@@ -1,7 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include "backends/base/mfe/mfe_sparse_opt.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <string>

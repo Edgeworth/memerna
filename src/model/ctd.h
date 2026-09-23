@@ -2,12 +2,16 @@
 #ifndef MODEL_CTD_H_
 #define MODEL_CTD_H_
 
+#include <fmt/base.h>
+#include <fmt/ostream.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <deque>
 #include <initializer_list>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -17,6 +21,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "util/util.h"
 
 namespace mrna {
 

@@ -2,15 +2,22 @@
 #ifndef API_BRIDGE_MEMERNA_H_
 #define API_BRIDGE_MEMERNA_H_
 
+#include <cstdint>
 #include <optional>
 #include <utility>
 #include <vector>
 
 #include "api/bridge/bridge.h"
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
 #include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace_cfg.h"
+#include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"

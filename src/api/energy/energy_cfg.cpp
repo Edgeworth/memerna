@@ -3,7 +3,9 @@
 
 #include <ostream>
 
+#include "util/argparse.h"
 #include "util/error.h"
+#include "util/string.h"
 
 namespace mrna::erg {
 

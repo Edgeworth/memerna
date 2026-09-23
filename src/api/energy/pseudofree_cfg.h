@@ -2,9 +2,10 @@
 #ifndef API_ENERGY_PSEUDOFREE_CFG_H_
 #define API_ENERGY_PSEUDOFREE_CFG_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
+#include <cassert>
 #include <cstddef>
 #include <iosfwd>
 #include <ostream>
@@ -14,6 +15,7 @@
 #include "model/energy.h"
 #include "model/primary.h"
 #include "util/argparse.h"
+#include "util/float.h"  // IWYU pragma: keep - provides exp for flt.
 
 namespace mrna::erg {
 

@@ -8,6 +8,7 @@
 
 #include "gtest/gtest.h"
 #include "model/base.h"
+#include "model/energy.h"
 
 namespace mrna::md {
 

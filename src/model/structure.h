@@ -2,16 +2,18 @@
 #ifndef MODEL_STRUCTURE_H_
 #define MODEL_STRUCTURE_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "model/base.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna {
 

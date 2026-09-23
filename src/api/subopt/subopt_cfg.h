@@ -2,7 +2,7 @@
 #ifndef API_SUBOPT_SUBOPT_CFG_H_
 #define API_SUBOPT_SUBOPT_CFG_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
 #include <cstdint>

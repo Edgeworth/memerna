@@ -4,12 +4,19 @@
 
 #include <algorithm>
 #include <istream>
+#include <random>
 #include <string>
 
 #include "backends/common/boltz.h"
 #include "backends/common/model_mixin.h"
 #include "backends/common/parse.h"
+#include "model/base.h"
+#include "model/constants.h"
+#include "model/energy.h"
+#include "model/primary.h"
+#include "util/error.h"
 #include "util/file.h"
+#include "util/string.h"
 
 namespace mrna::md::base {
 

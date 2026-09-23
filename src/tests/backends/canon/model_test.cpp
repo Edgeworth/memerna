@@ -1,5 +1,9 @@
 // Copyright 2026 Eliot Courtney.
+#include "backends/canon/energy/model.h"
+
+#include "api/ctx/backend_cfg.h"
 #include "gtest/gtest.h"
+#include "model/energy.h"
 #include "tests/init.h"
 
 namespace mrna::md::canon {

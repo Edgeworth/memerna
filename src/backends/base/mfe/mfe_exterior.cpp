@@ -1,8 +1,6 @@
 // Copyright 2016 Eliot Courtney.
 #include "backends/base/mfe/mfe_exterior.h"
 
-#include <fmt/core.h>
-
 #include <algorithm>
 
 #include "api/energy/energy_cfg.h"

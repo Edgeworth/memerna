@@ -1,20 +1,32 @@
 // Copyright 2023 Eliot Courtney.
 #include "backends/stack/subopt/subopt_persistent.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/common/base/dp.h"
+#include "backends/common/energy.h"
 #include "backends/common/static.h"
+#include "backends/stack/energy/model.h"
+#include "backends/stack/mfe/dp.h"
+#include "backends/stack/trace/trace.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
+#include "model/energy.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 #include "util/error.h"
 #include "util/log.h"
@@ -60,11 +72,12 @@ SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::SuboptPersistent(
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback& fn) {
   res_ = SuboptResult(ZERO_E, trace::TraceResult(Secondary(r_.size()), Ctds(r_.size())));
-  q_.reserve(r_.size());
 
   std::string reason;
   verify(IsSupported(pf_, subopt_cfg_, &reason), "{} does not support the given configuration: {}",
       funcname(), reason);
+  pf_.Verify(r_);
+
   logdebug("stack {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
 
   q_.clear();
@@ -185,10 +198,7 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateEx
 
   if (std::holds_alternative<PenultimateIndex>(to_expand)) {
     auto idx = std::get<PenultimateIndex>(to_expand);
-    const int st = idx.st;
-    const int en = idx.en;
-    const int length = idx.len;
-    return PenultimateExpansions(st, en, length, delta);
+    return PenultimateExpansions(idx.st, idx.en, delta);
   }
 
   auto idx = std::get<NoStackIndex>(to_expand);
@@ -344,7 +354,6 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::PairedOrNo
     int st, int en, bool is_nostack, Energy delta) const {
   const auto& dp = dp_.base.dp;
   const auto& nostack = dp_.nostack;
-  const auto& penult = dp_.penult;
   std::vector<Expansion> exps;
   Energy energy = ZERO_E;
 
@@ -356,52 +365,13 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::PairedOrNo
   const auto en2b = r_[en - 2];
 
   if (!is_nostack) {
-    const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
-    const Energy bulge_left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1);
-    const Energy bulge_right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2);
-
-    const auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] +
+    const auto none = m_->stack[stb][st1b][en1b][enb] +
         m_->penultimate_stack[en1b][enb][stb][st1b] + pf_.Paired(st, en) - dp[st][en][DP_P];
-    const auto left = bulge_left + m_->penultimate_stack[en1b][enb][stb][st2b] - dp[st][en][DP_P];
-    const auto right = bulge_right + m_->penultimate_stack[en2b][enb][stb][st1b] - dp[st][en][DP_P];
-
-    for (int length = 2; 2 * length <= max_stack; ++length) {
-      if (length == 2) {
-        energy = none + nostack[st + 1][en - 1] +
-            m_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]];
-        if (energy <= delta)
-          exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
-      }
-
-      energy = none + penult[st + 1][en - 1][length - 1];
-      if (energy <= delta)
-        exps.push_back(
-            {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
-
-      if (length == 2) {
-        energy = left + nostack[st + 2][en - 1] +
-            m_->penultimate_stack[r_[st]][r_[st + 2]][r_[en - 1]][r_[en]];
-        if (energy <= delta)
-          exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
-      }
-
-      energy = left + penult[st + 2][en - 1][length - 1];
-      if (energy <= delta)
-        exps.push_back(
-            {.delta = energy, .idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
-
-      if (length == 2) {
-        energy = right + nostack[st + 1][en - 2] +
-            m_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 2]][r_[en]];
-        if (energy <= delta)
-          exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
-      }
-
-      energy = right + penult[st + 1][en - 2][length - 1];
-      if (energy <= delta)
-        exps.push_back(
-            {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
-    }
+    const auto left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1) +
+        m_->penultimate_stack[en1b][enb][stb][st2b] - dp[st][en][DP_P];
+    const auto right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2) +
+        m_->penultimate_stack[en2b][enb][stb][st1b] - dp[st][en][DP_P];
+    StackExpansions(st, en, none, left, right, delta, &exps);
   }
 
   const auto target = is_nostack ? nostack[st][en] : dp[st][en][DP_P];
@@ -742,55 +712,31 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::UnpairedEx
 }
 
 template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
+void SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::StackExpansions(int st, int en, Energy none,
+    Energy left, Energy right, Energy delta, std::vector<Expansion>* exps) const {
+  const auto maybe_add = [&](int ist, int ien, Energy loop) {
+    Energy energy =
+        loop + dp_.nostack[ist][ien] + m_->penultimate_stack[r_[st]][r_[ist]][r_[ien]][r_[en]];
+    if (energy <= delta)
+      exps->push_back({.delta = energy, .idx0 = NoStackIndex(ist, ien), .pair{st, en}});
+    energy = loop + dp_.penult[ist][ien];
+    if (energy <= delta)
+      exps->push_back({.delta = energy, .idx0 = PenultimateIndex(ist, ien), .pair{st, en}});
+  };
+  maybe_add(st + 1, en - 1, none);
+  maybe_add(st + 2, en - 1, left);
+  maybe_add(st + 1, en - 2, right);
+}
+
+template <erg::EnergyCfg CFG, class PseudofreeCfgT, bool UseLru>
 std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::PenultimateExpansions(
-    int st, int en, int length, Energy delta) const {
-  const auto& nostack = dp_.nostack;
-  const auto& penult = dp_.penult;
+    int st, int en, Energy delta) const {
   std::vector<Expansion> exps;
-  Energy energy = ZERO_E;
-
-  const auto bulge_left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1);
-  const auto bulge_right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2);
-
-  auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + pf_.Paired(st, en) -
-      penult[st][en][length];
-  if (length == 2) {
-    energy = none + nostack[st + 1][en - 1] +
-        m_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]];
-    if (energy <= delta)
-      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
-  }
-  energy = none + penult[st + 1][en - 1][length - 1];
-  if (energy <= delta)
-    exps.push_back(
-        {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
-
-  auto left = bulge_left - penult[st][en][length];
-  if (length == 2) {
-    energy = left + nostack[st + 2][en - 1] +
-        m_->penultimate_stack[r_[st]][r_[st + 2]][r_[en - 1]][r_[en]];
-    if (energy <= delta)
-      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
-  }
-
-  energy = left + penult[st + 2][en - 1][length - 1];
-  if (energy <= delta)
-    exps.push_back(
-        {.delta = energy, .idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
-
-  auto right = bulge_right - penult[st][en][length];
-  if (length == 2) {
-    energy = right + nostack[st + 1][en - 2] +
-        m_->penultimate_stack[r_[st]][r_[st + 1]][r_[en - 2]][r_[en]];
-    if (energy <= delta)
-      exps.push_back({.delta = energy, .idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
-  }
-
-  energy = right + penult[st + 1][en - 2][length - 1];
-  if (energy <= delta)
-    exps.push_back(
-        {.delta = energy, .idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
-
+  const auto target = dp_.penult[st][en];
+  const auto none = m_->stack[r_[st]][r_[st + 1]][r_[en - 1]][r_[en]] + pf_.Paired(st, en) - target;
+  const auto left = m_->Bulge<CFG>(r_, pf_, st, en, st + 2, en - 1) - target;
+  const auto right = m_->Bulge<CFG>(r_, pf_, st, en, st + 1, en - 2) - target;
+  StackExpansions(st, en, none, left, right, delta, &exps);
   return exps;
 }
 

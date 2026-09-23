@@ -3,6 +3,7 @@
 #define UTIL_ARRAY_H_
 
 #include <algorithm>
+#include <cstddef>
 #include <utility>
 
 namespace mrna {
@@ -121,69 +122,6 @@ struct Array1D1S {
 
   constexpr T* operator[](std::size_t idx) { return &data_[idx * K]; }
   constexpr const T* operator[](std::size_t idx) const { return &data_[idx * K]; }
-
-  [[nodiscard]] constexpr std::size_t size() const { return size_; }
-  [[nodiscard]] constexpr bool empty() const { return size_ == 0; }
-
- private:
-  T* data_{nullptr};
-  std::size_t size_{0};
-};
-
-// View of 2D array inside a 3D array.
-template <typename T>
-struct Array2DView {
- public:
-  constexpr Array2DView() = delete;
-
-  constexpr Array2DView(T* data, std::size_t size) : data_(data), size_(size) {}
-  constexpr ~Array2DView() = default;
-
-  // Prevent non-local uses to avoid dangling pointers.
-  constexpr Array2DView(const Array2DView&) = delete;
-  constexpr Array2DView& operator=(const Array2DView&) = delete;
-  constexpr Array2DView(Array2DView&& o) = delete;
-  constexpr Array2DView& operator=(Array2DView&& o) = delete;
-
-  constexpr T* operator[](std::size_t idx) { return &data_[idx * size_]; }
-  constexpr const T* operator[](std::size_t idx) const { return &data_[idx * size_]; }
-
-  [[nodiscard]] constexpr std::size_t size() const { return size_; }
-  [[nodiscard]] constexpr bool empty() const { return size_ == 0; }
-
- private:
-  T* data_{nullptr};
-  std::size_t size_{0};
-};
-
-template <typename T>
-struct Array3D {
- public:
-  constexpr Array3D() = default;
-  constexpr Array3D(std::size_t size, T init_val) : data_(new T[size * size * size]), size_(size) {
-    std::fill(data_, data_ + size_ * size_ * size_, init_val);
-  }
-  constexpr ~Array3D() { delete[] data_; }
-
-  constexpr Array3D(const Array3D&) = delete;
-  constexpr Array3D& operator=(const Array3D&) = delete;
-  constexpr Array3D(Array3D&& o) noexcept { *this = std::move(o); }
-
-  constexpr Array3D& operator=(Array3D&& o) noexcept {
-    delete[] data_;
-    data_ = o.data_;
-    size_ = o.size_;
-    o.data_ = nullptr;
-    o.size_ = 0;
-    return *this;
-  }
-
-  constexpr Array2DView<T> operator[](std::size_t idx) {
-    return Array2DView(data_ + idx * size_ * size_, size_);
-  }
-  constexpr Array2DView<const T> operator[](std::size_t idx) const {
-    return Array2DView<const T>(data_ + idx * size_ * size_, size_);
-  }
 
   [[nodiscard]] constexpr std::size_t size() const { return size_; }
   [[nodiscard]] constexpr bool empty() const { return size_ == 0; }

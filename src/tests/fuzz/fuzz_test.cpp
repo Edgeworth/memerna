@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "fuzz/fuzz_cfg.h"
-#include "fuzz/fuzz_harness.h"
 #include "gtest/gtest.h"
 #include "tests/util.h"
 

@@ -1,7 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#include <fmt/core.h>
 
+#include <fmt/base.h>
+
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/pfn.h"
 #include "model/pfn.h"
@@ -9,7 +12,7 @@
 #include "programs/print.h"
 #include "util/argparse.h"
 #include "util/error.h"
-#include "util/util.h"
+#include "util/float.h"
 
 namespace mrna {
 

@@ -7,19 +7,27 @@
 #include <tuple>
 #include <vector>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
-#include "api/pfn.h"
+#include "api/mfe.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "fuzz/fuzz_cfg.h"
+#include "model/energy.h"
+#include "model/pfn.h"
 #include "model/primary.h"
+#include "util/float.h"
 
 #ifdef MRNA_USE_RNASTRUCTURE
 #include <memory>
 #include <utility>
 
 #include "api/bridge/rnastructure.h"
+#include "api/pfn.h"
+#include "util/error.h"
 #endif  // MRNA_USE_RNASTRUCTURE
 
 namespace mrna::fuzz {

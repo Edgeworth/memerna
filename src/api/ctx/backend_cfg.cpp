@@ -3,9 +3,16 @@
 
 #include <fmt/format.h>
 
+#include <cstdint>
+#include <optional>
 #include <ostream>
 #include <string>
+#include <variant>
 
+#include "api/energy/energy_cfg.h"
+#include "model/energy.h"
+#include "util/argparse.h"
+#include "util/error.h"
 #include "util/util.h"
 
 namespace mrna {

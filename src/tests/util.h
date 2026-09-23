@@ -2,16 +2,25 @@
 #ifndef TESTS_UTIL_H_
 #define TESTS_UTIL_H_
 
-#include <iomanip>
+#include <iomanip>  // IWYU pragma: keep - used by EXPECT_REL_EQ.
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
 
 #include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+#include "api/pfn.h"
+#include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
+#include "model/energy.h"
+#include "model/pfn.h"
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"

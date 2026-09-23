@@ -2,6 +2,8 @@
 #ifndef BACKENDS_COMMON_BASE_PRECOMP_BASE_H_
 #define BACKENDS_COMMON_BASE_PRECOMP_BASE_H_
 #include <algorithm>
+#include <cmath>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -9,6 +11,7 @@
 #include "backends/common/energy.h"
 #include "model/base.h"
 #include "model/branch.h"
+#include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "util/error.h"
@@ -94,8 +97,11 @@ class PrecompBase {
 
     verify(m_->internal_asym >= ZERO_E,
         "min_internal optimisation does not work for negative asymmetry penalties");
-    const auto min_mismatch =
-        2 * std::min(MinEnergy(m_->internal_2x3_mismatch), MinEnergy(m_->internal_other_mismatch));
+    // 1xN internal loops (N >= 3) have no mismatch term, so a positive mismatch
+    // minimum would overestimate them.
+    const auto min_mismatch = std::min(
+        2 * std::min(MinEnergy(m_->internal_2x3_mismatch), MinEnergy(m_->internal_other_mismatch)),
+        ZERO_E);
     const auto min_internal_init = MinEnergy(std::span<const Energy>(m_->internal_init).subspan(4));
 
     // Current implementation needs regular AU/GU for special internal loops.
@@ -109,7 +115,9 @@ class PrecompBase {
     const auto min_bulge_init = MinEnergy(std::span<const Energy>(m_->bulge_init).subspan(1));
 
     const Energy states_bonus = -E(R * T * log(std::max(MaxNumContiguous(r_), 1)));
-    const Energy min_bulge = min_bulge_init + min_penalty + min_stack +
+    // Only size 1 bulges have a stacking term. Bulges larger than that would be
+    // overestimated by a positive stacking minimum.
+    const Energy min_bulge = min_bulge_init + min_penalty + std::min(min_stack, ZERO_E) +
         std::min(m_->bulge_special_c, ZERO_E) + states_bonus;
     min_twoloop_not_stack = std::min(min_bulge, min_internal);
 

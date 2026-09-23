@@ -12,6 +12,9 @@
 #include <unordered_map>
 #include <utility>
 
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+#include "backends/base/energy/model.h"
 #include "backends/base/energy/precomp.h"
 #include "backends/common/base/branch.h"
 #include "backends/common/base/model_base.h"

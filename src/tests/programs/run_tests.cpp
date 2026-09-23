@@ -1,6 +1,7 @@
 // Copyright 2016 Eliot Courtney.
 #include <gtest/gtest.h>
 
+#include "api/ctx/backend_cfg.h"
 #include "tests/init.h"
 #include "util/argparse.h"
 #include "util/error.h"

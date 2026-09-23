@@ -10,7 +10,6 @@ namespace mrna {
 inline const Opt OPT_VERBOSE =
     Opt(Opt::FLAG).LongName("verbose").ShortName("v").Help("verbose output");
 inline const Opt OPT_QUIET = Opt(Opt::FLAG).LongName("quiet").ShortName("q").Help("quiet output");
-inline const Opt OPT_AFL = Opt(Opt::FLAG).LongName("afl").Help("run in afl-fuzz mode");
 
 inline const Opt OPT_EFN = Opt(Opt::FLAG).LongName("efn").ShortName("e").Help("run efn");
 inline const Opt OPT_FOLD = Opt(Opt::FLAG).LongName("fold").ShortName("f").Help("run fold");

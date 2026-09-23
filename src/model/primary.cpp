@@ -1,6 +1,7 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/primary.h"
 
+#include <cstddef>
 #include <optional>
 #include <random>
 #include <string>

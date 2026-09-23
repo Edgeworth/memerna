@@ -2,13 +2,19 @@
 #ifndef UTIL_ENUM_H_
 #define UTIL_ENUM_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 
-#include <boost/describe.hpp>
+#include <boost/describe/enum.hpp>
+#include <boost/describe/enum_to_string.hpp>
+#include <boost/describe/enumerators.hpp>
+#include <boost/describe/operators.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/list.hpp>
 #include <cctype>
 #include <iostream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "util/error.h"
@@ -93,15 +99,15 @@ template <class T>
 struct fmt::formatter<T, char,
     std::enable_if_t<boost::describe::has_describe_enumerators<T>::value>> {
  public:
-  constexpr auto parse(format_parse_context& ctx) {
-    return fmt::formatter<fmt::string_view, char>().parse(ctx);
-  }
+  constexpr auto parse(format_parse_context& ctx) { return formatter_.parse(ctx); }
 
   auto format(const T& value, format_context& ctx) const {
     auto name = boost::describe::enum_to_string(value, nullptr);
-    return fmt::formatter<fmt::string_view, char>().format(
-        name ? mrna::NormalizeEnumName(name) : "?", ctx);
+    return formatter_.format(name ? mrna::NormalizeEnumName(name) : "?", ctx);
   }
+
+ private:
+  fmt::formatter<fmt::string_view, char> formatter_;
 };
 
 #endif  // UTIL_ENUM_H_

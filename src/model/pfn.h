@@ -6,6 +6,7 @@
 
 #include "model/energy.h"
 #include "util/array.h"
+#include "util/float.h"
 #include "util/util.h"
 
 namespace mrna {

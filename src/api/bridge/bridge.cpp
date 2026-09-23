@@ -5,6 +5,7 @@
 
 #include "api/bridge/memerna.h"
 #include "api/ctx/ctx.h"
+#include "util/argparse.h"
 #include "util/error.h"
 
 #ifdef MRNA_USE_RNASTRUCTURE

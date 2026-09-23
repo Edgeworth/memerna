@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
-#include <fmt/core.h>
 
+#include <fmt/base.h>
+
+#include <cstdint>
 #include <deque>
 #include <iostream>
 #include <memory>
@@ -8,6 +10,7 @@
 #include <vector>
 
 #include "api/bridge/bridge.h"
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
 #include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
@@ -61,9 +64,8 @@ int main(int argc, char* argv[]) {
       std::string seq;
       std::string db;
       if (read_stdin) {
-        getline(std::cin, seq);
-        getline(std::cin, db);
-        if (!std::cin) break;
+        if (!getline(std::cin, seq)) break;
+        verify(static_cast<bool>(getline(std::cin, db)), "missing dot-bracket line for {}", seq);
       } else {
         if (q.empty()) break;
         verify(q.size() >= 2, "need even number of positional args");

@@ -5,10 +5,13 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <variant>
 
 #include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/base/energy/model.h"
+#include "util/error.h"
 #include "util/util.h"
 
 namespace mrna::md::canon {

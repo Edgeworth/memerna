@@ -2,7 +2,7 @@
 #ifndef UTIL_VERSION_H_
 #define UTIL_VERSION_H_
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <string>
 #include <string_view>

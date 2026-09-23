@@ -2,11 +2,15 @@
 #include "api/energy/pseudofree_cfg.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <ostream>
 #include <span>
 #include <utility>
 #include <vector>
 
+#include "model/energy.h"
+#include "model/primary.h"
+#include "util/argparse.h"
 #include "util/error.h"
 
 namespace mrna::erg {

@@ -1,7 +1,10 @@
 // Copyright 2016 Eliot Courtney.
-#include <fmt/core.h>
 
+#include <fmt/base.h>
+
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
 #include "api/trace/trace.h"

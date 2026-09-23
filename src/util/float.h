@@ -3,15 +3,18 @@
 #define UTIL_FLOAT_H_
 
 #include <algorithm>
-#include <cmath>
 #include <string>
 
 #ifdef MRNA_USE_MPFR
-#include <fmt/ostream.h>
+#include <fmt/base.h>
 
-#include <boost/multiprecision/mpfr.hpp>
+#include <boost/multiprecision/fwd.hpp>
+#include <boost/multiprecision/mpfr.hpp>  // IWYU pragma: keep - defines mpfr_float_backend.
+#include <boost/multiprecision/number.hpp>
+#include <cstdlib>
+#include <exception>
 
-#include "util/string.h"
+#include "util/enum.h"
 
 namespace boost {
 
@@ -21,6 +24,8 @@ inline void throw_exception(const std::exception& e) {
 }
 
 }  // namespace boost
+#else
+#include <cmath>
 #endif  // MRNA_USE_MPFR
 
 namespace mrna {
@@ -36,8 +41,8 @@ constexpr int powi(int base, int exp) {
 using flt =
     boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<MRNA_FLOAT_PRECISION>>;
 
-#define _STRHELP(x) STRINGIFY(x)
-#define FLTFMT "{:." _STRHELP(MRNA_FLOAT_PRECISION) "f}"
+#define MRNA_STRHELP(x) STRINGIFY(x)
+#define FLTFMT "{:." MRNA_STRHELP(MRNA_FLOAT_PRECISION) "f}"
 
 // Stringify to ensure
 #define FLT(x) static_cast<flt>(#x)
@@ -84,7 +89,9 @@ inline const flt EP{1e-7};
 #elif MRNA_FLOAT_PRECISION == 18
 inline const flt EP{1e-9};
 #else
-inline const flt EP{1e-30};
+// Other precisions are only possible with MPFR. Use half of the significant
+// digits, as the precisions above do.
+inline const flt EP = pow(flt(10), -(MRNA_FLOAT_PRECISION / 2));
 #endif
 
 inline bool abs_eq(flt a, flt b, flt ep = EP) {
@@ -106,6 +113,9 @@ inline bool absrel_eq(flt a, flt b, flt ep = EP) { return abs_eq(a, b, ep) || re
 #ifdef MRNA_USE_MPFR
 
 #include <fmt/format.h>
+
+#include <cstring>
+#include <ios>
 
 template <typename T>
 concept FltConvertible = boost::multiprecision::is_number<T>::value ||

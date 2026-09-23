@@ -1,6 +1,10 @@
 // Copyright 2016 Eliot Courtney.
+#include "backends/stack/energy/model.h"
+
+#include "api/ctx/backend_cfg.h"
 #include "backends/stack/energy/boltz_model.h"
 #include "gtest/gtest.h"
+#include "model/energy.h"
 #include "tests/init.h"
 
 namespace mrna::md::stack {

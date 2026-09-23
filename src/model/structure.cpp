@@ -1,10 +1,15 @@
 // Copyright 2016 Eliot Courtney.
-#include "structure.h"
+#include "model/structure.h"
+
+#include <fmt/format.h>
 
 #include <cassert>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "model/ctd.h"
 
 namespace mrna {
 

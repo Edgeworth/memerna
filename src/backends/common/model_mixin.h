@@ -2,13 +2,15 @@
 #ifndef BACKENDS_COMMON_MODEL_MIXIN_H_
 #define BACKENDS_COMMON_MODEL_MIXIN_H_
 
-#include <cstddef>
+#include <algorithm>  // IWYU pragma: keep - used by RANDOMISE_DATA.
+#include <cstddef>  // IWYU pragma: keep - used by RANDOMISE_DATA.
 #include <memory>
 #include <random>
 #include <string>
 #include <variant>
 
 #include "api/ctx/backend_cfg.h"
+#include "util/error.h"
 #include "util/util.h"
 
 namespace mrna::md {
@@ -21,11 +23,16 @@ namespace mrna::md {
     }                                                          \
   } while (0)
 
-#define RANDOMISE_DATA(m, d)                                        \
-  do {                                                              \
-    auto* data = Decay((m).d);                                      \
-    for (std::size_t i = 0; i < sizeof((m).d) / sizeof(*data); ++i) \
-      data[i] = Energy::FromFlt(energy_dist(eng));                  \
+// Draws table `d` from a random sub-range of `energy_dist`. Pruning bounds
+// that add up the minima of several tables, like those in PrecompBase, are
+// only tested when the tables have different minima.
+#define RANDOMISE_DATA(m, d)                                                 \
+  do {                                                                       \
+    auto* data = Decay((m).d);                                               \
+    const auto [lo, hi] = std::minmax({energy_dist(eng), energy_dist(eng)}); \
+    std::uniform_real_distribution<double> table_dist(lo, hi);               \
+    for (std::size_t i = 0; i < sizeof((m).d) / sizeof(*data); ++i)          \
+      data[i] = Energy::FromFlt(table_dist(eng));                            \
   } while (0)
 
 template <typename T>

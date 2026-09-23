@@ -4,9 +4,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 
+#include "model/base.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "util/array.h"

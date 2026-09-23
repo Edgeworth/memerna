@@ -1,13 +1,20 @@
 // Copyright 2022 Eliot Courtney.
 #include "backends/brute/alg.h"
 
-#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/pfn.h"
+#include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "backends/brute/brute.h"
 #include "backends/common/static.h"
+#include "model/primary.h"
 #include "util/error.h"
 
 namespace mrna::md::brute {

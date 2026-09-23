@@ -1,23 +1,32 @@
 // Copyright 2021 Eliot Courtney.
 #include "backends/brute/brute.h"
 
-#include <fmt/core.h>
-
+#include <cstdint>
 #include <iterator>
 #include <string>
 #include <type_traits>
 #include <utility>
 
 #include "api/ctx/algorithm.h"
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
 #include "backends/common/static.h"
+#include "model/base.h"
 #include "model/branch.h"
 #include "model/constants.h"
+#include "model/ctd.h"
 #include "model/energy.h"
+#include "model/pfn.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 #include "util/error.h"
 #include "util/log.h"
+#include "util/splaymap.h"
 
 namespace mrna::md::brute {
 

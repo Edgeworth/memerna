@@ -92,8 +92,8 @@ cmake --build build
 ```
 
 Alternatively, memerna can be compiled using the rnapy python helper script, if
-you have uv installed. This will output builds into the given prefix directory,
-which defaults to $HOME/bin/memerna.
+you have uv installed. This will output builds into `<prefix>/memerna/<config>`,
+where the prefix defaults to $HOME/bin.
 
 ```sh
 uv run python -m rnapy.run build --kind release
@@ -120,6 +120,8 @@ configuration for a full explanation.
 - INDEX_BITS: the number of bits to use for indices and sequence lengths
 - ENERGY_PRECISION: the number of decimal places to use for energy calculations
 - FLOAT_PRECISION: the number of significant digits to use for floats
+- USE_NATIVE_ARCH (cmake only): optimise release builds for the build machine's
+  CPU. It is on by default; turn it off for binaries that run on other machines.
 
 ENERGY_PRECISION is by default 2, meaning energies are specified to two decimal
 places. If you only need 1 decimal place, you can set this to 1 and performance

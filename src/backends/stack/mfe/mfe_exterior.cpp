@@ -1,14 +1,13 @@
 // Copyright 2023 Eliot Courtney.
 #include "backends/stack/mfe/mfe_exterior.h"
 
-#include <fmt/core.h>
-
 #include <algorithm>
 
 #include "api/energy/energy_cfg.h"
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
+#include "backends/stack/mfe/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"

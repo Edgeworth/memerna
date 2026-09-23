@@ -2,7 +2,7 @@
 #ifndef UTIL_SPLAYMAP_H_
 #define UTIL_SPLAYMAP_H_
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <cassert>

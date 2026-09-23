@@ -1,7 +1,11 @@
 // Copyright 2023 Eliot Courtney.
 #include "api/trace/trace_cfg.h"
 
+#include <cstdint>
 #include <ostream>
+
+#include "util/argparse.h"
+#include "util/error.h"
 
 namespace mrna::trace {
 

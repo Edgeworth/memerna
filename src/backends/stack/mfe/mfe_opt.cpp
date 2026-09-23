@@ -1,7 +1,7 @@
 // Copyright 2023 Eliot Courtney.
 #include "backends/stack/mfe/mfe_opt.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <string>
@@ -10,6 +10,7 @@
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
+#include "backends/stack/mfe/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/energy.h"
@@ -52,7 +53,7 @@ struct MfeInternal {
   int N;
   base::DpArray& dp;
   Array2D<Energy>& nostack;
-  Array3D<Energy>& penult;
+  Array2D<Energy>& penult;
 
   MfeInternal(const Primary& r_, const Model::Ptr& m_, const PseudofreeCfgT& pf_, DpState& state_)
       : r(r_), m(*m_), pf(pf_), N(r_.size()), dp(state_.base.dp), nostack(state_.nostack),
@@ -71,7 +72,7 @@ struct MfeInternal {
 
     dp = base::DpArray(r.size() + 1, MAX_E);
     nostack = Array2D(r.size() + 1, MAX_E);
-    penult = Array3D(r.size() + 1, MAX_E);
+    penult = Array2D(r.size() + 1, MAX_E);
 
     for (int st = N - 1; st >= 0; --st) {
       for (int en = st + HAIRPIN_MIN_SZ + 1; en < N; ++en) {
@@ -84,62 +85,28 @@ struct MfeInternal {
 
         if (Model::CanPair<CFG>(r, st, en)) {
           Energy stack_min = MAX_E;
-
-          {
-            const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
-            // Try all stacks of each length, with or without a 1 nuc bulge loop
-            // intercedeing.
-            const Energy bulge_left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
-            const Energy bulge_right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
-
-            // Try stems with a specific length.
-            for (int length = 2; 2 * length <= max_stack; ++length) {
-              // Update our DP at (st, en) - no bulge:
-              if (Model::CanPair<CFG>(r, st + 1, en - 1)) {
-                // Include the paired pseudofree energy value for all except the last pair in
-                // this stack. The last pair will be handled by whatever starts after this
-                // stack.
-                auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + pf.Paired(st, en);
-                // Try ending the stack without a bulge loop.
-                if (length == 2) {
-                  none += nostack[st + 1][en - 1] +
-                      m.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]];
-                } else {
-                  none += penult[st + 1][en - 1][length - 1];
-                }
-                penult[st][en][length] = std::min(penult[st][en][length], none);
-                stack_min = std::min(stack_min, none + m.penultimate_stack[en1b][enb][stb][st1b]);
-              }
-
-              // Left bulge:
-              if (Model::CanPair<CFG>(r, st + 2, en - 1)) {
-                auto left = bulge_left;
-                // Try ending the stack without a bulge loop.
-                if (length == 2) {
-                  left += nostack[st + 2][en - 1] +
-                      m.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]];
-                } else {
-                  left += penult[st + 2][en - 1][length - 1];
-                }
-                penult[st][en][length] = std::min(penult[st][en][length], left);
-                stack_min = std::min(stack_min, left + m.penultimate_stack[en1b][enb][stb][st2b]);
-              }
-
-              // Right bulge:
-              if (Model::CanPair<CFG>(r, st + 1, en - 2)) {
-                auto right = bulge_right;
-                if (length == 2) {
-                  right += nostack[st + 1][en - 2] +
-                      m.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]];
-                } else {
-                  right += penult[st + 1][en - 2][length - 1];
-                }
-                penult[st][en][length] = std::min(penult[st][en][length], right);
-
-                stack_min = std::min(stack_min, right + m.penultimate_stack[en2b][enb][stb][st1b]);
-              }
-            }
-          }
+          Energy penult_min = MAX_E;
+          // Continue the stack from (st, en) to (ist, ien), where `loop` is the
+          // energy of the stacking pair or size 1 bulge loop between them. The
+          // stack can end at (ist, ien) or keep going.
+          const auto extend = [&](int ist, int ien, Energy loop, Energy outer_penultimate) {
+            if (!Model::CanPair<CFG>(r, ist, ien)) return;
+            const auto inner =
+                std::min(nostack[ist][ien] + m.penultimate_stack[stb][r[ist]][r[ien]][enb],
+                    penult[ist][ien]);
+            penult_min = std::min(penult_min, loop + inner);
+            stack_min = std::min(stack_min, loop + inner + outer_penultimate);
+          };
+          // Include the paired pseudofree energy value for all except the last pair in
+          // this stack. The last pair will be handled by whatever starts after this
+          // stack.
+          extend(st + 1, en - 1, m.stack[stb][st1b][en1b][enb] + pf.Paired(st, en),
+              m.penultimate_stack[en1b][enb][stb][st1b]);
+          extend(st + 2, en - 1, m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1),
+              m.penultimate_stack[en1b][enb][stb][st2b]);
+          extend(st + 1, en - 2, m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2),
+              m.penultimate_stack[en2b][enb][stb][st1b]);
+          penult[st][en] = penult_min;
 
           Energy nostack_min = MAX_E;
 

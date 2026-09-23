@@ -1,7 +1,11 @@
 // Copyright 2016 Eliot Courtney.
-#include <fmt/core.h>
+
+#include <fmt/base.h>
+#include <fmt/format.h>
 
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <random>
 #include <string>
@@ -171,6 +175,8 @@ int main(int argc, char* argv[]) {
   }
 
   auto fuzz_cfg = mrna::fuzz::FuzzCfg::FromArgParse(args);
+  verify(single_sequence || (fuzz_cfg.pf_paired.empty() && fuzz_cfg.pf_unpaired.empty()),
+      "--pf-paired and --pf-unpaired need a single sequence; use --random-pf with a length range");
   auto runner = FuzzRunner(fuzz_cfg, interval);
   bool ok = false;
   if (single_sequence) {

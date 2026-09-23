@@ -4,7 +4,7 @@ description = "memerna"
 license = {text = "GPL-3.0-only"}
 name = "rnapy"
 requires-python = ">=3.14,<4.0"
-version = "0.2.1"
+version = "0.3.0"
 
 dependencies = [
   "click>=8.5.0",
@@ -12,20 +12,20 @@ dependencies = [
   "click_log>=0.4.0",
   "cloup>=4.0.0",
   "libtmux>=0.62.0",
-  "polars>=1.44.2",
-  "python-dotenv>=1.2.3",
+  "polars>=2.0.0",
+  "python-dotenv>=1.2.4",
 ]
 
 [dependency-groups]
 dev = [
   "pytest>=9.1.1",
   "ruff==0.15.0",
-  "ty>=0.0.83",
+  "ty>=0.0.89",
 ]
 
 [build-system]
 build-backend = "uv_build"
-requires = ["uv_build>=0.11.29,<0.12"]
+requires = ["uv_build>=0.9.18"]
 
 [tool.uv]
 preview-features = ["centralized-project-envs"]
@@ -79,7 +79,6 @@ ignore = [
   "PLR0913", # allow more arguments in functions
   "PLR0915", # allow more statements in functions
   "PLR2004", # allow magic numbers
-  "PT011", # allow broad exception matching in tests
   "PYI021", # allow docstrings in stubs
   "RET504", # allow return statements after assignment of variable
   "S101", # allow asserts
@@ -97,6 +96,7 @@ select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/rnapy_tests/**/*.py" = [
+  "PT011", # allow pytest.raises without match: tests do not check exception messages
   "SLF001", # allow private member access
 ]
 

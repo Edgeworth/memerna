@@ -4,10 +4,14 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 
 #include "api/trace/trace.h"
+#include "model/base.h"
+#include "model/ctd.h"
+#include "model/energy.h"
 #include "util/array.h"
 #include "util/util.h"
 

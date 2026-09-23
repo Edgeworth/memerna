@@ -2,13 +2,14 @@
 #ifndef API_ENERGY_ENERGY_CFG_H_
 #define API_ENERGY_ENERGY_CFG_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
 #include <iosfwd>
 #include <string>
 
 #include "model/ctd.h"
+#include "model/secondary.h"
 #include "util/argparse.h"
 #include "util/enum.h"
 

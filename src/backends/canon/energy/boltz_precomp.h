@@ -2,6 +2,7 @@
 #ifndef BACKENDS_CANON_ENERGY_BOLTZ_PRECOMP_H_
 #define BACKENDS_CANON_ENERGY_BOLTZ_PRECOMP_H_
 
+#include "api/energy/energy_cfg.h"
 #include "backends/base/energy/boltz_precomp.h"
 #include "backends/canon/energy/boltz_model.h"
 

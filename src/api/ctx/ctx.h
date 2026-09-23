@@ -3,6 +3,7 @@
 #define API_CTX_CTX_H_
 
 #include <array>
+#include <cstdint>
 #include <mutex>
 #include <optional>
 #include <utility>
@@ -10,6 +11,7 @@
 
 #include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/energy.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
@@ -23,6 +25,7 @@
 #include "model/primary.h"
 #include "model/secondary.h"
 #include "util/argparse.h"
+#include "util/enum.h"
 
 namespace mrna {
 

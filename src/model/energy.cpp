@@ -6,13 +6,17 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
+#include <ios>
 #include <istream>
 #include <limits>
+#include <ostream>
 #include <random>
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "util/error.h"
+#include "util/float.h"
 
 namespace mrna {
 

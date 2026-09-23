@@ -1,11 +1,14 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/subopt/subopt.h"
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 
+#include <cstdint>
 #include <string>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/options.h"
 #include "api/subopt/subopt_cfg.h"

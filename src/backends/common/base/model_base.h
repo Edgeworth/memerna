@@ -4,6 +4,8 @@
 
 #include <cassert>
 #include <cmath>
+#include <deque>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -11,8 +13,11 @@
 #include "api/energy/energy_cfg.h"
 #include "model/base.h"
 #include "model/constants.h"
+#include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
+#include "model/secondary.h"
+#include "util/error.h"
 
 namespace mrna::md::base {
 
@@ -147,6 +152,23 @@ class ModelBase {
       coax += coax_mismatch_gu_bonus;
     return coax;
   }
+
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
+      int ien, std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
+      std::unique_ptr<Structure>* s = nullptr) const;
+  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
+  Energy MultiloopEnergy(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
+      int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
+      std::unique_ptr<Structure>* sstruc = nullptr) const;
 
  protected:
   // This is protected to prevent construction on the stack, since this structure

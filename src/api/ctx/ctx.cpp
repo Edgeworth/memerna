@@ -2,16 +2,28 @@
 #include "api/ctx/ctx.h"
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <mutex>
 #include <new>
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
 #include <vector>
 
+#include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
+#include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
+#include "api/pfn.h"
+#include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
+#include "backends/base/energy/model.h"
 #include "backends/brute/alg.h"
 #include "backends/canon/dp.h"
 #include "backends/canon/energy/model.h"
@@ -19,8 +31,12 @@
 #include "backends/common/static.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
+#include "model/ctd.h"
 #include "model/primary.h"
+#include "model/secondary.h"
+#include "util/argparse.h"
 #include "util/error.h"
+#include "util/float.h"
 #include "util/util.h"
 
 namespace mrna {
@@ -146,6 +162,7 @@ PfnBackend Ctx::BackendForPfn(
 erg::EnergyResult Ctx::Efn(const Primary& r, const Secondary& s, erg::EnergyCfg cfg,
     const erg::PseudofreeCfg& pf, const Ctds* given_ctd, bool build_structure) const {
   verify(r.size() > 0, "sequence must not be empty");
+  s.Verify(r);
   std::string log;
   auto resolved = ResolveEfn(backend_, cfg_, cfg, pf, &log);
   if (!resolved.has_value()) fatal("No backend supports this configuration for Efn:\n{}", log);
@@ -229,6 +246,11 @@ pfn::PfnResult Ctx::Pfn(const Primary& r, std::optional<PfnAlg> alg, erg::Energy
 
   pfn::PfnState dp = CreatePfnState(backend.m);
   auto pfn = backend.pfn_fn(backend.m, r, dp, cfg, pf);
+
+  // The partition function is not scaled, so a long or stable sequence can
+  // overflow the float type.
+  verify(IsFinite(pfn.q),
+      "partition function overflowed (q = {}); use a larger FLOAT_PRECISION or USE_MPFR", pfn.q);
 
   return pfn::PfnResult{.state = std::move(dp), .pfn = std::move(pfn)};
 }

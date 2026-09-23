@@ -3,6 +3,7 @@
 #define UTIL_CONTAINER_H_
 
 #include <boost/container/small_vector.hpp>
+#include <cstddef>
 
 namespace mrna {
 

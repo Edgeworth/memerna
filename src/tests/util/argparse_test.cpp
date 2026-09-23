@@ -35,6 +35,27 @@ TEST(ArgParseTest, HasIsTrueForNoFlagButGetOrIsFalse) {
   EXPECT_FALSE(args.GetOr(opt));
 }
 
+TEST(ArgParseTest, MultipleValuesReplaceDefault) {
+  const auto opt = mrna::Opt(mrna::Opt::ARG).LongName("opt").Multiple().Default("a,b");
+  mrna::ArgParse args;
+  args.RegisterOpt(opt);
+
+  std::vector<std::string> argv_str = {"prog"};
+  auto argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+  EXPECT_EQ((std::vector<std::string>{"a", "b"}), args.GetMultiple(opt));
+
+  argv_str = {"prog", "--opt", "c"};
+  argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+  EXPECT_EQ((std::vector<std::string>{"c"}), args.GetMultiple(opt));
+
+  argv_str = {"prog", "--opt", "c", "--opt", "d"};
+  argv = MakeArgv(argv_str);
+  EXPECT_EQ("", args.Parse(static_cast<int>(argv.size()), argv.data()));
+  EXPECT_EQ((std::vector<std::string>{"c", "d"}), args.GetMultiple(opt));
+}
+
 TEST(ArgParseTest, GetOrDefaultIsFalseWhenUnspecified) {
   const auto opt = mrna::Opt(mrna::Opt::FLAG).LongName("flag");
   mrna::ArgParse args;

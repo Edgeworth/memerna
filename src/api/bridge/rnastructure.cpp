@@ -1,16 +1,45 @@
 // Copyright 2016 Eliot Courtney.
 #include "api/bridge/rnastructure.h"
 
+#include <cmath>
+#include <cstdint>
 #include <memory>
+#include <optional>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "api/bridge/bridge.h"
+#include "api/ctx/algorithm.h"
+#include "api/ctx/ctx.h"
+#include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+#include "api/pfn.h"
 #include "api/subopt/subopt.h"
+#include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "api/trace/trace_cfg.h"
+#include "model/base.h"
+#include "model/constants.h"
+#include "model/ctd.h"
+#include "model/energy.h"
+#include "model/pfn.h"
+#include "model/primary.h"
+#include "model/secondary.h"
+#include "rnastructure_bridge/include/DynProgArray.h"
+#include "rnastructure_bridge/include/algorithm.h"
 #include "rnastructure_bridge/include/alltrace.h"
+#include "rnastructure_bridge/include/forceclass.h"
+#include "rnastructure_bridge/include/pfunction.h"
+#include "rnastructure_bridge/include/pfunction_math.h"
+#include "rnastructure_bridge/include/rna_library.h"
 #include "rnastructure_bridge/include/stochastic.h"
+#include "rnastructure_bridge/include/structure.h"
+#include "util/argparse.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna::bridge {
 

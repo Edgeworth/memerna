@@ -3,16 +3,21 @@
 #define BACKENDS_COMMON_BASE_BRANCH_H_
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <deque>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "model/base.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/secondary.h"
+#include "util/error.h"
+#include "util/util.h"
 
 namespace mrna::md::base {
 

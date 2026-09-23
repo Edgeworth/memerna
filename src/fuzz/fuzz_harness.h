@@ -2,13 +2,14 @@
 #ifndef FUZZ_FUZZ_HARNESS_H_
 #define FUZZ_FUZZ_HARNESS_H_
 
-#include <memory>
 #include <optional>
 #include <random>
 #include <string>
 #include <variant>
 #include <vector>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_cfg.h"
 #include "fuzz/fuzz_invocation.h"
@@ -16,6 +17,8 @@
 #include "util/util.h"
 
 #ifdef MRNA_USE_RNASTRUCTURE
+#include <memory>
+
 #include "api/bridge/rnastructure.h"
 #endif  // MRNA_USE_RNASTRUCTURE
 

@@ -2,15 +2,21 @@
 #ifndef BACKENDS_BASE_ENERGY_MODEL_H_
 #define BACKENDS_BASE_ENERGY_MODEL_H_
 
-#include <deque>
 #include <memory>
+#include <random>
 #include <string>
 
 #include "api/ctx/backend_cfg.h"
+#include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/common/base/model_base.h"
 #include "backends/common/base/parse.h"
 #include "backends/common/model_mixin.h"
+#include "model/ctd.h"
+#include "model/energy.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna::md::base {
 
@@ -20,23 +26,6 @@ class Model : public ModelBase, public ModelMixin<Model> {
 
   static bool IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& cfg,
       const erg::PseudofreeCfg& pf, std::string* reason = nullptr);
-
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
-      int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy MultiloopEnergy(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
-      int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
-      std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   // ModelMixin:
   template <erg::EnergyCfg CFG, class PseudofreeCfgT>

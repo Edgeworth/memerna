@@ -1,14 +1,20 @@
 // Copyright 2022 Eliot Courtney.
 #include "model/ctd.h"
 
+#include <algorithm>
+#include <cassert>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include "model/base.h"
 #include "model/branch.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna {
 
@@ -102,7 +108,7 @@ Ctds ParseCtdString(const Secondary& s, const std::string& ctd_str) {
       ctd[s[i - 1]] = CTD_3_DANGLE;
     }
     if (c == '5') {
-      verify(i + 1 < N && ctd[i + 1] == CTD_NA, "invalid input");
+      verify(i + 1 < N && s.IsPaired(i + 1) && ctd[i + 1] == CTD_NA, "invalid input");
       ctd[i + 1] = CTD_5_DANGLE;
     }
     // Opening a branch.
@@ -137,6 +143,11 @@ Ctds ParseCtdString(const Secondary& s, const std::string& ctd_str) {
           i + 1 < N && s.IsPaired(i + 1) && s[i + 1] + 1 < N && ctd_str[s[i + 1] + 1] == 'M';
       verify(right_branch_viable && ctd[i + 1] != CTD_NA, "invalid input");
       if (ctd[i + 1] == CTD_UNUSED) ctd[i + 1] = CTD_MISMATCH;
+    }
+    if (c == 'M') {
+      const bool left_branch_viable =
+          i - 1 >= 0 && s.IsPaired(i - 1) && s[i - 1] - 1 >= 0 && ctd_str[s[i - 1] - 1] == 'm';
+      verify(left_branch_viable, "invalid input");
     }
   }
   return ctd;

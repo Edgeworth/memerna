@@ -2,9 +2,13 @@
 #include "backends/canon/trace/trace.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "api/trace/trace_cfg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -14,6 +18,7 @@
 #include "model/secondary.h"
 #include "util/error.h"
 #include "util/log.h"
+#include "util/util.h"
 
 namespace mrna::md::canon {
 

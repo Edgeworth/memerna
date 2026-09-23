@@ -2,6 +2,7 @@
 #ifndef BACKENDS_STACK_TRACE_TRACE_H_
 #define BACKENDS_STACK_TRACE_TRACE_H_
 
+#include <optional>
 #include <string>
 
 #include "api/energy/energy_cfg.h"
@@ -9,7 +10,10 @@
 #include "api/trace/trace_cfg.h"
 #include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
+#include "model/ctd.h"
+#include "model/energy.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna::md::stack {
 

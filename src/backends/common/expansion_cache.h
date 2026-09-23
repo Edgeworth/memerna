@@ -3,6 +3,7 @@
 #define BACKENDS_COMMON_EXPANSION_CACHE_H_
 
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 #include <vector>
 

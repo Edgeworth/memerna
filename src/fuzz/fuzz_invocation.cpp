@@ -1,35 +1,56 @@
 // Copyright 2021 Eliot Courtney.
 #include "fuzz/fuzz_invocation.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <optional>
 #include <set>
 #include <string>
 #include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "api/ctx/algorithm.h"
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/ctx/ctx.h"
 #include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "api/mfe.h"
 #include "api/pfn.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "api/trace/trace_cfg.h"
 #include "backends/brute/brute.h"
+#include "backends/canon/dp.h"
+#include "backends/common/base/dp.h"
+#include "backends/stack/mfe/dp.h"
+#include "fuzz/fuzz_cfg.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
 #include "model/pfn.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 #include "util/error.h"
 #include "util/float.h"
+
+#ifdef MRNA_USE_RNASTRUCTURE
+#include "api/bridge/rnastructure.h"
+#include "rnastructure_bridge/include/algorithm.h"
+#include "rnastructure_bridge/include/defines.h"
+#endif  // MRNA_USE_RNASTRUCTURE
 #include "util/log.h"
 #include "util/string.h"
+#include "util/util.h"
 
 namespace mrna::fuzz {
 

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <queue>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "backends/common/base/dp.h"
 #include "backends/common/energy.h"
 #include "backends/common/expansion_cache.h"
+#include "model/base.h"
 #include "model/energy.h"
 #include "model/primary.h"
 

@@ -4,9 +4,9 @@
 
 #include <memory>
 
+#include "api/energy/energy_cfg.h"
 #include "backends/canon/energy/model.h"
 #include "backends/common/base/boltz_model_base.h"
-#include "backends/common/boltz.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "model/structure.h"

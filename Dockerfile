@@ -49,7 +49,7 @@ COPY . .
 RUN uv sync --locked
 
 RUN runtime_build="$(mktemp -d)" \
-    && cmake -S . -B "${runtime_build}" -D CMAKE_BUILD_TYPE=Release \
+    && cmake -S . -B "${runtime_build}" -D CMAKE_BUILD_TYPE=Release -D USE_NATIVE_ARCH=OFF \
     && cmake --build "${runtime_build}" --parallel "${MRNA_BUILD_JOBS}" \
         --target efn fold fuzz harness partition run_tests subopt \
     && "${runtime_build}/run_tests" \

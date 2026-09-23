@@ -1,7 +1,7 @@
 // Copyright 2023 Eliot Courtney.
 #include "util/error.h"
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 
 #include <cstdlib>
 #include <exception>
@@ -10,7 +10,7 @@
 #include "util/log.h"
 
 #ifdef MRNA_USE_BOOST
-#include <boost/stacktrace.hpp>
+#include <boost/stacktrace/stacktrace.hpp>
 #endif
 
 namespace {

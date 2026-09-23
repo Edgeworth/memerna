@@ -5,6 +5,7 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/canon/dp.h"
 #include "backends/canon/energy/boltz_model.h"
+#include "model/energy.h"
 #include "model/primary.h"
 
 namespace mrna::md::canon {

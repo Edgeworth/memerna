@@ -1,12 +1,14 @@
 // Copyright 2026 Eliot Courtney.
 #include "util/log.h"
 
+#ifdef MRNA_ENABLE_LOGGING
 #include <cstdlib>
 #include <utility>
 
-#ifdef MRNA_ENABLE_LOGGING
 #include "spdlog/cfg/env.h"
+#include "spdlog/common.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 #include "util/version.h"
 #endif
 

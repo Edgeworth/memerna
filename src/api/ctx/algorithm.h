@@ -2,6 +2,8 @@
 #ifndef API_CTX_ALGORITHM_H_
 #define API_CTX_ALGORITHM_H_
 
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <string>
@@ -16,6 +18,9 @@
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
 #include "api/trace/trace_cfg.h"
+#include "model/energy.h"
+#include "model/pfn.h"
+#include "model/primary.h"
 #include "util/argparse.h"
 #include "util/container.h"
 #include "util/enum.h"

@@ -1,12 +1,14 @@
 // Copyright 2026 Eliot Courtney.
 #include "backends/canon/mfe/mfe_opt.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <string>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/canon/energy/precomp.h"
 #include "backends/common/static.h"
 #include "model/base.h"

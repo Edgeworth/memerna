@@ -1,7 +1,14 @@
 // Copyright 2024 Eliot Courtney.
 #include "api/ctx/backend.h"
 
+#include <variant>
+
+#include "api/ctx/backend_cfg.h"
+#include "backends/base/energy/model.h"
+#include "backends/canon/energy/model.h"
+#include "backends/stack/energy/model.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna {
 

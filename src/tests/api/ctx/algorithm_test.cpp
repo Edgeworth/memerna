@@ -1,18 +1,27 @@
 // Copyright 2026 Eliot Courtney.
 #include "api/ctx/algorithm.h"
 
+#include <cstdint>
 #include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
+#include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/ctx/ctx.h"
+#include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
+#include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
 #include "model/primary.h"
+#include "model/secondary.h"
 #include "tests/init.h"
 
 namespace mrna {
@@ -217,6 +226,19 @@ TEST(CtxTest, RejectsEmptySequences) {
     EXPECT_THROW(
         (void)ctx.SuboptIntoVector(r, std::nullopt, std::nullopt, {}, {}, {}), std::runtime_error);
     EXPECT_THROW((void)ctx.Pfn(r, std::nullopt, {}, {}), std::runtime_error);
+  }
+}
+
+TEST(CtxTest, EfnRejectsStructuresTheModelCannotEvaluate) {
+  for (const auto& model : t04_ms) {
+    const Ctx ctx(model, kT04Cfg);
+    EXPECT_NO_THROW((void)ctx.Efn(Primary::FromSeq("GAAAC"), Secondary::FromDb("(...)"), {}));
+    // A-A is not a canonical pair.
+    EXPECT_THROW((void)ctx.Efn(Primary::FromSeq("AAAAA"), Secondary::FromDb("(...)"), {}),
+        std::runtime_error);
+    // The hairpin has 2 unpaired bases.
+    EXPECT_THROW(
+        (void)ctx.Efn(Primary::FromSeq("GCGC"), Secondary::FromDb("(..)"), {}), std::runtime_error);
   }
 }
 

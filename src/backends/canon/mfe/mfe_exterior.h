@@ -2,8 +2,10 @@
 #ifndef BACKENDS_CANON_MFE_MFE_EXTERIOR_H_
 #define BACKENDS_CANON_MFE_MFE_EXTERIOR_H_
 
+#include "api/energy/energy_cfg.h"
 #include "backends/canon/dp.h"
 #include "backends/canon/energy/model.h"
+#include "model/energy.h"
 #include "model/primary.h"
 
 namespace mrna::md::canon {

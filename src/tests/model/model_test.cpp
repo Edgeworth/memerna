@@ -1,8 +1,12 @@
 // Copyright 2022 Eliot Courtney.
+#include <stdexcept>
+
 #include "api/energy/pseudofree_cfg.h"
 #include "backends/common/energy.h"
 #include "gtest/gtest.h"
 #include "model/energy.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna {
 
@@ -101,6 +105,18 @@ TEST(PseudofreeCfgTest, BoltzRangesHandleCappedEntries) {
   EXPECT_EQ(pf.UnpairedProd(0, 1), ZERO_B);
   EXPECT_EQ(pf.UnpairedProd(1, 1), ONE_B);
   EXPECT_EQ(pf.UnpairedProd(1, 0), ONE_B);
+}
+
+TEST(SecondaryTest, VerifyChecksPairsAgainstSequence) {
+  EXPECT_NO_THROW(Secondary::FromDb("((...)).").Verify(Primary::FromSeq("GGAAACCA")));
+  // G-U is a canonical pair.
+  EXPECT_NO_THROW(Secondary::FromDb("(...)").Verify(Primary::FromSeq("GAAAU")));
+  // G-A is not.
+  EXPECT_THROW(Secondary::FromDb("(...)").Verify(Primary::FromSeq("GAAAA")), std::runtime_error);
+  // The hairpin has 2 unpaired bases.
+  EXPECT_THROW(Secondary::FromDb("(..)").Verify(Primary::FromSeq("GAAC")), std::runtime_error);
+  // The lengths differ.
+  EXPECT_THROW(Secondary::FromDb("(...)").Verify(Primary::FromSeq("GAAACA")), std::runtime_error);
 }
 
 }  // namespace mrna

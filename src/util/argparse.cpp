@@ -1,7 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/argparse.h"
 
-#include <fmt/core.h>
+#include <fmt/base.h>
+#include <fmt/format.h>
 
 #include <cstdlib>
 #include <string>
@@ -10,6 +11,7 @@
 #include <vector>
 
 #include "api/options.h"
+#include "util/error.h"
 #include "util/log.h"
 #include "util/string.h"
 
@@ -39,7 +41,7 @@ std::string Opt::Desc() const {
     desc += ")";
   }
   if (multiple_) desc += " (multiple)";
-  if (!has_default_ && !choices_.empty()) desc += " <arg>";
+  if (kind_ == ARG && !has_default_) desc += " <arg>";
   if (!help_.empty()) desc += ": " + help_;
   return desc;
 }
@@ -116,6 +118,8 @@ std::string ArgParse::Parse(int argc, char* argv[]) {
         if (i + 1 == argc) return fmt::format("missing argument for option {}", opt.Desc());
         if (opt.multiple()) {
           auto& val = values_[opt];
+          // The first explicit value replaces the default.
+          if (!explicit_values_.contains(opt)) val.clear();
           if (!val.empty()) val += ",";
           val += argv[++i];
         } else {

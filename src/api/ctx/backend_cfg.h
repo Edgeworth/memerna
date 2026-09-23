@@ -2,6 +2,7 @@
 #ifndef API_CTX_BACKEND_CFG_H_
 #define API_CTX_BACKEND_CFG_H_
 
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
 #include <cstdint>
@@ -13,6 +14,7 @@
 #include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
+#include "util/enum.h"
 #include "util/string.h"
 
 namespace mrna {

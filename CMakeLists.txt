@@ -4,9 +4,9 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not supported; configure with -B <build-directory>")
 endif()
 
-project(memerna VERSION 0.2.1 LANGUAGES CXX)
+project(memerna VERSION 0.3.0 LANGUAGES CXX)
 
-# Supress warning messages about unused variables:
+# Suppress warning messages about unused variables:
 set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
 
 # Options
@@ -14,6 +14,7 @@ option(USE_MPFR "Use MPFR for higher precision floats" OFF)
 option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 option(USE_LTO "Whether to build with LTO" OFF)
+option(USE_NATIVE_ARCH "Whether to optimise release builds for the build machine's CPU" ON)
 option(ENABLE_LOGGING "Enable project logging" ON)
 set(INDEX_BITS 16 CACHE STRING "Number of bits to use for indices and sequence lengths.
     Valid values are 8, 16, or 32.")
@@ -50,8 +51,12 @@ endif()
 # Flags for each build configuration.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native -O3")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+if(USE_NATIVE_ARCH)
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+endif()
 
 # Enable LTO
 if(USE_LTO)
@@ -249,6 +254,7 @@ set(MEMERNA_SOURCE
   src/backends/common/base/boltz_precomp_base.h
   src/backends/common/base/branch.h
   src/backends/common/base/dp.h
+  src/backends/common/base/model_base.cpp
   src/backends/common/base/model_base.h
   src/backends/common/base/parse.h
   src/backends/common/base/precomp_base.h
@@ -463,6 +469,6 @@ endif()
 # Keep the build-tree data assets in sync for incremental builds.
 add_custom_target(copy_data ALL
   COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/data
-COMMAND ${CMAKE_COMMAND}   -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data
     ${CMAKE_CURRENT_BINARY_DIR}/data)
 add_dependencies(memerna copy_data)

@@ -1,6 +1,8 @@
 // Copyright 2024 Eliot Courtney.
 #include "tests/util.h"
 
+#include <gtest/gtest.h>
+
 #include <string>
 #include <tuple>
 #include <utility>
@@ -9,6 +11,10 @@
 #include "api/ctx/backend.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
+#include "model/energy.h"
+#include "model/pfn.h"
+#include "model/primary.h"
+#include "model/secondary.h"
 
 namespace mrna {
 

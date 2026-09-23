@@ -297,6 +297,9 @@ class SuboptPerfRunner:
                         "real_sec": cmd_res.real_sec,
                     },
                 )
+            except NotImplementedError:
+                # Packages raise this for unsupported configurations, which the caller skips.
+                raise
             except Exception as e:
                 click.echo(f"Error running {program} on {name}: {e}")
                 failed = True
@@ -321,7 +324,12 @@ class SuboptPerfRunner:
     ) -> None:
         for cfg in subopt_cfgs:
             click.echo(f"Running {program} on {rna_idx} {rna.name}, cfg {cfg}")
-            if not self._run_once(program, energy_cfg, cfg, rna):
+            try:
+                succeeded = self._run_once(program, energy_cfg, cfg, rna)
+            except NotImplementedError as e:
+                click.echo(f"Skipping remaining runs at {rna.name} for {program}: {e}")
+                break
+            if not succeeded:
                 click.echo(f"Failed, skipping remaining runs at {rna.name} for {program}")
                 break
 

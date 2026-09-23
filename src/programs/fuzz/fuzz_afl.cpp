@@ -4,17 +4,23 @@
 #include "util/error.h"
 
 #ifdef __AFL_FUZZ_TESTCASE_LEN
-#include <fmt/core.h>
-#include <unistd.h>
+#include <fmt/base.h>
+#include <unistd.h>  // IWYU pragma: keep - used by the AFL macros.
 
-#include <boost/json/src.hpp>
+#include <boost/json/object.hpp>
+#include <boost/json/parse.hpp>
+#include <boost/json/src.hpp>  // IWYU pragma: keep - compiles Boost.JSON into this program.
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <exception>
 #include <optional>
 #include <random>
 #include <string>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_harness.h"
 #include "model/energy.h"
 #include "model/primary.h"
@@ -144,7 +150,10 @@ int main(int argc, char* argv[]) {
             "Pseudofree unpaired: {}\n", mrna::FormatPseudofreeEnergies(pf.UnpairedEnergies()));
       for (const auto& s : *res) fmt::print("{}\n", s);
       fmt::print("\n");
-      abort();
+      // abort() does not flush stdio, and stdout is fully buffered when it is
+      // redirected to a file or pipe.
+      std::fflush(stdout);
+      std::abort();
     }
   }
 #endif

@@ -41,10 +41,7 @@ class FoldPerfRunner:
         self.memevault = memevault
         self.output_path = output_path
         self.programs = [
-            (
-                memerna01,
-                EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC, backend="base"),
-            ),
+            (memerna01, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
             (linearfold, EnergyCfg(ctd=CtdCfg.D2, lonely_pairs=LonelyPairs.HEURISTIC)),
             (rnastructure, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
             (viennarna, EnergyCfg(ctd=CtdCfg.ALL, lonely_pairs=LonelyPairs.HEURISTIC)),
@@ -85,6 +82,9 @@ class FoldPerfRunner:
                     "sys_sec": res.sys_sec,
                     "real_sec": res.real_sec,
                 }
+            except NotImplementedError:
+                # Packages raise this for unsupported configurations, which the caller skips.
+                raise
             except Exception as e:
                 click.echo(f"Error running {program} on {name}: {e}")
                 failed = True
@@ -100,6 +100,9 @@ class FoldPerfRunner:
             desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
             dataset = self.memevault.dataset
             click.echo(f"Benchmarking folding with {desc} on {dataset}")
-            for rna_idx, rna in enumerate(self.memevault):
-                click.echo(f"Running {program} on {rna_idx} {rna.name}")
-                self._run_once(program, cfg, rna)
+            try:
+                for rna_idx, rna in enumerate(self.memevault):
+                    click.echo(f"Running {program} on {rna_idx} {rna.name}")
+                    self._run_once(program, cfg, rna)
+            except NotImplementedError as e:
+                click.echo(f"Skipping {desc}: {e}")

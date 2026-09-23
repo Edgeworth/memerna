@@ -2,11 +2,9 @@
 #include "util/string.h"
 
 #include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/detail/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/type_index/type_index_facade.hpp>
 #include <cctype>
+#include <istream>
 #include <string>
 #include <vector>
 

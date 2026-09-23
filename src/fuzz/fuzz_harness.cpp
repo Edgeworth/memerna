@@ -1,19 +1,32 @@
 // Copyright 2022 Eliot Courtney.
 #include "fuzz/fuzz_harness.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
-#include <memory>
+#include <cstdint>
+#include <iterator>
+#include <optional>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "api/ctx/algorithm.h"
 #include "api/ctx/backend.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "fuzz/fuzz_cfg.h"
+#include "fuzz/fuzz_invocation.h"
 #include "model/primary.h"
+#include "util/enum.h"
 #include "util/log.h"
+
+#ifdef MRNA_USE_RNASTRUCTURE
+#include <memory>
+
+#include "api/bridge/rnastructure.h"
+#include "util/error.h"
+#endif  // MRNA_USE_RNASTRUCTURE
 
 namespace mrna::fuzz {
 

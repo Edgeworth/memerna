@@ -1,6 +1,8 @@
 // Copyright 2026 Eliot Courtney.
 #include "backends/canon/energy/boltz_precomp.h"
 
+#include "backends/base/energy/boltz_precomp.h"
+#include "backends/canon/energy/boltz_model.h"
 #include "backends/common/static.h"
 
 namespace mrna::md::base {

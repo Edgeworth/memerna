@@ -2,8 +2,10 @@
 #ifndef FUZZ_FUZZ_CFG_H_
 #define FUZZ_FUZZ_CFG_H_
 
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>
@@ -13,6 +15,7 @@
 #include "api/energy/energy_cfg.h"
 #include "model/energy.h"
 #include "util/argparse.h"
+#include "util/float.h"
 
 namespace mrna::fuzz {
 

@@ -111,6 +111,9 @@ class FoldAccuracyRunner:
                 "sensitivity": accuracy.sensitivity,
                 "f1": accuracy.f1_score(),
             }
+        except NotImplementedError:
+            # Packages raise this for unsupported configurations, which the caller skips.
+            raise
         except Exception as e:
             click.echo(f"Error running {program} on {name}: {e}")
             failed = True
@@ -128,6 +131,9 @@ class FoldAccuracyRunner:
             dataset = self.memevault.dataset
             desc = program.desc(energy_cfg=cfg, subopt_cfg=None)
             click.echo(f"Folding accuracy with {desc} on {dataset}")
-            for rna_idx, rna in enumerate(self.memevault):
-                click.echo(f"Running {desc} on {rna_idx} {rna.name}")
-                self._run_once(program, cfg, rna)
+            try:
+                for rna_idx, rna in enumerate(self.memevault):
+                    click.echo(f"Running {desc} on {rna_idx} {rna.name}")
+                    self._run_once(program, cfg, rna)
+            except NotImplementedError as e:
+                click.echo(f"Skipping {desc}: {e}")

@@ -9,6 +9,8 @@
 #include <unordered_map>
 
 #include "model/base.h"
+#include "model/energy.h"
+#include "util/error.h"
 
 namespace mrna::md {
 

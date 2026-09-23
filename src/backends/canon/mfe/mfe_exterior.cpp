@@ -4,6 +4,8 @@
 #include <algorithm>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"

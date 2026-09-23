@@ -5,6 +5,8 @@
 #include <ostream>
 
 #include "api/ctx/backend_cfg.h"
+#include "model/energy.h"
+#include "util/argparse.h"
 #include "util/error.h"
 
 namespace mrna::subopt {

@@ -128,10 +128,12 @@ fuzz *args:
     if [[ "$include_pfn" == true ]]; then
       base_cfgs+=("--mfe --mfe-table --subopt --pfn 1 30")
     fi
-    energy_models=(t04 t12 t22)
+    # With random models, the code for T12 is the same as for T04, and only the
+    # parameter files differ. Fuzzing with --random-seeds does not load them.
+    energy_models=(t04 t22)
     ctds=(none d2 no-coax all)
     random_model_ranges=(
-      "--random-min-energy -1.0 --random-max-energy 1.0"
+      "--random-min-energy -10.0 --random-max-energy 10.0"
       "--random-min-energy -1.0 --random-max-energy 0.0"
       "--random-min-energy 0.0 --random-max-energy 1.0"
       "--random-min-energy 0.0 --random-max-energy 0.0"
@@ -149,6 +151,11 @@ fuzz *args:
     for base_cfg in "${base_cfgs[@]}"; do
       for energy_model in "${energy_models[@]}"; do
         for ctd in "${ctds[@]}"; do
+          # T22 is only supported by the stack backend, which does not support
+          # D2. The fuzzer would exit successfully without testing anything.
+          if [[ "$energy_model" == t22 && "$ctd" == d2 ]]; then continue; fi
+          # The stack backend has no partition function for T22.
+          if [[ "$energy_model" == t22 && "$base_cfg" == *--pfn* ]]; then continue; fi
           for random_model_range in "${random_model_ranges[@]}"; do
             for random_pf_range in "${random_pf_ranges[@]}"; do
               cmd="SPDLOG_LEVEL=err ${fuzz_exec_q} ${base_cfg} --energy-model ${energy_model} --ctd ${ctd} --random-seeds"

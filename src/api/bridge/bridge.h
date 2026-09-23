@@ -2,6 +2,7 @@
 #ifndef API_BRIDGE_BRIDGE_H_
 #define API_BRIDGE_BRIDGE_H_
 
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>

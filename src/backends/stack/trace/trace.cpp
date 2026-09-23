@@ -1,18 +1,19 @@
 // Copyright 2023 Eliot Courtney.
 #include "backends/stack/trace/trace.h"
 
-#include <fmt/core.h>
-
 #include <algorithm>
 #include <optional>
 #include <random>
+#include <string>
 #include <utility>
 #include <variant>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "api/trace/trace_cfg.h"
 #include "backends/common/base/dp.h"
 #include "backends/common/static.h"
+#include "backends/stack/energy/model.h"
 #include "backends/stack/mfe/dp.h"
 #include "model/base.h"
 #include "model/constants.h"
@@ -23,6 +24,7 @@
 #include "util/array.h"
 #include "util/error.h"
 #include "util/log.h"
+#include "util/util.h"
 
 namespace mrna::md::stack {
 
@@ -56,7 +58,7 @@ struct TracebackInternal {
   const base::DpArray& dp;
   const base::ExtArray& ext;
   const Array2D<Energy>& nostack;
-  const Array3D<Energy>& penult;
+  const Array2D<Energy>& penult;
   TraceResult res;
   std::vector<Expansion> next;
   std::mt19937 eng;
@@ -195,46 +197,13 @@ struct TracebackInternal {
     const auto en2b = r[en - 2];
 
     if (!is_nostack) {
-      const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
-      const Energy bulge_left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
-      const Energy bulge_right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
-
-      const auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] +
-          m.penultimate_stack[en1b][enb][stb][st1b] + pf.Paired(st, en);
-      const auto left = bulge_left + m.penultimate_stack[en1b][enb][stb][st2b];
-      const auto right = bulge_right + m.penultimate_stack[en2b][enb][stb][st1b];
-
-      for (int length = 2; 2 * length <= max_stack; ++length) {
-        if (length == 2 &&
-            none + nostack[st + 1][en - 1] +
-                    m.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
-                dp[st][en][DP_P]) {
-          next.push_back({.idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
-        }
-        if (none + penult[st + 1][en - 1][length - 1] == dp[st][en][DP_P]) {
-          next.push_back({.idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
-        }
-
-        if (length == 2 &&
-            left + nostack[st + 2][en - 1] +
-                    m.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
-                dp[st][en][DP_P]) {
-          next.push_back({.idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
-        }
-        if (left + penult[st + 2][en - 1][length - 1] == dp[st][en][DP_P]) {
-          next.push_back({.idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
-        }
-
-        if (length == 2 &&
-            right + nostack[st + 1][en - 2] +
-                    m.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
-                dp[st][en][DP_P]) {
-          next.push_back({.idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
-        }
-        if (right + penult[st + 1][en - 2][length - 1] == dp[st][en][DP_P]) {
-          next.push_back({.idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
-        }
-      }
+      const auto none = m.stack[stb][st1b][en1b][enb] + m.penultimate_stack[en1b][enb][stb][st1b] +
+          pf.Paired(st, en);
+      const auto left =
+          m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1) + m.penultimate_stack[en1b][enb][stb][st2b];
+      const auto right =
+          m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2) + m.penultimate_stack[en2b][enb][stb][st1b];
+      AddStackExpansions(st, en, none, left, right, dp[st][en][DP_P]);
     }
 
     const auto target = is_nostack ? nostack[st][en] : dp[st][en][DP_P];
@@ -536,39 +505,26 @@ struct TracebackInternal {
     }
   }
 
-  void ComputePenultimate(int st, int en, int length) {
-    const auto bulge_left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
-    const auto bulge_right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
+  // Adds expansions for a stack continuing from (st, en) to a stacking pair, a
+  // left bulge, or a right bulge, with energies `none`, `left`, and `right`
+  // respectively for the loop between them.
+  void AddStackExpansions(int st, int en, Energy none, Energy left, Energy right, Energy target) {
+    const auto maybe_add = [&](int ist, int ien, Energy loop) {
+      if (loop + nostack[ist][ien] + m.penultimate_stack[r[st]][r[ist]][r[ien]][r[en]] == target)
+        next.push_back({.idx0 = NoStackIndex(ist, ien), .pair{st, en}});
+      if (loop + penult[ist][ien] == target)
+        next.push_back({.idx0 = PenultimateIndex(ist, ien), .pair{st, en}});
+    };
+    maybe_add(st + 1, en - 1, none);
+    maybe_add(st + 2, en - 1, left);
+    maybe_add(st + 1, en - 2, right);
+  }
 
-    auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + pf.Paired(st, en);
-    if (length == 2 &&
-        none + nostack[st + 1][en - 1] + m.penultimate_stack[r[st]][r[st + 1]][r[en - 1]][r[en]] ==
-            penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 1, en - 1), .pair{st, en}});
-    }
-    if (none + penult[st + 1][en - 1][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 1, length - 1), .pair{st, en}});
-    }
-
-    auto left = bulge_left;
-    if (length == 2 &&
-        left + nostack[st + 2][en - 1] + m.penultimate_stack[r[st]][r[st + 2]][r[en - 1]][r[en]] ==
-            penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 2, en - 1), .pair{st, en}});
-    }
-    if (left + penult[st + 2][en - 1][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 2, en - 1, length - 1), .pair{st, en}});
-    }
-
-    auto right = bulge_right;
-    if (length == 2 &&
-        right + nostack[st + 1][en - 2] + m.penultimate_stack[r[st]][r[st + 1]][r[en - 2]][r[en]] ==
-            penult[st][en][length]) {
-      next.push_back({.idx0 = NoStackIndex(st + 1, en - 2), .pair{st, en}});
-    }
-    if (right + penult[st + 1][en - 2][length - 1] == penult[st][en][length]) {
-      next.push_back({.idx0 = PenultimateIndex(st + 1, en - 2, length - 1), .pair{st, en}});
-    }
+  void ComputePenultimate(int st, int en) {
+    const auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + pf.Paired(st, en);
+    const auto left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
+    const auto right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
+    AddStackExpansions(st, en, none, left, right, penult[st][en]);
   }
 
   TraceResult Compute() {
@@ -598,10 +554,7 @@ struct TracebackInternal {
         }
       } else if (std::holds_alternative<PenultimateIndex>(idx_all)) {
         auto idx = std::get<PenultimateIndex>(idx_all);
-        const int st = idx.st;
-        const int en = idx.en;
-        const int length = idx.len;
-        ComputePenultimate(st, en, length);
+        ComputePenultimate(idx.st, idx.en);
       } else {
         auto idx = std::get<NoStackIndex>(idx_all);
         const int st = idx.st;

@@ -79,6 +79,8 @@ class Secondary {
     return st != 0 && en + 1 < size() && data_[st - 1] == en + 1;
   }
 
+  void Verify(const Primary& r) const;
+
   static Secondary FromDb(const std::string& pairs_str);  // Dotbracket
   [[nodiscard]] std::string ToDb() const;
 

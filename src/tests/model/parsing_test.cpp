@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "gtest/gtest.h"
+#include "model/base.h"
 #include "model/ctd.h"
 #include "model/primary.h"
 #include "model/secondary.h"
@@ -191,6 +192,19 @@ TEST_F(ParsingTest, ParseCtd) {
       ParseSeqCtdString(kPrimary16.ToSeq(), kCtdString16, /*use_d2=*/false));
   EXPECT_EQ(std::make_tuple(kPrimary17, kSecondary17, kCtd17),
       ParseSeqCtdString(kPrimary17.ToSeq(), kCtdString17, /*use_d2=*/false));
+}
+
+TEST_F(ParsingTest, ParseCtdRejectsMarkersWithoutBranch) {
+  // 5' dangle on an unpaired base.
+  EXPECT_THROW(
+      (void)ParseSeqCtdString("AAGAAACAAAA", "5.[...]....", /*use_d2=*/false), std::runtime_error);
+  // Mismatch with no matching `m`.
+  EXPECT_THROW(
+      (void)ParseSeqCtdString("AAGAAACAAAA", "..[...]M...", /*use_d2=*/false), std::runtime_error);
+  EXPECT_EQ(std::make_tuple(Primary::FromSeq("AAGAAACAAAA"), Secondary::FromDb("..(...)...."),
+                Ctds{CTD_NA, CTD_NA, CTD_MISMATCH, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA, CTD_NA,
+                    CTD_NA, CTD_NA}),
+      ParseSeqCtdString("AAGAAACAAAA", ".m[...]M...", /*use_d2=*/false));
 }
 
 TEST_F(ParsingTest, IsCtdString) {

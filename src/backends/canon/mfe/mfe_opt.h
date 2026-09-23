@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "api/energy/energy_cfg.h"
 #include "backends/canon/dp.h"
 #include "backends/canon/energy/model.h"
 #include "model/primary.h"

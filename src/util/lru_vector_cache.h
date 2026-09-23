@@ -3,6 +3,7 @@
 #define UTIL_LRU_VECTOR_CACHE_H_
 
 #include <cassert>
+#include <cstddef>
 #include <list>
 #include <utility>
 #include <vector>

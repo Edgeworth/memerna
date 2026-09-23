@@ -10,6 +10,8 @@
 
 #include "api/ctx/backend.h"
 #include "api/ctx/backend_cfg.h"
+#include "api/energy/energy_cfg.h"
+#include "backends/base/energy/model.h"
 #include "backends/canon/energy/model.h"
 #include "backends/stack/energy/model.h"
 #include "model/primary.h"

@@ -1,12 +1,22 @@
 // Copyright 2022 Eliot Courtney.
 #include "programs/print.h"
 
-#include <fmt/core.h>
+#include <fmt/base.h>
+#include <fmt/format.h>
 
+#include <cstddef>
+#include <span>
 #include <string>
+#include <variant>
 
+#include "api/ctx/backend.h"
+#include "api/energy/pseudofree_cfg.h"
 #include "backends/common/base/model_base.h"
+#include "model/energy.h"
+#include "model/pfn.h"
+#include "model/primary.h"
 #include "util/error.h"
+#include "util/float.h"
 #include "util/util.h"
 
 namespace mrna {

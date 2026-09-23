@@ -1,21 +1,29 @@
 // Copyright 2023 Eliot Courtney.
 #include "backends/base/subopt/subopt_persistent.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "api/energy/energy_cfg.h"
+#include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace.h"
+#include "backends/base/energy/model.h"
+#include "backends/common/base/dp.h"
+#include "backends/common/energy.h"
 #include "backends/common/static.h"
 #include "model/base.h"
 #include "model/constants.h"
 #include "model/ctd.h"
 #include "model/energy.h"
+#include "model/primary.h"
 #include "model/secondary.h"
 #include "util/error.h"
 #include "util/log.h"

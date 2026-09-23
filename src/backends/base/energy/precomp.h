@@ -10,6 +10,8 @@
 #include "api/energy/energy_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/precomp_base.h"
+#include "model/base.h"
+#include "model/constants.h"
 #include "model/energy.h"
 #include "model/primary.h"
 

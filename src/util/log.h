@@ -2,7 +2,7 @@
 #ifndef UTIL_LOG_H_
 #define UTIL_LOG_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 
 #include <cstdio>  // IWYU pragma: keep - required for stderr in no-logging builds.
 #include <utility>

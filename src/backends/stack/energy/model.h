@@ -2,10 +2,7 @@
 #ifndef BACKENDS_STACK_ENERGY_MODEL_H_
 #define BACKENDS_STACK_ENERGY_MODEL_H_
 
-#include <fmt/core.h>
-
 #include <cassert>
-#include <deque>
 #include <memory>
 #include <random>
 #include <string>
@@ -37,23 +34,6 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
   Energy penultimate_stack[4][4][4][4] = {};
 
   bool operator==(const Model&) const = default;
-
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
-      int ien, std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy TwoLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
-      std::unique_ptr<Structure>* s = nullptr) const;
-  template <erg::EnergyCfg CFG, class PseudofreeCfgT>
-  Energy MultiloopEnergy(const Primary& r, const Secondary& s, const PseudofreeCfgT& pf, int st,
-      int en, std::deque<int>* branches, bool use_given_ctds, Ctds* ctd,
-      std::unique_ptr<Structure>* sstruc = nullptr) const;
 
   // Computes the penalty for a stack of the given length, ending at (ist, ien).
   // Handles bulge loops.

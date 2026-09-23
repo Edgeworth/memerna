@@ -1,6 +1,8 @@
 // Copyright 2016 Eliot Courtney.
 #include "util/splaymap.h"
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <random>

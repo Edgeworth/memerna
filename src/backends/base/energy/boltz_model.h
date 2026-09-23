@@ -5,9 +5,13 @@
 #include <cassert>
 #include <memory>
 
+#include "api/energy/energy.h"
+#include "api/energy/energy_cfg.h"
 #include "backends/base/energy/model.h"
 #include "backends/common/base/boltz_model_base.h"
 #include "backends/common/model_mixin.h"
+#include "model/energy.h"
+#include "model/primary.h"
 
 namespace mrna::md::base {
 

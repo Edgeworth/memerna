@@ -2,6 +2,7 @@
 #ifndef BACKENDS_CANON_ENERGY_PRECOMP_H_
 #define BACKENDS_CANON_ENERGY_PRECOMP_H_
 
+#include "api/energy/energy_cfg.h"
 #include "backends/base/energy/precomp.h"
 #include "backends/canon/energy/model.h"
 

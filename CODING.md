@@ -71,7 +71,9 @@ configurations. These environment variables control its resource use:
 
 - `MRNA_TEST_JOBS`: number of concurrent configurations
 - `MRNA_TEST_JOB_MEMORY`: estimated memory per configuration used to select and
-  suspend concurrent work, default `4G`
+  suspend concurrent work, default `10G`
+- `MRNA_TEST_COMPILERS`: compiler flags passed to the build script, one
+  configuration set per compiler, default `--compiler=clang --compiler=default`
 - `MRNA_BUILD_JOBS`: compiler jobs within one configuration
 - `MRNA_CLEAN_BUILDS=1`: use a temporary build prefix for each configuration
 

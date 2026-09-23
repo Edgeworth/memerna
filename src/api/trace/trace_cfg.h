@@ -1,8 +1,8 @@
-// Copyright 2023 Eliot Courtney.;
+// Copyright 2023 Eliot Courtney.
 #ifndef API_TRACE_TRACE_CFG_H_
 #define API_TRACE_TRACE_CFG_H_
 
-#include <fmt/core.h>
+#include <fmt/base.h>
 #include <fmt/ostream.h>
 
 #include <cstdint>

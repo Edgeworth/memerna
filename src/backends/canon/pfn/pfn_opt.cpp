@@ -1,14 +1,17 @@
 // Copyright 2026 Eliot Courtney.
 #include "backends/canon/pfn/pfn_opt.h"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <string>
 #include <utility>
 
 #include "api/energy/energy_cfg.h"
+#include "backends/canon/dp.h"
+#include "backends/canon/energy/boltz_model.h"
 #include "backends/canon/energy/boltz_precomp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/canon/pfn/pfn_exterior.h"
 #include "backends/common/static.h"
 #include "model/base.h"

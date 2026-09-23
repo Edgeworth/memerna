@@ -1,6 +1,8 @@
 // Copyright 2026 Eliot Courtney.
 #include "backends/canon/energy/precomp.h"
 
+#include "backends/base/energy/precomp.h"
+#include "backends/canon/energy/model.h"
 #include "backends/common/static.h"
 
 namespace mrna::md::base {

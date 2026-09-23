@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <optional>
 #include <queue>
 #include <string>
 #include <utility>
@@ -14,10 +15,13 @@
 #include "api/energy/energy_cfg.h"
 #include "api/subopt/subopt.h"
 #include "api/subopt/subopt_cfg.h"
+#include "backends/common/base/dp.h"
 #include "backends/common/energy.h"
 #include "backends/common/expansion_cache.h"
 #include "backends/stack/energy/model.h"
+#include "backends/stack/mfe/dp.h"
 #include "backends/stack/trace/trace.h"
+#include "model/base.h"
 #include "model/energy.h"
 #include "model/primary.h"
 
@@ -100,8 +104,13 @@ class SuboptPersistent {
   [[nodiscard]] std::vector<Expansion> UnpairedExpansions(
       int st, int en, base::DpArrayId a, Energy delta) const;
 
-  [[nodiscard]] std::vector<Expansion> PenultimateExpansions(
-      int st, int en, int length, Energy delta) const;
+  // Adds expansions for a stack continuing from (st, en) to a stacking pair, a
+  // left bulge, or a right bulge. `none`, `left`, and `right` are the energies
+  // of the loop to each of those pairs, relative to the value being expanded.
+  void StackExpansions(int st, int en, Energy none, Energy left, Energy right, Energy delta,
+      std::vector<Expansion>* exps) const;
+
+  [[nodiscard]] std::vector<Expansion> PenultimateExpansions(int st, int en, Energy delta) const;
 };
 
 }  // namespace mrna::md::stack

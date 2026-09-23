@@ -58,14 +58,6 @@ struct Opt {
     return *this;
   }
 
-  Opt& AllChoicesAsDefault() {
-    verify(!choices_.empty(), "choices must be set already");
-    verify(multiple_, "multiple must be set");
-    has_default_ = true;
-    default_ = Join(choices_, ",");
-    return *this;
-  }
-
   constexpr Opt& Required() {
     required_ = true;
     return *this;

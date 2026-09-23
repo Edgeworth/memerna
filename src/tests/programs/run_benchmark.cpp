@@ -2,19 +2,24 @@
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
-#include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/seq/cat.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/variadic/to_seq.hpp>
+#include <cstddef>
+#include <optional>
 #include <random>
 #include <tuple>
 #include <utility>
+#include <variant>
 
 #include "api/ctx/algorithm.h"
+#include "api/ctx/backend_cfg.h"
 #include "api/ctx/ctx.h"
 #include "api/energy/energy_cfg.h"
 #include "api/energy/pseudofree_cfg.h"
 #include "api/subopt/subopt_cfg.h"
 #include "api/trace/trace_cfg.h"
+#include "model/base.h"
 #include "model/energy.h"
 #include "model/primary.h"
 #include "tests/init.h"

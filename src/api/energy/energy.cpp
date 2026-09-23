@@ -4,6 +4,8 @@
 #include <memory>
 #include <utility>
 
+#include "model/ctd.h"
+#include "model/energy.h"
 #include "model/structure.h"
 
 namespace mrna::erg {

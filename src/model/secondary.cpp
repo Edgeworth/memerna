@@ -5,10 +5,24 @@
 #include <tuple>
 #include <vector>
 
+#include "model/base.h"
+#include "model/constants.h"
 #include "model/primary.h"
 #include "util/error.h"
+#include "util/util.h"
 
 namespace mrna {
+
+void Secondary::Verify(const Primary& r) const {
+  verify(r.size() == size(), "sequence and secondary structure must be the same length");
+  for (int i = 0; i < size(); ++i) {
+    if (!IsOpeningPair(i)) continue;
+    const int j = data_[i];
+    verify(IsPair(r[i], r[j]), "non-canonical pair ({}, {})", i, j);
+    verify(j - i - 1 >= HAIRPIN_MIN_SZ, "pair ({}, {}) encloses fewer than {} bases", i, j,
+        HAIRPIN_MIN_SZ);
+  }
+}
 
 Secondary Secondary::FromDb(const std::string& pairs_str) {
   Secondary s(pairs_str.size());
