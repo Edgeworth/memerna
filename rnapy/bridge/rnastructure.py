@@ -50,10 +50,10 @@ class RNAstructure(RnaPackage):
         with named_tmpfile("w") as fin, named_tmpfile("r") as fout:
             fin.write(RnaParser.to_ct_file(rna))
             fin.flush()
-            # Note that not giving the -s flag doesn't make it logarithmic.
-            # RNAstructure 5.8 adds the logarithmic and asymmetry models together in this case.
-            # RNAstructure also uses a coefficient of -6 for the number of branches, rather than
-            # the fitted -9.
+            # Note that not giving the -s flag doesn't make it logarithmic. RNAstructure 5.8
+            # adds the logarithmic and asymmetry models together in this case. RNAstructure
+            # also uses a coefficient of -6 for the number of branches, rather than the
+            # fitted -9.
             res = self._run_cmd("./exe/efn2", "-s", fin.name, fout.name, stdout_to_str=True)
             output = fout.read()
             match = re.search(r"[eE]nergy = (.+)", output)

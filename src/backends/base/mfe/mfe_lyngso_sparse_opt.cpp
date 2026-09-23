@@ -100,8 +100,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
               m->Bulge<CFG>(r, pf, st, en, st + 1, en - 1 - isz) + dp[st + 1][en - 1 - isz][DP_P]);
         }
 
-        // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since they have
-        // special energies.
+        // Ax1 internal loops. Make sure to skip 0x1, 1x1, 2x1, and 1x2 loops, since
+        // they have special energies.
         static_assert(Model::INITIATION_CACHE_SZ > TWOLOOP_MAX_SZ,
             "need initiation cached up to TWOLOOP_MAX_SZ");
         auto base_internal_loop =
@@ -119,8 +119,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
                   pf.UnpairedSum(en - isz + 1, en - 1) + dp[st + 2][en - isz][DP_P]);
         }
 
-        // Internal loop cases. Since we require HAIRPIN_MIN_SZ >= 3 and initialise arr to MAX_E, we
-        // don't need ifs here.
+        // Internal loop cases. Since we require HAIRPIN_MIN_SZ >= 3 and initialise arr
+        // to MAX_E, we don't need ifs here.
         mins[DP_P] = std::min(mins[DP_P],
             m->internal_1x1[stb][st1b][st2b][en2b][en1b][enb] + m->AuGuPenalty(stb, enb) +
                 m->AuGuPenalty(st2b, en2b) + pf.Paired(st, en) + pf.Unpaired(st + 1) +
@@ -170,7 +170,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
         // Hairpin loops.
         mins[DP_P] = std::min(mins[DP_P], pc.Hairpin(st, en));
 
-        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
+        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop
+        // helix.
         const auto base_branch_cost = pc.augubranch[stb][enb] + pf.Paired(st, en) + m->multiloop_a;
 
         // (<   ><   >)
@@ -299,18 +300,19 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
       dp[st][en][DP_U_GU] = mins[DP_U_GU];
       dp[st][en][DP_U_RC] = mins[DP_U_RC];
 
-      // Now build the candidates arrays based off the current area [st, en].
-      // In general, the idea is to see if there exists something we could replace a structure
-      // with that is as good. e.g. we could replace a (   )3' with the equivalent U since we know
-      // the energy for (   )3' that is, it is self contained. If replacing it with U[st][en] is
-      // better, then we do not need to consider (...)3' when computing a larger U. In some cases
-      // we use the minimum possible energy if we don't know the energy exactly for a structure
-      // (e.g. RC). These orderings are useful to remember: U <= U_WC, U_GU, U2
+      // Now build the candidates arrays based off the current area [st, en]. In
+      // general, the idea is to see if there exists something we could replace a
+      // structure with that is as good. e.g. we could replace a (   )3' with the
+      // equivalent U since we know the energy for (   )3' that is, it is self
+      // contained. If replacing it with U[st][en] is better, then we do not need to
+      // consider (...)3' when computing a larger U. In some cases we use the minimum
+      // possible energy if we don't know the energy exactly for a structure (e.g.
+      // RC). These orderings are useful to remember: U <= U_WC, U_GU, U2
       Energy cand_st_u = MAX_E;
 
-      // Unpaired cases. These store the best pairs u_cand that begin at st.
-      // begin means that the whole interaction starts at st. e.g. .(   ). starts one before the
-      // paren.
+      // Unpaired cases. These store the best pairs u_cand that begin at st. begin
+      // means that the whole interaction starts at st. e.g. .(   ). starts one before
+      // the paren.
       // (   ) - Normal - U, U2
       auto normal_base = dp[st][en][DP_P] + pc.augubranch[stb][enb];
 
@@ -330,8 +332,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
 
       if (normal_base < dp[st][en][DP_U] && normal_base < cand_st_u) cand_st_u = normal_base;
 
-      // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare them to
-      // something they can be
+      // For U_GU and U_WC, they can't be replaced with DP_U, so we need to compare
+      // them to something they can be
       // replaced with, i.e. themselves.
       if (IsGuPair(stb, enb)) {
         const auto* cand_st_u_gu_last =
@@ -381,8 +383,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
           cand_st_u = terminal_base;
       }
 
-      // Add potentials to the candidate lists. Need to adjust by the unpaired pseudofree energy if
-      // it exists to maintain the monotonicity property.
+      // Add potentials to the candidate lists. Need to adjust by the unpaired
+      // pseudofree energy if it exists to maintain the monotonicity property.
       const auto* cand_st_u_last = cand_st[CAND_U].empty() ? nullptr : &cand_st[CAND_U].back();
       const Energy cand_st_u_unpaired_cum = cand_st_u_last
           ? pf.UnpairedSum(cand_st_u_last->idx, en) +
@@ -406,8 +408,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
           cand_st[CAND_U_RC_FWD].emplace_back(rcoaxf_base, en + 1);
 
         // (   )<.( * ). > Right coax backward - RC
-        // Again, we can't replace RC with U, we'd have to replace it with RC, so compare to
-        // itself.
+        // Again, we can't replace RC with U, we'd have to replace it with RC, so
+        // compare to itself.
         const auto rcoaxb_base = dp[st + 1][en - 1][DP_P] + pc.augubranch[st1b][en1b] +
             m->MismatchCoaxial(en1b, enb, stb, st1b) + pf.Unpaired(st) + pf.Unpaired(en) +
             2 * m->multiloop_c;
@@ -438,8 +440,8 @@ void MfeLyngsoSparseOpt<CFG, PseudofreeCfgT>::Run(
 
         // Paired cases
         // (.(   )   .) Left outer coax - P
-        // Since we assumed the minimum energy coax stack and made this structure self contained,
-        // we could potentially replace it with U[st + 1][en].
+        // Since we assumed the minimum energy coax stack and made this structure self
+        // contained, we could potentially replace it with U[st + 1][en].
         const auto plocoax_base = dp[st + 2][en][DP_P] + pc.augubranch[st2b][enb] +
             pf.Unpaired(st + 1) + m->multiloop_c + pc.min_mismatch_coax;
         if (plocoax_base < CAP_E && plocoax_base < dp[st + 1][en][DP_U])

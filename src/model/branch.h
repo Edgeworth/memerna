@@ -22,8 +22,8 @@ namespace mrna {
 // side of a branch will contain the number of siblings that branch has.
 std::vector<int> GetBranchCounts(const Secondary& s);
 
-// Takes the branch representation of ctds in `branch_ctd` for `branches` branches and
-// writes it in per-base representation to `ctds`.
+// Takes the branch representation of ctds in `branch_ctd` for `branches`
+// branches and writes it in per-base representation to `ctds`.
 void AddBranchCtdsToBaseCtds(
     const std::deque<int>& branches, const BranchCtd& branch_ctd, Ctds* ctd);
 

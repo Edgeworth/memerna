@@ -83,8 +83,8 @@ class ModelBase {
     assert(n >= 3);
     if (n < INITIATION_CACHE_SZ) return hairpin_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-    // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to match
-    // RNAstructure.
+    // Formula: G_init(9) + 1.75 * R * T * ln(n / 9)  -- we use 30 here though to
+    // match RNAstructure.
     return hairpin_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
@@ -92,7 +92,8 @@ class ModelBase {
     assert(n >= 1);
     if (n < INITIATION_CACHE_SZ) return bulge_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-    // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to match RNAstructure.
+    // Formula: G_init(6) + 1.75 * R * T * ln(n / 6) -- we use 30 here though to
+    // match RNAstructure.
     return bulge_init[30] + E(1.75 * R * T * log(n / 30.0));
   }
 
@@ -100,7 +101,8 @@ class ModelBase {
     assert(n >= 4);
     if (n < INITIATION_CACHE_SZ) return internal_init[n];
     static_assert(INITIATION_CACHE_SZ > 30, "Need initiation values for up to 30.");
-    // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match RNAstructure.
+    // Formula: G_init(6) + 1.08 * ln(n / 6) -- we use 30 here though to match
+    // RNAstructure.
     return internal_init[30] + E(1.08 * log(n / 30.0));
   }
 
@@ -147,7 +149,8 @@ class ModelBase {
   }
 
  protected:
-  // This is protected to prevent construction on the stack, since this structure is large.
+  // This is protected to prevent construction on the stack, since this structure
+  // is large.
   ModelBase() = default;
 
   static void Verify(const Primary& r, const Secondary& s, const Ctds* given_ctd) {

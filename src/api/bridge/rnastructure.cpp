@@ -129,7 +129,8 @@ erg::EnergyResult RNAstructure::Efn(const Primary& r, const Secondary& s, erg::E
   const auto struc = LoadStructure(r, s);
   constexpr auto linear_multiloop = true;  // Use same efn calculation as DP.
   efn2(data_.get(), struc.get(), 1, linear_multiloop, static_cast<std::ostream*>(nullptr));
-  // Note: build_structure is ignored - RNAstructure bridge doesn't support Structure output.
+  // Note: build_structure is ignored - RNAstructure bridge doesn't support
+  // Structure output.
   return {ToEnergy(struc->GetEnergy(1)), Ctds(), nullptr};
 }
 
@@ -177,7 +178,8 @@ std::vector<subopt::SuboptResult> RNAstructure::SuboptIntoVector(const Primary& 
   verify(!alg.has_value(), "Bridge for RNAstructure does not support subopt algorithm selection");
   VerifySupported(subopt_cfg);
   const auto structure = LoadStructure(r);
-  // Arguments: structure, data tables, percentage delta, absolute delta, nullptr, nullptr, false
+  // Arguments: structure, data tables, percentage delta, absolute delta, nullptr,
+  // nullptr, false
   alltrace(
       structure.get(), data_.get(), 100, FromEnergy(subopt_cfg.delta), nullptr, nullptr, false);
   return StructureToSuboptVector(*structure);

@@ -17,7 +17,8 @@ namespace mrna::md::base {
 
 inline constexpr int MAX_SPECIAL_HAIRPIN_SZ = 6;
 
-// This is templated because the partition function wants to use it with a different type.
+// This is templated because the partition function wants to use it with a
+// different type.
 template <typename T>
 struct HairpinPrecomp {
   explicit HairpinPrecomp(T init) {

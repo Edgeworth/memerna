@@ -90,8 +90,9 @@ void Brute<CFG, PseudofreeCfgT>::Dfs(int idx) {
   bool can_take = true;
   const auto& p = pairs_[idx];
   // Only need to check in the range of this base pair. Since we ordered by
-  // increasing st, anything at or after this will either be the start of something starting at st,
-  // or something ending, both of which conflict with this base pair.
+  // increasing st, anything at or after this will either be the start of
+  // something starting at st, or something ending, both of which conflict with
+  // this base pair.
   for (int i = p.st; i <= p.en; ++i) {
     if (s_.IsPaired(i)) {
       can_take = false;
@@ -152,8 +153,8 @@ void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
     return;
   }
 
-  // If we already set this, this isn't a valid base pair, it's not part of a multiloop, can't set
-  // ctds so continue.
+  // If we already set this, this isn't a valid base pair, it's not part of a
+  // multiloop, can't set ctds so continue.
   const int st = idx;
   if (ctd_[idx] != CTD_NA || s_.IsUnpaired(st) || branch_count_[idx] < 2) {
     AddAllCombinations(idx + 1);
@@ -173,7 +174,8 @@ void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
       (!ru_shared ||
           (ctd_[en + 2] != CTD_5_DANGLE && ctd_[en + 2] != CTD_MISMATCH &&
               ctd_[en + 2] != CTD_LCOAX_WITH_NEXT));
-  // Even if the next branch is an outer branch, everything will be magically handled.
+  // Even if the next branch is an outer branch, everything will be magically
+  // handled.
 
   // CTD_NONE or D2 CTD;
   Ctd none_ctd = CTD_UNUSED;
@@ -212,7 +214,8 @@ void Brute<CFG, PseudofreeCfgT>::AddAllCombinations(int idx) {
   }
 
   if constexpr (CFG.UseCoaxialStacking()) {
-    // Check that the next branch hasn't been set already. If it's unused or na, try re-writing it.
+    // Check that the next branch hasn't been set already. If it's unused or na, try
+    // re-writing it.
     // CTD_LCOAX_WITH_NEXT
     if (lu_usable && ru_usable && ru_shared) {
       auto prevval = ctd_[en + 2];
@@ -275,7 +278,8 @@ template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 Brute<CFG, PseudofreeCfgT>::SubstructureId Brute<CFG, PseudofreeCfgT>::WriteBits(
     int st, int en, int N, bool inside) {
   static_assert(PT_MAX_BITS + CTD_MAX_BITS <= 16, "substructure block does not fit in uint16_t");
-  // Zero initialise. Unpaired is all-ones in the packed representation once PT_MASK is applied.
+  // Zero initialise. Unpaired is all-ones in the packed representation once
+  // PT_MASK is applied.
   SubstructureId struc = {};
   uint32_t b = 0;
   for (int i = 0; i < N; ++i, b += PT_MAX_BITS + CTD_MAX_BITS) {

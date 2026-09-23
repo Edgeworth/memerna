@@ -80,17 +80,19 @@ template <bool CheckTime>
 SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternalResult
 SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(const SuboptCallback& fn, Energy delta,
     bool exact_energy, int64_t max, const std::chrono::steady_clock::time_point& start_time) {
-  // General idea is perform a dfs of the expand tree. Keep track of the current partial structures
-  // and energy. Also keep track of what is yet to be expanded. Each node is either a terminal,
-  // or leads to one expansion (either from unexpanded, or from expanding itself) - if there is
-  // another expansion it is put on the unexpanded list. Everything in unexpanded never affects
-  // the CTDs or energy of the current state - that is rolled into the modification when that
-  // unexpanded is originally generated.
+  // General idea is perform a dfs of the expand tree. Keep track of the current
+  // partial structures and energy. Also keep track of what is yet to be expanded.
+  // Each node is either a terminal, or leads to one expansion (either from
+  // unexpanded, or from expanding itself) - if there is another expansion it is
+  // put on the unexpanded list. Everything in unexpanded never affects the CTDs
+  // or energy of the current state - that is rolled into the modification when
+  // that unexpanded is originally generated.
 
   int64_t count = 0;
-  // Store the smallest energy above delta we see. If we reach our `structure_limit` before
-  // finishing, we might not see the smallest one, but it's okay since we won't be called again.
-  // Otherwise, we will completely finish, and definitely see it.
+  // Store the smallest energy above delta we see. If we reach our
+  // `structure_limit` before finishing, we might not see the smallest one, but
+  // it's okay since we won't be called again. Otherwise, we will completely
+  // finish, and definitely see it.
   Energy next_seen = MAX_E;
   Energy energy = ZERO_E;
   q_.clear();
@@ -132,8 +134,8 @@ SuboptIterative<CFG, PseudofreeCfgT, UseLru>::RunInternal(const SuboptCallback& 
     if (s.expand_idx != num_exps && exps[s.expand_idx].delta + energy > delta)
       next_seen = std::min(next_seen, exps[s.expand_idx].delta + energy);
 
-    // If we ran out of expansions, or the next expansion would take us over the delta limit
-    // we are done with this node.
+    // If we ran out of expansions, or the next expansion would take us over the
+    // delta limit we are done with this node.
     if (s.expand_idx == num_exps || exps[s.expand_idx].delta + energy > delta) {
       if (!s.to_expand.IsExternal() && s.to_expand.a == DP_P)
         res_.tb.s[s.to_expand.st] = res_.tb.s[s.to_expand.en] = INVALID_INDEX;
@@ -271,8 +273,8 @@ std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::GenerateExp
               .ctd0{st, val_ctd}});
 
         // (   )<   >
-        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
-        // coaxial stack.
+        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set
+        // from a coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           exps.push_back({.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st, en, DP_P}});
       }
@@ -505,7 +507,8 @@ std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::GenerateExp
     // stb pl1b pb   pr1b
     auto pb = r_[piv];
     auto pl1b = r_[piv - 1];
-    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+    // the right.
     auto base00 = dp_.dp[st][piv][DP_P] + pc_.augubranch[stb][pb] - dp_.dp[st][en][a];
     auto base01 = dp_.dp[st][piv - 1][DP_P] + pc_.augubranch[stb][pl1b] - dp_.dp[st][en][a];
     auto base10 = dp_.dp[st + 1][piv][DP_P] + pc_.augubranch[st1b][pb] - dp_.dp[st][en][a];
@@ -584,7 +587,8 @@ std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::GenerateExp
     if constexpr (CFG.UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
       energy = base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) + m_->multiloop_c;
-      // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
+      // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not
+      // DP_U2.
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back(
             {.delta = energy + right_unpaired, .idx0{st, piv - 1, DP_P}, .ctd0{st, CTD_3_DANGLE}});

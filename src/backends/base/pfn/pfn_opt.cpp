@@ -68,7 +68,8 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
             p += bpc.TwoLoop(st, en, ist, ien) * dp[ist][ien][PT_P];
         // Hairpin loops.
         p += bpc.Hairpin(st, en);
-        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
+        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop
+        // helix.
         const BoltzEnergy base_branch_cost =
             bpc.augubranch[stb][enb] * bpc.bpf.Paired(st, en) * bm->multiloop_a;
 
@@ -151,7 +152,8 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
         // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+        // the right.
         const BoltzEnergy base00 = dp[st][piv][PT_P] * bpc.augubranch[stb][pb];
         const BoltzEnergy base01 = dp[st][piv - 1][PT_P] * bpc.augubranch[stb][pl1b];
         const BoltzEnergy base10 = dp[st + 1][piv][PT_P] * bpc.augubranch[st1b][pb];
@@ -249,7 +251,8 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
 
   // Fill the left triangle.
   // The meaning of the tables changes here:
-  // U, U2, WC, GU, RC: any table index with en < st must have a loop enclosing (en, st)
+  // U, U2, WC, GU, RC: any table index with en < st must have a loop enclosing
+  // (en, st)
   for (int st = N - 1; st >= 0; --st) {
     for (int en = 0; en < st; ++en) {
       //        ..)...(..
@@ -482,8 +485,8 @@ PfnTables PfnOpt<CFG, PseudofreeCfgT>::Run(
       BoltzEnergy wc{0};
       BoltzEnergy gu{0};
       // Update unpaired.
-      // Choose `st` to be unpaired, but only if we can maintain the constraint that we have
-      // an enclosing loop formed.
+      // Choose `st` to be unpaired, but only if we can maintain the constraint that
+      // we have an enclosing loop formed.
       if (st + 1 < N) {
         u += dp[st + 1][en][PT_U] * bpc.bpf.Unpaired(st) * bm->multiloop_c;
         u2 += dp[st + 1][en][PT_U2] * bpc.bpf.Unpaired(st) * bm->multiloop_c;

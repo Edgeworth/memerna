@@ -31,9 +31,10 @@ void PrintInnerStackProbs(const Primary& r, const PfnTables& pfn, const md::base
   PrintBoltzProbs(prob);
 }
 
-// Prints probability each pair is in a helix, where here helix is defined as a stack containing at
-// least 3 adjacent pairs with no single nucleotide bulges between them. This looks at all
-// structures of the form *(((*)))* where * is any structure.
+// Prints probability each pair is in a helix, where here helix is defined as a
+// stack containing at least 3 adjacent pairs with no single nucleotide bulges
+// between them. This looks at all structures of the form *(((*)))* where * is
+// any structure.
 void PrintHelixProbs(const Primary& r, const PfnTables& pfn, const md::base::ModelBase& model,
     const erg::BoltzPseudofreeCfg& pf) {
   const auto N = As<int>(pfn.p.size());

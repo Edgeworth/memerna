@@ -46,8 +46,8 @@ class RNAstructure : public RnaPackage {
   [[nodiscard]] pfn::PfnResult Pfn(const Primary& r, std::optional<PfnAlg> alg,
       erg::EnergyCfgPfn cfg, const erg::PseudofreeCfg& pf) const override;
 
-  // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies in SuboptResult
-  // are meaningless.
+  // Runs the Ding & Lawrence stochastic sample algorithm. Note that the energies
+  // in SuboptResult are meaningless.
   [[nodiscard]] std::vector<subopt::SuboptResult> StochasticSampleIntoVector(
       const Primary& r, int num_samples) const;
 

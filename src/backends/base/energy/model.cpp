@@ -48,9 +48,10 @@ bool Model::IsSupported(const BackendCfg& backend_cfg, const erg::EnergyCfg& /*c
 //   Terminal mismatch energy for st + 1 and en - 1.
 //   If the mismatch is UU or GA (not AG), additional bonus
 //   If the mismatch is GG, additional bonus.
-//   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both Gs, if they exist.
-//   A penalty if all the bases inside are C: A * length + B (A, B specified as part of the energy
-//   model).
+//   If the pair st, en is GU (not UG), a bonus if st - 1 and st - 2 are both
+//   Gs, if they exist.
+//   A penalty if all the bases inside are C: A * length + B (A, B specified as
+//   part of the energy model).
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 Energy Model::Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en,
     std::unique_ptr<Structure>* s) const {
@@ -140,15 +141,17 @@ Energy Model::Hairpin(const Primary& r, const PseudofreeCfgT& pf, int st, int en
 
 // Indices are inclusive.
 // Rules for bulge loop energy:
-// 1. If length (number of unpaired bases in the bulge loop) is more than 1, just use initiation
-// energy.
+// 1. If length (number of unpaired bases in the bulge loop) is more than 1,
+//    just use initiation energy.
 // 2. Otherwise:
-//    Don't apply AU/GU penalties -- since the helix is able to continue (unlike for lengths > 1).
-//    Since the helix continues, also apply stacking energies for Watson-Crick helices.
-//    If the unpaired base is a C, and is next to another C (at pos - 1 or pos + 1), add special C
-//    bulge bonus.
-//    Count up the number of contiguous bases next to the size 1 bulge loop base, and compute a
-//    bonus from that.
+//    Don't apply AU/GU penalties -- since the helix is able to continue (unlike
+//    for lengths > 1).
+//    Since the helix continues, also apply stacking energies for Watson-Crick
+//    helices.
+//    If the unpaired base is a C, and is next to another C (at pos - 1 or
+//    pos + 1), add special C bulge bonus.
+//    Count up the number of contiguous bases next to the size 1 bulge loop
+//    base, and compute a bonus from that.
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 Energy Model::Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist, int ien,
     std::unique_ptr<Structure>* s) const {
@@ -215,7 +218,8 @@ Energy Model::Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen
     energy += bulge_special_c;
   }
 
-  // Count up the number of contiguous same bases next to the size 1 bulge loop base.
+  // Count up the number of contiguous same bases next to the size 1 bulge loop
+  // base.
   if constexpr (CFG.bulge_states) {
     int num_states = 0;
     for (int i = unpaired; i < r.size() && r[i] == r[unpaired]; ++i) num_states++;
@@ -233,11 +237,11 @@ Energy Model::Bulge(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen
 // 1. If it is 1x1, 1x2, 2x1, or 2x2, then check a lookup table.
 // 2. If not, return G_init plus:
 // 2.1 Internal loop specific AU/GU penalty for each AU/GU end.
-// 2.2 A constant times the absolute difference between the number of unpaired bases on each side of
-// the loop.
-// 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just store the values for
-// 2x3, and then
-//   rotate the rna by 180 degrees to look it up for 3x2.
+// 2.2 A constant times the absolute difference between the number of unpaired
+//     bases on each side of the loop.
+// 2.3 If the loop is 2x3 or 3x2, look up special mismatch parameters. We just
+//     store the values for 2x3, and then rotate the rna by 180 degrees to look
+//     it up for 3x2.
 template <erg::EnergyCfg CFG, class PseudofreeCfgT>
 Energy Model::InternalLoop(const Primary& r, const PseudofreeCfgT& pf, int ost, int oen, int ist,
     int ien, std::unique_ptr<Structure>* s) const {

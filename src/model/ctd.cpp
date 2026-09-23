@@ -32,8 +32,8 @@ Ctds MakeD2CtdsForSecondary(const Secondary& s) {
       cur_ctd = CTD_5_DANGLE;
     }
 
-    // Set CTDs when we are in a multiloop for the outer face, or if we are a multiloop for the
-    // inner face.
+    // Set CTDs when we are in a multiloop for the outer face, or if we are a
+    // multiloop for the inner face.
     if (in_multiloop.back()) ctd[i] = cur_ctd;
 
     if (s.IsOpeningPair(i))
@@ -94,8 +94,8 @@ Ctds ParseCtdString(const Secondary& s, const std::string& ctd_str) {
       }
     }
     if (c == '3') {
-      // If we optimistically set an exterior loop to CTD_UNUSED, we might want to rewrite it
-      // here.
+      // If we optimistically set an exterior loop to CTD_UNUSED, we might want to
+      // rewrite it here.
       verify(i - 1 >= 0 && s.IsPaired(i - 1) &&
               (ctd[s[i - 1]] == CTD_NA || ctd[s[i - 1]] == CTD_UNUSED),
           "invalid input");

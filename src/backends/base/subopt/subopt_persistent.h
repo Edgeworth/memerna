@@ -48,13 +48,15 @@ class SuboptPersistent {
     // Index of the expansion this Node used w.r.t. the parent state's `to_expand`.
     // INVALID_EXPANSION_INDEX means root.
     ExpansionIndex parent_expand_idx{INVALID_EXPANSION_INDEX};
-    // Index of the next Node who's expansion contains an unexpanded DpIndex we need to process.
+    // Index of the next Node who's expansion contains an unexpanded DpIndex we need
+    // to process.
     SuboptIndex unexpanded_idx{INVALID_SUBOPT_INDEX};
-    // Index of the expansion to use for `unexpanded_idx`'s Node. INVALID_EXPANSION_INDEX means
-    // none.
+    // Index of the expansion to use for `unexpanded_idx`'s Node.
+    // INVALID_EXPANSION_INDEX means none.
     ExpansionIndex unexpanded_expand_idx{INVALID_EXPANSION_INDEX};
-    // Index of the child expansion of `to_expand` we should process. This gets updated in place
-    // (saves time and memory), which is why we need to keep `parent_expand_idx` around as well.
+    // Index of the child expansion of `to_expand` we should process. This gets
+    // updated in place (saves time and memory), which is why we need to keep
+    // `parent_expand_idx` around as well.
     ExpansionIndex expand_idx{0};
     // DpIndex whose child expansions we are processing.
     DpIndex to_expand{};
@@ -74,7 +76,8 @@ class SuboptPersistent {
 
   std::pair<Energy, SuboptIndex> RunInternal();
 
-  // Computes the suboptimal folding for the given subpath and puts it into `res_`.
+  // Computes the suboptimal folding for the given subpath and puts it into
+  // `res_`.
   void GenerateResult(SuboptIndex idx);
 
   const std::vector<Expansion>& GetExpansion(const DpIndex& to_expand) {
@@ -90,8 +93,8 @@ class SuboptPersistent {
     return cache_.Insert(key, std::move(exps));
   }
 
-  // Generates expansions for the given index, given that the extra energy over the best choice
-  // can't be more than `delta`.
+  // Generates expansions for the given index, given that the extra energy over
+  // the best choice can't be more than `delta`.
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };

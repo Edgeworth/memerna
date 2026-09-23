@@ -75,7 +75,8 @@ void MfeDebug<CFG, PseudofreeCfgT>::Run(
         UPDATE_CACHE(DP_P, m->Hairpin<CFG>(r, pf, st, en));
 
         // Multiloops. Look at range [st + 1, en - 1].
-        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
+        // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop
+        // helix.
         const auto base_branch_cost =
             m->AuGuPenalty(stb, enb) + pf.Paired(st, en) + m->multiloop_a + m->multiloop_b;
 
@@ -163,7 +164,8 @@ void MfeDebug<CFG, PseudofreeCfgT>::Run(
         // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+        // the right.
         const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_b;
         const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_b;
         const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;

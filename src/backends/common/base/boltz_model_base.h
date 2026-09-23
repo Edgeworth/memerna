@@ -10,8 +10,9 @@
 #include "model/base.h"
 #include "model/energy.h"
 
-// GCC 11 doesn't handle constructors for MPFR here well - takes a lot of time and memory. We set
-// these values after initialization anyway, so skip the initializer for MPFR.
+// GCC 11 doesn't handle constructors for MPFR here well - takes a lot of time
+// and memory. We set these values after initialization anyway, so skip the
+// initializer for MPFR.
 #ifdef MRNA_USE_MPFR
 #define BOLTZ_MEMBER_INIT
 #else

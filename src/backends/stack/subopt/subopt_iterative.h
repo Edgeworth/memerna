@@ -40,9 +40,9 @@ class SuboptIterative {
  private:
   struct Node {
     ExpansionIndex expand_idx = {0};
-    // We could use std::monostate in DpIndex to avoid optional here, but it doesn't change the size
-    // of `Node` and it causes a perf regression by adding more variants which worsens the
-    // `SplayMap` cache lookup.
+    // We could use std::monostate in DpIndex to avoid optional here, but it doesn't
+    // change the size of `Node` and it causes a perf regression by adding more
+    // variants which worsens the `SplayMap` cache lookup.
     std::optional<DpIndex> to_expand = {};
     bool should_unexpand = {false};
   };

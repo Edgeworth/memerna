@@ -48,8 +48,9 @@ Energy Energy::FromString(const std::string& s) {
   }
   verify(ss.eof(), "invalid energy: {}", s);
   verify(lo >= 0 && lo < Energy::FACTOR, "invalid energy: {}", s);
-  // Compute in 64-bit so an out-of-range integer part is caught by the range check below rather
-  // than overflowing int. The largest valid magnitude is bounded by CAP_E.
+  // Compute in 64-bit so an out-of-range integer part is caught by the range
+  // check below rather than overflowing int. The largest valid magnitude is
+  // bounded by CAP_E.
   const int64_t raw = int64_t{sgn} * (int64_t{hi} * Energy::FACTOR + lo);
   verify(raw >= std::numeric_limits<int32_t>::min() && raw <= std::numeric_limits<int32_t>::max(),
       "energy out of range: {}", s);

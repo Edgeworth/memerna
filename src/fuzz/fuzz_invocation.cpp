@@ -98,8 +98,8 @@ constexpr std::size_t SUBOPT_HARD_CAP = 100000;
 }
 
 [[nodiscard]] Energy SuboptDeltaForLength(int len) {
-  // Number of structures is exponential. Heuristic to estimate delta to target a reasonable number
-  // of structures.
+  // Number of structures is exponential. Heuristic to estimate delta to target a
+  // reasonable number of structures.
   Energy delta = Energy::FromFlt(1.0 / (log(len) + 2.0));
   return delta;
 }
@@ -260,8 +260,8 @@ std::tuple<Error, std::optional<FuzzInvocation::FoldBaseline>> FuzzInvocation::C
 
   if (results.empty()) return {std::move(errors), std::nullopt};
 
-  // Prefer a baseline with a DP table so table comparisons and RNAstructure checks
-  // can use the chosen baseline directly.
+  // Prefer a baseline with a DP table so table comparisons and RNAstructure
+  // checks can use the chosen baseline directly.
   int cmp_idx = 0;
   for (int i = 0; i < static_cast<int>(results.size()); ++i) {
     if (mfe::MaybeGetBaseDpState(results[i].mfe.dp) != nullptr) {
@@ -353,7 +353,8 @@ Error FuzzInvocation::CheckSubopt(const FoldBaseline& baseline) {
       const auto kind = GetBackendKind(m);
       for (const auto& entry :
           SuboptPriorityForBackend(kind, /*alg=*/std::nullopt, /*include_brute=*/false)) {
-        // DEBUG algo may OOM even with hard-cap, so only run it (later) if we didn't hit cap.
+        // DEBUG algo may OOM even with hard-cap, so only run it (later) if we didn't
+        // hit cap.
         if (entry.alg == SuboptAlg::DEBUG) continue;
         if (auto run = collect(m, entry.alg)) runs.push_back(std::move(*run));
       }
@@ -546,7 +547,8 @@ Error FuzzInvocation::CheckPfn() {
       tags.push_back(fmt::format("{}-{}", kind, pfn_alg));
     };
 
-    // Brute force partition has a hard size cap (PFN_MAX_RNA_SIZE) independent of brute_max.
+    // Brute force partition has a hard size cap (PFN_MAX_RNA_SIZE) independent of
+    // brute_max.
     const bool use_brute = N <= cfg_.brute_max && N <= md::brute::PFN_MAX_RNA_SIZE;
     for (const auto& entry : PfnPriorityForBackend(kind, /*alg=*/std::nullopt, use_brute))
       maybe_run(entry.alg);
@@ -641,8 +643,9 @@ Error FuzzInvocation::CheckMfeRNAstructure(const FoldBaseline& baseline) {
 Error FuzzInvocation::CheckSuboptRNAstructure(subopt::SuboptCfg subopt_cfg,
     const FoldBaseline& baseline, const std::vector<subopt::SuboptResult>& subopt) {
   Error errors;
-  // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because RNAstructure does
-  // strange things when the energy for suboptimal structures is 0 or above.
+  // Subopt folding. Ignore ones with MFE >= -SUBOPT_MAX_DELTA because
+  // RNAstructure does strange things when the energy for suboptimal structures is
+  // 0 or above.
   if (subopt.empty()) return errors;
   if (subopt[0].energy < -subopt_cfg.delta) {
     std::vector<subopt::SuboptResult> rstr_subopt;

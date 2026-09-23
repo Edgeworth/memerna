@@ -56,7 +56,8 @@ class Model : public base::Model {
   Ptr Clone() const { return std::make_shared<Model>(*this); }
 
  private:
-  // This is private to prevent construction on the stack, since this structure is large.
+  // This is private to prevent construction on the stack, since this structure is
+  // large.
   Model() = default;
 };
 

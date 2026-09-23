@@ -9,7 +9,8 @@
 
 namespace mrna {
 
-// Somewhat special LRU cache since it holds vectors and clears the vectors when they are evicted.
+// Somewhat special LRU cache since it holds vectors and clears the vectors when
+// they are evicted.
 template <typename Value>
 class LruVectorCache {
  public:
@@ -24,8 +25,8 @@ class LruVectorCache {
   LruVectorCache& operator=(LruVectorCache&&) = delete;
 
   const std::vector<Value>& Insert(Key key, std::vector<Value>&& value) {
-    // Key should not already be in the cache. This means we don't need to remove it from the LRU
-    // list.
+    // Key should not already be in the cache. This means we don't need to remove it
+    // from the LRU list.
     assert(key < cache_.size());
     assert(cache_[key].first.empty());
     total_ += value.size();

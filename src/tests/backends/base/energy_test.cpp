@@ -361,8 +361,8 @@ TEST(EnergyTestBase, T04Pseudofree) {
     EXPECT_EQ(E(10.90) + pseudofree, energy);
   }
 
-  // Special 1x1 internal loop with helix affected by penultimate stack on external
-  // sides only:
+  // Special 1x1 internal loop with helix affected by penultimate stack on
+  // external sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
   {
     const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGACCCUUCUU", "((.((...)).))");
@@ -384,8 +384,8 @@ TEST(EnergyTestBase, T04Pseudofree) {
     EXPECT_EQ(E(9.10) + pseudofree, energy);
   }
 
-  // Special 1x2 internal loop with helix affected by penultimate stack on external
-  // sides only:
+  // Special 1x2 internal loop with helix affected by penultimate stack on
+  // external sides only:
   // AU end on GU at 0, 4; GU end on AU at 1, 3
   {
     const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGACCCUUCCUU", "((.((...))..))");
@@ -407,8 +407,8 @@ TEST(EnergyTestBase, T04Pseudofree) {
     EXPECT_EQ(E(10.90) + pseudofree, energy);
   }
 
-  // Special 2x2 internal loop with helix affected by penultimate stack on external
-  // sides only:
+  // Special 2x2 internal loop with helix affected by penultimate stack on
+  // external sides only:
   // AU end on GU at 0, 5; GU end on AU at 1, 4
   {
     const auto& [energy, pseudofree] = GetPseudofree(m, "AGGGGACCCUUCCUU", "((..((...))..))");

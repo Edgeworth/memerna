@@ -30,7 +30,8 @@ struct EnergyCfg {
       NONE,
       // Same as ViennaRNA -d2 in efn, folding, subopt, partition, etc.
       D2,
-      //  Use only terminal mismatches and dangling ends in folding, subopt, partition. Like "d1".
+      //  Use only terminal mismatches and dangling ends in folding, subopt,
+      //  partition. Like "d1".
       NO_COAX,
       //  Use CTDs in folding, subopt, partition, etc. Like "d3".
       ALL);

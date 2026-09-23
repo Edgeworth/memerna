@@ -21,12 +21,15 @@ constexpr DpArrayId INVALID_DP_ARRAY_ID = std::numeric_limits<DpArrayId>::max();
 // DP arrays
 enum : DpArrayId {
   DP_P,  // For the paired array.
-  DP_U,  // For the unpaired array. Contains at least one branch. First and last base may be paired.
+  // For the unpaired array. Contains at least one branch. First and last base may
+  // be paired.
+  DP_U,
   DP_U2,  // Contains at least two branches.
   DP_U_WC,  // Unpaired but must start with a branch not in a CTD that is not GU.
   DP_U_GU,  // Unpaired but must start with a branch not in a CTD that is GU.
-  DP_U_RC,  // Unpaired but must start with a branch in a right coaxial stack - includes energy
-            // for it.
+  // Unpaired but must start with a branch in a right coaxial stack - includes
+  // energy for it.
+  DP_U_RC,
   DP_SIZE
 };
 
@@ -51,21 +54,24 @@ enum : DpArrayId {
   // Monotonic, because we place Unpaired on the right.
   // Replaceability: Unpaired
   // Energy: Fully determined, since we have all the bases available.
-  // Left inner coax: Mismatch mediated coaxial stack on the left with the outer loop.
+  // Left inner coax: Mismatch mediated coaxial stack on the left with the outer
+  // loop.
   // (|.(   ).|   )
   CAND_P_LIC,
 
   // Monotonic, because we place Unpaired on the right.
   // Replaceability: Unpaired
   // Energy: Partial, since we don't know the bases on the right.
-  // Left outer coax: Outer loop outer mismatch mediated coaxial stack with a branch on the left
+  // Left outer coax: Outer loop outer mismatch mediated coaxial stack with a
+  // branch on the left
   // (|.(   )|   .)
   CAND_P_LOC,
 
   // Monotonic, because we place Unpaired on the right.
   // Replaceability: Unpaired
   // Energy: Partial, since we don't know the bases on the right.
-  // Left flush coax: Outer loop forms a flush coaxial stack with a branch on the left
+  // Left flush coax: Outer loop forms a flush coaxial stack with a branch on the
+  // left
   // (|(   )|   )
   CAND_P_LFC,
 
@@ -132,21 +138,24 @@ enum : DpArrayId {
   // Monotonic, because we place Unpaired on the left.
   // Replaceability: Unpaired
   // Energy: Fully determined, since we have all the bases available.
-  // Right inner coax: Mismatch mediated coaxial stack on the right with the outer loop.
+  // Right inner coax: Mismatch mediated coaxial stack on the right with the outer
+  // loop.
   // (   |.(   ).|)
   CAND_EN_P_RIC,
 
   // Monotonic, because we place Unpaired on the left.
   // Replaceability: Unpaired
   // Energy: Partial, since we don't know the bases on the left.
-  // Right outer coax: Outer loop outer mismatch mediated coaxial stack with a branch on the right
+  // Right outer coax: Outer loop outer mismatch mediated coaxial stack with a
+  // branch on the right
   // (.   |(   ).|)
   CAND_EN_P_ROC,
 
   // Monotonic, because we place Unpaired on the left.
   // Replaceability: Unpaired
   // Energy: Partial, since we don't know the bases on the left.
-  // Right flush coax: Outer loop forms a flush coaxial stack with a branch on the right
+  // Right flush coax: Outer loop forms a flush coaxial stack with a branch on the
+  // right
   // (   |(   )|)
   CAND_EN_P_RFC,
 
@@ -227,7 +236,8 @@ enum : DpArrayId {
   PTEXT_L,
   PTEXT_R_WC,  // Must start with a branch not involved in an interaction that is Watson-Crick
   PTEXT_R_GU,  // Must start with a branch not involved in an interaction that is GU
-  // Must start with a branch, that branch is involved backwards in a right coaxial stack.
+  // Must start with a branch, that branch is involved backwards in a right
+  // coaxial stack.
   PTEXT_R_RC,
   PTEXT_L_WC,
   PTEXT_L_GU,

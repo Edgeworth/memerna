@@ -72,7 +72,8 @@ class SuboptDebug {
     PruneInsert(curnode_, &q_);
   }
 
-  // Creates and inserts a new node with energy `energy` that needs to expand the given ranges.
+  // Creates and inserts a new node with energy `energy` that needs to expand the
+  // given ranges.
   void Expand(Energy energy, DpIndex nye) {
     curnode_.not_yet_expanded.push_back(nye);
     curnode_.res.energy = energy;
@@ -86,7 +87,8 @@ class SuboptDebug {
     curnode_.res.tb.ctd[ctd_idx.idx] = CTD_NA;
   }
 
-  // Creates and inserts a new node with energy `energy` that needs to expand the two given ranges.
+  // Creates and inserts a new node with energy `energy` that needs to expand the
+  // two given ranges.
   void Expand(Energy energy, DpIndex nye0, DpIndex nye1) {
     curnode_.not_yet_expanded.push_back(nye0);
     curnode_.not_yet_expanded.push_back(nye1);

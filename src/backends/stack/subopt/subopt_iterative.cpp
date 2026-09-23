@@ -579,8 +579,8 @@ std::vector<Expansion> SuboptIterative<CFG, PseudofreeCfgT, UseLru>::UnpairedExp
     // stb pl1b pb   pr1b
     const auto pb = r_[piv];
     const auto pl1b = r_[piv - 1];
-    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
-    // right.
+    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+    // the right.
     const auto base00 =
         dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_b - dp[st][en][a];
     const auto base01 =

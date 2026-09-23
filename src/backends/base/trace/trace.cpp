@@ -364,7 +364,8 @@ TraceResult Trace<CFG, PseudofreeCfgT>::Run(const Primary& r, const Model::Ptr& 
         // stb pl1b pb   pr1b
         const auto pb = r[piv];
         const auto pl1b = r[piv - 1];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+        // the right.
         const auto base00 = dp[st][piv][DP_P] + m->AuGuPenalty(stb, pb) + m->multiloop_b;
         const auto base01 = dp[st][piv - 1][DP_P] + m->AuGuPenalty(stb, pl1b) + m->multiloop_b;
         const auto base10 = dp[st + 1][piv][DP_P] + m->AuGuPenalty(st1b, pb) + m->multiloop_b;
@@ -419,8 +420,8 @@ TraceResult Trace<CFG, PseudofreeCfgT>::Run(const Primary& r, const Model::Ptr& 
 
         if (val == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
             (a != DP_U_GU || IsGuPair(stb, pb))) {
-          // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and were
-          // already set.
+          // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously,
+          // and were already set.
           if (a != DP_U_WC && a != DP_U_GU) res.ctd[st] = val_ctd;
           q.emplace_back(st, piv, DP_P);
           if (is_right_filled) q.emplace_back(piv + 1, en, DP_U);

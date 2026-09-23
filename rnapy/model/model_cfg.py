@@ -14,7 +14,8 @@ class LonelyPairs(StrEnum):
 class CtdCfg(StrEnum):
     NONE = "none"  #  Do not use CTDs in efn, folding, subopt, partition, etc.
     D2 = "d2"  #  Same as ViennaRNA d2 in efn, folding, subopt, partition, etc.
-    #  Use only terminal mismatches and dangling ends in folding, subopt, partition, etc.
+    #  Use only terminal mismatches and dangling ends in folding, subopt, partition,
+    #  etc.
     NO_COAX = "no-coax"
     ALL = "all"  #  Use CTDs in folding, subopt, partition, etc.
 

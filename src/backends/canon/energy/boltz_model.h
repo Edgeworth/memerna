@@ -46,7 +46,8 @@ class BoltzModel : public base::BoltzModelBase<Model> {
   }
 
  private:
-  // This is private to prevent construction on the stack, since this structure is large.
+  // This is private to prevent construction on the stack, since this structure is
+  // large.
   explicit BoltzModel(const Model::Ptr& m) : BoltzModelBase(m) {}
 };
 

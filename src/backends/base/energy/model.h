@@ -58,7 +58,8 @@ class Model : public ModelBase, public ModelMixin<Model> {
  protected:
   friend class ModelMixin<Model>;
 
-  // This is protected to prevent construction on the stack, since this structure is large.
+  // This is protected to prevent construction on the stack, since this structure
+  // is large.
   Model() = default;
 
  private:

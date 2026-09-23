@@ -28,7 +28,8 @@ class SplayMap {
 
     NodeIndex oldroot = root;
     root = As<NodeIndex>(ns_.size());
-    // Case where `oldroot` is NONE will be handled magically, since none.{l, r} == none.
+    // Case where `oldroot` is NONE will be handled magically, since none.{l, r} ==
+    // none.
     if (key < ns_[oldroot].k) {
       ns_.push_back({key, ns_[oldroot].l, oldroot, std::forward<ValueRef>(value)});
       ns_[oldroot].l = NONE;
@@ -136,13 +137,14 @@ class SplayMap {
     if (Find(key)) {
       // Root now contains the key.
       if (ns_[root].r == NONE) {
-        // Either, the right subtree is empty, in which case set the root to the left subtree:
+        // Either, the right subtree is empty, in which case set the root to the left
+        // subtree:
         root = ns_[root].l;
       } else {
         // Or the right subtree is not empty, in which case:
-        // Move the next lowest key up to the top of the right subtree with another find.
-        // Since it is the next lowest, the left child of the right subtree will be NONE,
-        // so we can attach the left subtree there.
+        // Move the next lowest key up to the top of the right subtree with another
+        // find. Since it is the next lowest, the left child of the right subtree will
+        // be NONE, so we can attach the left subtree there.
         NodeIndex oldroot = root;
         root = ns_[root].r;
         Find(key);

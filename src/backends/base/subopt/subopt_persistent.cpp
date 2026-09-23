@@ -73,8 +73,8 @@ int64_t SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::Run(const SuboptCallback&
     auto [delta, idx] = RunInternal();
     if (idx == INVALID_SUBOPT_INDEX || delta > subopt_cfg_.delta) break;
 
-    // TODO(2): We could expose an API that just has the index to avoid the cost of materialising
-    // the full structure here.
+    // TODO(2): We could expose an API that just has the index to avoid the cost of
+    // materialising the full structure here.
     num_strucs++;
     GenerateResult(idx);
     res_.energy = delta + mfe;
@@ -93,8 +93,9 @@ SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::RunInternal() {
     auto& s = q_[idx];
 
     if (!s.to_expand.IsValid()) {
-      // At a terminal state - this is a bit different to the other subopt implementations because
-      // nodes with no expansions are put onto the queue to make sure energy is properly ordered.
+      // At a terminal state - this is a bit different to the other subopt
+      // implementations because nodes with no expansions are put onto the queue to
+      // make sure energy is properly ordered.
       return {-neg_delta, idx};
     }
 
@@ -104,8 +105,8 @@ SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::RunInternal() {
 
     const auto& exp = exps[s.expand_idx];
     const bool has_unexpanded = exp.idx1.IsValid();
-    // If we have an unexpanded DpIndex, tell the child to look at us first. Otherwise, progress
-    // to the next one.
+    // If we have an unexpanded DpIndex, tell the child to look at us first.
+    // Otherwise, progress to the next one.
     Node ns = {.parent_idx = idx,
         .parent_expand_idx = s.expand_idx,
         .unexpanded_idx = has_unexpanded ? idx : s.unexpanded_idx,
@@ -115,13 +116,14 @@ SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::RunInternal() {
     // Update this node for the next expansion.
     s.expand_idx++;
 
-    // If we still have expansions to process, update the energy of the current node with what
-    // the best we could do is with the next (worse) expansion.
+    // If we still have expansions to process, update the energy of the current node
+    // with what the best we could do is with the next (worse) expansion.
     if (s.expand_idx != num_exps)
       pq_.emplace(neg_delta + exp.delta - exps[s.expand_idx].delta, idx);
 
     if (!exp.idx0.IsValid() && s.unexpanded_idx != INVALID_SUBOPT_INDEX) {
-      // Ran out of expansions at this node but we still have unexpanded DpIndexes to process.
+      // Ran out of expansions at this node but we still have unexpanded DpIndexes to
+      // process.
       assert(!has_unexpanded);
       assert(!exp.ctd0.IsValid() && !exp.ctd1.IsValid());
 
@@ -136,12 +138,13 @@ SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::RunInternal() {
       ns.to_expand = unexpanded_exp.idx1;
     }
 
-    // We want to explore nodes with the same energy depth-first, so we reach a complete structure
-    // as fast as possible. Doing this depth first guarantees linear memory usage in the number of
-    // structures produced. We don't need to explicilty store a depth because the increasing index
-    // functions as a depth counter. If we stored a depth value, the only advantage we would get is
-    // starting from a lower internal node when we 'switch' to a new place in the tree to generate a
-    // new structure, but the extra memory usage is not worth it.
+    // We want to explore nodes with the same energy depth-first, so we reach a
+    // complete structure as fast as possible. Doing this depth first guarantees
+    // linear memory usage in the number of structures produced. We don't need to
+    // explicilty store a depth because the increasing index functions as a depth
+    // counter. If we stored a depth value, the only advantage we would get is
+    // starting from a lower internal node when we 'switch' to a new place in the
+    // tree to generate a new structure, but the extra memory usage is not worth it.
     pq_.emplace(neg_delta, SuboptIndex(q_.size()));
     // This is the only modification to `q_`, so access to `s` is valid until here.
     q_.push_back(ns);
@@ -251,8 +254,8 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateEx
               .ctd0{st, val_ctd}});
 
         // (   )<   >
-        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
-        // coaxial stack.
+        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set
+        // from a coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           exps.push_back({.delta = energy, .idx0{en + 1, INVALID_INDEX, EXT}, .idx1{st, en, DP_P}});
       }
@@ -485,7 +488,8 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateEx
     // stb pl1b pb   pr1b
     auto pb = r_[piv];
     auto pl1b = r_[piv - 1];
-    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the right.
+    // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+    // the right.
     auto base00 = dp_.dp[st][piv][DP_P] + pc_.augubranch[stb][pb] - dp_.dp[st][en][a];
     auto base01 = dp_.dp[st][piv - 1][DP_P] + pc_.augubranch[stb][pl1b] - dp_.dp[st][en][a];
     auto base10 = dp_.dp[st + 1][piv][DP_P] + pc_.augubranch[st1b][pb] - dp_.dp[st][en][a];
@@ -564,7 +568,8 @@ std::vector<Expansion> SuboptPersistent<CFG, PseudofreeCfgT, UseLru>::GenerateEx
     if constexpr (CFG.UseDangleMismatch()) {
       // (   )3<   > 3' - U, U2
       energy = base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) + m_->multiloop_c;
-      // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
+      // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not
+      // DP_U2.
       if (a == DP_U && energy + right_unpaired <= delta)
         exps.push_back(
             {.delta = energy + right_unpaired, .idx0{st, piv - 1, DP_P}, .ctd0{st, CTD_3_DANGLE}});

@@ -16,21 +16,24 @@
 
 namespace mrna::md::base {
 
-// Computes the optimal arrangement of coaxial stackings, terminal mismatches, and dangles (CTD).
-// This DP needs to be run four times. The series of branches is actually cyclic, and there are two
-// types of interactions that can occur between branches. Interactions between the branches
-// themselves, and interactions between them and the bases next to them. N.B. interact is not
-// used in the chemistry sense here. The DP needs to be run with the outer branch at the start
-// and the end, and also with the unpaired base on the left of the first branch (if it exists)
-// not used and potentially used. Running with the outer branch at both the start and
-// the end allows coaxial stacking interactions between the outer branch and both adjacent branches.
-// Running with having the left unpaired base both not used lets the last branch potentially
-// consume it (wrapping around).
+// Computes the optimal arrangement of coaxial stackings, terminal mismatches,
+// and dangles (CTD). This DP needs to be run four times. The series of branches
+// is actually cyclic, and there are two types of interactions that can occur
+// between branches. Interactions between the branches themselves, and
+// interactions between them and the bases next to them. N.B. interact is not
+// used in the chemistry sense here. The DP needs to be run with the outer
+// branch at the start and the end, and also with the unpaired base on the left
+// of the first branch (if it exists) not used and potentially used. Running
+// with the outer branch at both the start and the end allows coaxial stacking
+// interactions between the outer branch and both adjacent branches. Running
+// with having the left unpaired base both not used lets the last branch
+// potentially consume it (wrapping around).
 //
-// The state holds which branches we're up to, `i`, and whether the unpaired base on the left was
-// consumed (if it exists).
+// The state holds which branches we're up to, `i`, and whether the unpaired
+// base on the left was consumed (if it exists).
 //
-// Note that we can't form two dangles attached to the same stem; that's a terminal mismatch.
+// Note that we can't form two dangles attached to the same stem; that's a
+// terminal mismatch.
 
 // unpaired base will never have been consumed by a 5' dangle.
 #define UPDATE_CACHE(used, idx, cur_used, cur_idx, value, reason)                     \
@@ -80,9 +83,10 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
     assert(s.IsPaired(branches[i]));
     lui[i] = li[i] - 1;
     rui[i] = ri[i] + 1;
-    // If `use_first_lu`, then if the left unpaired base is the same as the last branch's right
-    // unpaired base, then we can't use it (as it could be used at the end by a terminal mismatch,
-    // dangle, right facing coaxial stack, etc). This is because the loop is cyclic.
+    // If `use_first_lu`, then if the left unpaired base is the same as the last
+    // branch's right unpaired base, then we can't use it (as it could be used at
+    // the end by a terminal mismatch, dangle, right facing coaxial stack, etc).
+    // This is because the loop is cyclic.
     lu_exists[i] = lui[i] >= 0 && lui[i] < RSZ && s.IsUnpaired(lui[i]);
     lu_usable[i] = lu_exists[i] && (lui[i] != last_rui || use_first_lu);
     ru_exists[i] = rui[i] < RSZ && s.IsUnpaired(rui[i]);
@@ -98,32 +102,33 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
     if (lu_exists[i]) lub = r[lui[i]];
     if (ru_exists[i]) rub = r[rui[i]];
 
-    // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches) and this not be
-    // the last branch.
+    // Flush coaxial stacking. Requires that ru not exist (i.e. adjacent branches)
+    // and this not be the last branch.
     if (CFG.UseCoaxialStacking() && !ru_exists[i] && i != N - 1) {
       Energy coax = m.stack[rb][r[li[i + 1]]][r[ri[i + 1]]][lb];
-      // When the next branch is consumed by this coaxial stack, it can no longer interact with
-      // anything, so just skip to i + 2.
+      // When the next branch is consumed by this coaxial stack, it can no longer
+      // interact with anything, so just skip to i + 2.
       UPDATE_CACHE(0, i + 2, 0, i, coax, CTD_FCOAX_WITH_NEXT);
       if (lu_exists[i]) {
-        // If lu exists, and it was used, then it's fine to coaxially stack. If `used` were true but
-        // lu didn't exist then we couldn't coaxially stack as the current branch would already
-        // have been involved in one, though.
+        // If lu exists, and it was used, then it's fine to coaxially stack. If `used`
+        // were true but lu didn't exist then we couldn't coaxially stack as the current
+        // branch would already have been involved in one, though.
         UPDATE_CACHE(0, i + 2, 1, i, coax, CTD_FCOAX_WITH_NEXT);
       }
     }
 
     if (lu_usable[i] && ru_usable[i]) {
       if constexpr (CFG.UseDangleMismatch()) {
-        // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use left.
-        // Consumes ru, so if it was shared, use it.
+        // Terminal mismatch, requires lu_exists, ru_exists, and that we didn't use
+        // left. Consumes ru, so if it was shared, use it.
         UPDATE_CACHE(ru_shared[i], i + 1, 0, i, m.terminal[rb][rub][lub][lb], CTD_MISMATCH);
       }
 
-      // Mismatch mediated coaxial stacking, left facing (uses the branch we're currently at).
-      // Requires lu_usable, ru_usable, ru_shared, and left not used. Consumes ru.
-      // Skip to the branch after next since the next branch can't be involved in any more
-      // interactions anyway: its left pair is consumed, and its right pair can't dangle towards it.
+      // Mismatch mediated coaxial stacking, left facing (uses the branch we're
+      // currently at). Requires lu_usable, ru_usable, ru_shared, and left not used.
+      // Consumes ru. Skip to the branch after next since the next branch can't be
+      // involved in any more interactions anyway: its left pair is consumed, and its
+      // right pair can't dangle towards it.
       if (CFG.UseCoaxialStacking() && ru_shared[i] && i != N - 1) {
         Energy left_coax = m.MismatchCoaxial(rb, rub, lub, lb);
         UPDATE_CACHE(0, i + 2, 0, i, left_coax, CTD_LCOAX_WITH_NEXT);
@@ -146,8 +151,8 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
 
         UPDATE_CACHE(ru_shared[i + 1], i + 2, 0, i, right_coax, CTD_RC_WITH_NEXT);
         if (lu_exists[i]) {
-          // In the case that lu doesn't exist but it is "used" it means this branch was consumed
-          // by a coaxial interaction so don't use it.
+          // In the case that lu doesn't exist but it is "used" it means this branch was
+          // consumed by a coaxial interaction so don't use it.
           UPDATE_CACHE(ru_shared[i + 1], i + 2, 1, i, right_coax, CTD_RC_WITH_NEXT);
         }
       }
@@ -193,9 +198,9 @@ Energy ComputeOptimalCtds(const T& m, const Primary& r, const Secondary& s,
     Ctd reason = CTD_NA;
     std::tie(used, idx, energy, reason) = std::move(state);
     if (idx == -1) break;
-    // We can skip a branch on coaxial stacking interactions, so make sure to insert the ctd energy
-    // for the branch. We build branch_ctd backwards, so we need to insert this later branch first.
-    // To get the PREV versions, just add one.
+    // We can skip a branch on coaxial stacking interactions, so make sure to insert
+    // the ctd energy for the branch. We build branch_ctd backwards, so we need to
+    // insert this later branch first. To get the PREV versions, just add one.
     if (reason == CTD_LCOAX_WITH_NEXT || reason == CTD_RC_WITH_NEXT ||
         reason == CTD_FCOAX_WITH_NEXT)
       branch_ctd->emplace_back(Ctd(reason + 1), energy);
@@ -216,10 +221,11 @@ Energy AddBaseCtdsToBranchCtds(const T& m, const Primary& r, const Secondary& s,
     const std::deque<int>& branches, BranchCtd* branch_ctd) {
   assert(branch_ctd->empty());
   Energy total_energy = ZERO_E;
-  // If we have an outer loop in `branches`, it is possible the first could refer to PREV, or the
-  // last, to NEXT. In this case, we need to fix the branch_ctd so that the corresponding branch
-  // ctd is on the right side. e.g. if the first element refers to PREV, we would put something
-  // before it, but that actually needs to be at the end.
+  // If we have an outer loop in `branches`, it is possible the first could refer
+  // to PREV, or the last, to NEXT. In this case, we need to fix the branch_ctd so
+  // that the corresponding branch ctd is on the right side. e.g. if the first
+  // element refers to PREV, we would put something before it, but that actually
+  // needs to be at the end.
   bool rot_left = false;
   for (std::size_t i = 0; i < branches.size(); ++i) {
     const int branch = branches[i];

@@ -385,8 +385,8 @@ struct TracebackInternal {
       // stb pl1b pb   pr1b
       const auto pb = r[piv];
       const auto pl1b = r[piv - 1];
-      // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
-      // right.
+      // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+      // the right.
       const auto base00 = dp[st][piv][DP_P] + m.AuGuPenalty(stb, pb) + m.multiloop_b;
       const auto base01 = dp[st][piv - 1][DP_P] + m.AuGuPenalty(stb, pl1b) + m.multiloop_b;
       const auto base10 = dp[st + 1][piv][DP_P] + m.AuGuPenalty(st1b, pb) + m.multiloop_b;
@@ -435,8 +435,8 @@ struct TracebackInternal {
       // (   )<   > - U, U2, U_WC?, U_GU?
       if (base00 + right_unpaired == dp[st][en][a] && (a != DP_U_WC || IsWcPair(stb, pb)) &&
           (a != DP_U_GU || IsGuPair(stb, pb))) {
-        // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously, and
-        // were already set.
+        // If U_WC, or U_GU, we were involved in some sort of coaxial stack previously,
+        // and were already set.
         Expansion exp{.idx0 = base::DpIndex(st, piv, DP_P)};
         if (a != DP_U_WC && a != DP_U_GU) exp.ctd0 = {st, CTD_UNUSED};
         if (can_right_unpaired) next.push_back(exp);

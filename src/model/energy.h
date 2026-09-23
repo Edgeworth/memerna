@@ -27,7 +27,8 @@ struct __attribute__((packed, aligned(4))) Energy {
 
   [[nodiscard]] static constexpr Energy FromRaw(int32_t v) noexcept { return Energy{.v = v}; }
 
-  // Converts a floating point energy value in kcal/mol to an integer energy value.
+  // Converts a floating point energy value in kcal/mol to an integer energy
+  // value.
   [[nodiscard]] static Energy FromFlt(flt energy);
   [[nodiscard]] static Energy FromString(const std::string& s);
 
@@ -70,7 +71,8 @@ std::ostream& operator<<(std::ostream& out, const Energy& o);
 // Used for infinite/sentinel energy values, e.g. in DP tables.
 inline constexpr Energy MAX_E = Energy::FromRaw(0x0F0F0F0F);
 
-// Used for finite but larger than any possible energy values. e.g. for subopt-delta
+// Used for finite but larger than any possible energy values. e.g. for
+// subopt-delta
 inline constexpr Energy CAP_E = Energy::FromRaw(0x07070707);
 
 inline constexpr Energy ZERO_E = Energy::FromRaw(0);

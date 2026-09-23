@@ -57,11 +57,13 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
   logdebug("base {} with {}, {}, {}", funcname(), CFG, subopt_cfg_, pf_);
   auto start_time = std::chrono::steady_clock::now();
 
-  // Basic idea of suboptimal traceback is look at all possible choices from a state, and expand
-  // just one of them. Fully expanding one of them means there will be no duplicates in the tree.
-  // Cull the ones not inside the window or when we have more than `max_structures`.
-  // We don't have to check for expanding impossible states indirectly, since they will have MAX_E,
-  // be above subopt_cfg_.delta, and be instantly culled (callers use CAP_E for no energy limit).
+  // Basic idea of suboptimal traceback is look at all possible choices from a
+  // state, and expand just one of them. Fully expanding one of them means there
+  // will be no duplicates in the tree. Cull the ones not inside the window or
+  // when we have more than `max_structures`. We don't have to check for expanding
+  // impossible states indirectly, since they will have MAX_E, be above
+  // subopt_cfg_.delta, and be instantly culled (callers use CAP_E for no energy
+  // limit).
   q_.insert({.not_yet_expanded = {{0, INVALID_INDEX, EXT}},
       .res = SuboptResult(dp_.ext[0][EXT], trace::TraceResult(Secondary(N), Ctds(N)))});
   Node node;
@@ -79,8 +81,9 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
       continue;
     }
 
-    // If we found a non-finished node, but `finished` is full, and the worst in `finished` is
-    // as good as our current node (which is the best in `q`), then we can exit.
+    // If we found a non-finished node, but `finished` is full, and the worst in
+    // `finished` is as good as our current node (which is the best in `q`), then we
+    // can exit.
     if (static_cast<int64_t>(finished_.size()) >= subopt_cfg_.strucs &&
         (--finished_.end())->res.energy <= node.res.energy)
       break;
@@ -98,8 +101,8 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
 
     // Exterior loop
     if (to_expand.IsExternal()) {
-      // We try replacing what we do at (st, a) with a bunch of different cases, so we use this
-      // energy as a base.
+      // We try replacing what we do at (st, a) with a bunch of different cases, so we
+      // use this energy as a base.
       const Energy base_energy = node.res.energy - dp_.ext[st][a];
       if (a == EXT) {
         // Base case: do nothing.
@@ -159,8 +162,8 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
         if (a == EXT) Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st, en, DP_P}, {st, val_ctd});
 
         // (   )<   >
-        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set from a
-        // coaxial stack.
+        // If we are at EXT_WC or EXT_GU, the CTDs for this have already have been set
+        // from a coaxial stack.
         if ((a == EXT_WC && IsWcPair(stb, enb)) || (a == EXT_GU && IsGuPair(stb, enb)))
           Expand(energy, {en + 1, INVALID_INDEX, EXT}, {st, en, DP_P});
 
@@ -345,8 +348,8 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
         // stb pl1b pb   pr1b
         auto pb = r_[piv];
         auto pl1b = r_[piv - 1];
-        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
-        // right.
+        // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+        // the right.
         auto base00 = dp_.dp[st][piv][DP_P] + m_->AuGuPenalty(stb, pb) + m_->multiloop_b;
         auto base01 = dp_.dp[st][piv - 1][DP_P] + m_->AuGuPenalty(stb, pl1b) + m_->multiloop_b;
         auto base10 = dp_.dp[st + 1][piv][DP_P] + m_->AuGuPenalty(st1b, pb) + m_->multiloop_b;
@@ -412,7 +415,8 @@ int64_t SuboptDebug<CFG, PseudofreeCfgT>::Run(const SuboptCallback& fn) {
           // (   )3<   > 3' - U, U2
           energy = base_energy + base01 + m_->dangle3[pl1b][pb][stb] + pf_.Unpaired(piv) +
               m_->multiloop_c;
-          // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not DP_U2.
+          // Can only let the rest be unpaired if we only need one branch, i.e. DP_U not
+          // DP_U2.
           if (a == DP_U) Expand(energy + right_unpaired, {st, piv - 1, DP_P}, {st, CTD_3_DANGLE});
           Expand(
               energy + right_paired, {st, piv - 1, DP_P}, {piv + 1, en, DP_U}, {st, CTD_3_DANGLE});

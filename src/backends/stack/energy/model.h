@@ -76,7 +76,8 @@ class Model : public base::ModelBase, public ModelMixin<Model> {
  private:
   friend class ModelMixin<Model>;
 
-  // This is private to prevent construction on the stack, since this structure is large.
+  // This is private to prevent construction on the stack, since this structure is
+  // large.
   Model() = default;
 
   template <erg::EnergyCfg CFG, class PseudofreeCfgT>

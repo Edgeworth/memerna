@@ -149,8 +149,9 @@ def try_cmd(
     if isinstance(stdin_inp, str):
         stdin_inp = stdin_inp.encode("utf-8")
 
-    # Resource limits deliberately wrap only the benchmarked command. Runner setup and
-    # output compression stay outside them so benchmark limits do not depend on harness overhead.
+    # Resource limits deliberately wrap only the benchmarked command. Runner setup
+    # and output compression stay outside them so benchmark limits do not depend on
+    # harness overhead.
     cmd_list = _cmd_list_with_limits(cmd, limits)
 
     env = os.environ.copy()
@@ -161,8 +162,8 @@ def try_cmd(
         timing_file = stack.enter_context(tempfile.NamedTemporaryFile(mode="w+b"))
         command_stderr_file: IO[bytes] | None = None
         if limits.time_sec is not None:
-            # Keep the command's stderr separate so timeout --verbose is an unambiguous
-            # side channel. The shell immediately execs the command and leaves no supervisor.
+            # Keep the command's stderr separate so timeout --verbose is an unambiguous side
+            # channel. The shell immediately execs the command and leaves no supervisor.
             command_stderr_file = stack.enter_context(tempfile.NamedTemporaryFile(mode="w+b"))
             cmd_list = [
                 "timeout",

@@ -87,7 +87,8 @@ struct MfeInternal {
 
           {
             const int max_stack = en - st - HAIRPIN_MIN_SZ + 1;
-            // Try all stacks of each length, with or without a 1 nuc bulge loop intercedeing.
+            // Try all stacks of each length, with or without a 1 nuc bulge loop
+            // intercedeing.
             const Energy bulge_left = m.Bulge<CFG>(r, pf, st, en, st + 2, en - 1);
             const Energy bulge_right = m.Bulge<CFG>(r, pf, st, en, st + 1, en - 2);
 
@@ -95,8 +96,9 @@ struct MfeInternal {
             for (int length = 2; 2 * length <= max_stack; ++length) {
               // Update our DP at (st, en) - no bulge:
               if (Model::CanPair<CFG>(r, st + 1, en - 1)) {
-                // Include the paired pseudofree energy value for all except the last pair in this
-                // stack. The last pair will be handled by whatever starts after this stack.
+                // Include the paired pseudofree energy value for all except the last pair in
+                // this stack. The last pair will be handled by whatever starts after this
+                // stack.
                 auto none = m.stack[r[st]][r[st + 1]][r[en - 1]][r[en]] + pf.Paired(st, en);
                 // Try ending the stack without a bulge loop.
                 if (length == 2) {
@@ -154,7 +156,8 @@ struct MfeInternal {
           nostack_min = std::min(nostack_min, m.Hairpin<CFG>(r, pf, st, en));
 
           // Multiloops. Look at range [st + 1, en - 1].
-          // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop helix.
+          // Cost for initiation + one branch. Include AU/GU penalty for ending multiloop
+          // helix.
           const auto base_branch_cost =
               m.AuGuPenalty(stb, enb) + pf.Paired(st, en) + m.multiloop_a + m.multiloop_b;
 
@@ -242,8 +245,8 @@ struct MfeInternal {
           // stb pl1b pb   pr1b
           const auto pb = r[piv];
           const auto pl1b = r[piv - 1];
-          // baseAB indicates A bases left unpaired on the left, B bases left unpaired on the
-          // right.
+          // baseAB indicates A bases left unpaired on the left, B bases left unpaired on
+          // the right.
           const auto base00 = dp[st][piv][DP_P] + m.multiloop_b + m.AuGuPenalty(stb, pb);
           const auto base01 = dp[st][piv - 1][DP_P] + m.multiloop_b + m.AuGuPenalty(stb, pl1b);
           const auto base10 = dp[st + 1][piv][DP_P] + m.multiloop_b + m.AuGuPenalty(st1b, pb);

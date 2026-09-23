@@ -60,7 +60,8 @@ class SuboptIterative {
 
   // Incremental state. Holds the current partial structure.
   SuboptResult res_;
-  // Incremental state - holds unexpanded Indexes for the current partial structure.
+  // Incremental state - holds unexpanded Indexes for the current partial
+  // structure.
   std::vector<DpIndex> unexpanded_;
   int iters_until_check_ = 1;
 
@@ -87,8 +88,8 @@ class SuboptIterative {
     return cache_.Insert(key, std::move(exps));
   }
 
-  // Generates expansions for the given index, given that the extra energy over the best choice
-  // can't be more than `delta`.
+  // Generates expansions for the given index, given that the extra energy over
+  // the best choice can't be more than `delta`.
   [[nodiscard]] std::vector<Expansion> GenerateExpansions(
       const DpIndex& to_expand, Energy delta) const;
 };

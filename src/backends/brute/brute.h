@@ -28,7 +28,8 @@ inline constexpr int PFN_MAX_RNA_SIZE = (1 << PFN_PT_MAX_BITS) - 1;
 struct SuboptCmp {
   bool operator()(const subopt::SuboptResult& a, const subopt::SuboptResult& b) const {
     // Kept in a multiset, so this is just used for ordering, not deduplication.
-    // There should be no duplicates added anyway. Single comparison to keep it fast.
+    // There should be no duplicates added anyway. Single comparison to keep it
+    // fast.
     return a.energy < b.energy;
   }
 };
