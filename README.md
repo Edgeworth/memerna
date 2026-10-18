@@ -12,11 +12,11 @@ Please cite the following for the memerna software package:
 ```
 @software{memerna2025,
   author = {Courtney, Eliot and Ward, Max},
-  year = {2025},
-  month = {7},
+  year = {2026},
+  month = {10},
   title = {{memerna Software Package}},
   url = {https://github.com/Edgeworth/memerna},
-  version = {0.2.0},
+  version = {0.2.3},
 }
 ```
 
