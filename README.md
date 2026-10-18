@@ -16,6 +16,7 @@ Please cite the following for the memerna software package:
   month = {10},
   title = {{memerna Software Package}},
   url = {https://github.com/Edgeworth/memerna},
+  doi = {10.5281/zenodo.8214641},
   version = {0.2.3},
 }
 ```
