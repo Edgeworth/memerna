@@ -15,8 +15,13 @@ set(FLOAT_PRECISION 15 CACHE STRING "Number of significant digits to use for flo
 set(ENERGY_PRECISION 2 CACHE STRING
   "Number of decimal places to use for energy calculations")
 
-# Always have RNAstructure compiled as release.
 if(USE_RNASTRUCTURE)
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/rnastructure_bridge/CMakeLists.txt)
+    message(FATAL_ERROR
+      "USE_RNASTRUCTURE requires the extern/rnastructure_bridge submodule; get it with\n"
+      "  git submodule update --init extern/rnastructure_bridge")
+  endif()
+  # Always have RNAstructure compiled as release.
   set(SAVED_BUILD_TYPE ${CMAKE_BUILD_TYPE})
   set(CMAKE_BUILD_TYPE Release)
   add_subdirectory("extern/rnastructure_bridge")
@@ -46,8 +51,7 @@ if(USE_IWYU)
 endif()
 
 # Include things to find libraries.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-  ${CMAKE_CURRENT_SOURCE_DIR}/extern/sanitizers-cmake/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(get_cpm) # get cmake package manager
 
 # Find packages
@@ -58,8 +62,18 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON) # Gtest needs this.
 find_package(Threads REQUIRED)
 find_package(Boost 1.77 REQUIRED)
-find_package(Sanitizers)
 find_package(MPFR)
+
+# Only sanitizer builds need the sanitizers-cmake submodule.
+set(SANITIZERS_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/sanitizers-cmake/cmake)
+if(EXISTS ${SANITIZERS_CMAKE_DIR}/FindSanitizers.cmake)
+  list(APPEND CMAKE_MODULE_PATH ${SANITIZERS_CMAKE_DIR})
+  find_package(Sanitizers)
+elseif(SANITIZE_ADDRESS OR SANITIZE_MEMORY OR SANITIZE_THREAD OR SANITIZE_UNDEFINED)
+  message(FATAL_ERROR
+    "Sanitizer builds require the extern/sanitizers-cmake submodule; get it with\n"
+    "  git submodule update --init extern/sanitizers-cmake")
+endif()
 
 # Enable stacktraces if we have boost.
 find_library(LIBBACKTRACE NAMES backtrace libbacktrace)
@@ -380,18 +394,20 @@ target_compile_definitions(memerna PUBLIC FLOAT_PRECISION=${FLOAT_PRECISION})
 target_compile_definitions(memerna PUBLIC ENERGY_PRECISION=${ENERGY_PRECISION})
 
 # Add sanitizers
-add_sanitizers(memerna)
-add_sanitizers(brute)
-add_sanitizers(efn)
-add_sanitizers(fold)
-add_sanitizers(fuzz)
-add_sanitizers(fuzz_afl)
-add_sanitizers(harness)
-add_sanitizers(partition)
-add_sanitizers(run_benchmark)
-add_sanitizers(run_tests)
-add_sanitizers(splay_explorer)
-add_sanitizers(subopt)
+if(Sanitizers_FOUND)
+  add_sanitizers(memerna)
+  add_sanitizers(brute)
+  add_sanitizers(efn)
+  add_sanitizers(fold)
+  add_sanitizers(fuzz)
+  add_sanitizers(fuzz_afl)
+  add_sanitizers(harness)
+  add_sanitizers(partition)
+  add_sanitizers(run_benchmark)
+  add_sanitizers(run_tests)
+  add_sanitizers(splay_explorer)
+  add_sanitizers(subopt)
+endif()
 
 # Add iwyu to targets if requested.
 if(USE_IWYU)
