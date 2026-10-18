@@ -75,7 +75,8 @@ git clone https://github.com/Edgeworth/memerna.git
 cd memerna
 ```
 
-Set up git submodules to pull in external dependencies:
+To build with RNAstructure (USE_RNASTRUCTURE) or sanitizers, set up the git
+submodules:
 
 ```sh
 git submodule update --init --recursive
