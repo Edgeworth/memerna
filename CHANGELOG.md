@@ -55,6 +55,14 @@
 - Added pseudofree energy support to Lyngso sparse algorithm
 - Implemented pseudofree energy for hairpin precomputation
 
+# Released 0.2.3 (2026-10-18)
+
+- Added a docker Ubuntu 22.04 build, test, and runtime image.
+- Supported GCC 11 and Python 3.10.
+- Required Boost 1.77 or newer.
+- Disabled RNAstructure by default. Set USE_RNASTRUCTURE=ON to build with it.
+- Only required the git submodules for RNAstructure and sanitizer builds.
+
 # Released 0.2.2 (2026-02-13)
 
 - Supported more than 2^31 - 1 suboptimal structures.
