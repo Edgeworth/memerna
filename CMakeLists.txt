@@ -11,7 +11,7 @@ set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
 
 # Options
 option(USE_MPFR "Use MPFR for higher precision floats" OFF)
-option(USE_RNASTRUCTURE "Whether to build in RNAstructure" ON)
+option(USE_RNASTRUCTURE "Whether to build in RNAstructure" OFF)
 option(USE_IWYU "Whether to build with include-what-you-use" OFF)
 option(USE_LTO "Whether to build with LTO" OFF)
 option(USE_NATIVE_ARCH "Whether to optimise release builds for the build machine's CPU" ON)
