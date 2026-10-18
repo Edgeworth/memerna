@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(memerna VERSION 0.2.0 LANGUAGES CXX)
+project(memerna VERSION 0.2.3 LANGUAGES CXX)
 
 # Supress warning messages about unused variables:
 set(SUPPRESS_UNUSED "${CMAKE_C_COMPILER}")
