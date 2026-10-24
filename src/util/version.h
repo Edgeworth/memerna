@@ -26,7 +26,7 @@ struct VersionInfo {
 // Its definition will come from a build-system-generated source file.
 // export // If in a module
 inline const VersionInfo VERSION = {
-    .major = 0, .minor = 2, .patch = 3, .pre_release = "", .build_metadata = ""};
+    .major = 0, .minor = 2, .patch = 4, .pre_release = "", .build_metadata = ""};
 
 }  // namespace mrna
 

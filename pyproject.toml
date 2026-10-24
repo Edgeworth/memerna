@@ -4,7 +4,7 @@ classifiers = ["License :: OSI Approved :: GPL-3.0-only"]
 description = "memerna"
 name = "rnapy"
 readme = "README.md"
-version = "0.2.3"
+version = "0.2.4"
 
 [tool.poetry.dependencies]
 bidict = ">=0.23.1"
