@@ -20,7 +20,7 @@ dependencies = [
 dev = [
   "pytest>=9.1.1",
   "ruff==0.15.0",
-  "ty>=0.0.89",
+  "ty>=0.0.91",
 ]
 
 [build-system]
