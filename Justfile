@@ -38,6 +38,18 @@ test:
     cfgs+=$'\n'"--kind=debug --sanitizer=none --float-precision=15"
     cfgs+=" --energy-precision=1 --rnastructure --mpfr $test_compiler"
   done
+  # The submodule directories are empty in a source archive and in a clone
+  # before git submodule update, so turn off the options that need them.
+  if [[ ! -f extern/sanitizers-cmake/cmake/FindSanitizers.cmake ]]; then
+    echo "Testing without sanitizers because extern/sanitizers-cmake is missing"
+    cfgs="$(sed -E 's/--sanitizer=[a-z]+/--sanitizer=none/' <<< "$cfgs")"
+  fi
+  if [[ ! -f extern/rnastructure_bridge/CMakeLists.txt ]]; then
+    echo "Testing without RNAstructure because extern/rnastructure_bridge is missing"
+    cfgs="$(sed -E 's/(^| )--rnastructure( |$)/\1--no-rnastructure\2/' <<< "$cfgs")"
+  fi
+  # With an option turned off, a configuration can be in the list more than once.
+  cfgs="$(awk '!seen[$0]++' <<< "$cfgs")"
   # Suspend work when there is not enough memory for another job.
   printf '%s\n' "$cfgs" | parallel --halt soon,fail=1 --jobs "$test_jobs" \
     --memsuspend "$test_job_memory" just _test-build {}
