@@ -46,6 +46,22 @@ test:
     # sequence. One build covers the size limit without shrinking the matrix.
     cfgs+=$'\n'"$base --sanitizer=ubsan --index-bits=8 $test_compiler"
   done
+  # The submodule directories are empty in a source archive and in a clone
+  # before git submodule update, so turn off the options that need them.
+  if [[ ! -f extern/sanitizers-cmake/cmake/FindSanitizers.cmake ]]; then
+    echo "Testing without sanitizers because extern/sanitizers-cmake is missing"
+    cfgs="$(sed -E 's/--sanitizer=[a-z]+/--sanitizer=none/' <<< "$cfgs")"
+  fi
+  if [[ ! -f extern/rnastructure_bridge/CMakeLists.txt ]]; then
+    echo "Testing without RNAstructure because extern/rnastructure_bridge is missing"
+    cfgs="$(sed -E 's/(^| )--rnastructure( |$)/\1--no-rnastructure\2/' <<< "$cfgs")"
+  fi
+  # With an option turned off, a configuration can be in the list more than once.
+  # Compare sorted options to remove the repeats, since the options of the extra
+  # builds above are in another order.
+  cfgs="$(while read -r cfg; do
+    printf '%s\t%s\n' "$(tr ' ' '\n' <<< "$cfg" | sort | paste -sd ' ')" "$cfg"
+  done <<< "$cfgs" | awk -F '\t' '!seen[$1]++ { print $2 }')"
   # Suspend work when there is not enough memory for another job.
   printf '%s\n' "$cfgs" | parallel --halt soon,fail=1 --jobs "$test_jobs" \
     --memsuspend "$test_job_memory" just _test-build {}
