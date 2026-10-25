@@ -35,6 +35,11 @@
 - Added multiloop closure cost (multiloop_c) to energy model and MFE
 - Migrated from pandas to polars for analysis
 
+# Released 0.2.4 (2026-10-25)
+
+- Turned off sanitizers and RNAstructure in `just test` when their git
+  submodules are missing.
+
 # Released 0.2.3 (2026-10-18)
 
 - Added a docker Ubuntu 22.04 build, test, and runtime image.
