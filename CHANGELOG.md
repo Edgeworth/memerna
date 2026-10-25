@@ -32,28 +32,8 @@
 - Started adding multiloop_c to sparse MFE and subopt algorithms
 
 ## 2025/06
-- Added versioning support with version.h
 - Added multiloop closure cost (multiloop_c) to energy model and MFE
 - Migrated from pandas to polars for analysis
-
-## 2025/05
-- Fixed lowmem mode for suboptimal folding
-- Added CPU affinity support for benchmarking
-
-## 2025/04
-- Added pseudofree energy support to partition function opt algorithm
-- Fixed partition function unpaired nucleotide handling
-
-## 2025/03
-- Implemented N^2 cache for suboptimal folding (new expansion_cache and lru_vector_cache)
-- Implemented pseudofree energy for base partition function
-- Implemented pseudofree energy for base suboptimal algorithms
-
-## 2025/01
-- Implemented D2 (dangling ends model) for base backend
-- Implemented pseudofree energy for base sparse MFE algorithm
-- Added pseudofree energy support to Lyngso sparse algorithm
-- Implemented pseudofree energy for hairpin precomputation
 
 # Released 0.2.3 (2026-10-18)
 
@@ -76,6 +56,28 @@
 - Fixed wrong lowmem mode for persistent subopt algorithm
 
 # Released 0.2.0 (2025-06-09)
+
+## 2025/06
+- Added versioning support with version.h
+
+## 2025/05
+- Fixed lowmem mode for suboptimal folding
+- Added CPU affinity support for benchmarking
+
+## 2025/04
+- Added pseudofree energy support to partition function opt algorithm
+- Fixed partition function unpaired nucleotide handling
+
+## 2025/03
+- Implemented N^2 cache for suboptimal folding (new expansion_cache and lru_vector_cache)
+- Implemented pseudofree energy for base partition function
+- Implemented pseudofree energy for base suboptimal algorithms
+
+## 2025/01
+- Implemented D2 (dangling ends model) for base backend
+- Implemented pseudofree energy for base sparse MFE algorithm
+- Added pseudofree energy support to Lyngso sparse algorithm
+- Implemented pseudofree energy for hairpin precomputation
 
 ## 2024/09
 - Added pseudofree energy support to base energy function (efn)
